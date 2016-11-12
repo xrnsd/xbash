@@ -1,0 +1,101 @@
+#!/bin/bash
+#####---------------------工具函数---------------------------#########
+ftKillPhoneAppByPackageName()
+{
+	adb root
+	adb remount
+ 	local packageName=$1
+	pid=`adb shell ps | grep $packageName | awk '{print $2}'`
+	#pid=`adb shell "ps" | awk '/com.android.systemui/{print $2}'`
+	adb shell kill $pid
+}
+
+ftRestartadb1()
+{
+	  echo $mUserPwd | sudo -S adb kill-server
+	  echo
+	  sleep 2
+	  echo $mUserPwd | sudo -S adb start-server
+	  echo server-start
+	  adb devices
+}
+
+ftCleanDataGarbage()
+{
+	dev_dir_array=(
+			   /media/data_self \
+			   /home/${mUserName} \
+			  )
+
+	for dev_dir in ${dev_dir_array[*]}
+	do
+	dir=null
+	if [ -d ${dev_dir}/.Trash-1000 ];then
+		dir=${dev_dir}/.Trash-1000
+	else
+		if [ -d ${dev_dir}/.local/share/Trash ];then
+			dir=${dev_dir}/.local/share/Trash
+		fi
+	fi
+
+	if [ -d $dir ];then
+		cd $dir
+		if [ ! -d empty ];then
+			mkdir empty
+		fi
+		rsync --delete-before -d -a -H -v --progress --stats empty/ files/
+		rm -rf files/*
+		fi
+	done
+}
+
+ftMtkFlashTool()
+{
+	local tempDirPath=`pwd`
+	local toolDirPath=${mDirPathTools}/sp_flash_tool_v5.1548
+	cd $toolDirPath&&
+	echo '123' | sudo -S ./flash_tool&&
+	cd $tempDirPath
+}
+
+ftFileDirEdit()
+{
+	#=================== example=============================
+	#
+	#		ftFileDirEdit [type] [isCreate] [path]
+	#		ftFileDirEdit f true /home/xian-hp-u16/cmds/test.sh
+	#		echo $?
+	#=========================================================
+
+	ftName=路径合法性校验
+	type=$1
+	isCreate=$2
+	path=$3
+	if [ $type = "f" ];then
+	
+		if [ -f $path ];then
+			return 1
+		elif [ $isCreate = "true" ];then
+			touch $path
+			return 1
+		else
+			return 0
+		fi
+		
+	elif [ $type = "d" ];then
+	
+		if [ -d $path ];then
+			return 1
+		elif [ $isCreate = "true" ];then
+			mkdir -p $path
+			return 1
+		else
+			return 0
+		fi
+		
+	else
+		echo 函数[[${ftName}]]调用时使用了错误参数
+		return 0
+	fi
+}
+
