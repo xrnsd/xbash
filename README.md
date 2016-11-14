@@ -33,12 +33,12 @@ android mmi开发环境的bash简单扩展
 				cd /home/xxx
 				mv .bashrc .bashrc_base.backup
 				#bashrc_xxx默认为bashrc_work_lz
-				ln -s cmds/config/bashrc_xxx
+				ln -s cmds/config/bashrc_xxx .bashrc
 				
 		4 使用自定义root用户bash配置
 				cd /root
 				mv .bashrc .bashrc_base.backup
 				#bashrc_xxx默认为bashrc_root_work_lz
-				ln -s /home/xxxx/cmds/config/bashrc_root_xxx
+				ln -s /home/xxxx/cmds/config/bashrc_root_xxx .bashrc
 				
 		5 输入xc 查看帮助
