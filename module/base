@@ -66,20 +66,17 @@ ftMain()
 		case $mBaseShellParameter2 in
 		    "help")  ftReadMe; break;;
 		    *)  if [ `whoami` = "root" ]&&[ "$commandAuthority" = "root" ];then 
-        		while true; do
+        		      while true; do
 				case $mBaseShellParameter2 in
-
+                            "test")                                    ${mDirPathCmdTools}test.sh; break;;
 				"backup")					${mDirPathCmdTools}system_backup_restore.sh backup; break;;
 				"restore")					${mDirPathCmdTools}system_backup_restore.sh restore; break;;
 				*)							ftReadMe;exit;;
-
 				esac
 			    done
-			fi
-			if [ `whoami` != "root" ]&&[ "$commandAuthority" = "base" ]; then
+			elif [ `whoami` != "root" ]&&[ "$commandAuthority" = "base" ]; then
 				while true; do
 				case $mBaseShellParameter2 in
-
 				"clean_data_garbage")		ftCleanDataGarbage ; break;;
 				"mtk_flashtool")			ftMtkFlashTool ; break;;
 				"test")						${mDirPathCmdTools}test.sh; break;;
@@ -89,7 +86,6 @@ ftMain()
 				"systemui")					ftKillPhoneAppByPackageName com.android.systemui; break;;
 				"launcher")					ftKillPhoneAppByPackageName com.android.launcher3; break;;
 				*)							ftReadMe;exit;;
-
 				esac
 			    done
 			fi
@@ -101,7 +97,6 @@ ftMain()
 
 ftReadMe()
 {
-
 	cat<<EOF
     =========================================================================
     命令  --- 参数/命令说明
@@ -131,22 +126,25 @@ ftReadMe()
           |-- systemui  -----------------------------  关闭systemui
     xl ----- 过滤 android 含有tag的所有等级的log
           |// xl tag
-
+          |
+    xt ----- 检测shell脚本，语法检测和测试运行
+          |// xt 脚本文件名
+          |
     //xg  ---- [无参] / 搜索文件里面的字符串
           |// xg 字符串
-
+          |
     xle ----- 过滤 android 含有tag的E级log
           |// xle tag
-
+          |
     xkd  ---- [无参] / 快速删除海量文件
           |// xkd 文件夹
-
+          |
     xbh ----- 根据标签过滤命令历史
           |// xbh 标签
-
+          |
     xp ----- 查看文件绝对路径
           |// xp 文件名
-
+          |
     xi  ---- [无参] / 快速初始化模块编译环境
     xr  ---- [无参] / 使.bashrc修改生效
     .   ---- [无参] / 进入上一级目录

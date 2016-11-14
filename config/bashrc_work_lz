@@ -164,6 +164,7 @@ alias xp="title=显示文件的绝对路径;xtt;readlink -f"
 alias xh='title=浏览终端命令历史;xtt;history | less'
 alias xd='${dirPathHomeCmd}main.sh mtk_flashtool'
 alias xb='title=系统备份还原;xtt;${dirPathHomeCmd}main.sh'
+alias xt='python ${dirPathHomeCmd}/module/pytools/shtest.py $2'
 alias xi='title=项目编译;xtt;. ${dirPathHomeCmd}compile.sh'
 alias xl='title=过滤所有log;xtt;adb logcat -c;adb logcat | grep'
 alias xle='title=过滤E级log;xtt;adb logcat -c;adb logcat "*:E"'

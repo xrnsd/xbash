@@ -112,6 +112,7 @@ export PS1='xrnsd\[\033[42m\][\w]\[\033[0m\]:'
 #--------------------------命令封装---------------------------
 alias ..="cd .."
 alias ...="cd ../.."
+alias xc='${dirPathHomeCmd}main.sh'
 alias xr="source ~/.bashrc"
 alias xu='gedit /root/.bashrc'
 alias xbh='cat ~/.bash_history |grep $2'
@@ -121,3 +122,4 @@ alias xb='${dirPathHomeCmd}main.sh'
 
 #--------------------------命令选项快速适配---------------------------
 complete -W "backup restore" xb
+complete -W "test" xc
