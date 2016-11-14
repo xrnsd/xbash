@@ -1,14 +1,14 @@
 # Xrnsd-extensions-to-bash   
 android mmi开发环境的bash简单扩展
 ##说明：环境耦合较高，需要解耦，下面介绍作者环境和工具初始化
-##1.环境目录
+##环境目录
 		home/xxx/tools     环境相关工具
 		home/xxx/cmds      本项目文件[对Xrnsd-extensions-to-bash重命名]
 		home/xxx/.bashrc   为home/xxx/cmds/config/bashrc_xxxx的软连
 		/root/.bashrc      为home/xxx/cmds/config/bashrc_root_xxxx的软连
 
 		
-##2.工具				
+##工具				
 ###1.工程结构
 		cmds/config     					环境相关工具
 			config/bashrc_root_work_lz     	为root相关bash配置文件
