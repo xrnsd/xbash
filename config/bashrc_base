@@ -167,7 +167,7 @@ alias xkd='mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empt
 alias xx='echo '$pwd' |  sudo -S pm-hibernate'
 
 #--------------------------命令选项快速适配---------------------------
-complete -W "os restore" xb
+complete -W "backup restore" xb
 complete -W "123" xl
 complete -W "123" xle
 complete -W "compile" xi

@@ -120,4 +120,4 @@ alias xs='shutdown -h now'
 alias xb='${dirPathHomeCmd}main.sh'
 
 #--------------------------命令选项快速适配---------------------------
-complete -W "os restore" xb
+complete -W "backup restore" xb

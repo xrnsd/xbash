@@ -685,7 +685,7 @@
 				#记录版本包相关系统信息
 				ftAddOrCheckSystemHwSwInfo add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 				#备份
-				ftBackupOs $backupType22&&
+				ftBackupOs $mTypeBackupEdit&&
 				#同步
 				ftSynchronous 
 		else

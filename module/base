@@ -69,7 +69,7 @@ ftMain()
         		while true; do
 				case $mBaseShellParameter2 in
 
-				"os")						${mDirPathCmdTools}system_backup_restore.sh backup; break;;
+				"backup")					${mDirPathCmdTools}system_backup_restore.sh backup; break;;
 				"restore")					${mDirPathCmdTools}system_backup_restore.sh restore; break;;
 				*)							ftReadMe;exit;;
 
@@ -113,7 +113,7 @@ ftReadMe()
     xb  ----- 系统维护
           |// xb ×××××
           |
-          |-- os       ---------------- [root] ------  备份系统
+          |-- backup  ---------------- [root] ------  备份系统
           |-- restore  ---------------- [root] ------  还原系统
     xc  ----- 常规自定义命令和扩展
           |// xc ×××××

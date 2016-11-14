@@ -162,7 +162,6 @@ alias xss='echo '$pwd' | sudo -S reboot'
 alias xs='echo '$pwd' | sudo -S shutdown -h now'
 alias xp="title=显示文件的绝对路径;xtt;readlink -f"
 alias xh='title=浏览终端命令历史;xtt;history | less'
-#alias xd='${dirPathHomeTools}/sp_flash_tool_v5.1548/flash_tool'
 alias xd='${dirPathHomeCmd}main.sh mtk_flashtool'
 alias xb='title=系统备份还原;xtt;${dirPathHomeCmd}main.sh'
 alias xi='title=项目编译;xtt;. ${dirPathHomeCmd}compile.sh'
@@ -181,7 +180,7 @@ alias xg6820='git clone git@192.168.1.188:sprd6820.git -b'
 alias zz='git checkout -b'
 
 #--------------------------命令选项快速适配---------------------------
-complete -W "os restore" xb
+complete -W "backup restore" xb
 complete -W "123" xl
 complete -W "123" xle
 complete -W "compile" xi
