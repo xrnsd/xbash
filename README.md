@@ -1,7 +1,7 @@
 # Xrnsd-extensions-to-bash   
 android mmi开发环境的bash简单扩展
 ##说明：
-###环境耦合度教高，需要解耦，下面时作者环境说明
+###环境耦合较高，需要解耦，下面时作者环境说明
 ####1.环境目录
 		home/xxx/tools     环境相关工具
 		home/xxx/cmds      本项目文件
