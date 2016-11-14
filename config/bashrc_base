@@ -1,0 +1,186 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+
+# If not running interactively, don't do anything
+[ -z "$PS1" ] && return
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+#force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+    else
+	color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+    . /etc/bash_completion
+fi
+
+#=========================================================================
+#====================== 自定义配置   ======================================
+#=========================================================================
+userName=`who | awk '{print $1}'|sort -u`
+dirPathHome=/home/${userName}
+dirPathHomeCmd=${dirPathHome}/cmds/
+dirPathHomeTools=${dirPathHome}/tools
+pwd=123 
+
+#--------------------------部分环境变量---------------------------
+export JAVA_HOME=${dirPathHomeTools}/jdk/1.6.038
+#export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+export JRE_HOME=${JAVA_HOME}/jre 
+export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+export ANDROID_SDK=${dirPathHomeTools}/sdk
+export ANDROID_SDK_HOME=$ANDROID_SDK
+export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r10c
+export LD_LIBRARY_PATH=${dirPathHomeTools}/sp_flash_tool_v5.1548:${dirPathHomeTools}/sp_flash_tool_v5.1548/lib:$LD_LIBRARY_PATH  
+export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$ANDROID_SDK/platform-tools:$ANDROID_SDK/tools:$ANDROID_NDK:$PATH
+
+#--------------------------终端自身设定---------------------------
+#终端提示
+export PS1='$userName\[\033[44m\][\w]\[\033[0m\]:'
+# 忽略[连续]重复命令
+export HISTCONTROL=ignoredups
+# 忽略特定命令
+export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
+# 命令历史文件大小
+export HISTFILESIZE=100000000
+# 保存历史命令条数
+export HISTSIZE=100000
+# 以追加的方式保存命令历史
+shopt -s histappend
+
+#--------------------------命令封装---------------------------
+alias ..="cd .."
+alias ...="cd ../.."
+#alias xg='grep -irsn $2 ./'
+alias xr="source ~/.bashrc"
+alias xk='${dirPathHomeCmd}main.sh'
+alias xc='${dirPathHomeCmd}main.sh'
+alias xu='gedit ${dirPathHome}/.bashrc'
+alias xuu='subl ${dirPathHomeCmd}main.sh'
+alias xbh='cat ~/.bash_history |grep $2'
+alias xss='echo '$pwd' | sudo -S reboot'
+alias xs='echo '$pwd' | sudo -S shutdown -h now'
+alias xp="readlink -f"
+alias xh='history | less'
+#alias xd='${dirPathHomeTools}/sp_flash_tool_v5.1548/flash_tool'
+alias xd='${dirPathHomeCmd}main.sh mtk_flashtool'
+alias xb='${dirPathHomeCmd}main.sh'
+alias xi='. ${dirPathHomeCmd}compile.sh'
+alias xl='adb logcat -c;adb logcat | grep'
+alias xle='adb logcat -c;adb logcat "*:E"'
+alias .9='${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
+alias xkd='mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
+
+#---------------------------------不稳定命令---------------------------------
+alias xx='echo '$pwd' |  sudo -S pm-hibernate'
+
+#--------------------------命令选项快速适配---------------------------
+complete -W "os restore" xb
+complete -W "123" xl
+complete -W "123" xle
+complete -W "compile" xi
+complete -W "systemui monkey launcher" xk
+complete -W "restartadb help gjh test clean_data_garbage" xc
+
+#-------------------------android优化加速部分------------------
+#编译加速 c/c++ 部分
+#export USE_CCACHE=1
+#export CACHE_UMASK=002
+#unset CCACHE_HARDLINK
+#缓存目录
+#export CCACHE_DIR=/media/data/.ccache
+#分布式编译集群的IP组
+#export DISTCC_HOSTS="192.168.3.114"
+
