@@ -1,36 +1,35 @@
 #!/bin/bash
 #####----------------------变量--------------------------#########
 
-	#将要执行的操作
+	#将执行操作
 		mTypeEdit=$1
-
-	#用户主目录
-		mNameUser=`who | awk '{print $1}'|sort -u`
-
-	#变量
-		mDate=$(date -d "today" +"%Y%m%d")
-
 		mTypeBackupEdit=null
-		mDirPathStoreTarget=null
-		mFileNameBackupTarget=null
-		mNoteBackupTarget=null
-		mFileNameBackupLog=null
-		mFileNameBackupTargetBase=null
-
-		mDirPathStoreSource=null
-		mDirPathRestoreExcludeTarget=null
-		mDirPathRestoreTarget=/
-		mFilePathRestoreSource=null
-		mFileNameRestoreSource=null
-		mFileNameRestoreSourceBase=null
-		mNoteRestoreSource=null
-		mDirPathLog=${mDirNameHome}/log
-
-	#同步选项
-		isSynchronous=false
-	#同步目录
+		
+		mDate=$(date -d "today" +"%Y%m%d")
+		mNameUser=`who | awk '{print $1}'|sort -u`
+		
 		#mDirPathSynchronous1=
 		#mDirPathSynchronous2=
+		mDirPathRestoreTarget=/
+		mDirPathStoreTarget=null
+		mDirPathStoreSource=null
+		mDirPathLog=${mDirNameHome}/log
+		mDirPathRestoreExcludeTarget=null
+		
+		mFilePathRestoreSource=null
+		
+		mFileNameBackupLog=null
+		mFileNameBackupTarget=null
+		#VersionNameBackup
+		mFileNameBackupTargetBase=null
+		mFileNameRestoreSource=null
+		#VersionNameRestore
+		mFileNameRestoreSourceBase=null
+		
+		mNoteBackupTarget=null
+		mNoteRestoreSource=null
+
+		isSynchronous=false
 
 
 
@@ -50,10 +49,10 @@
 					if [ -d $mDirPathRestoreTarget ];then
 					sudo tar -xvpzf $pathsource --exclude=$mDirPathRestoreExcludeTarget -C $mDirPathRestoreTarget
 					else
-						echo 未找到目录:${mDirPathRestoreTarget}
+						ftEcho -e 未找到目录:${mDirPathRestoreTarget}
 					fi
 				else
-					echo 未找到版本包:${pathsource}
+					ftEcho -e 未找到版本包:${pathsource}
 				fi;break;;
 			 n | N | q |Q)  exit;;
 			 * )  ftEcho -e 错误的选择：$sel ;echo "输入n，q，离开"
@@ -73,7 +72,7 @@
 		#b=${a/123/321};将${a}里的第一个123替换为321\
 
 		if [ -z "$filelist" ];then
-			echo 在${mDirPathStoreSource}没找到有效的版本包
+			ftEcho -e 在${mDirPathStoreSource}没找到有效的版本包
 			exit
 		else
 			ftEcho -t 请选择备份的版本包
@@ -132,7 +131,7 @@
 				if [ -d $customdir ];then
 				mDirPathRestoreTarget=$customdir
 				else
-				echo --------目录不存在----------
+				ftEcho -e 目录${customdir}不存在
 				fi
 				customdir=null ; break;;
 			0 | n | no | q |Q)  exit;;
@@ -154,8 +153,9 @@
 		while true; do
 		case $option in
 			e | E | -e | -E)  echo -e "\033[31m$Content\033[0m"; break;;
-			t | T | -t | -T)  echo -e "\e[41;33;1m   =========== $Content ============= \e[0m"; break;;
-			b | B | -b | -B)  echo;echo -e "\e[41;33;1m   =========== $Content ============= \e[0m";echo; break;;
+			s | S | -s | -S)  echo -e "\033[44m$Content\033[0m"; break;;
+			t | T | -t | -T)  echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
+			b | B | -b | -B)  echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
 			* ) exit ;
 		esac
 		done
@@ -170,7 +170,7 @@
 		local infoType=$1
 		if [ $infoType = "restore" ];then
 
-			echo 使用的源文件为：		${mFileNameRestoreSource}
+			echo 使用的源文件为：	${mFileNameRestoreSource}
 			echo 使用的源文件的说明：	${mNoteRestoreSource}
 			echo 还原的目标目录为：	${mDirPathRestoreTarget}
 			echo 还原时将忽略目录：	${mDirPathRestoreExcludeTarget}
@@ -194,7 +194,7 @@
 			echo 生成的备份的类型：	${btype}
 			echo 当前系统有效修改：	${mVersionChangs}
 		else
-	 		echo ------------------一脸懵逼----------------------
+	 		ftEcho -e 一脸懵逼
 		fi
 		echo
 	}
@@ -258,9 +258,9 @@
 		mDirPathStoreTarget=$devTargetDir/backup/os/${mNameUser};
 		mDirPathStoreSource=$devTargetDir/backup/os/${mNameUser};
 
-		if [ ! -d $mDirPathStoreTarget ];
-			then echo 目录不存在已创建
+		if [ ! -d $mDirPathStoreTarget ];then
 			mkdir -p $mDirPathStoreTarget
+			echo ${mDirPathStoreTarget}不存在已创建
 		fi
 	}
 
@@ -315,89 +315,69 @@
 		esac
 		done
 	}
-
+	
 	ftBackupOs()
 	{
-		echo -en "是否开始备份[y/n]"
-		while true; do
-		   read -n1 sel
-		   case "$sel" in
-			 y | yes )
-				#写版本备注
-				ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
-				#清理临时文件
-				ftAutoCleanTemp
-
-				ftEcho -b 开始生成系统版本包
-
-				if [ $mTypeBackupEdit = "cg" ];then
-					sudo tar -cvpzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget \
-					--exclude=/proc \
-					--exclude=/android \
-					--exclude=/lost+found \
-					--exclude=/mnt \
-					--exclude=/sys \
-					--exclude=/.Trash-0 \
-					--exclude=/media \
-					--exclude=${mDirNameHome}workspaces \
-					--exclude=${mDirNameHome}workspace \
-					--exclude=${mDirNameHome}download \
-					--exclude=${mDirNameHome}packages \
-					--exclude=${mDirNameHome}Pictures \
-					--exclude=${mDirNameHome}projects \
-					--exclude=${mDirNameHome}backup \
-					--exclude=${mDirNameHome}media  \
-					--exclude=${mDirNameHome}temp \
-					--exclude=${mDirNameHome}tools \
-					--exclude=${mDirNameHome}cmds \
-					--exclude=${mDirNameHome}code \
-					--exclude=${mDirNameHome}log  \
-					--exclude=${mDirNameHome}doc  \
-					--exclude=${mDirNameHome}.AndroidStudio2.1 \
-					--exclude=${mDirNameHome}.thumbnails \
-					--exclude=${mDirNameHome}.software \
-					--exclude=${mDirNameHome}.cache \
-					--exclude=${mDirNameHome}.local \
-					--exclude=${mDirNameHome}.other \
-					--exclude=${mDirNameHome}.gvfs / \
-					 2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
-
-					#记录版本包校验信息
-					ftAddMd5 $mDirPathStoreTarget $mFileNameBackupTargetBase
-				elif [ $mTypeBackupEdit = "bx" ];then
-					sudo tar -cvpzf  ${mDirPathStoreTarget}/${mFileNameBackupTarget} \
-					--exclude=/proc \
-					--exclude=/android \
-					--exclude=/lost+found  \
-					--exclude=/mnt  \
-					--exclude=/sys  \
-					--exclude=${mDirNameHome}.AndroidStudio2.1 \
-					--exclude=${mDirNameHome}backup \
-					--exclude=${mDirNameHome}.software \
-					--exclude=${mDirNameHome}download \
-					--exclude=${mDirNameHome}log  \
-					--exclude=${mDirNameHome}temp \
-					--exclude=${mDirNameHome}Pictures \
-					--exclude=${mDirNameHome}projects \
-					--exclude=${mDirNameHome}workspaces \
-					--exclude=${mDirNameHome}.cache \
-					--exclude=${mDirNameHome}.thumbnails \
-					--exclude=${mDirNameHome}.local \
-					--exclude=${mDirNameHome}.other \
-					--exclude=${mDirNameHome}.gvfs \
-					--exclude=/media / \
-					2>&1|tee  ${mDirPathLog}/${mFileNameBackupLog}
-
-					#记录版本包校验信息
-					ftAddMd5 $mDirPathStoreTarget $mFileNameBackupTargetBase
-				else
-			 		echo ------------------你想金包还是银包呢----------------------
-				fi
-				break;;
-			 n | N | q |Q)  exit;;
-			 * )  ftEcho -e 错误的选择：$sel ;echo  "输入n，q，离开";;
-		   esac
-		done
+		ftEcho -b 开始生成系统版本包
+		if [ $mTypeBackupEdit = "cg" ];then
+			sudo tar -cvpzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget \
+			--exclude=/proc \
+			--exclude=/android \
+			--exclude=/lost+found \
+			--exclude=/mnt \
+			--exclude=/sys \
+			--exclude=/.Trash-0 \
+			--exclude=/media \
+			--exclude=${mDirNameHome}workspaces \
+			--exclude=${mDirNameHome}workspace \
+			--exclude=${mDirNameHome}download \
+			--exclude=${mDirNameHome}packages \
+			--exclude=${mDirNameHome}Pictures \
+			--exclude=${mDirNameHome}projects \
+			--exclude=${mDirNameHome}backup \
+			--exclude=${mDirNameHome}media  \
+			--exclude=${mDirNameHome}temp \
+			--exclude=${mDirNameHome}tools \
+			--exclude=${mDirNameHome}cmds \
+			--exclude=${mDirNameHome}code \
+			--exclude=${mDirNameHome}log  \
+			--exclude=${mDirNameHome}doc  \
+			--exclude=${mDirNameHome}.AndroidStudio2.1 \
+			--exclude=${mDirNameHome}.thumbnails \
+			--exclude=${mDirNameHome}.software \
+			--exclude=${mDirNameHome}.cache \
+			--exclude=${mDirNameHome}.local \
+			--exclude=${mDirNameHome}.other \
+			--exclude=${mDirNameHome}.gvfs / \
+			 2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
+			 
+		elif [ $mTypeBackupEdit = "bx" ];then
+			sudo tar -cvpzf  ${mDirPathStoreTarget}/${mFileNameBackupTarget} \
+			--exclude=/proc \
+			--exclude=/android \
+			--exclude=/lost+found  \
+			--exclude=/mnt  \
+			--exclude=/sys  \
+			--exclude=${mDirNameHome}.AndroidStudio2.1 \
+			--exclude=${mDirNameHome}backup \
+			--exclude=${mDirNameHome}.software \
+			--exclude=${mDirNameHome}download \
+			--exclude=${mDirNameHome}log  \
+			--exclude=${mDirNameHome}temp \
+			--exclude=${mDirNameHome}Pictures \
+			--exclude=${mDirNameHome}projects \
+			--exclude=${mDirNameHome}workspaces \
+			--exclude=${mDirNameHome}.cache \
+			--exclude=${mDirNameHome}.thumbnails \
+			--exclude=${mDirNameHome}.local \
+			--exclude=${mDirNameHome}.other \
+			--exclude=${mDirNameHome}.gvfs \
+			--exclude=/media / \
+			2>&1|tee  ${mDirPathLog}/${mFileNameBackupLog}
+		else
+	 		ftEcho -e  你想金包还是银包呢
+	 		exit
+		fi
 	}
 
 
@@ -413,7 +393,7 @@
 
 		if [ -d ${dir_backup_root} ]&&[ ! -d ${dir_backup_note} ];then
 				mkdir ${dir_backup_note}
-				echo 新建备注存储目录:${dir_backup_note}
+				ftEcho -s 新建备注存储目录:${dir_backup_note}
     	fi
 
 		local path_default=${dir_backup_root}/${file_name_default}
@@ -441,63 +421,67 @@
 
 		mNoteBackupTarget=$note
 	}
-
-	ftAddMd5()
+	
+	ftMD5()
 	{
-		local dir_backup_root=${1}
+	#=================== example=============================
+	#
+	#		ftMD5 [type] [path] [fileNameBase/VersionName]
+	#		ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
+	#=========================================================
+		local typeEdit=${1}
+		local dir_backup_root=${2}
 		local dir_backup_md5=${dir_backup_root}/.md5s
-		local version_name=${2}
+		local version_name=${3}
 		local file_name_md5=${version_name}.md5
-
-		ftEcho -b 开始记录版本包校验信息
-
-		if [ -d ${dir_backup_root} ]&&[ ! -d ${dir_backup_md5} ];then
+		
+		if [ ! -d ${dir_backup_root} ];then
+				ftEcho -e MD5相关操作失败，找不到$dir_backup_root
+				exit
+    	fi
+    	
+		if [ ${typeEdit} == "-add" ]; then
+		
+			ftEcho -b 开始记录版本包校验信息
+			if [ ! -d ${dir_backup_md5} ];then
 				mkdir ${dir_backup_md5}
 				echo 新建版本包校验信息存储目录:${dir_backup_md5}
-    		fi
+			fi
 
-		local path_file=${dir_backup_root}/${version_name}.tgz
-		local path_md5=${dir_backup_md5}/${file_name_md5}
-
-		md5=`md5sum $path_file | awk '{print $1}'`
-		sudo echo $md5>$path_md5
-
-		echo
-		echo "记录完成"
-		echo
-
-	}
-
-	ftCheckMd5()
-	{
-		local dir_backup_root=${1}
-		local dir_backup_md5=${dir_backup_root}/.md5s
-		local version_name=${2}
-		local file_name_md5=${version_name}.md5
-
-		ftEcho -b 开始校验版本包，确定有效性
-
-		if [ -d ${dir_backup_root} ]&&[ -d ${dir_backup_md5} ];then
 			local path_file=${dir_backup_root}/${version_name}.tgz
 			local path_md5=${dir_backup_md5}/${file_name_md5}
-			if [ -f ${path_md5} ];then
-				md5Base=`cat $path_md5`
-				md5Now=`md5sum $path_file | awk '{print $1}'`
-				if [ "$md5Base"x != "$md5Now"x ]; then
-					echo 校验失败，版本包：${version_name}无效
-					exit
+
+			md5=`md5sum $path_file | awk '{print $1}'`
+			sudo echo $md5>$path_md5
+
+			ftEcho -s "记录完成"
+			
+		elif [ ${typeEdit} == "-check" ]; then
+		
+			ftEcho -b 开始校验版本包，确定有效性
+
+			if [ -d ${dir_backup_md5} ];then
+				local path_file=${dir_backup_root}/${version_name}.tgz
+				local path_md5=${dir_backup_md5}/${file_name_md5}
+				if [ -f ${path_md5} ];then
+					md5Base=`cat $path_md5`
+					md5Now=`md5sum $path_file | awk '{print $1}'`
+					if [ "$md5Base"x != "$md5Now"x ]; then
+						ftEcho -e 校验失败，版本包：${version_name}无效
+						exit
+					else
+						ftEcho -s 版本包：${version_name}校验成功
+					fi
 				else
-					echo 版本包：${version_name}校验成功
+					ftEcho -e 版本包：${version_name}校验信息查找失败
+					exit
 				fi
 			else
-				echo 校验信息查找失败
+				ftEcho -e 版本包：${version_name}校验信息查找失败
 				exit
 			fi
-		else
-			echo 校验信息查找失败
-			exit
-    	fi
-
+		fi
+	
 	}
 
 	ftAutoCleanTemp()
@@ -519,12 +503,12 @@
 			   read sel
 			   case "$sel" in
 					 y | yes )
-					echo 开始同步...........................................................
+					ftEcho -s 开始同步!
 					for d in $mDirPathSynchronous1 $mDirPathSynchronous2 ;
 					do
 						find $mDirPathStoreTarget -regex ".*\.tgz\|.*\.list" -exec cp {} -u -n -v $d \; ;
 					done
-					echo 同步结束！
+					ftEcho -s 同步结束！
 					break;;
 				 n | no | q |Q)  exit;;
 				 * )   ftEcho -e 错误的选择：$sel ;echo "输入n，no，q，离开"
@@ -539,7 +523,7 @@
 	#=================== example=============================
 	#
 	#		ftAddOrCheckSystemHwSwInfo [type] [path] [path]
-	#		ftAddOrCheckSystemHwSwInfo check 
+	#		ftAddOrCheckSystemHwSwInfo -check 
 	#=========================================================
 	
 	local typeEdit=$1
@@ -572,7 +556,7 @@
 			mkdir $dirPathBackupInfoVersion
 			echo 版本信息记录位置不存在，已建立
 		fi
-		if [ ${typeEdit} == "add" ]; then
+		if [ ${typeEdit} == "-add" ]; then
 			ftEcho -b 记录版本包相关系统信息
 
 			echo $infoHwCpu 		>$filePathVersionCpu
@@ -580,11 +564,11 @@
 			echo $infoHwSystem 		>$filePathVersionSystem
 			echo $infoHw32x64 		>$filePathVersion32x64
 		
-		elif [ ${typeEdit} == "check" ]; then
+		elif [ ${typeEdit} == "-check" ]; then
 			ftEcho -b 检查版本包和当前系统兼容程度
 
 			if [ ! -f $filePathVersionCpu ]||[ ! -f $filePathVersionMainboard ]||[ ! -f $filePathVersionSystem ]||[ ! -f $filePathVersion32x64 ]; then
-				echo  版本包相关系统信息损坏
+				ftEcho -e   版本包相关系统信息损坏
 				echo filePathVersionCpu=$filePathVersionCpu
 				echo filePathVersionMainboard=$filePathVersionMainboard
 				echo filePathVersionSystem=$filePathVersionSystem
@@ -610,13 +594,13 @@
 			if [[ "$infoHwSystemVersion" != "$infoHwSystem" ]]; then
 			echo Version= $infoHwSystemVersion
 			echo baseion=$infoHwSystem
-				echo 系统版本不一致，将自动退出
+				ftEcho -e  系统版本不一致，将自动退出
 				returns=未通过，
 		  	fi
 			if [[ "$infoHw32x64Version" != "$infoHw32x64" ]]; then
 			echo Version= $infoHw32x64Version
 			echo baseion=$infoHw32x64
-				echo 系统版本的位数不一致，将自动退出
+				ftEcho -e 系统版本的位数不一致，将自动退出
 				returns=失败
 		  	fi
 
@@ -662,9 +646,9 @@
 				#选择版本包
 				ftRestoreChoiceSource&&
 				#检查版本包和当前系统兼容程度
-				ftAddOrCheckSystemHwSwInfo check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
+				ftAddOrCheckSystemHwSwInfo -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
 				#检查版本包有效性
-				ftCheckMd5 $mDirPathStoreSource $mFileNameRestoreSourceBase&&
+				ftMD5 -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
 				#选择版本包覆盖的目标路径
 				ftRestoreChoiceTarget&&
 				#选择版本包覆盖的忽略路径
@@ -682,15 +666,30 @@
 				ftSelBackupType&&
 				#当前配置信息显示
 				ftEchoInfo backup&&
-				#记录版本包相关系统信息
-				ftAddOrCheckSystemHwSwInfo add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
-				#备份
-				ftBackupOs $mTypeBackupEdit&&
-				#同步
-				ftSynchronous 
+				echo -en "是否开始备份[y/n]"
+				while true; do
+				   read -n1 sel
+				   case "$sel" in
+					 y | yes )
+						#写版本备注
+						ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+						#清理临时文件
+						ftAutoCleanTemp&&
+						#备份
+						ftBackupOs&&
+						#记录版本包校验信息
+						ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+						#记录版本包相关系统信息
+						ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+						#同步
+						ftSynchronous ;break;;
+					 n | N | q |Q)  exit;;
+					 * )  ftEcho -e 错误的选择：$sel ;echo  "输入n，q，离开";;
+				   esac
+				done
 		else
-	 		echo ------------------不知道你想干嘛！----------------------
+			ftEcho -e 不知道你想干嘛！
 		fi
 	else
- 		echo ------------------请转换为root用户后重新运行----------------------
+		ftEcho -e 请转换为root用户后重新运行
 	fi
