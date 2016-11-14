@@ -1,6 +1,11 @@
 # Xrnsd-extensions-to-bash ，android mmi开发环境的bash简单扩展
 
 ##说明：环境耦合较高，需要解耦，下面介绍作者环境和工具初始化
+##已验证环境
+		ubuntu12.04 x64
+			12.04 下xx[休眠]建议不要开启，太不稳定了
+		ubuntu14.04 x64
+		ubuntu16.04 x64
 
 ##环境目录
 		home/xxx/tools     环境相关工具
@@ -18,7 +23,8 @@
 ###1.工程结构
 		cmds/config     					环境相关工具
 			config/bashrc_root_work_lz     	为root相关bash配置文件
-			config/bashrc_work_lz     		为普通用户相关bash配置文件
+			config/bashrc_base 				为普通用户相关bash配置文件
+			config/bashrc_work_lz     		为作者使用的普通用户相关bash配置文件
 		cmds/module     					脚本实现文件[具体功能]
 			module/base     				Xrnsd-extensions-to-bash的流程控制
 			module/compile.sh     			Xrnsd-extensions-to-bash的项目编译初始化
@@ -43,7 +49,7 @@
 			ln -s cmds/config/bashrc_base .bashrc
 			gedit .bashrc
 			修改pwd=123，替换成自己的密码
-			删除自己不需要的模块
+			修改tools相关工具[有的话]，对应到你当前环境下的路径，如jdk的路径
 				
 		4 使用自定义root用户bash配置
 			cd /root
@@ -52,6 +58,7 @@
 			sudo ln -s /home/xxxx/cmds/config/bashrc_root_xxx .bashrc
 			sudo gedit .bashrc
 			修改pwd=123，替换成自己的密码
+			修改tools相关工具[有的话]，对应到你当前环境下的路径，如jdk的路径
 				
 		5 输入xc 查看帮助
 			1. 提示找不到命令
