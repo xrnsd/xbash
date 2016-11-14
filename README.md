@@ -19,22 +19,24 @@
 		home/xxx/.bashrc   为home/xxx/cmds/config/bashrc_xxxx的软连接
 		/root/.bashrc      为home/xxx/cmds/config/bashrc_root_xxxx的软连接
 		
-##工具				
-###1.工程结构
+##工具 			
+###1.工程结构，Xrnsd-extensions-to-bash在下面简写为xbash
 		cmds/config     					环境相关工具
 			config/bashrc_root_work_lz     	为root相关bash配置文件
 			config/bashrc_base 				为普通用户相关bash配置文件
 			config/bashrc_work_lz     		为作者使用的普通用户相关bash配置文件
 		cmds/module     					脚本实现文件[具体功能]
-			module/base     				Xrnsd-extensions-to-bash的流程控制
-			module/compile.sh     			Xrnsd-extensions-to-bash的项目编译初始化
-			module/system_backup_restore.sh Xrnsd-extensions-to-bash的系统维护
-			module/test.sh     				Xrnsd-extensions-to-bash的demo测试
-			module/tools     				Xrnsd-extensions-to-bash的小功能实现
+			module/base     				xbash的流程控制
+			module/system_backup_restore.sh xbash的系统维护
+			module/test.sh     				xbash的demo测试
+			module/tools     				xbash的小功能实现
+			module/pytools     				xbash的脚本测试工具
+			module/compile.sh     			xbash的项目编译初始化
 		cmds/data     						脚本数据存储
-			data/excludeDirsAll.list		备份排除[忽略]列表，全部
-			data/excludeDirsBase.list		备份排除[忽略]列表，基础
-		cmds/main.sh     					Xrnsd-extensions-to-bash主入口
+			data/excludeDirsAll.list		备份排除[忽略]全部列表
+			data/excludeDirsBase.list		备份排除[忽略]基础列表
+			data/version/read.me			系统当前有效修改说明信息
+		cmds/main.sh     					xbash主入口
 		cmds/value     						全局参数
 				
 ###2.准备操作

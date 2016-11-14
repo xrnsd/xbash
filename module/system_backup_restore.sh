@@ -164,7 +164,7 @@
 	ftEchoInfo()
 	{
 		ftEcho -b 请确认下面信息
-		local path=${mDirPathUserHome}cmds/config/version/read.me
+		local path=${mDirPathUserHome}cmds/data/version/read.me
 		local mVersionChangs=`cat $path`
 
 		local infoType=$1
