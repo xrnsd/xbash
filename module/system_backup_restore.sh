@@ -13,7 +13,7 @@
 		mDirPathRestoreTarget=/
 		mDirPathStoreTarget=null
 		mDirPathStoreSource=null
-		mDirPathLog=${mDirNameHome}/log
+		mDirPathLog=${mDirPathUserHome}/log
 		mDirPathRestoreExcludeTarget=null
 		
 		mFilePathRestoreSource=null
@@ -164,7 +164,7 @@
 	ftEchoInfo()
 	{
 		ftEcho -b 请确认下面信息
-		local path=${mDirNameHome}cmds/config/version/read.me
+		local path=${mDirPathUserHome}cmds/config/version/read.me
 		local mVersionChangs=`cat $path`
 
 		local infoType=$1
@@ -208,7 +208,7 @@
 		local devTargetDir
 		local devDir=/media
 		local dirList=`ls $devDir`
-		local dirList2[0]=${mDirNameHome/$mNameUser\//$mNameUser}
+		local dirList2[0]=${mDirPathUserHome/$mNameUser\//$mNameUser}
 		local index=0;
 		#遍历/media目录
 		echo [0] ${dirList2[0]}
@@ -302,12 +302,12 @@
 
 			#设定默认值
 			if [ ${#typeIndex} == 0 ]; then
-				mDirPathRestoreExcludeTarget=$mDirNameHome
+				mDirPathRestoreExcludeTarget=$mDirPathUserHome
 				break
 			fi
 
 			case $typeIndex in
-			[1]* ) mDirPathRestoreExcludeTarget=$mDirNameHome;break;;
+			[1]* ) mDirPathRestoreExcludeTarget=$mDirPathUserHome;break;;
 
 			[2]* )mDirPathRestoreExcludeTarget=; break;;
 			n | no | q |Q)  exit;;
@@ -318,68 +318,90 @@
 	
 	ftBackupOs()
 	{
-		ftEcho -b 开始生成系统版本包
+		ftEcho -b 开始更新排除列表
+		#/home/wgx/cmds/data/excludeDirsBase.list
+		fileNameExcludeBase=excludeDirsBase.list
+		fileNameExcludeAll=excludeDirsAll.list
+		mFilePathExcludeBase=${mDirPathUserHome}${mDirNameCmd}${mFileNameCmdModuleData}${fileNameExcludeBase}
+		mFilePathExcludeAll=${mDirPathUserHome}${mDirNameCmd}${mFileNameCmdModuleData}${fileNameExcludeAll}
+	
+	mDirPathsExcludeBase=(/proc \
+							/android \
+							/lost+found \
+							/mnt \
+							/sys \
+							/.Trash-0 \
+							/media \
+							${mDirPathUserHome}workspaces \
+							${mDirPathUserHome}workspace \
+							${mDirPathUserHome}download \
+							${mDirPathUserHome}packages \
+							${mDirPathUserHome}Pictures \
+							${mDirPathUserHome}projects \
+							${mDirPathUserHome}backup \
+							${mDirPathUserHome}media  \
+							${mDirPathUserHome}temp \
+							${mDirPathUserHome}tools \
+							${mDirPathUserHome}cmds \
+							${mDirPathUserHome}code \
+							${mDirPathUserHome}log  \
+							${mDirPathUserHome}doc  \
+							${mDirPathUserHome}.AndroidStudio2.1 \
+							${mDirPathUserHome}.thumbnails \
+							${mDirPathUserHome}.software \
+							${mDirPathUserHome}.cache \
+							${mDirPathUserHome}.local \
+							${mDirPathUserHome}.other \
+							${mDirPathUserHome}.gvfs)
+							
+	mDirPathsExcludeAll=(/proc \
+						/android \
+						/lost+found  \
+						/mnt  \
+						/sys  \
+						/media \
+						${mDirPathUserHome}.AndroidStudio2.1 \
+						${mDirPathUserHome}backup \
+						${mDirPathUserHome}.software \
+						${mDirPathUserHome}download \
+						${mDirPathUserHome}log  \
+						${mDirPathUserHome}temp \
+						${mDirPathUserHome}Pictures \
+						${mDirPathUserHome}projects \
+						${mDirPathUserHome}workspaces \
+						${mDirPathUserHome}.cache \
+						${mDirPathUserHome}.thumbnails \
+						${mDirPathUserHome}.local \
+						${mDirPathUserHome}.other \
+						${mDirPathUserHome}.gvfs)
+		
+		local dirsExclude=
+		local fileNameExclude
 		if [ $mTypeBackupEdit = "cg" ];then
-			sudo tar -cvpzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget \
-			--exclude=/proc \
-			--exclude=/android \
-			--exclude=/lost+found \
-			--exclude=/mnt \
-			--exclude=/sys \
-			--exclude=/.Trash-0 \
-			--exclude=/media \
-			--exclude=${mDirNameHome}workspaces \
-			--exclude=${mDirNameHome}workspace \
-			--exclude=${mDirNameHome}download \
-			--exclude=${mDirNameHome}packages \
-			--exclude=${mDirNameHome}Pictures \
-			--exclude=${mDirNameHome}projects \
-			--exclude=${mDirNameHome}backup \
-			--exclude=${mDirNameHome}media  \
-			--exclude=${mDirNameHome}temp \
-			--exclude=${mDirNameHome}tools \
-			--exclude=${mDirNameHome}cmds \
-			--exclude=${mDirNameHome}code \
-			--exclude=${mDirNameHome}log  \
-			--exclude=${mDirNameHome}doc  \
-			--exclude=${mDirNameHome}.AndroidStudio2.1 \
-			--exclude=${mDirNameHome}.thumbnails \
-			--exclude=${mDirNameHome}.software \
-			--exclude=${mDirNameHome}.cache \
-			--exclude=${mDirNameHome}.local \
-			--exclude=${mDirNameHome}.other \
-			--exclude=${mDirNameHome}.gvfs / \
-			 2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
-			 
+			dirsExclude=${mDirPathsExcludeBase[*]}
+			fileNameExclude=$mFilePathExcludeBase
 		elif [ $mTypeBackupEdit = "bx" ];then
-			sudo tar -cvpzf  ${mDirPathStoreTarget}/${mFileNameBackupTarget} \
-			--exclude=/proc \
-			--exclude=/android \
-			--exclude=/lost+found  \
-			--exclude=/mnt  \
-			--exclude=/sys  \
-			--exclude=${mDirNameHome}.AndroidStudio2.1 \
-			--exclude=${mDirNameHome}backup \
-			--exclude=${mDirNameHome}.software \
-			--exclude=${mDirNameHome}download \
-			--exclude=${mDirNameHome}log  \
-			--exclude=${mDirNameHome}temp \
-			--exclude=${mDirNameHome}Pictures \
-			--exclude=${mDirNameHome}projects \
-			--exclude=${mDirNameHome}workspaces \
-			--exclude=${mDirNameHome}.cache \
-			--exclude=${mDirNameHome}.thumbnails \
-			--exclude=${mDirNameHome}.local \
-			--exclude=${mDirNameHome}.other \
-			--exclude=${mDirNameHome}.gvfs \
-			--exclude=/media / \
-			2>&1|tee  ${mDirPathLog}/${mFileNameBackupLog}
+			dirsExclude=${mDirPathsExcludeAll[*]}
+			fileNameExclude=$mFilePathExcludeAll
 		else
 	 		ftEcho -e  你想金包还是银包呢
 	 		exit
 		fi
+    	
+    	#更新排除列表
+		if [  -f $fileNameExclude ]; then
+			rm -rf $fileNameExclude
+		fi
+	    for dirpath in ${dirsExclude[@]}
+		do
+		    echo $dirpath >>$fileNameExclude
+		done
+		
+		ftEcho -b 开始生成系统版本包
+		
+		sudo tar -cvpzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / \
+		2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
 	}
-
 
 	ftAddNote()##记录note
 	{
@@ -674,8 +696,8 @@
 						#写版本备注
 						ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 						#清理临时文件
-						ftAutoCleanTemp&&
-						#备份
+						ftAutoCleanTemp
+						#备份系统生成版本包
 						ftBackupOs&&
 						#记录版本包校验信息
 						ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&

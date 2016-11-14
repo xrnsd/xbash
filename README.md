@@ -31,6 +31,9 @@
 			module/system_backup_restore.sh Xrnsd-extensions-to-bash的系统维护
 			module/test.sh     				Xrnsd-extensions-to-bash的demo测试
 			module/tools     				Xrnsd-extensions-to-bash的小功能实现
+		cmds/data     						脚本数据存储
+			data/excludeDirsAll.list		备份排除[忽略]列表，全部
+			data/excludeDirsBase.list		备份排除[忽略]列表，基础
 		cmds/main.sh     					Xrnsd-extensions-to-bash主入口
 		cmds/value     						全局参数
 				

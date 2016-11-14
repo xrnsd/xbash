@@ -3,13 +3,14 @@
 export mDirNameCmd=cmds/
 export mDirNameCmdModule=module/
 export mFileNameCmdModuleTool=tools/
+export mFileNameCmdModuleData=data/
 export mDirNameLog=log/
 export mUserPwd=123
 
-#脚本文件夹cmds放在home/××××/时，以下逻辑[mDirNameHome=用户主目录]有效
-export dirName=${mDirNameCmd}
-export dirPathCmdTools=$(cd `dirname $0`; pwd)/
-export mDirNameHome=${dirPathCmdTools/$dirName/}
+#脚本文件夹cmds放在home/××××/时，以下逻辑[mDirPathUserHome=用户主目录]有效
+	dirName=${mDirNameCmd}
+	dirPathCmdTools=$(cd `dirname $0`; pwd)/
+export mDirPathUserHome=${dirPathCmdTools/$mDirNameCmd/}
 
 #外部参数
 export mBaseShellParameter1=$0
@@ -19,9 +20,9 @@ export mBaseShellParameter3=$2
 export mTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
 export mTimeBackupStart=$(date +%s -d $(date +"%H:%M:%S"))
 
-export mDirPathTools=${mDirNameHome}${mFileNameCmdModuleTool}
-export mDirPathCmdTools=${mDirNameHome}${mDirNameCmd}${mDirNameCmdModule}
-export mFilePathLog=${mDirNameHome}${mDirNameLog}${mBaseShellParameter2}\[${mTimeBackup}\].log
+export mDirPathTools=${mDirPathUserHome}${mFileNameCmdModuleTool}
+export mDirPathCmdTools=${mDirPathUserHome}${mDirNameCmd}${mDirNameCmdModule}
+export mFilePathLog=${mDirPathUserHome}${mDirNameLog}${mBaseShellParameter2}\[${mTimeBackup}\].log
 
 export mCmdsPermissionRoot=(compileContextConfig backup restore )
 export mCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher test mtk_flashtool)

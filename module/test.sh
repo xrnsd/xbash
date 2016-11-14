@@ -6,7 +6,7 @@ ft1()
 cd $dir1
 source build/envsetup.sh
 mmm  packages/apps/Launcher4
-adb install -r  ${dir1}out/target/product/generic/system/app/launcher4.apk
+adb install -r  ${test1}out/target/product/generic/system/app/launcher4.apk
 cd ~
 }
 
@@ -772,4 +772,109 @@ fteee()
 		done
 	}
 	
-	ftAddOrCheckSystemHwSwInfo add /home/wgx/temp 22
+	fttar()
+	{
+		
+		
+		
+	dir2=/home/wgx/cmds/data/excludeDirsBase.list
+	dir1=/home/wgx/cmds/data/excludeDirsAll.list
+ 	dirssss1=(${test1}1 ${test1}2 ${test1}3)
+ 	dirssss2=(${test1}4 ${test1}5 ${test1}6)
+	dir3=/home/wgx/temp/test
+		mTypeBackupEdit=$1
+		if [ $mTypeBackupEdit = "cg" ];then
+			tar -cvpzf  /home/wgx/temp/111.tgz \
+			--exclude-from=$dirssss1 $dir3
+			 
+		elif [ $mTypeBackupEdit = "bx" ];then
+			tar -cvpzf  /home/wgx/temp/222.tgz \
+			--exclude-from=$dirssss2 $dir3
+	 		exit
+		fi
+	}
+	
+	fttar()
+	{
+	mTypeBackupEdit=$1
+	#/home/wgx/cmds/data/excludeDirsBase.list
+	fileNameExcludeBase=excludeDirsBase.list
+	fileNameExcludeAll=excludeDirsAll.list
+	mFilePathExcludeBase=/home/wgx/cmds/data/${fileNameExcludeBase}
+	mFilePathExcludeAll=/home/wgx/cmds/data/${fileNameExcludeAll}
+	mDirPathUserHome=/home/wgx/
+	mDirPathsExcludeBase=(/proc \
+						/android \
+						/lost+found \
+						/mnt \
+						/sys \
+						/.Trash-0 \
+						/media \
+						${mDirPathUserHome}workspaces \
+						${mDirPathUserHome}workspace \
+						${mDirPathUserHome}download \
+						${mDirPathUserHome}packages \
+						${mDirPathUserHome}Pictures \
+						${mDirPathUserHome}projects \
+						${mDirPathUserHome}backup \
+						${mDirPathUserHome}media  \
+						${mDirPathUserHome}temp \
+						${mDirPathUserHome}tools \
+						${mDirPathUserHome}cmds \
+						${mDirPathUserHome}code \
+						${mDirPathUserHome}log  \
+						${mDirPathUserHome}doc  \
+						${mDirPathUserHome}.AndroidStudio2.1 \
+						${mDirPathUserHome}.thumbnails \
+						${mDirPathUserHome}.software \
+						${mDirPathUserHome}.cache \
+						${mDirPathUserHome}.local \
+						${mDirPathUserHome}.other \
+						${mDirPathUserHome}.gvfs)
+							
+	mDirPathsExcludeAll=(/proc \
+						/android \
+						/lost+found  \
+						/mnt  \
+						/sys  \
+						/media \
+						${mDirPathUserHome}.AndroidStudio2.1 \
+						${mDirPathUserHome}backup \
+						${mDirPathUserHome}.software \
+						${mDirPathUserHome}download \
+						${mDirPathUserHome}log  \
+						${mDirPathUserHome}temp \
+						${mDirPathUserHome}Pictures \
+						${mDirPathUserHome}projects \
+						${mDirPathUserHome}workspaces \
+						${mDirPathUserHome}.cache \
+						${mDirPathUserHome}.thumbnails \
+						${mDirPathUserHome}.local \
+						${mDirPathUserHome}.other \
+						${mDirPathUserHome}.gvfs)
+		
+		local dirsExclude=
+		local fileNameExclude
+		if [ $mTypeBackupEdit = "cg" ];then
+			dirsExclude=${mDirPathsExcludeBase[*]}
+			fileNameExclude=$mFilePathExcludeBase
+		elif [ $mTypeBackupEdit = "bx" ];then
+			dirsExclude=${mDirPathsExcludeAll[*]}
+			fileNameExclude=$mFilePathExcludeAll
+		else
+	 		ftEcho -e  你想金包还是银包呢
+	 		exit
+		fi
+    	
+    	#更新排除列表
+		if [  -f $fileNameExclude ]; then
+			rm -rf $fileNameExclude
+		fi
+	    for dirpath in ${dirsExclude[@]}
+		do
+		    echo $dirpath >$fileNameExclude
+		done
+		
+		#sudo tar -cvpzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / 2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
+	}
+	fttar cg

@@ -84,7 +84,7 @@ ftMain()
 				"mtk_flashtool")			ftMtkFlashTool ; break;;
 				"test")						${mDirPathCmdTools}test.sh; break;;
 				"restartadb")				ftRestartadb1; break;;
-				# "gjh") 					java -jar ${mDirNameHome}/tools/xls2values/androidi18nBuilder.jar; break;;
+				# "gjh") 					java -jar ${mDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar; break;;
 				"monkey")					ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
 				"systemui")					ftKillPhoneAppByPackageName com.android.systemui; break;;
 				"launcher")					ftKillPhoneAppByPackageName com.android.launcher3; break;;
