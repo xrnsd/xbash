@@ -153,7 +153,7 @@
 		while true; do
 		case $option in
 			e | E | -e | -E)  echo -e "\033[31m$Content\033[0m"; break;;
-			s | S | -s | -S)  echo -e "\033[44m$Content\033[0m"; break;;
+			s | S | -s | -S)  echo;echo -e "\033[44m$Content\033[0m"; break;;
 			t | T | -t | -T)  echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
 			b | B | -b | -B)  echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
 			* ) exit ;
@@ -325,55 +325,55 @@
 		mFilePathExcludeBase=${mDirPathUserHome}${mDirNameCmd}${mFileNameCmdModuleData}${fileNameExcludeBase}
 		mFilePathExcludeAll=${mDirPathUserHome}${mDirNameCmd}${mFileNameCmdModuleData}${fileNameExcludeAll}
 	
-	mDirPathsExcludeBase=(/proc \
-							/android \
-							/lost+found \
-							/mnt \
-							/sys \
-							/.Trash-0 \
-							/media \
-							${mDirPathUserHome}workspaces \
-							${mDirPathUserHome}workspace \
-							${mDirPathUserHome}download \
-							${mDirPathUserHome}packages \
-							${mDirPathUserHome}Pictures \
-							${mDirPathUserHome}projects \
-							${mDirPathUserHome}backup \
-							${mDirPathUserHome}media  \
-							${mDirPathUserHome}temp \
-							${mDirPathUserHome}tools \
-							${mDirPathUserHome}cmds \
-							${mDirPathUserHome}code \
-							${mDirPathUserHome}log  \
-							${mDirPathUserHome}doc  \
-							${mDirPathUserHome}.AndroidStudio2.1 \
-							${mDirPathUserHome}.thumbnails \
-							${mDirPathUserHome}.software \
-							${mDirPathUserHome}.cache \
-							${mDirPathUserHome}.local \
-							${mDirPathUserHome}.other \
-							${mDirPathUserHome}.gvfs)
+		mDirPathsExcludeBase=(/proc \
+					/android \
+					/lost+found \
+					/mnt \
+					/sys \
+					/.Trash-0 \
+					/media \
+					${mDirPathUserHome}workspaces \
+					${mDirPathUserHome}workspace \
+					${mDirPathUserHome}download \
+					${mDirPathUserHome}packages \
+					${mDirPathUserHome}Pictures \
+					${mDirPathUserHome}projects \
+					${mDirPathUserHome}backup \
+					${mDirPathUserHome}media  \
+					${mDirPathUserHome}temp \
+					${mDirPathUserHome}tools \
+					${mDirPathUserHome}cmds \
+					${mDirPathUserHome}code \
+					${mDirPathUserHome}log  \
+					${mDirPathUserHome}doc  \
+					${mDirPathUserHome}.AndroidStudio2.1 \
+					${mDirPathUserHome}.thumbnails \
+					${mDirPathUserHome}.software \
+					${mDirPathUserHome}.cache \
+					${mDirPathUserHome}.local \
+					${mDirPathUserHome}.other \
+					${mDirPathUserHome}.gvfs)
 							
-	mDirPathsExcludeAll=(/proc \
-						/android \
-						/lost+found  \
-						/mnt  \
-						/sys  \
-						/media \
-						${mDirPathUserHome}.AndroidStudio2.1 \
-						${mDirPathUserHome}backup \
-						${mDirPathUserHome}.software \
-						${mDirPathUserHome}download \
-						${mDirPathUserHome}log  \
-						${mDirPathUserHome}temp \
-						${mDirPathUserHome}Pictures \
-						${mDirPathUserHome}projects \
-						${mDirPathUserHome}workspaces \
-						${mDirPathUserHome}.cache \
-						${mDirPathUserHome}.thumbnails \
-						${mDirPathUserHome}.local \
-						${mDirPathUserHome}.other \
-						${mDirPathUserHome}.gvfs)
+		mDirPathsExcludeAll=(/proc \
+					/android \
+					/lost+found  \
+					/mnt  \
+					/sys  \
+					/media \
+					${mDirPathUserHome}.AndroidStudio2.1 \
+					${mDirPathUserHome}backup \
+					${mDirPathUserHome}.software \
+					${mDirPathUserHome}download \
+					${mDirPathUserHome}log  \
+					${mDirPathUserHome}temp \
+					${mDirPathUserHome}Pictures \
+					${mDirPathUserHome}projects \
+					${mDirPathUserHome}workspaces \
+					${mDirPathUserHome}.cache \
+					${mDirPathUserHome}.thumbnails \
+					${mDirPathUserHome}.local \
+					${mDirPathUserHome}.other \
+					${mDirPathUserHome}.gvfs)
 		
 		local dirsExclude=
 		local fileNameExclude
@@ -399,7 +399,7 @@
 		
 		ftEcho -b 开始生成系统版本包
 		
-		sudo tar -cvpzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / \
+		sudo tar -cvPzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / \
 		2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
 	}
 
@@ -418,7 +418,7 @@
 				ftEcho -s 新建备注存储目录:${dir_backup_note}
     	fi
 
-		local path_default=${dir_backup_root}/${file_name_default}
+		local path_default=${dir_backup_note}/${file_name_default}
 		local path_note=${dir_backup_note}/${file_name_note}
 
 		if [ ! -f $path_default ]; then
@@ -464,7 +464,6 @@
     	
 		if [ ${typeEdit} == "-add" ]; then
 		
-			ftEcho -b 开始记录版本包校验信息
 			if [ ! -d ${dir_backup_md5} ];then
 				mkdir ${dir_backup_md5}
 				echo 新建版本包校验信息存储目录:${dir_backup_md5}
@@ -476,7 +475,7 @@
 			md5=`md5sum $path_file | awk '{print $1}'`
 			sudo echo $md5>$path_md5
 
-			ftEcho -s "记录完成"
+			ftEcho -s "版本${version_name}校验信息记录完成"
 			
 		elif [ ${typeEdit} == "-check" ]; then
 		
@@ -579,13 +578,12 @@
 			echo 版本信息记录位置不存在，已建立
 		fi
 		if [ ${typeEdit} == "-add" ]; then
-			ftEcho -b 记录版本包相关系统信息
-
 			echo $infoHwCpu 		>$filePathVersionCpu
 			echo $infoHwMainboard 	>$filePathVersionMainboard
 			echo $infoHwSystem 		>$filePathVersionSystem
 			echo $infoHw32x64 		>$filePathVersion32x64
-		
+
+			ftEcho -s 版本${dirNameBackupInfoVersion}相关系统信息记录完成
 		elif [ ${typeEdit} == "-check" ]; then
 			ftEcho -b 检查版本包和当前系统兼容程度
 
