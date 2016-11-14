@@ -2,33 +2,35 @@
 #####----------------------变量--------------------------#########
 
 	#将要执行的操作
-		editType=$1
+		mTypeEdit=$1
 
 	#用户主目录
-		userName=`who | awk '{print $1}'|sort -u`
+		mNameUser=`who | awk '{print $1}'|sort -u`
 
 	#变量
-		strDate=$(date -d "today" +"%Y%m%d")
+		mDate=$(date -d "today" +"%Y%m%d")
 
-		editTyp_backupType=null
-		bDirTarget=null
-		bFileTargetName=null
-		fileTargetNote=null
-		strLogFileName=null
+		mTypeBackupEdit=null
+		mDirPathStoreTarget=null
+		mFileNameBackupTarget=null
+		mNoteBackupTarget=null
+		mFileNameBackupLog=null
+		mFileNameBackupTargetBase=null
 
-		strDirSource=null
-		rDirExclude=null
-		rDirTarget=/
-		fileSource=null
-		rFileSourceName=null
-		rFileSourceNote=null
-		strLogDirectory=${mDirNameHome}/log
+		mDirPathStoreSource=null
+		mDirPathRestoreExcludeTarget=null
+		mDirPathRestoreTarget=/
+		mFilePathRestoreSource=null
+		mFileNameRestoreSource=null
+		mFileNameRestoreSourceBase=null
+		mNoteRestoreSource=null
+		mDirPathLog=${mDirNameHome}/log
 
 	#同步选项
 		isSynchronous=false
 	#同步目录
-		#strDirSynchronous1=$dir1
-		#strDirSynchronous2=$dir2
+		#mDirPathSynchronous1=
+		#mDirPathSynchronous2=
 
 
 
@@ -43,18 +45,18 @@
 		   case "$sel" in
 			 y | yes )
 				pathsource=$1
-				rDirTarget=$2
+				mDirPathRestoreTarget=$2
 				if [ -f $pathsource ];then
-					if [ -d $rDirTarget ];then
-					sudo tar -xvpzf $pathsource --exclude=$rDirExclude -C $rDirTarget
+					if [ -d $mDirPathRestoreTarget ];then
+					sudo tar -xvpzf $pathsource --exclude=$mDirPathRestoreExcludeTarget -C $mDirPathRestoreTarget
 					else
-						echo 未找到目录:${rDirTarget}
+						echo 未找到目录:${mDirPathRestoreTarget}
 					fi
 				else
 					echo 未找到版本包:${pathsource}
 				fi;break;;
 			 n | N | q |Q)  exit;;
-			 * ) echo  ftEcho $sel ;echo "输入n，q，离开"
+			 * )  ftEcho -e 错误的选择：$sel ;echo "输入n，q，离开"
 		   esac
 		done
 	}
@@ -63,15 +65,15 @@
 	{
 
 		local index=0;
-		local filelist=`ls $strDirSource|grep '.tgz'`
-		local dir_backup_note=${strDirSource}/.notes
+		local filelist=`ls $mDirPathStoreSource|grep '.tgz'`
+		local dir_backup_note=${mDirPathStoreSource}/.notes
 
 		#文件数量获取
 		#filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l
 		#b=${a/123/321};将${a}里的第一个123替换为321\
 
 		if [ -z "$filelist" ];then
-			echo 在${strDirSource}没找到有效的版本包
+			echo 在${mDirPathStoreSource}没找到有效的版本包
 			exit
 		else
 			ftEcho -t 请选择备份的版本包
@@ -100,9 +102,10 @@
 				tIndex=0
 			fi
 			echo
-			rFileSourceName=${fileList2[$tIndex]}
-			fileSource=${strDirSource}/${rFileSourceName}
-			rFileSourceNote=${fileNoteList[$tIndex]}
+			mFileNameRestoreSource=${fileList2[$tIndex]}
+			mFileNameRestoreSourceBase=${mFileNameRestoreSource/.tgz/}
+			mFilePathRestoreSource=${mDirPathStoreSource}/${mFileNameRestoreSource}
+			mNoteRestoreSource=${fileNoteList[$tIndex]}
 			echo
 		fi
 	}
@@ -123,17 +126,17 @@
 			option=1
 		fi
 		case $option in
-			1)  rDirTarget=/; break;;
+			1)  mDirPathRestoreTarget=/; break;;
 			2)  	echo -en "请输入目标路径："
 				read customdir
 				if [ -d $customdir ];then
-				rDirTarget=$customdir
+				mDirPathRestoreTarget=$customdir
 				else
 				echo --------目录不存在----------
 				fi
 				customdir=null ; break;;
 			0 | n | no | q |Q)  exit;;
-			* )   ftEcho $option ; echo "选择输入1,2 离开输入0，n，no，q"
+			* )    ftEcho -e 错误的选择：$sel ;echo  "选择输入1,2 离开输入0，n，no，q"
 		esac
 		done
 		echo
@@ -161,37 +164,35 @@
 	ftEchoInfo()
 	{
 		ftEcho -b 请确认下面信息
+		local path=${mDirNameHome}cmds/config/version/read.me
+		local mVersionChangs=`cat $path`
 
 		local infoType=$1
 		if [ $infoType = "restore" ];then
-			echo 使用的源文件为：		${rFileSourceName}
-			echo 使用的源文件的说明：	${rFileSourceNote}
-			echo 还原的目标目录为：	${rDirTarget}
-			echo 还原时将忽略目录：	${rDirExclude}
-			local path=${mDirNameHome}cmds/config/version/read.me
-			local versionAllChangs=`cat $path`
-			echo 当前系统有效修改：	${versionAllChangs}
+
+			echo 使用的源文件为：		${mFileNameRestoreSource}
+			echo 使用的源文件的说明：	${mNoteRestoreSource}
+			echo 还原的目标目录为：	${mDirPathRestoreTarget}
+			echo 还原时将忽略目录：	${mDirPathRestoreExcludeTarget}
+			echo 当前系统有效修改：	${mVersionChangs}
 
 		elif [ $infoType = "backup" ];then
-			strBackFileBaseName=backup_${editTyp_backupType}_${userName}_${strDate}
-			bFileTargetName=${strBackFileBaseName}.tgz
-			strLogFileName=${strBackFileBaseName}.log
-
-			local path=${mDirNameHome}cmds/config/version/read.me
-			local versionAllChangs=`cat $path`
+			mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${mNameUser}_${mDate}
+			mFileNameBackupTarget=${mFileNameBackupTargetBase}.tgz
+			mFileNameBackupLog=${mFileNameBackupTargetBase}.log
 			
 			local btype
-			if [ $editTyp_backupType = "cg" ];then
+			if [ $mTypeBackupEdit = "cg" ];then
 				btype=基础
-			elif [ $editTyp_backupType = "bx" ];then
+			elif [ $mTypeBackupEdit = "bx" ];then
 				btype=全部
 			fi
 
-			echo 生成的备份文件为：	${bFileTargetName}
-			echo 生成备份文件的目录：	${bDirTarget}
-			echo 生成的备份的说明：	${fileTargetNote}
+			echo 生成的备份文件为：	${mFileNameBackupTarget}
+			echo 生成备份文件的目录：	${mDirPathStoreTarget}
+			echo 生成的备份的说明：	${mNoteBackupTarget}
 			echo 生成的备份的类型：	${btype}
-			echo 当前系统有效修改：	${versionAllChangs}
+			echo 当前系统有效修改：	${mVersionChangs}
 		else
 	 		echo ------------------一脸懵逼----------------------
 		fi
@@ -207,14 +208,14 @@
 		local devTargetDir
 		local devDir=/media
 		local dirList=`ls $devDir`
-		local dirList2[0]=${mDirNameHome/$userName\//$userName}
+		local dirList2[0]=${mDirNameHome/$mNameUser\//$mNameUser}
 		local index=0;
 		#遍历/media目录
 		echo [0] ${dirList2[0]}
 		for dir in $dirList
 		do
 			#临时挂载设备
-			if [ ${dir} == $userName ]; then
+			if [ ${dir} == $mNameUser ]; then
 			  	local dirTempList=`ls ${devDir}/${dir}`
 	  			for dirTemp in $dirTempList
 				do
@@ -250,16 +251,16 @@
 				fi
 				break;
 			  fi
-			  ftEcho $dir
+			  ftEcho -e 错误的选择：$dir
 		  done
 		echo
 
-		bDirTarget=$devTargetDir/backup/os/${userName};
-		strDirSource=$devTargetDir/backup/os/${userName};
+		mDirPathStoreTarget=$devTargetDir/backup/os/${mNameUser};
+		mDirPathStoreSource=$devTargetDir/backup/os/${mNameUser};
 
-		if [ ! -d $bDirTarget ];
+		if [ ! -d $mDirPathStoreTarget ];
 			then echo 目录不存在已创建
-			mkdir -p $bDirTarget
+			mkdir -p $mDirPathStoreTarget
 		fi
 	}
 
@@ -279,11 +280,11 @@
 		fi
 		case $typeIndex in
 		[1]* )
-			editTyp_backupType=cg; break;;
+			mTypeBackupEdit=cg; break;;
 		[2]* )
-			editTyp_backupType=bx; break;;
+			mTypeBackupEdit=bx; break;;
 	 	n | N | q |Q)  exit;;
-		* ) echo  ftEcho $typeIndex ;"选择输入1,2 离开输入n，q";;
+		* )  ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";;
 		esac
 		done
 	}
@@ -301,16 +302,16 @@
 
 			#设定默认值
 			if [ ${#typeIndex} == 0 ]; then
-				rDirExclude=$mDirNameHome
+				mDirPathRestoreExcludeTarget=$mDirNameHome
 				break
 			fi
 
 			case $typeIndex in
-			[1]* ) rDirExclude=$mDirNameHome;break;;
+			[1]* ) mDirPathRestoreExcludeTarget=$mDirNameHome;break;;
 
-			[2]* )rDirExclude=; break;;
+			[2]* )mDirPathRestoreExcludeTarget=; break;;
 			n | no | q |Q)  exit;;
-			* )echo  ftEcho $typeIndex ; echo "选择输入1,2 离开输入n，no，q";;
+			* ) ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，no，q";;
 		esac
 		done
 	}
@@ -323,14 +324,14 @@
 		   case "$sel" in
 			 y | yes )
 				#写版本备注
-				ftAddNote $bDirTarget $strBackFileBaseName
+				ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
 				#清理临时文件
 				ftAutoCleanTemp
 
 				ftEcho -b 开始生成系统版本包
 
-				if [ $editTyp_backupType = "cg" ];then
-					sudo tar -cvpzf  ${bDirTarget}/$bFileTargetName \
+				if [ $mTypeBackupEdit = "cg" ];then
+					sudo tar -cvpzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget \
 					--exclude=/proc \
 					--exclude=/android \
 					--exclude=/lost+found \
@@ -359,12 +360,12 @@
 					--exclude=${mDirNameHome}.local \
 					--exclude=${mDirNameHome}.other \
 					--exclude=${mDirNameHome}.gvfs / \
-					 2>&1 |tee ${strLogDirectory}/${strLogFileName}
+					 2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
 
 					#记录版本包校验信息
-					ftAddMd5 $bDirTarget $strBackFileBaseName
-				elif [ $editTyp_backupType = "bx" ];then
-					sudo tar -cvpzf  ${bDirTarget}/${bFileTargetName} \
+					ftAddMd5 $mDirPathStoreTarget $mFileNameBackupTargetBase
+				elif [ $mTypeBackupEdit = "bx" ];then
+					sudo tar -cvpzf  ${mDirPathStoreTarget}/${mFileNameBackupTarget} \
 					--exclude=/proc \
 					--exclude=/android \
 					--exclude=/lost+found  \
@@ -385,16 +386,16 @@
 					--exclude=${mDirNameHome}.other \
 					--exclude=${mDirNameHome}.gvfs \
 					--exclude=/media / \
-					2>&1|tee  ${strLogDirectory}/${strLogFileName}
+					2>&1|tee  ${mDirPathLog}/${mFileNameBackupLog}
 
 					#记录版本包校验信息
-					ftAddMd5 $bDirTarget $strBackFileBaseName
+					ftAddMd5 $mDirPathStoreTarget $mFileNameBackupTargetBase
 				else
 			 		echo ------------------你想金包还是银包呢----------------------
 				fi
 				break;;
 			 n | N | q |Q)  exit;;
-			 * ) echo  ftEcho $sel ;echo "输入n，q，离开";;
+			 * )  ftEcho -e 错误的选择：$sel ;echo  "输入n，q，离开";;
 		   esac
 		done
 	}
@@ -438,7 +439,7 @@
 		#写入版本独立备注
 		sudo echo $note>$path_note
 
-		fileTargetNote=$note
+		mNoteBackupTarget=$note
 	}
 
 	ftAddMd5()
@@ -519,14 +520,14 @@
 			   case "$sel" in
 					 y | yes )
 					echo 开始同步...........................................................
-					for d in $strDirSynchronous1 $strDirSynchronous2 ;
+					for d in $mDirPathSynchronous1 $mDirPathSynchronous2 ;
 					do
-						find $bDirTarget -regex ".*\.tgz\|.*\.list" -exec cp {} -u -n -v $d \; ;
+						find $mDirPathStoreTarget -regex ".*\.tgz\|.*\.list" -exec cp {} -u -n -v $d \; ;
 					done
 					echo 同步结束！
 					break;;
 				 n | no | q |Q)  exit;;
-				 * ) echo  ftEcho e 错误的选择：$sel ;echo "输入n，no，q，离开"
+				 * )   ftEcho -e 错误的选择：$sel ;echo "输入n，no，q，离开"
 			   esac
 			done
 		fi
@@ -643,7 +644,7 @@
 			 y | yes )
 				echo 已忽略$1;break;;
 			 n | N | q |Q)  exit;;
-			 * ) echo  ftEcho $sel ;echo "不忽略请输入n，q"
+			 * )  ftEcho -e 错误的选择：$sel ;echo "不忽略请输入n，q"
 		   esac
 		done
 	}
@@ -655,15 +656,15 @@
 	# 	echo $typeIndex | sudo -S su
 	# fi
 	if [ `whoami` = "root" ];then
-		if [ $editType = "restore" ];then
+		if [ $mTypeEdit = "restore" ];then
 				#选择存放版本包的设备
 				ftSetBackupDevDir&&
 				#选择版本包
 				ftRestoreChoiceSource&&
 				#检查版本包和当前系统兼容程度
-				ftAddOrCheckSystemHwSwInfo check $strDirSource ${rFileSourceName/.tgz/}&&
+				ftAddOrCheckSystemHwSwInfo check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
 				#检查版本包有效性
-				ftCheckMd5 $strDirSource ${rFileSourceName/.tgz/}&&
+				ftCheckMd5 $mDirPathStoreSource $mFileNameRestoreSourceBase&&
 				#选择版本包覆盖的目标路径
 				ftRestoreChoiceTarget&&
 				#选择版本包覆盖的忽略路径
@@ -671,9 +672,9 @@
 				#当前配置信息显示
 				ftEchoInfo restore&&
 				#执行还原操作
-				ftRestoreOperate $fileSource $rDirTarget
+				ftRestoreOperate $mFilePathRestoreSource $mDirPathRestoreTarget
 
-		elif [ $editType = "backup" ];then
+		elif [ $mTypeEdit = "backup" ];then
 				#选择存放版本包的设备
 				ftSetBackupDevDir&&
 				cd /&&
@@ -682,7 +683,7 @@
 				#当前配置信息显示
 				ftEchoInfo backup&&
 				#记录版本包相关系统信息
-				ftAddOrCheckSystemHwSwInfo add $bDirTarget ${bFileTargetName/.tgz/}
+				ftAddOrCheckSystemHwSwInfo add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 				#备份
 				ftBackupOs $backupType22&&
 				#同步
