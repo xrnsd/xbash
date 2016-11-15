@@ -114,8 +114,8 @@ source  $(cd `dirname $0`; pwd)/base
 					mFilePathRestoreSource=${mDirPathStoreSource}/${mFileNameRestoreSource}
 					mNoteRestoreSource=${fileNoteList[$tIndex]}
 					echo;break;;
-				0 | n | N | q |Q)  exit;;
-				* )    ftEcho -e 错误的选择：$tIndex ;echo  "选择输入1,2 离开输入0，n，no，q";break;;
+				n | N | q |Q)  exit;;
+				* )    ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2 选择    输入 n，no，q 离开";break;;
 			esac
 			done
 		fi
@@ -146,8 +146,8 @@ source  $(cd `dirname $0`; pwd)/base
 				ftEcho -e 目录${customdir}不存在
 				fi
 				customdir=null ; break;;
-			0 | n | no | q |Q)  exit;;
-			* )    ftEcho -e 错误的选择：$sel ;echo  "选择输入1,2 离开输入0，n，no，q";break;;
+			n | no | q |Q)  exit;;
+			* )    ftEcho -e 错误的选择：$sel ;echo  "输入1,2 选择    输入n，no，q 离开";break;;
 		esac
 		done
 		echo
@@ -278,7 +278,7 @@ source  $(cd `dirname $0`; pwd)/base
 		1)		mTypeBackupEdit=cg; break;;
 		2)		mTypeBackupEdit=bx; break;;
 	 	n | N | q |Q)  	exit;;
-		* )  		ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";break;;
+		* )  		ftEcho -e 错误的选择：$typeIndex ;echo "输入1,2 选择    输入n，q离开";break;;
 		esac
 		done
 	}

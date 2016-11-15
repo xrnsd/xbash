@@ -53,7 +53,7 @@ ftWhoAmI1()## #命令权限判定
 		   	if [[ $mBaseShellParameter2 =~ "v" ]];then
 		   		echo \"Xrnsd extensions to bash\" V0.4.4.beta
 			else
-				ftReadMe;exit;
+				ftReadMe -e;exit;
 			fi
 		fi
   }
@@ -104,7 +104,7 @@ ftMain()
                                   "test")                                    ${mDirPathCmdTools}test.sh; break;;
             				"backup")					${mDirPathCmdTools}system_backup_restore.sh backup; break;;
             				"restore")					${mDirPathCmdTools}system_backup_restore.sh restore; break;;
-            				*)							ftReadMe;exit;;
+            				*)							ftReadMe -e;exit;;
             				esac
             			    done
                           fi
@@ -119,7 +119,7 @@ ftMain()
 				"monkey")					ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
 				"systemui")					ftKillPhoneAppByPackageName com.android.systemui; break;;
 				"launcher")					ftKillPhoneAppByPackageName com.android.launcher3; break;;
-				*)							ftReadMe;exit;;
+				*)							ftReadMe -e;exit;;
 				esac
 			    done
 			fi
@@ -131,13 +131,18 @@ ftMain()
 
 ftReadMe()
 {
+	while true; do
+	   case "$1" in
+		 e | E | -e |-E) ftEcho -e "   没有有效的命令参数，请查看下面的说明";break;;
+		 *)break;;
+	   esac
+	done
+
 	cat<<EOF
     =========================================================================
     命令  --- 参数/命令说明
           |// 使用格式
-          |
           |-- 参数1   ---------------- [参数权限] ----  参数说明
-          |-- 参数2   ---------------- [参数权限] ----  参数说明
     =========================================================================
     xb  ----- 系统维护
           |// xb ×××××
@@ -146,11 +151,11 @@ ftReadMe()
           |-- restore  ---------------- [root] ------  还原系统
     xc  ----- 常规自定义命令和扩展
           |// xc ×××××
-          |                                                            
+          |
           |-- test   -------------------------------   shell测试
-          |-- clean_data_garbage                       清空回收站   
-          |-- restartadb  --------------------------   重启adb服务  
-          |-- v ------------------------------------   自定义命令版本                                                 
+          |-- clean_data_garbage                       清空回收站
+          |-- restartadb  --------------------------   重启adb服务
+          |-- v ------------------------------------   自定义命令版本                                         
           |-- help                                     查看自定义命令说明
           |-- gjh  ---------------------------------   生成国际化所需的xml文件
     xk  ----- 关闭手机指定进程
