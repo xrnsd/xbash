@@ -28,21 +28,30 @@ ftTimeLong()
 
 ftWhoAmI1()## #命令权限判定
 {
-	    for cmd in ${mCmdsPermissionBase[@]}
+      for cmd in ${mCmdsPermissionOther[@]}
+      do
+          if [ "$cmd" = "$mBaseShellParameter2" ];
+            then commandAuthority=other
+          fi
+      done
+
+	for cmd in ${mCmdsPermissionBase[@]}
     	do
     	    if [ "$cmd" = "$mBaseShellParameter2" ];
     	    	then commandAuthority=base
     	    fi
     	done
-        for cmd in ${mCmdsPermissionRoot[@]}
+
+      for cmd in ${mCmdsPermissionRoot[@]}
     	do
     	    if [ "$cmd" = "$mBaseShellParameter2" ];
     	    	then commandAuthority=root
     	    fi
     	done
+
     	if [ "$commandAuthority" = "" ];then
 		   	if [[ $mBaseShellParameter2 =~ "v" ]];then
-		   		echo \"Xrnsd extensions to bash\" V0.4.1.beta
+		   		echo \"Xrnsd extensions to bash\" V0.4.4.beta
 			else
 				ftReadMe;exit;
 			fi
@@ -65,16 +74,18 @@ ftMain()
 		while true; do
 		case $mBaseShellParameter2 in
 		    "help")  ftReadMe; break;;
-		    *)  if [ `whoami` = "root" ]&&[ "$commandAuthority" = "root" ];then 
-        		      while true; do
-				case $mBaseShellParameter2 in
-                            "test")                                    ${mDirPathCmdTools}test.sh; break;;
-				"backup")					${mDirPathCmdTools}system_backup_restore.sh backup; break;;
-				"restore")					${mDirPathCmdTools}system_backup_restore.sh restore; break;;
-				*)							ftReadMe;exit;;
-				esac
-			    done
-			elif [ `whoami` != "root" ]&&[ "$commandAuthority" = "base" ]; then
+		    *)  if [ `whoami` = "root" ];then 
+                           if [ "$commandAuthority" = "root" ]||[ "$commandAuthority" = "other" ];then 
+                    		    while true; do
+            				case $mBaseShellParameter2 in
+                                  "test")                                    ${mDirPathCmdTools}test.sh; break;;
+            				"backup")					${mDirPathCmdTools}system_backup_restore.sh backup; break;;
+            				"restore")					${mDirPathCmdTools}system_backup_restore.sh restore; break;;
+            				*)							ftReadMe;exit;;
+            				esac
+            			    done
+                          fi
+			elif [ "$commandAuthority" = "base" ]||[ "$commandAuthority" = "other" ]; then
 				while true; do
 				case $mBaseShellParameter2 in
 				"clean_data_garbage")		ftCleanDataGarbage ; break;;
