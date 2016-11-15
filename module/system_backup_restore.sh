@@ -38,7 +38,7 @@
 
 	ftRestoreOperate()
 	{
-		echo -en "是否开始还原[y/n]"
+		ftEcho -y 是否开始还原
 		while true; do
 		   read -n1 sel
 		   case "$sel" in
@@ -64,33 +64,33 @@
 	{
 
 		local index=0;
-		local filelist=`ls $mDirPathStoreSource|grep '.tgz'`
-		local dir_backup_note=${mDirPathStoreSource}/.notes
+		local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
+		local dirBackupNote=${mDirPathStoreSource}/.notes
 
 		#文件数量获取
 		#filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l
 		#b=${a/123/321};将${a}里的第一个123替换为321\
 
-		if [ -z "$filelist" ];then
+		if [ -z "$fileList" ];then
 			ftEcho -e 在${mDirPathStoreSource}没找到有效的版本包
 			exit
 		else
 			ftEcho -t 请选择备份的版本包
 			echo "[序号]		版本包名	----------------	   备注		"
 			echo
-			for file in $filelist
+			for file in $fileList
 			do
-				local file_base_name=${file/.tgz/}
-				local file_name_note=${file_base_name}.note
-				local path_note=${dir_backup_note}/${file_name_note}
-				if [ -f $path_note ];then
-					local note=`cat $path_note`
+				local fileBaseName=${file/.tgz/}
+				local fileNameNote=${fileBaseName}.note
+				local filePathNote=${dirBackupNote}/${fileNameNote}
+				if [ -f $filePathNote ];then
+					local note=`cat $filePathNote`
 				else
 					local note=缺失版本说明，建议视为无效
 				fi
 				fileNoteList[$index]=$note
 				fileList2[$index]=$file
-				echo [${index}] ${file_base_name}"   ----------------   "${note}
+				echo [${index}] ${fileBaseName}"   ----------------   "${note}
 				index=`expr $index + 1`
 			done
 			echo
@@ -152,11 +152,12 @@
 		Content=$2
 		while true; do
 		case $option in
+			y | Y | -y | -Y)  echo -en "${Content}[y/n]"; break;;
 			e | E | -e | -E)  echo -e "\033[31m$Content\033[0m"; break;;
 			s | S | -s | -S)  echo;echo -e "\033[44m$Content\033[0m"; break;;
 			t | T | -t | -T)  echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
 			b | B | -b | -B)  echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
-			* ) exit ;
+			* ) echo $option ;break;;
 		esac
 		done
 	}
@@ -170,11 +171,11 @@
 		local infoType=$1
 		if [ $infoType = "restore" ];then
 
-			echo 使用的源文件为：	${mFileNameRestoreSource}
-			echo 使用的源文件的说明：	${mNoteRestoreSource}
-			echo 还原的目标目录为：	${mDirPathRestoreTarget}
-			echo 还原时将忽略目录：	${mDirPathRestoreExcludeTarget}
-			echo 当前系统有效修改：	${mVersionChangs}
+			echo "使用的源文件为：	${mFileNameRestoreSource}"
+			echo "使用的源文件的说明：	${mNoteRestoreSource}"
+			echo "还原的目标目录为：	${mDirPathRestoreTarget}"
+			echo "还原时将忽略目录：	${mDirPathRestoreExcludeTarget}"
+			echo -e "当前系统有效修改：	\033[44m$mVersionChangs\033[0m"
 
 		elif [ $infoType = "backup" ];then
 			mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${mNameUser}_${mDate}
@@ -188,11 +189,11 @@
 				btype=全部
 			fi
 
-			echo 生成的备份文件为：	${mFileNameBackupTarget}
-			echo 生成备份文件的目录：	${mDirPathStoreTarget}
-			echo 生成的备份的说明：	${mNoteBackupTarget}
-			echo 生成的备份的类型：	${btype}
-			echo 当前系统有效修改：	${mVersionChangs}
+			echo "生成的备份文件为：	${mFileNameBackupTarget}"
+			echo "生成备份文件的目录：	${mDirPathStoreTarget}"
+			echo "生成的备份的说明：	${mNoteBackupTarget}"
+			echo "生成的备份的类型：	${btype}"
+			echo -e "当前系统有效修改：	\033[44m$mVersionChangs\033[0m"
 		else
 	 		ftEcho -e 一脸懵逼
 		fi
@@ -405,41 +406,41 @@
 
 	ftAddNote()##记录note
 	{
-		local str_date=$(date -d "today" +"%Y%m%d")
-		local str_time=$(date -d "today" +"%Y%m%d_%H%M%S")
-		local dir_backup_root=${1}
-		local dir_backup_note=${dir_backup_root}/.notes
-		local version_name=${2}
-		local file_name_default=.note.list
-		local file_name_note=${version_name}.note
+		local dateOnly=$(date -d "today" +"%Y%m%d")
+		local dateTime=$(date -d "today" +"%Y%m%d_%H%M%S")
+		local dirBackupRoot=${1}
+		local dirBackupNote=${dirBackupRoot}/.notes
+		local versionName=${2}
+		local fileNameDefault=.note.list
+		local fileNameNote=${versionName}.note
 
-		if [ -d ${dir_backup_root} ]&&[ ! -d ${dir_backup_note} ];then
-				mkdir ${dir_backup_note}
-				ftEcho -s 新建备注存储目录:${dir_backup_note}
+		if [ -d ${dirBackupRoot} ]&&[ ! -d ${dirBackupNote} ];then
+				mkdir ${dirBackupNote}
+				ftEcho -s 新建备注存储目录:${dirBackupNote}
     	fi
 
-		local path_default=${dir_backup_note}/${file_name_default}
-		local path_note=${dir_backup_note}/${file_name_note}
+		local filePathDefault=${dirBackupNote}/${fileNameDefault}
+		local filePathNote=${dirBackupNote}/${fileNameNote}
 
-		if [ ! -f $path_default ]; then
-			touch $path_default;echo "【 create by wgx 】">$path_default
+		if [ ! -f $filePathDefault ]; then
+			touch $filePathDefault;echo "【 create by wgx 】">$filePathDefault
 		fi
 
 		#note文件行数
-		lines=$(sed -n '$=' $path_default)
+		lines=$(sed -n '$=' $filePathDefault)
 		lines=$((lines/2))
 		let lines=lines+1
 
-		local strVersion="[ "${lines}" ] "${version_name}
+		local strVersion="[ "${lines}" ] "${versionName}
 
-		local tt="请输入版本   ["${version_name}"]  相应的说明:"
+		local tt="请输入版本   ["${versionName}"]  相应的说明:"
 		echo -en $tt
 		read note
 		#写入备注总文件
-		sed -i "1i ==========================================" $path_default
-		sed -i "1i $strVersion           $note" $path_default
+		sed -i "1i ==========================================" $filePathDefault
+		sed -i "1i $strVersion           $note" $filePathDefault
 		#写入版本独立备注
-		sudo echo $note>$path_note
+		sudo echo $note>$filePathNote
 
 		mNoteBackupTarget=$note
 	}
@@ -448,57 +449,57 @@
 	{
 	#=================== example=============================
 	#
-	#		ftMD5 [type] [path] [fileNameBase/VersionName]
-	#		ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
+	#	ftMD5 [type] [path] [fileNameBase/VersionName]
+	#	ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
 	#=========================================================
 		local typeEdit=${1}
-		local dir_backup_root=${2}
-		local dir_backup_md5=${dir_backup_root}/.md5s
-		local version_name=${3}
-		local file_name_md5=${version_name}.md5
+		local dirBackupRoot=${2}
+		local dirBackupMd5=${dirBackupRoot}/.md5s
+		local versionName=${3}
+		local fileNameMd5=${versionName}.md5
 		
-		if [ ! -d ${dir_backup_root} ];then
-				ftEcho -e MD5相关操作失败，找不到$dir_backup_root
-				exit
-    	fi
+		if [ ! -d ${dirBackupRoot} ];then
+			ftEcho -e MD5相关操作失败，找不到$dirBackupRoot
+			exit
+    		fi
     	
 		if [ ${typeEdit} == "-add" ]; then
 		
-			if [ ! -d ${dir_backup_md5} ];then
-				mkdir ${dir_backup_md5}
-				echo 新建版本包校验信息存储目录:${dir_backup_md5}
+			if [ ! -d ${dirBackupMd5} ];then
+				mkdir ${dirBackupMd5}
+				echo 新建版本包校验信息存储目录:${dirBackupMd5}
 			fi
 
-			local path_file=${dir_backup_root}/${version_name}.tgz
-			local path_md5=${dir_backup_md5}/${file_name_md5}
+			local pathFile=${dirBackupRoot}/${versionName}.tgz
+			local pathMd5=${dirBackupMd5}/${fileNameMd5}
 
-			md5=`md5sum $path_file | awk '{print $1}'`
-			sudo echo $md5>$path_md5
+			md5=`md5sum $pathFile | awk '{print $1}'`
+			sudo echo $md5>$pathMd5
 
-			ftEcho -s "版本${version_name}校验信息记录完成"
+			ftEcho -s "版本${versionName}校验信息记录完成"
 			
 		elif [ ${typeEdit} == "-check" ]; then
 		
 			ftEcho -b 开始校验版本包，确定有效性
 
-			if [ -d ${dir_backup_md5} ];then
-				local path_file=${dir_backup_root}/${version_name}.tgz
-				local path_md5=${dir_backup_md5}/${file_name_md5}
-				if [ -f ${path_md5} ];then
-					md5Base=`cat $path_md5`
-					md5Now=`md5sum $path_file | awk '{print $1}'`
+			if [ -d ${dirBackupMd5} ];then
+				local pathFile=${dirBackupRoot}/${versionName}.tgz
+				local pathMd5=${dirBackupMd5}/${fileNameMd5}
+				if [ -f ${pathMd5} ];then
+					md5Base=`cat $pathMd5`
+					md5Now=`md5sum $pathFile | awk '{print $1}'`
 					if [ "$md5Base"x != "$md5Now"x ]; then
-						ftEcho -e 校验失败，版本包：${version_name}无效
+						ftEcho -e 校验失败，版本包：${versionName}无效
 						exit
 					else
-						ftEcho -s 版本包：${version_name}校验成功
+						ftEcho -s 版本包：${versionName}校验成功
 					fi
 				else
-					ftEcho -e 版本包：${version_name}校验信息查找失败
+					ftEcho -e 版本包：${versionName}校验信息查找失败
 					exit
 				fi
 			else
-				ftEcho -e 版本包：${version_name}校验信息查找失败
+				ftEcho -e 版本包：${versionName}校验信息查找失败
 				exit
 			fi
 		fi
@@ -507,23 +508,23 @@
 
 	ftAutoCleanTemp()
 	{
-		ftEcho -t 开始清理临时文件
+		ftEcho -b 开始清理临时文件
 
 		sudo apt-get autoclean
 		sudo apt-get clean
 		sudo apt-get autoremove
 		sudo apt-get install -f
-		sudo rm -R /var/cache/apt/archives
+		sudo rm -rf /var/cache/apt/archives
 	}
 	
 	ftSynchronous()
 	{
 		if [ $isSynchronous = "true" ];then
-			echo -en "是否开始同步[y/n]"
+			ftEcho -y 是否开始同步
 			while true; do
-			   read sel
-			   case "$sel" in
-					 y | yes )
+			read sel
+			case "$sel" in
+				 y | yes )
 					ftEcho -s 开始同步!
 					for d in $mDirPathSynchronous1 $mDirPathSynchronous2 ;
 					do
@@ -543,8 +544,8 @@
 	{
 	#=================== example=============================
 	#
-	#		ftAddOrCheckSystemHwSwInfo [type] [path] [path]
-	#		ftAddOrCheckSystemHwSwInfo -check 
+	#	ftAddOrCheckSystemHwSwInfo [type] [path] [path]
+	#	ftAddOrCheckSystemHwSwInfo -check 
 	#=========================================================
 	
 	local typeEdit=$1
@@ -589,6 +590,7 @@
 
 			if [ ! -f $filePathVersionCpu ]||[ ! -f $filePathVersionMainboard ]||[ ! -f $filePathVersionSystem ]||[ ! -f $filePathVersion32x64 ]; then
 				ftEcho -e   版本包相关系统信息损坏
+				#显示相关信息存储路径
 				echo filePathVersionCpu=$filePathVersionCpu
 				echo filePathVersionMainboard=$filePathVersionMainboard
 				echo filePathVersionSystem=$filePathVersionSystem
@@ -624,7 +626,7 @@
 				returns=失败
 		  	fi
 
-			echo 版本包：${dirNameBackupInfoVersion}系统兼容性检测${returns}
+			ftEcho -s 版本包：${dirNameBackupInfoVersion}系统兼容性检测${returns}
 		  	if [ "$infoHw32x64Version"  = "失败" ]; then
 				exit
 			fi
@@ -641,12 +643,12 @@
 	#		ftSel test
 	#=========================================================
 		local title=$1
-		echo -en "$1有变动,是否忽悠[y/n]"
+		ftEcho -y "$1有变动,是否忽悠"
 		while true; do
 		   read -n1 sel
 		   case "$sel" in
 			 y | yes )
-				echo 已忽略$1;break;;
+			echo 已忽略$1;break;;
 			 n | N | q |Q)  exit;;
 			 * )  ftEcho -e 错误的选择：$sel ;echo "不忽略请输入n，q"
 		   esac
@@ -668,7 +670,7 @@
 				#检查版本包和当前系统兼容程度
 				ftAddOrCheckSystemHwSwInfo -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
 				#检查版本包有效性
-				ftMD5 -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
+				#ftMD5 -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
 				#选择版本包覆盖的目标路径
 				ftRestoreChoiceTarget&&
 				#选择版本包覆盖的忽略路径
@@ -686,23 +688,23 @@
 				ftSelBackupType&&
 				#当前配置信息显示
 				ftEchoInfo backup&&
-				echo -en "是否开始备份[y/n]"
+				ftEcho -y 是否开始备份
 				while true; do
 				   read -n1 sel
 				   case "$sel" in
 					 y | yes )
-						#写版本备注
-						ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
-						#清理临时文件
-						ftAutoCleanTemp
-						#备份系统生成版本包
-						ftBackupOs&&
-						#记录版本包校验信息
-						ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
-						#记录版本包相关系统信息
-						ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
-						#同步
-						ftSynchronous ;break;;
+					#写版本备注
+					ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+					#清理临时文件
+					ftAutoCleanTemp
+					#备份系统生成版本包
+					ftBackupOs&&
+					#记录版本包校验信息
+					ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+					#记录版本包相关系统信息
+					ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+					#同步
+					ftSynchronous ;break;;
 					 n | N | q |Q)  exit;;
 					 * )  ftEcho -e 错误的选择：$sel ;echo  "输入n，q，离开";;
 				   esac

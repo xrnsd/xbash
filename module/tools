@@ -22,19 +22,19 @@ ftRestartadb1()
 
 ftCleanDataGarbage()
 {
-	dev_dir_array=(
+	dirDevsArray=(
 			   /media/data_self \
 			   /home/${mUserName} \
 			  )
 
-	for dev_dir in ${dev_dir_array[*]}
+	for dirDev in ${dirDevsArray[*]}
 	do
 	dir=null
-	if [ -d ${dev_dir}/.Trash-1000 ];then
-		dir=${dev_dir}/.Trash-1000
+	if [ -d ${dirDev}/.Trash-1000 ];then
+		dir=${dirDev}/.Trash-1000
 	else
-		if [ -d ${dev_dir}/.local/share/Trash ];then
-			dir=${dev_dir}/.local/share/Trash
+		if [ -d ${dirDev}/.local/share/Trash ];then
+			dir=${dirDev}/.local/share/Trash
 		fi
 	fi
 

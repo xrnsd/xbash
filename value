@@ -26,4 +26,4 @@ export mFilePathLog=${mDirPathUserHome}${mDirNameLog}${mBaseShellParameter2}\[${
 
 export mCmdsPermissionOther=(test)
 export mCmdsPermissionRoot=(compileContextConfig backup restore)
-export mCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher mtk_flashtool)
+export mCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher)
