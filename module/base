@@ -68,6 +68,29 @@ ftWhoAmYou()
 	fi
 }
 
+
+	
+ftEcho()
+{
+#=================== example=============================
+#
+#		ftEcho [option] [Content] 
+#		ftEcho e 错误的选择1 
+#=========================================================
+	option=$1
+	Content=$2
+	while true; do
+	case $option in
+		y | Y | -y | -Y)  echo -en "${Content}[y/n]"; break;;
+		e | E | -e | -E)  echo -e "\033[31m$Content\033[0m"; break;;
+		s | S | -s | -S)  echo;echo -e "\033[44m$Content\033[0m"; break;;
+		t | T | -t | -T)  echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
+		b | B | -b | -B)  echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
+		* ) echo $option ;break;;
+	esac
+	done
+}
+
 ftMain()
 {
 		ftWhoAmI1
@@ -104,7 +127,7 @@ ftMain()
 		esac
 	    done
 
-    }
+}
 
 ftReadMe()
 {

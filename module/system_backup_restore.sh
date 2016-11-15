@@ -1,4 +1,5 @@
 #!/bin/bash
+source  $(cd `dirname $0`; pwd)/base
 #####----------------------变量--------------------------#########
 
 	#将执行操作
@@ -93,19 +94,37 @@
 				echo [${index}] ${fileBaseName}"   ----------------   "${note}
 				index=`expr $index + 1`
 			done
+			while true; do
 			echo
 			echo -en "请输入版本包对应的序号(回车默认0):"
-			read -n1 tIndex
+			if [ ${#fileList[@]} -gt 9 ];then
+				read tIndex
+			else
+				read -n1 tIndex
+			fi
 			#设定默认值
 			if [ ${#tIndex} == 0 ]; then
 				tIndex=0
 			fi
-			echo
-			mFileNameRestoreSource=${fileList2[$tIndex]}
-			mFileNameRestoreSourceBase=${mFileNameRestoreSource/.tgz/}
-			mFilePathRestoreSource=${mDirPathStoreSource}/${mFileNameRestoreSource}
-			mNoteRestoreSource=${fileNoteList[$tIndex]}
-			echo
+			
+
+
+			case $tIndex in
+				[o-9][0-9][0-9][0-9])
+					echo
+					mFileNameRestoreSource=${fileList2[$tIndex]}
+					mFileNameRestoreSourceBase=${mFileNameRestoreSource/.tgz/}
+					mFilePathRestoreSource=${mDirPathStoreSource}/${mFileNameRestoreSource}
+					mNoteRestoreSource=${fileNoteList[$tIndex]}
+					echo;break;;
+				0 | n | N | q |Q)  exit;;
+				* )    ftEcho -e 错误的选择：$tIndex ;echo  "选择输入1,2 离开输入0，n，no，q"
+			esac
+			done
+
+
+
+			
 		fi
 	}
 
@@ -139,27 +158,6 @@
 		esac
 		done
 		echo
-	}
-	
-	ftEcho()
-	{
-	#=================== example=============================
-	#
-	#		ftEcho [option] [Content] 
-	#		ftEcho e 错误的选择1 
-	#=========================================================
-		option=$1
-		Content=$2
-		while true; do
-		case $option in
-			y | Y | -y | -Y)  echo -en "${Content}[y/n]"; break;;
-			e | E | -e | -E)  echo -e "\033[31m$Content\033[0m"; break;;
-			s | S | -s | -S)  echo;echo -e "\033[44m$Content\033[0m"; break;;
-			t | T | -t | -T)  echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
-			b | B | -b | -B)  echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
-			* ) echo $option ;break;;
-		esac
-		done
 	}
 
 	ftEchoInfo()
@@ -236,7 +234,11 @@
 		echo
 		while true; do
 			echo -en "请选择存放备份文件的设备[0~$index,q](回车默认当前用户目录):"
-			read -n1 dir
+			if [ ${#dirList[@]} -gt 9 ];then
+				read dir
+			else
+				read -n1 dir
+			fi
 			#设定默认值
 			  if [ ${#dir} == 0 ]; then
 			  	dir=0
