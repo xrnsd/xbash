@@ -56,7 +56,7 @@ source  $(cd `dirname $0`; pwd)/base
 					ftEcho -e 未找到版本包:${pathsource}
 				fi;break;;
 			 n | N | q |Q)  exit;;
-			 * )  ftEcho -e 错误的选择：$sel ;echo "输入n，q，离开"
+			 * )  ftEcho -e 错误的选择：$sel ;echo "输入n，q，离开";break;;
 		   esac
 		done
 	}
@@ -106,11 +106,8 @@ source  $(cd `dirname $0`; pwd)/base
 			if [ ${#tIndex} == 0 ]; then
 				tIndex=0
 			fi
-			
-
-
 			case $tIndex in
-				[o-9][0-9][0-9][0-9])
+				[0-9]|[0-9][0-9]|[0-9][0-9][0-9]|[0-9][0-9][0-9][0-9])
 					echo
 					mFileNameRestoreSource=${fileList2[$tIndex]}
 					mFileNameRestoreSourceBase=${mFileNameRestoreSource/.tgz/}
@@ -118,13 +115,9 @@ source  $(cd `dirname $0`; pwd)/base
 					mNoteRestoreSource=${fileNoteList[$tIndex]}
 					echo;break;;
 				0 | n | N | q |Q)  exit;;
-				* )    ftEcho -e 错误的选择：$tIndex ;echo  "选择输入1,2 离开输入0，n，no，q"
+				* )    ftEcho -e 错误的选择：$tIndex ;echo  "选择输入1,2 离开输入0，n，no，q";break;;
 			esac
 			done
-
-
-
-			
 		fi
 	}
 
@@ -154,7 +147,7 @@ source  $(cd `dirname $0`; pwd)/base
 				fi
 				customdir=null ; break;;
 			0 | n | no | q |Q)  exit;;
-			* )    ftEcho -e 错误的选择：$sel ;echo  "选择输入1,2 离开输入0，n，no，q"
+			* )    ftEcho -e 错误的选择：$sel ;echo  "选择输入1,2 离开输入0，n，no，q";break;;
 		esac
 		done
 		echo
@@ -282,12 +275,10 @@ source  $(cd `dirname $0`; pwd)/base
 			typeIndex=1
 		fi
 		case $typeIndex in
-		[1]* )
-			mTypeBackupEdit=cg; break;;
-		[2]* )
-			mTypeBackupEdit=bx; break;;
-	 	n | N | q |Q)  exit;;
-		* )  ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";;
+		1)		mTypeBackupEdit=cg; break;;
+		2)		mTypeBackupEdit=bx; break;;
+	 	n | N | q |Q)  	exit;;
+		* )  		ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";break;;
 		esac
 		done
 	}
@@ -305,16 +296,13 @@ source  $(cd `dirname $0`; pwd)/base
 
 			#设定默认值
 			if [ ${#typeIndex} == 0 ]; then
-				mDirPathRestoreExcludeTarget=$mDirPathUserHome
-				break
+				typeIndex=1
 			fi
-
 			case $typeIndex in
-			[1]* ) mDirPathRestoreExcludeTarget=$mDirPathUserHome;break;;
-
-			[2]* )mDirPathRestoreExcludeTarget=; break;;
-			n | no | q |Q)  exit;;
-			* ) ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，no，q";;
+			1 ) 		mDirPathRestoreExcludeTarget=$mDirPathUserHome;break;;
+			2 )		mDirPathRestoreExcludeTarget=; break;;
+			n | no | q |Q)	exit;;
+			* )		ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，no，q";break;;
 		esac
 		done
 	}
@@ -535,7 +523,7 @@ source  $(cd `dirname $0`; pwd)/base
 					ftEcho -s 同步结束！
 					break;;
 				 n | no | q |Q)  exit;;
-				 * )   ftEcho -e 错误的选择：$sel ;echo "输入n，no，q，离开"
+				 * )   ftEcho -e 错误的选择：$sel ;echo "输入n，no，q，离开";break;;
 			   esac
 			done
 		fi
@@ -649,10 +637,9 @@ source  $(cd `dirname $0`; pwd)/base
 		while true; do
 		   read -n1 sel
 		   case "$sel" in
-			 y | yes )
-			echo 已忽略$1;break;;
-			 n | N | q |Q)  exit;;
-			 * )  ftEcho -e 错误的选择：$sel ;echo "不忽略请输入n，q"
+			 y | yes )	echo 已忽略$1;break;;
+			 n | N | q |Q)	exit;;
+			 * )		ftEcho -e 错误的选择：$sel ;echo "不忽略请输入n，q";break;;
 		   esac
 		done
 	}
@@ -672,7 +659,7 @@ source  $(cd `dirname $0`; pwd)/base
 				#检查版本包和当前系统兼容程度
 				ftAddOrCheckSystemHwSwInfo -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
 				#检查版本包有效性
-				#ftMD5 -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
+				ftMD5 -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
 				#选择版本包覆盖的目标路径
 				ftRestoreChoiceTarget&&
 				#选择版本包覆盖的忽略路径
@@ -708,7 +695,7 @@ source  $(cd `dirname $0`; pwd)/base
 					#同步
 					ftSynchronous ;break;;
 					 n | N | q |Q)  exit;;
-					 * )  ftEcho -e 错误的选择：$sel ;echo  "输入n，q，离开";;
+					 * )  ftEcho -e 错误的选择：$sel ;echo  "输入n，q，离开";break;;
 				   esac
 				done
 		else
