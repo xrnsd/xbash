@@ -150,26 +150,25 @@ shopt -s histappend
 #--------------------------命令封装---------------------------
 alias ..="cd .."
 alias ...="cd ../.."
-#alias xg='grep -irsn $2 ./'
+#alias xg='export XCMD=x;grep -irsn $2 ./'
 alias xr="source ~/.bashrc"
-alias xtt='nameTerminal $title'
-alias xk='${dirPathHomeCmd}main.sh'
-alias xc='${dirPathHomeCmd}main.sh'
-alias xh='${dirPathHomeCmd}main.sh help $2'
-alias xu='gedit ${dirPathHome}/.bashrc'
-alias xuu='subl ${dirPathHomeCmd}main.sh'
-alias xbh='cat ~/.bash_history |grep $2'
-alias xss='echo '$pwd' | sudo -S reboot'
-alias xs='echo '$pwd' | sudo -S shutdown -h now'
-alias xp="title=显示文件的绝对路径;xtt;readlink -f"
-alias xd='${dirPathHomeCmd}main.sh mtk_flashtool'
-alias xb='title=系统备份还原;xtt;${dirPathHomeCmd}main.sh'
-alias xt='python ${dirPathHomeCmd}/module/pytools/shtest.py $2'
-alias xi='title=项目编译;xtt;. ${dirPathHomeCmd}compile.sh'
-alias xl='title=过滤所有log;xtt;adb logcat -c;adb logcat | grep'
-alias xle='title=过滤E级log;xtt;adb logcat -c;adb logcat "*:E"'
-alias .9='title=.9图片;xtt;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
-alias xkd='mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
+alias xk='export XCMD=xk;${dirPathHomeCmd}main.sh'
+alias xc='export XCMD=xc;${dirPathHomeCmd}main.sh'
+alias xh='export XCMD=xh;${dirPathHomeCmd}main.sh help $2'
+alias xu='export XCMD=xu;gedit ${dirPathHome}/.bashrc'
+alias xuu='export XCMD=xuu;subl ${dirPathHomeCmd}main.sh'
+alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
+alias xss='export XCMD=xss;echo '$pwd' | sudo -S reboot'
+alias xs='export XCMD=xs;echo '$pwd' | sudo -S shutdown -h now'
+alias xp="export XCMD=xp;readlink -f"
+alias xd='export XCMD=xd;${dirPathHomeCmd}main.sh mtk_flashtool'
+alias xb='export XCMD=xb;${dirPathHomeCmd}main.sh'
+alias xt='export XCMD=xt;python ${dirPathHomeCmd}/module/pytools/shtest.py $2'
+alias xi='export XCMD=xi;. ${dirPathHomeCmd}compile.sh'
+alias xl='export XCMD=xl;adb logcat -c;adb logcat | grep'
+alias xle='export XCMD=xle;adb logcat -c;adb logcat "*:E"'
+alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
+alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
 alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version"'
 
 #---------------------------------不稳定命令---------------------------------

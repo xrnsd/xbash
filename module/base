@@ -94,13 +94,14 @@ ftMain()
         "help")                          ftReadMe $mBaseShellParameter3                                  ;break;;
         v | V | -v |-V)                echo \"Xrnsd extensions to bash\" V0.4.4.beta              ;break;;
         *)
+              #权限约束开始
                if [ "$commandAuthority" = "root" ]&&[ `whoami` = "root" ]; then
-                            while true; do
+                    while true; do
                     case $mBaseShellParameter2 in
                     "backup")         ${mDirPathCmdTools}system_backup_restore.sh backup; break;;
                     "restore")          ${mDirPathCmdTools}system_backup_restore.sh restore; break;;
                     esac
-                      done
+                    done
               elif [ "$commandAuthority" = "base" ]&&[ `whoami` = "base" ]; then
                     while true; do
                     case $mBaseShellParameter2 in
@@ -112,12 +113,18 @@ ftMain()
                     "systemui")         ftKillPhoneAppByPackageName com.android.systemui; break;;
                     "launcher")         ftKillPhoneAppByPackageName com.android.launcher3; break;;
                     esac
-                      done
+                    done
+              #权限约束结束
               else
-                    ftReadMe $mBaseShellParameter2
+                    while true; do
+                    case $XCMD in
+                    "xk")   ftKillPhoneAppByPackageName $mBaseShellParameter2; break;;
+                    *)        ftEcho -e "   没有有效的命令参数，请查看下面的说明";ftReadMe $XCMD; break;;
+                    esac
+                    done
       fi
       ftWhoAmYou;break;;
-    esac
+      esac
       done
 
 }
@@ -307,7 +314,7 @@ cat<<EOF
     xss ---- [无参] / 重启
 EOF
 break;;
-       *)ftEcho -e "   没有有效的命令参数，请查看下面的说明";ftReadMe -a;break;;
+       *)ftEcho -e "   没有有效的命令，请查看下面的说明";ftReadMe -a;break;;
        esac
     done
   }

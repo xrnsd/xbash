@@ -62,7 +62,6 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftRestoreChoiceSource()
 	{
-
 		local index=0;
 		local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
 		local dirBackupNote=${mDirPathStoreSource}/.notes
