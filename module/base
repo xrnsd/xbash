@@ -91,7 +91,7 @@ ftMain()
     while true; do
     case $mBaseShellParameter2 in
         "test")                           ${mDirPathCmdTools}test.sh                                           ;break;;
-        "help")                          echo mBaseShellParameter3=$mBaseShellParameter3;break;;
+        "help")                          ftReadMe $mBaseShellParameter3                                  ;break;;
         v | V | -v |-V)                echo \"Xrnsd extensions to bash\" V0.4.4.beta              ;break;;
         *)
                if [ "$commandAuthority" = "root" ]&&[ `whoami` = "root" ]; then
@@ -224,85 +224,85 @@ cat<<EOF
           |-- systemui  -----------------------------  关闭systemui
 EOF
 break;;
-       xl)ftEcho -g;
+       xl)
 cat<<EOF
     xl ----- 过滤 android 含有tag的所有等级的log
           |// xl tag
 EOF
 break;;
-       xt)ftEcho -g;
+       xt)
 cat<<EOF
     xt ----- 检测shell脚本，语法检测和测试运行
           |// xt 脚本文件名
 EOF
 break;;
-       xg)ftEcho -g;
+       xg)
 cat<<EOF
     //xg  ---- [无参] / 搜索文件里面的字符串
           |// xg 字符串
 EOF
 break;;
-       xle)ftEcho -g;
+       xle)
 cat<<EOF
     xle ----- 过滤 android 含有tag的E级log
           |// xle tag
 EOF
 break;;
-       xkd)ftEcho -g;
+       xkd)
 cat<<EOF
     xkd  ---- [无参] / 快速删除海量文件
           |// xkd 文件夹
 EOF
 break;;
-       xbh)ftEcho -g;
+       xbh)
 cat<<EOF
     xbh ----- 根据标签过滤命令历史
           |// xbh 标签
 EOF
 break;;
-       xp)ftEcho -g;
+       xp)
 cat<<EOF
     xp ----- 查看文件绝对路径
           |// xp 文件名
 EOF
 break;;
-       xh)ftEcho -g;
+       xh)
 cat<<EOF
     xh ----- 查看具体命令说明
           |// xh 命令名
 EOF
 break;;
-       xi)ftEcho -g;
+       xi)
 cat<<EOF
     xi  ---- [无参] / 快速初始化模块编译环境
 EOF
 break;;
-       xr)ftEcho -g;
+       xr)
 cat<<EOF
    xr  ---- [无参] / 使.bashrc修改生效
 EOF
 break;;
-       xd)ftEcho -g;
+       xd)
 cat<<EOF
     xd  ---- [无参] / mtk下载工具
 EOF
 break;;
-       xu)ftEcho -g;
+       xu)
 cat<<EOF
     xu  ---- [无参] / 打开.bashrc
 EOF
 break;;
-       xx)ftEcho -g;
+       xx)
 cat<<EOF
     xx  ---- [无参] / 休眠
 EOF
 break;;
-       xs)ftEcho -g;
+       xs)
 cat<<EOF
     xs  ---- [无参] / 关机
 EOF
 break;;
-       xss)ftEcho -g;
+       xss)
 cat<<EOF
     xss ---- [无参] / 重启
 EOF
