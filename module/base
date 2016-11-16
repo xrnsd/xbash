@@ -92,7 +92,7 @@ ftMain()
     case $mBaseShellParameter2 in
         "test")                           ${mDirPathCmdTools}test.sh                                           ;break;;
         "help")                          ftReadMe $mBaseShellParameter3                                  ;break;;
-        v | V | -v |-V)                echo \"Xrnsd extensions to bash\" V0.4.4.beta              ;break;;
+        v | V | -v |-V)                echo \"Xrnsd extensions to bash\" V0.5.0beta              ;break;;
         *)
               #权限约束开始
                if [ "$commandAuthority" = "root" ]&&[ `whoami` = "root" ]; then
