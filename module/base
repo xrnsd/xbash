@@ -2,6 +2,7 @@
 #####---------------------流程函数---------------------------#########
 ftTimeLong()
 {
+	ftName=脚本操作耗时记录
 	 #时间少于1秒默认不显示操作耗时
 	 #时间时分秒各单位不显示为零的结果
 	time2=$(date +%s -d $(date +"%H:%M:%S"))
@@ -28,6 +29,7 @@ ftTimeLong()
 
 ftWhoAmI1()## #命令权限判定
 {
+	ftName=命令权限判定
 	for cmd in ${mCmdsPermissionBase[@]}
 			do
 					if [ "$cmd" = "$mBaseShellParameter2" ];
@@ -45,6 +47,7 @@ ftWhoAmI1()## #命令权限判定
 
 ftWhoAmYou()
 {
+	ftName=命令权限与环境权限不一致时，提示用户切换环境
 	if [ `whoami` != "root" ]&&[ "$commandAuthority" = "root" ]; then
 		echo "当前用户权限过低，请转换为root 用户后重新运行" ;exit
 	fi
@@ -62,6 +65,7 @@ ftEcho()
 #	 ftEcho [option] [Content]
 #	 ftEcho e 错误的选择1
 #=========================================================
+	ftName=工具信息提示
 	option=$1
 	Content=$2
 	while true; do
@@ -87,6 +91,7 @@ break;;
 
 ftMain()
 {
+		ftName=工具主入口
 		ftWhoAmI1
 		while true; do
 		case $mBaseShellParameter2 in
@@ -133,9 +138,10 @@ ftMain()
 
 ftReadMe()
 {
-		while true; do
-			 case "$1" in
-			 a | A | -a |-A)
+	ftName=工具命令使用说明
+	while true; do
+		 case "$1" in
+		 a | A | -a |-A)
 	cat<<EOF
 		=========================================================================
 		命令	--- 参数/命令说明

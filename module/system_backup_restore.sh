@@ -38,6 +38,7 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftRestoreOperate()
 	{
+		ftName=使用tar还原系统
 		ftEcho -y 是否开始还原
 		while true; do
 		read -n1 sel
@@ -62,6 +63,7 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftRestoreChoiceSource()
 	{
+		ftName=选择还原使用的版本[备份]包
 		local index=0;
 		local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
 		local dirBackupNote=${mDirPathStoreSource}/.notes
@@ -121,6 +123,7 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftRestoreChoiceTarget()
 	{
+		ftName=选择还原的目标目录
 		ftEcho -b 还原的目标目录
 		echo -e "[1]\t系统"
 		echo -e "[2]\t自定义"
@@ -153,6 +156,7 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftEchoInfo()
 	{
+		ftName=脚本操作信息显示，用于关键操作前的确认
 		ftEcho -b 请确认下面信息
 		local path=${mDirPathUserHome}cmds/data/version/read.me
 		local mVersionChangs=`cat $path`
@@ -192,7 +196,8 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftSetBackupDevDir()
 	{
-		ftEcho -t 请选择备份包存放的设备
+		ftName=选择备份包存放的设备
+		ftEcho -t 请${ftName}
 
 		local devTarget
 		local devTargetDir
@@ -260,7 +265,8 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftSelBackupType()
 	{
-		ftEcho -t 备份类型
+		ftName=选择备份类型
+		ftEcho -t 请${ftName}
 		echo -e "[1]\t基础"
 		echo -e "[2]\t全部"
 
@@ -283,7 +289,8 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftSetRestoreType()
 	{
-		ftEcho -t 还原配置
+		ftName=选择还原时忽略的目录
+		ftEcho -t 请${ftName}
 		echo -e "[1]\t忽略home"
 		echo -e "[2]\t不忽略"
 
@@ -307,6 +314,7 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftBackupOs()
 	{
+		ftName=生成版本包
 		ftEcho -b 开始更新排除列表
 		#/home/wgx/cmds/data/excludeDirsBase.list
 		fileNameExcludeBase=excludeDirsBase.list
@@ -386,14 +394,15 @@ source  $(cd `dirname $0`; pwd)/base
 		 echo $dirpath >>$fileNameExclude
 		done
 
-		ftEcho -b 开始生成系统版本包
+		ftEcho -b 开始${ftName}
 
 		sudo tar -cvPzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / \
 		2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
 	}
 
-	ftAddNote()##记录note
+	ftAddNote()
 	{
+		ftName=记录版本包相关备注
 		local dateOnly=$(date -d "today" +"%Y%m%d")
 		local dateTime=$(date -d "today" +"%Y%m%d_%H%M%S")
 		local dirBackupRoot=${1}
@@ -440,6 +449,7 @@ source  $(cd `dirname $0`; pwd)/base
 	#	ftMD5 [type] [path] [fileNameBase/VersionName]
 	#	ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
 	#=========================================================
+		ftName=记录和校验版本包的MD5
 		local typeEdit=${1}
 		local dirBackupRoot=${2}
 		local dirBackupMd5=${dirBackupRoot}/.md5s
@@ -496,7 +506,8 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftAutoCleanTemp()
 	{
-		ftEcho -b 开始清理临时文件
+		ftName=清理临时文件
+		ftEcho -b 开始${ftName}
 
 		sudo apt-get autoclean
 		sudo apt-get clean
@@ -507,6 +518,7 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftSynchronous()
 	{
+		ftName=在不同设备间同步版本包
 		if [ $isSynchronous = "true" ];then
 			ftEcho -y 是否开始同步
 			while true; do
@@ -527,7 +539,6 @@ source  $(cd `dirname $0`; pwd)/base
 		fi
 	}
 
-	#记录版本包软件和硬件信息
 	ftAddOrCheckSystemHwSwInfo()
 	{
 	#=================== example=============================
@@ -536,6 +547,7 @@ source  $(cd `dirname $0`; pwd)/base
 	#	ftAddOrCheckSystemHwSwInfo -check
 	#=========================================================
 
+	ftName=记录和校验版本包软件和硬件信息
 	local typeEdit=$1
 	local dirPathBackupRoot=$2
 	local dirNameBackupInfoVersion=$3
@@ -630,6 +642,7 @@ source  $(cd `dirname $0`; pwd)/base
 	#		ftSel [title]
 	#		ftSel test
 	#=========================================================
+		ftName=版本包软件和硬件信息校验操作选择
 		local title=$1
 		ftEcho -y "$1有变动,是否忽悠"
 		while true; do
