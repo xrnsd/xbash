@@ -98,9 +98,7 @@ ftMain()
 	"test")		${mDirPathCmdTools}test.sh	 ;break;;
 	"help")		ftReadMe $mBaseShellParameter3	;break;;
 	v | V | -v |-V)	echo \"Xrnsd extensions to bash\" V0.5.0beta	;break;;
-	*)		break;;
-	esac
-	done
+	*)
 	#权限约束开始
 	ftWhoAmI $mBaseShellParameter2
 	if [ "$commandAuthority" = "root" ]; then
@@ -142,7 +140,10 @@ ftMain()
 		*)	ftEcho -e "	 没有有效的命令参数，请查看下面的说明";ftReadMe $XCMD; break;;
 		esac
 		done
-	fi
+	fi	
+	break;;
+	esac
+	done
 
 }
 
