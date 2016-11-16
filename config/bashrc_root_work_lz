@@ -112,13 +112,13 @@ export PS1='xrnsd\[\033[42m\][\w]\[\033[0m\]:'
 #--------------------------命令封装---------------------------
 alias ..="cd .."
 alias ...="cd ../.."
-alias xc='${dirPathHomeCmd}main.sh'
-alias xr="source ~/.bashrc"
-alias xu='gedit /root/.bashrc'
-alias xbh='cat ~/.bash_history |grep $2'
+alias xc='export XCMD=xc;${dirPathHomeCmd}main.sh'
+alias xr="export XCMD=xr;source ~/.bashrc"
+alias xu='export XCMD=xu;gedit /root/.bashrc'
+alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
 alias xss='reboot'
 alias xs='shutdown -h now'
-alias xb='${dirPathHomeCmd}main.sh'
+alias xb='export XCMD=xb;${dirPathHomeCmd}main.sh'
 
 #--------------------------命令选项快速适配---------------------------
 complete -W "backup restore" xb
