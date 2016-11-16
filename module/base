@@ -2,90 +2,75 @@
 #####---------------------流程函数---------------------------#########
 ftTimeLong()
 {
-	 #时间少于1秒默认不显示操作耗时
-	 #时间时分秒各单位不显示为零的结果
-	time2=$(date +%s -d $(date +"%H:%M:%S"))
-	time3=$(((time2-mTimeBackupStart)%60))
-	time5=$(((time2-mTimeBackupStart)/3600))
-	time4=$((((time2-mTimeBackupStart)-time5*3600)/60))
-	if [ "$time5" -ne "0" ];
-		then strS1=$time5时
-		else strS1=""
-	fi
-	if [ "$time4" -ne "0" ];
-		then strF1=$time4分
-		else strF1=""
-	fi
-	if [ "$time3" -ne "0" ];
-		then strM1=$time3秒
-		else strM1=""
-	fi
-	if [ "$time3" -eq "0" ]&&[ "$time4" -eq "0" ] &&[ "$time5" -eq "0" ];
-		then echo;echo;echo 1秒没到就结束了
-		else echo 本技能耗时${strS1}${strF1}${strM1} ！
-	fi
+   #时间少于1秒默认不显示操作耗时
+   #时间时分秒各单位不显示为零的结果
+  time2=$(date +%s -d $(date +"%H:%M:%S"))
+  time3=$(((time2-mTimeBackupStart)%60))
+  time5=$(((time2-mTimeBackupStart)/3600))
+  time4=$((((time2-mTimeBackupStart)-time5*3600)/60))
+  if [ "$time5" -ne "0" ];
+    then strS1=$time5时
+    else strS1=""
+  fi
+  if [ "$time4" -ne "0" ];
+    then strF1=$time4分
+    else strF1=""
+  fi
+  if [ "$time3" -ne "0" ];
+    then strM1=$time3秒
+    else strM1=""
+  fi
+  if [ "$time3" -eq "0" ]&&[ "$time4" -eq "0" ] &&[ "$time5" -eq "0" ];
+    then echo;echo;echo 1秒没到就结束了
+    else echo 本技能耗时${strS1}${strF1}${strM1} ！
+  fi
 }
 
 ftWhoAmI1()## #命令权限判定
 {
-      for cmd in ${mCmdsPermissionOther[@]}
+  for cmd in ${mCmdsPermissionBase[@]}
       do
           if [ "$cmd" = "$mBaseShellParameter2" ];
-            then commandAuthority=other
+            then commandAuthority=base
           fi
       done
 
-	for cmd in ${mCmdsPermissionBase[@]}
-    	do
-    	    if [ "$cmd" = "$mBaseShellParameter2" ];
-    	    	then commandAuthority=base
-    	    fi
-    	done
-
       for cmd in ${mCmdsPermissionRoot[@]}
-    	do
-    	    if [ "$cmd" = "$mBaseShellParameter2" ];
-    	    	then commandAuthority=root
-    	    fi
-    	done
-
-    	if [ "$commandAuthority" = "" ];then
-		   	if [[ $mBaseShellParameter2 =~ "v" ]];then
-		   		echo \"Xrnsd extensions to bash\" V0.4.4.beta
-			else
-				ftReadMe -a;exit;
-			fi
-		fi
+      do
+          if [ "$cmd" = "$mBaseShellParameter2" ];
+            then commandAuthority=root
+          fi
+      done
   }
 
 ftWhoAmYou()
 {
-	if [ `whoami` != "root" ]&&[ "$commandAuthority" = "root" ]; then
-		echo "当前用户权限过低，请转换为root 用户后重新运行" ;exit
-	fi
-	if [ `whoami` = "root" ]&&[ "$commandAuthority" = "base" ];  then
-	    echo "转化普通用户后，再次尝试"; exit
-	fi
+  if [ `whoami` != "root" ]&&[ "$commandAuthority" = "root" ]; then
+    echo "当前用户权限过低，请转换为root 用户后重新运行" ;exit
+  fi
+  if [ `whoami` = "root" ]&&[ "$commandAuthority" = "base" ];  then
+      echo "转化普通用户后，再次尝试"; exit
+  fi
 }
 
 
-	
+  
 ftEcho()
 {
 #=================== example=============================
 #
-#		ftEcho [option] [Content] 
-#		ftEcho e 错误的选择1 
+#   ftEcho [option] [Content] 
+#   ftEcho e 错误的选择1 
 #=========================================================
-	option=$1
-	Content=$2
-	while true; do
-	case $option in
-		y | Y | -y | -Y)  echo -en "${Content}[y/n]"; break;;
-		e | E | -e | -E)  echo -e "\033[31m$Content\033[0m"; break;;
-		s | S | -s | -S)  echo;echo -e "\033[44m$Content\033[0m"; break;;
-		t | T | -t | -T)  echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
-		b | B | -b | -B)  echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
+  option=$1
+  Content=$2
+  while true; do
+  case $option in
+    y | Y | -y | -Y)  echo -en "${Content}[y/n]"; break;;
+    e | E | -e | -E)  echo -e "\033[31m$Content\033[0m"; break;;
+    s | S | -s | -S)  echo;echo -e "\033[44m$Content\033[0m"; break;;
+    t | T | -t | -T)  echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
+    b | B | -b | -B)  echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
               g | G | -g | -G)
 cat<<EOF
     =========================================================================
@@ -95,46 +80,45 @@ cat<<EOF
     =========================================================================
 EOF
 break;;
-		* ) echo $option ;break;;
-	esac
-	done
+    * ) echo $option ;break;;
+  esac
+  done
 }
 
 ftMain()
 {
-		ftWhoAmI1
-		while true; do
-		case $mBaseShellParameter2 in
-		    "help")  ftReadMe; break;;
-		    *)  if [ `whoami` = "root" ];then 
-                           if [ "$commandAuthority" = "root" ]||[ "$commandAuthority" = "other" ];then 
-                    		    while true; do
-            				case $mBaseShellParameter2 in
-                                  "test")                                    ${mDirPathCmdTools}test.sh; break;;
-            				"backup")					${mDirPathCmdTools}system_backup_restore.sh backup; break;;
-            				"restore")					${mDirPathCmdTools}system_backup_restore.sh restore; break;;
-            				esac
-            			    done
-                          fi
-			elif [ "$commandAuthority" = "base" ]||[ "$commandAuthority" = "other" ]; then
-				while true; do
-				case $mBaseShellParameter2 in
-				"clean_data_garbage")		ftCleanDataGarbage ; break;;
-				"mtk_flashtool")			ftMtkFlashTool ; break;;
-				"test")						${mDirPathCmdTools}test.sh; break;;
-				"restartadb")				ftRestartadb1; break;;
-				# "gjh") 					java -jar ${mDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar; break;;
-				"monkey")					ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
-				"systemui")					ftKillPhoneAppByPackageName com.android.systemui; break;;
-				"launcher")					ftKillPhoneAppByPackageName com.android.launcher3; break;;
-				esac
-			    done
-                    else
-                        ftReadMe $mBaseShellParameter2
-			fi
-			ftWhoAmYou;break;;
-		esac
-	    done
+    ftWhoAmI1
+    while true; do
+    case $mBaseShellParameter2 in
+        "test")                           ${mDirPathCmdTools}test.sh                                           ;break;;
+        "help")                          echo mBaseShellParameter3=$mBaseShellParameter3;break;;
+        v | V | -v |-V)                echo \"Xrnsd extensions to bash\" V0.4.4.beta              ;break;;
+        *)
+               if [ "$commandAuthority" = "root" ]&&[ `whoami` = "root" ]; then
+                            while true; do
+                    case $mBaseShellParameter2 in
+                    "backup")         ${mDirPathCmdTools}system_backup_restore.sh backup; break;;
+                    "restore")          ${mDirPathCmdTools}system_backup_restore.sh restore; break;;
+                    esac
+                      done
+              elif [ "$commandAuthority" = "base" ]&&[ `whoami` = "base" ]; then
+                    while true; do
+                    case $mBaseShellParameter2 in
+                    "clean_data_garbage")   ftCleanDataGarbage ; break;;
+                    "mtk_flashtool")      ftMtkFlashTool ; break;;
+                    "restartadb")       ftRestartadb1; break;;
+                    # "gjh")          java -jar ${mDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar; break;;
+                    "monkey")         ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
+                    "systemui")         ftKillPhoneAppByPackageName com.android.systemui; break;;
+                    "launcher")         ftKillPhoneAppByPackageName com.android.launcher3; break;;
+                    esac
+                      done
+              else
+                    ftReadMe $mBaseShellParameter2
+      fi
+      ftWhoAmYou;break;;
+    esac
+      done
 
 }
 
@@ -189,11 +173,13 @@ ftReadMe()
     xp ----- 查看文件绝对路径
           |// xp 文件名
           |
+    xh ----- 查看具体命令说明
+          |// xh 命令名
+          |
     xi  ---- [无参] / 快速初始化模块编译环境
     xr  ---- [无参] / 使.bashrc修改生效
     .   ---- [无参] / 进入上一级目录
     ..  ---- [无参] / 进入上两级目录
-    xh  ---- [无参] / 浏览命令历史
     xd  ---- [无参] / mtk下载工具
     xu  ---- [无参] / 打开.bashrc
     .9  ---- [无参] / 打开.9工具
@@ -280,6 +266,12 @@ cat<<EOF
           |// xp 文件名
 EOF
 break;;
+       xh)ftEcho -g;
+cat<<EOF
+    xh ----- 查看具体命令说明
+          |// xh 命令名
+EOF
+break;;
        xi)ftEcho -g;
 cat<<EOF
     xi  ---- [无参] / 快速初始化模块编译环境
@@ -288,11 +280,6 @@ break;;
        xr)ftEcho -g;
 cat<<EOF
    xr  ---- [无参] / 使.bashrc修改生效
-EOF
-break;;
-       xh)ftEcho -g;
-cat<<EOF
-    xh  ---- [无参] / 浏览命令历史
 EOF
 break;;
        xd)ftEcho -g;

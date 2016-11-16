@@ -24,6 +24,5 @@ export mDirPathTools=${mDirPathUserHome}${mFileNameCmdModuleTool}
 export mDirPathCmdTools=${mDirPathUserHome}${mDirNameCmd}${mDirNameCmdModule}
 export mFilePathLog=${mDirPathUserHome}${mDirNameLog}${mBaseShellParameter2}\[${mTimeBackup}\].log
 
-export mCmdsPermissionOther=(test)
 export mCmdsPermissionRoot=(compileContextConfig backup restore)
 export mCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher mtk_flashtool)
