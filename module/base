@@ -115,6 +115,8 @@ ftMain()
                     esac
                     done
               #权限约束结束
+              elif [ ${#mBaseShellParameter2} == 0 ]; then
+                    ftReadMe -a
               else
                     while true; do
                     case $XCMD in
@@ -122,7 +124,7 @@ ftMain()
                     *)        ftEcho -e "   没有有效的命令参数，请查看下面的说明";ftReadMe $XCMD; break;;
                     esac
                     done
-      fi
+              fi
       ftWhoAmYou;break;;
       esac
       done
@@ -314,7 +316,7 @@ cat<<EOF
     xss ---- [无参] / 重启
 EOF
 break;;
-       *)ftEcho -e "   没有有效的命令，请查看下面的说明";ftReadMe -a;break;;
+       *)ftReadMe -a;break;;
        esac
     done
   }
