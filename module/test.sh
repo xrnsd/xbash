@@ -877,4 +877,221 @@ fteee()
 		
 		#sudo tar -cvpzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / 2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
 	}
-	fttar cg
+ftEcho()
+{
+#=================== example=============================
+#
+#		ftEcho [option] [Content] 
+#		ftEcho e 错误的选择1 
+#=========================================================
+	option=$1
+	Content=$2
+	while true; do
+	case $option in
+		y | Y | -y | -Y)  echo -en "${Content}[y/n]"; break;;
+		e | E | -e | -E)  echo -e "\033[31m$Content\033[0m"; break;;
+		s | S | -s | -S)  echo;echo -e "\033[44m$Content\033[0m"; break;;
+		t | T | -t | -T)  echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
+		b | B | -b | -B)  echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
+              g | G | -g | -G)
+cat<<EOF
+    =========================================================================
+    命令  --- 参数/命令说明
+          |// 使用格式
+          |-- 参数1   ---------------- [参数权限] ----  参数说明
+    =========================================================================
+EOF
+break;;
+		* ) echo $option ;break;;
+	esac
+	done
+}
+
+	ftwddd()
+	{
+		while true; do
+		   case "$1" in
+			 e | E | -e |-E) ftEcho -e "   没有有效的命令参数，请查看下面的说明";break;;
+			 a | A | -a |-A)
+	cat<<EOF
+    =========================================================================
+    命令  --- 参数/命令说明
+          |// 使用格式
+          |-- 参数1   ---------------- [参数权限] ----  参数说明
+    =========================================================================
+    xb  ----- 系统维护
+          |// xb ×××××
+          |
+          |-- backup  ---------------- [root] ------  备份系统
+          |-- restore  ---------------- [root] ------  还原系统
+    xc  ----- 常规自定义命令和扩展
+          |// xc ×××××
+          |
+          |-- test   -------------------------------   shell测试
+          |-- clean_data_garbage                       清空回收站
+          |-- restartadb  --------------------------   重启adb服务
+          |-- v ------------------------------------   自定义命令版本                                         
+          |-- help                                     查看自定义命令说明
+          |-- gjh  ---------------------------------   生成国际化所需的xml文件
+    xk  ----- 关闭手机指定进程
+          |// xk ×××××
+          |
+          |-- monkey  -------------------------------  关闭monkey
+          |-- systemui  -----------------------------  关闭systemui
+    xl ----- 过滤 android 含有tag的所有等级的log
+          |// xl tag
+          |
+    xt ----- 检测shell脚本，语法检测和测试运行
+          |// xt 脚本文件名
+          |
+    //xg  ---- [无参] / 搜索文件里面的字符串
+          |// xg 字符串
+          |
+    xle ----- 过滤 android 含有tag的E级log
+          |// xle tag
+          |
+    xkd  ---- [无参] / 快速删除海量文件
+          |// xkd 文件夹
+          |
+    xbh ----- 根据标签过滤命令历史
+          |// xbh 标签
+          |
+    xp ----- 查看文件绝对路径
+          |// xp 文件名
+          |
+    xi  ---- [无参] / 快速初始化模块编译环境
+    xr  ---- [无参] / 使.bashrc修改生效
+    .   ---- [无参] / 进入上一级目录
+    ..  ---- [无参] / 进入上两级目录
+    xh  ---- [无参] / 浏览命令历史
+    xd  ---- [无参] / mtk下载工具
+    xu  ---- [无参] / 打开.bashrc
+    .9  ---- [无参] / 打开.9工具
+    xx  ---- [无参] / 休眠
+    xs  ---- [无参] / 关机
+    xss ---- [无参] / 重启
+    
+    ===============  临时命令 ===================
+    xversion--[无参] / 查看软件版本
+    xg6572 ----- 下载mtk6572的工程
+          |// xg6572 分支名
+EOF
+break;;
+			 xc |test | clean_data_garbage|restartadb | help | gjh)ftEcho -g;
+cat<<EOF
+    xc  ----- 常规自定义命令和扩展
+          |// xc ×××××
+          |
+          |-- test   -------------------------------   shell测试
+          |-- clean_data_garbage                       清空回收站
+          |-- restartadb  --------------------------   重启adb服务
+          |-- v ------------------------------------   自定义命令版本                                         
+          |-- help                                     查看自定义命令说明
+          |-- gjh  ---------------------------------   生成国际化所需的xml文件
+EOF
+break;;
+			 xb | backup | restore)ftEcho -g;
+cat<<EOF
+    xb  ----- 系统维护
+          |// xb ×××××
+          |
+          |-- backup  ---------------- [root] ------  备份系统
+          |-- restore  ---------------- [root] ------  还原系统
+EOF
+break;;
+			 xk | monkey | systemui)ftEcho -g;
+cat<<EOF
+    xk  ----- 关闭手机指定进程
+          |// xk ×××××
+          |
+          |-- monkey  -------------------------------  关闭monkey
+          |-- systemui  -----------------------------  关闭systemui
+EOF
+break;;
+			 xl)ftEcho -g;
+cat<<EOF
+    xl ----- 过滤 android 含有tag的所有等级的log
+          |// xl tag
+EOF
+break;;
+			 xt)ftEcho -g;
+cat<<EOF
+    xt ----- 检测shell脚本，语法检测和测试运行
+          |// xt 脚本文件名
+EOF
+break;;
+			 xg)ftEcho -g;
+cat<<EOF
+    //xg  ---- [无参] / 搜索文件里面的字符串
+          |// xg 字符串
+EOF
+break;;
+			 xle)ftEcho -g;
+cat<<EOF
+    xle ----- 过滤 android 含有tag的E级log
+          |// xle tag
+EOF
+break;;
+			 xkd)ftEcho -g;
+cat<<EOF
+    xkd  ---- [无参] / 快速删除海量文件
+          |// xkd 文件夹
+EOF
+break;;
+			 xbh)ftEcho -g;
+cat<<EOF
+    xbh ----- 根据标签过滤命令历史
+          |// xbh 标签
+EOF
+break;;
+			 xp)ftEcho -g;
+cat<<EOF
+    xp ----- 查看文件绝对路径
+          |// xp 文件名
+EOF
+break;;
+			 xi)ftEcho -g;
+cat<<EOF
+    xi  ---- [无参] / 快速初始化模块编译环境
+EOF
+break;;
+			 xr)ftEcho -g;
+cat<<EOF
+   xr  ---- [无参] / 使.bashrc修改生效
+EOF
+break;;
+			 xh)ftEcho -g;
+cat<<EOF
+    xh  ---- [无参] / 浏览命令历史
+EOF
+break;;
+			 xd)ftEcho -g;
+cat<<EOF
+    xd  ---- [无参] / mtk下载工具
+EOF
+break;;
+			 xu)ftEcho -g;
+cat<<EOF
+    xu  ---- [无参] / 打开.bashrc
+EOF
+break;;
+			 xx)ftEcho -g;
+cat<<EOF
+    xx  ---- [无参] / 休眠
+EOF
+break;;
+			 xs)ftEcho -g;
+cat<<EOF
+    xs  ---- [无参] / 关机
+EOF
+break;;
+			 xss)ftEcho -g;
+cat<<EOF
+    xss ---- [无参] / 重启
+EOF
+break;;
+			 *)break;;
+		   esac
+		done
+	}
+ftwddd $1 $2 $3

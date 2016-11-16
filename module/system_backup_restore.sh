@@ -2,7 +2,6 @@
 source  $(cd `dirname $0`; pwd)/base
 #####----------------------变量--------------------------#########
 
-	#将执行操作
 		mTypeEdit=$1
 		mTypeBackupEdit=null
 		
