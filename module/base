@@ -33,23 +33,15 @@ ftWhoAmI()## #命令权限判定
 	local cmdName=$1
 	for cmd in ${mCmdsPermissionBase[@]}
 	do
-			if [ "$cmd" = "$cmdName" ];
-				then commandAuthority=base
+			if [ "$cmd" = "$cmdName" ]||[ "$XCMD" = "$cmdName" ];then
+				commandAuthority=base
 			fi
 	done
 
 	for cmd in ${mCmdsPermissionRoot[@]}
 	do
-			if [ "$cmd" = "$cmdName" ];
-				then commandAuthority=root
-			fi
-	done
-
-	cmdName=$XCMD
-	for cmd in ${mCmdsPermissionRoot[@]}
-	do
-			if [ "$cmd" = "$cmdName" ];
-				then commandAuthority=root
+			if [ "$cmd" = "$cmdName" ]||[ "$XCMD" = "$cmdName" ];then
+				commandAuthority=root
 			fi
 	done
 	}
@@ -80,13 +72,12 @@ ftEcho()
 	Content=$2
 	while true; do
 	case $option in
-		y | Y | -y | -Y)	echo -en "${Content}[y/n]"; break;;
-		e | E | -e | -E)	echo -e "\033[31m$Content\033[0m"; break;;
-		s | S | -s | -S)	echo;echo -e "\033[44m$Content\033[0m"; break;;
-		t | T | -t | -T)	echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
-		b | B | -b | -B)	echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
-		g | G | -g | -G)
-cat<<EOF
+	y | Y | -y | -Y)	echo -en "${Content}[y/n]"; break;;
+	e | E | -e | -E)	echo -e "\033[31m$Content\033[0m"; break;;
+	s | S | -s | -S)	echo;echo -e "\033[44m$Content\033[0m"; break;;
+	t | T | -t | -T)	echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
+	b | B | -b | -B)	echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
+	g | G | -g | -G)cat<<EOF
 	=========================================================================
 	命令	--- 参数/命令说明
 		|// 使用格式
@@ -94,7 +85,7 @@ cat<<EOF
 	=========================================================================
 EOF
 break;;
-		* ) echo $option ;break;;
+	* ) echo $option ;break;;
 	esac
 	done
 }
@@ -141,7 +132,6 @@ ftMain()
 		else
 			ftWhoAmYou
 		fi
-
 	#权限约束结束
 	elif [ ${#mBaseShellParameter2} == 0 ]; then
 		ftReadMe -a
@@ -163,26 +153,26 @@ ftReadMe()
 		case "$1" in
 		a | A | -a |-A)
 	cat<<EOF
-		=========================================================================
+	=========================================================================
 		命令	--- 参数/命令说明
 		|// 使用格式
 		|-- 参数1	 ---------------- [参数权限] ----	参数说明
-		=========================================================================
-	xb	----- 系统维护
+	=========================================================================
+	xb ----- 系统维护
 		|// xb ×××××
 		|
 		|-- backup	---------------- [root] ------	备份系统
 		|-- restore	---------------- [root] ------	还原系统
-	xc	----- 常规自定义命令和扩展
+	xc ----- 常规自定义命令和扩展
 		|// xc ×××××
 		|
 		|-- test	-------------------------------	 shell测试
-		|-- clean_data_garbage				清空回收站
+		|-- clean_data_garbage				 清空回收站
 		|-- restartadb	--------------------------	 重启adb服务
 		|-- v ------------------------------------	 自定义命令版本
-		|-- help					查看自定义命令说明
+		|-- help					 查看自定义命令说明
 		|-- gjh	---------------------------------	 生成国际化所需的xml文件
-	xk	----- 关闭手机指定进程
+	xk ----- 关闭手机指定进程
 		|// xk ×××××
 		|
 		|-- monkey	-------------------------------	关闭monkey
@@ -259,46 +249,10 @@ cat<<EOF
 		|-- systemui	-----------------------------	关闭systemui
 EOF
 break;;
-	xl)
-cat<<EOF
-	xl ----- 过滤 android 含有tag的所有等级的log
-		|// xl tag
-EOF
-break;;
 	xt)
 cat<<EOF
 	xt ----- 检测shell脚本，语法检测和测试运行
 		|// xt 脚本文件名
-EOF
-break;;
-	xg)
-cat<<EOF
-		//xg	---- [无参] / 搜索文件里面的字符串
-		|// xg 字符串
-EOF
-break;;
-	xle)
-cat<<EOF
-	xle ----- 过滤 android 含有tag的E级log
-		|// xle tag
-EOF
-break;;
-	xkd)
-cat<<EOF
-	xkd	---- [无参] / 快速删除海量文件
-		|// xkd 文件夹
-EOF
-break;;
-	xbh)
-cat<<EOF
-	xbh ----- 根据标签过滤命令历史
-		|// xbh 标签
-EOF
-break;;
-	xp)
-cat<<EOF
-	xp ----- 查看文件绝对路径
-		|// xp 文件名
 EOF
 break;;
 	xh)
@@ -307,42 +261,7 @@ cat<<EOF
 		|// xh 命令名
 EOF
 break;;
-	xi)
-cat<<EOF
-	xi	---- [无参] / 快速初始化模块编译环境
-EOF
-break;;
-	xr)
-cat<<EOF
-	 	xr	---- [无参] / 使.bashrc修改生效
-EOF
-break;;
-	xd)
-cat<<EOF
-	xd	---- [无参] / mtk下载工具
-EOF
-break;;
-	xu)
-cat<<EOF
-	xu	---- [无参] / 打开.bashrc
-EOF
-break;;
-	xx)
-cat<<EOF
-	xx	---- [无参] / 休眠
-EOF
-break;;
-	xs)
-cat<<EOF
-	xs	---- [无参] / 关机
-EOF
-break;;
-	xss)
-cat<<EOF
-	xss ---- [无参] / 重启
-EOF
-break;;
-		*)ftReadMe -a;break;;
-		esac
-	done
+	*)ftReadMe -a;break;;
+	esac
+done
 }
