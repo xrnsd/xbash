@@ -4,7 +4,7 @@ ftKillPhoneAppByPackageName()
 {
 	adb root
 	adb remount
- 	local packageName=$1
+	local packageName=$1
 	pid=`adb shell ps | grep $packageName | awk '{print $2}'`
 	#pid=`adb shell "ps" | awk '/com.android.systemui/{print $2}'`
 	adb shell kill $pid
@@ -12,20 +12,20 @@ ftKillPhoneAppByPackageName()
 
 ftRestartadb1()
 {
-	  echo $mUserPwd | sudo -S adb kill-server
-	  echo
-	  sleep 2
-	  echo $mUserPwd | sudo -S adb start-server
-	  echo server-start
-	  adb devices
+	echo $mUserPwd | sudo -S adb kill-server
+	echo
+	sleep 2
+	echo $mUserPwd | sudo -S adb start-server
+	echo server-start
+	adb devices
 }
 
 ftCleanDataGarbage()
 {
 	dirDevsArray=(
-			   /media/data_self \
-			   /home/${mUserName} \
-			  )
+			/media/data_self \
+			/home/${mUserName} \
+			)
 
 	for dirDev in ${dirDevsArray[*]}
 	do
@@ -72,7 +72,7 @@ ftFileDirEdit()
 	isCreate=$2
 	path=$3
 	if [ $type = "f" ];then
-	
+
 		if [ -f $path ];then
 			return 1
 		elif [ $isCreate = "true" ];then
@@ -81,9 +81,9 @@ ftFileDirEdit()
 		else
 			return 0
 		fi
-		
+
 	elif [ $type = "d" ];then
-	
+
 		if [ -d $path ];then
 			return 1
 		elif [ $isCreate = "true" ];then
@@ -92,7 +92,7 @@ ftFileDirEdit()
 		else
 			return 0
 		fi
-		
+
 	else
 		echo 函数[[${ftName}]]调用时使用了错误参数
 		return 0

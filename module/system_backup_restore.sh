@@ -4,10 +4,10 @@ source  $(cd `dirname $0`; pwd)/base
 
 		mTypeEdit=$1
 		mTypeBackupEdit=null
-		
+
 		mDate=$(date -d "today" +"%Y%m%d")
 		mNameUser=`who | awk '{print $1}'|sort -u`
-		
+
 		#mDirPathSynchronous1=
 		#mDirPathSynchronous2=
 		mDirPathRestoreTarget=/
@@ -15,9 +15,9 @@ source  $(cd `dirname $0`; pwd)/base
 		mDirPathStoreSource=null
 		mDirPathLog=${mDirPathUserHome}/log
 		mDirPathRestoreExcludeTarget=null
-		
+
 		mFilePathRestoreSource=null
-		
+
 		mFileNameBackupLog=null
 		mFileNameBackupTarget=null
 		#VersionNameBackup
@@ -25,7 +25,7 @@ source  $(cd `dirname $0`; pwd)/base
 		mFileNameRestoreSource=null
 		#VersionNameRestore
 		mFileNameRestoreSourceBase=null
-		
+
 		mNoteBackupTarget=null
 		mNoteRestoreSource=null
 
@@ -40,9 +40,9 @@ source  $(cd `dirname $0`; pwd)/base
 	{
 		ftEcho -y 是否开始还原
 		while true; do
-		   read -n1 sel
-		   case "$sel" in
-			 y | yes )
+		read -n1 sel
+		case "$sel" in
+			y | yes )
 				pathsource=$1
 				mDirPathRestoreTarget=$2
 				if [ -f $pathsource ];then
@@ -54,9 +54,9 @@ source  $(cd `dirname $0`; pwd)/base
 				else
 					ftEcho -e 未找到版本包:${pathsource}
 				fi;break;;
-			 n | N | q |Q)  exit;;
-			 * )  ftEcho -e 错误的选择：$sel ;echo "输入n，q，离开";break;;
-		   esac
+			n | N | q |Q)  exit;;
+			* )  ftEcho -e 错误的选择：$sel ;echo "输入n，q，离开";break;;
+		esac
 		done
 	}
 
@@ -170,7 +170,7 @@ source  $(cd `dirname $0`; pwd)/base
 			mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${mNameUser}_${mDate}
 			mFileNameBackupTarget=${mFileNameBackupTargetBase}.tgz
 			mFileNameBackupLog=${mFileNameBackupTargetBase}.log
-			
+
 			local btype
 			if [ $mTypeBackupEdit = "cg" ];then
 				btype=基础
@@ -184,7 +184,7 @@ source  $(cd `dirname $0`; pwd)/base
 			echo "生成的备份的类型：	${btype}"
 			echo -e "当前系统有效修改：	\033[44m$mVersionChangs\033[0m"
 		else
-	 		ftEcho -e 一脸懵逼
+			ftEcho -e 一脸懵逼
 		fi
 		echo
 	}
@@ -206,8 +206,8 @@ source  $(cd `dirname $0`; pwd)/base
 		do
 			#临时挂载设备
 			if [ ${dir} == $mNameUser ]; then
-			  	local dirTempList=`ls ${devDir}/${dir}`
-	  			for dirTemp in $dirTempList
+				local dirTempList=`ls ${devDir}/${dir}`
+				for dirTemp in $dirTempList
 				do
 					index=`expr $index + 1`
 					dir=${dir}/${dirTemp}
@@ -231,22 +231,22 @@ source  $(cd `dirname $0`; pwd)/base
 				read -n1 dir
 			fi
 			#设定默认值
-			  if [ ${#dir} == 0 ]; then
-			  	dir=0
-			  fi
-			  if [ ${dir} == "q" ]; then
-			  	exit
-			  elif [ -n "$(echo $dir| sed -n "/^[0-$index]\+$/p")" ];then 
-			  	devTarget=${dirList2[$dir]}
+			 if [ ${#dir} == 0 ]; then
+				dir=0
+			 fi
+			 if [ ${dir} == "q" ]; then
+				exit
+			 elif [ -n "$(echo $dir| sed -n "/^[0-$index]\+$/p")" ];then
+				devTarget=${dirList2[$dir]}
 				devTargetDir=${devDir}/${devTarget}
 				#插入home目录
 				if [ "$dir" -eq "0" ];then
 					devTargetDir=${dirList2[$dir]}
 				fi
 				break;
-			  fi
-			  ftEcho -e 错误的选择：$dir
-		  done
+			 fi
+			 ftEcho -e 错误的选择：$dir
+		done
 		echo
 
 		mDirPathStoreTarget=$devTargetDir/backup/os/${mNameUser};
@@ -263,7 +263,7 @@ source  $(cd `dirname $0`; pwd)/base
 		ftEcho -t 备份类型
 		echo -e "[1]\t基础"
 		echo -e "[2]\t全部"
-				
+
 		while true; do
 		echo
 		echo -en "请选择备份类型(默认基础):"
@@ -304,7 +304,7 @@ source  $(cd `dirname $0`; pwd)/base
 		esac
 		done
 	}
-	
+
 	ftBackupOs()
 	{
 		ftEcho -b 开始更新排除列表
@@ -313,7 +313,7 @@ source  $(cd `dirname $0`; pwd)/base
 		fileNameExcludeAll=excludeDirsAll.list
 		mFilePathExcludeBase=${mDirPathUserHome}${mDirNameCmd}${mFileNameCmdModuleData}${fileNameExcludeBase}
 		mFilePathExcludeAll=${mDirPathUserHome}${mDirNameCmd}${mFileNameCmdModuleData}${fileNameExcludeAll}
-	
+
 		mDirPathsExcludeBase=(/proc \
 					/android \
 					/lost+found \
@@ -342,7 +342,7 @@ source  $(cd `dirname $0`; pwd)/base
 					${mDirPathUserHome}.local \
 					${mDirPathUserHome}.other \
 					${mDirPathUserHome}.gvfs)
-							
+
 		mDirPathsExcludeAll=(/proc \
 					/android \
 					/lost+found  \
@@ -363,7 +363,7 @@ source  $(cd `dirname $0`; pwd)/base
 					${mDirPathUserHome}.local \
 					${mDirPathUserHome}.other \
 					${mDirPathUserHome}.gvfs)
-		
+
 		local dirsExclude=
 		local fileNameExclude
 		if [ $mTypeBackupEdit = "cg" ];then
@@ -373,21 +373,21 @@ source  $(cd `dirname $0`; pwd)/base
 			dirsExclude=${mDirPathsExcludeAll[*]}
 			fileNameExclude=$mFilePathExcludeAll
 		else
-	 		ftEcho -e  你想金包还是银包呢
-	 		exit
+			ftEcho -e  你想金包还是银包呢
+			exit
 		fi
-    	
-    	#更新排除列表
+
+		#更新排除列表
 		if [  -f $fileNameExclude ]; then
 			rm -rf $fileNameExclude
 		fi
-	    for dirpath in ${dirsExclude[@]}
+		for dirpath in ${dirsExclude[@]}
 		do
-		    echo $dirpath >>$fileNameExclude
+		 echo $dirpath >>$fileNameExclude
 		done
-		
+
 		ftEcho -b 开始生成系统版本包
-		
+
 		sudo tar -cvPzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / \
 		2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
 	}
@@ -405,7 +405,7 @@ source  $(cd `dirname $0`; pwd)/base
 		if [ -d ${dirBackupRoot} ]&&[ ! -d ${dirBackupNote} ];then
 				mkdir ${dirBackupNote}
 				ftEcho -s 新建备注存储目录:${dirBackupNote}
-    	fi
+		fi
 
 		local filePathDefault=${dirBackupNote}/${fileNameDefault}
 		local filePathNote=${dirBackupNote}/${fileNameNote}
@@ -432,7 +432,7 @@ source  $(cd `dirname $0`; pwd)/base
 
 		mNoteBackupTarget=$note
 	}
-	
+
 	ftMD5()
 	{
 	#=================== example=============================
@@ -445,14 +445,14 @@ source  $(cd `dirname $0`; pwd)/base
 		local dirBackupMd5=${dirBackupRoot}/.md5s
 		local versionName=${3}
 		local fileNameMd5=${versionName}.md5
-		
+
 		if [ ! -d ${dirBackupRoot} ];then
 			ftEcho -e MD5相关操作失败，找不到$dirBackupRoot
 			exit
-    		fi
-    	
+			fi
+
 		if [ ${typeEdit} == "-add" ]; then
-		
+
 			if [ ! -d ${dirBackupMd5} ];then
 				mkdir ${dirBackupMd5}
 				echo 新建版本包校验信息存储目录:${dirBackupMd5}
@@ -465,9 +465,9 @@ source  $(cd `dirname $0`; pwd)/base
 			sudo echo $md5>$pathMd5
 
 			ftEcho -s "版本${versionName}校验信息记录完成"
-			
+
 		elif [ ${typeEdit} == "-check" ]; then
-		
+
 			ftEcho -b 开始校验版本包，确定有效性
 
 			if [ -d ${dirBackupMd5} ];then
@@ -491,7 +491,7 @@ source  $(cd `dirname $0`; pwd)/base
 				exit
 			fi
 		fi
-	
+
 	}
 
 	ftAutoCleanTemp()
@@ -504,7 +504,7 @@ source  $(cd `dirname $0`; pwd)/base
 		sudo apt-get install -f
 		sudo rm -rf /var/cache/apt/archives
 	}
-	
+
 	ftSynchronous()
 	{
 		if [ $isSynchronous = "true" ];then
@@ -512,7 +512,7 @@ source  $(cd `dirname $0`; pwd)/base
 			while true; do
 			read sel
 			case "$sel" in
-				 y | yes )
+				y | yes )
 					ftEcho -s 开始同步!
 					for d in $mDirPathSynchronous1 $mDirPathSynchronous2 ;
 					do
@@ -520,28 +520,28 @@ source  $(cd `dirname $0`; pwd)/base
 					done
 					ftEcho -s 同步结束！
 					break;;
-				 n | no | q |Q)  exit;;
-				 * )   ftEcho -e 错误的选择：$sel ;echo "输入n，no，q，离开";break;;
-			   esac
+				n | no | q |Q)  exit;;
+				* )   ftEcho -e 错误的选择：$sel ;echo "输入n，no，q，离开";break;;
+			esac
 			done
 		fi
 	}
-	
+
 	#记录版本包软件和硬件信息
 	ftAddOrCheckSystemHwSwInfo()
 	{
 	#=================== example=============================
 	#
 	#	ftAddOrCheckSystemHwSwInfo [type] [path] [path]
-	#	ftAddOrCheckSystemHwSwInfo -check 
+	#	ftAddOrCheckSystemHwSwInfo -check
 	#=========================================================
-	
+
 	local typeEdit=$1
 	local dirPathBackupRoot=$2
 	local dirNameBackupInfoVersion=$3
 	local dirPathBackupInfo=${dirPathBackupRoot}/.info
 	local dirPathBackupInfoVersion=${dirPathBackupInfo}/${dirNameBackupInfoVersion}
-	
+
 	local filePathVersionCpu=${dirPathBackupInfoVersion}/cpu
 	local filePathVersionMainboard=${dirPathBackupInfoVersion}/mainboard
 	local filePathVersionSystem=${dirPathBackupInfoVersion}/system
@@ -552,7 +552,7 @@ source  $(cd `dirname $0`; pwd)/base
 	local infoHwMainboard=$(echo $infoHwMainboard |sed s/[[:space:]]//g)
 	local infoHwSystem=$(head -n 1 /etc/issue|sed s/[[:space:]]//g)
 	local infoHw32x64=$(uname -m|sed s/[[:space:]]//g)
-	
+
 	local returns=通过
 	if [ ! -d $dirPathBackupRoot ]; then
 		echo 系统信息相关操作失败
@@ -561,7 +561,7 @@ source  $(cd `dirname $0`; pwd)/base
 		if [ ! -d $dirPathBackupInfo ]; then
 			mkdir $dirPathBackupInfo
 			echo 根系统信息记录位置不存在，已建立
-		fi	
+		fi
 		if [ ! -d $dirPathBackupInfoVersion ]; then
 			mkdir $dirPathBackupInfoVersion
 			echo 版本信息记录位置不存在，已建立
@@ -600,29 +600,29 @@ source  $(cd `dirname $0`; pwd)/base
 			echo baseion=$infoHwMainboard
 				ftSel 主板
 				returns=结束
-		  	fi
+			fi
 			if [[ "$infoHwSystemVersion" != "$infoHwSystem" ]]; then
 			echo Version= $infoHwSystemVersion
 			echo baseion=$infoHwSystem
 				ftEcho -e  系统版本不一致，将自动退出
 				returns=未通过，
-		  	fi
+			fi
 			if [[ "$infoHw32x64Version" != "$infoHw32x64" ]]; then
 			echo Version= $infoHw32x64Version
 			echo baseion=$infoHw32x64
 				ftEcho -e 系统版本的位数不一致，将自动退出
 				returns=失败
-		  	fi
+			fi
 
 			ftEcho -s 版本包：${dirNameBackupInfoVersion}系统兼容性检测${returns}
-		  	if [ "$infoHw32x64Version"  = "失败" ]; then
+			if [ "$infoHw32x64Version"  = "失败" ]; then
 				exit
 			fi
 
 		fi
 	fi
 	}
-	
+
 	ftSel()
 	{
 	#=================== example=============================
@@ -633,12 +633,12 @@ source  $(cd `dirname $0`; pwd)/base
 		local title=$1
 		ftEcho -y "$1有变动,是否忽悠"
 		while true; do
-		   read -n1 sel
-		   case "$sel" in
-			 y | yes )	echo 已忽略$1;break;;
-			 n | N | q |Q)	exit;;
-			 * )		ftEcho -e 错误的选择：$sel ;echo "不忽略请输入n，q";break;;
-		   esac
+		read -n1 sel
+		case "$sel" in
+			y | yes )	echo 已忽略$1;break;;
+			n | N | q |Q)	exit;;
+			* )		ftEcho -e 错误的选择：$sel ;echo "不忽略请输入n，q";break;;
+		esac
 		done
 	}
 
@@ -677,9 +677,9 @@ source  $(cd `dirname $0`; pwd)/base
 				ftEchoInfo backup&&
 				ftEcho -y 是否开始备份
 				while true; do
-				   read -n1 sel
-				   case "$sel" in
-					 y | yes )
+				read -n1 sel
+				case "$sel" in
+					y | yes )
 					#写版本备注
 					ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 					#清理临时文件
@@ -692,9 +692,9 @@ source  $(cd `dirname $0`; pwd)/base
 					ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 					#同步
 					ftSynchronous ;break;;
-					 n | N | q |Q)  exit;;
-					 * )  ftEcho -e 错误的选择：$sel ;echo  "输入n，q，离开";break;;
-				   esac
+					n | N | q |Q)  exit;;
+					* )  ftEcho -e 错误的选择：$sel ;echo  "输入n，q，离开";break;;
+				esac
 				done
 		else
 			ftEcho -e 不知道你想干嘛！
