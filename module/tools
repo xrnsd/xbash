@@ -2,7 +2,7 @@
 #####---------------------工具函数---------------------------#########
 ftKillPhoneAppByPackageName()
 {
-	ftName=根据应用包名杀死应用
+	local ftName=根据应用包名杀死应用
 	adb root
 	adb remount
 	local packageName=$1
@@ -13,7 +13,7 @@ ftKillPhoneAppByPackageName()
 
 ftRestartadb1()
 {
-	ftName=重启adb sever
+	local ftName=重启adb sever
 	echo $mUserPwd | sudo -S adb kill-server
 	echo
 	sleep 2
@@ -24,7 +24,7 @@ ftRestartadb1()
 
 ftCleanDataGarbage()
 {
-	ftName=清空回收站
+	local ftName=清空回收站
 	dirDevsArray=(
 			/media/data_self \
 			/home/${mUserName} \
@@ -54,7 +54,7 @@ ftCleanDataGarbage()
 
 ftMtkFlashTool()
 {
-	ftName=mtk 下载工具
+	local ftName=mtk 下载工具
 	local tempDirPath=`pwd`
 	local toolDirPath=${mDirPathTools}/sp_flash_tool_v5.1548
 	cd $toolDirPath&&
@@ -71,7 +71,7 @@ ftFileDirEdit()
 	#		echo $?
 	#=========================================================
 
-	ftName=路径合法性校验
+	local ftName=路径合法性校验
 	type=$1
 	isCreate=$2
 	path=$3

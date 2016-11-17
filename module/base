@@ -2,7 +2,7 @@
 #####---------------------流程函数---------------------------#########
 ftTimeLong()
 {
-	ftName=脚本操作耗时记录
+	local ftName=脚本操作耗时记录
 	 #时间少于1秒默认不显示操作耗时
 	 #时间时分秒各单位不显示为零的结果
 	time2=$(date +%s -d $(date +"%H:%M:%S"))
@@ -29,7 +29,7 @@ ftTimeLong()
 
 ftWhoAmI()## #命令权限判定
 {
-	ftName=命令权限判定
+	local ftName=命令权限判定
 	local cmdName=$1
 	for cmd in ${mCmdsPermissionBase[@]}
 	do
@@ -48,7 +48,7 @@ ftWhoAmI()## #命令权限判定
 
 ftWhoAmYou()
 {
-	ftName=命令权限与环境权限不一致时，提示用户切换环境
+	local ftName=命令权限与环境权限不一致时，提示用户切换环境
 	if [ `whoami` != "root" ]&&[ "$commandAuthority" = "root" ]; then
 		echo "当前用户权限过低，请转换为root 用户后重新运行" ;exit
 	fi
@@ -67,7 +67,7 @@ ftEcho()
 #	 ftEcho [option] [Content]
 #	 ftEcho e 错误的选择1
 #=========================================================
-	ftName=工具信息提示
+	local ftName=工具信息提示
 	option=$1
 	Content=$2
 	while true; do
@@ -92,7 +92,7 @@ break;;
 
 ftMain()
 {
-	ftName=工具主入口
+	local ftName=工具主入口
 	while true; do
 	case $mBaseShellParameter2 in
 	"test")		${mDirPathCmdTools}test.sh	 ;break;;
@@ -149,7 +149,7 @@ ftMain()
 
 ftReadMe()
 {
-	ftName=工具命令使用说明
+	local ftName=工具命令使用说明
 	while true; do
 		case "$1" in
 		a | A | -a |-A)
