@@ -706,7 +706,7 @@ source  $(cd `dirname $0`; pwd)/base
 					#同步
 					ftSynchronous ;break;;
 					n | N | q |Q)  exit;;
-					* )  ftEcho -e 错误的选择：$sel ;echo  "输入n，q，离开";break;;
+					* )  ftEcho -e 错误的选择:${sel} ;echo  "输入n，q，离开";break;;
 				esac
 				done
 		else
