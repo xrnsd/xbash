@@ -416,9 +416,9 @@ source  $(cd `dirname $0`; pwd)/base
 		local ftName=记录版本包相关备注
 		local dateOnly=$(date -d "today" +"%Y%m%d")
 		local dateTime=$(date -d "today" +"%Y%m%d_%H%M%S")
-		local dirBackupRoot=${1}
+		local dirBackupRoot=$1
 		local dirBackupNote=${dirBackupRoot}/.notes
-		local versionName=${2}
+		local versionName=$2
 		local fileNameDefault=.note.list
 		local fileNameNote=${versionName}.note
 
@@ -468,10 +468,10 @@ source  $(cd `dirname $0`; pwd)/base
 	#	ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
 	#=========================================================
 		local ftName=记录和校验版本包的MD5
-		local typeEdit=${1}
-		local dirBackupRoot=${2}
+		local typeEdit=$1
+		local dirBackupRoot=$2
 		local dirBackupMd5=${dirBackupRoot}/.md5s
-		local versionName=${3}
+		local versionName=$3
 		local fileNameMd5=${versionName}.md5
 
 		#耦合变量校验

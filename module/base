@@ -107,7 +107,7 @@ ftMain()
 	case $mRoBaseShellParameter2 in
 	"test")		${mRoDirPathCmdTools}test.sh	 ;break;;
 	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
-	v | V | -v |-V)	echo \"Xrnsd extensions to bash\" V0.5.0beta	;break;;
+	v | V | -v |-V)	echo \"Xrnsd extensions to bash\" V0.5.1 beta	;break;;
 	*)
 	#权限约束开始
 	ftWhoAmI $mRoBaseShellParameter2
