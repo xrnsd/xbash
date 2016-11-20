@@ -31,6 +31,15 @@ ftWhoAmI()## #命令权限判定
 {
 	local ftName=命令权限判定
 	local cmdName=$1
+
+	#耦合变量校验
+    local valCount=1
+    if [ $# -ne $valCount ]||[ -z "$cmdName" ]\
+    					   ||[ -z "$mRoCmdsPermissionBase" ]\
+    					   ||[ -z "$mRoCmdsPermissionRoot" ];then
+		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+	fi
+
 	for cmd in ${mRoCmdsPermissionBase[@]}
 	do
 			if [ "$cmd" = "$cmdName" ]||[ "$XCMD" = "$cmdName" ];then
@@ -74,6 +83,7 @@ ftEcho()
 	case $option in
 	y | Y | -y | -Y)	echo -en "${Content}[y/n]"; break;;
 	e | E | -e | -E)	echo -e "\033[31m$Content\033[0m"; break;;
+	ex | EX | -ex | -EX)	echo -e "\033[31m$Content\033[0m"; exit;;
 	s | S | -s | -S)	echo;echo -e "\033[44m$Content\033[0m"; break;;
 	t | T | -t | -T)	echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
 	b | B | -b | -B)	echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;

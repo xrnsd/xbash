@@ -3,9 +3,16 @@
 ftKillPhoneAppByPackageName()
 {
 	local ftName=根据应用包名杀死应用
+	local packageName=$1
+
+	#耦合变量校验
+    local valCount=1
+    if [ $# -ne $valCount ]||[ -z "$packageName" ];then
+		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+	fi
+
 	adb root
 	adb remount
-	local packageName=$1
 	pid=`adb shell ps | grep $packageName | awk '{print $2}'`
 	#pid=`adb shell "ps" | awk '/com.android.systemui/{print $2}'`
 	adb shell kill $pid
@@ -13,6 +20,12 @@ ftKillPhoneAppByPackageName()
 
 ftRestartadb1()
 {
+	#耦合变量校验
+    local valCount=0
+    if [ $# -ne $valCount ]||[ -z "$mUserPwd" ];then
+		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+	fi
+
 	local ftName=重启adb sever
 	echo $mUserPwd | sudo -S adb kill-server
 	echo
@@ -54,11 +67,19 @@ ftCleanDataGarbage()
 
 ftMtkFlashTool()
 {
-	local ftName=mtk 下载工具
+	local ftName=mtk下载工具
 	local tempDirPath=`pwd`
 	local toolDirPath=${mRoDirPathTools}/sp_flash_tool_v5.1548
+
+	#耦合变量校验
+    local valCount=0
+    if [ $# -ne $valCount ]||[ -z "$tempDirPath" ]\
+    					   ||[ -z "$mRoDirPathTools" ];then
+		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+	fi
+
 	cd $toolDirPath&&
-	echo '123' | sudo -S ./flash_tool&&
+	echo "$mUserPwd" | sudo -S ./flash_tool&&
 	cd $tempDirPath
 }
 
@@ -75,6 +96,15 @@ ftFileDirEdit()
 	type=$1
 	isCreate=$2
 	path=$3
+
+	#耦合变量校验
+    local valCount=3
+    if [ $# -ne $valCount ]||[ -z "$type" ]\
+    					   ||[ -z "$isCreate" ]\
+    					   ||[ -z "$path" ];then
+		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+	fi
+
 	if [ $type = "f" ];then
 
 		if [ -f $path ];then

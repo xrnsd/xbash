@@ -68,6 +68,12 @@ source  $(cd `dirname $0`; pwd)/base
 		local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
 		local dirBackupNote=${mDirPathStoreSource}/.notes
 
+		#耦合变量校验
+	    local valCount=0
+	    if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ];then
+			  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		fi
+
 		#文件数量获取
 		#filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l
 		#b=${a/123/321};将${a}里的第一个123替换为321\
@@ -402,6 +408,11 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftAddNote()
 	{
+	#=================== example=============================
+	#
+	#	ftAddNote [dirBackupRoot] [versionName]
+	#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
+	#=========================================================
 		local ftName=记录版本包相关备注
 		local dateOnly=$(date -d "today" +"%Y%m%d")
 		local dateTime=$(date -d "today" +"%Y%m%d_%H%M%S")
@@ -410,6 +421,13 @@ source  $(cd `dirname $0`; pwd)/base
 		local versionName=${2}
 		local fileNameDefault=.note.list
 		local fileNameNote=${versionName}.note
+
+		#耦合变量校验
+	    local valCount=2
+	    if [ $# -ne $valCount ]||[ -z "$dirBackupRoot" ]\
+	    					   ||[ -z "$versionName" ];then
+			  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		fi
 
 		if [ -d ${dirBackupRoot} ]&&[ ! -d ${dirBackupNote} ];then
 				mkdir ${dirBackupNote}
@@ -455,6 +473,14 @@ source  $(cd `dirname $0`; pwd)/base
 		local dirBackupMd5=${dirBackupRoot}/.md5s
 		local versionName=${3}
 		local fileNameMd5=${versionName}.md5
+
+		#耦合变量校验
+	    local valCount=3
+	    if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
+	    					   ||[ -z "$dirBackupRoot" ]\
+	    					   ||[ -z "$versionName" ];then
+			  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		fi
 
 		if [ ! -d ${dirBackupRoot} ];then
 			ftEcho -e MD5相关操作失败，找不到$dirBackupRoot
@@ -519,6 +545,15 @@ source  $(cd `dirname $0`; pwd)/base
 	ftSynchronous()
 	{
 		local ftName=在不同设备间同步版本包
+
+		#耦合变量校验
+	    local valCount=0
+	    if [ $# -ne $valCount ]||[ -z "$isSynchronous" ]\
+	    					   ||[ -z "$mDirPathSynchronous1" ]\
+	    					   ||[ -z "$mDirPathSynchronous2" ];then
+			  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		fi
+
 		if [ $isSynchronous = "true" ];then
 			ftEcho -y 是否开始同步
 			while true; do
@@ -564,6 +599,14 @@ source  $(cd `dirname $0`; pwd)/base
 	local infoHwMainboard=$(echo $infoHwMainboard |sed s/[[:space:]]//g)
 	local infoHwSystem=$(head -n 1 /etc/issue|sed s/[[:space:]]//g)
 	local infoHw32x64=$(uname -m|sed s/[[:space:]]//g)
+
+	#耦合变量校验
+    local valCount=3
+    if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
+    					   ||[ -z "$dirPathBackupRoot" ]\
+    					   ||[ -z "$dirNameBackupInfoVersion" ];then
+		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+	fi
 
 	local returns=通过
 	if [ ! -d $dirPathBackupRoot ]; then
@@ -644,6 +687,10 @@ source  $(cd `dirname $0`; pwd)/base
 	#=========================================================
 		local ftName=版本包软件和硬件信息校验操作选择
 		local title=$1
+	    local valCount=1
+	    if [ $# -ne $valCount ]||[ -z "$title" ];then
+			  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		fi
 		ftEcho -y "$1有变动,是否忽悠"
 		while true; do
 		read -n1 sel
