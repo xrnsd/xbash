@@ -13,7 +13,7 @@ source  $(cd `dirname $0`; pwd)/base
 		mDirPathRestoreTarget=/
 		mDirPathStoreTarget=null
 		mDirPathStoreSource=null
-		mDirPathLog=${mDirPathUserHome}/log
+		mDirPathLog=${mRoDirPathUserHome}/log
 		mDirPathRestoreExcludeTarget=null
 
 		mFilePathRestoreSource=null
@@ -158,7 +158,7 @@ source  $(cd `dirname $0`; pwd)/base
 	{
 		local ftName=脚本操作信息显示，用于关键操作前的确认
 		ftEcho -b 请确认下面信息
-		local path=${mDirPathUserHome}cmds/data/version/read.me
+		local path=${mRoDirPathUserHome}cmds/data/version/read.me
 		local mVersionChangs=`cat $path`
 
 		local infoType=$1
@@ -203,7 +203,7 @@ source  $(cd `dirname $0`; pwd)/base
 		local devTargetDir
 		local devDir=/media
 		local dirList=`ls $devDir`
-		local dirList2[0]=${mDirPathUserHome/$mNameUser\//$mNameUser}
+		local dirList2[0]=${mRoDirPathUserHome/$mNameUser\//$mNameUser}
 		local index=0;
 		#遍历/media目录
 		echo [0] ${dirList2[0]}
@@ -304,7 +304,7 @@ source  $(cd `dirname $0`; pwd)/base
 				typeIndex=1
 			fi
 			case $typeIndex in
-			1 ) 		mDirPathRestoreExcludeTarget=$mDirPathUserHome;break;;
+			1 ) 		mDirPathRestoreExcludeTarget=$mRoDirPathUserHome;break;;
 			2 )		mDirPathRestoreExcludeTarget=; break;;
 			n | no | q |Q)	exit;;
 			* )		ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，no，q";break;;
@@ -319,8 +319,8 @@ source  $(cd `dirname $0`; pwd)/base
 		#/home/wgx/cmds/data/excludeDirsBase.list
 		fileNameExcludeBase=excludeDirsBase.list
 		fileNameExcludeAll=excludeDirsAll.list
-		mFilePathExcludeBase=${mDirPathUserHome}${mDirNameCmd}${mFileNameCmdModuleData}${fileNameExcludeBase}
-		mFilePathExcludeAll=${mDirPathUserHome}${mDirNameCmd}${mFileNameCmdModuleData}${fileNameExcludeAll}
+		mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoFileNameCmdModuleData}${fileNameExcludeBase}
+		mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoFileNameCmdModuleData}${fileNameExcludeAll}
 
 		mDirPathsExcludeBase=(/proc \
 					/android \
@@ -329,27 +329,27 @@ source  $(cd `dirname $0`; pwd)/base
 					/sys \
 					/.Trash-0 \
 					/media \
-					${mDirPathUserHome}workspaces \
-					${mDirPathUserHome}workspace \
-					${mDirPathUserHome}download \
-					${mDirPathUserHome}packages \
-					${mDirPathUserHome}Pictures \
-					${mDirPathUserHome}projects \
-					${mDirPathUserHome}backup \
-					${mDirPathUserHome}media  \
-					${mDirPathUserHome}temp \
-					${mDirPathUserHome}tools \
-					${mDirPathUserHome}cmds \
-					${mDirPathUserHome}code \
-					${mDirPathUserHome}log  \
-					${mDirPathUserHome}doc  \
-					${mDirPathUserHome}.AndroidStudio2.1 \
-					${mDirPathUserHome}.thumbnails \
-					${mDirPathUserHome}.software \
-					${mDirPathUserHome}.cache \
-					${mDirPathUserHome}.local \
-					${mDirPathUserHome}.other \
-					${mDirPathUserHome}.gvfs)
+					${mRoDirPathUserHome}workspaces \
+					${mRoDirPathUserHome}workspace \
+					${mRoDirPathUserHome}download \
+					${mRoDirPathUserHome}packages \
+					${mRoDirPathUserHome}Pictures \
+					${mRoDirPathUserHome}projects \
+					${mRoDirPathUserHome}backup \
+					${mRoDirPathUserHome}media  \
+					${mRoDirPathUserHome}temp \
+					${mRoDirPathUserHome}tools \
+					${mRoDirPathUserHome}cmds \
+					${mRoDirPathUserHome}code \
+					${mRoDirPathUserHome}log  \
+					${mRoDirPathUserHome}doc  \
+					${mRoDirPathUserHome}.AndroidStudio2.1 \
+					${mRoDirPathUserHome}.thumbnails \
+					${mRoDirPathUserHome}.software \
+					${mRoDirPathUserHome}.cache \
+					${mRoDirPathUserHome}.local \
+					${mRoDirPathUserHome}.other \
+					${mRoDirPathUserHome}.gvfs)
 
 		mDirPathsExcludeAll=(/proc \
 					/android \
@@ -357,20 +357,20 @@ source  $(cd `dirname $0`; pwd)/base
 					/mnt  \
 					/sys  \
 					/media \
-					${mDirPathUserHome}.AndroidStudio2.1 \
-					${mDirPathUserHome}backup \
-					${mDirPathUserHome}.software \
-					${mDirPathUserHome}download \
-					${mDirPathUserHome}log  \
-					${mDirPathUserHome}temp \
-					${mDirPathUserHome}Pictures \
-					${mDirPathUserHome}projects \
-					${mDirPathUserHome}workspaces \
-					${mDirPathUserHome}.cache \
-					${mDirPathUserHome}.thumbnails \
-					${mDirPathUserHome}.local \
-					${mDirPathUserHome}.other \
-					${mDirPathUserHome}.gvfs)
+					${mRoDirPathUserHome}.AndroidStudio2.1 \
+					${mRoDirPathUserHome}backup \
+					${mRoDirPathUserHome}.software \
+					${mRoDirPathUserHome}download \
+					${mRoDirPathUserHome}log  \
+					${mRoDirPathUserHome}temp \
+					${mRoDirPathUserHome}Pictures \
+					${mRoDirPathUserHome}projects \
+					${mRoDirPathUserHome}workspaces \
+					${mRoDirPathUserHome}.cache \
+					${mRoDirPathUserHome}.thumbnails \
+					${mRoDirPathUserHome}.local \
+					${mRoDirPathUserHome}.other \
+					${mRoDirPathUserHome}.gvfs)
 
 		local dirsExclude=
 		local fileNameExclude

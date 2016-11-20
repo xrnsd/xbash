@@ -56,7 +56,7 @@ ftMtkFlashTool()
 {
 	local ftName=mtk 下载工具
 	local tempDirPath=`pwd`
-	local toolDirPath=${mDirPathTools}/sp_flash_tool_v5.1548
+	local toolDirPath=${mRoDirPathTools}/sp_flash_tool_v5.1548
 	cd $toolDirPath&&
 	echo '123' | sudo -S ./flash_tool&&
 	cd $tempDirPath

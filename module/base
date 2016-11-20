@@ -6,9 +6,9 @@ ftTimeLong()
 	 #时间少于1秒默认不显示操作耗时
 	 #时间时分秒各单位不显示为零的结果
 	time2=$(date +%s -d $(date +"%H:%M:%S"))
-	time3=$(((time2-mTimeBackupStart)%60))
-	time5=$(((time2-mTimeBackupStart)/3600))
-	time4=$((((time2-mTimeBackupStart)-time5*3600)/60))
+	time3=$(((time2-mRoTimeBackupStart)%60))
+	time5=$(((time2-mRoTimeBackupStart)/3600))
+	time4=$((((time2-mRoTimeBackupStart)-time5*3600)/60))
 	if [ "$time5" -ne "0" ];
 		then strS1=$time5时
 		else strS1=""
@@ -31,14 +31,14 @@ ftWhoAmI()## #命令权限判定
 {
 	local ftName=命令权限判定
 	local cmdName=$1
-	for cmd in ${mCmdsPermissionBase[@]}
+	for cmd in ${mRoCmdsPermissionBase[@]}
 	do
 			if [ "$cmd" = "$cmdName" ]||[ "$XCMD" = "$cmdName" ];then
 				commandAuthority=base
 			fi
 	done
 
-	for cmd in ${mCmdsPermissionRoot[@]}
+	for cmd in ${mRoCmdsPermissionRoot[@]}
 	do
 			if [ "$cmd" = "$cmdName" ]||[ "$XCMD" = "$cmdName" ];then
 				commandAuthority=root
@@ -94,19 +94,19 @@ ftMain()
 {
 	local ftName=工具主入口
 	while true; do
-	case $mBaseShellParameter2 in
-	"test")		${mDirPathCmdTools}test.sh	 ;break;;
-	"help")		ftReadMe $mBaseShellParameter3	;break;;
+	case $mRoBaseShellParameter2 in
+	"test")		${mRoDirPathCmdTools}test.sh	 ;break;;
+	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
 	v | V | -v |-V)	echo \"Xrnsd extensions to bash\" V0.5.0beta	;break;;
 	*)
 	#权限约束开始
-	ftWhoAmI $mBaseShellParameter2
+	ftWhoAmI $mRoBaseShellParameter2
 	if [ "$commandAuthority" = "root" ]; then
 		if [ `whoami` = "root" ]; then
 			while true; do
-			case $mBaseShellParameter2 in
-				"backup")	${mDirPathCmdTools}system_backup_restore.sh backup; break;;
-				"restore")	${mDirPathCmdTools}system_backup_restore.sh restore; break;;
+			case $mRoBaseShellParameter2 in
+				"backup")	${mRoDirPathCmdTools}system_backup_restore.sh backup; break;;
+				"restore")	${mRoDirPathCmdTools}system_backup_restore.sh restore; break;;
 				*)		ftEcho -e "	 没有有效的命令参数，请查看下面的说明";ftReadMe $XCMD; break;;
 			esac
 			done
@@ -116,14 +116,14 @@ ftMain()
 	elif [ "$commandAuthority" = "base" ]; then
 		if [ `whoami` = "base" ]; then
 			while true; do
-			case $mBaseShellParameter2 in
+			case $mRoBaseShellParameter2 in
 				"clean_data_garbage")	ftCleanDataGarbage ; break;;
 				"mtk_flashtool")	ftMtkFlashTool ; break;;
 				"restartadb")		ftRestartadb1; break;;
 				"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
 				"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
 				"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
-				# "gjh")			java -jar ${mDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar; break;;
+				# "gjh")			java -jar ${mRoDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar; break;;
 				*)			ftEcho -e "	 没有有效的命令参数，请查看下面的说明";ftReadMe $XCMD; break;;
 			esac
 			done
@@ -131,12 +131,12 @@ ftMain()
 			ftWhoAmYou
 		fi
 	#权限约束结束
-	elif [ ${#mBaseShellParameter2} == 0 ]; then
+	elif [ ${#mRoBaseShellParameter2} == 0 ]; then
 		ftReadMe -a
 	else
 		while true; do
 		case $XCMD in
-		"xk")	 ftKillPhoneAppByPackageName $mBaseShellParameter2; break;;
+		"xk")	 ftKillPhoneAppByPackageName $mRoBaseShellParameter2; break;;
 		*)	ftEcho -e "	 没有有效的命令参数，请查看下面的说明";ftReadMe $XCMD; break;;
 		esac
 		done

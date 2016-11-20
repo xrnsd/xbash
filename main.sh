@@ -3,13 +3,13 @@
 source  $(cd `dirname $0`; pwd)/value
 
 #####---------------------工具函数---------------------------#########
-source  ${mDirPathCmdTools}tools
+source  ${mRoDirPathCmdTools}tools
 
 #####---------------------流程函数---------------------------#########
-source  ${mDirPathCmdTools}base
+source  ${mRoDirPathCmdTools}base
 
 #####-------------------执行------------------------------#########
-ftMain 2>&1|tee $mFilePathLog
+ftMain 2>&1|tee $mRoFilePathLog
 #ftMain
 ftTimeLong
 exit

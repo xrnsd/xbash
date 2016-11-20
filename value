@@ -1,28 +1,28 @@
 #! /bin/bash
 #####----------------------变量--------------------------#########
-export mDirNameCmd=cmds/
-export mDirNameCmdModule=module/
-export mFileNameCmdModuleTool=tools/
-export mFileNameCmdModuleData=data/
-export mDirNameLog=log/
+export readonly mRoDirNameCmd=cmds/
+export readonly mRoDirNameCmdModule=module/
+export readonly mRoFileNameCmdModuleTool=tools/
+export readonly mRoFileNameCmdModuleData=data/
+export readonly mRoDirNameLog=log/
 export mUserPwd=123
 
-#脚本文件夹cmds放在home/××××/时，以下逻辑[mDirPathUserHome=用户主目录]有效
-	dirName=${mDirNameCmd}
+#脚本文件夹cmds放在home/××××/时，以下逻辑[mRoDirPathUserHome=用户主目录]有效
+	dirName=${mRoDirNameCmd}
 	dirPathCmdTools=$(cd `dirname $0`; pwd)/
-export mDirPathUserHome=${dirPathCmdTools/$mDirNameCmd/}
+export readonly mRoDirPathUserHome=${dirPathCmdTools/$mRoDirNameCmd/}
 
 #外部参数
-export mBaseShellParameter1=$0
-export mBaseShellParameter2=$1
-export mBaseShellParameter3=$2
+export readonly mRoBaseShellParameter1=$0
+export readonly mRoBaseShellParameter2=$1
+export readonly mRoBaseShellParameter3=$2
 
-export mTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
-export mTimeBackupStart=$(date +%s -d $(date +"%H:%M:%S"))
+export readonly mRoTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
+export readonly mRoTimeBackupStart=$(date +%s -d $(date +"%H:%M:%S"))
 
-export mDirPathTools=${mDirPathUserHome}${mFileNameCmdModuleTool}
-export mDirPathCmdTools=${mDirPathUserHome}${mDirNameCmd}${mDirNameCmdModule}
-export mFilePathLog=${mDirPathUserHome}${mDirNameLog}${mBaseShellParameter2}\[${mTimeBackup}\].log
+export readonly mRoDirPathTools=${mRoDirPathUserHome}${mRoFileNameCmdModuleTool}
+export readonly mRoDirPathCmdTools=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoDirNameCmdModule}
+export readonly mRoFilePathLog=${mRoDirPathUserHome}${mRoDirNameLog}${mRoBaseShellParameter2}\[${mRoTimeBackup}\].log
 
-export mCmdsPermissionRoot=(xb backup restore)
-export mCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher mtk_flashtool)
+export readonly mRoCmdsPermissionRoot=(xb backup restore)
+export readonly mRoCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher mtk_flashtool)

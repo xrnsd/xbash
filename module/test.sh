@@ -802,7 +802,7 @@ fteee()
 	fileNameExcludeAll=excludeDirsAll.list
 	mFilePathExcludeBase=/home/wgx/cmds/data/${fileNameExcludeBase}
 	mFilePathExcludeAll=/home/wgx/cmds/data/${fileNameExcludeAll}
-	mDirPathUserHome=/home/wgx/
+	mRoDirPathUserHome=/home/wgx/
 	mDirPathsExcludeBase=(/proc \
 						/android \
 						/lost+found \
@@ -810,27 +810,27 @@ fteee()
 						/sys \
 						/.Trash-0 \
 						/media \
-						${mDirPathUserHome}workspaces \
-						${mDirPathUserHome}workspace \
-						${mDirPathUserHome}download \
-						${mDirPathUserHome}packages \
-						${mDirPathUserHome}Pictures \
-						${mDirPathUserHome}projects \
-						${mDirPathUserHome}backup \
-						${mDirPathUserHome}media  \
-						${mDirPathUserHome}temp \
-						${mDirPathUserHome}tools \
-						${mDirPathUserHome}cmds \
-						${mDirPathUserHome}code \
-						${mDirPathUserHome}log  \
-						${mDirPathUserHome}doc  \
-						${mDirPathUserHome}.AndroidStudio2.1 \
-						${mDirPathUserHome}.thumbnails \
-						${mDirPathUserHome}.software \
-						${mDirPathUserHome}.cache \
-						${mDirPathUserHome}.local \
-						${mDirPathUserHome}.other \
-						${mDirPathUserHome}.gvfs)
+						${mRoDirPathUserHome}workspaces \
+						${mRoDirPathUserHome}workspace \
+						${mRoDirPathUserHome}download \
+						${mRoDirPathUserHome}packages \
+						${mRoDirPathUserHome}Pictures \
+						${mRoDirPathUserHome}projects \
+						${mRoDirPathUserHome}backup \
+						${mRoDirPathUserHome}media  \
+						${mRoDirPathUserHome}temp \
+						${mRoDirPathUserHome}tools \
+						${mRoDirPathUserHome}cmds \
+						${mRoDirPathUserHome}code \
+						${mRoDirPathUserHome}log  \
+						${mRoDirPathUserHome}doc  \
+						${mRoDirPathUserHome}.AndroidStudio2.1 \
+						${mRoDirPathUserHome}.thumbnails \
+						${mRoDirPathUserHome}.software \
+						${mRoDirPathUserHome}.cache \
+						${mRoDirPathUserHome}.local \
+						${mRoDirPathUserHome}.other \
+						${mRoDirPathUserHome}.gvfs)
 							
 	mDirPathsExcludeAll=(/proc \
 						/android \
@@ -838,20 +838,20 @@ fteee()
 						/mnt  \
 						/sys  \
 						/media \
-						${mDirPathUserHome}.AndroidStudio2.1 \
-						${mDirPathUserHome}backup \
-						${mDirPathUserHome}.software \
-						${mDirPathUserHome}download \
-						${mDirPathUserHome}log  \
-						${mDirPathUserHome}temp \
-						${mDirPathUserHome}Pictures \
-						${mDirPathUserHome}projects \
-						${mDirPathUserHome}workspaces \
-						${mDirPathUserHome}.cache \
-						${mDirPathUserHome}.thumbnails \
-						${mDirPathUserHome}.local \
-						${mDirPathUserHome}.other \
-						${mDirPathUserHome}.gvfs)
+						${mRoDirPathUserHome}.AndroidStudio2.1 \
+						${mRoDirPathUserHome}backup \
+						${mRoDirPathUserHome}.software \
+						${mRoDirPathUserHome}download \
+						${mRoDirPathUserHome}log  \
+						${mRoDirPathUserHome}temp \
+						${mRoDirPathUserHome}Pictures \
+						${mRoDirPathUserHome}projects \
+						${mRoDirPathUserHome}workspaces \
+						${mRoDirPathUserHome}.cache \
+						${mRoDirPathUserHome}.thumbnails \
+						${mRoDirPathUserHome}.local \
+						${mRoDirPathUserHome}.other \
+						${mRoDirPathUserHome}.gvfs)
 		
 		local dirsExclude=
 		local fileNameExclude
@@ -1094,4 +1094,27 @@ break;;
 		   esac
 		done
 	}
-ftwddd $1 $2 $3
+
+
+ERRTRAP()
+       {
+         echo "错误出现在行:$1"
+       }
+       foo()
+       {
+         return 1;
+       }
+      # trap 'ERRTRAP $LINENO' ERR
+      #abc
+      #foo
+
+       trap 'echo “before execute line:$LINENO, a=$a,b=$b,c=$c”' DEBUG
+       a=1
+       if [ "$a" -eq 1 ]
+       then
+          b=2
+       else
+          b=1
+      fi
+      c=3
+      echo "end"
