@@ -35,8 +35,8 @@ ftWhoAmI()## #命令权限判定
 	#耦合变量校验
     local valCount=1
 	if [ $# -ne $valCount ]||[ -z "$cmdName" ]\
-					||[ -z "$mRoCmdsPermissionBase" ]\
-					||[ -z "$mRoCmdsPermissionRoot" ];then
+					         ||[ -z "$mRoCmdsPermissionBase" ]\
+					         ||[ -z "$mRoCmdsPermissionRoot" ];then
 		ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 	fi
 
@@ -124,7 +124,8 @@ ftMain()
 			ftWhoAmYou
 		fi
 	elif [ "$commandAuthority" = "base" ]; then
-		if [ `whoami` = "base" ]; then
+		if [ `whoami` = $mRoNameUser ]; then
+		echo `whoami`
 			while true; do
 			case $mRoBaseShellParameter2 in
 				"clean_data_garbage")	ftCleanDataGarbage ; break;;
