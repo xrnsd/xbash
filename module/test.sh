@@ -430,19 +430,19 @@ ft9()
 
 
 
-dev1=/media/data_self
-dev2=/media/data_out
-dev3=/media/data_code
+# dev1=/media/data_self
+# dev2=/media/data_out
+# dev3=/media/data_code
 
 
-dir_backup=backup
+# dir_backup=backup
 
-dir_backup_type=os
+# dir_backup_type=os
 
 
-dir1=${db4}${d1}${db1}        #/home/xian-hp-u16/backup/
-dir2=${da5}${db1}             #/media/xrnsd_hdd1/backup/os
-dir3=/home/xian-hp-u16/log/
+# dir1=${db4}${d1}${db1}        #/home/xian-hp-u16/backup/
+# dir2=${da5}${db1}             #/media/xrnsd_hdd1/backup/os
+# dir3=/home/xian-hp-u16/log/
 
 
 
@@ -569,25 +569,25 @@ ft111()
 		note=`cat $path_note`
 		echo ${version_name}"     --------------------------    "${note}
 		echo
-		
-		
-		
+
+
+
 			cnt=1
-	   for var in `ls`; 
+	   for var in `ls`;
 	   do
 	   filename = ${var%.*}
-	   extension=${var##*.} 
+	   extension=${var##*.}
 	   if  [ $cnt -gt 9 ] ; then
 		mv $var ${cnt}.${extension}
 	else
 		mv $var 0${cnt}.${extension}
 	fi
-	   let "cnt=$cnt+1" 
+	   let "cnt=$cnt+1"
 	done;
-	
+
 	}
 
-	    
+
 	GetSoftwareID()
 {
 
@@ -596,13 +596,13 @@ ft111()
   do
 	echo -en "请选择存放备份文件的设备:"
 	read -n1 answers
-      
+
       if [ ${#answers} == 0 ]; then
 	  answers="00000"
 	  elif [ ${answers} == "q" ]; then
 	  	exit
       fi
-      
+
       InputLen=${#answers}
       if [ $InputLen -gt 4 ]; then
 	  RET=`expr match $answers "[0-9]*$"`
@@ -625,7 +625,7 @@ fteee()
 			break;
 		  elif [ ${dir} == "q" ]; then
 		  	exit
-		  elif [ "$dir" -gt 0 ] 2>/dev/null ;then 
+		  elif [ "$dir" -gt 0 ] 2>/dev/null ;then
 		  	devTarget=${dirList2[$dir]}
 			devTargetDir=${devDir}/${devTarget}
 			break;
@@ -634,20 +634,20 @@ fteee()
 }
 	fttt()
 	{
-	
+
 	#=================== example=============================
 	#
 	#		fttt [type] [isCreate] [path]
 	#		fttt f true /home/xian-hp-u16/cmds/test.sh
 	#		echo $?
 	#=========================================================
-	
+
 		local ftName=路径合法性校验
 		type=$1
 		isCreate=$2
 		path=$3
 		if [ $type = "f" ];then
-		
+
 			if [ -f $path ];then
 				return 1
 			elif [ $isCreate = "true" ];then
@@ -656,9 +656,9 @@ fteee()
 			else
 				return 0
 			fi
-			
+
 		elif [ $type = "d" ];then
-		
+
 			if [ -d $path ];then
 				return 1
 			elif [ $isCreate = "true" ];then
@@ -667,28 +667,28 @@ fteee()
 			else
 				return 0
 			fi
-			
+
 		else
 			echo 函数[[${ftName}]]调用时使用了错误参数
 			return 0
 		fi
 	}
-	
+
 	#记录版本包软件和硬件信息
 	ftAddOrCheckSystemHwSwInfo()
 	{
 	#=================== example=============================
 	#
 	#		ftAddOrCheckSystemHwSwInfo [type] [path] [path]
-	#		ftAddOrCheckSystemHwSwInfo check 
+	#		ftAddOrCheckSystemHwSwInfo check
 	#=========================================================
-	
+
 	local typeEdit=$1
 	local dirPathBackupRoot=$2
 	local dirNameBackupInfoVersion=$3
 	local dirPathBackupInfo=${dirPathBackupRoot}/.info
 	local dirPathBackupInfoVersion=${dirPathBackupInfo}/${dirNameBackupInfoVersion}
-	
+
 	local filePathVersionCpu=${dirPathBackupInfoVersion}/cpu
 	local filePathVersionMainboard=${dirPathBackupInfoVersion}/mainboard
 	local filePathVersionSystem=${dirPathBackupInfoVersion}/system
@@ -699,7 +699,7 @@ fteee()
 	local infoHwMainboard=$(echo $infoHwMainboard |sed s/[[:space:]]//g)
 	local infoHwSystem=$(head -n 1 /etc/issue|sed s/[[:space:]]//g)
 	local infoHw32x64=$(uname -m|sed s/[[:space:]]//g)
-	
+
 	if [ ! -d $dirPathBackupRoot ]; then
 		echo 系统信息相关操作失败
 	  	exit
@@ -708,7 +708,7 @@ fteee()
 			#mkdir $dirPathBackupInfo
 			echo $dirPathBackupInfo
 			echo 根系统信息记录位置不存在，已建立
-		fi	
+		fi
 		if [ ! -d $dirPathBackupInfoVersion ]; then
 			#mkdir $dirPathBackupInfoVersion
 			echo $dirPathBackupInfo
@@ -719,7 +719,7 @@ fteee()
 			echo $infoHwMainboard 	>$filePathVersionMainboard
 			echo $infoHwSystem 		>$filePathVersionSystem
 			echo $infoHw32x64 		>$filePathVersion32x64
-		
+
 		elif [ ${typeEdit} == "check" ]; then
 			local infoHwCpuVersion=$(sed s/[[:space:]]//g $filePathVersionCpu)
 			local infoHwMainboardVersion=$(sed s/[[:space:]]//g $filePathVersionMainboard)
@@ -751,7 +751,7 @@ fteee()
 		fi
 	fi
 	}
-	
+
 	ftSel()
 	{
 	#=================== example=============================
@@ -771,12 +771,12 @@ fteee()
 		   esac
 		done
 	}
-	
+
 	fttar()
 	{
-		
-		
-		
+
+
+
 	dir2=/home/wgx/cmds/data/excludeDirsBase.list
 	dir1=/home/wgx/cmds/data/excludeDirsAll.list
  	dirssss1=(${test1}1 ${test1}2 ${test1}3)
@@ -786,14 +786,14 @@ fteee()
 		if [ $mTypeBackupEdit = "cg" ];then
 			tar -cvpzf  /home/wgx/temp/111.tgz \
 			--exclude-from=$dirssss1 $dir3
-			 
+
 		elif [ $mTypeBackupEdit = "bx" ];then
 			tar -cvpzf  /home/wgx/temp/222.tgz \
 			--exclude-from=$dirssss2 $dir3
 	 		exit
 		fi
 	}
-	
+
 	fttar()
 	{
 	mTypeBackupEdit=$1
@@ -831,7 +831,7 @@ fteee()
 						${mRoDirPathUserHome}.local \
 						${mRoDirPathUserHome}.other \
 						${mRoDirPathUserHome}.gvfs)
-							
+
 	mDirPathsExcludeAll=(/proc \
 						/android \
 						/lost+found  \
@@ -852,7 +852,7 @@ fteee()
 						${mRoDirPathUserHome}.local \
 						${mRoDirPathUserHome}.other \
 						${mRoDirPathUserHome}.gvfs)
-		
+
 		local dirsExclude=
 		local fileNameExclude
 		if [ $mTypeBackupEdit = "cg" ];then
@@ -865,7 +865,7 @@ fteee()
 	 		ftEcho -e  你想金包还是银包呢
 	 		exit
 		fi
-    	
+
     	#更新排除列表
 		if [  -f $fileNameExclude ]; then
 			rm -rf $fileNameExclude
@@ -874,15 +874,15 @@ fteee()
 		do
 		    echo $dirpath >$fileNameExclude
 		done
-		
+
 		#sudo tar -cvpzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / 2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
 	}
 ftEcho()
 {
 #=================== example=============================
 #
-#		ftEcho [option] [Content] 
-#		ftEcho e 错误的选择1 
+#		ftEcho [option] [Content]
+#		ftEcho e 错误的选择1
 #=========================================================
 	option=$1
 	Content=$2
@@ -930,7 +930,7 @@ break;;
           |-- test   -------------------------------   shell测试
           |-- clean_data_garbage                       清空回收站
           |-- restartadb  --------------------------   重启adb服务
-          |-- v ------------------------------------   自定义命令版本                                         
+          |-- v ------------------------------------   自定义命令版本
           |-- help                                     查看自定义命令说明
           |-- gjh  ---------------------------------   生成国际化所需的xml文件
     xk  ----- 关闭手机指定进程
@@ -970,7 +970,7 @@ break;;
     xx  ---- [无参] / 休眠
     xs  ---- [无参] / 关机
     xss ---- [无参] / 重启
-    
+
     ===============  临时命令 ===================
     xversion--[无参] / 查看软件版本
     xg6572 ----- 下载mtk6572的工程
@@ -985,7 +985,7 @@ cat<<EOF
           |-- test   -------------------------------   shell测试
           |-- clean_data_garbage                       清空回收站
           |-- restartadb  --------------------------   重启adb服务
-          |-- v ------------------------------------   自定义命令版本                                         
+          |-- v ------------------------------------   自定义命令版本
           |-- help                                     查看自定义命令说明
           |-- gjh  ---------------------------------   生成国际化所需的xml文件
 EOF
@@ -1124,6 +1124,6 @@ ERRTRAP()
 		    b=9
 		    CALLER=$9
 		      if [ $# -gt $num ];then
-				  echo "$#函数[${title}]参数错误，请查看函数使用示例	" 
+				  echo "$#函数[${title}]参数错误，请查看函数使用示例	"
 			fi
 	}

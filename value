@@ -27,3 +27,5 @@ export readonly mRoFilePathLog=${mRoDirPathUserHome}${mRoDirNameLog}${mRoBaseShe
 
 export readonly mRoCmdsPermissionRoot=(xb backup restore)
 export readonly mRoCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher mtk_flashtool)
+
+export readonly mRoIsDebug=false
