@@ -69,9 +69,9 @@ source  $(cd `dirname $0`; pwd)/base
 		local dirBackupNote=${mDirPathStoreSource}/.notes
 
 		#耦合变量校验
-	    local valCount=0
-	    if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ];then
-			  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		local valCount=0
+		if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ];then
+			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 		fi
 
 		#文件数量获取
@@ -424,9 +424,9 @@ source  $(cd `dirname $0`; pwd)/base
 
 		#耦合变量校验
 	    local valCount=2
-	    if [ $# -ne $valCount ]||[ -z "$dirBackupRoot" ]\
-	    					   ||[ -z "$versionName" ];then
-			  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		if [ $# -ne $valCount ]||[ -z "$dirBackupRoot" ]\
+						||[ -z "$versionName" ];then
+			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 		fi
 
 		if [ -d ${dirBackupRoot} ]&&[ ! -d ${dirBackupNote} ];then
@@ -476,10 +476,10 @@ source  $(cd `dirname $0`; pwd)/base
 
 		#耦合变量校验
 	    local valCount=3
-	    if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
-	    					   ||[ -z "$dirBackupRoot" ]\
-	    					   ||[ -z "$versionName" ];then
-			  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
+						||[ -z "$dirBackupRoot" ]\
+						||[ -z "$versionName" ];then
+			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 		fi
 
 		if [ ! -d ${dirBackupRoot} ];then
@@ -547,11 +547,11 @@ source  $(cd `dirname $0`; pwd)/base
 		local ftName=在不同设备间同步版本包
 
 		#耦合变量校验
-	    local valCount=0
-	    if [ $# -ne $valCount ]||[ -z "$isSynchronous" ]\
-	    					   ||[ -z "$mDirPathSynchronous1" ]\
-	    					   ||[ -z "$mDirPathSynchronous2" ];then
-			  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		local valCount=0
+		if [ $# -ne $valCount ]||[ -z "$isSynchronous" ]\
+						||[ -z "$mDirPathSynchronous1" ]\
+						||[ -z "$mDirPathSynchronous2" ];then
+			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 		fi
 
 		if [ $isSynchronous = "true" ];then
@@ -602,10 +602,10 @@ source  $(cd `dirname $0`; pwd)/base
 
 	#耦合变量校验
     local valCount=3
-    if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
-    					   ||[ -z "$dirPathBackupRoot" ]\
-    					   ||[ -z "$dirNameBackupInfoVersion" ];then
-		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+	if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
+					||[ -z "$dirPathBackupRoot" ]\
+					||[ -z "$dirNameBackupInfoVersion" ];then
+		ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 	fi
 
 	local returns=通过
@@ -688,8 +688,8 @@ source  $(cd `dirname $0`; pwd)/base
 		local ftName=版本包软件和硬件信息校验操作选择
 		local title=$1
 	    local valCount=1
-	    if [ $# -ne $valCount ]||[ -z "$title" ];then
-			  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		if [ $# -ne $valCount ]||[ -z "$title" ];then
+			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 		fi
 		ftEcho -y "$1有变动,是否忽悠"
 		while true; do

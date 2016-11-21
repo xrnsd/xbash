@@ -34,10 +34,10 @@ ftWhoAmI()## #命令权限判定
 
 	#耦合变量校验
     local valCount=1
-    if [ $# -ne $valCount ]||[ -z "$cmdName" ]\
-    					   ||[ -z "$mRoCmdsPermissionBase" ]\
-    					   ||[ -z "$mRoCmdsPermissionRoot" ];then
-		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+	if [ $# -ne $valCount ]||[ -z "$cmdName" ]\
+					||[ -z "$mRoCmdsPermissionBase" ]\
+					||[ -z "$mRoCmdsPermissionRoot" ];then
+		ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 	fi
 
 	for cmd in ${mRoCmdsPermissionBase[@]}
@@ -150,7 +150,7 @@ ftMain()
 		*)	ftEcho -e "	 没有有效的命令参数，请查看下面的说明";ftReadMe $XCMD; break;;
 		esac
 		done
-	fi	
+	fi
 	break;;
 	esac
 	done

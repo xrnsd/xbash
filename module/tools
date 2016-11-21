@@ -7,7 +7,7 @@ ftKillPhoneAppByPackageName()
 
 	#耦合变量校验
     local valCount=1
-    if [ $# -ne $valCount ]||[ -z "$packageName" ];then
+	if [ $# -ne $valCount ]||[ -z "$packageName" ];then
 		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 	fi
 
@@ -21,8 +21,8 @@ ftKillPhoneAppByPackageName()
 ftRestartadb1()
 {
 	#耦合变量校验
-    local valCount=0
-    if [ $# -ne $valCount ]||[ -z "$mUserPwd" ];then
+	local valCount=0
+	if [ $# -ne $valCount ]||[ -z "$mUserPwd" ];then
 		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 	fi
 
@@ -72,9 +72,9 @@ ftMtkFlashTool()
 	local toolDirPath=${mRoDirPathTools}/sp_flash_tool_v5.1548
 
 	#耦合变量校验
-    local valCount=0
-    if [ $# -ne $valCount ]||[ -z "$tempDirPath" ]\
-    					   ||[ -z "$mRoDirPathTools" ];then
+	local valCount=0
+	if [ $# -ne $valCount ]||[ -z "$tempDirPath" ]\
+			         ||[ -z "$mRoDirPathTools" ];then
 		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 	fi
 
@@ -99,9 +99,9 @@ ftFileDirEdit()
 
 	#耦合变量校验
     local valCount=3
-    if [ $# -ne $valCount ]||[ -z "$type" ]\
-    					   ||[ -z "$isCreate" ]\
-    					   ||[ -z "$path" ];then
+	if [ $# -ne $valCount ]||[ -z "$type" ]\
+					         ||[ -z "$isCreate" ]\
+					         ||[ -z "$path" ];then
 		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 	fi
 
