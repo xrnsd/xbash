@@ -6,7 +6,6 @@ source  $(cd `dirname $0`; pwd)/base
 		mTypeBackupEdit=null
 
 		mDate=$(date -d "today" +"%Y%m%d")
-		mNameUser=`who | awk '{print $1}'|sort -u`
 
 		#mDirPathSynchronous1=
 		#mDirPathSynchronous2=
@@ -34,7 +33,6 @@ source  $(cd `dirname $0`; pwd)/base
 
 
 #####----------------------函数--------------------------#########
-
 
 	ftRestoreOperate()
 	{
@@ -177,7 +175,7 @@ source  $(cd `dirname $0`; pwd)/base
 			echo -e "当前系统有效修改：	\033[44m$mVersionChangs\033[0m"
 
 		elif [ $infoType = "backup" ];then
-			mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${mNameUser}_${mDate}
+			mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${mRoNameUser}_${mDate}
 			mFileNameBackupTarget=${mFileNameBackupTargetBase}.tgz
 			mFileNameBackupLog=${mFileNameBackupTargetBase}.log
 
@@ -209,14 +207,14 @@ source  $(cd `dirname $0`; pwd)/base
 		local devTargetDir
 		local devDir=/media
 		local dirList=`ls $devDir`
-		local dirList2[0]=${mRoDirPathUserHome/$mNameUser\//$mNameUser}
+		local dirList2[0]=${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser}
 		local index=0;
 		#遍历/media目录
 		echo [0] ${dirList2[0]}
 		for dir in $dirList
 		do
 			#临时挂载设备
-			if [ ${dir} == $mNameUser ]; then
+			if [ ${dir} == $mRoNameUser ]; then
 				local dirTempList=`ls ${devDir}/${dir}`
 				for dirTemp in $dirTempList
 				do
@@ -260,8 +258,8 @@ source  $(cd `dirname $0`; pwd)/base
 		done
 		echo
 
-		mDirPathStoreTarget=$devTargetDir/backup/os/${mNameUser};
-		mDirPathStoreSource=$devTargetDir/backup/os/${mNameUser};
+		mDirPathStoreTarget=$devTargetDir/backup/os/${mRoNameUser};
+		mDirPathStoreSource=$devTargetDir/backup/os/${mRoNameUser};
 
 		if [ ! -d $mDirPathStoreTarget ];then
 			mkdir -p $mDirPathStoreTarget
@@ -425,7 +423,7 @@ source  $(cd `dirname $0`; pwd)/base
 		#耦合变量校验
 	    local valCount=2
 		if [ $# -ne $valCount ]||[ -z "$dirBackupRoot" ]\
-						||[ -z "$versionName" ];then
+						         ||[ -z "$versionName" ];then
 			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 		fi
 
@@ -477,8 +475,8 @@ source  $(cd `dirname $0`; pwd)/base
 		#耦合变量校验
 	    local valCount=3
 		if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
-						||[ -z "$dirBackupRoot" ]\
-						||[ -z "$versionName" ];then
+						         ||[ -z "$dirBackupRoot" ]\
+						         ||[ -z "$versionName" ];then
 			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 		fi
 
@@ -549,8 +547,8 @@ source  $(cd `dirname $0`; pwd)/base
 		#耦合变量校验
 		local valCount=0
 		if [ $# -ne $valCount ]||[ -z "$isSynchronous" ]\
-						||[ -z "$mDirPathSynchronous1" ]\
-						||[ -z "$mDirPathSynchronous2" ];then
+						         ||[ -z "$mDirPathSynchronous1" ]\
+						         ||[ -z "$mDirPathSynchronous2" ];then
 			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 		fi
 
@@ -603,8 +601,8 @@ source  $(cd `dirname $0`; pwd)/base
 	#耦合变量校验
     local valCount=3
 	if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
-					||[ -z "$dirPathBackupRoot" ]\
-					||[ -z "$dirNameBackupInfoVersion" ];then
+					         ||[ -z "$dirPathBackupRoot" ]\
+					         ||[ -z "$dirNameBackupInfoVersion" ];then
 		ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 	fi
 
