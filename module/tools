@@ -132,4 +132,15 @@ ftFileDirEdit()
 		return 0
 	fi
 }
+ftDebug()
+{
+#=================== example=============================
+#
+#	 trap 'echo “行:$LINENO, a=$a,b=$b,c=$c”' DEBUG
+#	 根据需要修改 a，b，c
+#	 ftDebug
+#=========================================================
+	local ftName=调试用，实时跟踪变量变化
 
+
+}
