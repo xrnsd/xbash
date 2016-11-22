@@ -77,7 +77,7 @@ ftMtkFlashTool()
 			         ||[ -z "$mRoDirPathTools" ];then
 		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 	fi
-	
+
 	cd $toolDirPath&&
 	echo "$mUserPwd" | sudo -S ./flash_tool&&
 	cd $tempDirPath
@@ -158,4 +158,68 @@ ftDebug()
 	 	ftEcho -ex 当前非调试模式
 	fi
 
+}
+
+ftEcho()
+{
+#=================== example=============================
+#
+#	 ftEcho [option] [Content]
+#	 ftEcho e 错误的选择1
+#=========================================================
+	local ftName=工具信息提示
+	option=$1
+	Content=$2
+	while true; do
+	case $option in
+	y | Y | -y | -Y)	echo -en "${Content}[y/n]"; break;;
+	e | E | -e | -E)	echo -e "\033[31m$Content\033[0m"; break;;
+	ex | EX | -ex | -EX)	echo -e "\033[31m$Content\033[0m"; exit;;
+	s | S | -s | -S)	echo;echo -e "\033[44m$Content\033[0m"; break;;
+	t | T | -t | -T)	echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
+	b | B | -b | -B)	echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
+	g | G | -g | -G)cat<<EOF
+=========================================================================
+命令	--- 参数/命令说明
+	|// 使用格式
+	|-- 参数1	 ---------------- [参数权限] ----	参数说明
+=========================================================================
+EOF
+break;;
+	* ) echo $option ;break;;
+	esac
+	done
+}
+
+
+ftTimeLong()
+{
+	local ftName=脚本操作耗时记录
+	 #时间少于1秒默认不显示操作耗时
+	 #时间时分秒各单位不显示为零的结果
+	time2=$(date +%s -d $(date +"%H:%M:%S"))
+	time3=$(((time2-mRoTimeBackupStart)%60))
+	time5=$(((time2-mRoTimeBackupStart)/3600))
+	time4=$((((time2-mRoTimeBackupStart)-time5*3600)/60))
+
+	if [ "$time5" -ne "0" ];then
+		strS1=$time5时
+	else
+		strS1=""
+	fi
+	if [ "$time4" -ne "0" ];then
+		strF1=$time4分
+	else
+		strF1=""
+	fi
+	if [ "$time3" -ne "0" ];then
+		strM1=$time3秒
+	else
+		strM1=""
+	fi
+	if [ "$time3" -eq "0" ]&&[ "$time4" -eq "0" ] &&[ "$time5" -eq "0" ];then
+		ftEcho -s 1秒没到就结束了
+	else
+		 ftEcho -s "本技能耗时${strS1}${strF1}${strM1}  !"
+	fi
 }
