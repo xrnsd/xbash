@@ -1212,5 +1212,23 @@ EOF
 		ftded -h
 	fi
 }
-ftded
+			while true; do
+			echo
+			echo -en "请输入版本包对应的序号(回车默认0):"
+			if [ ${#fileList[@]} -gt 9 ];then
+				read tIndex
+			else
+				read -n1 tIndex
+			fi
+			#设定默认值
+			if [ ${#tIndex} == 0 ]; then
+				tIndex=0
+			fi
+			case $tIndex in
+				[0-9]|[0-9][0-9]|[0-9][0-9][0-9]|[0-9][0-9][0-9][0-9])
+					echo 1111break;;
+				n | N | q |Q)  exit;;
+				* )    ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2 选择    输入 n，q 离开";break;;
+			esac
+			done
 

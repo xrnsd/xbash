@@ -125,7 +125,7 @@ source  ${mRoDirPathCmdTools}base
 					mNoteRestoreSource=${fileNoteList[$tIndex]}
 					echo;break;;
 				n | N | q |Q)  exit;;
-				* )    ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2 选择    输入 n，no，q 离开";break;;
+				* )    ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2 选择    输入 n，q 离开";break;;
 			esac
 			done
 		fi
@@ -157,8 +157,8 @@ source  ${mRoDirPathCmdTools}base
 				ftEcho -e 目录${customdir}不存在
 				fi
 				customdir=null ; break;;
-			n | no | q |Q)  exit;;
-			* )    ftEcho -e 错误的选择：$sel ;echo  "输入1,2 选择    输入n，no，q 离开";break;;
+			n | N | q |Q)  exit;;
+			* )    ftEcho -e 错误的选择：$sel ;echo  "输入1,2 选择    输入n，q 离开";break;;
 		esac
 		done
 		echo
@@ -316,8 +316,8 @@ source  ${mRoDirPathCmdTools}base
 			case $typeIndex in
 			1 ) 		mDirPathRestoreExcludeTarget=$mRoDirPathUserHome;break;;
 			2 )		mDirPathRestoreExcludeTarget=; break;;
-			n | no | q |Q)	exit;;
-			* )		ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，no，q";break;;
+			n | N | q |Q)	exit;;
+			* )		ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";break;;
 		esac
 		done
 	}
@@ -595,8 +595,8 @@ EOF
 					done
 					ftEcho -s 同步结束！
 					break;;
-				n | no | q |Q)  exit;;
-				* )   ftEcho -e 错误的选择：$sel ;echo "输入n，no，q，离开";break;;
+				n | N| q |Q)  exit;;
+				* )   ftEcho -e 错误的选择：$sel ;echo "输入n，q，离开";break;;
 			esac
 			done
 		fi
