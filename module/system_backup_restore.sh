@@ -1,33 +1,33 @@
 #!/bin/bash
 #####----------------------变量--------------------------#########
 
-		mTypeEdit=$1
-		mTypeBackupEdit=null
+	mTypeEdit=$1
+	mTypeBackupEdit=null
 
-		mDate=$(date -d "today" +"%Y%m%d")
+	mDate=$(date -d "today" +"%Y%m%d")
 
-		#mDirPathSynchronous1=
-		#mDirPathSynchronous2=
-		mDirPathRestoreTarget=/
-		mDirPathStoreTarget=null
-		mDirPathStoreSource=null
-		mDirPathLog=${mRoDirPathUserHome}/log
-		mDirPathRestoreExcludeTarget=null
+	#mDirPathSynchronous1=
+	#mDirPathSynchronous2=
+	mDirPathRestoreTarget=/
+	mDirPathStoreTarget=null
+	mDirPathStoreSource=null
+	mDirPathLog=${mRoDirPathUserHome}/log
+	mDirPathRestoreExcludeTarget=null
 
-		mFilePathRestoreSource=null
+	mFilePathRestoreSource=null
 
-		mFileNameBackupLog=null
-		mFileNameBackupTarget=null
-		#VersionNameBackup
-		mFileNameBackupTargetBase=null
-		mFileNameRestoreSource=null
-		#VersionNameRestore
-		mFileNameRestoreSourceBase=null
+	mFileNameBackupLog=null
+	mFileNameBackupTarget=null
+	#VersionNameBackup
+	mFileNameBackupTargetBase=null
+	mFileNameRestoreSource=null
+	#VersionNameRestore
+	mFileNameRestoreSourceBase=null
 
-		mNoteBackupTarget=null
-		mNoteRestoreSource=null
+	mNoteBackupTarget=null
+	mNoteRestoreSource=null
 
-		isSynchronous=false
+	isSynchronous=false
 
 
 #####---------------------工具函数---------------------------#########
@@ -128,7 +128,7 @@ source  ${mRoDirPathCmdTools}base
 					mNoteRestoreSource=${fileNoteList[$tIndex]}
 					echo;break;;
 				n | N | q |Q)  exit;;
-				* )    ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2 选择    输入 n，q 离开";break;;
+				* )    ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2...... 选择    输入 n，q 离开";break;;
 			esac
 			done
 		fi
@@ -425,20 +425,14 @@ source  ${mRoDirPathCmdTools}base
 		local fileNameNote=${versionName}.note
 
 		#使用示例
-		while true; do
-		case "$1" in
-			h | H |-h | -H)
-		cat<<EOF
+		while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 		#=================== ${ftName}的使用示例===================
 		#
 		#	ftAddNote [dirBackupRoot] [versionName]
 		#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
 		#=========================================================
 EOF
-		exit;;
-		* )break;;
-		esac
-		done
+		exit;; * )break;; esac;done
 
 		#耦合变量校验
 		local valCount=2
@@ -489,20 +483,14 @@ EOF
 		local fileNameMd5=${versionName}.md5
 
 		#使用示例
-		while true; do
-		case "$1" in
-			h | H |-h | -H)
-		cat<<EOF
+		while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 		#=================== ${ftName}的使用示例===================
 		#
 		#	ftMD5 [type] [path] [fileNameBase/VersionName]
 		#	ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
 		#=========================================================
 EOF
-		exit;;
-		* )break;;
-		esac
-		done
+		exit;; * )break;; esac;done
 
 		#耦合变量校验
 		local valCount=3
@@ -629,20 +617,14 @@ EOF
 	local infoHw32x64=$(uname -m|sed s/[[:space:]]//g)
 
 	#使用示例
-	while true; do
-	case "$1" in
-		h | H |-h | -H)
-	cat<<EOF
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 	#=================== ${ftName}的使用示例===================
 	#
 	#	ftAddOrCheckSystemHwSwInfo [type] [path] [path]
 	#	ftAddOrCheckSystemHwSwInfo -check
 	#=========================================================
 EOF
-	exit;;
-	* )break;;
-	esac
-	done
+	exit;; * )break;; esac;done
 
 	#耦合变量校验
 	local valCount=3
