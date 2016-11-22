@@ -1,5 +1,4 @@
 #!/bin/bash
-source  $(cd `dirname $0`; pwd)/base
 #####----------------------变量--------------------------#########
 
 		mTypeEdit=$1
@@ -31,8 +30,13 @@ source  $(cd `dirname $0`; pwd)/base
 		isSynchronous=false
 
 
+#####---------------------工具函数---------------------------#########
+source  ${mRoDirPathCmdTools}tools
 
-#####----------------------函数--------------------------#########
+#####---------------------流程函数---------------------------#########
+source  ${mRoDirPathCmdTools}base
+
+#####----------------------自有函数--------------------------#########
 
 	ftRestoreOperate()
 	{
@@ -64,11 +68,13 @@ source  $(cd `dirname $0`; pwd)/base
 		local ftName=选择还原使用的版本[备份]包
 		local index=0;
 		local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
-		local dirBackupNote=${mDirPathStoreSource}/.notes
+		local dirNameBackupNote=${mDirPathStoreSource}/.notes
 
 		#耦合变量校验
 		local valCount=0
-		if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ];then
+		if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ]\
+					||[ ! -d $mDirPathStoreSource ]\
+					||[ ! -d $dirNameBackupNote ];then
 			ftEcho -ex "函数[${ftName}]参数错误"
 		fi
 
@@ -87,7 +93,7 @@ source  $(cd `dirname $0`; pwd)/base
 			do
 				local fileBaseName=${file/.tgz/}
 				local fileNameNote=${fileBaseName}.note
-				local filePathNote=${dirBackupNote}/${fileNameNote}
+				local filePathNote=${dirNameBackupNote}/${fileNameNote}
 				if [ -f $filePathNote ];then
 					local note=`cat $filePathNote`
 				else
@@ -210,7 +216,7 @@ source  $(cd `dirname $0`; pwd)/base
 		local dirList2[0]=${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser}
 		local index=0;
 		#遍历/media目录
-		echo [0] ${dirList2[0]}
+		echo [ 0 ] ${dirList2[0]}
 		for dir in $dirList
 		do
 			#临时挂载设备
@@ -226,7 +232,7 @@ source  $(cd `dirname $0`; pwd)/base
 			else
 			#长期挂载设备
 			index=`expr $index + 1`
-			echo [${index}]  ${devDir}/${dir}
+			echo [ ${index} ]  ${devDir}/${dir}
 			dirList2[$index]=$dir
 			fi
 		done
@@ -410,7 +416,7 @@ source  $(cd `dirname $0`; pwd)/base
 		local dateOnly=$(date -d "today" +"%Y%m%d")
 		local dateTime=$(date -d "today" +"%Y%m%d_%H%M%S")
 		local dirBackupRoot=$1
-		local dirBackupNote=${dirBackupRoot}/.notes
+		local dirNameBackupNote=${dirBackupRoot}/.notes
 		local versionName=$2
 		local fileNameDefault=.note.list
 		local fileNameNote=${versionName}.note
@@ -439,13 +445,13 @@ EOF
 			ftAddNote -h
 		fi
 
-		if [ -d ${dirBackupRoot} ]&&[ ! -d ${dirBackupNote} ];then
-				mkdir ${dirBackupNote}
-				ftEcho -s 新建备注存储目录:${dirBackupNote}
+		if [ -d ${dirBackupRoot} ]&&[ ! -d ${dirNameBackupNote} ];then
+				mkdir ${dirNameBackupNote}
+				ftEcho -s 新建备注存储目录:${dirNameBackupNote}
 		fi
 
-		local filePathDefault=${dirBackupNote}/${fileNameDefault}
-		local filePathNote=${dirBackupNote}/${fileNameNote}
+		local filePathDefault=${dirNameBackupNote}/${fileNameDefault}
+		local filePathNote=${dirNameBackupNote}/${fileNameNote}
 
 		if [ ! -f $filePathDefault ]; then
 			touch $filePathDefault;echo "【 create by wgx 】">$filePathDefault
@@ -644,7 +650,7 @@ EOF
 		ftAddOrCheckSystemHwSwInfo -h
 	fi
 
-	local returns=通过
+	local returns=兼容
 	if [ ! -d $dirPathBackupRoot ]; then
 		echo 系统信息相关操作失败
 	  	exit
@@ -681,32 +687,32 @@ EOF
 			local infoHw32x64Version=$(sed s/[[:space:]]//g $filePathVersion32x64)
 
 			if [[ $infoHwCpuVersion != $infoHwCpu ]];then
-			echo Version=$infoHwCpuVersion
-			echo baseion=$infoHwCpu
+			echo versionpackageInfo=$infoHwCpuVersion
+			echo tragetInfo=$infoHwCpu
 				ftSel CPU
-				returns=结束
+				returns=${returns}，忽略CPU变化
 			fi
 			if [[ "$infoHwMainboardVersion" != "$infoHwMainboard" ]]; then
-			echo Version= $infoHwMainboardVersion
-			echo baseion=$infoHwMainboard
+			echo versionpackageInfo= $infoHwMainboardVersion
+			echo tragetInfo=$infoHwMainboard
 				ftSel 主板
-				returns=结束
+				returns=${returns}，忽略主板变化
 			fi
 			if [[ "$infoHwSystemVersion" != "$infoHwSystem" ]]; then
-			echo Version= $infoHwSystemVersion
-			echo baseion=$infoHwSystem
+			echo versionpackageInfo= $infoHwSystemVersion
+			echo tragetInfo=$infoHwSystem
 				ftEcho -e  系统版本不一致，将自动退出
-				returns=未通过，
+				returns=不兼容
 			fi
 			if [[ "$infoHw32x64Version" != "$infoHw32x64" ]]; then
-			echo Version= $infoHw32x64Version
-			echo baseion=$infoHw32x64
+			echo versionpackageInfo= $infoHw32x64Version
+			echo tragetInfo=$infoHw32x64
 				ftEcho -e 系统版本的位数不一致，将自动退出
-				returns=失败
+				returns=不兼容
 			fi
 
-			ftEcho -s 版本包：${dirNameBackupInfoVersion}系统兼容性检测${returns}
-			if [ "$infoHw32x64Version"  = "失败" ]; then
+			ftEcho -s 版本包：${dirNameBackupInfoVersion}系统兼容性检测结果为${returns}
+			if [ "$returns"  = "不兼容" ]; then
 				exit
 			fi
 
