@@ -6,7 +6,7 @@ ftKillPhoneAppByPackageName()
 	local packageName=$1
 
 	#耦合变量校验
-    local valCount=1
+	local valCount=1
 	if [ $# -ne $valCount ]||[ -z "$packageName" ];then
 		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 	fi
@@ -18,7 +18,7 @@ ftKillPhoneAppByPackageName()
 	adb shell kill $pid
 }
 
-ftRestartadb1()
+ftRestartadb()
 {
 	#耦合变量校验
 	local valCount=0
@@ -98,7 +98,7 @@ ftFileDirEdit()
 	path=$3
 
 	#耦合变量校验
-    local valCount=3
+	local valCount=3
 	if [ $# -ne $valCount ]||[ -z "$type" ]\
 					         ||[ -z "$isCreate" ]\
 					         ||[ -z "$path" ];then

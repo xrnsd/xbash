@@ -60,7 +60,7 @@ ftMain()
 			case $mRoBaseShellParameter2 in
 				"clean_data_garbage")	ftCleanDataGarbage ; break;;
 				"mtk_flashtool")	ftMtkFlashTool ; break;;
-				"restartadb")		ftRestartadb1; break;;
+				"restartadb")		ftRestartadb; break;;
 				"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
 				"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
 				"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;

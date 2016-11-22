@@ -421,7 +421,7 @@ source  $(cd `dirname $0`; pwd)/base
 		local fileNameNote=${versionName}.note
 
 		#耦合变量校验
-	    local valCount=2
+		local valCount=2
 		if [ $# -ne $valCount ]||[ -z "$dirBackupRoot" ]\
 						         ||[ -z "$versionName" ];then
 			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
@@ -473,7 +473,7 @@ source  $(cd `dirname $0`; pwd)/base
 		local fileNameMd5=${versionName}.md5
 
 		#耦合变量校验
-	    local valCount=3
+		local valCount=3
 		if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
 						         ||[ -z "$dirBackupRoot" ]\
 						         ||[ -z "$versionName" ];then
@@ -596,10 +596,13 @@ source  $(cd `dirname $0`; pwd)/base
 	local infoHwMainboard=$(dmidecode |grep Name |sed s/[[:space:]]//g)
 	local infoHwMainboard=$(echo $infoHwMainboard |sed s/[[:space:]]//g)
 	local infoHwSystem=$(head -n 1 /etc/issue|sed s/[[:space:]]//g)
+		infoHwSystem=${infoHwSystem//"\n\l"/}
+		infoHwSystem=${infoHwSystem//"."/}
+		infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
 	local infoHw32x64=$(uname -m|sed s/[[:space:]]//g)
 
 	#耦合变量校验
-    local valCount=3
+	local valCount=3
 	if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
 					         ||[ -z "$dirPathBackupRoot" ]\
 					         ||[ -z "$dirNameBackupInfoVersion" ];then
@@ -685,7 +688,7 @@ source  $(cd `dirname $0`; pwd)/base
 	#=========================================================
 		local ftName=版本包软件和硬件信息校验操作选择
 		local title=$1
-	    local valCount=1
+		local valCount=1
 		if [ $# -ne $valCount ]||[ -z "$title" ];then
 			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 		fi
