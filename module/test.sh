@@ -1127,3 +1127,58 @@ ERRTRAP()
 				  echo "$#函数[${title}]参数错误，请查看函数使用示例	"
 			fi
 	}
+networkAndFtp()
+{
+    #超时时间
+    timeout=5
+
+    #目标网站
+    target=www.baidu.com
+
+    #获取响应状态码
+    ret_code=`curl -I -s --connect-timeout $timeout $target -w %{http_code} | tail -n1`
+
+    if [ "x$ret_code" = "x200" ]; then
+       echo 网络畅通
+    else
+        echo 网络不畅通
+    fi
+}
+softWarePackages1204=( gnupg flex bison gperf build-essential zip curl zlib1g-dev libc6-dev lib32ncurses5-dev ia32-libs x11proto-core-dev libx11-dev lib32readline-gplv2-dev lib32z-dev libgl1-mesa-dev g++-multilib mingw32 tofrodos libxml2-utils xsltproc openjdk-7-jre openjdk-7-jdk libvpx1  gcc-4.4 g++-4.4 xsel unison-gtk autoconf automake m4 perl libtool folder-color indicator-multiload indicator-cpufreq my-weather-indicator ntfs-config samba smbfs gvfs nautilus-open-terminal remind ccache sqlite3 sqlitebrowser python-pysqlite2 wine ubuntu-tweak flashplugin-installer gdebi iptux fcitx im-config im-switch fcitx-config-gtk fcitx-module-kimpanel sysstat sysv-rc-conf qgit meld myunity  gnome-tweak-tool unace unrar zip unzip p7zip-fullp7zip-rar sharutils rar uudeview mpack lha arj cabextract stardict shutter nemo nemo-fileroller build-essential libgtk2.0-dev tree ranger htop zsh autojump tmux guake gitg shutter virtualbox classicmenu-indicator albert calibre okular  catfish gedit-plugins lsyncd dos2unix numlockx xfonts-wqy)
+softWarePackages1404=( gnupg ccache flex bison gperf build-essential zip curl libc6-dev libncurses5-dev:i386 x11proto-core-dev libx11-dev:i386 libreadline6-dev:i386 libgl1-mesa-dri:i386 libgl1-mesa-dev g++-multilib mingw32 tofrodos python-markdown libxml2-utils xsltproc zlib1g-dev:i386 dpkg-dev ccache gcc-4.4 g++-4.4 lib32z1 lib32ncurses5 lib32bz2-1.0 lib32stdc++6 bison flex gperf mingw32 mingw32-binutils mingw32-runtime pax cvs flex bison texinfo libxml2-utils nemo nemo-fileroller libqt4-webkit libusb-dev xsel unison-gtk autoconf automake m4 perl libtool folder-color indicator-multiload indicator-cpufreq my-weather-indicator ntfs-config samba nautilus-open-terminal remind ccache sqlite3 sqlitebrowser python-pysqlite2 wine ubuntu-tweak flashplugin-installer gdebi iptux sysstat sysv-rc-conf qgit meld  gnome-tweak-tool unace unrar zip unzip sharutils rar uudeview mpack arj cabextract stardict shutter fcitx libssh2-1 nautilus-open-terminal qt4-default qgit gitweb unity-tweak-tool build-essential libgtk2.0-dev tree ranger htop zsh autojump tmux guake gitg shutter virtualbox classicmenu-indicator albert calibre okular  catfish gedit-plugins lsyncd dos2unix numlockx xfonts-wqy)
+softwarePackages1604=( openjdk-7-jdk nitruxos faenza-icon-theme awoken-icon-theme vibrancy-colors fs-icons-ubuntu emerald compizconfig-settings-manager ambiance-flat-colors radiance-flat-colors nitrux-umd zukitwo-gtk-theme zukitwo-dark-gtk-theme tree ranger htop zsh autojump tmux guake gitg shutter virtualbox classicmenu-indicator albert calibre okular  catfish gedit-plugins nemo nemo-fileroller lsyncd dos2unix numlockx xfonts-wqy)
+	while true; do
+	echo -en xdcqwaedxcqwd
+	read -n1 sel
+	#sel格式：[系统版本][系统位数][开发版本]
+	case "$sel" in
+		1)
+		softwarePackages=softwarePackages1204
+		break;;
+		2)
+		softwarePackages=softwarePackages1404
+		break;;
+		3)
+		softwarePackages=softwarePackages1604
+		break;;
+		*)  exit;;
+	esac
+	done
+
+#   5 a=letter_of_alphabet   # 变量"a"的值是另一个变量的名字.
+ #  6 letter_of_alphabet=z
+ #  7
+ #  8 echo
+ #  9
+ # 10 # 直接引用.
+ # 11 echo "a = $a"          # a = letter_of_alphabet
+ # 12
+ # 13 # 间接引用.
+ # 14 eval a=\$$a
+ # 15 echo "Now a = $a"      # 现在 a = z
+ # 16
+ # 17 echo
+
+
+ eval softwarePackages=\$$softwarePackages
+echo $softwarePackages
