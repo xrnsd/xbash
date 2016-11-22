@@ -65,7 +65,7 @@
 			修改pwd=123，替换成自己的密码
 			修改tools相关工具[有的话]，对应到你当前环境下的路径，如jdk的路径
 
-		5 输入xc 查看帮助
+		5 输入xc help查看帮助
 			1. 提示找不到命令
 				打开新窗口
 				sudo chmod 777 -R /home/xxxx/cmds/module
