@@ -77,3 +77,5 @@
 			修改 /home/xxxx/cmds/config/xxxx
 			修改 /home/xxxx/cmds/data/value
 			修改 /home/xxxx/cmds/module/base
+
+		7 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
