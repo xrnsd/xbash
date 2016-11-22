@@ -11,7 +11,7 @@ ftWhoAmI()## #命令权限判定
 	if [ $# -ne $valCount ]||[ -z "$cmdName" ]\
 			         ||[ -z "$mRoCmdsPermissionBase" ]\
 			         ||[ -z "$mRoCmdsPermissionRoot" ];then
-		ftEcho -e "命令[${XCMD}]参数错误，请查看函数使用示例"
+		ftEcho -e "命令[${XCMD}]参数错误"
 		ftReadMe $XCMD
 	fi
 

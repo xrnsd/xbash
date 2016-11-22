@@ -1184,10 +1184,33 @@ fi
 # done
 }
 
- infoHwSystem=$(head -n 1 /etc/issue|sed s/[[:space:]]//g)
-infoHwSystem=${infoHwSystem//"\n\l"/}
-infoHwSystem=${infoHwSystem//"."/}
-infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
-echo $infoHwSystem
-#b=${a/123/321};将${a}里的第一个123替换为321\
+ftded()
+{
+
+	while true; do
+	case "$1" in
+		h | H |-h | -H)
+	cat<<EOF
+	#=================== example=============================
+	#
+	#	ftAddOrCheckSystemHwSwInfo [type] [path] [path]
+	#	ftAddOrCheckSystemHwSwInfo -check
+	#=========================================================
+EOF
+	exit;;
+	* )break;;
+	esac
+	done
+
+	local ftName=记录和校验版本包软件和硬件信息
+
+	local valCount=3
+	if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
+					         ||[ -z "$dirPathBackupRoot" ]\
+					         ||[ -z "$dirNameBackupInfoVersion" ];then
+		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+		ftded -h
+	fi
+}
+ftded
 

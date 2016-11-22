@@ -69,7 +69,7 @@ source  $(cd `dirname $0`; pwd)/base
 		#耦合变量校验
 		local valCount=0
 		if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ];then
-			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+			ftEcho -ex "函数[${ftName}]参数错误"
 		fi
 
 		#文件数量获取
@@ -406,11 +406,6 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftAddNote()
 	{
-	#=================== example=============================
-	#
-	#	ftAddNote [dirBackupRoot] [versionName]
-	#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
-	#=========================================================
 		local ftName=记录版本包相关备注
 		local dateOnly=$(date -d "today" +"%Y%m%d")
 		local dateTime=$(date -d "today" +"%Y%m%d_%H%M%S")
@@ -420,11 +415,28 @@ source  $(cd `dirname $0`; pwd)/base
 		local fileNameDefault=.note.list
 		local fileNameNote=${versionName}.note
 
+		#使用示例
+		while true; do
+		case "$1" in
+			h | H |-h | -H)
+		cat<<EOF
+		#=================== ${ftName}的使用示例===================
+		#
+		#	ftAddNote [dirBackupRoot] [versionName]
+		#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
+		#=========================================================
+EOF
+		exit;;
+		* )break;;
+		esac
+		done
+
 		#耦合变量校验
 		local valCount=2
 		if [ $# -ne $valCount ]||[ -z "$dirBackupRoot" ]\
 						         ||[ -z "$versionName" ];then
-			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+			ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+			ftAddNote -h
 		fi
 
 		if [ -d ${dirBackupRoot} ]&&[ ! -d ${dirBackupNote} ];then
@@ -460,11 +472,6 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftMD5()
 	{
-	#=================== example=============================
-	#
-	#	ftMD5 [type] [path] [fileNameBase/VersionName]
-	#	ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
-	#=========================================================
 		local ftName=记录和校验版本包的MD5
 		local typeEdit=$1
 		local dirBackupRoot=$2
@@ -472,12 +479,29 @@ source  $(cd `dirname $0`; pwd)/base
 		local versionName=$3
 		local fileNameMd5=${versionName}.md5
 
+		#使用示例
+		while true; do
+		case "$1" in
+			h | H |-h | -H)
+		cat<<EOF
+		#=================== ${ftName}的使用示例===================
+		#
+		#	ftMD5 [type] [path] [fileNameBase/VersionName]
+		#	ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
+		#=========================================================
+EOF
+		exit;;
+		* )break;;
+		esac
+		done
+
 		#耦合变量校验
 		local valCount=3
 		if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
 						         ||[ -z "$dirBackupRoot" ]\
 						         ||[ -z "$versionName" ];then
-			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+			ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+			ftMD5 -h
 		fi
 
 		if [ ! -d ${dirBackupRoot} ];then
@@ -574,12 +598,6 @@ source  $(cd `dirname $0`; pwd)/base
 
 	ftAddOrCheckSystemHwSwInfo()
 	{
-	#=================== example=============================
-	#
-	#	ftAddOrCheckSystemHwSwInfo [type] [path] [path]
-	#	ftAddOrCheckSystemHwSwInfo -check
-	#=========================================================
-
 	local ftName=记录和校验版本包软件和硬件信息
 	local typeEdit=$1
 	local dirPathBackupRoot=$2
@@ -601,12 +619,29 @@ source  $(cd `dirname $0`; pwd)/base
 		infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
 	local infoHw32x64=$(uname -m|sed s/[[:space:]]//g)
 
+	#使用示例
+	while true; do
+	case "$1" in
+		h | H |-h | -H)
+	cat<<EOF
+	#=================== ${ftName}的使用示例===================
+	#
+	#	ftAddOrCheckSystemHwSwInfo [type] [path] [path]
+	#	ftAddOrCheckSystemHwSwInfo -check
+	#=========================================================
+EOF
+	exit;;
+	* )break;;
+	esac
+	done
+
 	#耦合变量校验
 	local valCount=3
 	if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
 					         ||[ -z "$dirPathBackupRoot" ]\
 					         ||[ -z "$dirNameBackupInfoVersion" ];then
-		ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+		ftAddOrCheckSystemHwSwInfo -h
 	fi
 
 	local returns=通过

@@ -36,7 +36,7 @@
 			data/excludeDirsAll.list		备份排除[忽略]全部列表
 			data/excludeDirsBase.list		备份排除[忽略]基础列表
 			data/version/read.me			系统当前有效修改说明信息
-			data/value     				全局参数
+			data/value     					全局参数
 		cmds/main.sh     					xbash主入口
 
 ###2.准备操作
@@ -75,5 +75,5 @@
 
 		6 自定义命令名称
 			修改 /home/xxxx/cmds/config/xxxx
-			修改 /home/xxxx/cmds/value
+			修改 /home/xxxx/cmds/data/value
 			修改 /home/xxxx/cmds/module/base
