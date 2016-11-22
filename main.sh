@@ -9,7 +9,8 @@ source  ${mRoDirPathCmdTools}tools
 source  ${mRoDirPathCmdTools}base
 
 #####-------------------执行------------------------------#########
+ftTiming
 ftMain 2>&1|tee $mRoFilePathLog
 #ftMain
-ftTimeLong
+ftTiming
 exit

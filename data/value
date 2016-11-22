@@ -19,7 +19,7 @@ export readonly mRoBaseShellParameter2=$1
 export readonly mRoBaseShellParameter3=$2
 
 export readonly mRoTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
-export readonly mRoTimeBackupStart=$(date +%s -d $(date +"%H:%M:%S"))
+export mTimingStart
 
 export readonly mRoDirPathTools=${mRoDirPathUserHome}${mRoFileNameCmdModuleTool}
 export readonly mRoDirPathCmdTools=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoDirNameCmdModule}

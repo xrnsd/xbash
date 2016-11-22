@@ -191,16 +191,21 @@ break;;
 	done
 }
 
-
-ftTimeLong()
+ftTiming()
 {
 	local ftName=脚本操作耗时记录
+
+	if [ -z "$mTimingStart" ];then
+		mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
+		return 0;
+	fi
+
 	 #时间少于1秒默认不显示操作耗时
 	 #时间时分秒各单位不显示为零的结果
 	time2=$(date +%s -d $(date +"%H:%M:%S"))
-	time3=$(((time2-mRoTimeBackupStart)%60))
-	time5=$(((time2-mRoTimeBackupStart)/3600))
-	time4=$((((time2-mRoTimeBackupStart)-time5*3600)/60))
+	time3=$(((time2-mTimingStart)%60))
+	time5=$(((time2-mTimingStart)/3600))
+	time4=$((((time2-mTimingStart)-time5*3600)/60))
 
 	if [ "$time5" -ne "0" ];then
 		strS1=$time5时
@@ -222,4 +227,5 @@ ftTimeLong()
 	else
 		 ftEcho -s "本技能耗时${strS1}${strF1}${strM1}  !"
 	fi
+	mTimingStart=
 }
