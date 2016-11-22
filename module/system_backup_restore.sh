@@ -86,7 +86,7 @@ source  ${mRoDirPathCmdTools}base
 			ftEcho -e 在${mDirPathStoreSource}没找到有效的版本包
 			exit
 		else
-			ftEcho -t 请选择备份的版本包
+			ftEcho -t 请${ftName}
 			echo "[序号]		版本包名	----------------	   备注		"
 			echo
 			for file in $fileList
@@ -101,7 +101,7 @@ source  ${mRoDirPathCmdTools}base
 				fi
 				fileNoteList[$index]=$note
 				fileList2[$index]=$file
-				echo [${index}] ${fileBaseName}"   ----------------   "${note}
+				echo [ ${index} ] ${fileBaseName}"   ----------------   "${note}
 				index=`expr $index + 1`
 			done
 			while true; do
@@ -117,7 +117,10 @@ source  ${mRoDirPathCmdTools}base
 				tIndex=0
 			fi
 			case $tIndex in
-				[0-9]|[0-9][0-9]|[0-9][0-9][0-9]|[0-9][0-9][0-9][0-9])
+				[0-9]|\
+				[0-9][0-9]|\
+				[0-9][0-9][0-9]|\
+				[0-9][0-9][0-9][0-9])
 					echo
 					mFileNameRestoreSource=${fileList2[$tIndex]}
 					mFileNameRestoreSourceBase=${mFileNameRestoreSource/.tgz/}
@@ -674,7 +677,7 @@ EOF
 			ftEcho -b 检查版本包和当前系统兼容程度
 
 			if [ ! -f $filePathVersionCpu ]||[ ! -f $filePathVersionMainboard ]||[ ! -f $filePathVersionSystem ]||[ ! -f $filePathVersion32x64 ]; then
-				ftEcho -e   版本包相关系统信息损坏
+				ftEcho -e   版本${dirNameBackupInfoVersion}相关系统信息损坏
 				#显示相关信息存储路径
 				echo filePathVersionCpu=$filePathVersionCpu
 				echo filePathVersionMainboard=$filePathVersionMainboard
