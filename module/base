@@ -33,11 +33,12 @@ ftWhoAmI()## #命令权限判定
 	local cmdName=$1
 
 	#耦合变量校验
-    local valCount=1
+	local valCount=1
 	if [ $# -ne $valCount ]||[ -z "$cmdName" ]\
-					         ||[ -z "$mRoCmdsPermissionBase" ]\
-					         ||[ -z "$mRoCmdsPermissionRoot" ];then
-		ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+			         ||[ -z "$mRoCmdsPermissionBase" ]\
+			         ||[ -z "$mRoCmdsPermissionRoot" ];then
+		ftEcho -e "	函数[${ftName}]参数错误，请查看函数使用示例"
+		ftReadMe $XCMD
 	fi
 
 	for cmd in ${mRoCmdsPermissionBase[@]}
@@ -229,7 +230,7 @@ ftReadMe()
 	xg6572 ----- 下载mtk6572的工程
 		|// xg6572 分支名
 EOF
-break;;
+exit;;
 	xc |test | clean_data_garbage|restartadb | help | gjh)ftEcho -g;
 cat<<EOF
 	xc	----- 常规自定义命令和扩展
@@ -242,7 +243,7 @@ cat<<EOF
 		|-- help					查看自定义命令说明
 		|-- gjh ---------------------------------	 生成国际化所需的xml文件
 EOF
-break;;
+exit;;
 	xb | backup | restore)ftEcho -g;
 cat<<EOF
 	xb	----- 系统维护
@@ -251,7 +252,7 @@ cat<<EOF
 		|-- backup	---------------- [root] ------	备份系统
 		|-- restore	---------------- [root] ------	还原系统
 EOF
-break;;
+exit;;
 	xk | monkey | systemui)ftEcho -g;
 cat<<EOF
 	xk	----- 关闭手机指定进程
@@ -260,19 +261,19 @@ cat<<EOF
 		|-- monkey	-------------------------------	关闭monkey
 		|-- systemui	-----------------------------	关闭systemui
 EOF
-break;;
+exit;;
 	xt)
 cat<<EOF
 	xt ----- 检测shell脚本，语法检测和测试运行
 		|// xt 脚本文件名
 EOF
-break;;
+exit;;
 	xh)
 cat<<EOF
 	xh ----- 查看具体命令说明
 		|// xh 命令名
 EOF
-break;;
+exit;;
 	*)ftReadMe -a;break;;
 	esac
 done
