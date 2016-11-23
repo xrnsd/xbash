@@ -55,7 +55,6 @@ ftMain()
 		fi
 	elif [ "$commandAuthority" = "base" ]; then
 		if [ `whoami` = $mRoNameUser ]; then
-		echo `whoami`
 			while true; do
 			case $mRoBaseShellParameter2 in
 				"clean_data_garbage")	ftCleanDataGarbage ; break;;
@@ -64,7 +63,10 @@ ftMain()
 				"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
 				"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
 				"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
-				# "gjh")			java -jar ${mRoDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar; break;;
+				"gjh")			ftEcho -e [$mRoBaseShellParameter2]已关闭，请修改脚本打开
+							ftReadMe $mRoBaseShellParameter2
+							#java -jar ${mRoDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar;
+							break;;
 				*)			ftEcho -e "命令[${XCMD}]参数错误，请查看函数使用示例";ftReadMe $XCMD; break;;
 			esac
 			done
