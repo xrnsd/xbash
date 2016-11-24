@@ -65,7 +65,8 @@
 			修改pwd=123，替换成自己的密码
 			修改tools相关工具[有的话]，对应到你当前环境下的路径，如jdk的路径
 
-		5 输入xc help查看帮助
+###3.其他
+		1 输入xc help查看帮助
 			1. 提示找不到命令
 				打开新窗口
 				sudo chmod 777 -R /home/xxxx/cmds/module
@@ -73,10 +74,10 @@
 				sudo chmod 777  /home/xxxx/cmds/value
 				xc
 
-		6 自定义命令名称
+		2 自定义命令名称
 			修改 /home/xxxx/cmds/config/xxxx
 			修改 /home/xxxx/cmds/data/value
 			修改 /home/xxxx/cmds/module/base
 
-		7 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现
-		8 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
+		3 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现
+		4 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
