@@ -1206,5 +1206,4 @@ EOF
 		ftded -h
 	fi
 }
-ftded
 

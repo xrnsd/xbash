@@ -6,6 +6,9 @@ export readonly mRoFileNameCmdModuleTool=tools/
 export readonly mRoFileNameCmdModuleData=data/
 export readonly mRoDirNameLog=log/
 export readonly mRoNameUser=`who | awk '{print $1}'|sort -u`
+#export readonly mRoDirPathCmdsDataValues=$(cd `dirname $0`; pwd)/
+	dirPathCmdsDataValues=$(cd `dirname $0`; pwd)/
+export readonly mRoDirPathCmds=$(dirname $dirPathCmdsDataValues)
 export mUserPwd=123
 
 #脚本文件夹cmds放在home/××××/时，以下逻辑[mRoDirPathUserHome=用户主目录]有效
