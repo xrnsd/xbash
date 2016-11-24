@@ -38,6 +38,11 @@ ftMain()
 	"test")		${mRoDirPathCmdTools}test.sh	 ;break;;
 	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
 	v | V | -v |-V)	echo \"Xrnsd extensions to bash\" V0.5.2 beta	;break;;
+	vvv)		ftEcho -t java
+			java -version
+			ftEcho -t gcc
+			gcc -v
+	break;;
 	*)
 	#权限约束开始
 	ftWhoAmI $mRoBaseShellParameter2
@@ -114,6 +119,7 @@ xc ----- 常规自定义命令和扩展
 	|-- clean_data_garbage				 清空回收站
 	|-- restartadb	--------------------------	 重启adb服务
 	|-- v ------------------------------------	 自定义命令版本
+	|-- vvv ------------------------------------	 系统环境关键参数查看
 	|-- help					 查看自定义命令说明
 	|-- gjh	---------------------------------	 生成国际化所需的xml文件
 xk ----- 关闭手机指定进程
@@ -145,6 +151,7 @@ xp ----- 查看文件绝对路径
 xh ----- 查看具体命令说明
 	|// xh 命令名
 	|
+xgl	---- [无参] / 简单查看最近10次git commit
 xi	---- [无参] / 快速初始化模块编译环境
 xr	---- [无参] / 使.bashrc修改生效
 .	 ---- [无参] / 进入上一级目录
@@ -171,6 +178,7 @@ xc	----- 常规自定义命令和扩展
 	|-- clean_data_garbage				清空回收站
 	|-- restartadb	--------------------------	 重启adb服务
 	|-- v ------------------------------------	 自定义命令版本
+	|-- vvv ------------------------------------	 系统环境关键参数查看
 	|-- help					查看自定义命令说明
 	|-- gjh ---------------------------------	 生成国际化所需的xml文件
 EOF
