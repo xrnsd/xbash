@@ -110,6 +110,12 @@ fi
 #=========================================================================
 #====================== 自定义配置   ======================================
 #=========================================================================
+#--------------------------基础变量----------------------------------
+userName=`who | awk '{print $1}'|sort -u`
+dirPathHome=/home/${userName}
+dirPathHomeCmd=${dirPathHome}/cmds/
+dirPathHomeTools=${dirPathHome}/tools
+pwd=123
 
 #--------------------------函数----------------------------------
 function nameTerminal {
@@ -135,12 +141,6 @@ ftEcho()
     esac
     done
 }
-#--------------------------基础变量----------------------------------
-userName=`who | awk '{print $1}'|sort -u`
-dirPathHome=/home/${userName}
-dirPathHomeCmd=${dirPathHome}/cmds/
-dirPathHomeTools=${dirPathHome}/tools
-pwd=123
 
 #--------------------------部分环境变量---------------------------
 export JAVA_HOME=${dirPathHomeTools}/jdk/1.6.038
@@ -191,7 +191,7 @@ alias xk='export XCMD=xk;${dirPathHomeCmd}main.sh'
 alias xc='export XCMD=xc;${dirPathHomeCmd}main.sh'
 alias xh='export XCMD=xh;${dirPathHomeCmd}main.sh help $2'
 alias xu='export XCMD=xu;gedit ${dirPathHome}/.bashrc'
-alias xuu='export XCMD=xuu;subl ${dirPathHomeCmd}main.sh'
+alias xuu='export XCMD=xuu;subl ${dirPathHomeCmd}'
 alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
 alias xss='export XCMD=xss;echo '$pwd' | sudo -S reboot'
 alias xs='export XCMD=xs;echo '$pwd' | sudo -S shutdown -h now'
@@ -221,7 +221,7 @@ complete -W "123" xl
 complete -W "123" xle
 complete -W "compile" xi
 complete -W "systemui monkey launcher" xk
-complete -W "restartadb help gjh test clean_data_garbage" xc
+complete -W "restartadb help gjh test clean_data_garbage vvv" xc
 
 #-------------------------android优化加速部分------------------
 #编译加速 c/c++ 部分

@@ -7,7 +7,7 @@ ftKillPhoneAppByPackageName()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例===================
+	#=================== ${ftName}的使用示例=============
 	#
 	#	ftKillPhoneAppByPackageName [packageName]
 	#	ftKillPhoneAppByPackageName com.android.settings
@@ -25,6 +25,7 @@ EOF
 	#adb状态检测
 	adbStatus=`adb get-state`
 	if [ $adbStatus =  "device" ];then
+		#确定包存在
 		if [ -n "$(adb shell pm list packages|grep $packageName)" ];then
 			adb root
 			adb remount
@@ -32,7 +33,7 @@ EOF
 			#pid=`adb shell "ps" | awk '/com.android.systemui/{print $2}'`
 			adb shell kill $pid
 		else
-			ftEcho -e 包名${packageName}不存在，请确认
+			ftEcho -e 包名[${packageName}]不存在，请确认
 		fi
 	else
 		ftEcho -e adb状态异常,请重新尝试
@@ -220,7 +221,7 @@ ftEcho()
 =========================================================================
 命令	--- 参数/命令说明
 	|// 使用格式
-	|-- 参数1	 ---------------- [参数权限] ----	参数说明
+	|-- 参数	 ---------------- [参数权限] ----	参数说明
 =========================================================================
 EOF
 break;;

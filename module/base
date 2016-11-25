@@ -40,7 +40,7 @@ ftMain()
 	case $mRoBaseShellParameter2 in
 	"test")		${mRoDirPathCmdTools}test.sh	 ;break;;
 	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
-	v | V | -v |-V)	echo \"Xrnsd extensions to bash\" V0.5.2 beta	;break;;
+	v | V | -v |-V)	echo \"Xrnsd extensions to bash\" V0.5.3 beta	;break;;
 	vvv)		ftEcho -t java
 			java -version
 			ftEcho -t gcc
@@ -93,7 +93,7 @@ ftOther()
 	while true; do
 	case $XCMD in
 	"xk")	ftKillPhoneAppByPackageName $mRoBaseShellParameter2	;break;;
-	*)	ftEcho -e "命令[${XCMD}]参数错误，请查看函数使用示例";ftReadMe $XCMD; break;;
+	*)	ftEcho -e "命令[${XCMD}]参数错误，请查看命令使用示例";ftReadMe $XCMD; break;;
 	esac
 	done
 }
@@ -108,7 +108,7 @@ ftReadMe()
 =========================================================================
 	命令	--- 参数/命令说明
 	|// 使用格式
-	|-- 参数1	 ---------------- [参数权限] ----	参数说明
+	|-- 参数	 ---------------- [参数权限] ----	参数说明
 =========================================================================
 xb ----- 系统维护
 	|// xb ×××××

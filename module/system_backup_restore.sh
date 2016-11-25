@@ -83,7 +83,7 @@ source  ${mRoDirPathCmdTools}base
 		#b=${a/123/321};将${a}里的第一个123替换为321\
 
 		if [ -z "$fileList" ];then
-			ftEcho -e 在${mDirPathStoreSource}没找到有效的版本包
+			ftEcho -ex 在${mDirPathStoreSource}没找到有效的版本包
 		else
 			ftEcho -t 请${ftName}
 			echo "[序号]		版本包名	----------------	   备注		"
