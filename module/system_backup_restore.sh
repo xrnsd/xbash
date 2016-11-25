@@ -84,7 +84,6 @@ source  ${mRoDirPathCmdTools}base
 
 		if [ -z "$fileList" ];then
 			ftEcho -e 在${mDirPathStoreSource}没找到有效的版本包
-			exit
 		else
 			ftEcho -t 请${ftName}
 			echo "[序号]		版本包名	----------------	   备注		"
@@ -201,7 +200,7 @@ source  ${mRoDirPathCmdTools}base
 			echo "生成的备份的类型：	${btype}"
 			echo -e "当前系统有效修改：	\033[44m$mVersionChangs\033[0m"
 		else
-			ftEcho -e 一脸懵逼
+			ftEcho -ex 一脸懵逼
 		fi
 		echo
 	}
@@ -394,7 +393,7 @@ source  ${mRoDirPathCmdTools}base
 			dirsExclude=${mDirPathsExcludeAll[*]}
 			fileNameExclude=$mFilePathExcludeAll
 		else
-			ftEcho -e  你想金包还是银包呢
+			ftEcho -ex  你想金包还是银包呢
 			exit
 		fi
 
@@ -504,7 +503,7 @@ EOF
 		if [ ! -d ${dirBackupRoot} ];then
 			ftEcho -e MD5相关操作失败，找不到$dirBackupRoot
 			exit
-			fi
+		fi
 
 		if [ ${typeEdit} == "-add" ]; then
 
@@ -532,18 +531,15 @@ EOF
 					md5Base=`cat $pathMd5`
 					md5Now=`md5sum $pathFile | awk '{print $1}'`
 					if [ "$md5Base"x != "$md5Now"x ]; then
-						ftEcho -e 校验失败，版本包：${versionName}无效
-						exit
+						ftEcho -ex 校验失败，版本包：${versionName}无效
 					else
 						ftEcho -s 版本包：${versionName}校验成功
 					fi
 				else
-					ftEcho -e 版本包：${versionName}校验信息查找失败
-					exit
+					ftEcho -ex 版本包：${versionName}校验信息查找失败
 				fi
 			else
-				ftEcho -e 版本包：${versionName}校验信息查找失败
-				exit
+				ftEcho -ex 版本包：${versionName}校验信息查找失败
 			fi
 		fi
 
