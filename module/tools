@@ -24,7 +24,7 @@ EOF
 
 	#adb状态检测
 	adbStatus=`adb get-state`
-	if [ $adbStatus =  "device" ];then
+	if [ $adbStatus = "device" ];then
 		#确定包存在
 		if [ -n "$(adb shell pm list packages|grep $packageName)" ];then
 			adb root
@@ -198,6 +198,7 @@ ftEcho()
 #
 #	 ftEcho [option] [Content]
 #	 ftEcho e 错误的选择1
+#	\033[47;30m  47背景色配置 30前景色配置
 #=========================================================
 	local ftName=工具信息提示
 	option=$1
@@ -205,11 +206,11 @@ ftEcho()
 	while true; do
 	case $option in
 	#错误信息显示
-	e | E | -e | -E)	echo -e "\033[31m$Content\033[0m"; break;;
+	e | E | -e | -E)	echo -e "\033[1;31m$Content\033[0m"; break;;
 	#错误信息显示，显示退出
-	ex | EX | -ex | -EX)	echo -e "\033[31m$Content\033[0m"; exit;;
+	ex | EX | -ex | -EX)	echo -e "\033[47;31m$Content\033[0m"; exit;;
 	#执行信息
-	s | S | -s | -S)	echo;echo -e "\033[44m$Content\033[0m"; break;;
+	s | S | -s | -S)	echo;echo -e "\033[42;37m$Content\033[0m"; break;;
 	# 标题，不换行
 	t | T | -t | -T)	echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
 	# 标题，换行

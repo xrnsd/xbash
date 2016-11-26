@@ -176,9 +176,9 @@ export HISTCONTROL=ignoredups
 # 忽略特定命令
 export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
 # 命令历史文件大小
-export HISTFILESIZE=100000000
+export HISTFILESIZE=10000000000
 # 保存历史命令条数
-export HISTSIZE=100000
+export HISTSIZE=1000000000
 # 以追加的方式保存命令历史
 shopt -s histappend
 
