@@ -1233,7 +1233,7 @@ ftBootAnimation()
 #=================== 函数${ftName}的使用示例============
 #
 #	ftBootAnimation [edittype] [path]
-#	生成bootanimation2.zip
+#	生成bootanimation2.zip,进入已new处理或解压的文件夹后可运行
 #	ftBootAnimation create /home/xxxx/test/bootanimation2
 #	初始化生成bootanimation2.zip所需要的东东，然后生成动画包
 #	ftBootAnimation new /home/xxxx/test/bootanimation2
@@ -1266,6 +1266,7 @@ EOF
 		local dirNamepart0=part0
 		local dirNamePart1=part1
 		local fileNameDesc=desc.txt
+		local fileNameLast
 
 		# 生成文件，文件夹
 		mkdir -p ${dirPathAnimation}/${dirNamepart0}
@@ -1273,9 +1274,27 @@ EOF
 		touch ${dirPathAnimation}/${fileNameDesc}
 
 		# 重命名图片，复制到part0
-
-
-		# 复制最后一张图片到part0
+		cd $dirPathAnimation
+		filelist=`ls $dirPathAnimation`
+		# 文件名去空格
+		for loop in `ls -1 | tr ' '  '#'`
+		 do
+		    mv  "`echo $loop | sed 's/#/ /g' `"  "`echo $loop |sed 's/#//g' `"  2> /dev/null
+		done
+		# 文件重命名
+		index=0
+		for file in $filelist
+		do
+			# echo “filename: ${file%.*}”
+			# echo “extension: ${file##*.}”
+			# if [ $file = local ]
+			a=$((1000+$index))
+			echo [$index]  ${file}
+			mv $file  ${dirPathAnimation}/part0/${a:1}.${file##*.}
+			fileNameLast=${a:1}.${file##*.}
+			index=`expr $index + 1`
+		done
+		# 复制最后一张图片到part1
 		# 输入分辨率,输入帧率,循环次数
 		#生成desc.txt
 		ftBootAnimation create $dirPathAnimation
@@ -1288,21 +1307,3 @@ EOF
 		ftBootAnimation -h
 	fi
 }
-dirPathAnimation=/home/wgx/download/temp/1
-cd $dirPathAnimation
-# filelist=`ls $dirPathAnimation`
-# index=0
-# for file in $filelist
-# do
-# # 	echo “filename: ${file%.*}”
-# # 	echo “extension: ${file##*.}”
-# 	a=$((1000+$index))
-# 	echo [$index]  ${file}
-# 	#echo ${dirPathAnimation}/part0/${a:1}.${file##*.}
-
-# 	index=`expr $index + 1`
-# done
-for loop in `ls -1 | tr ' '  '#'`
- do
-    mv  "`echo $loop | sed 's/#/ /g' `"  "`echo $loop |sed 's/#//g' `"  2> /dev/null
-done
