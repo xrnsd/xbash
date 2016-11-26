@@ -1,4 +1,18 @@
+#####---------------------工具函数---------------------------#########
+source  ${mRoDirPathCmdTools}tools
 
+#####---------------------流程函数---------------------------#########
+source  ${mRoDirPathCmdTools}base
+
+#####----------------------初始化demo环境--------------------------#######
+dirNameDebug=temp
+dirPathDebug=/home/${mRoNameUser}/${dirNameDebug}
+if [ ! -d $dirPathDebug ];then
+	mkdir -p $dirPathDebug
+	ftEcho -s 测试用目录[$dirPathDebug]不存在，已新建
+fi
+cd $dirPathDebug
+#####----------------------demo函数--------------------------#########
 
 ft1()
 {
@@ -1207,3 +1221,88 @@ EOF
 	fi
 }
 
+ftBootAnimation()
+{
+	local ftName=生成开关机动画
+	local typeEdit=$1
+	local dirPathAnimation=$2
+	local dirPathBase=$(pwd)
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== 函数${ftName}的使用示例============
+#
+#	ftBootAnimation [edittype] [path]
+#	生成bootanimation2.zip
+#	ftBootAnimation create /home/xxxx/test/bootanimation2
+#	初始化生成bootanimation2.zip所需要的东东，然后生成动画包
+#	ftBootAnimation new /home/xxxx/test/bootanimation2
+#============================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if [ $# -ne $valCount ]||[ -z "$dirPathAnimation" ];then
+		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+		ftBootAnimation -h
+	fi
+
+	while true; do case "$typeEdit" in
+	create)
+		local dirNamePackageName=${dirPathAnimation##*/}.zip
+		local fileConfig=`ls $dirPathAnimation|grep '.txt'`
+		if [ -z "$dirNamePackageName" ]||[ -z "$fileConfig" ];then
+			ftEcho -e "函数[${ftName}]运行出现错误，请查看函数"
+			echo dirNamePackageName=$dirNamePackageName
+			echo fileConfig=$fileConfig
+		fi
+
+		cd $dirPathAnimation
+		zip -r -0 ${dirNamePackageName} */* ${fileConfig}
+		cd $dirPathBase
+		break;;
+	new)
+		local dirNamepart0=part0
+		local dirNamePart1=part1
+		local fileNameDesc=desc.txt
+
+		# 生成文件，文件夹
+		mkdir -p ${dirPathAnimation}/${dirNamepart0}
+		mkdir -p ${dirPathAnimation}/${dirNamepart1}
+		touch ${dirPathAnimation}/${fileNameDesc}
+
+		# 重命名图片，复制到part0
+
+
+		# 复制最后一张图片到part0
+		# 输入分辨率,输入帧率,循环次数
+		#生成desc.txt
+		ftBootAnimation create $dirPathAnimation
+		break;;
+	 * )	ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+		ftBootAnimation -h;; esac;done
+
+	if [ $typeEdit = "create" ]||[ -z "new" ];then
+		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+		ftBootAnimation -h
+	fi
+}
+dirPathAnimation=/home/wgx/download/temp/1
+cd $dirPathAnimation
+# filelist=`ls $dirPathAnimation`
+# index=0
+# for file in $filelist
+# do
+# # 	echo “filename: ${file%.*}”
+# # 	echo “extension: ${file##*.}”
+# 	a=$((1000+$index))
+# 	echo [$index]  ${file}
+# 	#echo ${dirPathAnimation}/part0/${a:1}.${file##*.}
+
+# 	index=`expr $index + 1`
+# done
+for loop in `ls -1 | tr ' '  '#'`
+ do
+    mv  "`echo $loop | sed 's/#/ /g' `"  "`echo $loop |sed 's/#//g' `"  2> /dev/null
+done

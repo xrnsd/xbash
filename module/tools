@@ -1,4 +1,7 @@
 #!/bin/bash
+#####---------------------  说明  ---------------------------#########
+# 默认规划中，不可在此文件中出现，不被函数包裹的调用，定义
+# 人话，这里只放函数
 #####---------------------工具函数---------------------------#########
 ftKillPhoneAppByPackageName()
 {
@@ -268,4 +271,39 @@ ftTiming()
 		 ftEcho -s "本技能耗时${strS1}${strF1}${strM1}  !"
 	fi
 	mTimingStart=
+}
+ftCreateBootAnimation()
+{
+	local ftName=生成开关机动画
+	local dirPathAnimation=$1
+	local dirPathBase=$(pwd)
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== 函数${ftName}的使用示例============
+#
+#	ftCreateBootAnimation [path]
+#	ftCreateBootAnimation /home/xxxx/test/bootanimation2
+#============================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if [ $# -ne $valCount ]||[ -z "$dirPathAnimation" ];then
+		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+		ftCreateBootAnimation -h
+	fi
+
+	local dirNamePackageName=${dirPathAnimation##*/}.zip
+	local fileConfig=`ls $dirPathAnimation|grep '.txt'`
+	if [ -z "$dirNamePackageName" ]||[ -z "$fileConfig" ];then
+		ftEcho -e "函数[${ftName}]运行出现错误，请查看函数"
+		echo dirNamePackageName=$dirNamePackageName
+		echo fileConfig=$fileConfig
+	fi
+
+	cd $dirPathAnimation
+	zip -r -0 ${dirNamePackageName} */* ${fileConfig}
+	cd $dirPathBase
 }
