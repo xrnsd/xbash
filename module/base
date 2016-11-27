@@ -40,9 +40,13 @@ ftMain()
 	case $mRoBaseShellParameter2 in
 	"test")		${mRoDirPathCmdTools}test.sh	 ;break;;
 	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
-	v | V | -v |-V)	echo \"Xrnsd extensions to bash\" V0.5.3 beta	;break;;
-	vvv)		ftEcho -t java
+	v | V | -v |-V)		ftVersion;break;;
+	vvv)	ftEcho -t xbash
+			ftVersion
+
+			ftEcho -t java
 			java -version
+			
 			ftEcho -t gcc
 			gcc -v
 	break;;
@@ -221,4 +225,9 @@ exit;;
 	*)ftReadMe -a;break;;
 	esac
 done
+}
+
+ftVersion()
+{
+	echo \"Xrnsd extensions to bash\" V0.5.3 beta
 }
