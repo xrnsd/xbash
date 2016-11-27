@@ -853,35 +853,6 @@ fteee()
 
 		#sudo tar -cvpzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / 2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
 	}
-ftEcho()
-{
-#=================== example=============================
-#
-#		ftEcho [option] [Content]
-#		ftEcho e 错误的选择1
-#=========================================================
-	option=$1
-	Content=$2
-	while true; do
-	case $option in
-		y | Y | -y | -Y)  echo -en "${Content}[y/n]"; break;;
-		e | E | -e | -E)  echo -e "\033[31m$Content\033[0m"; break;;
-		s | S | -s | -S)  echo;echo -e "\033[44m$Content\033[0m"; break;;
-		t | T | -t | -T)  echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
-		b | B | -b | -B)  echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
-              g | G | -g | -G)
-cat<<EOF
-    =========================================================================
-    命令  --- 参数/命令说明
-          |// 使用格式
-          |-- 参数1   ---------------- [参数权限] ----  参数说明
-    =========================================================================
-EOF
-break;;
-		* ) echo $option ;break;;
-	esac
-	done
-}
 
 	ftwddd()
 	{
@@ -1221,7 +1192,7 @@ EOF
 	fi
 }
 
-ftBootAnimation()
+ftBootAnimation2()
 {
 	local ftName=生成开关机动画
 	local typeEdit=$1
@@ -1242,7 +1213,7 @@ EOF
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
-	local valCount=1
+	local valCount=2
 	if [ $# -ne $valCount ]||[ -z "$dirPathAnimation" ];then
 		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
 		ftBootAnimation -h
@@ -1250,8 +1221,17 @@ EOF
 
 	while true; do case "$typeEdit" in
 	create)
+		#默认运行前提环境
+		#所在文件夹为动画包解压生成的，也就是该参数默认只能重新打包
 		local dirNamePackageName=${dirPathAnimation##*/}.zip
 		local fileConfig=`ls $dirPathAnimation|grep '.txt'`
+
+		echo -en "请输入动画包的包名(回车默认animation):"
+		read customPackageName
+		if [ ${#customPackageName} != 0 ];then
+			dirNamePackageName=${customPackageName}.zip
+		fi
+
 		if [ -z "$dirNamePackageName" ]||[ -z "$fileConfig" ];then
 			ftEcho -e "函数[${ftName}]运行出现错误，请查看函数"
 			echo dirNamePackageName=$dirNamePackageName
@@ -1259,51 +1239,136 @@ EOF
 		fi
 
 		cd $dirPathAnimation
-		zip -r -0 ${dirNamePackageName} */* ${fileConfig}
+		zip -r -0 ${dirNamePackageName} */* ${fileConfig} >/dev/null
 		cd $dirPathBase
+
+		while true; do
+		ftEcho -y 已生成${dirNamePackageName}，是否清尾
+		read -n1 sel
+		case "$sel" in
+			y | Y )
+				mv ${dirPathAnimation}/${dirNamePackageName} /home/${mRoNameUser}/${dirNamePackageName}&&
+				rm -rf $dirPathAnimation
+				break;;
+			n | N| q |Q)  exit;;
+			* )   
+				ftEcho -e 错误的选择：$sel
+				echo "输入n，q，离开"
+				;;
+		esac
+		done
 		break;;
 	new)
-		local dirNamepart0=part0
+		local dirNamePart0=part0
 		local dirNamePart1=part1
 		local fileNameDesc=desc.txt
 		local fileNameLast
+		local dirNameAnimation=animation
 
-		# 生成文件，文件夹
-		mkdir -p ${dirPathAnimation}/${dirNamepart0}
-		mkdir -p ${dirPathAnimation}/${dirNamepart1}
-		touch ${dirPathAnimation}/${fileNameDesc}
+		dirPathAnimationSourceRes=$dirPathAnimation
 
-		# 重命名图片，复制到part0
-		cd $dirPathAnimation
-		filelist=`ls $dirPathAnimation`
-		# 文件名去空格
+		ftFileDirEdit -e false $dirPathAnimationSourceRes
+		if [ $? -eq "2" ];then
+			ftEcho -ex 空的动画资源，请确认[${dirPathAnimationSourceRes}]是否存在动画文件
+		fi
+
+		dirPathAnimationTraget=/home/${mRoNameUser}/${dirNameAnimation}
+
+		ftFileDirEdit -e false $dirPathAnimationTraget
+		if [ -d $dirPathAnimationTraget ]||[ $? -eq   "3" ];then		
+			while true; do
+			ftEcho -y ${ftName}的目标文件[${dirPathAnimationTraget}]夹非空，是否删除重建
+			read -n1 sel
+			case "$sel" in
+				y|Y)
+					rm -rf $dirPathAnimationTraget
+					break;;
+				n|N|q|Q)  exit;;
+				*)   
+					ftEcho -e 错误的选择：$sel
+					echo "输入n，q，离开"
+					;;
+			esac
+			done
+		fi
+		mkdir  -p ${dirPathAnimationTraget}/${dirNamePart0}
+		mkdir	  ${dirPathAnimationTraget}/${dirNamePart1}
+		touch  ${dirPathAnimationTraget}/${fileNameDesc}
+
+		cd $dirPathAnimationSourceRes
+		filelist=`ls $dirPathAnimationSourceRes`
+		#文件名去空格
 		for loop in `ls -1 | tr ' '  '#'`
 		 do
 		    mv  "`echo $loop | sed 's/#/ /g' `"  "`echo $loop |sed 's/#//g' `"  2> /dev/null
 		done
-		# 文件重命名
+
+		file1=${filelist[0]}
+		if [ ${file1##*.} != "jpg" ]&&[ ${file1##*.} != "jpg" ];then
+			ftEcho -e 特殊格式[${file1##*.}]动画资源文件，生成包大小可能异常
+		fi
+
+		#文件重命名
 		index=0
 		for file in $filelist
 		do
 			# echo “filename: ${file%.*}”
 			# echo “extension: ${file##*.}”
-			# if [ $file = local ]
 			a=$((1000+$index))
-			echo [$index]  ${file}
-			mv $file  ${dirPathAnimation}/part0/${a:1}.${file##*.}
+			# 重命名图片，复制到part0
 			fileNameLast=${a:1}.${file##*.}
+			cp  $file  ${dirPathAnimationTraget}/${dirNamePart0}/${fileNameLast}
 			index=`expr $index + 1`
 		done
 		# 复制最后一张图片到part1
+		cp  ${dirPathAnimationTraget}/${dirNamePart0}/${fileNameLast} ${dirPathAnimationTraget}/${dirNamePart1}/${fileNameLast}
+		
 		# 输入分辨率,输入帧率,循环次数
-		#生成desc.txt
-		ftBootAnimation create $dirPathAnimation
-		break;;
-	 * )	ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
-		ftBootAnimation -h;; esac;done
+		# 480           250   	15
+		# 图片的宽    图片的高   每秒显示的帧数
+		# p            	1        	0			part0
+		# 标识符    循环的次数  阶段切换间隔时间 对应图片的目录
+		# p 			0 			10 			part1
+		# 标识符    循环的次数  阶段切换间隔时间 对应图片的目录
+		local resolutionWidth=0
+		local resolutionHeight=0
+		local frameRate=0
+		local cycleCount=0
+		while [ -z "$resolutionWidth" ]||\
+			  [ -z "$resolutionHeight" ]||\
+			  [ -z "$frameRate" ]||\
+			  [ -z "$cycleCount" ]; do
 
-	if [ $typeEdit = "create" ]||[ -z "new" ];then
+			  	if [ -z "$resolutionWidth" ];then
+					echo -en 请输入动画的宽，用于计算分辨率:
+					read resolutionWidth
+					input=$resolutionWidth
+			  	elif [ -z "$resolutionHeight" ]; then
+					echo -en 请输入动画的高，用于计算分辨率:
+					read resolutionHeight
+					input=$resolutionWidth
+			  	elif [ -z "$frameRate" ]; then
+					echo -en 请输入动画的帧率:
+					read frameRate
+					input=$frameRate
+			  	elif [ -z "$cycleCount" ]; then
+					echo -en 请输入动画的循环次数:
+					read cycleCount
+					input=$cycleCount
+				fi
+		done
+
+		#生成desc.txt
+		echo -e "$resolutionWidth $resolutionHeight $frameRate\n\
+p $cycleCount 0 part0\n\
+p 0 0 part1" >${dirPathAnimationTraget}/${fileNameDesc}
+		
+		# 生成动画包
+		ftBootAnimation create $dirPathAnimationTraget
+		break;;
+	 * )	
 		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
-		ftBootAnimation -h
-	fi
+		ftBootAnimation -h;; esac;done
 }
+
+# ftBootAnimation2 new /home/xian-hp-u16/temp/bootanimation/folder1
