@@ -41,8 +41,8 @@ source  ${mRoDirPathCmdTools}base
 	ftRestoreOperate()
 	{
 		local ftName=使用tar还原系统
-		ftEcho -y 是否开始还原
 		while true; do
+		ftEcho -y 是否开始还原
 		read -n1 sel
 		case "$sel" in
 			y | yes )
@@ -58,7 +58,10 @@ source  ${mRoDirPathCmdTools}base
 					ftEcho -e 未找到版本包:${pathsource}
 				fi;break;;
 			n | N | q |Q)  exit;;
-			* )  ftEcho -e 错误的选择：$sel ;echo "输入n，q，离开";break;;
+			* )  
+				ftEcho -e 错误的选择：$sel 
+				echo "输入n，q，离开";
+				;;
 		esac
 		done
 	}
@@ -570,8 +573,8 @@ EOF
 		fi
 
 		if [ $isSynchronous = "true" ];then
-			ftEcho -y 是否开始同步
 			while true; do
+			ftEcho -y 是否开始同步
 			read sel
 			case "$sel" in
 				y | yes )
@@ -583,7 +586,10 @@ EOF
 					ftEcho -s 同步结束！
 					break;;
 				n | N| q |Q)  exit;;
-				* )   ftEcho -e 错误的选择：$sel ;echo "输入n，q，离开";break;;
+				* )   
+					ftEcho -e 错误的选择：$sel 
+					echo "输入n，q，离开";
+					;;
 			esac
 			done
 		fi
@@ -714,13 +720,16 @@ EOF
 		if [ $# -ne $valCount ]||[ -z "$title" ];then
 			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 		fi
-		ftEcho -y "$1有变动,是否忽悠"
 		while true; do
+		ftEcho -y "$1有变动,是否忽悠"
 		read -n1 sel
 		case "$sel" in
 			y | yes )	echo 已忽略$1;break;;
 			n | N | q |Q)	exit;;
-			* )		ftEcho -e 错误的选择：$sel ;echo "不忽略请输入n，q";break;;
+			* )		
+				ftEcho -e 错误的选择：$sel 
+				echo "输入n，q，离开";
+				;;
 		esac
 		done
 	}
@@ -758,8 +767,8 @@ EOF
 				ftSelBackupType&&
 				#当前配置信息显示
 				ftEchoInfo backup&&
-				ftEcho -y 是否开始备份
 				while true; do
+				ftEcho -y 是否开始备份
 				read -n1 sel
 				case "$sel" in
 					y | yes )
@@ -776,7 +785,10 @@ EOF
 					#同步
 					ftSynchronous ;break;;
 					n | N | q |Q)  exit;;
-					* )  ftEcho -e 错误的选择:${sel} ;echo  "输入n，q，离开";break;;
+					* ) 
+					ftEcho -e 错误的选择：$sel 
+					echo "输入n，q，离开";
+					;;
 				esac
 				done
 		else
