@@ -1379,3 +1379,80 @@ p 0 0 part1" >${dirPathAnimationTraget}/${fileNameDesc}
 }
 
 # ftBootAnimation2 new /home/xian-hp-u16/temp/bootanimation/folder1
+ftSynchronous2()
+{
+local ftName=在不同设备间同步版本包
+local isSynchronous=$1
+local dirPathArray=(/home/wgx/temp/1 /home/wgx/temp/2 /home/wgx/temp/3)
+
+if [ $isSynchronous = "false" ];then
+	return 1
+fi
+
+#耦合变量校验
+local valCount=1
+if [ $# -ne $valCount ];then
+	ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+fi
+
+if [ $isSynchronous = "true" ];then
+	while true; do
+	ftEcho -y 是否开始同步
+	read -n1 sel
+	case "$sel" in
+		y | yes )
+			ftEcho -s 开始同步!
+			for dirpath in ${dirPathArray[@]}
+			do
+				for dirpath2 in ${dirPathArray[@]}
+				do
+					if [ ${dirpath} != ${dirpath2} ]; then
+						find $dirpath -regex ".*\.log\|.*\.list" -exec cp {} -u -n -v $dirpath2 \; ;
+					fi
+				done
+			done
+			ftEcho -s 同步结束！
+			break;;
+		n | N| q |Q)  exit;;
+		* )
+			ftEcho -e 错误的选择：$sel
+			echo "输入n，q，离开";
+			;;
+	esac
+	done
+fi
+}
+# ftSynchronous2 true
+
+ftInitDevicesList2()
+{
+	local ftName=选择备份包存放的设备
+	local devDir=/media
+	local dirList=`ls $devDir`
+	mCmdsModuleDataDevicesList[0]=${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser}
+	local index=1;
+	#开始记录设备文件
+	for dir in $dirList
+	do
+		#临时挂载设备
+		if [ ${dir} == $mRoNameUser ]; then
+			local dirTempList=`ls ${devDir}/${dir}`
+			for dirTemp in $dirTempList
+			do
+				mCmdsModuleDataDevicesList[$index]=${devDir}/${dir}/${dirTemp}
+				index=`expr $index + 1`
+			done
+		else
+		#长期挂载设备
+		mCmdsModuleDataDevicesList[$index]=${devDir}/${dir}
+		index=`expr $index + 1`
+		fi
+	done
+	export mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[*]}
+}
+
+# ftInitDevicesList2
+# for dirTemp in $mCmdsModuleDataDevicesList
+# do
+# 	echo $dirTemp
+# done

@@ -27,8 +27,6 @@
 	mNoteBackupTarget=null
 	mNoteRestoreSource=null
 
-	isSynchronous=false
-
 # 函数
 if [ -f ${mRoDirPathCmdTools}tools ];then
 	source  ${mRoDirPathCmdTools}tools
@@ -45,7 +43,7 @@ fi
 		ftEcho -y 是否开始还原
 		read -n1 sel
 		case "$sel" in
-			y | yes )
+			y | Y )
 				pathsource=$1
 				mDirPathRestoreTarget=$2
 				if [ -f $pathsource ];then
@@ -173,12 +171,13 @@ fi
 	{
 		local ftName=脚本操作信息显示，用于关键操作前的确认
 		ftEcho -b 请确认下面信息
-		local path=${mRoDirPathUserHome}cmds/data/version/read.me
-		local mVersionChangs=`cat $path`
+		local mVersionChangs="Android build : mtk_KK  mtk_L mtk_M\n\
+			Android app : 4.4\n\
+			custom bash : Xrnsd-extensions-to-bash\n\
+			tools : jdk1.6 openjdk1.7 sdk ndk flash_tool eclipse"
 
 		local infoType=$1
 		if [ $infoType = "restore" ];then
-
 			echo "使用的源文件为：	${mFileNameRestoreSource}"
 			echo "使用的源文件的说明：	${mNoteRestoreSource}"
 			echo "还原的目标目录为：	${mDirPathRestoreTarget}"
@@ -197,7 +196,7 @@ fi
 				btype=全部
 			fi
 
-			echo "生成的备份文件为：	${mFileNameBackupTarget}"
+			echo "生成备份的文件为：	${mFileNameBackupTarget}"
 			echo "生成备份文件的目录：	${mDirPathStoreTarget}"
 			echo "生成的备份的说明：	${mNoteBackupTarget}"
 			echo "生成的备份的类型：	${btype}"
@@ -208,6 +207,32 @@ fi
 		echo
 	}
 
+	ftInitDevicesList()
+	{
+		local ftName=选择备份包存放的设备
+		local devDir=/media
+		local dirList=`ls $devDir`
+		mCmdsModuleDataDevicesList[0]=${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser}
+		local index=1;
+		#开始记录设备文件
+		for dir in $dirList
+		do
+			#临时挂载设备
+			if [ ${dir} == $mRoNameUser ]; then
+				local dirTempList=`ls ${devDir}/${dir}`
+				for dirTemp in $dirTempList
+				do
+					mCmdsModuleDataDevicesList[$index]=${devDir}/${dir}/${dirTemp}
+					index=`expr $index + 1`
+				done
+			else
+			#长期挂载设备
+			mCmdsModuleDataDevicesList[$index]=${devDir}/${dir}
+			index=`expr $index + 1`
+			fi
+		done
+		export mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[*]}
+	}
 
 	ftSetBackupDevDir()
 	{
@@ -216,36 +241,25 @@ fi
 
 		local devTarget
 		local devTargetDir
-		local devDir=/media
-		local dirList=`ls $devDir`
-		local dirList2[0]=${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser}
+
+		ftInitDevicesList
+
+		#耦合变量校验
+		if [ -z "$mCmdsModuleDataDevicesList" ];then
+			ftEcho -ex "函数[${ftName}]参数错误"
+		fi
+
 		local index=0;
-		#遍历/media目录
-		echo [ 0 ] ${dirList2[0]}
-		for dir in $dirList
+		for dev in $mCmdsModuleDataDevicesList
 		do
-			#临时挂载设备
-			if [ ${dir} == $mRoNameUser ]; then
-				local dirTempList=`ls ${devDir}/${dir}`
-				for dirTemp in $dirTempList
-				do
-					index=`expr $index + 1`
-					dir=${dir}/${dirTemp}
-					echo [${index}]  ${devDir}/${dir}
-					dirList2[$index]=$dir
-				done
-			else
-			#长期挂载设备
+			echo [ ${index} ] $dev
 			index=`expr $index + 1`
-			echo [ ${index} ]  ${devDir}/${dir}
-			dirList2[$index]=$dir
-			fi
 		done
 
 		echo
 		while true; do
-			echo -en "请选择存放备份文件的设备[0~$index,q](回车默认当前用户目录):"
-			if [ ${#dirList[@]} -gt 9 ];then
+			echo -en "请选择存放备份文件的设备[0~`expr $index - 1`,q](回车默认当前用户目录):"
+			if [ ${#mCmdsModuleDataDevicesList[@]} -gt 9 ];then
 				read dir
 			else
 				read -n1 dir
@@ -257,12 +271,7 @@ fi
 			 if [ ${dir} == "q" ]; then
 				exit
 			 elif [ -n "$(echo $dir| sed -n "/^[0-$index]\+$/p")" ];then
-				devTarget=${dirList2[$dir]}
-				devTargetDir=${devDir}/${devTarget}
-				#插入home目录
-				if [ "$dir" -eq "0" ];then
-					devTargetDir=${dirList2[$dir]}
-				fi
+				devTargetDir=${mCmdsModuleDataDevicesList[$dir]}
 				break;
 			 fi
 			 ftEcho -e 错误的选择：$dir
@@ -334,8 +343,8 @@ fi
 		#/home/wgx/cmds/data/excludeDirsBase.list
 		fileNameExcludeBase=excludeDirsBase.list
 		fileNameExcludeAll=excludeDirsAll.list
-		mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoFileNameCmdModuleData}${fileNameExcludeBase}
-		mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoFileNameCmdModuleData}${fileNameExcludeAll}
+		mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoDirNameCmdModuleData}${fileNameExcludeBase}
+		mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoDirNameCmdModuleData}${fileNameExcludeAll}
 
 		mDirPathsExcludeBase=(/proc \
 					/android \
@@ -562,37 +571,47 @@ EOF
 
 	ftSynchronous()
 	{
-		local ftName=在不同设备间同步版本包
+	local ftName=在不同设备间同步版本包
+	local isSynchronous=$1
+	ftInitDevicesList
+	local dirPathArray=${mCmdsModuleDataDevicesList[*]}
 
-		#耦合变量校验
-		local valCount=0
-		if [ $# -ne $valCount ]||[ -z "$isSynchronous" ]\
-						         ||[ -z "$mDirPathSynchronous1" ]\
-						         ||[ -z "$mDirPathSynchronous2" ];then
-			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
-		fi
+	if [ $isSynchronous = "false" ];then
+		return 1
+	fi
 
-		if [ $isSynchronous = "true" ];then
-			while true; do
-			ftEcho -y 是否开始同步
-			read sel
-			case "$sel" in
-				y | yes )
-					ftEcho -s 开始同步!
-					for d in $mDirPathSynchronous1 $mDirPathSynchronous2 ;
+	#耦合变量校验
+	local valCount=1
+	if [ $# -ne $valCount ];then
+		ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+	fi
+
+	if [ $isSynchronous = "true" ];then
+		while true; do
+		ftEcho -y 是否开始同步
+		read -n1 sel
+		case "$sel" in
+			y | Y )
+				ftEcho -s 开始同步!
+				for dirpath in ${dirPathArray[@]}
+				do
+					for dirpath2 in ${dirPathArray[@]}
 					do
-						find $mDirPathStoreTarget -regex ".*\.tgz\|.*\.list" -exec cp {} -u -n -v $d \; ;
+						if [ ${dirpath} != ${dirpath2} ]; then
+							find $dirpath -regex ".*\.log\|.*\.list" -exec cp {} -u -n -v $dirpath2 \; ;
+						fi
 					done
-					ftEcho -s 同步结束！
-					break;;
-				n | N| q |Q)  exit;;
-				* )
-					ftEcho -e 错误的选择：$sel
-					echo "输入n，q，离开";
-					;;
-			esac
-			done
-		fi
+				done
+				ftEcho -s 同步结束！
+				break;;
+			n | N| q |Q)  exit;;
+			* )
+				ftEcho -e 错误的选择：$sel
+				echo "输入n，q，离开";
+				;;
+		esac
+		done
+	fi
 	}
 
 	ftAddOrCheckSystemHwSwInfo()
@@ -724,7 +743,7 @@ EOF
 		ftEcho -y "$1有变动,是否忽悠"
 		read -n1 sel
 		case "$sel" in
-			y | yes )	echo 已忽略$1;break;;
+			y | Y )	echo 已忽略$1;break;;
 			n | N | q |Q)	exit;;
 			* )
 				ftEcho -e 错误的选择：$sel
@@ -771,7 +790,7 @@ EOF
 				ftEcho -y 是否开始备份
 				read -n1 sel
 				case "$sel" in
-					y | yes )
+					y | Y )
 					#写版本备注
 					ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 					#清理临时文件
@@ -783,7 +802,7 @@ EOF
 					#记录版本包相关系统信息
 					ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 					#同步
-					ftSynchronous ;break;;
+					ftSynchronous false ;break;;
 					n | N | q |Q)  exit;;
 					* )
 					ftEcho -e 错误的选择：$sel

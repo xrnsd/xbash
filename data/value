@@ -3,7 +3,7 @@
 export readonly mRoDirNameCmd=cmds/
 export readonly mRoDirNameCmdModule=module/
 export readonly mRoFileNameCmdModuleTool=tools/
-export readonly mRoFileNameCmdModuleData=data/
+export readonly mRoDirNameCmdModuleData=data/
 export readonly mRoDirNameLog=log/
 export readonly mRoNameUser=`who | awk '{print $1}'|sort -u`
 #export readonly mRoDirPathCmdsDataValues=$(cd `dirname $0`; pwd)/
@@ -30,5 +30,6 @@ export readonly mRoFilePathLog=${mRoDirPathUserHome}${mRoDirNameLog}${mRoBaseShe
 
 export readonly mRoCmdsPermissionRoot=(xb backup restore)
 export readonly mRoCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher mtk_flashtool gjh bootanim)
+export mCmdsModuleDataDevicesList=()
 
 export readonly mRoIsDebug=false

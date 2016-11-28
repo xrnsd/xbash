@@ -224,7 +224,7 @@ complete -W "123" xle
 complete -W "compile" xi
 complete -W "systemui monkey launcher" xk
 complete -W "restartadb help gjh test clean_data_garbage vvv bootanim" xc
-complete -W "create new" xc bootanim
+#complete -W "create new" xc bootanim
 
 #-------------------------android优化加速部分------------------
 #编译加速 c/c++ 部分
