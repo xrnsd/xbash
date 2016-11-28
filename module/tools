@@ -299,12 +299,19 @@ ftRestartadb()
 
 ftInitDevicesList()
 {
-	local ftName=选择备份包存放的设备
+	local ftName=初始化存储设备列表
 	local devDir=/media
 	local dirList=`ls $devDir`
-	devList=()
-	devList[0]=${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser}
+	local devList=()
 	local index=1;
+	#耦合变量校验
+	local valCount=0
+	if [ $# -ne $valCount ]||[ -z "$mRoDirPathUserHome" ]\
+			         ||[ -z "$mRoNameUser" ];then
+		ftEcho -ex "函数[${ftName}]参数错误"
+	fi
+
+	devList[0]=${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser}
 	#开始记录设备文件
 	for dir in $dirList
 	do
