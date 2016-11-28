@@ -2,6 +2,243 @@
 #####---------------------  说明  ---------------------------#########
 # 默认规划中，不可在此文件中出现，不被函数包裹的调用，定义
 # 人话，这里只放函数
+#####---------------------   变量 ---------------------------#########
+
+commandAuthority=null
+
+#####---------------------流程函数---------------------------#########
+
+ftWhoAmI()## #命令权限判定
+{
+	local ftName=命令权限判定
+	local cmdName=$1
+
+	#耦合变量校验
+	local valCount=1
+	if [ $# -ne $valCount ]||[ -z "$mRoCmdsPermissionBase" ]\
+			         ||[ -z "$mRoCmdsPermissionRoot" ];then
+		ftEcho -e "命令[${XCMD}]参数错误,请查看下面说明"
+		ftReadMe $XCMD
+	fi
+
+	for cmd in ${mRoCmdsPermissionBase[@]}
+	do
+			if [ "$cmd" = "$cmdName" ]||[ "$XCMD" = "$cmdName" ];then
+				commandAuthority=base
+			fi
+	done
+
+	for cmd in ${mRoCmdsPermissionRoot[@]}
+	do
+			if [ "$cmd" = "$cmdName" ]||[ "$XCMD" = "$cmdName" ];then
+				commandAuthority=root
+			fi
+	done
+}
+
+ftMain()
+{
+	local ftName=工具主入口
+	while true; do
+	case $mRoBaseShellParameter2 in
+	"test")		${mRoDirPathCmdTools}test.sh	 ;break;;
+	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
+	v | V | -v |-V)		ftVersion;break;;
+	vvv)	ftEcho -t xbash
+			ftVersion
+
+			ftEcho -t java
+			java -version
+
+			ftEcho -t gcc
+			gcc -v
+	break;;
+	*)
+	#权限约束开始
+	ftWhoAmI $mRoBaseShellParameter2
+	if [ "$commandAuthority" = "root" ]; then
+		if [ `whoami` = "root" ]; then
+			while true; do
+			case $mRoBaseShellParameter2 in
+				"backup")	${mRoDirPathCmdTools}system_backup_restore.sh backup; break;;
+				"restore")	${mRoDirPathCmdTools}system_backup_restore.sh restore; break;;
+			esac
+			done
+		else
+			ftEcho -ex "当前用户权限过低，请转换为root 用户后重新运行"
+		fi
+	elif [ "$commandAuthority" = "base" ]; then
+		if [ `whoami` = $mRoNameUser ]; then
+			while true; do
+			case $mRoBaseShellParameter2 in
+				"clean_data_garbage")	ftCleanDataGarbage ; break;;
+				"mtk_flashtool")	ftMtkFlashTool ; break;;
+				"restartadb")		ftRestartadb; break;;
+				"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
+				"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
+				"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
+				"bootanim")		ftBootAnimation $mRoBaseShellParameter3 $(pwd);break;;
+				"gjh")			ftEcho -e [$mRoBaseShellParameter2]已关闭，请修改脚本打开
+							ftReadMe $mRoBaseShellParameter2
+							#java -jar ${mRoDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar;
+							break;;
+			esac
+			done
+		else
+			ftEcho -ex "转化普通用户后，再次尝试"
+		fi
+	#权限约束结束
+	elif [ "$commandAuthority" = "null" ]; then
+		ftOther
+	fi
+	break;;
+	esac
+	done
+}
+
+ftOther()
+{
+	while true; do
+	case $XCMD in
+	"xk")	ftKillPhoneAppByPackageName $mRoBaseShellParameter2	;break;;
+	*)	ftEcho -e "命令[${XCMD}]参数错误，请查看命令使用示例";ftReadMe $XCMD; break;;
+	esac
+	done
+}
+
+ftReadMe()
+{
+	local ftName=工具命令使用说明
+	while true; do
+		case "$1" in
+		a | A | -a |-A)
+	cat<<EOF
+=========================================================================
+	命令	--- 参数/命令说明
+	|// 使用格式
+	|-- 参数	 ---------------- [参数权限] ----	参数说明
+=========================================================================
+xb ----- 系统维护
+	|// xb ×××××
+	|
+	|-- backup	---------------- [root] ------	备份系统
+	|-- restore	---------------- [root] ------	还原系统
+xc ----- 常规自定义命令和扩展
+	|// xc ×××××
+	|
+	|-- test	--------------------------	shell测试
+	|-- clean_data_garbage				清空回收站
+	|-- restartadb	--------------------------	重启adb服务
+	|-- v 						自定义命令版本
+	|-- help	--------------------------	查看自定义命令说明
+	|-- vvv						系统环境关键参数查看
+	|-- gjh		--------------------------	生成国际化所需的xml文件
+xk ----- 关闭手机指定进程
+	|// xk ×××××
+	|
+	|-- monkey	-----------------------------	关闭monkey
+	|-- systemui	-----------------------------	关闭systemui
+	|-- 应用包名	-----------------------------	关闭指定app
+xl ----- 过滤 android 含有tag的所有等级的log
+	|// xl tag
+	|
+xt ----- 检测shell脚本，语法检测和测试运行
+	|// xt 脚本文件名
+	|
+//xg	---- [无参] / 搜索文件里面的字符串
+	|// xg 字符串
+	|
+xle ----- 过滤 android 含有tag的E级log
+	|// xle tag
+	|
+xkd	---- [无参] / 快速删除海量文件
+	|// xkd 文件夹
+	|
+xbh ----- 根据标签过滤命令历史
+	|// xbh 标签
+	|
+xp ----- 查看文件绝对路径
+	|// xp 文件名
+	|
+xh ----- 查看具体命令说明
+	|// xh 命令名
+	|
+xgl --- [无参] / 简单查看最近10次git commit
+xi ---- [无参] / 快速初始化模块编译环境
+xr ---- [无参] / 使.bashrc修改生效
+.  ---- [无参] / 进入上一级目录
+.. ---- [无参] / 进入上两级目录
+xd ---- [无参] / mtk下载工具
+xu ---- [无参] / 打开.bashrc
+.9 ---- [无参] / 打开.9工具
+xx ---- [无参] / 休眠
+xs ---- [无参] / 关机
+xss --- [无参] / 重启
+
+===============	临时命令 ===================
+xversion--[无参] / 查看软件版本
+xg6572 ----- 下载mtk6572的工程
+	|// xg6572 分支名
+EOF
+exit;;
+	xc |test | clean_data_garbage|restartadb | help | gjh)ftEcho -g;
+cat<<EOF
+xc	----- 常规自定义命令和扩展
+	|// xc ×××××
+	|
+	|-- test	--------------------------	shell测试
+	|-- clean_data_garbage				清空回收站
+	|-- restartadb	--------------------------	重启adb服务
+	|-- v 						自定义命令版本
+	|-- help	--------------------------	查看自定义命令说明
+	|-- vvv						系统环境关键参数查看
+	|-- gjh		--------------------------	生成国际化所需的xml文件
+EOF
+exit;;
+	xb | backup | restore)ftEcho -g;
+cat<<EOF
+xb	----- 系统维护
+	|// xb ×××××
+	|
+	|-- backup	---------------- [root] ------	备份系统
+	|-- restore	---------------- [root] ------	还原系统
+EOF
+exit;;
+xk | monkey | systemui)ftEcho -g;
+cat<<EOF
+xk	----- 关闭手机指定进程
+	|// xk ×××××
+	|
+	|-- monkey	-------------------------------	关闭monkey
+	|-- systemui	-----------------------------	关闭systemui
+	|-- 应用包名	-----------------------------	关闭指定app
+EOF
+exit;;
+	xt)
+cat<<EOF
+xt ----- 检测shell脚本，语法检测和测试运行
+	|// xt 脚本文件名
+EOF
+exit;;
+	xh)
+cat<<EOF
+xh ----- 查看具体命令说明
+	|// xh 命令名
+EOF
+exit;;
+	*)ftReadMe -a;break;;
+	esac
+done
+}
+
+ftVersion()
+{
+	echo \"Xrnsd extensions to bash\" V0.5.4 beta
+}
+
+
+
+
 #####---------------------工具函数---------------------------#########
 ftKillPhoneAppByPackageName()
 {

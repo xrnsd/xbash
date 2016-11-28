@@ -89,7 +89,7 @@ fi
 			ftEcho -ex 在${mDirPathStoreSource}没找到有效的版本包
 		else
 			ftEcho -t 请${ftName}
-			echo "[序号]		版本包名	----------------	   备注		"
+			echo "[序号]		版本包名	----------------	备注		"
 			echo
 			for file in $fileList
 			do

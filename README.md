@@ -26,10 +26,9 @@
 			config/bashrc_base 				为普通用户相关bash配置文件
 			config/bashrc_work_lz     		为作者使用的普通用户相关bash配置文件
 		cmds/module     					脚本实现文件[具体功能]
-			module/base     				xbash的流程控制
-			module/system_backup_restore.sh xbash的系统维护
+			module/system_backup_restore.sh 		xbash的系统维护
 			module/test.sh     				xbash的demo测试,请忽略此文件的修改
-			module/tools     				xbash的小功能实现
+			module/tools     				xbash的函数实现
 			module/pytools     				xbash的脚本测试工具
 			module/compile.sh     			xbash的项目编译初始化
 		cmds/data     						脚本数据存储
@@ -77,7 +76,7 @@
 		2 自定义命令名称
 			修改 /home/xxxx/cmds/config/xxxx
 			修改 /home/xxxx/cmds/data/value
-			修改 /home/xxxx/cmds/module/base
+			修改 /home/xxxx/cmds/module/tools
 
 		3 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现
 		4 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
