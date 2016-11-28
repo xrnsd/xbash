@@ -674,7 +674,6 @@ EOF
 			done
 		fi
 
-
 		dirPathAnimationTraget=/home/${mRoNameUser}/${dirNameAnimation}
 
 		ftFileDirEdit -e false $dirPathAnimationTraget

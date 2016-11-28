@@ -110,40 +110,12 @@ fi
 #=========================================================================
 #====================== 自定义配置   ======================================
 #=========================================================================
-
-
 #--------------------------基础变量----------------------------------
 userName=`who | awk '{print $1}'|sort -u`
 dirPathHome=/home/${userName}
 dirPathHomeCmd=${dirPathHome}/cmds/
 dirPathHomeTools=${dirPathHome}/tools
 pwd=123
-
-#--------------------------函数----------------------------------
-function nameTerminal {
-    test =null
-    #export PS1='$title\[\033[44m\][\w]\[\033[0m\]:'
-}
-
-ftEcho()
-{
-    #=================== example=============================
-    #
-    #    ftEcho [option] [Content]
-    #    ftEcho e 错误的选择1
-    #=========================================================
-    local ftName=工具信息提示
-    option=$1
-    Content=$2
-    while true; do
-    case $option in
-    #错误信息显示
-    e | E | -e | -E)    echo -e "\033[31m$Content\033[0m"; break;;
-    * ) echo $option ;break;;
-    esac
-    done
-}
-
 #--------------------------部分环境变量---------------------------
 export JAVA_HOME=${dirPathHomeTools}/jdk/1.6.038
 #export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
@@ -159,6 +131,21 @@ export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:/usr/local/cuda-7.5/bin:$ANDROID_SD
 
 if [ ! -d "$dirPathHomeCmd" ];then
     ftEcho -e Xbash下实现的自定义命令不可用
+else
+#--------------------------初始化----------------------------------
+        #全局变量
+        if [ -f ${dirPathHomeCmd}data/value ];then
+            source  ${dirPathHomeCmd}data/value
+        else
+            echo -e "\033[1;31m全局变量加载失败\033[0m"
+        fi
+
+        # 函数
+        if [ -f ${dirPathHomeCmd}module/tools ];then
+            source  ${mRoDirPathCmdTools}tools
+        else
+            echo -e "\033[1;31m函数加载失败\033[0m"
+        fi
 fi
 if [ ! -d "$JAVA_HOME" ];then
     ftEcho -e Java_环境配置错误
