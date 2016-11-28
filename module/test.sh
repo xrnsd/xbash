@@ -1,17 +1,24 @@
-#####---------------------工具函数---------------------------#########
-source  ${mRoDirPathCmdTools}tools
-
-#####---------------------流程函数---------------------------#########
-source  ${mRoDirPathCmdTools}base
-
 #####----------------------初始化demo环境--------------------------#######
-dirNameDebug=temp
-dirPathDebug=/home/${mRoNameUser}/${dirNameDebug}
-if [ ! -d $dirPathDebug ];then
-	mkdir -p $dirPathDebug
-	ftEcho -s 测试用目录[$dirPathDebug]不存在，已新建
+# 函数
+if [ -f ${mRoDirPathCmdTools}tools ];then
+	source  ${mRoDirPathCmdTools}tools
+else
+	echo -e "\033[1;31m函数加载失败\033[0m"
 fi
-cd $dirPathDebug
+
+dirNameDebug=temp
+dirPathHome=/home/${mRoNameUser}/${dirNameDebug}
+dirPathHomeDebug=/home/${mRoNameUser}/${dirNameDebug}
+if [ -d $dirPathHome ];then
+	if [ ! -d $dirPathDebug ];then
+		mkdir  $dirPathDebug
+		ftEcho -s 测试用目录[$dirPathDebug]不存在，已新建
+	fi
+	cd $dirPathDebug
+else
+	echo -e "\033[1;31m初始化demo环境失败\033[0m"
+fi
+
 #####----------------------demo函数--------------------------#########
 
 ft1()
@@ -1251,7 +1258,7 @@ EOF
 				rm -rf $dirPathAnimation
 				break;;
 			n | N| q |Q)  exit;;
-			* )   
+			* )
 				ftEcho -e 错误的选择：$sel
 				echo "输入n，q，离开"
 				;;
@@ -1275,7 +1282,7 @@ EOF
 		dirPathAnimationTraget=/home/${mRoNameUser}/${dirNameAnimation}
 
 		ftFileDirEdit -e false $dirPathAnimationTraget
-		if [ -d $dirPathAnimationTraget ]||[ $? -eq   "3" ];then		
+		if [ -d $dirPathAnimationTraget ]||[ $? -eq   "3" ];then
 			while true; do
 			ftEcho -y ${ftName}的目标文件[${dirPathAnimationTraget}]夹非空，是否删除重建
 			read -n1 sel
@@ -1284,7 +1291,7 @@ EOF
 					rm -rf $dirPathAnimationTraget
 					break;;
 				n|N|q|Q)  exit;;
-				*)   
+				*)
 					ftEcho -e 错误的选择：$sel
 					echo "输入n，q，离开"
 					;;
@@ -1322,7 +1329,7 @@ EOF
 		done
 		# 复制最后一张图片到part1
 		cp  ${dirPathAnimationTraget}/${dirNamePart0}/${fileNameLast} ${dirPathAnimationTraget}/${dirNamePart1}/${fileNameLast}
-		
+
 		# 输入分辨率,输入帧率,循环次数
 		# 480           250   	15
 		# 图片的宽    图片的高   每秒显示的帧数
@@ -1362,11 +1369,11 @@ EOF
 		echo -e "$resolutionWidth $resolutionHeight $frameRate\n\
 p $cycleCount 0 part0\n\
 p 0 0 part1" >${dirPathAnimationTraget}/${fileNameDesc}
-		
+
 		# 生成动画包
 		ftBootAnimation create $dirPathAnimationTraget
 		break;;
-	 * )	
+	 * )
 		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
 		ftBootAnimation -h;; esac;done
 }

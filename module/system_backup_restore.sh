@@ -1,6 +1,6 @@
 #!/bin/bash
-#####----------------------变量--------------------------#########
-
+#####----------------------初始化--------------------------#########
+# 变量
 	mTypeEdit=$1
 	mTypeBackupEdit=null
 
@@ -29,12 +29,12 @@
 
 	isSynchronous=false
 
-
-#####---------------------工具函数---------------------------#########
-source  ${mRoDirPathCmdTools}tools
-
-#####---------------------流程函数---------------------------#########
-source  ${mRoDirPathCmdTools}base
+# 函数
+if [ -f ${mRoDirPathCmdTools}tools ];then
+	source  ${mRoDirPathCmdTools}tools
+else
+	echo -e "\033[1;31m函数加载失败\033[0m"
+fi
 
 #####----------------------自有函数--------------------------#########
 
@@ -58,8 +58,8 @@ source  ${mRoDirPathCmdTools}base
 					ftEcho -e 未找到版本包:${pathsource}
 				fi;break;;
 			n | N | q |Q)  exit;;
-			* )  
-				ftEcho -e 错误的选择：$sel 
+			* )
+				ftEcho -e 错误的选择：$sel
 				echo "输入n，q，离开";
 				;;
 		esac
@@ -586,8 +586,8 @@ EOF
 					ftEcho -s 同步结束！
 					break;;
 				n | N| q |Q)  exit;;
-				* )   
-					ftEcho -e 错误的选择：$sel 
+				* )
+					ftEcho -e 错误的选择：$sel
 					echo "输入n，q，离开";
 					;;
 			esac
@@ -726,8 +726,8 @@ EOF
 		case "$sel" in
 			y | yes )	echo 已忽略$1;break;;
 			n | N | q |Q)	exit;;
-			* )		
-				ftEcho -e 错误的选择：$sel 
+			* )
+				ftEcho -e 错误的选择：$sel
 				echo "输入n，q，离开";
 				;;
 		esac
@@ -785,8 +785,8 @@ EOF
 					#同步
 					ftSynchronous ;break;;
 					n | N | q |Q)  exit;;
-					* ) 
-					ftEcho -e 错误的选择：$sel 
+					* )
+					ftEcho -e 错误的选择：$sel
 					echo "输入n，q，离开";
 					;;
 				esac

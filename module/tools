@@ -121,10 +121,10 @@ ftFileDirEdit()
 #
 #	ftFileDirEdit [type] [isCreate] [path]
 #
-#	文件存在，创建返回1
+#	文件存在，创建，返回1
 #	ftFileDirEdit -f true /home/xian-hp-u16/cmds/test.sh
 #
-#	文件夹存在，创建返回1
+#	文件夹存在，创建，返回1
 #	ftFileDirEdit -d true /home/xian-hp-u16/cmds/test.sh
 #
 #	判断文件夹是否为空，空，返回2 非空，返回3,非文件夹，返回4
@@ -176,7 +176,7 @@ EOF
 				return 0
 			fi
 			break;;
-		* )  
+		* )
 			ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
 			ftFileDirEdit -h
 			;;
