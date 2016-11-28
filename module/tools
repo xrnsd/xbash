@@ -297,32 +297,61 @@ ftRestartadb()
 	adb devices
 }
 
+ftInitDevicesList()
+{
+	local ftName=选择备份包存放的设备
+	local devDir=/media
+	local dirList=`ls $devDir`
+	devList=()
+	devList[0]=${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser}
+	local index=1;
+	#开始记录设备文件
+	for dir in $dirList
+	do
+		#临时挂载设备
+		if [ ${dir} == $mRoNameUser ]; then
+			local dirTempList=`ls ${devDir}/${dir}`
+			for dirTemp in $dirTempList
+			do
+				devList[$index]=${devDir}/${dir}/${dirTemp}
+				index=`expr $index + 1`
+			done
+		else
+		#长期挂载设备
+		devList[$index]=${devDir}/${dir}
+		index=`expr $index + 1`
+		fi
+	done
+	export mCmdsModuleDataDevicesList=${devList[*]}
+}
+
 ftCleanDataGarbage()
 {
 	local ftName=清空回收站
-	dirDevsArray=(
-			/media/data_self \
-			/home/${mUserName} \
-			)
+	ftInitDevicesList
 
-	for dirDev in ${dirDevsArray[*]}
-	do
-	dir=null
-	if [ -d ${dirDev}/.Trash-1000 ];then
-		dir=${dirDev}/.Trash-1000
-	else
-		if [ -d ${dirDev}/.local/share/Trash ];then
-			dir=${dirDev}/.local/share/Trash
-		fi
+	#耦合变量校验
+	if [ -z "$mCmdsModuleDataDevicesList" ];then
+		ftEcho -ex "函数[${ftName}]参数错误"
 	fi
 
-	if [ -d $dir ];then
-		cd $dir
-		if [ ! -d empty ];then
-			mkdir empty
+	for dirDev in ${mCmdsModuleDataDevicesList[*]}
+	do
+		dir=null
+		if [ -d ${dirDev}/.Trash-1000 ];then
+			dir=${dirDev}/.Trash-1000
+		else
+			if [ -d ${dirDev}/.local/share/Trash ];then
+				dir=${dirDev}/.local/share/Trash
+			fi
 		fi
-		rsync --delete-before -d -a -H -v --progress --stats empty/ files/
-		rm -rf files/*
+		if [ -d $dir ];then
+			cd $dir
+			if [ ! -d empty ];then
+				mkdir empty
+			fi
+			rsync --delete-before -d -a -H -v --progress --stats empty/ files/
+			rm -rf files/*
 		fi
 	done
 }

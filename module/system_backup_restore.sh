@@ -207,33 +207,6 @@ fi
 		echo
 	}
 
-	ftInitDevicesList()
-	{
-		local ftName=选择备份包存放的设备
-		local devDir=/media
-		local dirList=`ls $devDir`
-		mCmdsModuleDataDevicesList[0]=${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser}
-		local index=1;
-		#开始记录设备文件
-		for dir in $dirList
-		do
-			#临时挂载设备
-			if [ ${dir} == $mRoNameUser ]; then
-				local dirTempList=`ls ${devDir}/${dir}`
-				for dirTemp in $dirTempList
-				do
-					mCmdsModuleDataDevicesList[$index]=${devDir}/${dir}/${dirTemp}
-					index=`expr $index + 1`
-				done
-			else
-			#长期挂载设备
-			mCmdsModuleDataDevicesList[$index]=${devDir}/${dir}
-			index=`expr $index + 1`
-			fi
-		done
-		export mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[*]}
-	}
-
 	ftSetBackupDevDir()
 	{
 		local ftName=选择备份包存放的设备
