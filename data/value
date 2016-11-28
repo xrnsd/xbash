@@ -29,6 +29,6 @@ export readonly mRoDirPathCmdTools=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoDir
 export readonly mRoFilePathLog=${mRoDirPathUserHome}${mRoDirNameLog}${mRoBaseShellParameter2}___${mRoTimeBackup}.log
 
 export readonly mRoCmdsPermissionRoot=(xb backup restore)
-export readonly mRoCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher mtk_flashtool gjh)
+export readonly mRoCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher mtk_flashtool gjh bootanim)
 
 export readonly mRoIsDebug=false

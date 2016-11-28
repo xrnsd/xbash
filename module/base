@@ -46,7 +46,7 @@ ftMain()
 
 			ftEcho -t java
 			java -version
-			
+
 			ftEcho -t gcc
 			gcc -v
 	break;;
@@ -74,6 +74,7 @@ ftMain()
 				"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
 				"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
 				"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
+				"bootanim")		ftBootAnimation mRoBaseShellParameter3 $(pwd); break;;
 				"gjh")			ftEcho -e [$mRoBaseShellParameter2]已关闭，请修改脚本打开
 							ftReadMe $mRoBaseShellParameter2
 							#java -jar ${mRoDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar;
@@ -125,6 +126,9 @@ xc ----- 常规自定义命令和扩展
 	|-- test	--------------------------	shell测试
 	|-- clean_data_garbage				清空回收站
 	|-- restartadb	--------------------------	重启adb服务
+	|-- bootanim	--------------------------	制作开关机动画
+			|-- new 		重新制作
+			|-- create 		重新打包
 	|-- v 						自定义命令版本
 	|-- help	--------------------------	查看自定义命令说明
 	|-- vvv						系统环境关键参数查看
@@ -185,6 +189,9 @@ xc	----- 常规自定义命令和扩展
 	|-- test	--------------------------	shell测试
 	|-- clean_data_garbage				清空回收站
 	|-- restartadb	--------------------------	重启adb服务
+	|-- bootanim	--------------------------	制作开关机动画
+		|-- new		----------		重新制作
+		|-- create	----------		重新打包
 	|-- v 						自定义命令版本
 	|-- help	--------------------------	查看自定义命令说明
 	|-- vvv						系统环境关键参数查看

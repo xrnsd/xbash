@@ -305,7 +305,7 @@ ftBootAnimation()
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== 函数${ftName}的使用示例============
-#
+#	请进入动画资源目录后执行xc bootanim xxx
 #	ftBootAnimation [edittype] [path]
 #	生成bootanimation2.zip,进入已new处理或解压的文件夹后可运行
 #	ftBootAnimation create /home/xxxx/test/bootanimation2
@@ -350,11 +350,28 @@ EOF
 		read -n1 sel
 		case "$sel" in
 			y | Y )
-				mv ${dirPathAnimation}/${dirNamePackageName} /home/${mRoNameUser}/${dirNamePackageName}&&
+				local filePath=/home/${mRoNameUser}/${dirNamePackageName}
+				if [ -f $filePath ];then
+					while true; do
+					echo
+					ftEcho -y 有旧的${dirNamePackageName}，是否覆盖
+					read -n1 sel
+					case "$sel" in
+						y | Y )	break;;
+						n | N)	mv $filePath /home/${mRoNameUser}/${dirNamePackageName/.zip/_old.zip};break;;
+						q |Q)	exit;;
+						* )
+							ftEcho -e 错误的选择：$sel
+							echo "输入q，离开"
+							;;
+					esac
+					done
+				fi
+				mv ${dirPathAnimation}/${dirNamePackageName} $filePath&&
 				rm -rf $dirPathAnimation
 				break;;
 			n | N| q |Q)  exit;;
-			* )   
+			* )
 				ftEcho -e 错误的选择：$sel
 				echo "输入n，q，离开"
 				;;
@@ -369,16 +386,26 @@ EOF
 		local dirNameAnimation=animation
 
 		dirPathAnimationSourceRes=$dirPathAnimation
+		cd $dirPathAnimationSourceRes
 
 		ftFileDirEdit -e false $dirPathAnimationSourceRes
 		if [ $? -eq "2" ];then
 			ftEcho -ex 空的动画资源，请确认[${dirPathAnimationSourceRes}]是否存在动画文件
+		else
+			filelist=`ls $dirPathAnimationSourceRes`
+			for file in $filelist
+			do
+				if [ ! -f $file ];then
+					ftEcho -ex 动画资源包含错误类型的文件[${file}]，请确认
+				fi
+			done
 		fi
+
 
 		dirPathAnimationTraget=/home/${mRoNameUser}/${dirNameAnimation}
 
 		ftFileDirEdit -e false $dirPathAnimationTraget
-		if [ -d $dirPathAnimationTraget ]||[ $? -eq   "3" ];then		
+		if [ -d $dirPathAnimationTraget ]||[ $? -eq   "3" ];then
 			while true; do
 			ftEcho -y ${ftName}的目标文件[${dirPathAnimationTraget}]夹非空，是否删除重建
 			read -n1 sel
@@ -387,7 +414,7 @@ EOF
 					rm -rf $dirPathAnimationTraget
 					break;;
 				n|N|q|Q)  exit;;
-				*)   
+				*)
 					ftEcho -e 错误的选择：$sel
 					echo "输入n，q，离开"
 					;;
@@ -398,17 +425,16 @@ EOF
 		mkdir	  ${dirPathAnimationTraget}/${dirNamePart1}
 		touch  ${dirPathAnimationTraget}/${fileNameDesc}
 
-		cd $dirPathAnimationSourceRes
-		filelist=`ls $dirPathAnimationSourceRes`
 		#文件名去空格
 		for loop in `ls -1 | tr ' '  '#'`
 		 do
 		    mv  "`echo $loop | sed 's/#/ /g' `"  "`echo $loop |sed 's/#//g' `"  2> /dev/null
 		done
 
-		file1=${filelist[0]}
-		if [ ${file1##*.} != "jpg" ]&&[ ${file1##*.} != "jpg" ];then
-			ftEcho -e 特殊格式[${file1##*.}]动画资源文件，生成包大小可能异常
+		local file1=${filelist[0]}
+		local file1=${file1##*.}
+		if [ $file1 != "jpg" ]&&[ $file1 != "png" ];then
+			ftEcho -e 特殊格式[${file1}]动画资源文件，生成包大小可能异常
 		fi
 
 		#文件重命名
@@ -425,7 +451,7 @@ EOF
 		done
 		# 复制最后一张图片到part1
 		cp  ${dirPathAnimationTraget}/${dirNamePart0}/${fileNameLast} ${dirPathAnimationTraget}/${dirNamePart1}/${fileNameLast}
-		
+
 		# 输入分辨率,输入帧率,循环次数
 		# 480           250   	15
 		# 图片的宽    图片的高   每秒显示的帧数
@@ -433,31 +459,26 @@ EOF
 		# 标识符    循环的次数  阶段切换间隔时间 对应图片的目录
 		# p 			0 			10 			part1
 		# 标识符    循环的次数  阶段切换间隔时间 对应图片的目录
-		local resolutionWidth=0
-		local resolutionHeight=0
-		local frameRate=0
-		local cycleCount=0
+		local resolutionWidth
+		local resolutionHeight
+		local frameRate
+		local cycleCount
 		while [ -z "$resolutionWidth" ]||\
-			  [ -z "$resolutionHeight" ]||\
-			  [ -z "$frameRate" ]||\
-			  [ -z "$cycleCount" ]; do
-
-			  	if [ -z "$resolutionWidth" ];then
-					echo -en 请输入动画的宽，用于计算分辨率:
+			[ -z "$resolutionHeight" ]||\
+			[ -z "$frameRate" ]||\
+			[ -z "$cycleCount" ]; do
+				if [ -z "$resolutionWidth" ];then
+					echo -en 请输入动画的宽:
 					read resolutionWidth
-					input=$resolutionWidth
 			  	elif [ -z "$resolutionHeight" ]; then
-					echo -en 请输入动画的高，用于计算分辨率:
+					echo -en 请输入动画的高:
 					read resolutionHeight
-					input=$resolutionWidth
 			  	elif [ -z "$frameRate" ]; then
 					echo -en 请输入动画的帧率:
 					read frameRate
-					input=$frameRate
 			  	elif [ -z "$cycleCount" ]; then
 					echo -en 请输入动画的循环次数:
 					read cycleCount
-					input=$cycleCount
 				fi
 		done
 
@@ -465,11 +486,11 @@ EOF
 		echo -e "$resolutionWidth $resolutionHeight $frameRate\n\
 p $cycleCount 0 part0\n\
 p 0 0 part1" >${dirPathAnimationTraget}/${fileNameDesc}
-		
+
 		# 生成动画包
 		ftBootAnimation create $dirPathAnimationTraget
 		break;;
-	 * )	
+	 * )
 		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
 		ftBootAnimation -h;; esac;done
 }
