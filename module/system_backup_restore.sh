@@ -28,8 +28,8 @@
 	mNoteRestoreSource=null
 
 # 函数
-if [ -f ${mRoDirPathCmdTools}tools ];then
-	source  ${mRoDirPathCmdTools}tools
+if [ -f ${mRoDirPathCmdModule}/tools ];then
+	source  ${mRoDirPathCmdModule}/tools
 else
 	echo -e "\033[1;31m函数加载失败\033[0m"
 fi
@@ -170,13 +170,13 @@ fi
 	ftEchoInfo()
 	{
 		local ftName=脚本操作信息显示，用于关键操作前的确认
-		ftEcho -b 请确认下面信息
 		local mVersionChangs="Android build : mtk_KK  mtk_L mtk_M\n\
 			Android app : 4.4\n\
 			custom bash : Xrnsd-extensions-to-bash\n\
 			tools : jdk1.6 openjdk1.7 sdk ndk flash_tool eclipse"
-
 		local infoType=$1
+
+		ftEcho -b 请确认下面信息
 		if [ $infoType = "restore" ];then
 			echo "使用的源文件为：	${mFileNameRestoreSource}"
 			echo "使用的源文件的说明：	${mNoteRestoreSource}"
@@ -244,12 +244,12 @@ fi
 			 if [ ${dir} == "q" ]; then
 				exit
 			 elif [ -n "$(echo $dir| sed -n "/^[0-$index]\+$/p")" ];then
+		echo dir=$dir
 				devTargetDir=${mCmdsModuleDataDevicesList[$dir]}
 				break;
 			 fi
 			 ftEcho -e 错误的选择：$dir
 		done
-		echo
 
 		mDirPathStoreTarget=$devTargetDir/backup/os/${mRoNameUser};
 		mDirPathStoreSource=$devTargetDir/backup/os/${mRoNameUser};
@@ -316,8 +316,8 @@ fi
 		#/home/wgx/cmds/data/excludeDirsBase.list
 		fileNameExcludeBase=excludeDirsBase.list
 		fileNameExcludeAll=excludeDirsAll.list
-		mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoDirNameCmdModuleData}${fileNameExcludeBase}
-		mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoDirNameCmdModuleData}${fileNameExcludeAll}
+		mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdModuleData}${fileNameExcludeBase}
+		mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdModuleData}${fileNameExcludeAll}
 
 		mDirPathsExcludeBase=(/proc \
 					/android \

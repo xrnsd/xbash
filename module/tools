@@ -41,7 +41,7 @@ ftMain()
 	local ftName=工具主入口
 	while true; do
 	case $mRoBaseShellParameter2 in
-	"test")		${mRoDirPathCmdTools}test.sh	 ;break;;
+	"test")		${mRoDirPathCmdModule}/test.sh	 ;break;;
 	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
 	v | V | -v |-V)		ftVersion;break;;
 	vvv)	ftEcho -t xbash
@@ -60,8 +60,8 @@ ftMain()
 		if [ `whoami` = "root" ]; then
 			while true; do
 			case $mRoBaseShellParameter2 in
-				"backup")	${mRoDirPathCmdTools}system_backup_restore.sh backup; break;;
-				"restore")	${mRoDirPathCmdTools}system_backup_restore.sh restore; break;;
+				"backup")	${mRoDirPathCmdModule}/system_backup_restore.sh backup; break;;
+				"restore")	${mRoDirPathCmdModule}/system_backup_restore.sh restore; break;;
 			esac
 			done
 		else
@@ -367,7 +367,7 @@ ftMtkFlashTool()
 {
 	local ftName=mtk下载工具
 	local tempDirPath=`pwd`
-	local toolDirPath=${mRoDirPathTools}sp_flash_tool_v5.1548
+	local toolDirPath=${mRoDirPathTools}/sp_flash_tool_v5.1548
 
 	#耦合变量校验
 	local valCount=0

@@ -1,7 +1,7 @@
 #####----------------------初始化demo环境--------------------------#######
 # 函数
-if [ -f ${mRoDirPathCmdTools}tools ];then
-	source  ${mRoDirPathCmdTools}tools
+if [ -f ${mRoDirPathCmdModule}/tools ];then
+	source  ${mRoDirPathCmdModule}/tools
 else
 	echo -e "\033[1;31m函数加载失败\033[0m"
 fi

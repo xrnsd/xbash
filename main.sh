@@ -8,10 +8,10 @@
 		exit
 	fi
 #函数
-	if [ -f ${mRoDirPathCmdTools}tools ];then
-		source  ${mRoDirPathCmdTools}tools
+	if [ -f ${mRoDirPathCmdModule}/tools ];then
+		source  ${mRoDirPathCmdModule}/tools
 	else
-		echo -e "\033[1;31m函数[${mRoDirPathCmdTools}tools]加载失败\033[0m"
+		echo -e "\033[1;31m函数[${mRoDirPathCmdModule}/tools]加载失败\033[0m"
 		exit
 	fi
 

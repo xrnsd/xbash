@@ -1,20 +1,18 @@
 #! /bin/bash
 #####----------------------变量--------------------------#########
-export readonly mRoDirNameCmd=cmds/
-export readonly mRoDirNameCmdModule=module/
-export readonly mRoFileNameCmdModuleTool=tools/
-export readonly mRoDirNameCmdModuleData=data/
-export readonly mRoDirNameLog=log/
-export readonly mRoNameUser=`who | awk '{print $1}'|sort -u`
-#export readonly mRoDirPathCmdsDataValues=$(cd `dirname $0`; pwd)/
-	dirPathCmdsDataValues=$(cd `dirname $0`; pwd)/
-export readonly mRoDirPathCmds=$(dirname $dirPathCmdsDataValues)
 export mUserPwd=123
+export readonly mRoNameUser=`who | awk '{print $1}'|sort -u`
+export readonly mRoDirPathUserHome=/home/${mRoNameUser}/
 
-#脚本文件夹cmds放在home/××××/时，以下逻辑[mRoDirPathUserHome=用户主目录]有效
-	dirName=${mRoDirNameCmd}
-	dirPathCmdTools=$(cd `dirname $0`; pwd)/
-export readonly mRoDirPathUserHome=${dirPathCmdTools/$mRoDirNameCmd/}
+export readonly mRoDirNameLog=log
+export readonly mRoDirNameCmd=cmds
+export readonly mRoDirNameTools=tools
+
+# 	dirPathCmdsDataValues=$(cd `dirname $0`; pwd)/
+# export readonly mRoDirPathCmds=$(dirname $dirPathCmdsDataValues)
+export readonly mRoDirPathCmds=${mRoDirPathUserHome}/${mRoDirNameCmd}
+export readonly mRoDirNameCmdModule=module
+export readonly mRoDirNameCmdModuleData=data/
 
 #外部参数
 export readonly mRoBaseShellParameter1=$0
@@ -24,12 +22,12 @@ export readonly mRoBaseShellParameter3=$2
 export readonly mRoTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
 export mTimingStart
 
-export readonly mRoDirPathTools=${mRoDirPathUserHome}${mRoFileNameCmdModuleTool}
-export readonly mRoDirPathCmdTools=${mRoDirPathUserHome}${mRoDirNameCmd}${mRoDirNameCmdModule}
-export readonly mRoFilePathLog=${mRoDirPathUserHome}${mRoDirNameLog}${mRoBaseShellParameter2}___${mRoTimeBackup}.log
+export readonly mRoDirPathTools=${mRoDirPathUserHome}${mRoDirNameTools}
+export readonly mRoDirPathCmdModule=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdModule}
+export readonly mRoFilePathLog=${mRoDirPathUserHome}${mRoDirNameLog}/${mRoBaseShellParameter2}___${mRoTimeBackup}.log
 
+export mCmdsModuleDataDevicesList=()
 export readonly mRoCmdsPermissionRoot=(xb backup restore)
 export readonly mRoCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher mtk_flashtool gjh bootanim)
-export mCmdsModuleDataDevicesList=()
 
 export readonly mRoIsDebug=false
