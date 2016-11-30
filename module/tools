@@ -67,7 +67,7 @@ ftMain()
 	local ftName=工具主入口
 	while true; do
 	case $mRoBaseShellParameter2 in
-	"test")		${mRoDirPathCmdModule}/test.sh	 ;break;;
+	"test")		ftTest	 ;break;;
 	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
 	v | V | -v |-V)	ftVersion;break;;
 	vvv)	ftEcho -t xbash;		ftVersion
@@ -870,4 +870,30 @@ EOF
 	# done
 
 	export mFilePathLog=${dirPath}/$(date -d "today" +"%y%m%d_%H:%M:%S")
+}
+
+ftTest()
+{
+	local ftName=函数demo调试
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#
+	#	ftTest 无参数
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if [ $# -ne $valCount ]||[ -z "$mRoDirPathCmdModule" ];then
+		ftEcho -e "函数[${XCMD}]参数[mRoDirPathCmdModule=$mRoDirPathCmdModule]错误,请查看下面说明"
+		ftReadMe $XCMD
+	fi
+	if [ -f "${mRoDirPathCmdModule}/test.sh" ];then
+		${mRoDirPathCmdModule}/test.sh
+	else
+		ftEcho -e "函数[${XCMD}]执行错误，文件[${mRoDirPathCmdModule}/test.sh]不存在"
+	fi
 }
