@@ -9,7 +9,7 @@ commandAuthority=null
 #####---------------------流程函数---------------------------#########
 ftExample()
 {
-	local ftName=示例
+	local ftName=函数模板
 	# 1 耦合变量校验[耦合变量包含全局变量，输入参数，输入变量]
 	# 3 提供可执行前提说明
 	# 4 提供执行流程说明
@@ -27,9 +27,9 @@ EOF
 
 	#耦合变量校验
 	local valCount=1
-	if [ $# -ne $valCount ]||[ -z "$mRoCmdsPermissionBase" ]\
-			         ||[ -z "$mRoCmdsPermissionRoot" ];then
-		ftEcho -e "函数[${XCMD}]参数错误,请查看下面说明"
+	if [ $# -ne $valCount ]||[ -z "$example1" ]\
+			         ||[ -z "$example2" ];then
+		ftEcho -e "函数[${XCMD}]参数[example1=$example1,example2=$example2]错误,请查看下面说明"
 		ftReadMe $XCMD
 	fi
 }
@@ -69,56 +69,51 @@ ftMain()
 	case $mRoBaseShellParameter2 in
 	"test")		${mRoDirPathCmdModule}/test.sh	 ;break;;
 	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
-	v | V | -v |-V)		ftVersion;break;;
-	vvv)	ftEcho -t xbash
-			ftVersion
-
-			ftEcho -t java
-			java -version
-
-			ftEcho -t gcc
-			gcc -v
-	break;;
+	v | V | -v |-V)	ftVersion;break;;
+	vvv)	ftEcho -t xbash;		ftVersion
+		ftEcho -t java;		java -version
+		ftEcho -t gcc;		gcc -v
+		break;;
 	*)
-	#权限约束开始
-	ftWhoAmI $mRoBaseShellParameter2
-	if [ "$commandAuthority" = "root" ]; then
-		if [ `whoami` = "root" ]; then
-			while true; do
-			case $mRoBaseShellParameter2 in
-				"backup")	${mRoDirPathCmdModule}/system_backup_restore.sh backup; break;;
-				"restore")	${mRoDirPathCmdModule}/system_backup_restore.sh restore; break;;
-			esac
-			done
-		else
-			ftEcho -ex "当前用户权限过低，请转换为root 用户后重新运行"
+		#权限约束开始
+		ftWhoAmI $mRoBaseShellParameter2
+		if [ "$commandAuthority" = "root" ]; then
+			if [ `whoami` = "root" ]; then
+				while true; do
+				case $mRoBaseShellParameter2 in
+					"backup")	${mRoDirPathCmdModule}/system_backup_restore.sh backup; break;;
+					"restore")	${mRoDirPathCmdModule}/system_backup_restore.sh restore; break;;
+				esac
+				done
+			else
+				ftEcho -ex "当前用户权限过低，请转换为root 用户后重新运行"
+			fi
+		elif [ "$commandAuthority" = "base" ]; then
+			if [ `whoami` = $mRoNameUser ]; then
+				while true; do
+				case $mRoBaseShellParameter2 in
+					"clean_data_garbage")	ftCleanDataGarbage ; break;;
+					"mtk_flashtool")	ftMtkFlashTool ; break;;
+					"restartadb")		ftRestartadb; break;;
+					"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
+					"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
+					"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
+					"bootanim")		ftBootAnimation $mRoBaseShellParameter3 $(pwd);break;;
+					"gjh")			ftGjh;break;;
+					# "gjh")			ftEcho -e [$mRoBaseShellParameter2]已关闭，请修改脚本打开
+					# 			ftReadMe $mRoBaseShellParameter2
+					# 			#java -jar ${mRoDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar;
+					# 			break;;
+				esac
+				done
+			else
+				ftEcho -ex "转化普通用户后，再次尝试"
+			fi
+		#权限约束结束
+		elif [ "$commandAuthority" = "null" ]; then
+			ftOther $mRoBaseShellParameter2
 		fi
-	elif [ "$commandAuthority" = "base" ]; then
-		if [ `whoami` = $mRoNameUser ]; then
-			while true; do
-			case $mRoBaseShellParameter2 in
-				"clean_data_garbage")	ftCleanDataGarbage ; break;;
-				"mtk_flashtool")	ftMtkFlashTool ; break;;
-				"restartadb")		ftRestartadb; break;;
-				"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
-				"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
-				"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
-				"bootanim")		ftBootAnimation $mRoBaseShellParameter3 $(pwd);break;;
-				"gjh")			ftGjh;break;;
-				# "gjh")			ftEcho -e [$mRoBaseShellParameter2]已关闭，请修改脚本打开
-				# 			ftReadMe $mRoBaseShellParameter2
-				# 			#java -jar ${mRoDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar;
-				# 			break;;
-			esac
-			done
-		else
-			ftEcho -ex "转化普通用户后，再次尝试"
-		fi
-	#权限约束结束
-	elif [ "$commandAuthority" = "null" ]; then
-		ftOther
-	fi
-	break;;
+		break;;
 	esac
 	done
 }
@@ -128,7 +123,7 @@ ftOther()
 	while true; do
 	case $XCMD in
 	"xk")	ftKillPhoneAppByPackageName $mRoBaseShellParameter2	;break;;
-	*)	ftEcho -e "命令[${XCMD}]参数错误，请查看命令使用示例";ftReadMe $XCMD; break;;
+	*)	ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftReadMe $XCMD; break;;
 	esac
 	done
 }
@@ -797,10 +792,6 @@ p 0 0 part1" >${dirPathAnimationTraget}/${fileNameDesc}
 ftGjh()
 {
 	local ftName=生成国际化所需的xml文件
-	# 1 耦合变量校验[耦合变量包含全局变量，输入参数，输入变量]
-	# 3 提供可执行前提说明
-	# 4 提供执行流程说明
-	# 5 提供使用示例
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -825,4 +816,58 @@ EOF
 		ftEcho -e "命令[${XCMD}]找不到[$filePath]"
 	fi
 
+}
+
+ftLog()
+{
+	local ftName=初始化运行日志记录所需的参数
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#
+	#	ftLog 无参数
+	#	初始化log记录所需的参数
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=0
+	if [ $# -ne $valCount ]||[ -z "$mRoDirPathUserHome" ]\
+			         ||[ -z "$mRoDirNameLog" ];then
+		ftEcho -e "函数[${XCMD}]参数[mRoDirPathUserHome=$mRoDirPathUserHome,mRoDirNameLog=$mRoDirNameLog]错误,请查看下面说明"
+		ftReadMe $XCMD
+	fi
+	#初始化命令log目录
+	dirPath=${mRoDirPathUserHome}${mRoDirNameLog}/${XCMD}_${mRoBaseShellParameter2}
+	if [ -z "$mRoBaseShellParameter2" ];then
+		dirPath=${mRoDirPathUserHome}${mRoDirNameLog}
+	fi
+
+	#不存在新建命令log目录
+	if [ ! -d "$dirPath" ];then
+		mkdir $dirPath
+	fi
+
+	# while true; do
+	# case $mRoBaseShellParameter2 in
+	# 	"test")			${mRoDirPathCmdModule}/test.sh ;break;;
+	# 	"help")			ftReadMe $mRoBaseShellParameter3	;break;;
+	# 	v | V | -v |-V)		ftVersion;break;;
+	# 	vvv)			;break;;
+	# 	"backup")		${mRoDirPathCmdModule}/system_backup_restore.sh backup; break;;
+	# 	"restore")		${mRoDirPathCmdModule}/system_backup_restore.sh restore; break;;
+	# 	"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
+	# 	"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
+	# 	"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
+	# 	"bootanim")		ftBootAnimation $mRoBaseShellParameter3 $(pwd);break;;
+	# 	"clean_data_garbage")	ftCleanDataGarbage ; break;;
+	# 	"mtk_flashtool")		ftMtkFlashTool ; break;;
+	# 	"restartadb")		ftRestartadb; break;;
+	# 	"gjh")			ftGjh;break;;
+	# 	*)			dirPath=${mRoDirPathUserHome}${mRoDirNameLog};break;;
+	# esac
+	# done
+
+	export mFilePathLog=${dirPath}/$(date -d "today" +"%y%m%d_%H:%M:%S")
 }

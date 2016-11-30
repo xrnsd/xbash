@@ -18,7 +18,7 @@
 
 #####-------------------执行------------------------------#########
 ftTiming
-ftMain 2>&1|tee $mRoFilePathLog
-#ftMain
+ftLog
+ftMain 2>&1|tee -a $mFilePathLog
 ftTiming
 exit

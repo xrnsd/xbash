@@ -24,10 +24,11 @@ export mTimingStart
 
 export readonly mRoDirPathTools=${mRoDirPathUserHome}${mRoDirNameTools}
 export readonly mRoDirPathCmdModule=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdModule}
-export readonly mRoFilePathLog=${mRoDirPathUserHome}${mRoDirNameLog}/${mRoBaseShellParameter2}___${mRoTimeBackup}.log
 
-export mCmdsModuleDataDevicesList=()
 export readonly mRoCmdsPermissionRoot=(xb backup restore)
 export readonly mRoCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher mtk_flashtool gjh bootanim)
 
 export readonly mRoIsDebug=false
+
+export mCmdsModuleDataDevicesList=()
+export mFilePathLog #=${mRoDirPathUserHome}${mRoDirNameLog}/${mRoBaseShellParameter2}.log
