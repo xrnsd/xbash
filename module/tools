@@ -93,7 +93,7 @@ ftMain()
 				while true; do
 				case $mRoBaseShellParameter2 in
 					"clean_data_garbage")	ftCleanDataGarbage ; break;;
-					"mtk_flashtool")	ftMtkFlashTool ; break;;
+					"mtk_flashtool")		ftMtkFlashTool ; break;;
 					"restartadb")		ftRestartadb; break;;
 					"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
 					"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
