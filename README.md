@@ -1,5 +1,4 @@
-# Xrnsd-extensions-to-bash
-###android mmi开发环境的bash简单扩展
+#android mmi开发环境的bash简单扩展
 
 ##1.工程结构
 ####Xrnsd-extensions-to-bash在下面简写为xbash
