@@ -113,17 +113,17 @@ userName=`who | awk '{print $1}'|sort -u`
 dirPathHome=/home/${userName}
 dirPathHomeCmd=${dirPathHome}/cmds/
 dirPathHomeTools=${dirPathHome}/tools
-pwd=123 
+pwd=123
 
 #--------------------------部分环境变量---------------------------
 export JAVA_HOME=${dirPathHomeTools}/jdk/1.6.038
 #export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
-export JRE_HOME=${JAVA_HOME}/jre 
+export JRE_HOME=${JAVA_HOME}/jre
 export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
 export ANDROID_SDK=${dirPathHomeTools}/sdk
 export ANDROID_SDK_HOME=$ANDROID_SDK
 export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r10c
-export LD_LIBRARY_PATH=${dirPathHomeTools}/sp_flash_tool_v5.1548:${dirPathHomeTools}/sp_flash_tool_v5.1548/lib:$LD_LIBRARY_PATH  
+export LD_LIBRARY_PATH=${dirPathHomeTools}/sp_flash_tool_v5.1548:${dirPathHomeTools}/sp_flash_tool_v5.1548/lib:$LD_LIBRARY_PATH
 export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$ANDROID_SDK/platform-tools:$ANDROID_SDK/tools:$ANDROID_NDK:$PATH
 
 #--------------------------终端自身设定---------------------------
@@ -157,7 +157,7 @@ alias xh='history | less'
 #alias xd='${dirPathHomeTools}/sp_flash_tool_v5.1548/flash_tool'
 alias xd='${dirPathHomeCmd}main.sh mtk_flashtool'
 alias xb='${dirPathHomeCmd}main.sh'
-alias xi='. ${dirPathHomeCmd}compile.sh'
+alias xi='. ${dirPathHomeCmd}${mRoFileNameCmdModuleCompile}'
 alias xl='adb logcat -c;adb logcat | grep'
 alias xle='adb logcat -c;adb logcat "*:E"'
 alias .9='${dirPathHome}/tools/sdk/5.1/tools/draw9patch'

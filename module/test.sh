@@ -1,7 +1,7 @@
 #####----------------------初始化demo环境--------------------------#######
 # 函数
-if [ -f ${mRoDirPathCmdModule}/tools.sh ];then
-	source  ${mRoDirPathCmdModule}/tools.sh
+if [ -f ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools} ];then
+	source  ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}
 else
 	echo -e "\033[1;31m函数加载失败\033[0m"
 fi
@@ -621,7 +621,7 @@ fteee()
 	#=================== example=============================
 	#
 	#		fttt [type] [isCreate] [path]
-	#		fttt f true /home/xian-hp-u16/cmds/test.sh
+	#		fttt f true /home/xian-hp-u16/cmds/${mRoFileNameCmdModuleTest}
 	#		echo $?
 	#=========================================================
 
@@ -1149,7 +1149,7 @@ networkAndFtp()
 ftlists()
 {
 	source  /home/wgx/init/data/values
-source /home/wgx/cmds/module/tools
+source /home/wgx/cmds/module/${mRoFileNameCmdModuleTools}
 
 index=0
 for devEnv in ${mRoListDevEnv[*]}

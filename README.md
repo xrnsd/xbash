@@ -10,7 +10,7 @@
 	cmds/module	---------------------	脚本实现文件[具体功能]
 		module/system_backup_restore.sh	xbash的系统维护
 		module/test.sh					xbash的demo测试,请忽略此文件的修改
-		module/tools					xbash的函数实现
+		module/tools.sh					xbash的函数实现
 		module/pytools					xbash的脚本测试工具
 		module/compile.sh				xbash的项目编译初始化
 

@@ -81,8 +81,8 @@ ftMain()
 			if [ `whoami` = "root" ]; then
 				while true; do
 				case $mRoBaseShellParameter2 in
-					"backup")	${mRoDirPathCmdModule}/system_backup_restore.sh backup; break;;
-					"restore")	${mRoDirPathCmdModule}/system_backup_restore.sh restore; break;;
+					"backup")	${mRoDirPathCmdModule}/${mRoFileNameCmdModuleSbr} backup; break;;
+					"restore")	${mRoDirPathCmdModule}/${mRoFileNameCmdModuleSbr} restore; break;;
 				esac
 				done
 			else
@@ -428,10 +428,10 @@ ftFileDirEdit()
 #	ftFileDirEdit [type] [isCreate] [path]
 #
 #	文件存在，创建，返回1
-#	ftFileDirEdit -f true /home/xian-hp-u16/cmds/test.sh
+#	ftFileDirEdit -f true /home/xian-hp-u16/cmds/${mRoFileNameCmdModuleTest}
 #
 #	文件夹存在，创建，返回1
-#	ftFileDirEdit -d true /home/xian-hp-u16/cmds/test.sh
+#	ftFileDirEdit -d true /home/xian-hp-u16/cmds/${mRoFileNameCmdModuleTest}
 #
 #	判断文件夹是否为空，空，返回2 非空，返回3,非文件夹，返回4
 #	ftFileDirEdit -e false /home/xian-hp-u16/cmds
@@ -863,12 +863,12 @@ EOF
 
 	# while true; do
 	# case $mRoBaseShellParameter2 in
-	# 	"test")			${mRoDirPathCmdModule}/test.sh ;break;;
+	# 	"test")			${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest} ;break;;
 	# 	"help")			ftReadMe $mRoBaseShellParameter3	;break;;
 	# 	v | V | -v |-V)		ftVersion;break;;
 	# 	vvv)			;break;;
-	# 	"backup")		${mRoDirPathCmdModule}/system_backup_restore.sh backup; break;;
-	# 	"restore")		${mRoDirPathCmdModule}/system_backup_restore.sh restore; break;;
+	# 	"backup")		${mRoDirPathCmdModule}/${mRoFileNameCmdModuleSbr} backup; break;;
+	# 	"restore")		${mRoDirPathCmdModule}/${mRoFileNameCmdModuleSbr} restore; break;;
 	# 	"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
 	# 	"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
 	# 	"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
@@ -903,9 +903,9 @@ EOF
 		ftEcho -e "[${ftName}]参数[mRoDirPathCmdModule=$mRoDirPathCmdModule]错误,请查看下面说明"
 		ftTest -h
 	fi
-	if [ -f "${mRoDirPathCmdModule}/test.sh" ];then
-		${mRoDirPathCmdModule}/test.sh
+	if [ -f "${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest}" ];then
+		${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest}
 	else
-		ftEcho -e "[${ftName}]执行错误，文件[${mRoDirPathCmdModule}/test.sh]不存在"
+		ftEcho -e "[${ftName}]执行错误，文件[${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest}]不存在"
 	fi
 }

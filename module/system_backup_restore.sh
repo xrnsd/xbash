@@ -28,8 +28,8 @@
 	mNoteRestoreSource=null
 
 # 函数
-if [ -f ${mRoDirPathCmdModule}/tools ];then
-	source  ${mRoDirPathCmdModule}/tools
+if [ -f ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools} ];then
+	source  ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}
 else
 	echo -e "\033[1;31m函数加载失败\033[0m"
 fi
@@ -318,8 +318,8 @@ fi
 		#/home/wgx/cmds/data/excludeDirsBase.list
 		fileNameExcludeBase=excludeDirsBase.list
 		fileNameExcludeAll=excludeDirsAll.list
-		mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdModuleData}${fileNameExcludeBase}
-		mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdModuleData}${fileNameExcludeAll}
+		mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}${fileNameExcludeBase}
+		mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}${fileNameExcludeAll}
 
 		mDirPathsExcludeBase=(/proc \
 					/android \

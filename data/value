@@ -12,7 +12,11 @@ export readonly mRoDirNameTools=tools
 # export readonly mRoDirPathCmds=$(dirname $dirPathCmdsDataValues)
 export readonly mRoDirPathCmds=${mRoDirPathUserHome}/${mRoDirNameCmd}
 export readonly mRoDirNameCmdModule=module
-export readonly mRoDirNameCmdModuleData=data/
+export readonly mRoFileNameCmdModuleTest=test.sh
+export readonly mRoFileNameCmdModuleTools=tools.sh
+export readonly mRoFileNameCmdModuleCompile=compile.sh
+export readonly mRoFileNameCmdModuleSbr=system_backup_restore.sh
+export readonly mRoDirNameCmdData=data/
 
 #外部参数
 export readonly mRoBaseShellParameter1=$0
