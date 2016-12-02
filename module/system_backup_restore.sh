@@ -223,10 +223,12 @@ fi
 		fi
 
 		local index=0;
-		for dev in $mCmdsModuleDataDevicesList
+		for dev in ${mCmdsModuleDataDevicesList[*]}
 		do
 			echo [ ${index} ] $dev
+			# echo [ ${index} ] ${mCmdsModuleDataDevicesList[$index]}
 			index=`expr $index + 1`
+
 		done
 
 		echo
@@ -244,7 +246,7 @@ fi
 			 if [ ${dir} == "q" ]; then
 				exit
 			 elif [ -n "$(echo $dir| sed -n "/^[0-$index]\+$/p")" ];then
-		echo dir=$dir
+				echo
 				devTargetDir=${mCmdsModuleDataDevicesList[$dir]}
 				break;
 			 fi
@@ -762,6 +764,7 @@ EOF
 				while true; do
 				ftEcho -y 是否开始备份
 				read -n1 sel
+				echo
 				case "$sel" in
 					y | Y )
 					#写版本备注

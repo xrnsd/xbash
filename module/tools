@@ -321,19 +321,30 @@ ftRestartadb()
 
 ftInitDevicesList()
 {
-	local ftName=初始化存储设备列表
+	local ftName=选择备份包存放的设备
 	local devDir=/media
 	local dirList=`ls $devDir`
-	local devList=()
-	local index=1;
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例===================
+	#
+	#	ftInitDevicesList 无参数
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
+
 	#耦合变量校验
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$mRoDirPathUserHome" ]\
 			         ||[ -z "$mRoNameUser" ];then
-		ftEcho -ex "函数[${ftName}]参数错误"
+		  ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+		  ftInitDevicesList -h
 	fi
 
-	devList[0]=${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser}
+	unset ${mCmdsModuleDataDevicesList[*]}
+	mCmdsModuleDataDevicesList=(${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser})
+	local index=1;
 	#开始记录设备文件
 	for dir in $dirList
 	do
@@ -342,16 +353,16 @@ ftInitDevicesList()
 			local dirTempList=`ls ${devDir}/${dir}`
 			for dirTemp in $dirTempList
 			do
-				devList[$index]=${devDir}/${dir}/${dirTemp}
+				mCmdsModuleDataDevicesList[$index]=${devDir}/${dir}/${dirTemp}
 				index=`expr $index + 1`
 			done
 		else
 		#长期挂载设备
-		devList[$index]=${devDir}/${dir}
+		mCmdsModuleDataDevicesList[$index]=${devDir}/${dir}
 		index=`expr $index + 1`
 		fi
 	done
-	export mCmdsModuleDataDevicesList=${devList[*]}
+	export mCmdsModuleDataDevicesList
 }
 
 ftCleanDataGarbage()
@@ -886,7 +897,7 @@ EOF
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
-	local valCount=1
+	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$mRoDirPathCmdModule" ];then
 		ftEcho -e "[${ftName}]参数[mRoDirPathCmdModule=$mRoDirPathCmdModule]错误,请查看下面说明"
 		ftTest -h

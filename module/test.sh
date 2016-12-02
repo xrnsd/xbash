@@ -1429,7 +1429,26 @@ ftInitDevicesList2()
 	local ftName=选择备份包存放的设备
 	local devDir=/media
 	local dirList=`ls $devDir`
-	mCmdsModuleDataDevicesList[0]=${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser}
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例===================
+	#
+	#	ftInitDevicesList 无参数
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=0
+	if [ $# -ne $valCount ]||[ -z "$mRoDirPathUserHome" ]\
+			         ||[ -z "$mRoNameUser" ];then
+		  ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+		  ftInitDevicesList -h
+	fi
+
+	unset ${mCmdsModuleDataDevicesList[*]}
+	mCmdsModuleDataDevicesList=(${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser})
 	local index=1;
 	#开始记录设备文件
 	for dir in $dirList
@@ -1448,11 +1467,17 @@ ftInitDevicesList2()
 		index=`expr $index + 1`
 		fi
 	done
-	export mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[*]}
+	export mCmdsModuleDataDevicesList
 }
 
 # ftInitDevicesList2
-# for dirTemp in $mCmdsModuleDataDevicesList
+#  index=0;
+# for dev in  ${mCmdsModuleDataDevicesList[*]}
 # do
-# 	echo $dirTemp
+# 	echo [ ${index} ] $dev
+# 	# echo [ ${index} ] ${mCmdsModuleDataDevicesList[$index]}
+# 	index=`expr $index + 1`
 # done
+# echo -en dsacsdcsd  :
+# read -n1 sel
+# echo ${mCmdsModuleDataDevicesList[$sel]}
