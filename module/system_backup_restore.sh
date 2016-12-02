@@ -447,9 +447,10 @@ EOF
 
 		local strVersion="[ "${lines}" ] "${versionName}
 
-		local tt="请输入版本   ["${versionName}"]  相应的说明:"
+		local tt="请输入版本   ["${versionName}"]  相应的说明[回车默认为常规]:"
 		echo -en $tt
 		read note
+		note=${note:-'常规'} #未输入写入默认值
 		#写入备注总文件
 		sed -i "1i ==========================================" $filePathDefault
 		sed -i "1i $strVersion           $note" $filePathDefault
