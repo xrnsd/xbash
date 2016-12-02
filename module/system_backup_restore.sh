@@ -6,8 +6,6 @@
 
 	mDate=$(date -d "today" +"%Y%m%d")
 
-	#mDirPathSynchronous1=
-	#mDirPathSynchronous2=
 	mDirPathRestoreTarget=/
 	mDirPathStoreTarget=null
 	mDirPathStoreSource=null
