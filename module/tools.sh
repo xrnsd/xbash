@@ -858,6 +858,7 @@ EOF
 	#不存在新建命令log目录
 	if [ ! -d "$dirPath" ];then
 		mkdir $dirPath
+		echo $mUserPwd | sudo -S chmod 777 -R $dirPath
 	fi
 
 	# while true; do
