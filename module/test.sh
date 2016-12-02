@@ -1,7 +1,7 @@
 #####----------------------初始化demo环境--------------------------#######
 # 函数
-if [ -f ${mRoDirPathCmdModule}/tools ];then
-	source  ${mRoDirPathCmdModule}/tools
+if [ -f ${mRoDirPathCmdModule}/tools.sh ];then
+	source  ${mRoDirPathCmdModule}/tools.sh
 else
 	echo -e "\033[1;31m函数加载失败\033[0m"
 fi
@@ -1481,3 +1481,18 @@ EOF
 # echo -en dsacsdcsd  :
 # read -n1 sel
 # echo ${mCmdsModuleDataDevicesList[$sel]}
+
+
+# ftInitDevicesList2
+# ftdddd()
+# {
+# 	local listss=$1
+# 	 index=0;
+# 	for dev in  ${listss[*]}
+# 	do
+# 		echo [ ${index} ] $dev
+# 		# echo [ ${index} ] ${mCmdsModuleDataDevicesList[$index]}
+# 		index=`expr $index + 1`
+# 	done
+# }
+# ftdddd "${mCmdsModuleDataDevicesList[*]}"

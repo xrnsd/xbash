@@ -548,22 +548,26 @@ EOF
 	ftSynchronous()
 	{
 	local ftName=在不同设备间同步版本包
-	local isSynchronous=$1
-	ftInitDevicesList
-	local dirPathArray=${mCmdsModuleDataDevicesList[*]}
+	local dirPathArray=$1
 
-	if [ $isSynchronous = "false" ];then
-		return 1
-	fi
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#
+	#	ftSynchronous [dirPathArray]
+	#	ftSynchronous $mCmdsModuleDataDevicesList
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
 
 	#耦合变量校验
 	local valCount=1
-	if [ $# -ne $valCount ];then
-		ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+	if [ $# -ne $valCount ]||[ -z "$dirPathArray" ];then
+	ftEcho -e "[${ftName}]参数[mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]},mNoteBackupTarget=$mNoteBackupTarget]错误,请查看下面说明"
+		ftBackUpDevScanning -h
 	fi
 
-	if [ $isSynchronous = "true" ];then
-		while true; do
+	while true; do
 		ftEcho -y 是否开始同步
 		read -n1 sel
 		case "$sel" in
@@ -586,8 +590,7 @@ EOF
 				echo "输入n，q，离开";
 				;;
 		esac
-		done
-	fi
+	done
 	}
 
 	ftAddOrCheckSystemHwSwInfo()
@@ -777,9 +780,10 @@ EOF
 					#记录版本包校验信息
 					ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 					#记录版本包相关系统信息
-					ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+					ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase
 					#同步
-					ftSynchronous false ;break;;
+					# ftSynchronous "${mCmdsModuleDataDevicesList[*]}"
+					break;;
 					n | N | q |Q)  exit;;
 					* )
 					ftEcho -e 错误的选择：$sel
