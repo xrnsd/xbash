@@ -48,7 +48,8 @@ fi
 				mDirPathRestoreTarget=$2
 				if [ -f $pathsource ];then
 					if [ -d $mDirPathRestoreTarget ];then
-					sudo tar -xvpzf $pathsource --exclude=$mDirPathRestoreExcludeTarget -C $mDirPathRestoreTarget
+					sudo tar -xvpzf $pathsource --exclude=$mDirPathRestoreExcludeTarget -C $mDirPathRestoreTarget \
+					2>&1 |tee $mFilePathLog
 					else
 						ftEcho -e 未找到目录:${mDirPathRestoreTarget}
 					fi
@@ -395,8 +396,8 @@ fi
 
 		ftEcho -b 开始${ftName}
 
-		# sudo tar -cvPzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / \
-		echo 123 2>&1 |tee $mFilePathLog
+		 sudo tar -cvPzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / \
+		 2>&1 |tee $mFilePathLog
 	}
 
 	ftAddNote()
