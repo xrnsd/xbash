@@ -395,8 +395,8 @@ fi
 
 		ftEcho -b 开始${ftName}
 
-		sudo tar -cvPzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / \
-		2>&1 |tee ${mDirPathLog}/${mFileNameBackupLog}
+		# sudo tar -cvPzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / \
+		echo 123 2>&1 |tee $mFilePathLog
 	}
 
 	ftAddNote()
@@ -732,6 +732,40 @@ EOF
 		done
 	}
 
+
+ftBackUpDevScanning()
+{
+	local ftName=备份设备扫描
+	#提供具体备份操作前，扫描可用的全部存储设备，查看是否有已存在备份，提供快速同步
+	# 1 耦合变量校验[耦合变量包含全局变量，输入参数，输入变量]
+	# 3 提供可执行前提说明
+	# 4 提供执行流程说明
+	# 5 提供使用示例
+	local version=$1
+	local note=$2
+	local devList=$3
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#
+	#	ftBackUpDevScanning [version] [note] [backup_dev_list]
+	#	ftBackUpDevScanning backup_cg_wgx_20161202 常规 $mCmdsModuleDataDevicesList
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if [ $# -ne $valCount ]||[ -z "$version" ]\
+				||[ -z "$note" ]\
+				||[ -z "$devList" ];then
+	ftEcho -e "[${ftName}]参数[mFileNameBackupTargetBase=${mFileNameBackupTargetBase[@]},mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]},mNoteBackupTarget=$mNoteBackupTarget]错误,请查看下面说明"
+		ftBackUpDevScanning -h
+	fi
+
+}
+
 #####-------------------执行------------------------------#########
 
 	# if [ `whoami` != "root" ];then
@@ -773,6 +807,8 @@ EOF
 					y | Y )
 					#写版本备注
 					ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+					#扫描设备,确定有无相同备份
+					ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mCmdsModuleDataDevicesList[*]}"
 					#清理临时文件
 					ftAutoCleanTemp
 					#备份系统生成版本包

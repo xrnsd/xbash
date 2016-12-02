@@ -146,7 +146,6 @@ export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:/usr/local/cuda-7.5/bin:$ANDROID_SD
 if [ ! -d "$dirPathHomeCmd" ];then
     ftEcho -e Xbash下实现的自定义命令不可用
 else
-#--------------------------初始化----------------------------------
         #全局变量
         if [ -f ${dirPathHomeCmd}data/value ];then
             source  ${dirPathHomeCmd}data/value

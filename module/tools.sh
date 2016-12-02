@@ -861,26 +861,6 @@ EOF
 		echo $mUserPwd | sudo -S chmod 777 -R $dirPath
 	fi
 
-	# while true; do
-	# case $mRoBaseShellParameter2 in
-	# 	"test")			${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest} ;break;;
-	# 	"help")			ftReadMe $mRoBaseShellParameter3	;break;;
-	# 	v | V | -v |-V)		ftVersion;break;;
-	# 	vvv)			;break;;
-	# 	"backup")		${mRoDirPathCmdModule}/${mRoFileNameCmdModuleSbr} backup; break;;
-	# 	"restore")		${mRoDirPathCmdModule}/${mRoFileNameCmdModuleSbr} restore; break;;
-	# 	"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
-	# 	"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
-	# 	"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
-	# 	"bootanim")		ftBootAnimation $mRoBaseShellParameter3 $(pwd);break;;
-	# 	"clean_data_garbage")	ftCleanDataGarbage ; break;;
-	# 	"mtk_flashtool")		ftMtkFlashTool ; break;;
-	# 	"restartadb")		ftRestartadb; break;;
-	# 	"gjh")			ftGjh;break;;
-	# 	*)			dirPath=${mRoDirPathUserHome}${mRoDirNameLog};break;;
-	# esac
-	# done
-
 	export mFilePathLog=${dirPath}/$(date -d "today" +"%y%m%d_%H:%M:%S")
 }
 
