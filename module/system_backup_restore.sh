@@ -563,7 +563,7 @@ EOF
 	local valCount=1
 	if [ $# -ne $valCount ]||[ -z "$dirPathArray" ];then
 	ftEcho -e "[${ftName}]参数[mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]},mNoteBackupTarget=$mNoteBackupTarget]错误,请查看下面说明"
-		ftBackUpDevScanning -h
+		ftSynchronous -h
 	fi
 
 	while true; do
@@ -755,11 +755,12 @@ EOF
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
-	local valCount=1
+	local valCount=3
 	if [ $# -ne $valCount ]||[ -z "$version" ]\
 				||[ -z "$note" ]\
 				||[ -z "$devList" ];then
-	ftEcho -e "[${ftName}]参数[mFileNameBackupTargetBase=${mFileNameBackupTargetBase[@]},mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]},mNoteBackupTarget=$mNoteBackupTarget]错误,请查看下面说明"
+	ftEcho -e "[${ftName}]错误"
+	ftEcho -e "参数[devList=${devList[@]},note=${note[@]},version=$version]错误,请查看下面说明"
 		ftBackUpDevScanning -h
 	fi
 
