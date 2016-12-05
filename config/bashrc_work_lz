@@ -221,5 +221,4 @@ unset CCACHE_HARDLINK
 export CCACHE_DIR=/media/data/.ccache
 #分布式编译集群的IP组
 #export DISTCC_HOSTS="192.168.3.114"
-#-------------------------ttf显示中文------------------
-alias zhcon='zhcon --utf8 --drv=fb'
+

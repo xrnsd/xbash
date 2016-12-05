@@ -117,7 +117,7 @@ export PS1='xrnsd\[\033[44m\][\w]\[\033[0m\]:'
 # 忽略[连续]重复命令
 export HISTCONTROL=ignoredups
 # 忽略特定命令
-export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:xc:xd:xk:xu;xr:xuu:xbh:xs:xss:xh:xp:xb:xt:xgl:xi:xl:xle:xkd:Xversion:xx:history*"
+export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:xc:xd:xk:xu;xr:xbh:xs:xss:xh:xp:xb:xt:xgl:xi:xl:xkd:Xversion:xx:history*"
 # 命令历史文件大小
 export HISTFILESIZE=10000000000
 # 保存历史命令条数
@@ -181,8 +181,8 @@ alias xh='export XCMD=xh;${dirPathHomeCmd}main.sh help $2'
 alias xu='export XCMD=xu;gedit ${dirPathHome}/.bashrc'
 alias xuu='export XCMD=xuu;gedit ${dirPathHomeCmd}'
 alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
-alias xss='export XCMD=xss;echo '$pwd' | sudo -S reboot'
-alias xs='export XCMD=xs;echo '$pwd' | sudo -S shutdown -h now'
+alias xss='export XCMD=xss;${dirPathHomeCmd}main.sh reboot'
+alias xs='export XCMD=xs;${dirPathHomeCmd}main.sh shutdown'
 alias xp="export XCMD=xp;readlink -f"
 alias xd='export XCMD=xd;${dirPathHomeCmd}main.sh mtk_flashtool'
 alias xb='export XCMD=xb;${dirPathHomeCmd}main.sh'
