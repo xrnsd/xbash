@@ -916,20 +916,18 @@ EOF
 	while true; do
 	case "$edittype" in
 		shutdown )
-		ftEcho -e 将在${waitLong}秒后关机，ctrl+c取消
 		for i in `seq -w $waitLong -1 1`
 		  do
-		    echo -ne "\b\b$i";
+		    echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后关机，ctrl+c取消\033[0m";
 		    sleep 1;
 		  done
 		echo -e "\b\b"
 		echo $mUserPwd | sudo -S shutdown -h now
 		break;;
 		reboot)
-		ftEcho -e 将在${waitLong}秒后重启，ctrl+c取消
 		for i in `seq -w $waitLong -1 1`
 		  do
-		    echo -ne "\b\b$i";
+		    echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后重启，ctrl+c取消\033[0m";
 		    sleep 1;
 		  done
 		echo -e "\b\b"
