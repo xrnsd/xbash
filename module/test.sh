@@ -1496,3 +1496,10 @@ EOF
 # 	done
 # }
 # ftdddd "${mCmdsModuleDataDevicesList[*]}"
+for i in `seq -w 2 -1 1`
+  do
+    echo -ne "\b\b$i";
+    sleep 1;
+  done
+
+echo -e "\b\bhello world!"

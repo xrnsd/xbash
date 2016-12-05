@@ -68,6 +68,8 @@ ftMain()
 	while true; do
 	case $mRoBaseShellParameter2 in
 	"test")		ftTest	 ;break;;
+	"shutdown")	ftBoot	shutdown ;break;;
+	"reboot")	ftBoot	reboot ;break;;
 	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
 	v | V | -v |-V)	ftVersion;break;;
 	vvv)	ftEcho -t xbash;		ftVersion
@@ -888,4 +890,55 @@ EOF
 	else
 		ftEcho -e "[${ftName}]执行错误，文件[${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest}]不存在"
 	fi
+}
+
+ftBoot()
+{
+	local ftName=函数demo调试
+	local edittype=$1
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#	ftBoot 关机/重启
+	#	ftBoot shutdown/reboot
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	if [ -z "$mUserPwd" ]||[ -z "$edittype" ];then
+		ftEcho -e "[${ftName}]参数[mUserPwd=$mUserPwd],[edittype=$edittype]错误,请查看下面说明"
+		ftBoot -h
+	fi
+
+	local waitLong=10
+
+	while true; do
+	case "$edittype" in
+		shutdown )
+		ftEcho -e 将在${waitLong}秒后关机，ctrl+c取消
+		for i in `seq -w $waitLong -1 1`
+		  do
+		    echo -ne "\b\b$i";
+		    sleep 1;
+		  done
+		echo -e "\b\b"
+		echo $mUserPwd | sudo -S shutdown -h now
+		break;;
+		reboot)
+		ftEcho -e 将在${waitLong}秒后重启，ctrl+c取消
+		for i in `seq -w $waitLong -1 1`
+		  do
+		    echo -ne "\b\b$i";
+		    sleep 1;
+		  done
+		echo -e "\b\b"
+		echo $mUserPwd | sudo -S reboot
+		break;;
+		* )
+			ftEcho -e 错误的选择：$sel
+			echo "输入q，离开"
+			;;
+	esac
+	done
 }
