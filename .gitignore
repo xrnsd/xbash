@@ -1,1 +1,3 @@
 #config/bashrc_home
+data/excludeDirsAll.list
+data/excludeDirsBase.list
