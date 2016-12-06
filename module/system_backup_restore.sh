@@ -756,12 +756,7 @@ EOF
 
 ftBackUpDevScanning()
 {
-	local ftName=备份设备扫描
-	#提供具体备份操作前，扫描可用的全部存储设备，查看是否有已存在备份，提供快速同步
-	# 1 耦合变量校验[耦合变量包含全局变量，输入参数，输入变量]
-	# 3 提供可执行前提说明
-	# 4 提供执行流程说明
-	# 5 提供使用示例
+	local ftName=备份设备扫描,同步
 	local version=$1
 	local note=$2
 	local devList=$3
@@ -786,6 +781,66 @@ EOF
 		ftBackUpDevScanning -h
 	fi
 
+	local md5InfoCheckfail=8
+	local softwareInfoCheckfail=9
+	for devDirPath in ${devList[@]}
+	do
+		dirPathTarget=${devDirPath}/backup/os/${mRoNameUser};
+		if [ $dirPathTarget = $mDirPathStoreTarget ];then
+			continue
+		fi
+		local filePathVersionTarget=${dirPathTarget}/${version}.tgz
+		if [ -f "$filePathVersionTarget" ];then
+			while true; do
+				ftEcho -y 在设备[${devDirPath}]上存在版本包[${version}],是否同步
+				read -n1 sel
+				echo
+				case "$sel" in
+					y | Y )
+						ftEcho -b 开始版本包[${version}]的可用性校验
+
+						ftAddOrCheckSystemHwSwInfo -check $dirPathTarget $version false
+						if [ $? -eq "$softwareInfoCheckfail" ];then
+							ftEcho -e 设备[${devDirPath}]上的版本包[${version}]不兼容
+							break
+						fi
+
+						ftMD5 -check $dirPathTarget $version false
+						if [ $? -eq "$md5InfoCheckfail" ];then
+							ftEcho -e 设备[${devDirPath}]上的版本包[${version}]无效
+							break
+						fi
+
+						filePathNote=${dirPathTarget}/.notes/${version}.note
+						if [ ! -f "$filePathNote" ]||[ $note != $(cat $filePathNote) ];then
+							echo note=$note
+							echo notett=$(cat $filePathNote)
+							ftEcho -e 设备[${devDirPath}]上版本包[${version}]的备注不一致
+							break
+						fi
+
+						ftEcho -s 版本包[${version}]可用，开始同步
+						# 写入备注
+						ftAddNote $mDirPathStoreTarget $version $note
+						#复制版本包
+						cp -rf -v $filePathVersionTarget ${mDirPathStoreTarget}/${version}.tgz
+						#复制软硬件信息
+						cp -rf -v ${dirPathTarget}/.info/${version} ${mDirPathStoreTarget}/.info/${version}
+						#复制md5信息
+						cp -rf -v  ${dirPathTarget}/.md5s/${version}.md5 ${mDirPathStoreTarget}/.md5s/${version}.md5
+						ftEcho -s 版本包[${version}]同步结束
+						#清除权限限制
+						chmod 777 -R $mDirPathStoreTarget
+						exit;;
+					n | N | q |Q)break;;
+					* )
+					ftEcho -e 错误的选择：$sel
+					echo "输入n，q，离开";
+					;;
+			esac
+			done
+		fi
+	done
 }
 
 #####-------------------执行------------------------------#########
