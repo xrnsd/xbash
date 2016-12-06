@@ -863,7 +863,7 @@ EOF
 		echo $mUserPwd | sudo -S chmod 777 -R $dirPath
 	fi
 
-	export mFilePathLog=${dirPath}/$(date -d "today" +"%y%m%d_%H:%M:%S")
+	export mFilePathLog=${dirPath}/$(date -d "today" +"%y%m%d_%H:%M:%S").log
 }
 
 ftTest()

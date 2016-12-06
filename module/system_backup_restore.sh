@@ -68,13 +68,13 @@ fi
 		local ftName=选择还原使用的版本[备份]包
 		local index=0;
 		local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
-		local dirNameBackupNote=${mDirPathStoreSource}/.notes
+		local dirPathBackupNote=${mDirPathStoreSource}/.notes
 
 		#耦合变量校验
 		local valCount=0
 		if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ]\
 					||[ ! -d $mDirPathStoreSource ]\
-					||[ ! -d $dirNameBackupNote ];then
+					||[ ! -d $dirPathBackupNote ];then
 			ftEcho -ex "函数[${ftName}]参数错误"
 		fi
 
@@ -92,7 +92,7 @@ fi
 			do
 				local fileBaseName=${file/.tgz/}
 				local fileNameNote=${fileBaseName}.note
-				local filePathNote=${dirNameBackupNote}/${fileNameNote}
+				local filePathNote=${dirPathBackupNote}/${fileNameNote}
 				if [ -f $filePathNote ];then
 					local note=`cat $filePathNote`
 				else
@@ -184,9 +184,6 @@ fi
 			echo -e "当前系统有效修改：	\033[44m$mVersionChangs\033[0m"
 
 		elif [ $infoType = "backup" ];then
-			mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${mRoNameUser}_${mDate}
-			mFileNameBackupTarget=${mFileNameBackupTargetBase}.tgz
-			mFileNameBackupLog=${mFileNameBackupTargetBase}.log
 
 			local btype
 			if [ $mTypeBackupEdit = "cg" ];then
@@ -283,6 +280,10 @@ fi
 		* )  		ftEcho -e 错误的选择：$typeIndex ;echo "输入1,2 选择    输入n，q离开";break;;
 		esac
 		done
+
+		mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${mRoNameUser}_${mDate}
+		mFileNameBackupTarget=${mFileNameBackupTargetBase}.tgz
+		mFileNameBackupLog=${mFileNameBackupTargetBase}.log
 	}
 
 	ftSetRestoreType()
@@ -346,6 +347,7 @@ fi
 					${mRoDirPathUserHome}.software \
 					${mRoDirPathUserHome}.cache \
 					${mRoDirPathUserHome}.local \
+					${mRoDirPathUserHome}.wine \
 					${mRoDirPathUserHome}.other \
 					${mRoDirPathUserHome}.gvfs)
 
@@ -403,9 +405,10 @@ fi
 		local ftName=记录版本包相关备注
 		local dateOnly=$(date -d "today" +"%Y%m%d")
 		local dateTime=$(date -d "today" +"%Y%m%d_%H%M%S")
-		local dirBackupRoot=$1
-		local dirNameBackupNote=${dirBackupRoot}/.notes
+		local dirPathBackupRoot=$1
+		local dirPathBackupNote=${dirPathBackupRoot}/.notes
 		local versionName=$2
+		local noteBase=$3
 		local fileNameDefault=.note.list
 		local fileNameNote=${versionName}.note
 
@@ -413,7 +416,7 @@ fi
 		while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 		#=================== ${ftName}的使用示例===================
 		#
-		#	ftAddNote [dirBackupRoot] [versionName]
+		#	ftAddNote [dirPathBackupRoot] [versionName]
 		#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
 		#=========================================================
 EOF
@@ -421,19 +424,19 @@ EOF
 
 		#耦合变量校验
 		local valCount=2
-		if [ $# -ne $valCount ]||[ -z "$dirBackupRoot" ]\
+		if [ $# -lt $valCount ]||[ -z "$dirPathBackupRoot" ]\
 						         ||[ -z "$versionName" ];then
 			ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
 			ftAddNote -h
 		fi
 
-		if [ -d ${dirBackupRoot} ]&&[ ! -d ${dirNameBackupNote} ];then
-				mkdir ${dirNameBackupNote}
-				ftEcho -s 新建备注存储目录:${dirNameBackupNote}
+		if [ -d ${dirPathBackupRoot} ]&&[ ! -d ${dirPathBackupNote} ];then
+				mkdir ${dirPathBackupNote}
+				ftEcho -s 新建备注存储目录:${dirPathBackupNote}
 		fi
 
-		local filePathDefault=${dirNameBackupNote}/${fileNameDefault}
-		local filePathNote=${dirNameBackupNote}/${fileNameNote}
+		local filePathDefault=${dirPathBackupNote}/${fileNameDefault}
+		local filePathNote=${dirPathBackupNote}/${fileNameNote}
 
 		if [ ! -f $filePathDefault ]; then
 			touch $filePathDefault;echo "【 create by wgx 】">$filePathDefault
@@ -445,11 +448,15 @@ EOF
 		let lines=lines+1
 
 		local strVersion="[ "${lines}" ] "${versionName}
-
-		local tt="请输入版本   ["${versionName}"]  相应的说明[回车默认为常规]:"
-		echo -en $tt
-		read note
-		note=${note:-'常规'} #未输入写入默认值
+		if [ -z "$noteBase" ];then
+			local tt="请输入版本   ["${versionName}"]  相应的说明[回车默认为常规]:"
+			echo
+			echo -en $tt
+			read note
+			note=${note:-'常规'} #未输入写入默认值
+		else
+			note=$noteBase
+		fi
 		#写入备注总文件
 		sed -i "1i ==========================================" $filePathDefault
 		sed -i "1i $strVersion           $note" $filePathDefault
@@ -463,9 +470,11 @@ EOF
 	{
 		local ftName=记录和校验版本包的MD5
 		local typeEdit=$1
-		local dirBackupRoot=$2
-		local dirBackupMd5=${dirBackupRoot}/.md5s
+		local dirPathBackupRoot=$2
+		local dirBackupMd5=${dirPathBackupRoot}/.md5s
 		local versionName=$3
+		local isExit=$4
+		isExit=${isExit:-'true'}
 		local fileNameMd5=${versionName}.md5
 
 		#使用示例
@@ -480,15 +489,15 @@ EOF
 
 		#耦合变量校验
 		local valCount=3
-		if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
-						         ||[ -z "$dirBackupRoot" ]\
+		if [ $# -lt $valCount ]||[ -z "$typeEdit" ]\
+						         ||[ -z "$dirPathBackupRoot" ]\
 						         ||[ -z "$versionName" ];then
 			ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
 			ftMD5 -h
 		fi
 
-		if [ ! -d ${dirBackupRoot} ];then
-			ftEcho -e MD5相关操作失败，找不到$dirBackupRoot
+		if [ ! -d ${dirPathBackupRoot} ];then
+			ftEcho -e MD5相关操作失败，找不到$dirPathBackupRoot
 			exit
 		fi
 
@@ -499,7 +508,7 @@ EOF
 				echo 新建版本包校验信息存储目录:${dirBackupMd5}
 			fi
 
-			local pathFile=${dirBackupRoot}/${versionName}.tgz
+			local pathFile=${dirPathBackupRoot}/${versionName}.tgz
 			local pathMd5=${dirBackupMd5}/${fileNameMd5}
 
 			md5=`md5sum $pathFile | awk '{print $1}'`
@@ -512,20 +521,29 @@ EOF
 			ftEcho -b 开始校验版本包，确定有效性
 
 			if [ -d ${dirBackupMd5} ];then
-				local pathFile=${dirBackupRoot}/${versionName}.tgz
+				local pathFile=${dirPathBackupRoot}/${versionName}.tgz
 				local pathMd5=${dirBackupMd5}/${fileNameMd5}
 				if [ -f ${pathMd5} ];then
 					md5Base=`cat $pathMd5`
 					md5Now=`md5sum $pathFile | awk '{print $1}'`
 					if [ "$md5Base"x != "$md5Now"x ]; then
+						if [ "$isExit" != "true" ]; then
+							return 8
+						fi
 						ftEcho -ex 校验失败，版本包：${versionName}无效
 					else
 						ftEcho -s 版本包：${versionName}校验成功
 					fi
 				else
+					if [ "$isExit" != "true" ]; then
+						return 8
+					fi
 					ftEcho -ex 版本包：${versionName}校验信息查找失败
 				fi
 			else
+				if [ "$isExit" != "true" ]; then
+					return 8
+				fi
 				ftEcho -ex 版本包：${versionName}校验信息查找失败
 			fi
 		fi
@@ -598,6 +616,8 @@ EOF
 	local typeEdit=$1
 	local dirPathBackupRoot=$2
 	local dirNameBackupInfoVersion=$3
+	local isExit=$4
+	isExit=${isExit:-'true'}
 	local dirPathBackupInfo=${dirPathBackupRoot}/.info
 	local dirPathBackupInfoVersion=${dirPathBackupInfo}/${dirNameBackupInfoVersion}
 
@@ -627,7 +647,7 @@ EOF
 
 	#耦合变量校验
 	local valCount=3
-	if [ $# -ne $valCount ]||[ -z "$typeEdit" ]\
+	if [ $# -lt $valCount ]||[ -z "$typeEdit" ]\
 					         ||[ -z "$dirPathBackupRoot" ]\
 					         ||[ -z "$dirNameBackupInfoVersion" ];then
 		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
@@ -694,9 +714,11 @@ EOF
 				ftEcho -e 系统版本的位数不一致，将自动退出
 				returns=不兼容
 			fi
-
 			ftEcho -s 版本包：${dirNameBackupInfoVersion}系统兼容性检测结果为${returns}
 			if [ "$returns"  = "不兼容" ]; then
+				if [ "$isExit" != "true" ]; then
+					return 9
+				fi
 				exit
 			fi
 
@@ -816,9 +838,11 @@ EOF
 					#记录版本包校验信息
 					ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 					#记录版本包相关系统信息
-					ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase
+					ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 					#同步
-					# ftSynchronous "${mCmdsModuleDataDevicesList[*]}"
+					# ftSynchronous "${mCmdsModuleDataDevicesList[*]}"&&
+					# 清除权限限制
+					chmod 777 -R $mDirPathStoreTarget
 					break;;
 					n | N | q |Q)  exit;;
 					* )

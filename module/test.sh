@@ -1505,3 +1505,106 @@ EOF
 #   done
 
 # echo -e "\b\bhello world!"
+
+ ftCompileContextConfig()#编译环境切换
+    {
+	#!/bin/bash
+	OPTION=$(whiptail --menu "编译环境配置" 15 60 4 \
+	"1" "MTK" \
+	"2" "SPRD"   3>&1 1>&2 2>&3)
+
+	exitstatus=$?
+	if [ $exitstatus = 0 ]; then
+
+		if [ ! -d ~/temp/1 ];then
+		   mkdir ~/temp
+		fi
+		if [ ! -f ~/temp ];then
+		   touch ~/temp/hj.conf
+		fi
+		while true; do
+		    case $OPTION in
+		    "1")
+		    	# echo "0"|| update-alternatives --config java >~/temp/hj.conf
+		    	# echo "0"|| update-alternatives --config javac >~/temp/hj.conf
+		    	echo "已修改当前环境为：MTK"; break;;
+		    "2")
+		    	# echo "1"|| update-alternatives --config java >~/temp/hj.conf
+		    	# echo "1"|| update-alternatives --config javac >~/temp/hj.conf
+		    	echo "已修改当前环境为：SPRD"; break;;
+		    *)  echo "错误的选择，请查看脚本";exit;;
+		    esac
+		done
+		rm -rf ~/temp/hj.conf
+	else
+	    echo "已退出环境配置"
+	fi
+    }
+    ftCompileContextConfig0725()#编译环境切换
+    {
+	#!/bin/bash
+	userdir=/home/xrnsd-pc-work1
+    	temp=~/temp.data
+	configdir=${userdir}/cmds/data/compile_environment
+	config_mtk=${configdir}/bashrc_mtk
+	config_sprd=${configdir}/bashrc_sprd
+
+    	java -version 2>$temp
+    	isOpenJDK=$(cat $temp||grep "OpenJDK")
+    	rm -rf $temp
+	#环境判断
+    	if [ -z "$isOpenJDK" ]; then
+	    CompileContext=SPRD
+	fi
+    	if [ -n "$isOpenJDK" ]; then
+	    CompileContext=MTK
+	fi
+
+	OPTION=$(whiptail --menu "编译环境配置[当前为${CompileContext}环境]" 15 60 4 \
+	"1" "MTK" \
+	"2" "SPRD"   3>&1 1>&2 2>&3)
+
+	exitstatus=$?
+	if [ $exitstatus = 0 ]; then
+
+		if [  -d $configdir ];then
+		   while true; do
+		    case $OPTION in
+		    "1")
+			if [ -f $config_mtk ];then
+			   cat $config_mtk >${userdir}/.bashrc
+			   source ${userdir}/.bashrc
+			   echo "已修改当前环境为：MTK,重启终端生效,本终端即将退出"
+			   #sleep 2
+			   #exit 0
+			else
+			echo "配置失败，请确认MTK相关配置信息文件【${config_mtk}】是否存在"
+			fi; break;;
+		    "2")
+			if [ -f $config_sprd ];then
+			   cat $config_sprd >${userdir}/.bashrc
+			   source ${userdir}/.bashrc
+			   echo "已修改当前环境为：SPRD,重启终端生效,本终端即将退出"
+			   #sleep 2
+			   #exit 0
+			else
+			echo "配置失败，请确认SPRD相关配置信息文件【${config_sprd}】是否存在"
+			fi; break;;
+		    *)  echo "错误的选择，请查看脚本";exit;;
+		    esac
+		done
+		fi
+	else
+	    echo "已退出环境配置"
+	fi
+    }
+
+ftasxa()
+{
+	    isExit=true
+if [ "$isExit" = "true" ]; then
+	return 8
+fi
+echo 1233
+}
+ftasxa
