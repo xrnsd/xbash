@@ -14,6 +14,12 @@ ftExample()
 	# 3 提供可执行前提说明
 	# 4 提供执行流程说明
 	# 5 提供使用示例
+	# -eq           //等于
+	# -ne           //不等于
+	# -gt            //大于
+	# -lt            //小于
+	# ge            //大于等于
+	# le            //小于等于
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -548,7 +554,7 @@ ftEcho()
 	# 标题，换行
 	b | B | -b | -B)	echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
 	#特定信息显示,y/n
-	y | Y | -y | -Y)	echo -en "${Content}[y/n]"; break;;
+	y | Y | -y | -Y)	echo;echo -en "${Content}[y/n]"; break;;
 	# 特定信息显示,命令说明的格式
 	g | G | -g | -G)cat<<EOF
 =========================================================================

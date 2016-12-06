@@ -20,5 +20,6 @@
 ftTiming
 ftLog
 ftMain 2>&1|tee -a $mFilePathLog
+# echo $mUserPwd | sudo -S chmod 777 $mFilePathLog
 ftTiming
 exit

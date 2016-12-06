@@ -395,8 +395,8 @@ fi
 		done
 
 		ftEcho -b 开始${ftName}
-
-		 sudo tar -cvPzf  ${mDirPathStoreTarget}/$mFileNameBackupTarget --exclude-from=$fileNameExclude / \
+		local filePathVersion=${mDirPathStoreTarget}/$mFileNameBackupTarget
+		sudo tar -cvPzf  $filePathVersion --exclude-from=$fileNameExclude / \
 		 2>&1 |tee $mFilePathLog
 	}
 
@@ -843,6 +843,41 @@ EOF
 	done
 }
 
+ftVersionPackageIsCreated()
+{
+	local ftName=检查版本包是否已经存在
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#
+	#	ftVersionPackageIsCreated 无参
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=0
+	if [ $# -ne $valCount ];then
+		ftEcho -e "[${ftName}]参数错误,请查看下面说明"
+		ftVersionPackageIsCreated -h
+	fi
+
+	if [ -f $filePathVersion ];then
+		ftEcho -y 版本[${mFileNameBackupTargetBase}]已存在，是否覆盖
+		while true; do
+		read -n1 sel
+		case "$sel" in
+			y | Y ) break;;
+			n | N| q |Q)  exit;;
+			* )	ftEcho -e 错误的选择：$sel
+				echo "输入n，q，离开";
+				;;
+		esac
+		done
+	fi
+}
+
 #####-------------------执行------------------------------#########
 
 	# if [ `whoami` != "root" ];then
@@ -874,6 +909,8 @@ EOF
 				cd /&&
 				#选择备份类型
 				ftSelBackupType&&
+				# 检查版本包是否已经存在
+				ftVersionPackageIsCreated&&
 				#当前配置信息显示
 				ftEchoInfo backup&&
 				while true; do
@@ -884,7 +921,7 @@ EOF
 					y | Y )
 					#写版本备注
 					ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
-					#扫描设备,确定有无相同备份
+					#扫描设备,同步相同备份
 					ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mCmdsModuleDataDevicesList[*]}"
 					#清理临时文件
 					ftAutoCleanTemp
