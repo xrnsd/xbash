@@ -263,7 +263,7 @@ done
 
 ftVersion()
 {
-	echo \"Xrnsd extensions to bash\" V0.5.5 beta
+	echo \"Xrnsd extensions to bash\" V0.5.6 beta
 }
 
 
