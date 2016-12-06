@@ -554,7 +554,7 @@ ftEcho()
 	# 标题，换行
 	b | B | -b | -B)	echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
 	#特定信息显示,y/n
-	y | Y | -y | -Y)	echo;echo -en "${Content}[y/n]"; break;;
+	y | Y | -y | -Y)	echo;echo -en "${Content}[y/n]";echo; break;;
 	# 特定信息显示,命令说明的格式
 	g | G | -g | -G)cat<<EOF
 =========================================================================

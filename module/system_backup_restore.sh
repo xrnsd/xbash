@@ -163,7 +163,6 @@ fi
 			* )    ftEcho -e 错误的选择：$sel ;echo  "输入1,2 选择    输入n，q 离开";break;;
 		esac
 		done
-		echo
 	}
 
 	ftEchoInfo()
@@ -200,7 +199,6 @@ fi
 		else
 			ftEcho -ex 一脸懵逼
 		fi
-		echo
 	}
 
 	ftSetBackupDevDir()
@@ -226,8 +224,8 @@ fi
 			index=`expr $index + 1`
 
 		done
-
 		echo
+
 		while true; do
 			echo -en "请选择存放备份文件的设备[0~`expr $index - 1`,q](回车默认当前用户目录):"
 			if [ ${#mCmdsModuleDataDevicesList[@]} -gt 9 ];then
@@ -264,9 +262,9 @@ fi
 		ftEcho -t 请${ftName}
 		echo -e "[1]\t基础"
 		echo -e "[2]\t全部"
+		echo
 
 		while true; do
-		echo
 		echo -en "请选择备份类型(默认基础):"
 		read -n1 typeIndex
 		#设定默认值
@@ -292,9 +290,9 @@ fi
 		ftEcho -t 请${ftName}
 		echo -e "[1]\t忽略home"
 		echo -e "[2]\t不忽略"
+		echo
 
 		while true; do
-			echo
 			echo -en "请选择还原设置(回车默认忽略home):"
 			read -n1 typeIndex
 
@@ -518,7 +516,7 @@ EOF
 
 		elif [ ${typeEdit} == "-check" ]; then
 
-			ftEcho -b 开始校验版本包，确定有效性
+			ftEcho -t 开始校验版本包，确定有效性
 
 			if [ -d ${dirBackupMd5} ];then
 				local pathFile=${dirPathBackupRoot}/${versionName}.tgz
@@ -675,7 +673,7 @@ EOF
 
 			ftEcho -s 版本${dirNameBackupInfoVersion}相关系统信息记录完成
 		elif [ ${typeEdit} == "-check" ]; then
-			ftEcho -b 检查版本包和当前系统兼容程度
+			ftEcho -t 检查版本包和当前系统兼容程度
 
 			if [ ! -f $filePathVersionCpu ]||[ ! -f $filePathVersionMainboard ]||[ ! -f $filePathVersionSystem ]||[ ! -f $filePathVersion32x64 ]; then
 				ftEcho -e   版本${dirNameBackupInfoVersion}相关系统信息损坏
@@ -794,7 +792,6 @@ EOF
 			while true; do
 				ftEcho -y 在设备[${devDirPath}]上存在版本包[${version}],是否同步
 				read -n1 sel
-				echo
 				case "$sel" in
 					y | Y )
 						ftEcho -b 开始版本包[${version}]的可用性校验
