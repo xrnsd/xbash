@@ -77,6 +77,7 @@ ftMain()
 	"shutdown")	ftBoot	shutdown ;break;;
 	"reboot")	ftBoot	reboot ;break;;
 	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
+	"clean_data_garbage")	ftCleanDataGarbage ; break;;
 	v | V | -v |-V)	ftVersion;break;;
 	vvv)	ftEcho -t xbash;		ftVersion
 		ftEcho -t java;		java -version
@@ -100,7 +101,6 @@ ftMain()
 			if [ `whoami` = $mRoNameUser ]; then
 				while true; do
 				case $mRoBaseShellParameter2 in
-					"clean_data_garbage")	ftCleanDataGarbage ; break;;
 					"mtk_flashtool")		ftMtkFlashTool ; break;;
 					"restartadb")		ftRestartadb; break;;
 					"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;

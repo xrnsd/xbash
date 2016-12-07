@@ -122,4 +122,4 @@ alias xb='export XCMD=xb;${dirPathHomeCmd}main.sh'
 
 #--------------------------命令选项快速适配---------------------------
 complete -W "backup restore" xb
-complete -W "test" xc
+complete -W "test clean_data_garbage" xc

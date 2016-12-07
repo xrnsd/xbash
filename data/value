@@ -30,7 +30,7 @@ export readonly mRoDirPathTools=${mRoDirPathUserHome}${mRoDirNameTools}
 export readonly mRoDirPathCmdModule=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdModule}
 
 export readonly mRoCmdsPermissionRoot=(xb backup restore)
-export readonly mRoCmdsPermissionBase=(restartadb help clean_data_garbage monkey systemui launcher mtk_flashtool gjh bootanim)
+export readonly mRoCmdsPermissionBase=(restartadb help monkey systemui launcher mtk_flashtool gjh bootanim)
 
 export readonly mRoIsDebug=false
 
