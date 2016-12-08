@@ -878,10 +878,14 @@ EOF
 	#不存在新建命令log目录
 	if [ ! -d "$dirPath" ];then
 		mkdir $dirPath
-		echo $mUserPwd | sudo -S chmod 777 -R $dirPath
 	fi
 
 	export mFilePathLog=${dirPath}/$(date -d "today" +"%y%m%d_%H:%M:%S").log
+	touch $mFilePathLog
+	
+	if [ `whoami` = "root" ]; then
+		chmod 777 -R $dirPath
+	fi
 }
 
 ftTest()
