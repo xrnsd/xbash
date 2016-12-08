@@ -560,54 +560,6 @@ EOF
 		sudo rm -rf /var/cache/apt/archives
 	}
 
-	ftSynchronous()
-	{
-	local ftName=在不同设备间同步版本包
-	local dirPathArray=$1
-
-	#使用示例
-	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftSynchronous [dirPathArray]
-	#	ftSynchronous $mCmdsModuleDataDevicesList
-	#=========================================================
-EOF
-	exit;; * )break;; esac;done
-
-	#耦合变量校验
-	local valCount=1
-	if [ $# -ne $valCount ]||[ -z "$dirPathArray" ];then
-	ftEcho -e "[${ftName}]参数[mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]},mNoteBackupTarget=$mNoteBackupTarget]错误,请查看下面说明"
-		ftSynchronous -h
-	fi
-
-	while true; do
-		ftEcho -y 是否开始同步
-		read -n1 sel
-		case "$sel" in
-			y | Y )
-				ftEcho -s 开始同步!
-				for dirpath in ${dirPathArray[@]}
-				do
-					for dirpath2 in ${dirPathArray[@]}
-					do
-						if [ ${dirpath} != ${dirpath2} ]; then
-							find $dirpath -regex ".*\.log\|.*\.list" -exec cp {} -u -n -v $dirpath2 \; ;
-						fi
-					done
-				done
-				ftEcho -s 同步结束！
-				break;;
-			n | N| q |Q)  exit;;
-			* )
-				ftEcho -e 错误的选择：$sel
-				echo "输入n，q，离开";
-				;;
-		esac
-	done
-	}
-
 	ftAddOrCheckSystemHwSwInfo()
 	{
 	local ftName=记录和校验版本包软件和硬件信息
@@ -929,7 +881,7 @@ EOF
 					#记录版本包相关系统信息
 					ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 					#同步
-					# ftSynchronous "${mCmdsModuleDataDevicesList[*]}"&&
+					# ftSynchronous "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"&&
 					# 清除权限限制
 					chmod 777 -R $mDirPathStoreTarget
 					break;;
