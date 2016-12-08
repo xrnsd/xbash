@@ -858,10 +858,22 @@ EOF
 		ftLog -h
 	fi
 	#初始化命令log目录
-	dirPath=${mRoDirPathUserHome}${mRoDirNameLog}/${XCMD}_${mRoBaseShellParameter2}
+
+	local diarNameCmdLog=null
 	if [ -z "$mRoBaseShellParameter2" ];then
-		dirPath=${mRoDirPathUserHome}${mRoDirNameLog}
+		diarNameCmdLog=other
+	else
+		while true; do case $XCMD in
+		xk)
+			diarNameCmdLog=${XCMD}_ftKillPhoneAppByPackageName
+			break;;
+		*)
+			diarNameCmdLog=${XCMD}_${mRoBaseShellParameter2}
+			break;;
+		esac;done
 	fi
+
+	dirPath=${mRoDirPathUserHome}${mRoDirNameLog}/${diarNameCmdLog}
 
 	#不存在新建命令log目录
 	if [ ! -d "$dirPath" ];then
