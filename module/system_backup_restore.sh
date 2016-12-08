@@ -881,7 +881,7 @@ EOF
 					#记录版本包相关系统信息
 					ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
 					#同步
-					# ftSynchronous "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"&&
+					# ftSynchronous -all "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"&&
 					# 清除权限限制
 					chmod 777 -R $mDirPathStoreTarget
 					break;;
