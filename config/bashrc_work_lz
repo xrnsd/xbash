@@ -131,8 +131,8 @@ dirPathHomeCmd=${dirPathHome}/cmds/
 dirPathHomeTools=${dirPathHome}/tools
 userPwd=123
 #--------------------------部分环境变量---------------------------
-export JAVA_HOME=${dirPathHomeTools}/jdk/1.6.038
-#export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+#export JAVA_HOME=${dirPathHomeTools}/jdk/1.6.038
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 export JRE_HOME=${JAVA_HOME}/jre
 export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
 export ANDROID_SDK=${dirPathHomeTools}/sdk

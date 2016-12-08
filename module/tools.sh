@@ -949,3 +949,164 @@ EOF
 	esac
 	done
 }
+
+ftGetKeyValueByBlockAndKey()
+{
+	local ftName=读取ini文件指定字段
+	local filePath=$1
+	local blockName=$2
+	local keyName=$3
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#
+	#	ftGetKeyValueByBlockAndKey2 [文件] [块名] [键名]
+	#	value=$(ftGetKeyValueByBlockAndKey2 /temp/odbcinst.ini PostgreSQL Setup)
+	# 	value表示对应字段的值
+	#=========================================================
+EOF
+	exit 1;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=3
+	if [ $# -ne $valCount ]||[ ! -f "$filePath" ]\
+				||[ -z "$blockName" ]\
+				||[ -z "$keyName" ];then
+		ftEcho -e "[${ftName}]参数[filePath=$filePath,blockName=$blockName,keyName=$keyName]错误,请查看下面说明"
+		ftGetKeyValueByBlockAndKey2 -h
+	fi
+
+	begin_block=0
+	end_block=0
+
+	cat $filePath | while read line
+	do
+		if [ "X$line" = "X[$blockName]" ];then
+			begin_block=1
+			continue
+		fi
+		if [ $begin_block -eq 1 ];then
+			end_block=$(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')
+			if [ $end_block -eq 1 ];then
+				break
+			fi
+
+			need_ignore=$(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')
+			if [ $need_ignore -eq 1 ];then
+				continue
+			fi
+			key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
+			value=$(echo $line | awk -F= '{gsub(" |\t","",$2); print $2}')
+
+			if [ "X$keyName" = "X$key" ];then
+				echo $value
+				break
+			fi
+		fi
+	done
+	return 0
+}
+
+
+ftSetKeyValueByBlockAndKey()
+{
+	local ftName=修改ini文件指定字段
+	local filePath=$1
+	local blockName=$2
+	local keyName=$3
+	local keyValue=$4
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#
+	#	ftSetKeyValueByBlockAndKey2 [文件] [块名] [键名] [键对应的值]
+	#	ftSetKeyValueByBlockAndKey2 /temp/odbcinst.ini PostgreSQL Setup 1232
+	#=========================================================
+EOF
+	exit 1;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=4
+	if [ $# -ne $valCount ]||[ ! -f "$filePath" ]\
+				||[ -z "$blockName" ]\
+				||[ -z "$keyName" ]\
+				||[ -z "$keyValue" ];then
+		ftEcho -e "[${ftName}]参数[filePath=$filePath,blockName=$blockName,keyName=$keyName,keyValue=$keyValue]错误,请查看下面说明"
+		ftSetKeyValueByBlockAndKey2 -h
+	fi
+	return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s/^$keyName*=.*/$keyName=$keyValue/g;}" $filePath`
+}
+
+
+function ftCheckIniConfigSyntax()
+{
+	#============ini文件模板=====================
+	# # 注释１
+	# [block1]
+	# key1=val1
+
+	# # 注释２
+	# [block2]
+	# key2=val2
+	#===========================================
+
+	local ftName=校验ini文件，确认文件有效
+	local filePath=$1
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#
+	#	ftCheckIniConfigSyntax2 [file path]
+	#	ftCheckIniConfigSyntax2 123/config.ini
+	#=========================================================
+EOF
+	exit 1;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if [ $# -ne $valCount ]||[ ! -f "$filePath" ];then
+		ftEcho -e "[${ftName}]参数[filePath=$filePath]错误,请查看下面说明"
+		ftExample -h
+	fi
+
+	ret=$(awk -F= 'BEGIN{valid=1}
+	{
+		#已经找到非法行,则一直略过处理
+		if(valid == 0) next
+		#忽略空行
+		if(length($0) == 0) next
+		#消除所有的空格
+		gsub(" |\t","",$0)
+		#检测是否是注释行
+		head_char=substr($0,1,1)
+		if (head_char != "#"){
+			#不是字段=值 形式的检测是否是块名
+			if( NF == 1){
+				b=substr($0,1,1)
+				len=length($0)
+				e=substr($0,len,1)
+				if (b != "[" || e != "]"){
+					valid=0
+				}
+			}else if( NF == 2){
+			#检测字段=值 的字段开头是否是[
+				b=substr($0,1,1)
+				if (b == "["){
+					valid=0
+				}
+			}else{
+			#存在多个=号分割的都非法
+				valid=0
+			}
+		}
+	}
+	END{print valid}' $filePath)
+
+	if [ $ret -eq 1 ];then
+		return 0
+	else
+		return 2
+	fi
+}
