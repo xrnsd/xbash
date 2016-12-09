@@ -28,7 +28,7 @@
 ##2.初始化环境
 
 	cd Xrnsd-extensions-to-bash
-	./module/system_init.sh -xb
+	./module/init_xbah.sh
 
 ##3.其他
 	1 已验证环境
