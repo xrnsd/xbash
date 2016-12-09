@@ -1,6 +1,7 @@
 #! /bin/bash
 #####----------------------变量--------------------------#########
-export mUserPwd=123
+mUserPwdBase=
+export mUserPwd=${mUserPwdBase:-'123'}
 export readonly mRoNameUser=`who | awk '{print $1}'|sort -u`
 export readonly mRoDirPathUserHome=/home/${mRoNameUser}/
 
