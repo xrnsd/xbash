@@ -282,6 +282,7 @@ fi
 		mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${mRoNameUser}_${mDate}
 		mFileNameBackupTarget=${mFileNameBackupTargetBase}.tgz
 		mFileNameBackupLog=${mFileNameBackupTargetBase}.log
+		mFilePathVersion=${mDirPathStoreTarget}/$mFileNameBackupTarget
 	}
 
 	ftSetRestoreType()
@@ -393,8 +394,7 @@ fi
 		done
 
 		ftEcho -bh 开始${ftName}
-		local filePathVersion=${mDirPathStoreTarget}/$mFileNameBackupTarget
-		sudo tar -cvPzf  $filePathVersion --exclude-from=$fileNameExclude / \
+		sudo tar -cvPzf  $mFilePathVersion --exclude-from=$fileNameExclude / \
 		 2>&1 |tee $mFilePathLog
 	}
 
@@ -571,10 +571,10 @@ EOF
 	local dirPathBackupInfo=${dirPathBackupRoot}/.info
 	local dirPathBackupInfoVersion=${dirPathBackupInfo}/${dirNameBackupInfoVersion}
 
-	local filePathVersionCpu=${dirPathBackupInfoVersion}/cpu
-	local filePathVersionMainboard=${dirPathBackupInfoVersion}/mainboard
-	local filePathVersionSystem=${dirPathBackupInfoVersion}/system
-	local filePathVersion32x64=${dirPathBackupInfoVersion}/32x64
+	local mFilePathVersionCpu=${dirPathBackupInfoVersion}/cpu
+	local mFilePathVersionMainboard=${dirPathBackupInfoVersion}/mainboard
+	local mFilePathVersionSystem=${dirPathBackupInfoVersion}/system
+	local mFilePathVersion32x64=${dirPathBackupInfoVersion}/32x64
 
 	local infoHwCpu=$(dmidecode |grep -i cpu|grep -i version|awk -F ':' '{print $2}'|sed s/[[:space:]]//g)
 	local infoHwMainboard=$(dmidecode |grep Name |sed s/[[:space:]]//g)
@@ -618,27 +618,27 @@ EOF
 			echo 版本信息记录位置不存在，已建立
 		fi
 		if [ ${typeEdit} == "-add" ]; then
-			echo $infoHwCpu 		>$filePathVersionCpu
-			echo $infoHwMainboard 	>$filePathVersionMainboard
-			echo $infoHwSystem 		>$filePathVersionSystem
-			echo $infoHw32x64 		>$filePathVersion32x64
+			echo $infoHwCpu 		>$mFilePathVersionCpu
+			echo $infoHwMainboard 	>$mFilePathVersionMainboard
+			echo $infoHwSystem 		>$mFilePathVersionSystem
+			echo $infoHw32x64 		>$mFilePathVersion32x64
 
 			ftEcho -s 版本${dirNameBackupInfoVersion}相关系统信息记录完成
 		elif [ ${typeEdit} == "-check" ]; then
 			ftEcho -b 检查版本包和当前系统兼容程度
 
-			if [ ! -f $filePathVersionCpu ]||[ ! -f $filePathVersionMainboard ]||[ ! -f $filePathVersionSystem ]||[ ! -f $filePathVersion32x64 ]; then
+			if [ ! -f $mFilePathVersionCpu ]||[ ! -f $mFilePathVersionMainboard ]||[ ! -f $mFilePathVersionSystem ]||[ ! -f $mFilePathVersion32x64 ]; then
 				ftEcho -e   版本${dirNameBackupInfoVersion}相关系统信息损坏
 				#显示相关信息存储路径
-				echo filePathVersionCpu=$filePathVersionCpu
-				echo filePathVersionMainboard=$filePathVersionMainboard
-				echo filePathVersionSystem=$filePathVersionSystem
-				echo filePathVersion32x64=$filePathVersion32x64
+				echo mFilePathVersionCpu=$mFilePathVersionCpu
+				echo mFilePathVersionMainboard=$mFilePathVersionMainboard
+				echo mFilePathVersionSystem=$mFilePathVersionSystem
+				echo mFilePathVersion32x64=$mFilePathVersion32x64
 			fi
-			local infoHwCpuVersion=$(sed s/[[:space:]]//g $filePathVersionCpu)
-			local infoHwMainboardVersion=$(sed s/[[:space:]]//g $filePathVersionMainboard)
-			local infoHwSystemVersion=$(sed s/[[:space:]]//g $filePathVersionSystem)
-			local infoHw32x64Version=$(sed s/[[:space:]]//g $filePathVersion32x64)
+			local infoHwCpuVersion=$(sed s/[[:space:]]//g $mFilePathVersionCpu)
+			local infoHwMainboardVersion=$(sed s/[[:space:]]//g $mFilePathVersionMainboard)
+			local infoHwSystemVersion=$(sed s/[[:space:]]//g $mFilePathVersionSystem)
+			local infoHw32x64Version=$(sed s/[[:space:]]//g $mFilePathVersion32x64)
 
 			if [[ $infoHwCpuVersion != $infoHwCpu ]];then
 			echo versionpackageInfo=$infoHwCpuVersion
@@ -739,8 +739,8 @@ EOF
 		if [ $dirPathTarget = $mDirPathStoreTarget ];then
 			continue
 		fi
-		local filePathVersionTarget=${dirPathTarget}/${version}.tgz
-		if [ -f "$filePathVersionTarget" ];then
+		local mFilePathVersionTarget=${dirPathTarget}/${version}.tgz
+		if [ -f "$mFilePathVersionTarget" ];then
 			while true; do
 				ftEcho -y 在设备[${devDirPath}]上存在版本包[${version}],是否同步
 				read -n1 sel
@@ -772,7 +772,7 @@ EOF
 						# 写入备注
 						ftAddNote $mDirPathStoreTarget $version $note
 						#复制版本包
-						cp -rf -v $filePathVersionTarget ${mDirPathStoreTarget}/${version}.tgz
+						cp -rf -v $mFilePathVersionTarget ${mDirPathStoreTarget}/${version}.tgz
 						#复制软硬件信息
 						cp -rf -v ${dirPathTarget}/.info/${version} ${mDirPathStoreTarget}/.info/${version}
 						#复制md5信息
@@ -807,12 +807,12 @@ EOF
 
 	#耦合变量校验
 	local valCount=0
-	if [ $# -ne $valCount ];then
-		ftEcho -e "[${ftName}]参数错误,请查看下面说明"
+	if [ $# -ne $valCount ]||[ -z $mFilePathVersion ];then
+		ftEcho -e "[${ftName}]参数[mFilePathVersion=$mFilePathVersion]错误,请查看下面说明"
 		ftVersionPackageIsCreated -h
 	fi
 
-	if [ -f $filePathVersion ];then
+	if [ -f $mFilePathVersion ];then
 		ftEcho -y 版本[${mFileNameBackupTargetBase}]已存在，是否覆盖
 		while true; do
 		read -n1 sel

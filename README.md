@@ -6,6 +6,14 @@
 		config/bashrc_root_work_lz		为root相关bash配置文件
 		config/bashrc_base				为普通用户相关bash配置文件
 		config/bashrc_work_lz			为作者使用的普通用户相关bash配置文件
+		config/bashrc_home				为作者在家使用的普通用户相关bash配置文件
+		config/system_init.config		android build环境初始化工具的配置文件
+
+	cmds/data	---------------------	脚本数据存储
+		data/excludeDirsAll.list		备份排除[忽略]全部列表
+		data/excludeDirsBase.list		备份排除[忽略]基础列表
+		data/user-dirs.dirs				home下默认文件夹配置
+		data/value						全局参数
 
 	cmds/module	---------------------	脚本实现文件[具体功能]
 		module/system_backup_restore.sh	xbash的系统维护
@@ -13,11 +21,7 @@
 		module/tools.sh					xbash的函数实现
 		module/pytools					xbash的脚本测试工具
 		module/compile.sh				xbash的项目编译初始化
-
-	cmds/data	---------------------	脚本数据存储
-		data/excludeDirsAll.list		备份排除[忽略]全部列表
-		data/excludeDirsBase.list		备份排除[忽略]基础列表
-		data/value						全局参数
+		module/system_init.sh			android build环境初始化工具
 
 	cmds/main.sh	-------------------	xbash主入口
 
@@ -70,14 +74,14 @@
 ##3.其他
 	1 已验证环境
 		ubuntu12.04 x64
-			12.04 下xx[休眠]建议不要开启，太不稳定了
 		ubuntu14.04 x64
 		ubuntu16.04 x64
 
 	3 自定义命令名称
 		修改 /home/xxxx/cmds/config/xxxx
 		修改 /home/xxxx/cmds/data/value
-		修改 /home/xxxx/cmds/module/tools
+		修改 /home/xxxx/cmds/module/tools.sh
 
 	4 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现
 	5 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
+	6 xx[休眠]建议不要开启，这玩意脾气不好

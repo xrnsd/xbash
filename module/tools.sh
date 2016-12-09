@@ -550,7 +550,7 @@ ftEcho()
 	#执行信息
 	s | S | -s | -S)		echo;echo -e "\033[42;37m$content\033[0m"; break;;
 	# 标题，不换行
-	t | T | -t | -T)		echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
+	b | B| -b | -B)		echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
 	# 标题，换行
 	bh | BH | -bh | -BH)	echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
 	#特定信息显示,y/n
