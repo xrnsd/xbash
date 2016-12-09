@@ -25,8 +25,18 @@
 
 	cmds/main.sh	-------------------	xbash主入口
 
-##2.准备操作
-	环境目录
+##2.初始化环境
+
+	cd Xrnsd-extensions-to-bash
+	./module/system_init.sh -xb
+
+##3.其他
+	1 已验证环境
+		ubuntu12.04 x64
+		ubuntu14.04 x64
+		ubuntu16.04 x64
+
+	2 环境目录
 		/home/xxx/tools	-------------------	环境相关工具
 			tools/sdk
 			tools/ndk
@@ -38,50 +48,9 @@
 		/home/xxx/.bashrc	---------------	普通用户bash配置
 		/root/.bashrc	------------------	root用户bash配置
 
-	1 下载项目
-		git clone https://github.com/xrnsd/Xrnsd-extensions-to-bash.git
-
-	2 修改项目目录名称，这步跳过的话需要修改 Xrnsd-extensions-to-bash/config/bashrc_xxxx,
-		将下面所有步骤的cmds替换为Xrnsd-extensions-to-bash
-		mv Xrnsd-extensions-to-bash cmds
-
-	3 使用自定义普通用户bash配置
-		cd /home/xxx
-		mv .bashrc .bashrc_base.backup
-		#作者使用bashrc_work_lz
-		ln -s cmds/config/bashrc_base .bashrc
-		gedit .bashrc
-		修改pwd=123，替换成自己的密码
-		修改tools相关工具[有的话]，对应到你当前环境下的路径，如jdk的路径
-
-	4 使用自定义root用户bash配置
-		cd /root
-		mv .bashrc .bashrc_base.backup
-		#bashrc_xxx默认为bashrc_root_work_lz
-		sudo ln -s /home/xxxx/cmds/config/bashrc_root_xxx .bashrc
-		sudo gedit .bashrc
-		修改pwd=123，替换成自己的密码
-		修改tools相关工具[有的话]，对应到你当前环境下的路径，如jdk的路径
-
-	5 输入xc help查看帮助
-		1. 提示找不到命令
-		打开新窗口
-		sudo chmod 777 -R /home/xxxx/cmds/module
-		sudo chmod 777  /home/xxxx/cmds/main.sh
-		sudo chmod 777  /home/xxxx/cmds/value
-		xc
-
-##3.其他
-	1 已验证环境
-		ubuntu12.04 x64
-		ubuntu14.04 x64
-		ubuntu16.04 x64
-
-	3 自定义命令名称
-		修改 /home/xxxx/cmds/config/xxxx
-		修改 /home/xxxx/cmds/data/value
-		修改 /home/xxxx/cmds/module/tools.sh
-
-	4 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现
-	5 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
-	6 xx[休眠]建议不要开启，这玩意脾气不好
+	3 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现
+	4 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
+	5 xx[休眠]建议不要开启，这玩意脾气不好
+	6 提示找不到命令
+		打开终端
+		sudo chmod 777 -R /home/xxxx/cmds
