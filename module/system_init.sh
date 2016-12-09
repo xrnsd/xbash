@@ -30,7 +30,7 @@
 # 	文件默认打开方式
 
 #======================变量=====================
-source  $(cd `dirname $0`; pwd)/data/system_init.config
+source  $(cd `dirname $0`; pwd)/config/system_init.config
 
 #####---------------------工具函数---------------------------#########
 source  $(cd `dirname $0`; pwd)/tools
@@ -137,7 +137,7 @@ ftUpdateSoftware()
 		echo [${index}]  ${devEnv}
 		index=`expr $index + 1`
 	done
-	ftEcho -t 请选择：
+	ftEcho -b 请选择：
 	if [ ${#mRoListDevEnv[@]} -gt 9 ];then
 		read sel
 	else

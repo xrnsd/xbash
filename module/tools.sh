@@ -79,9 +79,9 @@ ftMain()
 	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
 	"clean_data_garbage")	ftCleanDataGarbage ; break;;
 	v | V | -v |-V)	ftVersion;break;;
-	vvv)	ftEcho -t xbash;		ftVersion
-		ftEcho -t java;		java -version
-		ftEcho -t gcc;		gcc -v
+	vvv)	ftEcho -b xbash;		ftVersion
+		ftEcho -b java;		java -version
+		ftEcho -b gcc;		gcc -v
 		break;;
 	*)
 		#权限约束开始
@@ -540,21 +540,21 @@ ftEcho()
 #=========================================================
 	local ftName=工具信息提示
 	option=$1
-	Content=$2
+	content=$2
 	while true; do
 	case $option in
 	#错误信息显示
-	e | E | -e | -E)	echo -e "\033[1;31m$Content\033[0m"; break;;
+	e | E | -e | -E)		echo -e "\033[1;31m$content\033[0m"; break;;
 	#错误信息显示，显示退出
-	ex | EX | -ex | -EX)	echo -e "\033[1;31m$Content\033[0m"; exit;;
+	ex | EX | -ex | -EX)	echo -e "\033[1;31m$content\033[0m"; exit;;
 	#执行信息
-	s | S | -s | -S)	echo;echo -e "\033[42;37m$Content\033[0m"; break;;
+	s | S | -s | -S)		echo;echo -e "\033[42;37m$content\033[0m"; break;;
 	# 标题，不换行
-	t | T | -t | -T)	echo -e "\e[41;33;1m =========== $Content ============= \e[0m"; break;;
+	t | T | -t | -T)		echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
 	# 标题，换行
-	b | B | -b | -B)	echo;echo -e "\e[41;33;1m =========== $Content ============= \e[0m";echo; break;;
+	bh | BH | -bh | -BH)	echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
 	#特定信息显示,y/n
-	y | Y | -y | -Y)	echo;echo -en "${Content}[y/n]";echo; break;;
+	y | Y | -y | -Y)		echo;echo -en "${content}[y/n]";echo; break;;
 	# 特定信息显示,命令说明的格式
 	g | G | -g | -G)cat<<EOF
 =========================================================================
@@ -882,7 +882,7 @@ EOF
 
 	export mFilePathLog=${dirPath}/$(date -d "today" +"%y%m%d_%H:%M:%S").log
 	touch $mFilePathLog
-	
+
 	if [ `whoami` = "root" ]; then
 		chmod 777 -R $dirPath
 	fi
@@ -997,7 +997,7 @@ EOF
 	read -n1 sel
 	case "$sel" in
 		y | Y )
-		ftEcho -b 开始同步!
+		ftEcho -bh 开始同步!
 		while true; do
 		case "$synchronousType" in
 			-all |-All)

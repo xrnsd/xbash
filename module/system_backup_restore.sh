@@ -85,7 +85,7 @@ fi
 		if [ -z "$fileList" ];then
 			ftEcho -ex 在${mDirPathStoreSource}没找到有效的版本包
 		else
-			ftEcho -t 请${ftName}
+			ftEcho -b 请${ftName}
 			echo "[序号]		版本包名	----------------	备注		"
 			echo
 			for file in $fileList
@@ -136,7 +136,7 @@ fi
 	ftRestoreChoiceTarget()
 	{
 		local ftName=选择还原的目标目录
-		ftEcho -b 还原的目标目录
+		ftEcho -bh 还原的目标目录
 		echo -e "[1]\t系统"
 		echo -e "[2]\t自定义"
 		echo
@@ -174,7 +174,7 @@ fi
 			tools : jdk1.6 openjdk1.7 sdk ndk flash_tool eclipse"
 		local infoType=$1
 
-		ftEcho -b 请确认下面信息
+		ftEcho -bh 请确认下面信息
 		if [ $infoType = "restore" ];then
 			echo "使用的源文件为：	${mFileNameRestoreSource}"
 			echo "使用的源文件的说明：	${mNoteRestoreSource}"
@@ -204,7 +204,7 @@ fi
 	ftSetBackupDevDir()
 	{
 		local ftName=选择备份包存放的设备
-		ftEcho -t 请${ftName}
+		ftEcho -b 请${ftName}
 
 		local devTarget
 		local devTargetDir
@@ -259,7 +259,7 @@ fi
 	ftSelBackupType()
 	{
 		local ftName=选择备份类型
-		ftEcho -t 请${ftName}
+		ftEcho -b 请${ftName}
 		echo -e "[1]\t基础"
 		echo -e "[2]\t全部"
 		echo
@@ -287,7 +287,7 @@ fi
 	ftSetRestoreType()
 	{
 		local ftName=选择还原时忽略的目录
-		ftEcho -t 请${ftName}
+		ftEcho -b 请${ftName}
 		echo -e "[1]\t忽略home"
 		echo -e "[2]\t不忽略"
 		echo
@@ -312,12 +312,12 @@ fi
 	ftBackupOs()
 	{
 		local ftName=生成版本包
-		ftEcho -b 开始更新排除列表
+		ftEcho -bh 开始更新排除列表
 		#/home/wgx/cmds/data/excludeDirsBase.list
 		fileNameExcludeBase=excludeDirsBase.list
 		fileNameExcludeAll=excludeDirsAll.list
-		mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}${fileNameExcludeBase}
-		mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}${fileNameExcludeAll}
+		mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}/${fileNameExcludeBase}
+		mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}/${fileNameExcludeAll}
 
 		mDirPathsExcludeBase=(/proc \
 					/android \
@@ -392,7 +392,7 @@ fi
 		 echo $dirpath >>$fileNameExclude
 		done
 
-		ftEcho -b 开始${ftName}
+		ftEcho -bh 开始${ftName}
 		local filePathVersion=${mDirPathStoreTarget}/$mFileNameBackupTarget
 		sudo tar -cvPzf  $filePathVersion --exclude-from=$fileNameExclude / \
 		 2>&1 |tee $mFilePathLog
@@ -516,7 +516,7 @@ EOF
 
 		elif [ ${typeEdit} == "-check" ]; then
 
-			ftEcho -t 开始校验版本包，确定有效性
+			ftEcho -b 开始校验版本包，确定有效性
 
 			if [ -d ${dirBackupMd5} ];then
 				local pathFile=${dirPathBackupRoot}/${versionName}.tgz
@@ -551,7 +551,7 @@ EOF
 	ftAutoCleanTemp()
 	{
 		local ftName=清理临时文件
-		ftEcho -b 开始${ftName}
+		ftEcho -bh 开始${ftName}
 
 		sudo apt-get autoclean
 		sudo apt-get clean
@@ -625,7 +625,7 @@ EOF
 
 			ftEcho -s 版本${dirNameBackupInfoVersion}相关系统信息记录完成
 		elif [ ${typeEdit} == "-check" ]; then
-			ftEcho -t 检查版本包和当前系统兼容程度
+			ftEcho -b 检查版本包和当前系统兼容程度
 
 			if [ ! -f $filePathVersionCpu ]||[ ! -f $filePathVersionMainboard ]||[ ! -f $filePathVersionSystem ]||[ ! -f $filePathVersion32x64 ]; then
 				ftEcho -e   版本${dirNameBackupInfoVersion}相关系统信息损坏
@@ -746,7 +746,7 @@ EOF
 				read -n1 sel
 				case "$sel" in
 					y | Y )
-						ftEcho -b 开始版本包[${version}]的可用性校验
+						ftEcho -bh 开始版本包[${version}]的可用性校验
 
 						ftAddOrCheckSystemHwSwInfo -check $dirPathTarget $version false
 						if [ $? -eq "$softwareInfoCheckfail" ];then
