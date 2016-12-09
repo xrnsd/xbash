@@ -148,3 +148,75 @@ ftUpdateSoftware()
 	eval listTargetVersionSoftware=\${$listTargetVersionSoftwareName[@]}
 	echo $mRoUserPwd | sudo -S apt-get install -y ${listTargetVersionSoftware[*]}
 }
+
+ftUpdateHosts()
+{
+	local ftName=更新hosts
+	local filePathHosts=/etc/hosts
+	local urlCustomHosts=$1
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#使用默认hosts源
+	#	ftUpdateHosts 无参
+	#
+	#使用自定义hosts源
+	#	ftUpdateHosts [URL]
+	#	ftUpdateHosts https://raw.githubusercontent.com/racaljk/hosts/master/hosts
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if [ $# -gt $valCount ]||[ ! -f "$filePathHosts" ]\
+				||[ ! -d "$mRoDirPathCmdData" ];then
+		ftEcho -e "[${ftName}]参数[filePathHosts=$filePathHosts,mRoDirPathCmdData=$mRoDirPathCmdData]错误,请查看下面说明"
+		ftUpdateHosts -h
+	fi
+
+	# 下载hosts文件
+	local url="https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
+	local netTool=wget
+	local fileNameHostsNew="hosts.new"
+	local filePathHostsNew=${mRoDirPathCmdData}/${fileNameHostsNew}
+	if [ ! -z "$urlCustomHosts" ];then
+		url=$urlCustomHosts
+	fi
+	"$netTool" -q "$url" -O "$filePathHostsNew"
+
+	# 对比hosts文件，确定有无更新
+	local hostsVersionBase="Last updated:"
+	local hostsVersionOld=$(cat $filePathHosts|grep "$hostsVersionBase")
+	local hostsVersionNew=$(cat $filePathHostsNew|grep "$hostsVersionBase")
+	if [ ! -f $filePathHostsNew ]||[ "$hostsVersionOld" = "$hostsVersionNew" ];then
+		rm -f $filePathHostsNew
+		ftEcho -s hosts没有更新,将退出;exit
+	else
+		local fileNameHostsBase=hosts.base
+		local filePathHostsBase=${mRoDirPathCmdData}/${fileNameHostsBase}
+		if [ ! -f "$filePathHostsBase" ];then
+			echo "127.0.0.1	localhost
+127.0.1.1	$mRoNameUser
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+#added by $mRoNameUser" >$filePathHostsBase
+		fi
+		# 文件拼接
+		local fileNameHostsAllNew=hosts
+		local filePathHostsAllNew=${mRoDirPathCmdData}/${fileNameHostsAllNew}
+		cat $filePathHostsBase $filePathHostsNew>$filePathHostsAllNew
+		# 覆盖文件
+		echo $mUserPwd | sudo -S mv $filePathHosts ${filePathHosts}_${hostsVersionOld}
+		echo $mUserPwd | sudo -S mv -f $filePathHostsAllNew $filePathHosts
+
+	fi
+
+}
