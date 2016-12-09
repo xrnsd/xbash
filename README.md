@@ -2,14 +2,14 @@
 ![Logo](data/logo.png)
 ##1.工程结构
 ####Xrnsd-extensions-to-bash在下面简写为xbash
-	cmds/config	---------------------	环境相关工具
+	cmds/config	---------------------	工具相关配置
 		config/bashrc_root_work_lz		为root相关bash配置文件
 		config/bashrc_base				为普通用户相关bash配置文件
 		config/bashrc_work_lz			为作者使用的普通用户相关bash配置文件
 		config/bashrc_home				为作者在家使用的普通用户相关bash配置文件
-		config/system_init.config		android build环境初始化工具的配置文件
+		config/init_system.config		android build环境初始化工具的配置文件
 
-	cmds/data	---------------------	脚本数据存储
+	cmds/data	---------------------	工具相关数据
 		data/excludeDirsAll.list		备份排除[忽略]全部列表
 		data/excludeDirsBase.list		备份排除[忽略]基础列表
 		data/user-dirs.dirs				home下默认文件夹配置
@@ -21,7 +21,8 @@
 		module/tools.sh					xbash的函数实现
 		module/pytools					xbash的脚本测试工具
 		module/compile.sh				xbash的项目编译初始化
-		module/system_init.sh			android build环境初始化工具
+		module/init_xbash.sh			xbash环境初始化工具
+		module/init_system.sh			android build环境初始化工具
 
 	cmds/main.sh	-------------------	xbash主入口
 
