@@ -75,7 +75,11 @@ fi
 		if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ]\
 					||[ ! -d $mDirPathStoreSource ]\
 					||[ ! -d $dirPathBackupNote ];then
-			ftEcho -ex "函数[${ftName}]参数错误"
+			ftEcho -ex "函数[${ftName}],参数错误 \n\
+	valCount=$valCount \n\
+	mDirPathStoreSource=$mDirPathStoreSource\n\
+	dirPathBackupNote=${dirPathBackupNote[@]} \n\
+	请查看下面说明:"
 		fi
 
 		#文件数量获取
@@ -183,7 +187,9 @@ EOF
 		#耦合变量校验
 		local valCount=1
 		if [ $# -ne $valCount ]||[ -z "$infoType" ];then
-			ftEcho -e "[${ftName}]参数[infoType=$infoType]错误,请查看下面说明"
+			ftEcho -e "	函数[${ftName}],参数错误 \n\
+	infoType=$infoType \n\
+	请查看下面说明:"
 			ftEchoInfo -h
 		fi
 
@@ -238,7 +244,10 @@ EOF
 		local valCount=0
 		if [ $# -ne $valCount ]||[ -z "$mCmdsModuleDataDevicesList" ]\
 					||[ -z "$mRoNameUser" ];then
-			ftEcho -e "[${ftName}]参数[mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]},mRoNameUser=$mRoNameUser]错误,请查看下面说明"
+			ftEcho -e "	函数[${ftName}],参数错误 \n\
+	mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \n\
+	mRoNameUser=$mRoNameUser\n\
+	请查看下面说明:"
 			ftSetBackupDevDir -h
 		fi
 
@@ -250,10 +259,9 @@ EOF
 
 		for dev in ${mCmdsModuleDataDevicesList[*]}
 		do
-			echo [ ${index} ] $dev
+			echo [ ${index} ] $dev $(ftDevAvailableSpace $dev)
 			# echo [ ${index} ] ${mCmdsModuleDataDevicesList[$index]}
 			index=`expr $index + 1`
-
 		done
 		echo
 
@@ -331,7 +339,9 @@ EOF
 		#耦合变量校验
 		local valCount=1
 		if [ $# -gt $valCount ]||[ -z "$mRoDirPathUserHome" ];then
-			ftEcho -ex "[${ftName}]参数[mRoDirPathUserHome=$mRoDirPathUserHome]错误"
+			ftEcho -ex "函数[${ftName}],参数错误 \n\
+	mRoDirPathUserHome=$mRoDirPathUserHome \n\
+	请查看下面说明:"
 		elif [ ! -d "$mRoDirPathUserHome" ];then
 			ftEcho -ex "目录[$mRoDirPathUserHome]不存在"
 		fi
@@ -480,7 +490,10 @@ EOF
 		local valCount=2
 		if [ $# -lt $valCount ]||[ -z "$dirPathBackupRoot" ]\
 					||[ -z "$versionName" ];then
-			ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+			ftEcho -e "	函数[${ftName}],参数错误 \n\
+	dirPathBackupRoot=$dirPathBackupRoot \n\
+	versionName=$versionName\n\
+	请查看下面说明:"
 			ftAddNote -h
 		fi
 
@@ -546,7 +559,11 @@ EOF
 		if [ $# -lt $valCount ]||[ -z "$typeEdit" ]\
 					||[ -z "$dirPathBackupRoot" ]\
 					||[ -z "$versionName" ];then
-			ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+			ftEcho -e "	函数[${ftName}],参数错误 \n\
+	typeEdit=$typeEdit \n\
+	dirPathBackupRoot=$dirPathBackupRoot\n\
+	versionName=$versionName \n\
+	请查看下面说明:"
 			ftMD5 -h
 		fi
 
@@ -656,7 +673,11 @@ EOF
 	if [ $# -lt $valCount ]||[ -z "$typeEdit" ]\
 				||[ -z "$dirPathBackupRoot" ]\
 				||[ -z "$dirNameBackupInfoVersion" ];then
-		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+		ftEcho -e "	函数[${ftName}],参数错误 \n\
+	typeEdit=$typeEdit \n\
+	dirPathBackupRoot=$dirPathBackupRoot\n\
+	dirNameBackupInfoVersion=$dirNameBackupInfoVersion \n\
+	请查看下面说明:"
 		ftAddOrCheckSystemHwSwInfo -h
 	fi
 
@@ -782,8 +803,11 @@ EOF
 	if [ $# -ne $valCount ]||[ -z "$version" ]\
 				||[ -z "$note" ]\
 				||[ -z "$devList" ];then
-	ftEcho -e "[${ftName}]错误"
-	ftEcho -e "参数[devList=${devList[@]},note=${note[@]},version=$version]错误,请查看下面说明"
+		ftEcho -e "	函数[${ftName}],参数错误 \n\
+	version=$version \n\
+	note=$note\n\
+	devList=${devList[@]} \n\
+	请查看下面说明:"
 		ftBackUpDevScanning -h
 	fi
 
@@ -864,7 +888,10 @@ EOF
 	#耦合变量校验
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z $mFilePathVersion ];then
-		ftEcho -e "[${ftName}]参数[mFilePathVersion=$mFilePathVersion]错误,请查看下面说明"
+		ftEcho -e "	函数[${ftName}],参数错误 \n\
+	valCount=$valCount \n\
+	mFilePathVersion=$mFilePathVersion\n\
+	请查看下面说明:"
 		ftVersionPackageIsCreated -h
 	fi
 

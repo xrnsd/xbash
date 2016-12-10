@@ -172,7 +172,10 @@ EOF
 	local valCount=1
 	if [ $# -gt $valCount ]||[ ! -f "$filePathHosts" ]\
 				||[ ! -d "$mRoDirPathCmdData" ];then
-		ftEcho -e "[${ftName}]参数[filePathHosts=$filePathHosts,mRoDirPathCmdData=$mRoDirPathCmdData]错误,请查看下面说明"
+		ftEcho -e "	[${ftName}]参数错误 \n\
+	filePathHosts=$filePathHosts \n\
+	mRoDirPathCmdData=mRoDirPathCmdData \n\
+	请查看下面说明:"
 		ftUpdateHosts -h
 	fi
 

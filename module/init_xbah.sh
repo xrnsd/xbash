@@ -17,7 +17,10 @@ ftXrnsdExtensionsToBashInit()
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$userName" ]\
 				||[ ! -d "$dirPathHome" ];then
-		echo -e "\033[1;31m[${ftName}]参数错误[userName=$userName,dirPathHome=$dirPathHome]\033[0m"
+		echo -e "	[${ftName}]参数错误 \n\
+	userName=$userName \n\
+	dirPathHome=dirPathHome \n\
+	\033[0m"
 		exit
 	fi
 	local dirPathPwd=$(cd `dirname $0`; pwd)/
