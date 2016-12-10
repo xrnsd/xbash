@@ -1028,25 +1028,31 @@ EOF
 ftSynchronous()
 {
 	local ftName=在不同设备间同步版本包
-	local synchronousType=$1
-	local dirPathArray=$2
-	local fileTypeList=$3
+	local dirPathArray=$1
+	local fileTypeList=$2
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 	#=================== ${ftName}的使用示例=============
 	#
-	#	ftSynchronous [synchronousType] [dirPathArray] [fileTypeList]
-	#	ftSynchronous -all/-base "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
+	#	ftSynchronous [dirPathArray] [fileTypeList]
+	# 
+	# 	所有存储设备之间同步
+	#	ftSynchronous "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
+	# 
+	# 	本次备份存储设备和指定存储设备之间同步
+	#	ftSynchronous "/media/data_xx $mDirPathStoreTarget" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
+	# 
+	# 	自定义 存储设备和存储设备之间同步
+	#	ftSynchronous "/media/data_xx /media/data_xx" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
 	#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
-	local valCount=3
+	local valCount=2
 	if [ $# -ne $valCount ]||[ -z "$dirPathArray" ]\
-				||[ -z "$fileTypeList" ]\
-				||[ -z "$synchronousType" ];then
+				||[ -z "$fileTypeList" ];then
 		ftEcho -e "	函数[${ftName}],参数错误 \n\
 	参数数量=$# \n\
 	synchronousType=$synchronousType \n\
@@ -1061,28 +1067,19 @@ EOF
 	read -n1 sel
 	case "$sel" in
 		y | Y )
-		ftEcho -bh 开始同步!
-		while true; do
-		case "$synchronousType" in
-			-all |-All)
+			ftEcho -bh 开始同步!
+
 			for dirpath in ${dirPathArray[@]}
 			do
 			for dirpath2 in ${dirPathArray[@]}
 			do
 				if [ ${dirpath} != ${dirpath2} ]; then
-					find $dirpath -regex "$fileTypeList" -exec cp {} -u -n -v -r $dirpath2 \; ;
+					find $dirpath -regex "$fileTypeList" -exec cp {} -u -n -v -r $dirpath2 \;
 				fi
 			done
 			done
+			ftEcho -s 同步结束！
 			break;;
-			-base |-BASE);;#使用生成时间，新旧对比
-			* )	ftEcho -e 错误的选择：$sel
-				echo "输入n，q，离开";
-				;;
-		esac
-		done
-		ftEcho -s 同步结束！
-		break;;
 		n | N| q |Q)  exit;;
 		* )
 			ftEcho -e 错误的选择：$sel

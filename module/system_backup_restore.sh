@@ -25,13 +25,6 @@
 	mNoteBackupTarget=null
 	mNoteRestoreSource=null
 
-# 函数
-if [ -f ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools} ];then
-	source  ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}
-else
-	echo -e "\033[1;31m函数加载失败\033[0m"
-fi
-
 #####----------------------自有函数--------------------------#########
 
 	ftRestoreOperate()
@@ -920,73 +913,75 @@ EOF
 }
 
 #####-------------------执行------------------------------#########
+filePathCmdModuleTools=${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}
+if [ -f $filePathCmdModuleTools ];then
+	source  $filePathCmdModuleTools
+else
+	echo -e "\033[1;31m初始化失败，基础库无法加载\033[0m"
+fi
 
-	# if [ `whoami` != "root" ];then
-	# 	read -s -p "密码：" typeIndex
-	# 	echo $typeIndex | sudo -S su
-	# fi
-	if [ `whoami` = "root" ];then
-		if [ $mTypeEdit = "restore" ];then
-				#选择存放版本包的设备
-				ftSetBackupDevDir&&
-				#选择版本包
-				ftRestoreChoiceSource&&
-				#检查版本包和当前系统兼容程度
-				ftAddOrCheckSystemHwSwInfo -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
-				#检查版本包有效性
-				ftMD5 -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
-				#选择版本包覆盖的目标路径
-				ftRestoreChoiceTarget&&
-				#选择版本包覆盖的忽略路径
-				ftSetRestoreType&&
-				#当前配置信息显示
-				ftEchoInfo restore&&
-				#执行还原操作
-				ftRestoreOperate $mFilePathRestoreSource $mDirPathRestoreTarget
+if [ `whoami` = "root" ];then
+	if [ $mTypeEdit = "restore" ];then
+			#选择存放版本包的设备
+			ftSetBackupDevDir&&
+			#选择版本包
+			ftRestoreChoiceSource&&
+			#检查版本包和当前系统兼容程度
+			ftAddOrCheckSystemHwSwInfo -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
+			#检查版本包有效性
+			ftMD5 -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
+			#选择版本包覆盖的目标路径
+			ftRestoreChoiceTarget&&
+			#选择版本包覆盖的忽略路径
+			ftSetRestoreType&&
+			#当前配置信息显示
+			ftEchoInfo restore&&
+			#执行还原操作
+			ftRestoreOperate $mFilePathRestoreSource $mDirPathRestoreTarget
 
-		elif [ $mTypeEdit = "backup" ];then
-				#选择存放版本包的设备
-				ftSetBackupDevDir&&
-				cd /&&
-				#选择备份类型
-				ftSetBackupType&&
-				# 检查版本包是否已经存在
-				ftVersionPackageIsCreated&&
-				#当前配置信息显示
-				ftEchoInfo backup&&
-				while true; do
-				ftEcho -y 是否开始备份
-				read -n1 sel
-				echo
-				case "$sel" in
-					y | Y )
-					#写版本备注
-					ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
-					#扫描设备,同步相同备份
-					ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mCmdsModuleDataDevicesList[*]}"
-					#清理临时文件
-					ftAutoCleanTemp
-					#备份系统生成版本包
-					ftBackupOs&&
-					#记录版本包校验信息
-					ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
-					#记录版本包相关系统信息
-					ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
-					#同步
-					# ftSynchronous -all "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"&&
-					# 清除权限限制
-					chmod 777 -R $mDirPathStoreTarget
-					break;;
-					n | N | q |Q)  exit;;
-					* )
-					ftEcho -e 错误的选择：$sel
-					echo "输入n，q，离开";
-					;;
-				esac
-				done
-		else
-			ftEcho -e 不知道你想干嘛！
-		fi
+	elif [ $mTypeEdit = "backup" ];then
+			#选择存放版本包的设备
+			ftSetBackupDevDir&&
+			cd /&&
+			#选择备份类型
+			ftSetBackupType&&
+			# 检查版本包是否已经存在
+			ftVersionPackageIsCreated&&
+			#当前配置信息显示
+			ftEchoInfo backup&&
+			while true; do
+			ftEcho -y 是否开始备份
+			read -n1 sel
+			echo
+			case "$sel" in
+				y | Y )
+				#写版本备注
+				ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+				#扫描设备,同步相同备份
+				ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mCmdsModuleDataDevicesList[*]}"
+				#清理临时文件
+				ftAutoCleanTemp
+				#备份系统生成版本包
+				ftBackupOs&&
+				#记录版本包校验信息
+				ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+				#记录版本包相关系统信息
+				ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+				#同步
+				# ftSynchronous "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"&&
+				# 清除权限限制
+				chmod 777 -R $mDirPathStoreTarget
+				break;;
+				n | N | q |Q)  exit;;
+				* )
+				ftEcho -e 错误的选择：$sel
+				echo "输入n，q，离开";
+				;;
+			esac
+			done
 	else
-		ftEcho -e 请转换为root用户后重新运行
+		ftEcho -e 不知道你想干嘛！
 	fi
+else
+	ftEcho -e 请转换为root用户后重新运行
+fi
