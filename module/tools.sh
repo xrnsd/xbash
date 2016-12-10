@@ -343,7 +343,7 @@ ftRestartAdb()
 
 ftInitDevicesList()
 {
-	local ftName=选择备份包存放的设备
+	local ftName=存储设备列表初始化
 	local devDir=/media
 	local dirList=`ls $devDir`
 	# 设备最小可用空间，小于则视为无效.单位M
@@ -381,15 +381,24 @@ EOF
 			local dirTempList=`ls ${devDir}/${dir}`
 			for dirTemp in $dirTempList
 			do
-				mCmdsModuleDataDevicesList[$index]=${devDir}/${dir}/${dirTemp}
-				index=`expr $index + 1`
+				devPathTemp=${devDir}/${dir}/${dirTemp}
+				# 确定目录已挂载
+				if mountpoint -q $devPathTemp;then
+					mCmdsModuleDataDevicesList[$index]=$devPathTemp
+					index=`expr $index + 1`
+				fi
 			done
-		else
 		#长期挂载设备
-		mCmdsModuleDataDevicesList[$index]=${devDir}/${dir}
-		index=`expr $index + 1`
+		else
+			devPath=${devDir}/${dir}
+			# 确定目录已挂载
+			if mountpoint -q $devPath;then
+				mCmdsModuleDataDevicesList[$index]=$devPath
+				index=`expr $index + 1`
+			fi
 		fi
 	done
+
 	index=0
 	validDevList=
 	for dev in ${mCmdsModuleDataDevicesList[*]}
@@ -1045,6 +1054,8 @@ ftSynchronous()
 	# 
 	# 	自定义 存储设备和存储设备之间同步
 	#	ftSynchronous "/media/data_xx /media/data_xx" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
+	#未实现特性
+	# 	1 根据时间阀同步备份
 	#=========================================================
 EOF
 	exit;; * )break;; esac;done
