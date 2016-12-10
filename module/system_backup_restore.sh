@@ -229,7 +229,7 @@ EOF
 	{
 		local ftName=选择备份包存放的设备
 		# 初始化设备列表[mCmdsModuleDataDevicesList]
-		ftInitDevicesList
+		ftInitDevicesList 4096
 
 		#使用示例
 		while true; do case "$1" in    h | H |-h | -H) cat<<EOF

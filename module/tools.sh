@@ -342,19 +342,21 @@ ftInitDevicesList()
 	local ftName=选择备份包存放的设备
 	local devDir=/media
 	local dirList=`ls $devDir`
-
+	# 设备最小可用空间，小于则视为无效.单位M
+	local devMinAvailableSpace=${1:-'0'}
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 	#=================== ${ftName}的使用示例===================
 	#
-	#	ftInitDevicesList 无参数
+	#	ftInitDevicesList [devMinAvailableSpace 单位M]
+	#	ftInitDevicesList 4096M
 	#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
-	local valCount=0
-	if [ $# -ne $valCount ]||[ -z "$mRoDirPathUserHome" ]\
+	local valCount=1
+	if [ $# -gt $valCount ]||[ -z "$mRoDirPathUserHome" ]\
 				||[ -z "$mRoNameUser" ];then
 		ftEcho -e "	函数[${ftName}],参数错误 \n\
 	mRoDirPathUserHome=$mRoDirPathUserHome \n\
@@ -363,7 +365,7 @@ EOF
 		  ftInitDevicesList -h
 	fi
 
-	unset ${mCmdsModuleDataDevicesList[*]}
+	unset mCmdsModuleDataDevicesList
 	mCmdsModuleDataDevicesList=(${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser})
 	local index=1;
 	#开始记录设备文件
@@ -383,6 +385,19 @@ EOF
 		index=`expr $index + 1`
 		fi
 	done
+	index=0
+	validDevList=
+	for dev in ${mCmdsModuleDataDevicesList[*]}
+	do
+		# 大于等于4G
+		size=$(ftDevAvailableSpace $dev true)
+		if [ "$size" -gt "4096" ];then
+			validDevList[$index]=$dev
+			index=`expr $index + 1`
+		fi
+	done
+	unset mCmdsModuleDataDevicesList
+	mCmdsModuleDataDevicesList="${validDevList[*]}"
 	export mCmdsModuleDataDevicesList
 }
 
@@ -540,14 +555,12 @@ EOF
 	mRoIsDebug=$mRoIsDebug"
 	fi
 
-	 if [ "$mRoIsDebug" = "true" ]; then
+	 # if [ "$mRoIsDebug" = "true" ]; then
 		$@
-		trap 'echo “行:$LINENO, mRoBaseShellParameter2=$mRoBaseShellParameter2,\
-	 			 commandAuthority=$commandAuthority,\
-	 			 XCMD=$XCMD”' DEBUG
-	 else
-	 	ftEcho -ex 当前非调试模式
-	fi
+		trap 'echo “行:$LINENO, path_avail=$path_avail”' DEBUG
+	#  else
+	#  	ftEcho -ex 当前非调试模式
+	# fi
 
 }
 
@@ -1047,7 +1060,7 @@ EOF
 			done
 			done
 			break;;
-			-base |-BASE);;
+			-base |-BASE);;#使用生成时间，新旧对比
 			* )	ftEcho -e 错误的选择：$sel
 				echo "输入n，q，离开";
 				;;
@@ -1130,27 +1143,36 @@ ftDevAvailableSpace()
 {
 	local ftName=设备可用空间
 	local devDirPath=$1
+	local isReturn=$2
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 	#=================== ${ftName}的使用示例=============
 	#
-	#	ftDevAvailableSpace [devDirPath]
+	#	ftDevAvailableSpace [devDirPath] [[isReturn]]
 	#	ftDevAvailableSpace /media/test
+	#	ftDevAvailableSpace /media/test true
 	#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
-	local valCount=1
-	if [ $# -ne $valCount ]||[ -z "$devDirPath" ];then
+	local valCount=2
+	if [ $# -gt $valCount ]||[ -z "$devDirPath" ]\
+				||[ -z "$mRoDirPathCmdData" ];then
 		ftEcho -e "	函数[${ftName}],参数错误 \n\
 	devDirPath=$devDirPath \n\
+	mRoDirPathCmdData=$mRoDirPathCmdData \n\
 	请查看下面说明:"
 		ftDevAvailableSpace -h
 	elif [ ! -d $devDirPath ];then
 		ftEcho -ex "设备[$devDirPath]不存在"
+	elif [ ! -d $mRoDirPathCmdData ];then
+		ftEcho -ex "目录[$mRoDirPathCmdData]不存在"
 	fi
+
+	local filePathDevStatus=${mRoDirPathCmdData}/devs_status
+	local filePathTmpRootAvail=/tmp/tmp_root_avail
 
 	if [ "${devDirPath:0:1}" = "/" ];then
 		if [ ! -d ${devDirPath} ];then
@@ -1164,8 +1186,12 @@ EOF
 		devDirPath=${pwd}/${devDirPath}
 	fi
 
-##########get data from df -h#############
-	df -h | while read line
+	if [ -z $isReturn ]||[ $isReturn != "true" ];then
+		df -h >$filePathDevStatus
+	elif  $isReturn = "true" ];then
+		df >$filePathDevStatus
+	fi
+	cat $filePathDevStatus | while read line
 	do
 		line_path=`echo ${line} | awk -F' ' '{print $6}'`
 		line_avail=`echo ${line} | awk -F' ' '{print $4}'`
@@ -1176,10 +1202,10 @@ EOF
 		 if [ "${line_path}" = "/" ]; then
 				root_avail=${line_avail}
 			 #echo "root_avail:${root_avail}"
-			 if [ -f /tmp/tmp_root_avail ];then
-				 rm /tmp/tmp_root_avail
+			 if [ -f $filePathTmpRootAvail ];then
+				 rm $filePathTmpRootAvail
 			 fi
-			 echo ${root_avail} > /tmp/tmp_root_avail
+			 echo ${root_avail} > $filePathTmpRootAvail
 			 continue
 		 fi
 
@@ -1192,25 +1218,32 @@ EOF
 			echo ${path_avail} > /tmp/tmp_path_avail
 			break
 		fi
-
 	done
+	rm -f $filePathDevStatus
 
-#############get data from temp file###############
 	if [ -f /tmp/tmp_path_avail ];then
 		path_avail=`cat /tmp/tmp_path_avail`
 		rm /tmp/tmp_path_avail
 	fi
-	if [ -f /tmp/tmp_root_avail ];then
-		root_avail=`cat /tmp/tmp_root_avail`
-		rm /tmp/tmp_root_avail
+	if [ -f $filePathTmpRootAvail ];then
+		root_avail=`cat $filePathTmpRootAvail`
+		rm $filePathTmpRootAvail
 	fi
-###################compute######################
+
 	if [ -z ${path_avail} ];then
 		 path_avail=${root_avail}
 	fi
 
-	echo "${path_avail}"
+	local size
+	if [ -z $isReturn ]||[ $isReturn != "true" ];then
+		size=$path_avail
+	elif  $isReturn = "true" ];then
+		size=`expr $path_avail / 1024 `
+	fi
+	echo $size
 }
+
+
 
 ftSetKeyValueByBlockAndKey()
 {
