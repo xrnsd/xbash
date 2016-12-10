@@ -1087,6 +1087,87 @@ EOF
 	return 0
 }
 
+ftDevAvailableSpace()
+{
+	local ftName=设备可用空间
+	local devPath=$1
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#
+	#	ftDevAvailableSpace [devPath]
+	#	ftDevAvailableSpace /media/test
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if [ $# -ne $valCount ]||[ -z "$devPath" ];then
+		ftEcho -e "[${ftName}]参数[devPath=$devPath]错误,请查看下面说明"
+		ftDevAvailableSpace -h
+	fi
+
+	if [ "${devPath:0:1}" = "/" ];then
+		if [ ! -d ${devPath} ];then
+			mkdir -p ${devPath}
+		fi
+	else
+		pwd=`pwd`
+		if [ ! -d "${pwd}/${devPath}" ];then
+			mkdir -p ${pwd}/${devPath}
+		fi
+		devPath=${pwd}/${devPath}
+	fi
+
+##########get data from df -h#############
+	df -h | while read line
+	do
+		line_path=`echo ${line} | awk -F' ' '{print $6}'`
+		line_avail=`echo ${line} | awk -F' ' '{print $4}'`
+		 if [ "${line_path:0:1}" != "/" ]; then
+			 continue
+		 fi
+
+		 if [ "${line_path}" = "/" ]; then
+				root_avail=${line_avail}
+			 #echo "root_avail:${root_avail}"
+			 if [ -f /tmp/tmp_root_avail ];then
+				 rm /tmp/tmp_root_avail
+			 fi
+			 echo ${root_avail} > /tmp/tmp_root_avail
+			 continue
+		 fi
+
+		path_length=${#line_path}
+		if [ "${devPath:0:${path_length}}" = "${line_path}" ];then
+			path_avail=${line_avail}
+			if [ -f /tmp/tmp_path_avail ];then
+				rm /tmp/tmp_path_avail
+			fi
+			echo ${path_avail} > /tmp/tmp_path_avail
+			break
+		fi
+
+	done
+
+#############get data from temp file###############
+	if [ -f /tmp/tmp_path_avail ];then
+		path_avail=`cat /tmp/tmp_path_avail`
+		rm /tmp/tmp_path_avail
+	fi
+	if [ -f /tmp/tmp_root_avail ];then
+		root_avail=`cat /tmp/tmp_root_avail`
+		rm /tmp/tmp_root_avail
+	fi
+###################compute######################
+	if [ -z ${path_avail} ];then
+		 path_avail=${root_avail}
+	fi
+
+	echo "${path_avail}"
+}
 
 ftSetKeyValueByBlockAndKey()
 {
