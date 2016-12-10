@@ -25,6 +25,7 @@ ftExample()
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 	#=================== ${ftName}的使用示例=============
 	#
+	#	ftExample 无参
 	#	ftExample [example]
 	#	ftExample xxxx
 	#=========================================================
@@ -34,7 +35,7 @@ EOF
 	#耦合变量校验
 	local valCount=1
 	if [ $# -ne $valCount ]||[ -z "$example1" ]\
-			         ||[ -z "$example2" ];then
+				||[ -z "$example2" ];then
 		ftEcho -e "[${ftName}]参数[example1=$example1,example2=$example2]错误,请查看下面说明"
 		ftExample -h
 	fi
@@ -48,7 +49,7 @@ ftWhoAmI()## #命令权限判定
 	#耦合变量校验
 	local valCount=1
 	if [ $# -ne $valCount ]||[ -z "$mRoCmdsPermissionBase" ]\
-			         ||[ -z "$mRoCmdsPermissionRoot" ];then
+				||[ -z "$mRoCmdsPermissionRoot" ];then
 		ftEcho -e "命令[${XCMD}]参数错误,请查看下面说明"
 		ftReadMe $XCMD
 	fi
@@ -345,7 +346,7 @@ EOF
 	#耦合变量校验
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$mRoDirPathUserHome" ]\
-			         ||[ -z "$mRoNameUser" ];then
+				||[ -z "$mRoNameUser" ];then
 		  ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
 		  ftInitDevicesList -h
 	fi
@@ -413,7 +414,7 @@ ftMtkFlashTool()
 	#耦合变量校验
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$tempDirPath" ]\
-			         ||[ -z "$mRoDirPathTools" ];then
+				||[ -z "$mRoDirPathTools" ];then
 		  ftEcho -ex "函数[${ftName}]参数错误"
 	fi
 
@@ -451,8 +452,8 @@ EOF
 	#耦合变量校验
 	local valCount=3
 	if [ $# -ne $valCount ]||[ -z "$type" ]\
-					         ||[ -z "$isCreate" ]\
-					         ||[ -z "$path" ];then
+						||[ -z "$isCreate" ]\
+						||[ -z "$path" ];then
 		  ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
 		  ftFileDirEdit -h
 	fi
@@ -564,7 +565,7 @@ ftEcho()
 =========================================================================
 EOF
 break;;
-	* ) echo $option ;break;;
+	* )	echo $option ;break;;
 	esac
 	done
 }
@@ -853,7 +854,7 @@ EOF
 	#耦合变量校验
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$mRoDirPathUserHome" ]\
-			         ||[ -z "$mRoDirNameLog" ];then
+				||[ -z "$mRoDirNameLog" ];then
 		ftEcho -e "[${ftName}]参数[mRoDirPathUserHome=$mRoDirPathUserHome,mRoDirNameLog=$mRoDirNameLog]错误,请查看下面说明"
 		ftLog -h
 	fi
