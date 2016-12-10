@@ -76,6 +76,7 @@ fi
 					||[ ! -d $mDirPathStoreSource ]\
 					||[ ! -d $dirPathBackupNote ];then
 			ftEcho -ex "函数[${ftName}],参数错误 \n\
+	参数数量=$# \n\
 	valCount=$valCount \n\
 	mDirPathStoreSource=$mDirPathStoreSource\n\
 	dirPathBackupNote=${dirPathBackupNote[@]} \n\
@@ -188,6 +189,7 @@ EOF
 		local valCount=1
 		if [ $# -ne $valCount ]||[ -z "$infoType" ];then
 			ftEcho -e "	函数[${ftName}],参数错误 \n\
+	参数数量=$# \n\
 	infoType=$infoType \n\
 	请查看下面说明:"
 			ftEchoInfo -h
@@ -245,6 +247,7 @@ EOF
 		if [ $# -ne $valCount ]||[ -z "$mCmdsModuleDataDevicesList" ]\
 					||[ -z "$mRoNameUser" ];then
 			ftEcho -e "	函数[${ftName}],参数错误 \n\
+	参数数量=$# \n\
 	mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \n\
 	mRoNameUser=$mRoNameUser\n\
 	请查看下面说明:"
@@ -340,6 +343,7 @@ EOF
 		local valCount=1
 		if [ $# -gt $valCount ]||[ -z "$mRoDirPathUserHome" ];then
 			ftEcho -ex "函数[${ftName}],参数错误 \n\
+	参数数量=$# \n\
 	mRoDirPathUserHome=$mRoDirPathUserHome \n\
 	请查看下面说明:"
 		elif [ ! -d "$mRoDirPathUserHome" ];then
@@ -491,6 +495,7 @@ EOF
 		if [ $# -lt $valCount ]||[ -z "$dirPathBackupRoot" ]\
 					||[ -z "$versionName" ];then
 			ftEcho -e "	函数[${ftName}],参数错误 \n\
+	参数数量=$# \n\
 	dirPathBackupRoot=$dirPathBackupRoot \n\
 	versionName=$versionName\n\
 	请查看下面说明:"
@@ -560,6 +565,7 @@ EOF
 					||[ -z "$dirPathBackupRoot" ]\
 					||[ -z "$versionName" ];then
 			ftEcho -e "	函数[${ftName}],参数错误 \n\
+	参数数量=$# \n\
 	typeEdit=$typeEdit \n\
 	dirPathBackupRoot=$dirPathBackupRoot\n\
 	versionName=$versionName \n\
@@ -674,6 +680,7 @@ EOF
 				||[ -z "$dirPathBackupRoot" ]\
 				||[ -z "$dirNameBackupInfoVersion" ];then
 		ftEcho -e "	函数[${ftName}],参数错误 \n\
+	参数数量=$# \n\
 	typeEdit=$typeEdit \n\
 	dirPathBackupRoot=$dirPathBackupRoot\n\
 	dirNameBackupInfoVersion=$dirNameBackupInfoVersion \n\
@@ -804,6 +811,7 @@ EOF
 				||[ -z "$note" ]\
 				||[ -z "$devList" ];then
 		ftEcho -e "	函数[${ftName}],参数错误 \n\
+	参数数量=$# \n\
 	version=$version \n\
 	note=$note\n\
 	devList=${devList[@]} \n\
@@ -889,6 +897,7 @@ EOF
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z $mFilePathVersion ];then
 		ftEcho -e "	函数[${ftName}],参数错误 \n\
+	参数数量=$# \n\
 	valCount=$valCount \n\
 	mFilePathVersion=$mFilePathVersion\n\
 	请查看下面说明:"
