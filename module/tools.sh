@@ -371,8 +371,14 @@ EOF
 	fi
 
 	unset mCmdsModuleDataDevicesList
+
+	local index=0
 	mCmdsModuleDataDevicesList=(${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser})
-	local index=1;
+	#设备可用空间大小符合限制
+	sizeHome=$(ftDevAvailableSpace $mCmdsModuleDataDevicesList true)
+	if [ "$sizeHome" -gt "$devMinAvailableSpace" ];then
+		index=1;
+	fi
 	#开始记录设备文件
 	for dir in $dirList
 	do
@@ -382,8 +388,9 @@ EOF
 			for dirTemp in $dirTempList
 			do
 				devPathTemp=${devDir}/${dir}/${dirTemp}
-				# 确定目录已挂载
-				if mountpoint -q $devPathTemp;then
+				sizeTemp=$(ftDevAvailableSpace $devPathTemp true)
+				# 确定目录已挂载,设备可用空间大小符合限制
+				if mountpoint -q $devPathTemp&&[ "$sizeTemp" -gt "$devMinAvailableSpace" ];then
 					mCmdsModuleDataDevicesList[$index]=$devPathTemp
 					index=`expr $index + 1`
 				fi
@@ -391,27 +398,14 @@ EOF
 		#长期挂载设备
 		else
 			devPath=${devDir}/${dir}
-			# 确定目录已挂载
-			if mountpoint -q $devPath;then
+			size=$(ftDevAvailableSpace $devPath true)
+			# 确定目录已挂载,设备可用空间大小符合限制
+			if mountpoint -q $devPath&&[ "$size" -gt "$devMinAvailableSpace" ];then
 				mCmdsModuleDataDevicesList[$index]=$devPath
 				index=`expr $index + 1`
 			fi
 		fi
 	done
-
-	index=0
-	validDevList=
-	for dev in ${mCmdsModuleDataDevicesList[*]}
-	do
-		# 大于等于4G
-		size=$(ftDevAvailableSpace $dev true)
-		if [ "$size" -gt "4096" ];then
-			validDevList[$index]=$dev
-			index=`expr $index + 1`
-		fi
-	done
-	unset mCmdsModuleDataDevicesList
-	mCmdsModuleDataDevicesList="${validDevList[*]}"
 	export mCmdsModuleDataDevicesList
 }
 
