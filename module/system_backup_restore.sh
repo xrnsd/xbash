@@ -9,7 +9,6 @@
 	mDirPathRestoreTarget=/
 	mDirPathStoreTarget=null
 	mDirPathStoreSource=null
-	mDirPathLog=${mRoDirPathUserHome}/log
 	mDirPathRestoreExcludeTarget=null
 
 	mFilePathRestoreSource=null
@@ -59,9 +58,6 @@
 	ftRestoreChoiceSource()
 	{
 		local ftName=选择还原使用的版本[备份]包
-		local index=0;
-		local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
-		local dirPathBackupNote=${mDirPathStoreSource}/.notes
 
 		#耦合变量校验
 		local valCount=0
@@ -75,6 +71,9 @@
 	dirPathBackupNote=${dirPathBackupNote[@]} \n\
 	请查看下面说明:"
 		fi
+		local index=0;
+		local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
+		local dirPathBackupNote=${mDirPathStoreSource}/.notes
 
 		#文件数量获取
 		#filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l
@@ -434,7 +433,7 @@ EOF
 					${mRoDirPathUserHome}.other \
 					${mRoDirPathUserHome}.gvfs)
 
-		local dirsExclude=
+		local dirsExclude
 		local fileNameExclude
 		if [ $mTypeBackupEdit = "cg" ];then
 			dirsExclude=${mDirPathsExcludeBase[*]}
@@ -467,11 +466,9 @@ EOF
 		local dateOnly=$(date -d "today" +"%Y%m%d")
 		local dateTime=$(date -d "today" +"%Y%m%d_%H%M%S")
 		local dirPathBackupRoot=$1
-		local dirPathBackupNote=${dirPathBackupRoot}/.notes
 		local versionName=$2
 		local noteBase=$3
 		local fileNameDefault=.note.list
-		local fileNameNote=${versionName}.note
 
 		#使用示例
 		while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -479,6 +476,7 @@ EOF
 		#
 		#	ftAddNote [dirPathBackupRoot] [versionName]
 		#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
+		#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase “常规”
 		#=========================================================
 EOF
 		exit;; * )break;; esac;done
@@ -491,9 +489,12 @@ EOF
 	参数数量=$# \n\
 	dirPathBackupRoot=$dirPathBackupRoot \n\
 	versionName=$versionName\n\
+	noteBase=$noteBase\n\
 	请查看下面说明:"
 			ftAddNote -h
 		fi
+		local dirPathBackupNote=${dirPathBackupRoot}/.notes
+		local fileNameNote=${versionName}.note
 
 		if [ -d ${dirPathBackupRoot} ]&&[ ! -d ${dirPathBackupNote} ];then
 				mkdir ${dirPathBackupNote}
@@ -539,8 +540,6 @@ EOF
 		local versionName=$3
 		local isExit=$4
 			isExit=${isExit:-'true'}
-		local fileNameMd5=${versionName}.md5
-		local dirBackupMd5=${dirPathBackupRoot}/.md5s
 
 		#使用示例
 		while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -565,6 +564,9 @@ EOF
 	请查看下面说明:"
 			ftMD5 -h
 		fi
+
+		local fileNameMd5=${versionName}.md5
+		local dirBackupMd5=${dirPathBackupRoot}/.md5s
 
 		if [ ! -d ${dirPathBackupRoot} ];then
 			ftEcho -e MD5相关操作失败，找不到$dirPathBackupRoot
@@ -640,22 +642,6 @@ EOF
 	local dirNameBackupInfoVersion=$3
 	local isExit=$4
 	isExit=${isExit:-'true'}
-	local dirPathBackupInfo=${dirPathBackupRoot}/.info
-	local dirPathBackupInfoVersion=${dirPathBackupInfo}/${dirNameBackupInfoVersion}
-
-	local filePathVersionCpu=${dirPathBackupInfoVersion}/cpu
-	local filePathVersionMainboard=${dirPathBackupInfoVersion}/mainboard
-	local filePathVersionSystem=${dirPathBackupInfoVersion}/system
-	local filePathVersion32x64=${dirPathBackupInfoVersion}/32x64
-
-	local infoHwCpu=$(dmidecode |grep -i cpu|grep -i version|awk -F ':' '{print $2}'|sed s/[[:space:]]//g)
-	local infoHwMainboard=$(dmidecode |grep Name |sed s/[[:space:]]//g)
-	local infoHwMainboard=$(echo $infoHwMainboard |sed s/[[:space:]]//g)
-	local infoHwSystem=$(head -n 1 /etc/issue|sed s/[[:space:]]//g)
-		infoHwSystem=${infoHwSystem//"\n\l"/}
-		infoHwSystem=${infoHwSystem//"."/}
-		infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
-	local infoHw32x64=$(uname -m|sed s/[[:space:]]//g)
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -680,6 +666,22 @@ EOF
 	请查看下面说明:"
 		ftAddOrCheckSystemHwSwInfo -h
 	fi
+	local dirPathBackupInfo=${dirPathBackupRoot}/.info
+	local dirPathBackupInfoVersion=${dirPathBackupInfo}/${dirNameBackupInfoVersion}
+
+	local filePathVersionCpu=${dirPathBackupInfoVersion}/cpu
+	local filePathVersionMainboard=${dirPathBackupInfoVersion}/mainboard
+	local filePathVersionSystem=${dirPathBackupInfoVersion}/system
+	local filePathVersion32x64=${dirPathBackupInfoVersion}/32x64
+
+	local infoHwCpu=$(dmidecode |grep -i cpu|grep -i version|awk -F ':' '{print $2}'|sed s/[[:space:]]//g)
+	local infoHwMainboard=$(dmidecode |grep Name |sed s/[[:space:]]//g)
+	local infoHwMainboard=$(echo $infoHwMainboard |sed s/[[:space:]]//g)
+	local infoHwSystem=$(head -n 1 /etc/issue|sed s/[[:space:]]//g)
+		infoHwSystem=${infoHwSystem//"\n\l"/}
+		infoHwSystem=${infoHwSystem//"."/}
+		infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
+	local infoHw32x64=$(uname -m|sed s/[[:space:]]//g)
 
 	local returns=兼容
 	if [ ! -d $dirPathBackupRoot ]; then

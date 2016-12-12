@@ -446,7 +446,6 @@ ftMtkFlashTool()
 {
 	local ftName=mtk下载工具
 	local tempDirPath=`pwd`
-	local toolDirPath=${mRoDirPathTools}/sp_flash_tool_v5.1548
 
 	#耦合变量校验
 	local valCount=0
@@ -457,6 +456,7 @@ ftMtkFlashTool()
 	tempDirPath=$tempDirPath \n\
 	mRoDirPathTools=$mRoDirPathTools"
 	fi
+	local toolDirPath=${mRoDirPathTools}/sp_flash_tool_v5.1548
 
 	cd $toolDirPath&&
 	echo "$mUserPwd" | sudo -S ./flash_tool&&
@@ -600,7 +600,7 @@ ftEcho()
 	# 标题，换行
 	bh | BH | -bh | -BH)	echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
 	#特定信息显示,y/n
-	y | Y | -y | -Y)		echo;echo -en "${content}[y/n]";echo; break;;
+	y | Y | -y | -Y)		echo;echo -en "${content}[y/n]"; break;;
 	# 特定信息显示,命令说明的格式
 	g | G | -g | -G)cat<<EOF
 =========================================================================
@@ -1039,13 +1039,13 @@ ftSynchronous()
 	#=================== ${ftName}的使用示例=============
 	#
 	#	ftSynchronous [dirPathArray] [fileTypeList]
-	# 
+	#
 	# 	所有存储设备之间同步
 	#	ftSynchronous "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
-	# 
+	#
 	# 	本次备份存储设备和指定存储设备之间同步
 	#	ftSynchronous "/media/data_xx $mDirPathStoreTarget" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
-	# 
+	#
 	# 	自定义 存储设备和存储设备之间同步
 	#	ftSynchronous "/media/data_xx /media/data_xx" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
 	#未实现特性
