@@ -2,10 +2,6 @@
 #####---------------------  说明  ---------------------------#########
 # 默认规划中，不可在此文件中出现，不被函数包裹的调用，定义
 # 人话，这里只放函数
-#####---------------------   变量 ---------------------------#########
-
-commandAuthority=null
-
 #####---------------------流程函数---------------------------#########
 ftExample()
 {
@@ -36,11 +32,11 @@ EOF
 	local valCount=1
 	if [ $# -ne $valCount ]||[ -z "$example1" ]\
 				||[ -z "$example2" ];then
-		ftEcho -e "	[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	example1=$example1 \n\
-	example2=$example2 \n\
-	请查看下面说明:"
+		ftEcho -ea "	[${ftName}],参数错误 \
+				参数数量=$# \
+				example1=$example1 \
+				example2=$example2 \
+				请查看下面说明:"
 		ftExample -h
 	fi
 }
@@ -54,11 +50,11 @@ ftWhoAmI()## #命令权限判定
 	local valCount=1
 	if [ $# -ne $valCount ]||[ -z "$mRoCmdsPermissionBase" ]\
 				||[ -z "$mRoCmdsPermissionRoot" ];then
-		ftEcho -e "	[${XCMD}],参数错误 \n\
-	参数数量=$# \n\
-	mRoCmdsPermissionBase=$mRoCmdsPermissionBase \n\
-	mRoCmdsPermissionRoot=$mRoCmdsPermissionRoot \n\
-	请查看下面说明:"
+		ftEcho -e "	[${XCMD}],参数错误 \
+				参数数量=$# \
+				mRoCmdsPermissionBase=$mRoCmdsPermissionBase \
+				mRoCmdsPermissionRoot=$mRoCmdsPermissionRoot \
+				请查看下面说明:"
 		ftReadMe $XCMD
 	fi
 
@@ -272,7 +268,7 @@ done
 
 ftVersion()
 {
-	echo \"Xrnsd extensions to bash\" V0.5.7 beta
+	echo \"Xrnsd extensions to bash\" V0.5.9 beta
 }
 
 
@@ -297,10 +293,10 @@ EOF
 	#耦合变量校验
 	local valCount=1
 	if [ $# -ne $valCount ]||[ -z "$packageName" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	packageName=$packageName \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				packageName=$packageName \
+				请查看下面说明:"
 		  ftKillPhoneAppByPackageName -h
 	fi
 
@@ -327,9 +323,9 @@ ftRestartAdb()
 	#耦合变量校验
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$mUserPwd" ];then
-		  ftEcho -ex "函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	mUserPwd=$mUserPwd"
+		ftEcho -ex "函数[${ftName}],参数错误 \
+			参数数量=$# \
+			mUserPwd=$mUserPwd"
 	fi
 
 	local ftName=重启adb sever
@@ -362,11 +358,11 @@ EOF
 	local valCount=1
 	if [ $# -gt $valCount ]||[ -z "$mRoDirPathUserHome" ]\
 				||[ -z "$mRoNameUser" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	mRoDirPathUserHome=$mRoDirPathUserHome \n\
-	mRoNameUser=$mRoNameUser \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				mRoDirPathUserHome=$mRoDirPathUserHome \
+				mRoNameUser=$mRoNameUser \
+				请查看下面说明:"
 		  ftInitDevicesList -h
 	fi
 
@@ -416,8 +412,8 @@ ftCleanDataGarbage()
 
 	#耦合变量校验
 	if [ -z "$mCmdsModuleDataDevicesList" ];then
-		ftEcho -ex "函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
+		ftEcho -ex "函数[${ftName}],参数错误 \
+	参数数量=$# \
 	mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}"
 	fi
 
@@ -451,9 +447,9 @@ ftMtkFlashTool()
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$tempDirPath" ]\
 				||[ -z "$mRoDirPathTools" ];then
-		ftEcho -ex "函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	tempDirPath=$tempDirPath \n\
+		ftEcho -ex "函数[${ftName}],参数错误 \
+	参数数量=$# \
+	tempDirPath=$tempDirPath \
 	mRoDirPathTools=$mRoDirPathTools"
 	fi
 	local toolDirPath=${mRoDirPathTools}/sp_flash_tool_v5.1548
@@ -494,12 +490,12 @@ EOF
 	if [ $# -ne $valCount ]||[ -z "$type" ]\
 						||[ -z "$isCreate" ]\
 						||[ -z "$path" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	type=$type \n\
-	isCreate=$isCreate \n\
-	path=$path \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				type=$type \
+				isCreate=$isCreate \
+				path=$path \
+				请查看下面说明:"
 		  ftFileDirEdit -h
 	fi
 
@@ -562,8 +558,8 @@ EOF
 
 	#耦合变量校验
 	if [ -z "$mRoIsDebug" ];then
-		ftEcho -ex "函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
+		ftEcho -ex "函数[${ftName}],参数错误 \
+	参数数量=$# \
 	mRoIsDebug=$mRoIsDebug"
 	fi
 
@@ -587,6 +583,7 @@ ftEcho()
 	local ftName=工具信息提示
 	option=$1
 	content=$2
+
 	while true; do
 	case $option in
 	#错误信息显示
@@ -601,6 +598,12 @@ ftEcho()
 	bh | BH | -bh | -BH)	echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
 	#特定信息显示,y/n
 	y | Y | -y | -Y)		echo;echo -en "${content}[y/n]"; break;;
+	#错误信息显示，显示退出
+	ea| EA | -ea | -EA)	for val in ${content[@]}
+				do
+					echo -e "\033[1;31m$val\033[0m";
+				done
+				break;;
 	# 特定信息显示,命令说明的格式
 	g | G | -g | -G)cat<<EOF
 =========================================================================
@@ -678,10 +681,10 @@ EOF
 	#耦合变量校验
 	local valCount=2
 	if [ $# -ne $valCount ]||[ -z "$dirPathAnimation" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	dirPathAnimation=$dirPathAnimation \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				dirPathAnimation=$dirPathAnimation \
+				请查看下面说明:"
 		ftBootAnimation -h
 	fi
 
@@ -873,10 +876,10 @@ EOF
 	#耦合变量校验
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$mRoDirPathUserHome" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	mRoDirPathUserHome=$mRoDirPathUserHome \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				mRoDirPathUserHome=$mRoDirPathUserHome \
+				请查看下面说明:"
 		ftGjh -h
 	fi
 
@@ -906,11 +909,11 @@ EOF
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$mRoDirPathUserHome" ]\
 				||[ -z "$mRoDirNameLog" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	mRoDirPathUserHome=$mRoDirPathUserHome \n\
-	mRoDirNameLog=$mRoDirNameLog \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				mRoDirPathUserHome=$mRoDirPathUserHome \
+				mRoDirNameLog=$mRoDirNameLog \
+				请查看下面说明:"
 		ftLog -h
 	fi
 	#初始化命令log目录
@@ -961,11 +964,11 @@ EOF
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$mRoDirPathCmdModule" ]\
 		||[ ! -f "${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest}" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	TestBashFile=$mRoDirPathCmdModule \n\
-	mRoDirNameLog=${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest} \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				TestBashFile=$mRoDirPathCmdModule \
+				mRoDirNameLog=${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest} \
+				请查看下面说明:"
 		ftTest -h
 	fi
 
@@ -987,11 +990,11 @@ EOF
 
 	#耦合变量校验
 	if [ -z "$mUserPwd" ]||[ -z "$edittype" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	mUserPwd=$mUserPwd \n\
-	edittype=$edittype \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				mUserPwd=$mUserPwd \
+				edittype=$edittype \
+				请查看下面说明:"
 		ftBoot -h
 	fi
 
@@ -1058,12 +1061,12 @@ EOF
 	local valCount=2
 	if [ $# -ne $valCount ]||[ -z "$dirPathArray" ]\
 				||[ -z "$fileTypeList" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	synchronousType=$synchronousType \n\
-	dirPathArray=${dirPathArray[@]} \n\
-	fileTypeList=$fileTypeList \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				synchronousType=$synchronousType \
+				dirPathArray=${dirPathArray[@]} \
+				fileTypeList=$fileTypeList \
+				请查看下面说明:"
 		ftSynchronous -h
 	fi
 
@@ -1117,12 +1120,12 @@ EOF
 	if [ $# -ne $valCount ]||[ ! -f "$filePath" ]\
 				||[ -z "$blockName" ]\
 				||[ -z "$keyName" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	filePath=$filePath \n\
-	blockName=$blockName\n\
-	keyName=$keyName \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				filePath=$filePath \
+				blockName=$blockName\n\
+				keyName=$keyName \
+				请查看下面说明:"
 		ftGetKeyValueByBlockAndKey2 -h
 	fi
 
@@ -1178,11 +1181,11 @@ EOF
 	local valCount=2
 	if [ $# -gt $valCount ]||[ -z "$devDirPath" ]\
 				||[ -z "$mRoDirPathCmdData" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	devDirPath=$devDirPath \n\
-	mRoDirPathCmdData=$mRoDirPathCmdData \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				devDirPath=$devDirPath \
+				mRoDirPathCmdData=$mRoDirPathCmdData \
+				请查看下面说明:"
 		ftDevAvailableSpace -h
 	elif [ ! -d $devDirPath ];then
 		ftEcho -ex "设备[$devDirPath]不存在"
@@ -1288,13 +1291,13 @@ EOF
 				||[ -z "$blockName" ]\
 				||[ -z "$keyName" ]\
 				||[ -z "$keyValue" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	filePath=$filePath \n\
-	blockName=$blockName\n\
-	keyName=$keyName \n\
-	keyValue=$keyValue \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				filePath=$filePath \
+				blockName=$blockName\n\
+				keyName=$keyName \
+				keyValue=$keyValue \
+				请查看下面说明:"
 		ftSetKeyValueByBlockAndKey2 -h
 	fi
 	return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s/^$keyName*=.*/$keyName=$keyValue/g;}" $filePath`
@@ -1328,10 +1331,10 @@ EOF
 	#耦合变量校验
 	local valCount=1
 	if [ $# -ne $valCount ]||[ ! -f "$filePath" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	filePath=$filePath \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				filePath=$filePath \
+				请查看下面说明:"
 		ftExample -h
 	fi
 

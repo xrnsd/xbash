@@ -1,20 +1,33 @@
 #! /bin/bash
-#####------------------初始化------------------------------#########
-#变量
-	if [ -f $(cd `dirname $0`; pwd)/data/value ];then
-		source  $(cd `dirname $0`; pwd)/data/value
-	else
-		echo -e "\033[1;31m全局变量[$(cd `dirname $0`; pwd)/data/value]加载失败\033[0m"
-		exit
-	fi
-#函数
-	if [ -f ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools} ];then
-		source  ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}
-	else
-		echo -e "\033[1;31m函数[${mRoDirPathCmdModule}/tools]加载失败\033[0m"
-		exit
-	fi
+#####------------------变量------------------------------#########
+	readonly mRoModuleName=main.sh
 
+	mDirPathXbashTraget=$(cd `dirname $0`; pwd)
+	mDirNameXbashTragetConfig=config
+	mDirPathXbashTragetConfig=${mDirPathXbashTraget}/${mDirNameXbashTragetConfig}
+	mFileNameXbashTragetConfigBase=base.config
+	mFilePathXbashTragetConfigBase=${mDirPathXbashTragetConfig}/${mFileNameXbashTragetConfigBase}
+
+#####------------------初始化------------------------------#########
+	if [ -f $mFilePathXbashTragetConfigBase ];then
+		source  $mFilePathXbashTragetConfigBase
+		#函数
+		if [ -f ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools} ];then
+			source  ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}
+		else
+	echo -e "\033[1;31m	函数加载失败\n\
+	模块=$mRoModuleName\n\
+	toolsPath=${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}\n\
+	\033[0m"
+	exit
+		fi
+	else
+	echo -e "\033[1;31m	全局配置加载失败\n\
+	模块=$mRoModuleName\n\
+	mFilePathXbashTragetConfigBase=$mFilePathXbashTragetConfigBase\n\
+	\033[0m"
+	exit
+	fi
 
 #####-------------------执行------------------------------#########
 ftTiming

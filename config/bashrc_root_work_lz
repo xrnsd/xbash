@@ -100,26 +100,38 @@ fi
 
 #added by wgx
 #=========================================================================
-#====================== 自定义配置   ======================================
+#======================  自定义配置 =======================================
 #=========================================================================
-userName=`who | awk '{print $1}'|sort -u`
-dirPathHome=/home/${userName}
-dirPathHomeCmd=${dirPathHome}/cmds/
+
 
 #--------------------------终端自身设定---------------------------
 #终端提示
 export PS1='ROOT\[\033[42m\][\w]\[\033[0m\]:'
+
+
+#--------------------------基础变量----------------------------------
+userName=`who | awk '{print $1}'|sort -u`
+dirPathHome=/home/${userName}
+dirPathHomeCmd=${dirPathHome}/cmds
+
+
 #--------------------------命令封装---------------------------
+if [ ! -d "$dirPathHomeCmd" ];then
+    echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
+else
+    #命令封装
+	alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
+	alias xr="export XCMD=xr;source ~/.bashrc"
+	alias xu='export XCMD=xu;gedit /root/.bashrc'
+	alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
+	alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
+	alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
+	alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
+
+	#命令选项快速适配
+	complete -W "backup restore" xb
+	complete -W "test clean_data_garbage" xc
+fi
+
 alias ..="cd .."
 alias ...="cd ../.."
-alias xc='export XCMD=xc;${dirPathHomeCmd}main.sh'
-alias xr="export XCMD=xr;source ~/.bashrc"
-alias xu='export XCMD=xu;gedit /root/.bashrc'
-alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
-alias xss='reboot'
-alias xs='shutdown -h now'
-alias xb='export XCMD=xb;${dirPathHomeCmd}main.sh'
-
-#--------------------------命令选项快速适配---------------------------
-complete -W "backup restore" xb
-complete -W "test clean_data_garbage" xc

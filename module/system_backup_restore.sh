@@ -1,477 +1,488 @@
 #!/bin/bash
+#####-----------------------变量------------------------------#########
+readonly mRoModuleName=system_backup_restore.sh
+mTypeEdit=$1
+mTypeBackupEdit=null
+
+mDate=$(date -d "today" +"%Y%m%d")
+
+mDirPathRestoreTarget=/
+mDirPathStoreTarget=null
+mDirPathStoreSource=null
+mDirPathRestoreExcludeTarget=null
+
+mFilePathRestoreSource=null
+
+mFileNameBackupLog=null
+mFileNameBackupTarget=null
+#VersionNameBackup
+mFileNameBackupTargetBase=null
+mFileNameRestoreSource=null
+#VersionNameRestore
+mFileNameRestoreSourceBase=null
+
+mNoteBackupTarget=null
+mNoteRestoreSource=null
+
 #####----------------------初始化--------------------------#########
-# 变量
-	mTypeEdit=$1
-	mTypeBackupEdit=null
-
-	mDate=$(date -d "today" +"%Y%m%d")
-
-	mDirPathRestoreTarget=/
-	mDirPathStoreTarget=null
-	mDirPathStoreSource=null
-	mDirPathRestoreExcludeTarget=null
-
-	mFilePathRestoreSource=null
-
-	mFileNameBackupLog=null
-	mFileNameBackupTarget=null
-	#VersionNameBackup
-	mFileNameBackupTargetBase=null
-	mFileNameRestoreSource=null
-	#VersionNameRestore
-	mFileNameRestoreSourceBase=null
-
-	mNoteBackupTarget=null
-	mNoteRestoreSource=null
+filePathCmdModuleTools=${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}
+if [ -f $filePathCmdModuleTools ];then
+	source  $filePathCmdModuleTools
+else
+	echo -e "\033[1;31m	初始化失败，基础库无法加载\n\
+	模块=$mRoModuleName\n\
+	filePathCmdModuleTools=$filePathCmdModuleTools\n\
+	\033[0m"
+fi
 
 #####----------------------自有函数--------------------------#########
 
-	ftRestoreOperate()
-	{
-		local ftName=使用tar还原系统
-		while true; do
-		ftEcho -y 是否开始还原
-		read -n1 sel
-		case "$sel" in
-			y | Y )
-				pathsource=$1
-				mDirPathRestoreTarget=$2
-				if [ -f $pathsource ];then
-					if [ -d $mDirPathRestoreTarget ];then
-					sudo tar -xvpzf $pathsource --exclude=$mDirPathRestoreExcludeTarget -C $mDirPathRestoreTarget \
-					2>&1 |tee $mFilePathLog
-					else
-						ftEcho -e 未找到目录:${mDirPathRestoreTarget}
-					fi
+ftRestoreOperate()
+{
+	local ftName=使用tar还原系统
+	while true; do
+	ftEcho -y 是否开始还原
+	read -n1 sel
+	case "$sel" in
+		y | Y )
+			pathsource=$1
+			mDirPathRestoreTarget=$2
+			if [ -f $pathsource ];then
+				if [ -d $mDirPathRestoreTarget ];then
+				sudo tar -xvpzf $pathsource --exclude=$mDirPathRestoreExcludeTarget -C $mDirPathRestoreTarget \
+				2>&1 |tee $mFilePathLog
 				else
-					ftEcho -e 未找到版本包:${pathsource}
-				fi;break;;
-			n | N | q |Q)  exit;;
-			* )
-				ftEcho -e 错误的选择：$sel
-				echo "输入n，q，离开";
-				;;
-		esac
-		done
-	}
-
-	ftRestoreChoiceSource()
-	{
-		local ftName=选择还原使用的版本[备份]包
-
-		#耦合变量校验
-		local valCount=0
-		if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ]\
-					||[ ! -d $mDirPathStoreSource ]\
-					||[ ! -d $dirPathBackupNote ];then
-			ftEcho -ex "函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	valCount=$valCount \n\
-	mDirPathStoreSource=$mDirPathStoreSource\n\
-	dirPathBackupNote=${dirPathBackupNote[@]} \n\
-	请查看下面说明:"
-		fi
-		local index=0;
-		local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
-		local dirPathBackupNote=${mDirPathStoreSource}/.notes
-
-		#文件数量获取
-		#filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l
-		#b=${a/123/321};将${a}里的第一个123替换为321\
-
-		if [ -z "$fileList" ];then
-			ftEcho -ex 在${mDirPathStoreSource}没找到有效的版本包
-		else
-			ftEcho -b 请${ftName}
-			echo "[序号]		版本包名	----------------	备注		"
-			echo
-			for file in $fileList
-			do
-				local fileBaseName=${file/.tgz/}
-				local fileNameNote=${fileBaseName}.note
-				local filePathNote=${dirPathBackupNote}/${fileNameNote}
-				if [ -f $filePathNote ];then
-					local note=`cat $filePathNote`
-				else
-					local note=缺失版本说明，建议视为无效
+					ftEcho -e 未找到目录:${mDirPathRestoreTarget}
 				fi
-				fileNoteList[$index]=$note
-				fileList2[$index]=$file
-				echo [ ${index} ] ${fileBaseName}"   ----------------   "${note}
-				index=`expr $index + 1`
-			done
-			while true; do
-			echo
-			echo -en "请输入版本包对应的序号(回车默认0):"
-			if [ ${#fileList[@]} -gt 9 ];then
-				read tIndex
 			else
-				read -n1 tIndex
-			fi
-			#设定默认值
-			if [ ${#tIndex} == 0 ]; then
-				tIndex=0
-			fi
-			case $tIndex in
-				[0-9]|\
-				[0-9][0-9]|\
-				[0-9][0-9][0-9]|\
-				[0-9][0-9][0-9][0-9])
-					echo
-					mFileNameRestoreSource=${fileList2[$tIndex]}
-					mFileNameRestoreSourceBase=${mFileNameRestoreSource/.tgz/}
-					mFilePathRestoreSource=${mDirPathStoreSource}/${mFileNameRestoreSource}
-					mNoteRestoreSource=${fileNoteList[$tIndex]}
-					echo;break;;
-				n | N | q |Q)  exit;;
-				* )	ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2...... 选择    输入 n，q 离开";break;;
-			esac
-			done
-		fi
-	}
+				ftEcho -e 未找到版本包:${pathsource}
+			fi;break;;
+		n | N | q |Q)  exit;;
+		* )
+			ftEcho -e 错误的选择：$sel
+			echo "输入n，q，离开";
+			;;
+	esac
+	done
+}
 
-	ftRestoreChoiceTarget()
-	{
-		local ftName=选择还原的目标目录
-		ftEcho -bh 还原的目标目录
-		echo -e "[1]\t系统"
-		echo -e "[2]\t自定义"
+ftRestoreChoiceSource()
+{
+	local ftName=选择还原使用的版本[备份]包
+
+	#耦合变量校验
+	local valCount=0
+	if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ]\
+				||[ ! -d $mDirPathStoreSource ]\
+				||[ ! -d $dirPathBackupNote ];then
+		ftEcho -ex "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				valCount=$valCount \
+				mDirPathStoreSource=$mDirPathStoreSource\n\
+				dirPathBackupNote=${dirPathBackupNote[@]} \
+				请查看下面说明:"
+	fi
+	local index=0;
+	local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
+	local dirPathBackupNote=${mDirPathStoreSource}/.notes
+
+	#文件数量获取
+	#filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l
+	#b=${a/123/321};将${a}里的第一个123替换为321\
+
+	if [ -z "$fileList" ];then
+		ftEcho -ex 在${mDirPathStoreSource}没找到有效的版本包
+	else
+		ftEcho -b 请${ftName}
+		echo "[序号]		版本包名	----------------	备注		"
 		echo
-
+		for file in $fileList
+		do
+			local fileBaseName=${file/.tgz/}
+			local fileNameNote=${fileBaseName}.note
+			local filePathNote=${dirPathBackupNote}/${fileNameNote}
+			if [ -f $filePathNote ];then
+				local note=`cat $filePathNote`
+			else
+				local note=缺失版本说明，建议视为无效
+			fi
+			fileNoteList[$index]=$note
+			fileList2[$index]=$file
+			echo [ ${index} ] ${fileBaseName}"   ----------------   "${note}
+			index=`expr $index + 1`
+		done
 		while true; do
-		echo -en "请输入目录对应的序号(回车默认系统[/]):"
-		read -n1 option
 		echo
-		#设定默认值
-		if [ ${#option} == 0 ]; then
-			option=1
+		echo -en "请输入版本包对应的序号(回车默认0):"
+		if [ ${#fileList[@]} -gt 9 ];then
+			read tIndex
+		else
+			read -n1 tIndex
 		fi
-		case $option in
-			1)  mDirPathRestoreTarget=/; break;;
-			2)  echo -en "请输入目标路径："
-				read customdir
-				if [ -d $customdir ];then
-				mDirPathRestoreTarget=$customdir
-				else
-				ftEcho -e 目录${customdir}不存在
-				fi
-				customdir=null ; break;;
+		#设定默认值
+		if [ ${#tIndex} == 0 ]; then
+			tIndex=0
+		fi
+		case $tIndex in
+			[0-9]|\
+			[0-9][0-9]|\
+			[0-9][0-9][0-9]|\
+			[0-9][0-9][0-9][0-9])
+				echo
+				mFileNameRestoreSource=${fileList2[$tIndex]}
+				mFileNameRestoreSourceBase=${mFileNameRestoreSource/.tgz/}
+				mFilePathRestoreSource=${mDirPathStoreSource}/${mFileNameRestoreSource}
+				mNoteRestoreSource=${fileNoteList[$tIndex]}
+				echo;break;;
 			n | N | q |Q)  exit;;
-			* )	ftEcho -e 错误的选择：$sel ;echo  "输入1,2 选择    输入n，q 离开";break;;
+			* )	ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2...... 选择    输入 n，q 离开";break;;
 		esac
 		done
-	}
+	fi
+}
 
-	ftEchoInfo()
-	{
-		local ftName=脚本操作信息显示，用于关键操作前的确认
-		local infoType=$1
+ftRestoreChoiceTarget()
+{
+	local ftName=选择还原的目标目录
+	ftEcho -bh 还原的目标目录
+	echo -e "[1]\t系统"
+	echo -e "[2]\t自定义"
+	echo
 
-		#使用示例
-		while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	while true; do
+	echo -en "请输入目录对应的序号(回车默认系统[/]):"
+	read -n1 option
+	echo
+	#设定默认值
+	if [ ${#option} == 0 ]; then
+		option=1
+	fi
+	case $option in
+		1)  mDirPathRestoreTarget=/; break;;
+		2)  echo -en "请输入目标路径："
+			read customdir
+			if [ -d $customdir ];then
+			mDirPathRestoreTarget=$customdir
+			else
+			ftEcho -e 目录${customdir}不存在
+			fi
+			customdir=null ; break;;
+		n | N | q |Q)  exit;;
+		* )	ftEcho -e 错误的选择：$sel ;echo  "输入1,2 选择    输入n，q 离开";break;;
+	esac
+	done
+}
+
+ftEchoInfo()
+{
+	local ftName=脚本操作信息显示，用于关键操作前的确认
+	local infoType=$1
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 	#=================== ${ftName}的使用示例=============
 	#
 	#	ftEchoInfo [editType]
 	#	ftEchoInfo backup/restore
 	#=========================================================
 EOF
-		exit;; * )break;; esac;done
+	exit;; * )break;; esac;done
 
-		#耦合变量校验
-		local valCount=1
-		if [ $# -ne $valCount ]||[ -z "$infoType" ];then
-			ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	infoType=$infoType \n\
-	请查看下面说明:"
-			ftEchoInfo -h
+	#耦合变量校验
+	local valCount=1
+	if [ $# -ne $valCount ]||[ -z "$infoType" ];then
+		ftEcho -ea "函数[${ftName}],参数错误 \
+			参数数量=$# \
+			infoType=$infoType \
+			请查看下面说明:"
+		ftEchoInfo -h
+	fi
+
+	local mVersionChangs="Android build : mtk_KK  mtk_L mtk_M\n\
+		Android app : 4.4\n\
+		custom bash : Xrnsd-extensions-to-bash\n\
+		tools : jdk1.6 openjdk1.7 sdk ndk flash_tool eclipse"
+
+	ftEcho -bh 请确认下面信息
+	if [ $infoType = "restore" ];then
+		echo "使用的源文件为：	${mFileNameRestoreSource}"
+		echo "使用的源文件的说明：	${mNoteRestoreSource}"
+		echo "还原的目标目录为：	${mDirPathRestoreTarget}"
+		echo "还原时将忽略目录：	${mDirPathRestoreExcludeTarget}"
+		echo -e "当前系统有效修改：	\033[44m$mVersionChangs\033[0m"
+
+	elif [ $infoType = "backup" ];then
+
+		local btype
+		if [ $mTypeBackupEdit = "cg" ];then
+			btype=基础
+		elif [ $mTypeBackupEdit = "bx" ];then
+			btype=全部
 		fi
 
-		local mVersionChangs="Android build : mtk_KK  mtk_L mtk_M\n\
-			Android app : 4.4\n\
-			custom bash : Xrnsd-extensions-to-bash\n\
-			tools : jdk1.6 openjdk1.7 sdk ndk flash_tool eclipse"
+		echo "生成备份的文件为：	${mFileNameBackupTarget}"
+		echo "生成备份文件的目录：	${mDirPathStoreTarget}"
+		echo "生成的备份的说明：	${mNoteBackupTarget}"
+		echo "生成的备份的类型：	${btype}"
+		echo -e "当前系统有效修改：	\033[44m$mVersionChangs\033[0m"
+	else
+		ftEcho -ex 一脸懵逼
+	fi
+}
 
-		ftEcho -bh 请确认下面信息
-		if [ $infoType = "restore" ];then
-			echo "使用的源文件为：	${mFileNameRestoreSource}"
-			echo "使用的源文件的说明：	${mNoteRestoreSource}"
-			echo "还原的目标目录为：	${mDirPathRestoreTarget}"
-			echo "还原时将忽略目录：	${mDirPathRestoreExcludeTarget}"
-			echo -e "当前系统有效修改：	\033[44m$mVersionChangs\033[0m"
+ftSetBackupDevDir()
+{
+	local ftName=选择备份包存放的设备
+	# 初始化设备列表[mCmdsModuleDataDevicesList]
+	ftInitDevicesList 4096
 
-		elif [ $infoType = "backup" ];then
-
-			local btype
-			if [ $mTypeBackupEdit = "cg" ];then
-				btype=基础
-			elif [ $mTypeBackupEdit = "bx" ];then
-				btype=全部
-			fi
-
-			echo "生成备份的文件为：	${mFileNameBackupTarget}"
-			echo "生成备份文件的目录：	${mDirPathStoreTarget}"
-			echo "生成的备份的说明：	${mNoteBackupTarget}"
-			echo "生成的备份的类型：	${btype}"
-			echo -e "当前系统有效修改：	\033[44m$mVersionChangs\033[0m"
-		else
-			ftEcho -ex 一脸懵逼
-		fi
-	}
-
-	ftSetBackupDevDir()
-	{
-		local ftName=选择备份包存放的设备
-		# 初始化设备列表[mCmdsModuleDataDevicesList]
-		ftInitDevicesList 4096
-
-		#使用示例
-		while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftSetBackupDevDir 无参
-	#=========================================================
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftSetBackupDevDir 无参
+#=========================================================
 EOF
-		exit;; * )break;; esac;done
+	exit;; * )break;; esac;done
 
-		#耦合变量校验
-		local valCount=0
-		if [ $# -ne $valCount ]||[ -z "$mCmdsModuleDataDevicesList" ]\
-					||[ -z "$mRoNameUser" ];then
-			ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \n\
-	mRoNameUser=$mRoNameUser\n\
-	请查看下面说明:"
-			ftSetBackupDevDir -h
+	#耦合变量校验
+	local valCount=0
+	if [ $# -ne $valCount ]||[ -z "$mCmdsModuleDataDevicesList" ]\
+				||[ -z "$mRoNameUser" ];then
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \
+				mRoNameUser=$mRoNameUser\n\
+				请查看下面说明:"
+		ftSetBackupDevDir -h
+	fi
+
+	ftEcho -b 请${ftName}
+
+	local devTarget
+	local devTargetDir
+	local index=0;
+
+	for dev in ${mCmdsModuleDataDevicesList[*]}
+	do
+		echo [ ${index} ] $dev $(ftDevAvailableSpace $dev)
+		# echo [ ${index} ] ${mCmdsModuleDataDevicesList[$index]}
+		index=`expr $index + 1`
+	done
+	echo
+
+	while true; do
+		echo -en "请选择存放备份文件的设备[0~`expr $index - 1`,q](回车默认当前用户目录):"
+		if [ ${#mCmdsModuleDataDevicesList[@]} -gt 9 ];then
+			read dir
+		else
+			read -n1 dir
 		fi
+		#设定默认值
+		 if [ ${#dir} == 0 ]; then
+			dir=0
+		 fi
+		 if [ ${dir} == "q" ]; then
+			exit
+		 elif [ -n "$(echo $dir| sed -n "/^[0-$index]\+$/p")" ];then
+			echo
+			devTargetDir=${mCmdsModuleDataDevicesList[$dir]}
+			break;
+		 fi
+		 ftEcho -e 错误的选择：$dir
+	done
 
+	# 还原用
+	mDirPathStoreSource=$devTargetDir/backup/os/${mRoNameUser};
+
+	if [ $mTypeEdit = "backup" ];then
+		# 备份用
+		mDirPathStoreTarget=$devTargetDir/backup/os/${mRoNameUser};
+		if [ ! -d $mDirPathStoreTarget ];then
+			mkdir -p $mDirPathStoreTarget
+			echo ${mDirPathStoreTarget}不存在已创建
+		fi
+	elif [ ! -d $mDirPathStoreSource ];then
+		ftEcho -ex [$mDirPathStoreSource]不存在,将退出
+	fi
+}
+
+ftSetBackupType()
+{
+	local ftName=选择备份类型
+	mTypeBackupEdit=$1
+	if [ -z "$mTypeBackupEdit" ];then
 		ftEcho -b 请${ftName}
-
-		local devTarget
-		local devTargetDir
-		local index=0;
-
-		for dev in ${mCmdsModuleDataDevicesList[*]}
-		do
-			echo [ ${index} ] $dev $(ftDevAvailableSpace $dev)
-			# echo [ ${index} ] ${mCmdsModuleDataDevicesList[$index]}
-			index=`expr $index + 1`
-		done
+		echo -e "[1]\t基础"
+		echo -e "[2]\t全部"
 		echo
 
 		while true; do
-			echo -en "请选择存放备份文件的设备[0~`expr $index - 1`,q](回车默认当前用户目录):"
-			if [ ${#mCmdsModuleDataDevicesList[@]} -gt 9 ];then
-				read dir
-			else
-				read -n1 dir
-			fi
-			#设定默认值
-			 if [ ${#dir} == 0 ]; then
-				dir=0
-			 fi
-			 if [ ${dir} == "q" ]; then
-				exit
-			 elif [ -n "$(echo $dir| sed -n "/^[0-$index]\+$/p")" ];then
-				echo
-				devTargetDir=${mCmdsModuleDataDevicesList[$dir]}
-				break;
-			 fi
-			 ftEcho -e 错误的选择：$dir
-		done
-
-		# 还原用
-		mDirPathStoreSource=$devTargetDir/backup/os/${mRoNameUser};
-
-		if [ $mTypeEdit = "backup" ];then
-			# 备份用
-			mDirPathStoreTarget=$devTargetDir/backup/os/${mRoNameUser};
-			if [ ! -d $mDirPathStoreTarget ];then
-				mkdir -p $mDirPathStoreTarget
-				echo ${mDirPathStoreTarget}不存在已创建
-			fi
-		elif [ ! -d $mDirPathStoreSource ];then
-			ftEcho -ex [$mDirPathStoreSource]不存在,将退出
+		echo -en "请选择备份类型(默认基础):"
+		read -n1 typeIndex
+		#设定默认值
+		if [ ${#typeIndex} == 0 ]; then
+			typeIndex=1
 		fi
-	}
+		case $typeIndex in
+		1)		mTypeBackupEdit=cg; break;;
+		2)		mTypeBackupEdit=bx; break;;
+	 	n | N | q |Q)  	exit;;
+		* )		ftEcho -e 错误的选择：$typeIndex ;echo "输入1,2 选择    输入n，q离开";break;;
+		esac
+		done
+	fi
 
-	ftSetBackupType()
-	{
-		local ftName=选择备份类型
-		mTypeBackupEdit=$1
-		if [ -z "$mTypeBackupEdit" ];then
-			ftEcho -b 请${ftName}
-			echo -e "[1]\t基础"
-			echo -e "[2]\t全部"
-			echo
+	mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${mRoNameUser}_${mDate}
+	mFileNameBackupTarget=${mFileNameBackupTargetBase}.tgz
+	mFileNameBackupLog=${mFileNameBackupTargetBase}.log
+	mFilePathVersion=${mDirPathStoreTarget}/$mFileNameBackupTarget
+}
 
-			while true; do
-			echo -en "请选择备份类型(默认基础):"
+ftSetRestoreType()
+{
+	local ftName=选择还原时忽略的目录
+	#耦合变量校验
+	local valCount=1
+	if [ $# -gt $valCount ]||[ -z "$mRoDirPathUserHome" ];then
+		ftEcho -ex "函数[${ftName}],参数错误 \
+参数数量=$# \
+mRoDirPathUserHome=$mRoDirPathUserHome \
+请查看下面说明:"
+	elif [ ! -d "$mRoDirPathUserHome" ];then
+		ftEcho -ex "目录[$mRoDirPathUserHome]不存在"
+	fi
+
+	local typeIndex=$1
+	if [ -z "$typeIndex" ];then
+		ftEcho -b 请${ftName}
+		echo -e "[1]\t忽略home"
+		echo -e "[2]\t不忽略"
+		echo
+
+		while true; do
+			echo -en "请选择还原设置(回车默认忽略home):"
 			read -n1 typeIndex
+
 			#设定默认值
 			if [ ${#typeIndex} == 0 ]; then
 				typeIndex=1
 			fi
 			case $typeIndex in
-			1)		mTypeBackupEdit=cg; break;;
-			2)		mTypeBackupEdit=bx; break;;
-		 	n | N | q |Q)  	exit;;
-			* )		ftEcho -e 错误的选择：$typeIndex ;echo "输入1,2 选择    输入n，q离开";break;;
-			esac
-			done
-		fi
-
-		mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${mRoNameUser}_${mDate}
-		mFileNameBackupTarget=${mFileNameBackupTargetBase}.tgz
-		mFileNameBackupLog=${mFileNameBackupTargetBase}.log
-		mFilePathVersion=${mDirPathStoreTarget}/$mFileNameBackupTarget
-	}
-
-	ftSetRestoreType()
-	{
-		local ftName=选择还原时忽略的目录
-		#耦合变量校验
-		local valCount=1
-		if [ $# -gt $valCount ]||[ -z "$mRoDirPathUserHome" ];then
-			ftEcho -ex "函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	mRoDirPathUserHome=$mRoDirPathUserHome \n\
-	请查看下面说明:"
-		elif [ ! -d "$mRoDirPathUserHome" ];then
-			ftEcho -ex "目录[$mRoDirPathUserHome]不存在"
-		fi
-
-		local typeIndex=$1
-		if [ -z "$typeIndex" ];then
-			ftEcho -b 请${ftName}
-			echo -e "[1]\t忽略home"
-			echo -e "[2]\t不忽略"
-			echo
-
-			while true; do
-				echo -en "请选择还原设置(回车默认忽略home):"
-				read -n1 typeIndex
-
-				#设定默认值
-				if [ ${#typeIndex} == 0 ]; then
-					typeIndex=1
-				fi
-				case $typeIndex in
-				1 | 2)break;;
-				n | N | q |Q)	exit;;
-				* )		ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";break;;
-			esac
-			done
-		fi
-		while true; do
-			case $typeIndex in
-			1 )		mDirPathRestoreExcludeTarget=$mRoDirPathUserHome;break;;
-			2 )		mDirPathRestoreExcludeTarget=; break;;
+			1 | 2)break;;
+			n | N | q |Q)	exit;;
+			* )		ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";break;;
 		esac
 		done
-	}
+	fi
+	while true; do
+		case $typeIndex in
+		1 )		mDirPathRestoreExcludeTarget=$mRoDirPathUserHome;break;;
+		2 )		mDirPathRestoreExcludeTarget=; break;;
+	esac
+	done
+}
 
-	ftBackupOs()
-	{
-		local ftName=生成版本包
-		ftEcho -bh 开始更新排除列表
-		#/home/wgx/cmds/data/excludeDirsBase.list
-		fileNameExcludeBase=excludeDirsBase.list
-		fileNameExcludeAll=excludeDirsAll.list
-		mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}/${fileNameExcludeBase}
-		mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}/${fileNameExcludeAll}
+ftBackupOs()
+{
+	local ftName=生成版本包
+	ftEcho -bh 开始更新排除列表
+	#/home/wgx/cmds/data/excludeDirsBase.list
+	fileNameExcludeBase=excludeDirsBase.list
+	fileNameExcludeAll=excludeDirsAll.list
+	mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}/${fileNameExcludeBase}
+	mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}/${fileNameExcludeAll}
 
-		mDirPathsExcludeBase=(/proc \
-					/android \
-					/lost+found \
-					/mnt \
-					/sys \
-					/.Trash-0 \
-					/media \
-					${mRoDirPathUserHome}workspaces \
-					${mRoDirPathUserHome}workspace \
-					${mRoDirPathUserHome}download \
-					${mRoDirPathUserHome}packages \
-					${mRoDirPathUserHome}Pictures \
-					${mRoDirPathUserHome}projects \
-					${mRoDirPathUserHome}backup \
-					${mRoDirPathUserHome}media  \
-					${mRoDirPathUserHome}temp \
-					${mRoDirPathUserHome}tools \
-					${mRoDirPathUserHome}cmds \
-					${mRoDirPathUserHome}code \
-					${mRoDirPathUserHome}log  \
-					${mRoDirPathUserHome}doc  \
-					${mRoDirPathUserHome}.AndroidStudio2.1 \
-					${mRoDirPathUserHome}.thumbnails \
-					${mRoDirPathUserHome}.software \
-					${mRoDirPathUserHome}.cache \
-					${mRoDirPathUserHome}.local \
-					${mRoDirPathUserHome}.wine \
-					${mRoDirPathUserHome}.other \
-					${mRoDirPathUserHome}.gvfs)
+	mDirPathsExcludeBase=(/proc \
+				/android \
+				/lost+found \
+				/mnt \
+				/sys \
+				/.Trash-0 \
+				/media \
+				${mRoDirPathUserHome}workspaces \
+				${mRoDirPathUserHome}workspace \
+				${mRoDirPathUserHome}download \
+				${mRoDirPathUserHome}packages \
+				${mRoDirPathUserHome}Pictures \
+				${mRoDirPathUserHome}projects \
+				${mRoDirPathUserHome}backup \
+				${mRoDirPathUserHome}media  \
+				${mRoDirPathUserHome}temp \
+				${mRoDirPathUserHome}tools \
+				${mRoDirPathUserHome}cmds \
+				${mRoDirPathUserHome}code \
+				${mRoDirPathUserHome}log  \
+				${mRoDirPathUserHome}doc  \
+				${mRoDirPathUserHome}.AndroidStudio2.1 \
+				${mRoDirPathUserHome}.thumbnails \
+				${mRoDirPathUserHome}.software \
+				${mRoDirPathUserHome}.cache \
+				${mRoDirPathUserHome}.local \
+				${mRoDirPathUserHome}.wine \
+				${mRoDirPathUserHome}.other \
+				${mRoDirPathUserHome}.gvfs)
 
-		mDirPathsExcludeAll=(/proc \
-					/android \
-					/lost+found  \
-					/mnt  \
-					/sys  \
-					/media \
-					${mRoDirPathUserHome}.AndroidStudio2.1 \
-					${mRoDirPathUserHome}backup \
-					${mRoDirPathUserHome}.software \
-					${mRoDirPathUserHome}download \
-					${mRoDirPathUserHome}log  \
-					${mRoDirPathUserHome}temp \
-					${mRoDirPathUserHome}Pictures \
-					${mRoDirPathUserHome}projects \
-					${mRoDirPathUserHome}workspaces \
-					${mRoDirPathUserHome}.cache \
-					${mRoDirPathUserHome}.thumbnails \
-					${mRoDirPathUserHome}.local \
-					${mRoDirPathUserHome}.other \
-					${mRoDirPathUserHome}.gvfs)
+	mDirPathsExcludeAll=(/proc \
+				/android \
+				/lost+found  \
+				/mnt  \
+				/sys  \
+				/media \
+				${mRoDirPathUserHome}.AndroidStudio2.1 \
+				${mRoDirPathUserHome}backup \
+				${mRoDirPathUserHome}.software \
+				${mRoDirPathUserHome}download \
+				${mRoDirPathUserHome}log  \
+				${mRoDirPathUserHome}temp \
+				${mRoDirPathUserHome}Pictures \
+				${mRoDirPathUserHome}projects \
+				${mRoDirPathUserHome}workspaces \
+				${mRoDirPathUserHome}.cache \
+				${mRoDirPathUserHome}.thumbnails \
+				${mRoDirPathUserHome}.local \
+				${mRoDirPathUserHome}.other \
+				${mRoDirPathUserHome}.gvfs)
 
-		local dirsExclude
-		local fileNameExclude
-		if [ $mTypeBackupEdit = "cg" ];then
-			dirsExclude=${mDirPathsExcludeBase[*]}
-			fileNameExclude=$mFilePathExcludeBase
-		elif [ $mTypeBackupEdit = "bx" ];then
-			dirsExclude=${mDirPathsExcludeAll[*]}
-			fileNameExclude=$mFilePathExcludeAll
-		else
-			ftEcho -ex  你想金包还是银包呢
-			exit
-		fi
+	local dirsExclude
+	local fileNameExclude
+	if [ $mTypeBackupEdit = "cg" ];then
+		dirsExclude=${mDirPathsExcludeBase[*]}
+		fileNameExclude=$mFilePathExcludeBase
+	elif [ $mTypeBackupEdit = "bx" ];then
+		dirsExclude=${mDirPathsExcludeAll[*]}
+		fileNameExclude=$mFilePathExcludeAll
+	else
+		ftEcho -ex  你想金包还是银包呢
+		exit
+	fi
 
-		#更新排除列表
-		if [  -f $fileNameExclude ]; then
-			rm -rf $fileNameExclude
-		fi
-		for dirpath in ${dirsExclude[@]}
-		do
-		 echo $dirpath >>$fileNameExclude
-		done
+	#更新排除列表
+	if [  -f $fileNameExclude ]; then
+		rm -rf $fileNameExclude
+	fi
+	for dirpath in ${dirsExclude[@]}
+	do
+	 echo $dirpath >>$fileNameExclude
+	done
 
-		ftEcho -bh 开始${ftName}
-		sudo tar -cvPzf  $mFilePathVersion --exclude-from=$fileNameExclude / \
-		 2>&1 |tee $mFilePathLog
-	}
+	ftEcho -bh 开始${ftName}
+	sudo tar -cvPzf  $mFilePathVersion --exclude-from=$fileNameExclude / \
+	 2>&1 |tee $mFilePathLog
+}
 
-	ftAddNote()
-	{
-		local ftName=记录版本包相关备注
-		local dateOnly=$(date -d "today" +"%Y%m%d")
-		local dateTime=$(date -d "today" +"%Y%m%d_%H%M%S")
-		local dirPathBackupRoot=$1
-		local versionName=$2
-		local noteBase=$3
-		local fileNameDefault=.note.list
+ftAddNote()
+{
+	local ftName=记录版本包相关备注
+	local dateOnly=$(date -d "today" +"%Y%m%d")
+	local dateTime=$(date -d "today" +"%Y%m%d_%H%M%S")
+	local dirPathBackupRoot=$1
+	local versionName=$2
+	local noteBase=$3
+	local fileNameDefault=.note.list
 
-		#使用示例
-		while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 		#=================== ${ftName}的使用示例===================
 		#
 		#	ftAddNote [dirPathBackupRoot] [versionName]
@@ -479,138 +490,132 @@ EOF
 		#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase “常规”
 		#=========================================================
 EOF
-		exit;; * )break;; esac;done
+	exit;; * )break;; esac;done
 
-		#耦合变量校验
-		local valCount=2
-		if [ $# -lt $valCount ]||[ -z "$dirPathBackupRoot" ]\
-					||[ -z "$versionName" ];then
-			ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	dirPathBackupRoot=$dirPathBackupRoot \n\
-	versionName=$versionName\n\
-	noteBase=$noteBase\n\
-	请查看下面说明:"
-			ftAddNote -h
-		fi
-		local dirPathBackupNote=${dirPathBackupRoot}/.notes
-		local fileNameNote=${versionName}.note
+	#耦合变量校验
+	local valCount=2
+	if [ $# -lt $valCount ]||[ -z "$dirPathBackupRoot" ]\
+				||[ -z "$versionName" ];then
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				dirPathBackupRoot=$dirPathBackupRoot \
+				versionName=$versionName\n\
+				noteBase=$noteBase\n\
+				请查看下面说明:"
+		ftAddNote -h
+	fi
+	local dirPathBackupNote=${dirPathBackupRoot}/.notes
+	local fileNameNote=${versionName}.note
 
-		if [ -d ${dirPathBackupRoot} ]&&[ ! -d ${dirPathBackupNote} ];then
-				mkdir ${dirPathBackupNote}
-				ftEcho -s 新建备注存储目录:${dirPathBackupNote}
-		fi
+	if [ -d ${dirPathBackupRoot} ]&&[ ! -d ${dirPathBackupNote} ];then
+			mkdir ${dirPathBackupNote}
+			ftEcho -s 新建备注存储目录:${dirPathBackupNote}
+	fi
 
-		local filePathDefault=${dirPathBackupNote}/${fileNameDefault}
-		local filePathNote=${dirPathBackupNote}/${fileNameNote}
+	local filePathDefault=${dirPathBackupNote}/${fileNameDefault}
+	local filePathNote=${dirPathBackupNote}/${fileNameNote}
 
-		if [ ! -f $filePathDefault ]; then
-			touch $filePathDefault;echo "【 create by wgx 】">$filePathDefault
-		fi
+	if [ ! -f $filePathDefault ]; then
+		touch $filePathDefault;echo "【 create by wgx 】">$filePathDefault
+	fi
 
-		#note文件行数
-		lines=$(sed -n '$=' $filePathDefault)
-		lines=$((lines/2))
-		let lines=lines+1
+	#note文件行数
+	lines=$(sed -n '$=' $filePathDefault)
+	lines=$((lines/2))
+	let lines=lines+1
 
-		local strVersion="[ "${lines}" ] "${versionName}
-		if [ -z "$noteBase" ];then
-			local tt="请输入版本   ["${versionName}"]  相应的说明[回车默认为常规]:"
-			echo
-			echo -en $tt
-			read note
-			note=${note:-'常规'} #未输入写入默认值
-		else
-			note=$noteBase
-		fi
-		#写入备注总文件
-		sed -i "1i ==========================================" $filePathDefault
-		sed -i "1i $strVersion           $note" $filePathDefault
-		#写入版本独立备注
-		sudo echo $note>$filePathNote
+	local strVersion="[ "${lines}" ] "${versionName}
+	if [ -z "$noteBase" ];then
+		local tt="请输入版本   ["${versionName}"]  相应的说明[回车默认为常规]:"
+		echo
+		echo -en $tt
+		read note
+		note=${note:-'常规'} #未输入写入默认值
+	else
+		note=$noteBase
+	fi
+	#写入备注总文件
+	sed -i "1i ==========================================" $filePathDefault
+	sed -i "1i $strVersion           $note" $filePathDefault
+	#写入版本独立备注
+	sudo echo $note>$filePathNote
 
-		mNoteBackupTarget=$note
-	}
+	mNoteBackupTarget=$note
+}
 
-	ftMD5()
-	{
-		local ftName=记录和校验版本包的MD5
-		local typeEdit=$1
-		local dirPathBackupRoot=$2
-		local versionName=$3
-		local isExit=$4
-			isExit=${isExit:-'true'}
+ftMD5()
+{
+	local ftName=记录和校验版本包的MD5
+	local typeEdit=$1
+	local dirPathBackupRoot=$2
+	local versionName=$3
+	local isExit=$4
+	isExit=${isExit:-'true'}
 
-		#使用示例
-		while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 		#=================== ${ftName}的使用示例===================
 		#
 		#	ftMD5 [type] [path] [fileNameBase/VersionName]
 		#	ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
 		#=========================================================
 EOF
-		exit;; * )break;; esac;done
+	exit;; * )break;; esac;done
 
-		#耦合变量校验
-		local valCount=3
-		if [ $# -lt $valCount ]||[ -z "$typeEdit" ]\
-					||[ -z "$dirPathBackupRoot" ]\
-					||[ -z "$versionName" ];then
-			ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	typeEdit=$typeEdit \n\
-	dirPathBackupRoot=$dirPathBackupRoot\n\
-	versionName=$versionName \n\
-	请查看下面说明:"
-			ftMD5 -h
+	#耦合变量校验
+	local valCount=3
+	if [ $# -lt $valCount ]||[ -z "$typeEdit" ]\
+				||[ -z "$dirPathBackupRoot" ]\
+				||[ -z "$versionName" ];then
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				typeEdit=$typeEdit \
+				dirPathBackupRoot=$dirPathBackupRoot\n\
+				versionName=$versionName \
+				请查看下面说明:"
+		ftMD5 -h
+	fi
+
+	local fileNameMd5=${versionName}.md5
+	local dirBackupMd5=${dirPathBackupRoot}/.md5s
+
+	if [ ! -d ${dirPathBackupRoot} ];then
+		ftEcho -e MD5相关操作失败，找不到$dirPathBackupRoot
+		exit
+	fi
+
+	if [ ${typeEdit} == "-add" ]; then
+
+		if [ ! -d ${dirBackupMd5} ];then
+			mkdir ${dirBackupMd5}
+			echo 新建版本包校验信息存储目录:${dirBackupMd5}
 		fi
 
-		local fileNameMd5=${versionName}.md5
-		local dirBackupMd5=${dirPathBackupRoot}/.md5s
+		local pathFile=${dirPathBackupRoot}/${versionName}.tgz
+		local pathMd5=${dirBackupMd5}/${fileNameMd5}
 
-		if [ ! -d ${dirPathBackupRoot} ];then
-			ftEcho -e MD5相关操作失败，找不到$dirPathBackupRoot
-			exit
-		fi
+		md5=`md5sum $pathFile | awk '{print $1}'`
+		sudo echo $md5>$pathMd5
 
-		if [ ${typeEdit} == "-add" ]; then
+		ftEcho -s "版本${versionName}校验信息记录完成"
 
-			if [ ! -d ${dirBackupMd5} ];then
-				mkdir ${dirBackupMd5}
-				echo 新建版本包校验信息存储目录:${dirBackupMd5}
-			fi
+	elif [ ${typeEdit} == "-check" ]; then
 
+		ftEcho -b 开始校验版本包，确定有效性
+
+		if [ -d ${dirBackupMd5} ];then
 			local pathFile=${dirPathBackupRoot}/${versionName}.tgz
 			local pathMd5=${dirBackupMd5}/${fileNameMd5}
-
-			md5=`md5sum $pathFile | awk '{print $1}'`
-			sudo echo $md5>$pathMd5
-
-			ftEcho -s "版本${versionName}校验信息记录完成"
-
-		elif [ ${typeEdit} == "-check" ]; then
-
-			ftEcho -b 开始校验版本包，确定有效性
-
-			if [ -d ${dirBackupMd5} ];then
-				local pathFile=${dirPathBackupRoot}/${versionName}.tgz
-				local pathMd5=${dirBackupMd5}/${fileNameMd5}
-				if [ -f ${pathMd5} ];then
-					md5Base=`cat $pathMd5`
-					md5Now=`md5sum $pathFile | awk '{print $1}'`
-					if [ "$md5Base"x != "$md5Now"x ]; then
-						if [ "$isExit" != "true" ]; then
-							return 8
-						fi
-						ftEcho -ex 校验失败，版本包：${versionName}无效
-					else
-						ftEcho -s 版本包：${versionName}校验成功
-					fi
-				else
+			if [ -f ${pathMd5} ];then
+				md5Base=`cat $pathMd5`
+				md5Now=`md5sum $pathFile | awk '{print $1}'`
+				if [ "$md5Base"x != "$md5Now"x ]; then
 					if [ "$isExit" != "true" ]; then
 						return 8
 					fi
-					ftEcho -ex 版本包：${versionName}校验信息查找失败
+					ftEcho -ex 校验失败，版本包：${versionName}无效
+				else
+					ftEcho -s 版本包：${versionName}校验成功
 				fi
 			else
 				if [ "$isExit" != "true" ]; then
@@ -618,24 +623,30 @@ EOF
 				fi
 				ftEcho -ex 版本包：${versionName}校验信息查找失败
 			fi
+		else
+			if [ "$isExit" != "true" ]; then
+				return 8
+			fi
+			ftEcho -ex 版本包：${versionName}校验信息查找失败
 		fi
+	fi
 
-	}
+}
 
-	ftAutoCleanTemp()
-	{
-		local ftName=清理临时文件
-		ftEcho -bh 开始${ftName}
+ftAutoCleanTemp()
+{
+	local ftName=清理临时文件
+	ftEcho -bh 开始${ftName}
 
-		sudo apt-get autoclean
-		sudo apt-get clean
-		sudo apt-get autoremove
-		sudo apt-get install -f
-		sudo rm -rf /var/cache/apt/archives
-	}
+	sudo apt-get autoclean
+	sudo apt-get clean
+	sudo apt-get autoremove
+	sudo apt-get install -f
+	sudo rm -rf /var/cache/apt/archives
+}
 
-	ftAddOrCheckSystemHwSwInfo()
-	{
+ftAddOrCheckSystemHwSwInfo()
+{
 	local ftName=记录和校验版本包软件和硬件信息
 	local typeEdit=$1
 	local dirPathBackupRoot=$2
@@ -645,11 +656,11 @@ EOF
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例===================
-	#
-	#	ftAddOrCheckSystemHwSwInfo [type] [path] [path]
-	#	ftAddOrCheckSystemHwSwInfo -check
-	#=========================================================
+#=================== ${ftName}的使用示例===================
+#
+#	ftAddOrCheckSystemHwSwInfo [type] [path] [path]
+#	ftAddOrCheckSystemHwSwInfo -check
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -658,12 +669,12 @@ EOF
 	if [ $# -lt $valCount ]||[ -z "$typeEdit" ]\
 				||[ -z "$dirPathBackupRoot" ]\
 				||[ -z "$dirNameBackupInfoVersion" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	typeEdit=$typeEdit \n\
-	dirPathBackupRoot=$dirPathBackupRoot\n\
-	dirNameBackupInfoVersion=$dirNameBackupInfoVersion \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+			参数数量=$# \
+			typeEdit=$typeEdit \
+			dirPathBackupRoot=$dirPathBackupRoot\n\
+			dirNameBackupInfoVersion=$dirNameBackupInfoVersion \
+			请查看下面说明:"
 		ftAddOrCheckSystemHwSwInfo -h
 	fi
 	local dirPathBackupInfo=${dirPathBackupRoot}/.info
@@ -753,34 +764,34 @@ EOF
 
 		fi
 	fi
-	}
+}
 
-	ftSel()
-	{
-	#=================== example=============================
-	#
-	#		ftSel [title]
-	#		ftSel test
-	#=========================================================
-		local ftName=版本包软件和硬件信息校验操作选择
-		local title=$1
-		local valCount=1
-		if [ $# -ne $valCount ]||[ -z "$title" ];then
-			ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
-		fi
-		while true; do
-		ftEcho -y "$1有变动,是否忽悠"
-		read -n1 sel
-		case "$sel" in
-			y | Y )	echo 已忽略$1;break;;
-			n | N | q |Q)	exit;;
-			* )
-				ftEcho -e 错误的选择：$sel
-				echo "输入n，q，离开";
-				;;
-		esac
-		done
-	}
+ftSel()
+{
+#=================== example=============================
+#
+#		ftSel [title]
+#		ftSel test
+#=========================================================
+	local ftName=版本包软件和硬件信息校验操作选择
+	local title=$1
+	local valCount=1
+	if [ $# -ne $valCount ]||[ -z "$title" ];then
+		ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+	fi
+	while true; do
+	ftEcho -y "$1有变动,是否忽悠"
+	read -n1 sel
+	case "$sel" in
+		y | Y )	echo 已忽略$1;break;;
+		n | N | q |Q)	exit;;
+		* )
+			ftEcho -e 错误的选择：$sel
+			echo "输入n，q，离开";
+			;;
+	esac
+	done
+}
 
 
 ftBackUpDevScanning()
@@ -805,12 +816,12 @@ EOF
 	if [ $# -ne $valCount ]||[ -z "$version" ]\
 				||[ -z "$note" ]\
 				||[ -z "$devList" ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	version=$version \n\
-	note=$note\n\
-	devList=${devList[@]} \n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				version=$version \
+				note=$note\n\
+				devList=${devList[@]} \
+				请查看下面说明:"
 		ftBackUpDevScanning -h
 	fi
 
@@ -891,11 +902,11 @@ EOF
 	#耦合变量校验
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z $mFilePathVersion ];then
-		ftEcho -e "	函数[${ftName}],参数错误 \n\
-	参数数量=$# \n\
-	valCount=$valCount \n\
-	mFilePathVersion=$mFilePathVersion\n\
-	请查看下面说明:"
+		ftEcho -ea "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				valCount=$valCount \
+				mFilePathVersion=$mFilePathVersion\n\
+				请查看下面说明:"
 		ftVersionPackageIsCreated -h
 	fi
 
@@ -915,13 +926,6 @@ EOF
 }
 
 #####-------------------执行------------------------------#########
-filePathCmdModuleTools=${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}
-if [ -f $filePathCmdModuleTools ];then
-	source  $filePathCmdModuleTools
-else
-	echo -e "\033[1;31m初始化失败，基础库无法加载\033[0m"
-fi
-
 if [ `whoami` = "root" ];then
 	if [ $mTypeEdit = "restore" ];then
 			#选择存放版本包的设备

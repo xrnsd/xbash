@@ -1,9 +1,15 @@
+#!/bin/bash
+#####-----------------------变量------------------------------#########
+readonly mRoModuleName=test.sh
 #####----------------------初始化demo环境--------------------------#######
 # 函数
 if [ -f ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools} ];then
 	source  ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}
 else
-	echo -e "\033[1;31m函数加载失败\033[0m"
+	echo -e "\033[1;31m	函数加载失败\n\
+	模块=$mRoModuleName\n\
+	toolsPath=${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}\n\
+	\033[0m"
 fi
 
 dirNameDebug=temp
@@ -16,7 +22,10 @@ if [ -d $dirPathHome ];then
 	fi
 	cd $dirPathDebug
 else
-	echo -e "\033[1;31m初始化demo环境失败\033[0m"
+	echo -e "\033[1;31m	初始化demo环境失败\n\
+	模块=$mRoModuleName\n\
+	dirPathHome=$dirPathHome\n\
+	\033[0m"
 fi
 
 #####----------------------demo函数--------------------------#########

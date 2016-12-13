@@ -5,7 +5,7 @@ ftXrnsdExtensionsToBashInit()
 #
 #
 # 	1 复制工程文件到新目录cmds
-#	2 读取用户密码，更新cmds的value配置
+#	2 读取用户密码，更新cmds的base.config
 #	3 备份原始的普通用户的bash配置到cmds/dtata/bash_base_backup
 #	    备份root用户的bash配置到cmds/dtata/bash_root_backup
 #	4 确认3操作成功，更新对应用户的bash配置
@@ -55,17 +55,17 @@ ftXrnsdExtensionsToBashInit()
 		status=$?
 	done&&
 
-	local dirNameXbashTragetData=data
-	local dirPathXbashTragetData=${dirPathXbashTraget}/$dirNameXbashTragetData
-	if [ ! -d $dirPathXbashTragetData ];then
-		echo -e "\033[1;31m[${ftName}]错误[dirPathXbashTragetData=$dirPathXbashTragetData]\033[0m"
+	local dirNameXbashTragetConfig=config
+	local dirPathXbashTragetConfig=${dirPathXbashTraget}/$dirNameXbashTragetConfig
+	if [ ! -d $dirPathXbashTragetConfig ];then
+		echo -e "\033[1;31m[${ftName}]错误[dirPathXbashTragetConfig=$dirPathXbashTragetConfig]\033[0m"
 		exit
 	fi
 	# sed -i 's/被替换的内容/要替换成的内容/' file
-	local fileNameXbashTragetDataValue=vlaue
-	local filePathXbashTragetDataValue=${dirPathXbashTragetData}/${fileNameXbashTragetDataValue}
-	if [ ! -f $filePathXbashTragetDataValue ];then
-		echo -e "\033[1;31m[${ftName}]错误[filePathXbashTragetDataValue=$filePathXbashTragetDataValue]\033[0m"
+	local fileNameXbashTragetConfigBase=base.config
+	local filePathXbashTragetConfigBase=${dirPathXbashTragetConfig}/${fileNameXbashTragetConfigBase}
+	if [ ! -f $filePathXbashTragetConfigBase ];then
+		echo -e "\033[1;31m[${ftName}]错误[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
 		exit
 	fi
 	status=1
@@ -76,13 +76,13 @@ ftXrnsdExtensionsToBashInit()
 		echo $passwd | sudo -S echo 2> /dev/null
 		status=$?
 	done
-	sed -i "s/mUserPwdBase=/mUserPwdBase=$passwd/" $filePathXbashTragetDataValue
+	sed -i "s/mUserPwdBase=/mUserPwdBase=$passwd/" $filePathXbashTragetConfigBase
 
 	# 备份bash配置文件
 	local fileNameXbashTragetDataBashBaseBackup=bashrc_base_backup
 	local fileNameXbashTragetDataBashRootBackup=bashrc_root_backup
-	local filePathXbashTragetDataBashBaseBackup=${dirPathXbashTragetData}/${fileNameXbashTragetDataBashBaseBackup}
-	local filePathXbashTragetDataBashRootBackup=${dirPathXbashTragetData}/${fileNameXbashTragetDataBashRootBackup}
+	local filePathXbashTragetDataBashBaseBackup=${dirPathXbashTragetConfig}/${fileNameXbashTragetDataBashBaseBackup}
+	local filePathXbashTragetDataBashRootBackup=${dirPathXbashTragetConfig}/${fileNameXbashTragetDataBashRootBackup}
 	local filePathBashBase=/home/${userName}/.bashrc
 	local filePathBashRoot=/root/.bashrc
 	mv $filePathBashBase ${filePathBashBase}_base_backup
