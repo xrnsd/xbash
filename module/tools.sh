@@ -32,11 +32,11 @@ EOF
 	local valCount=1
 	if [ $# -ne $valCount ]||[ -z "$example1" ]\
 				||[ -z "$example2" ];then
-		ftEcho -ea "	[${ftName}],参数错误 \
-				参数数量=$# \
-				example1=$example1 \
-				example2=$example2 \
-				请查看下面说明:"
+		ftEcho -ea "[${ftName}],参数错误 \
+			参数数量=$# \
+			example1=$example1 \
+			example2=$example2 \
+			请查看下面说明:"
 		ftExample -h
 	fi
 }
@@ -50,7 +50,7 @@ ftWhoAmI()## #命令权限判定
 	local valCount=1
 	if [ $# -ne $valCount ]||[ -z "$mRoCmdsPermissionBase" ]\
 				||[ -z "$mRoCmdsPermissionRoot" ];then
-		ftEcho -e "	[${XCMD}],参数错误 \
+		ftEcho -ea "[${XCMD}],参数错误 \
 				参数数量=$# \
 				mRoCmdsPermissionBase=$mRoCmdsPermissionBase \
 				mRoCmdsPermissionRoot=$mRoCmdsPermissionRoot \
@@ -323,7 +323,7 @@ ftRestartAdb()
 	#耦合变量校验
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$mUserPwd" ];then
-		ftEcho -ex "函数[${ftName}],参数错误 \
+		ftEcho -eax "函数[${ftName}],参数错误 \
 			参数数量=$# \
 			mUserPwd=$mUserPwd"
 	fi
@@ -412,9 +412,9 @@ ftCleanDataGarbage()
 
 	#耦合变量校验
 	if [ -z "$mCmdsModuleDataDevicesList" ];then
-		ftEcho -ex "函数[${ftName}],参数错误 \
-	参数数量=$# \
-	mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}"
+		ftEcho -eax "函数[${ftName}],参数错误 \
+			参数数量=$# \
+			mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}"
 	fi
 
 	for dirDev in ${mCmdsModuleDataDevicesList[*]}
@@ -447,10 +447,10 @@ ftMtkFlashTool()
 	local valCount=0
 	if [ $# -ne $valCount ]||[ -z "$tempDirPath" ]\
 				||[ -z "$mRoDirPathTools" ];then
-		ftEcho -ex "函数[${ftName}],参数错误 \
-	参数数量=$# \
-	tempDirPath=$tempDirPath \
-	mRoDirPathTools=$mRoDirPathTools"
+		ftEcho -eax "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				tempDirPath=$tempDirPath \
+				mRoDirPathTools=$mRoDirPathTools"
 	fi
 	local toolDirPath=${mRoDirPathTools}/sp_flash_tool_v5.1548
 
@@ -558,9 +558,9 @@ EOF
 
 	#耦合变量校验
 	if [ -z "$mRoIsDebug" ];then
-		ftEcho -ex "函数[${ftName}],参数错误 \
-	参数数量=$# \
-	mRoIsDebug=$mRoIsDebug"
+		ftEcho -eax "函数[${ftName}],参数错误 \
+			参数数量=$# \
+			mRoIsDebug=$mRoIsDebug"
 	fi
 
 	 # if [ "$mRoIsDebug" = "true" ]; then
@@ -598,12 +598,18 @@ ftEcho()
 	bh | BH | -bh | -BH)	echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
 	#特定信息显示,y/n
 	y | Y | -y | -Y)		echo;echo -en "${content}[y/n]"; break;;
-	#错误信息显示，显示退出
+	#错误信息多行显示
 	ea| EA | -ea | -EA)	for val in ${content[@]}
 				do
 					echo -e "\033[1;31m$val\033[0m";
 				done
 				break;;
+	#错误信息多行显示,退出
+	eax| EAX | -eax | -EAX)	for val in ${content[@]}
+				do
+					echo -e "\033[1;31m$val\033[0m";
+				done
+				exit;;
 	# 特定信息显示,命令说明的格式
 	g | G | -g | -G)cat<<EOF
 =========================================================================
@@ -1123,7 +1129,7 @@ EOF
 		ftEcho -ea "函数[${ftName}],参数错误 \
 				参数数量=$# \
 				filePath=$filePath \
-				blockName=$blockName\n\
+				blockName=$blockName \
 				keyName=$keyName \
 				请查看下面说明:"
 		ftGetKeyValueByBlockAndKey2 -h
@@ -1294,7 +1300,7 @@ EOF
 		ftEcho -ea "函数[${ftName}],参数错误 \
 				参数数量=$# \
 				filePath=$filePath \
-				blockName=$blockName\n\
+				blockName=$blockName \
 				keyName=$keyName \
 				keyValue=$keyValue \
 				请查看下面说明:"

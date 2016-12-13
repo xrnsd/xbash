@@ -75,10 +75,10 @@ ftRestoreChoiceSource()
 	if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ]\
 				||[ ! -d $mDirPathStoreSource ]\
 				||[ ! -d $dirPathBackupNote ];then
-		ftEcho -ex "函数[${ftName}],参数错误 \
+		ftEcho -eax "函数[${ftName}],参数错误 \
 				参数数量=$# \
 				valCount=$valCount \
-				mDirPathStoreSource=$mDirPathStoreSource\n\
+				mDirPathStoreSource=$mDirPathStoreSource \
 				dirPathBackupNote=${dirPathBackupNote[@]} \
 				请查看下面说明:"
 	fi
@@ -252,7 +252,7 @@ EOF
 		ftEcho -ea "函数[${ftName}],参数错误 \
 				参数数量=$# \
 				mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \
-				mRoNameUser=$mRoNameUser\n\
+				mRoNameUser=$mRoNameUser \
 				请查看下面说明:"
 		ftSetBackupDevDir -h
 	fi
@@ -327,7 +327,7 @@ ftSetBackupType()
 		case $typeIndex in
 		1)		mTypeBackupEdit=cg; break;;
 		2)		mTypeBackupEdit=bx; break;;
-	 	n | N | q |Q)  	exit;;
+	 	n | N | q |Q)	exit;;
 		* )		ftEcho -e 错误的选择：$typeIndex ;echo "输入1,2 选择    输入n，q离开";break;;
 		esac
 		done
@@ -345,10 +345,10 @@ ftSetRestoreType()
 	#耦合变量校验
 	local valCount=1
 	if [ $# -gt $valCount ]||[ -z "$mRoDirPathUserHome" ];then
-		ftEcho -ex "函数[${ftName}],参数错误 \
-参数数量=$# \
-mRoDirPathUserHome=$mRoDirPathUserHome \
-请查看下面说明:"
+		ftEcho -eax "函数[${ftName}],参数错误 \
+				参数数量=$# \
+				mRoDirPathUserHome=$mRoDirPathUserHome \
+				请查看下面说明:"
 	elif [ ! -d "$mRoDirPathUserHome" ];then
 		ftEcho -ex "目录[$mRoDirPathUserHome]不存在"
 	fi
@@ -499,8 +499,8 @@ EOF
 		ftEcho -ea "函数[${ftName}],参数错误 \
 				参数数量=$# \
 				dirPathBackupRoot=$dirPathBackupRoot \
-				versionName=$versionName\n\
-				noteBase=$noteBase\n\
+				versionName=$versionName \
+				noteBase=$noteBase \
 				请查看下面说明:"
 		ftAddNote -h
 	fi
@@ -570,7 +570,7 @@ EOF
 		ftEcho -ea "函数[${ftName}],参数错误 \
 				参数数量=$# \
 				typeEdit=$typeEdit \
-				dirPathBackupRoot=$dirPathBackupRoot\n\
+				dirPathBackupRoot=$dirPathBackupRoot \
 				versionName=$versionName \
 				请查看下面说明:"
 		ftMD5 -h
@@ -672,7 +672,7 @@ EOF
 		ftEcho -ea "函数[${ftName}],参数错误 \
 			参数数量=$# \
 			typeEdit=$typeEdit \
-			dirPathBackupRoot=$dirPathBackupRoot\n\
+			dirPathBackupRoot=$dirPathBackupRoot \
 			dirNameBackupInfoVersion=$dirNameBackupInfoVersion \
 			请查看下面说明:"
 		ftAddOrCheckSystemHwSwInfo -h
@@ -819,7 +819,7 @@ EOF
 		ftEcho -ea "函数[${ftName}],参数错误 \
 				参数数量=$# \
 				version=$version \
-				note=$note\n\
+				note=$note \
 				devList=${devList[@]} \
 				请查看下面说明:"
 		ftBackUpDevScanning -h
@@ -905,7 +905,7 @@ EOF
 		ftEcho -ea "函数[${ftName}],参数错误 \
 				参数数量=$# \
 				valCount=$valCount \
-				mFilePathVersion=$mFilePathVersion\n\
+				mFilePathVersion=$mFilePathVersion \
 				请查看下面说明:"
 		ftVersionPackageIsCreated -h
 	fi
