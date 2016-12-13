@@ -109,7 +109,7 @@ ftXrnsdExtensionsToBashInit()
 	echo $passwd|sudo -S su<< EOF
 	chown root;root $filePathXbashTragetConfigBashRoot
 	ln -sf $filePathXbashTragetConfigBashRoot /root/.bashrc
-	EOF
+EOF
 	# 清除无效的文件
 	rm -rf $dirPathXbashBase
 }
