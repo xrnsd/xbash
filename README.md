@@ -4,17 +4,17 @@
 ####Xrnsd-extensions-to-bash在下面简写为xbash
 	cmds
 	├── config	-----------------------	工具相关配置
+	│		├── base.config					全局参数
 	│		├── bashrc_base					为普通用户相关bash配置文件
 	│		├── bashrc_home					为作者使用的普通用户相关bash配置文件
 	│		├── bashrc_root_work_lz			为root相关bash配置文件
 	│		├── bashrc_work_lz				为普通用户相关bash配置文件
 	│		└── init_system.config			android build环境初始化工具的配置文件
 	│
-	├── data		-----------------------	工具相关数据
+	├── data	-----------------------	工具相关数据
 	│		├── logo.png
 	│		├── logo.psd
-	│		├── user-dirs.dirs				home下默认文件夹配置
-	│		└── value							全局参数
+	│		└── user-dirs.dirs				home下默认文件夹配置
 	│
 	├── module	-----------------------	脚本实现文件[具体功能]
 	│		├── compile.sh					xbash的项目编译初始化
