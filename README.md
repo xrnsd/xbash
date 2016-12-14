@@ -20,10 +20,10 @@
 	│		├── compile.sh					xbash的项目编译初始化
 	│		├── init_system.sh				android build环境初始化工具
 	│		├── init_xbash.sh					xbash环境初始化工具
-	│		├── test						xbash的脚本测试工具
-	│		│		├── base.sh				demo测试,请忽略此文件的修改
+	│		├── test							xbash的脚本测试工具
+	│		│		├── base.sh					demo测试,请忽略此文件的修改
 	│		│		├── pytools.README
-	│		│		└── pytools.py				脚本语法逻辑校验高亮工具
+	│		│		└── pytools.py					脚本语法逻辑校验高亮工具
 	│		├── maintain_system.sh			xbash的系统维护
 	│		└── tools.sh					xbash的函数实现
 	│
