@@ -170,10 +170,10 @@ EOF
 
 	#耦合变量校验
 	local valCount=1
-	if [ $# -gt $valCount ]||[ ! -f "$filePathHosts" ]\
+	if (( $#>$valCount ))||[ ! -f "$filePathHosts" ]\
 				||[ ! -d "$mRoDirPathCmdData" ];then
 		ftEcho -ea "[${ftName}]参数错误 \
-			参数数量=$# \
+			参数数量=$#[def=$valCount] \
 			filePathHosts=$filePathHosts \
 			mRoDirPathCmdData=mRoDirPathCmdData \
 			请查看下面说明:"

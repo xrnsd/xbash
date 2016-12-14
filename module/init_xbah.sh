@@ -26,10 +26,10 @@ ftXrnsdExtensionsToBashInit()
 
 	#耦合变量校验
 	local valCount=0
-	if [ $# -ne $valCount ]||[ -z "$userName" ]\
+	if(( $#!=$valCount ))||[ -z "$userName" ]\
 				||[ ! -d "$dirPathHome" ];then
 		echo -e "	[${ftName}]参数错误 \n\
-	参数数量=$# \n\
+	参数数量=$#[def=$valCount] \n\
 	userName=$userName \n\
 	dirPathHome=dirPathHome \n\
 	\033[0m"

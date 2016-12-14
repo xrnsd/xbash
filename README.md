@@ -34,6 +34,7 @@
 
 	cd Xrnsd-extensions-to-bash
 	./module/init_xbah.sh
+	xc help
 
 ##3.其他
 	1 已验证环境
@@ -42,10 +43,10 @@
 		ubuntu16.04 x64
 
 	2 环境目录
-	/home/xxx/
-	├── tools      -------------------      环境相关工具
-	├── cmds      -------------------      xbash目录
-	└── .bashrc     -------------------      xbash目录文件
+		/home/xxx/
+		├── tools      -------------------      环境相关工具
+		├── cmds      -------------------      xbash目录
+		└── .bashrc     -------------------      xbash目录文件
 
 	3 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现
 	4 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
@@ -53,3 +54,7 @@
 	6 提示找不到命令
 		打开终端
 		sudo chmod 777 -R /home/xxxx/cmds
+	7 在终端直接使用tools.sh中方法，下列方法在参数错误情况下行为异常
+		ftBootAnimation
+		ftBoot
+		ftSynchronous

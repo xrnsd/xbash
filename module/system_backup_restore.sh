@@ -72,15 +72,14 @@ ftRestoreChoiceSource()
 
 	#耦合变量校验
 	local valCount=0
-	if [ $# -ne $valCount ]||[ -z "$mDirPathStoreSource" ]\
+	if(( $#!=$valCount ))||[ -z "$mDirPathStoreSource" ]\
 				||[ ! -d $mDirPathStoreSource ]\
 				||[ ! -d $dirPathBackupNote ];then
-		ftEcho -eax "函数[${ftName}],参数错误 \
-				参数数量=$# \
-				valCount=$valCount \
-				mDirPathStoreSource=$mDirPathStoreSource \
-				dirPathBackupNote=${dirPathBackupNote[@]} \
-				请查看下面说明:"
+		ftEcho -ex "函数[${ftName}]的参数错误 \
+参数数量=$#[def=$valCount] \
+mDirPathStoreSource=$mDirPathStoreSource \
+dirPathBackupNote=${dirPathBackupNote[@]} \
+请查看下面说明:"
 	fi
 	local index=0;
 	local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
@@ -190,9 +189,9 @@ EOF
 
 	#耦合变量校验
 	local valCount=1
-	if [ $# -ne $valCount ]||[ -z "$infoType" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-			参数数量=$# \
+	if(( $#!=$valCount ))||[ -z "$infoType" ];then
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+			参数数量=$#[def=$valCount] \
 			infoType=$infoType \
 			请查看下面说明:"
 		ftEchoInfo -h
@@ -247,13 +246,13 @@ EOF
 
 	#耦合变量校验
 	local valCount=0
-	if [ $# -ne $valCount ]||[ -z "$mCmdsModuleDataDevicesList" ]\
+	if(( $#!=$valCount ))||[ -z "$mCmdsModuleDataDevicesList" ]\
 				||[ -z "$mRoNameUser" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
-				mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \
-				mRoNameUser=$mRoNameUser \
-				请查看下面说明:"
+		ftEcho -e "函数[${ftName}]的参数错误 \
+参数数量=$#[def=$valCount] \
+mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \
+mRoNameUser=$mRoNameUser \
+请查看下面说明:"
 		ftSetBackupDevDir -h
 	fi
 
@@ -344,9 +343,9 @@ ftSetRestoreType()
 	local ftName=选择还原时忽略的目录
 	#耦合变量校验
 	local valCount=1
-	if [ $# -gt $valCount ]||[ -z "$mRoDirPathUserHome" ];then
-		ftEcho -eax "函数[${ftName}],参数错误 \
-				参数数量=$# \
+	if (( $#>$valCount ))||[ -z "$mRoDirPathUserHome" ];then
+		ftEcho -eax "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				mRoDirPathUserHome=$mRoDirPathUserHome \
 				请查看下面说明:"
 	elif [ ! -d "$mRoDirPathUserHome" ];then
@@ -494,10 +493,10 @@ EOF
 
 	#耦合变量校验
 	local valCount=2
-	if [ $# -lt $valCount ]||[ -z "$dirPathBackupRoot" ]\
+	if (( $#<$valCount ))||[ -z "$dirPathBackupRoot" ]\
 				||[ -z "$versionName" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				dirPathBackupRoot=$dirPathBackupRoot \
 				versionName=$versionName \
 				noteBase=$noteBase \
@@ -564,11 +563,11 @@ EOF
 
 	#耦合变量校验
 	local valCount=3
-	if [ $# -lt $valCount ]||[ -z "$typeEdit" ]\
+	if (( $#<$valCount ))||[ -z "$typeEdit" ]\
 				||[ -z "$dirPathBackupRoot" ]\
 				||[ -z "$versionName" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				typeEdit=$typeEdit \
 				dirPathBackupRoot=$dirPathBackupRoot \
 				versionName=$versionName \
@@ -666,11 +665,11 @@ EOF
 
 	#耦合变量校验
 	local valCount=3
-	if [ $# -lt $valCount ]||[ -z "$typeEdit" ]\
+	if (( $#<$valCount ))||[ -z "$typeEdit" ]\
 				||[ -z "$dirPathBackupRoot" ]\
 				||[ -z "$dirNameBackupInfoVersion" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-			参数数量=$# \
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+			参数数量=$#[def=$valCount] \
 			typeEdit=$typeEdit \
 			dirPathBackupRoot=$dirPathBackupRoot \
 			dirNameBackupInfoVersion=$dirNameBackupInfoVersion \
@@ -776,7 +775,7 @@ ftSel()
 	local ftName=版本包软件和硬件信息校验操作选择
 	local title=$1
 	local valCount=1
-	if [ $# -ne $valCount ]||[ -z "$title" ];then
+	if(( $#!=$valCount ))||[ -z "$title" ];then
 		ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
 	fi
 	while true; do
@@ -813,15 +812,15 @@ EOF
 
 	#耦合变量校验
 	local valCount=3
-	if [ $# -ne $valCount ]||[ -z "$version" ]\
+	if(( $#!=$valCount ))||[ -z "$version" ]\
 				||[ -z "$note" ]\
 				||[ -z "$devList" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
-				version=$version \
-				note=$note \
-				devList=${devList[@]} \
-				请查看下面说明:"
+		ftEcho -e "函数[${ftName}]的参数错误 \
+参数数量=$#[def=$valCount] \
+version=$version \
+note=$note \
+devList=${devList[@]} \
+请查看下面说明:"
 		ftBackUpDevScanning -h
 	fi
 
@@ -901,10 +900,9 @@ EOF
 
 	#耦合变量校验
 	local valCount=0
-	if [ $# -ne $valCount ]||[ -z $mFilePathVersion ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
-				valCount=$valCount \
+	if(( $#!=$valCount ))||[ -z $mFilePathVersion ];then
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				mFilePathVersion=$mFilePathVersion \
 				请查看下面说明:"
 		ftVersionPackageIsCreated -h

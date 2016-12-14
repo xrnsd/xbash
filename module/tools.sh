@@ -30,10 +30,10 @@ EOF
 
 	#耦合变量校验
 	local valCount=1
-	if [ $# -ne $valCount ]||[ -z "$example1" ]\
+	if(( $#!=$valCount ))||[ -z "$example1" ]\
 				||[ -z "$example2" ];then
-		ftEcho -ea "[${ftName}],参数错误 \
-			参数数量=$# \
+		ftEcho -ea "[${ftName}]的参数错误 \
+			参数数量=$#[def=$valCount] \
 			example1=$example1 \
 			example2=$example2 \
 			请查看下面说明:"
@@ -48,13 +48,15 @@ ftWhoAmI()## #命令权限判定
 
 	#耦合变量校验
 	local valCount=1
-	if [ $# -ne $valCount ]||[ -z "$mRoCmdsPermissionBase" ]\
+	if(( $#!=$valCount ))||[ -z "$cmdName" ]\
+				||[ -z "$mRoCmdsPermissionBase" ]\
 				||[ -z "$mRoCmdsPermissionRoot" ];then
-		ftEcho -ea "[${XCMD}],参数错误 \
-				参数数量=$# \
-				mRoCmdsPermissionBase=$mRoCmdsPermissionBase \
-				mRoCmdsPermissionRoot=$mRoCmdsPermissionRoot \
-				请查看下面说明:"
+		ftEcho -e "[${XCMD}]的参数错误 \n\
+参数数量=$#[def=$valCount] \n\
+cmdName=$cmdName \n\
+mRoCmdsPermissionBase=${mRoCmdsPermissionBase[@]} \n\
+mRoCmdsPermissionRoot=${mRoCmdsPermissionRoot[@]} \n\
+请查看下面说明:"
 		ftReadMe $XCMD
 	fi
 
@@ -164,6 +166,7 @@ xc ----- 常规自定义命令和扩展
 	|-- test	--------------------------	shell测试
 	|-- clean_data_garbage				清空回收站
 	|-- restartadb	--------------------------	重启adb服务
+	|-- bootanim	--------------------------	制作开关机动画包
 	|-- v 						自定义命令版本
 	|-- help	--------------------------	查看自定义命令说明
 	|-- vvv						系统环境关键参数查看
@@ -292,9 +295,9 @@ EOF
 
 	#耦合变量校验
 	local valCount=1
-	if [ $# -ne $valCount ]||[ -z "$packageName" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+	if(( $#!=$valCount ))||[ -z "$packageName" ];then
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				packageName=$packageName \
 				请查看下面说明:"
 		  ftKillPhoneAppByPackageName -h
@@ -302,7 +305,7 @@ EOF
 
 	#adb状态检测
 	adbStatus=`adb get-state`
-	if [ $adbStatus = "device" ];then
+	if [ "$adbStatus" = "device" ];then
 		#确定包存在
 		if [ -n "$(adb shell pm list packages|grep $packageName)" ];then
 			adb root
@@ -322,9 +325,9 @@ ftRestartAdb()
 {
 	#耦合变量校验
 	local valCount=0
-	if [ $# -ne $valCount ]||[ -z "$mUserPwd" ];then
-		ftEcho -eax "函数[${ftName}],参数错误 \
-			参数数量=$# \
+	if(( $#!=$valCount ))||[ -z "$mUserPwd" ];then
+		ftEcho -eax "函数[${ftName}]的参数错误 \
+			参数数量=$#[def=$valCount] \
 			mUserPwd=$mUserPwd"
 	fi
 
@@ -356,10 +359,10 @@ EOF
 
 	#耦合变量校验
 	local valCount=1
-	if [ $# -gt $valCount ]||[ -z "$mRoDirPathUserHome" ]\
+	if (( $#>$valCount ))||[ -z "$mRoDirPathUserHome" ]\
 				||[ -z "$mRoNameUser" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				mRoDirPathUserHome=$mRoDirPathUserHome \
 				mRoNameUser=$mRoNameUser \
 				请查看下面说明:"
@@ -411,10 +414,11 @@ ftCleanDataGarbage()
 	ftInitDevicesList
 
 	#耦合变量校验
-	if [ -z "$mCmdsModuleDataDevicesList" ];then
-		ftEcho -eax "函数[${ftName}],参数错误 \
-			参数数量=$# \
-			mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}"
+	local valCount=0
+	if(( $#!=$valCount ))||[ -z "$mCmdsModuleDataDevicesList" ];then
+		ftEcho -ex "函数[${ftName}]的参数错误 \
+参数数量=$#[def=$valCount] \
+mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}"
 	fi
 
 	for dirDev in ${mCmdsModuleDataDevicesList[*]}
@@ -445,10 +449,10 @@ ftMtkFlashTool()
 
 	#耦合变量校验
 	local valCount=0
-	if [ $# -ne $valCount ]||[ -z "$tempDirPath" ]\
+	if(( $#!=$valCount ))||[ -z "$tempDirPath" ]\
 				||[ -z "$mRoDirPathTools" ];then
-		ftEcho -eax "函数[${ftName}],参数错误 \
-				参数数量=$# \
+		ftEcho -eax "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				tempDirPath=$tempDirPath \
 				mRoDirPathTools=$mRoDirPathTools"
 	fi
@@ -487,11 +491,11 @@ EOF
 
 	#耦合变量校验
 	local valCount=3
-	if [ $# -ne $valCount ]||[ -z "$type" ]\
+	if(( $#!=$valCount ))||[ -z "$type" ]\
 						||[ -z "$isCreate" ]\
 						||[ -z "$path" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				type=$type \
 				isCreate=$isCreate \
 				path=$path \
@@ -558,8 +562,8 @@ EOF
 
 	#耦合变量校验
 	if [ -z "$mRoIsDebug" ];then
-		ftEcho -eax "函数[${ftName}],参数错误 \
-			参数数量=$# \
+		ftEcho -eax "函数[${ftName}]的参数错误 \
+			参数数量=$#[def=$valCount] \
 			mRoIsDebug=$mRoIsDebug"
 	fi
 
@@ -582,29 +586,32 @@ ftEcho()
 #=========================================================
 	local ftName=工具信息提示
 	option=$1
-	content=$2
+	option=${option:-'未制定显示信息'}
+	valList=$@
+	#除第一个参数外的所有参数列表，可正常打印数组
+	content="${valList[@]/$option/}"
 
 	while true; do
 	case $option in
-	#错误信息显示
+	#错误信息显示，对字符串的缩进敏感
 	e | E | -e | -E)		echo -e "\033[1;31m$content\033[0m"; break;;
-	#错误信息显示，显示退出
-	ex | EX | -ex | -EX)	echo -e "\033[1;31m$content\033[0m"; exit;;
-	#执行信息
+	#错误信息显示，显示退出，对字符串的缩进敏感
+	ex | EX | -ex | -EX)	echo -e "\033[1;31m$content\033[0m";sleep 3;exit;;
+	#执行信息，对字符串的缩进敏感
 	s | S | -s | -S)		echo;echo -e "\033[42;37m$content\033[0m"; break;;
-	# 标题，不换行
+	# 标题，不换行，对字符串的缩进敏感
 	b | B| -b | -B)		echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
-	# 标题，换行
+	# 标题，换行，对字符串的缩进敏感
 	bh | BH | -bh | -BH)	echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
-	#特定信息显示,y/n
+	#特定信息显示,y/n，对字符串的缩进敏感
 	y | Y | -y | -Y)		echo;echo -en "${content}[y/n]"; break;;
-	#错误信息多行显示
+	#错误信息多行显示,对字符串的缩进不敏感,包含数组会显示不正常
 	ea| EA | -ea | -EA)	for val in ${content[@]}
 				do
 					echo -e "\033[1;31m$val\033[0m";
 				done
 				break;;
-	#错误信息多行显示,退出
+	#错误信息多行显示，对字符串的缩进不敏感,包含数组会显示不正常
 	eax| EAX | -eax | -EAX)	for val in ${content[@]}
 				do
 					echo -e "\033[1;31m$val\033[0m";
@@ -686,9 +693,9 @@ EOF
 
 	#耦合变量校验
 	local valCount=2
-	if [ $# -ne $valCount ]||[ -z "$dirPathAnimation" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+	if(( $#!=$valCount ))||[ -z "$dirPathAnimation" ];then
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				dirPathAnimation=$dirPathAnimation \
 				请查看下面说明:"
 		ftBootAnimation -h
@@ -881,9 +888,9 @@ EOF
 
 	#耦合变量校验
 	local valCount=0
-	if [ $# -ne $valCount ]||[ -z "$mRoDirPathUserHome" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+	if(( $#!=$valCount ))||[ -z "$mRoDirPathUserHome" ];then
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				mRoDirPathUserHome=$mRoDirPathUserHome \
 				请查看下面说明:"
 		ftGjh -h
@@ -913,10 +920,10 @@ EOF
 
 	#耦合变量校验
 	local valCount=0
-	if [ $# -ne $valCount ]||[ -z "$mRoDirPathUserHome" ]\
+	if(( $#!=$valCount ))||[ -z "$mRoDirPathUserHome" ]\
 				||[ -z "$mRoDirNameLog" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				mRoDirPathUserHome=$mRoDirPathUserHome \
 				mRoDirNameLog=$mRoDirNameLog \
 				请查看下面说明:"
@@ -968,10 +975,10 @@ EOF
 
 	#耦合变量校验
 	local valCount=0
-	if [ $# -ne $valCount ]||[ -z "$mRoDirPathCmdModule" ]\
+	if(( $#!=$valCount ))||[ -z "$mRoDirPathCmdModule" ]\
 		||[ ! -f "${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest}" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				TestBashFile=$mRoDirPathCmdModule \
 				mRoDirNameLog=${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest} \
 				请查看下面说明:"
@@ -996,8 +1003,8 @@ EOF
 
 	#耦合变量校验
 	if [ -z "$mUserPwd" ]||[ -z "$edittype" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				mUserPwd=$mUserPwd \
 				edittype=$edittype \
 				请查看下面说明:"
@@ -1065,14 +1072,14 @@ EOF
 
 	#耦合变量校验
 	local valCount=2
-	if [ $# -ne $valCount ]||[ -z "$dirPathArray" ]\
+	if(( $#!=$valCount ))||[ -z "$dirPathArray" ]\
 				||[ -z "$fileTypeList" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
-				synchronousType=$synchronousType \
-				dirPathArray=${dirPathArray[@]} \
-				fileTypeList=$fileTypeList \
-				请查看下面说明:"
+		ftEcho -e "函数[${ftName}]的参数错误 \
+参数数量=$#[def=$valCount] \
+synchronousType=$synchronousType \
+dirPathArray=${dirPathArray[@]} \
+fileTypeList=$fileTypeList \
+请查看下面说明:"
 		ftSynchronous -h
 	fi
 
@@ -1123,11 +1130,11 @@ EOF
 
 	#耦合变量校验
 	local valCount=3
-	if [ $# -ne $valCount ]||[ ! -f "$filePath" ]\
+	if(( $#!=$valCount ))||[ ! -f "$filePath" ]\
 				||[ -z "$blockName" ]\
 				||[ -z "$keyName" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				filePath=$filePath \
 				blockName=$blockName \
 				keyName=$keyName \
@@ -1185,10 +1192,10 @@ EOF
 
 	#耦合变量校验
 	local valCount=2
-	if [ $# -gt $valCount ]||[ -z "$devDirPath" ]\
+	if (( $#>$valCount ))||[ -z "$devDirPath" ]\
 				||[ -z "$mRoDirPathCmdData" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				devDirPath=$devDirPath \
 				mRoDirPathCmdData=$mRoDirPathCmdData \
 				请查看下面说明:"
@@ -1293,12 +1300,12 @@ EOF
 
 	#耦合变量校验
 	local valCount=4
-	if [ $# -ne $valCount ]||[ ! -f "$filePath" ]\
+	if(( $#!=$valCount ))||[ ! -f "$filePath" ]\
 				||[ -z "$blockName" ]\
 				||[ -z "$keyName" ]\
 				||[ -z "$keyValue" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				filePath=$filePath \
 				blockName=$blockName \
 				keyName=$keyName \
@@ -1336,9 +1343,9 @@ EOF
 
 	#耦合变量校验
 	local valCount=1
-	if [ $# -ne $valCount ]||[ ! -f "$filePath" ];then
-		ftEcho -ea "函数[${ftName}],参数错误 \
-				参数数量=$# \
+	if(( $#!=$valCount ))||[ ! -f "$filePath" ];then
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				参数数量=$#[def=$valCount] \
 				filePath=$filePath \
 				请查看下面说明:"
 		ftExample -h
