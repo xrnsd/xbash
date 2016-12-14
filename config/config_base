@@ -1,0 +1,60 @@
+#! /bin/bash
+#####----------------------变量--------------------------#########
+
+# 基本配置
+export readonly rXbashVersion="V0.5.9.5 beta"
+mUserPwdBase=
+export mUserPwd=${mUserPwdBase:-'123'}
+export readonly rNameUser=`who | awk '{print $1}'|sort -u`
+export readonly rDirPathUserHome=/home/${rNameUser}/
+# home/xxxx
+export readonly rDirNameLog=log
+export readonly rDirNameTools=tools
+export readonly rDirNameCmd=cmds
+# home/$rNameUser/xxxx
+export readonly rDirNameCmdConfig=config
+export readonly rDirNameCmdData=data
+export readonly rDirNameCmdModule=module
+# home/$rNameUser/cmds/modiule/test
+export readonly rDirNameCmdModuleTest=test
+
+# home/$rNameUser/xxxx
+export readonly rDirPathCmds=${rDirPathUserHome}/${rDirNameCmd}
+# home/$rNameUser/cmds/xxxx
+export readonly rDirPathCmdsData=${rDirPathCmds}/${rDirNameCmdData}
+export readonly rDirPathCmdsConfig=${rDirPathCmds}/${rDirNameCmdConfig}
+export readonly rDirPathCmdsModule=${rDirPathCmds}/${rDirNameCmdModule}
+export readonly rDirPathCmdsModuleTest=${rDirPathCmdsModule}/${rDirNameCmdModuleTest}
+
+# home/$rNameUser/cmds/modiule/test/xxxx
+export readonly rFileNameCmdModuleTestBase=base.sh
+# home/$rNameUser/cmds/modiule/xxxx
+export readonly rFileNameCmdModuleTools=tools.sh
+export readonly rFileNameCmdModuleCompile=compile.sh
+export readonly rFileNameCmdModuleMS=maintain_system.sh
+
+# home/$rNameUser/cmds/modiule/xxxx
+export readonly rFilePathCmdModuleTools=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
+export readonly rFilePathCmdModuleTestBase=${rDirPathCmdsModuleTest}/${rFileNameCmdModuleTestBase}
+
+export readonly rCmdsPermissionRoot=(xb backup restore)
+export readonly rCmdsPermissionBase=(restartadb help monkey systemui launcher mtk_flashtool gjh bootanim)
+
+export mCmdsModuleDataDevicesList=()
+export mFilePathLog #=${rDirPathUserHome}${rDirNameLog}/${rBaseShellParameter2}.log
+export mTimingStart
+export readonly rTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
+
+export readonly rIsDebug=false
+
+commandAuthority=null
+
+
+# 非基本配置
+export readonly rDirPathTools=${rDirPathUserHome}${rDirNameTools}
+
+
+#外部参数
+export readonly rBaseShellParameter1=$0
+export readonly rBaseShellParameter2=$1
+export readonly rBaseShellParameter3=$2

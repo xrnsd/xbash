@@ -5,7 +5,7 @@ ftXrnsdExtensionsToBashInit()
 #
 #
 # 	1 复制工程文件到新目录cmds
-#	2 读取用户密码，更新cmds的base.config
+#	2 读取用户密码，更新cmds的config_base
 #	3 备份原始的普通用户的bash配置到cmds/dtata/bash_base_backup
 #	    备份root用户的bash配置到cmds/dtata/bash_root_backup
 #	4 确认3操作成功，更新对应用户的bash配置
@@ -62,7 +62,7 @@ ftXrnsdExtensionsToBashInit()
 		exit
 	fi
 	# sed -i 's/被替换的内容/要替换成的内容/' file
-	local fileNameXbashTragetConfigBase=base.config
+	local fileNameXbashTragetConfigBase=config_base
 	local filePathXbashTragetConfigBase=${dirPathXbashTragetConfig}/${fileNameXbashTragetConfigBase}
 	if [ ! -f $filePathXbashTragetConfigBase ];then
 		echo -e "\033[1;31m[${ftName}]错误[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
@@ -102,11 +102,15 @@ ftXrnsdExtensionsToBashInit()
 	local filePathXbashTragetConfig=${dirPathXbashTraget}/${fileNameXbashTragetConfig}
 	local filePathXbashTragetConfigBashBase=${filePathXbashTragetConfig}/${fileNameXbashTragetConfigBashBase}
 	local filePathXbashTragetConfigBashRoot=${filePathXbashTragetConfig}/${fileNameXbashTragetConfigBashRoot}
-
+	# 更新bash文件cmds对应路径
+	sed -i "s:dirPathHome=:dirPathHome=$dirPathXbashBase# :" $filePathXbashTragetConfigBashBase
+	# 链接
 	cd /home/${userName}&& ln -sf $filePathXbashTragetConfigBashBase .bashrc
 
 	echo $passwd|sudo -S su
 	echo $passwd|sudo -S su<< EOF
+	# 更新bash文件cmds对应路径
+	sed -i "s:dirPathHome=:dirPathHome=$dirPathXbashBase# :" $filePathXbashTragetConfigBashRoot
 	chown root;root $filePathXbashTragetConfigBashRoot
 	ln -sf $filePathXbashTragetConfigBashRoot /root/.bashrc
 EOF

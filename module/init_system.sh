@@ -30,7 +30,7 @@
 # 	文件默认打开方式
 
 #======================变量=====================
-source  $(cd `dirname $0`; pwd)/config/init_system.config
+source  $(cd `dirname $0`; pwd)/config/config_system_init
 
 #####---------------------工具函数---------------------------#########
 source  $(cd `dirname $0`; pwd)/tools
@@ -119,34 +119,34 @@ ftUpdateSoftware()
 	local versionDev=null
 
 	# 添加软件源
-	for source in ${mRoListSoftwareSources[@]}
+	for source in ${rListSoftwareSources[@]}
 	do
-		echo $mRoUserPwd | sudo -S  add-apt-repository  $source
+		echo $rUserPwd | sudo -S  add-apt-repository  $source
 	done
 	# 更新软件源
-	echo $mRoUserPwd | sudo -S  apt-get update
+	echo $rUserPwd | sudo -S  apt-get update
 	# 更新系统软件
-	echo $mRoUserPwd | sudo -S   apt-get upgrade
+	echo $rUserPwd | sudo -S   apt-get upgrade
 	# 根据环境安装软件包
 	#开发版本公共部分
-	echo $mRoUserPwd | sudo -S apt-get install -y  ${mRoListVersionSoftwarePublic[*]}
+	echo $rUserPwd | sudo -S apt-get install -y  ${rListVersionSoftwarePublic[*]}
 	#开发版本独立部分
 	index=0
-	for devEnv in ${mRoListDevEnv[*]}
+	for devEnv in ${rListDevEnv[*]}
 	do
 		echo [${index}]  ${devEnv}
 		index=`expr $index + 1`
 	done
 	ftEcho -b 请选择：
-	if [ ${#mRoListDevEnv[@]} -gt 9 ];then
+	if [ ${#rListDevEnv[@]} -gt 9 ];then
 		read sel
 	else
 		read -n1 sel
 	fi
 
-	listTargetVersionSoftwareName=${mRoListDevEnvCorrespondSftware["${mRoListDevEnv[$sel]}"]}
+	listTargetVersionSoftwareName=${rListDevEnvCorrespondSftware["${rListDevEnv[$sel]}"]}
 	eval listTargetVersionSoftware=\${$listTargetVersionSoftwareName[@]}
-	echo $mRoUserPwd | sudo -S apt-get install -y ${listTargetVersionSoftware[*]}
+	echo $rUserPwd | sudo -S apt-get install -y ${listTargetVersionSoftware[*]}
 }
 
 ftUpdateHosts()
@@ -171,11 +171,11 @@ EOF
 	#耦合变量校验
 	local valCount=1
 	if (( $#>$valCount ))||[ ! -f "$filePathHosts" ]\
-				||[ ! -d "$mRoDirPathCmdData" ];then
+				||[ ! -d "$rDirPathCmdsData" ];then
 		ftEcho -ea "[${ftName}]参数错误 \
 			参数数量=$#[def=$valCount] \
 			filePathHosts=$filePathHosts \
-			mRoDirPathCmdData=mRoDirPathCmdData \
+			rDirPathCmdsData=rDirPathCmdsData \
 			请查看下面说明:"
 		ftUpdateHosts -h
 	fi
@@ -184,7 +184,7 @@ EOF
 	local url="https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
 	local netTool=wget
 	local fileNameHostsNew="hosts.new"
-	local filePathHostsNew=${mRoDirPathCmdData}/${fileNameHostsNew}
+	local filePathHostsNew=${rDirPathCmdsData}/${fileNameHostsNew}
 	if [ ! -z "$urlCustomHosts" ];then
 		url=$urlCustomHosts
 	fi
@@ -199,10 +199,10 @@ EOF
 		ftEcho -s hosts没有更新,将退出;exit
 	else
 		local fileNameHostsBase=hosts.base
-		local filePathHostsBase=${mRoDirPathCmdData}/${fileNameHostsBase}
+		local filePathHostsBase=${rDirPathCmdsData}/${fileNameHostsBase}
 		if [ ! -f "$filePathHostsBase" ];then
 			echo "127.0.0.1	localhost
-127.0.1.1	$mRoNameUser
+127.0.1.1	$rNameUser
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     ip6-localhost ip6-loopback
@@ -211,11 +211,11 @@ ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 
-#added by $mRoNameUser" >$filePathHostsBase
+#added by $rNameUser" >$filePathHostsBase
 		fi
 		# 文件拼接
 		local fileNameHostsAllNew=hosts
-		local filePathHostsAllNew=${mRoDirPathCmdData}/${fileNameHostsAllNew}
+		local filePathHostsAllNew=${rDirPathCmdsData}/${fileNameHostsAllNew}
 		cat $filePathHostsBase $filePathHostsNew>$filePathHostsAllNew
 		# 覆盖文件
 		echo $mUserPwd | sudo -S mv $filePathHosts ${filePathHosts}_${hostsVersionOld}

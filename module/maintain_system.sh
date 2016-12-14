@@ -1,6 +1,6 @@
 #!/bin/bash
 #####-----------------------变量------------------------------#########
-readonly mRoModuleName=system_backup_restore.sh
+readonly rModuleName=maintain_system.sh
 mTypeEdit=$1
 mTypeBackupEdit=null
 
@@ -25,12 +25,12 @@ mNoteBackupTarget=null
 mNoteRestoreSource=null
 
 #####----------------------初始化--------------------------#########
-filePathCmdModuleTools=${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}
+filePathCmdModuleTools=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
 if [ -f $filePathCmdModuleTools ];then
 	source  $filePathCmdModuleTools
 else
 	echo -e "\033[1;31m	初始化失败，基础库无法加载\n\
-	模块=$mRoModuleName\n\
+	模块=$rModuleName\n\
 	filePathCmdModuleTools=$filePathCmdModuleTools\n\
 	\033[0m"
 fi
@@ -247,11 +247,11 @@ EOF
 	#耦合变量校验
 	local valCount=0
 	if(( $#!=$valCount ))||[ -z "$mCmdsModuleDataDevicesList" ]\
-				||[ -z "$mRoNameUser" ];then
+				||[ -z "$rNameUser" ];then
 		ftEcho -e "函数[${ftName}]的参数错误 \
 参数数量=$#[def=$valCount] \
 mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \
-mRoNameUser=$mRoNameUser \
+rNameUser=$rNameUser \
 请查看下面说明:"
 		ftSetBackupDevDir -h
 	fi
@@ -292,11 +292,11 @@ mRoNameUser=$mRoNameUser \
 	done
 
 	# 还原用
-	mDirPathStoreSource=$devTargetDir/backup/os/${mRoNameUser};
+	mDirPathStoreSource=$devTargetDir/backup/os/${rNameUser};
 
 	if [ $mTypeEdit = "backup" ];then
 		# 备份用
-		mDirPathStoreTarget=$devTargetDir/backup/os/${mRoNameUser};
+		mDirPathStoreTarget=$devTargetDir/backup/os/${rNameUser};
 		if [ ! -d $mDirPathStoreTarget ];then
 			mkdir -p $mDirPathStoreTarget
 			echo ${mDirPathStoreTarget}不存在已创建
@@ -332,7 +332,7 @@ ftSetBackupType()
 		done
 	fi
 
-	mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${mRoNameUser}_${mDate}
+	mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${rNameUser}_${mDate}
 	mFileNameBackupTarget=${mFileNameBackupTargetBase}.tgz
 	mFileNameBackupLog=${mFileNameBackupTargetBase}.log
 	mFilePathVersion=${mDirPathStoreTarget}/$mFileNameBackupTarget
@@ -343,13 +343,13 @@ ftSetRestoreType()
 	local ftName=选择还原时忽略的目录
 	#耦合变量校验
 	local valCount=1
-	if (( $#>$valCount ))||[ -z "$mRoDirPathUserHome" ];then
+	if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ];then
 		ftEcho -eax "函数[${ftName}]的参数错误 \
 				参数数量=$#[def=$valCount] \
-				mRoDirPathUserHome=$mRoDirPathUserHome \
+				rDirPathUserHome=$rDirPathUserHome \
 				请查看下面说明:"
-	elif [ ! -d "$mRoDirPathUserHome" ];then
-		ftEcho -ex "目录[$mRoDirPathUserHome]不存在"
+	elif [ ! -d "$rDirPathUserHome" ];then
+		ftEcho -ex "目录[$rDirPathUserHome]不存在"
 	fi
 
 	local typeIndex=$1
@@ -376,7 +376,7 @@ ftSetRestoreType()
 	fi
 	while true; do
 		case $typeIndex in
-		1 )		mDirPathRestoreExcludeTarget=$mRoDirPathUserHome;break;;
+		1 )		mDirPathRestoreExcludeTarget=$rDirPathUserHome;break;;
 		2 )		mDirPathRestoreExcludeTarget=; break;;
 	esac
 	done
@@ -389,8 +389,8 @@ ftBackupOs()
 	#/home/wgx/cmds/data/excludeDirsBase.list
 	fileNameExcludeBase=excludeDirsBase.list
 	fileNameExcludeAll=excludeDirsAll.list
-	mFilePathExcludeBase=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}/${fileNameExcludeBase}
-	mFilePathExcludeAll=${mRoDirPathUserHome}${mRoDirNameCmd}/${mRoDirNameCmdData}/${fileNameExcludeAll}
+	mFilePathExcludeBase=${rDirPathUserHome}${rDirNameCmd}/${rDirNameCmdData}/${fileNameExcludeBase}
+	mFilePathExcludeAll=${rDirPathUserHome}${rDirNameCmd}/${rDirNameCmdData}/${fileNameExcludeAll}
 
 	mDirPathsExcludeBase=(/proc \
 				/android \
@@ -399,28 +399,28 @@ ftBackupOs()
 				/sys \
 				/.Trash-0 \
 				/media \
-				${mRoDirPathUserHome}workspaces \
-				${mRoDirPathUserHome}workspace \
-				${mRoDirPathUserHome}download \
-				${mRoDirPathUserHome}packages \
-				${mRoDirPathUserHome}Pictures \
-				${mRoDirPathUserHome}projects \
-				${mRoDirPathUserHome}backup \
-				${mRoDirPathUserHome}media  \
-				${mRoDirPathUserHome}temp \
-				${mRoDirPathUserHome}tools \
-				${mRoDirPathUserHome}cmds \
-				${mRoDirPathUserHome}code \
-				${mRoDirPathUserHome}log  \
-				${mRoDirPathUserHome}doc  \
-				${mRoDirPathUserHome}.AndroidStudio2.1 \
-				${mRoDirPathUserHome}.thumbnails \
-				${mRoDirPathUserHome}.software \
-				${mRoDirPathUserHome}.cache \
-				${mRoDirPathUserHome}.local \
-				${mRoDirPathUserHome}.wine \
-				${mRoDirPathUserHome}.other \
-				${mRoDirPathUserHome}.gvfs)
+				${rDirPathUserHome}workspaces \
+				${rDirPathUserHome}workspace \
+				${rDirPathUserHome}download \
+				${rDirPathUserHome}packages \
+				${rDirPathUserHome}Pictures \
+				${rDirPathUserHome}projects \
+				${rDirPathUserHome}backup \
+				${rDirPathUserHome}media  \
+				${rDirPathUserHome}temp \
+				${rDirPathUserHome}tools \
+				${rDirPathUserHome}cmds \
+				${rDirPathUserHome}code \
+				${rDirPathUserHome}log  \
+				${rDirPathUserHome}doc  \
+				${rDirPathUserHome}.AndroidStudio2.1 \
+				${rDirPathUserHome}.thumbnails \
+				${rDirPathUserHome}.software \
+				${rDirPathUserHome}.cache \
+				${rDirPathUserHome}.local \
+				${rDirPathUserHome}.wine \
+				${rDirPathUserHome}.other \
+				${rDirPathUserHome}.gvfs)
 
 	mDirPathsExcludeAll=(/proc \
 				/android \
@@ -428,20 +428,20 @@ ftBackupOs()
 				/mnt  \
 				/sys  \
 				/media \
-				${mRoDirPathUserHome}.AndroidStudio2.1 \
-				${mRoDirPathUserHome}backup \
-				${mRoDirPathUserHome}.software \
-				${mRoDirPathUserHome}download \
-				${mRoDirPathUserHome}log  \
-				${mRoDirPathUserHome}temp \
-				${mRoDirPathUserHome}Pictures \
-				${mRoDirPathUserHome}projects \
-				${mRoDirPathUserHome}workspaces \
-				${mRoDirPathUserHome}.cache \
-				${mRoDirPathUserHome}.thumbnails \
-				${mRoDirPathUserHome}.local \
-				${mRoDirPathUserHome}.other \
-				${mRoDirPathUserHome}.gvfs)
+				${rDirPathUserHome}.AndroidStudio2.1 \
+				${rDirPathUserHome}backup \
+				${rDirPathUserHome}.software \
+				${rDirPathUserHome}download \
+				${rDirPathUserHome}log  \
+				${rDirPathUserHome}temp \
+				${rDirPathUserHome}Pictures \
+				${rDirPathUserHome}projects \
+				${rDirPathUserHome}workspaces \
+				${rDirPathUserHome}.cache \
+				${rDirPathUserHome}.thumbnails \
+				${rDirPathUserHome}.local \
+				${rDirPathUserHome}.other \
+				${rDirPathUserHome}.gvfs)
 
 	local dirsExclude
 	local fileNameExclude
@@ -828,7 +828,7 @@ devList=${devList[@]} \
 	local softwareInfoCheckfail=9
 	for devDirPath in ${devList[@]}
 	do
-		dirPathTarget=${devDirPath}/backup/os/${mRoNameUser};
+		dirPathTarget=${devDirPath}/backup/os/${rNameUser};
 		if [ $dirPathTarget = $mDirPathStoreTarget ];then
 			continue
 		fi

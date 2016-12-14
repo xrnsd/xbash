@@ -134,7 +134,7 @@ dirPathHomeCmdConfig=${dirPathHomeCmd}/config
 dirPathHomeTools=${dirPathHome}/tools
 userPwd=123
 
-fileNameXbashTragetConfigBase=base.config
+fileNameXbashTragetConfigBase=config_base
 filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
 
 
@@ -169,8 +169,8 @@ else
     if [ -f $filePathXbashTragetConfigBase ];then
         source  $filePathXbashTragetConfigBase
         # 函数
-        if [ -f ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools} ];then
-            source  ${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}
+        if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
+            source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
 			#命令封装
 			alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
 			alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
@@ -181,8 +181,8 @@ else
 			alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
 			alias xd='export XCMD=xd;${dirPathHomeCmd}/main.sh mtk_flashtool'
 			alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
-			alias xt='export XCMD=xt;python ${dirPathHomeCmd}/module/pytools/shtest.py $2'
-			alias xi='export XCMD=xi;. ${dirPathHomeCmd}/${mRoFileNameCmdModuleCompile}'
+			alias xt='export XCMD=xt;python ${dirPathHomeCmd}/module/test/pytools.py $2'
+			alias xi='export XCMD=xi;. ${dirPathHomeCmd}/${rFileNameCmdModuleCompile}'
 
 			#命令选项快速适配
 			complete -W "backup restore" xb
@@ -191,7 +191,7 @@ else
 			complete -W "restartadb help gjh test clean_data_garbage vvv bootanim" xc
 
         else
-            echo -e "\033[1;31m函数加载失败[ToolsPath=${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTools}]\033[0m"
+            echo -e "\033[1;31m函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
         fi
     else
         echo -e "\033[1;31m全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
@@ -234,4 +234,3 @@ unset CCACHE_HARDLINK
 export CCACHE_DIR=/media/data/.ccache
 #分布式编译集群的IP组
 #export DISTCC_HOSTS="192.168.3.114"
-

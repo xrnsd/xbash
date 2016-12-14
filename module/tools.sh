@@ -49,25 +49,25 @@ ftWhoAmI()## #命令权限判定
 	#耦合变量校验
 	local valCount=1
 	if(( $#!=$valCount ))||[ -z "$cmdName" ]\
-				||[ -z "$mRoCmdsPermissionBase" ]\
-				||[ -z "$mRoCmdsPermissionRoot" ];then
+				||[ -z "$rCmdsPermissionBase" ]\
+				||[ -z "$rCmdsPermissionRoot" ];then
 		ftEcho -e "[${XCMD}]的参数错误 \n\
 参数数量=$#[def=$valCount] \n\
 cmdName=$cmdName \n\
-mRoCmdsPermissionBase=${mRoCmdsPermissionBase[@]} \n\
-mRoCmdsPermissionRoot=${mRoCmdsPermissionRoot[@]} \n\
+rCmdsPermissionBase=${rCmdsPermissionBase[@]} \n\
+rCmdsPermissionRoot=${rCmdsPermissionRoot[@]} \n\
 请查看下面说明:"
 		ftReadMe $XCMD
 	fi
 
-	for cmd in ${mRoCmdsPermissionBase[@]}
+	for cmd in ${rCmdsPermissionBase[@]}
 	do
 			if [ "$cmd" = "$cmdName" ]||[ "$XCMD" = "$cmdName" ];then
 				commandAuthority=base
 			fi
 	done
 
-	for cmd in ${mRoCmdsPermissionRoot[@]}
+	for cmd in ${rCmdsPermissionRoot[@]}
 	do
 			if [ "$cmd" = "$cmdName" ]||[ "$XCMD" = "$cmdName" ];then
 				commandAuthority=root
@@ -79,11 +79,11 @@ ftMain()
 {
 	local ftName=工具主入口
 	while true; do
-	case $mRoBaseShellParameter2 in
+	case $rBaseShellParameter2 in
 	"test")		ftTest	 ;break;;
 	"shutdown")	ftBoot	shutdown ;break;;
 	"reboot")	ftBoot	reboot ;break;;
-	"help")		ftReadMe $mRoBaseShellParameter3	;break;;
+	"help")		ftReadMe $rBaseShellParameter3	;break;;
 	"clean_data_garbage")	ftCleanDataGarbage ; break;;
 	v | V | -v |-V)	ftVersion;break;;
 	vvv)	ftEcho -b xbash;		ftVersion
@@ -92,32 +92,32 @@ ftMain()
 		break;;
 	*)
 		#权限约束开始
-		ftWhoAmI $mRoBaseShellParameter2
+		ftWhoAmI $rBaseShellParameter2
 		if [ "$commandAuthority" = "root" ]; then
 			if [ `whoami` = "root" ]; then
 				while true; do
-				case $mRoBaseShellParameter2 in
-					"backup")	${mRoDirPathCmdModule}/${mRoFileNameCmdModuleSbr} backup; break;;
-					"restore")	${mRoDirPathCmdModule}/${mRoFileNameCmdModuleSbr} restore; break;;
+				case $rBaseShellParameter2 in
+					"backup")	${rDirPathCmdsModule}/${rFileNameCmdModuleMS} backup; break;;
+					"restore")	${rDirPathCmdsModule}/${rFileNameCmdModuleMS} restore; break;;
 				esac
 				done
 			else
 				ftEcho -ex "当前用户权限过低，请转换为root 用户后重新运行"
 			fi
 		elif [ "$commandAuthority" = "base" ]; then
-			if [ `whoami` = $mRoNameUser ]; then
+			if [ `whoami` = $rNameUser ]; then
 				while true; do
-				case $mRoBaseShellParameter2 in
+				case $rBaseShellParameter2 in
 					"mtk_flashtool")		ftMtkFlashTool ; break;;
 					"restartadb")		ftRestartAdb; break;;
 					"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
 					"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
 					"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
-					"bootanim")		ftBootAnimation $mRoBaseShellParameter3 $(pwd);break;;
+					"bootanim")		ftBootAnimation $rBaseShellParameter3 $(pwd);break;;
 					"gjh")			ftGjh;break;;
-					# "gjh")			ftEcho -e [$mRoBaseShellParameter2]已关闭，请修改脚本打开
-					# 			ftReadMe $mRoBaseShellParameter2
-					# 			#java -jar ${mRoDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar;
+					# "gjh")			ftEcho -e [$rBaseShellParameter2]已关闭，请修改脚本打开
+					# 			ftReadMe $rBaseShellParameter2
+					# 			#java -jar ${rDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar;
 					# 			break;;
 				esac
 				done
@@ -126,7 +126,7 @@ ftMain()
 			fi
 		#权限约束结束
 		elif [ "$commandAuthority" = "null" ]; then
-			ftOther $mRoBaseShellParameter2
+			ftOther $rBaseShellParameter2
 		fi
 		break;;
 	esac
@@ -137,7 +137,7 @@ ftOther()
 {
 	while true; do
 	case $XCMD in
-	"xk")	ftKillPhoneAppByPackageName $mRoBaseShellParameter2	;break;;
+	"xk")	ftKillPhoneAppByPackageName $rBaseShellParameter2	;break;;
 	*)	ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftReadMe $XCMD; break;;
 	esac
 	done
@@ -271,7 +271,7 @@ done
 
 ftVersion()
 {
-	echo \"Xrnsd extensions to bash\" V0.5.9 beta
+	echo \"Xrnsd extensions to bash\" $rXbashVersion
 }
 
 
@@ -359,12 +359,12 @@ EOF
 
 	#耦合变量校验
 	local valCount=1
-	if (( $#>$valCount ))||[ -z "$mRoDirPathUserHome" ]\
-				||[ -z "$mRoNameUser" ];then
+	if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ]\
+				||[ -z "$rNameUser" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				参数数量=$#[def=$valCount] \
-				mRoDirPathUserHome=$mRoDirPathUserHome \
-				mRoNameUser=$mRoNameUser \
+				rDirPathUserHome=$rDirPathUserHome \
+				rNameUser=$rNameUser \
 				请查看下面说明:"
 		  ftInitDevicesList -h
 	fi
@@ -372,7 +372,7 @@ EOF
 	unset mCmdsModuleDataDevicesList
 
 	local index=0
-	mCmdsModuleDataDevicesList=(${mRoDirPathUserHome/$mRoNameUser\//$mRoNameUser})
+	mCmdsModuleDataDevicesList=(${rDirPathUserHome/$rNameUser\//$rNameUser})
 	#设备可用空间大小符合限制
 	sizeHome=$(ftDevAvailableSpace $mCmdsModuleDataDevicesList true)
 	if [ "$sizeHome" -gt "$devMinAvailableSpace" ];then
@@ -382,7 +382,7 @@ EOF
 	for dir in $dirList
 	do
 		#临时挂载设备
-		if [ ${dir} == $mRoNameUser ]; then
+		if [ ${dir} == $rNameUser ]; then
 			local dirTempList=`ls ${devDir}/${dir}`
 			for dirTemp in $dirTempList
 			do
@@ -450,13 +450,13 @@ ftMtkFlashTool()
 	#耦合变量校验
 	local valCount=0
 	if(( $#!=$valCount ))||[ -z "$tempDirPath" ]\
-				||[ -z "$mRoDirPathTools" ];then
+				||[ -z "$rDirPathTools" ];then
 		ftEcho -eax "函数[${ftName}]的参数错误 \
 				参数数量=$#[def=$valCount] \
 				tempDirPath=$tempDirPath \
-				mRoDirPathTools=$mRoDirPathTools"
+				rDirPathTools=$rDirPathTools"
 	fi
-	local toolDirPath=${mRoDirPathTools}/sp_flash_tool_v5.1548
+	local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1548
 
 	cd $toolDirPath&&
 	echo "$mUserPwd" | sudo -S ./flash_tool&&
@@ -477,10 +477,10 @@ ftFileDirEdit()
 #	ftFileDirEdit [type] [isCreate] [path]
 #
 #	文件存在，创建，返回1
-#	ftFileDirEdit -f true /home/xian-hp-u16/cmds/${mRoFileNameCmdModuleTest}
+#	ftFileDirEdit -f true /home/xian-hp-u16/cmds/${rFileNameCmdModuleTestBase}
 #
 #	文件夹存在，创建，返回1
-#	ftFileDirEdit -d true /home/xian-hp-u16/cmds/${mRoFileNameCmdModuleTest}
+#	ftFileDirEdit -d true /home/xian-hp-u16/cmds/${rFileNameCmdModuleTestBase}
 #
 #	判断文件夹是否为空，空，返回2 非空，返回3,非文件夹，返回4
 #	ftFileDirEdit -e false /home/xian-hp-u16/cmds
@@ -553,7 +553,7 @@ ftDebug()
 	#
 	#	 trap 'echo “行:$LINENO, a=$a,b=$b,c=$c”' DEBUG
 	#	 根据需要修改 a，b，c
-	#	mRoIsDebug设为true
+	#	rIsDebug设为true
 	#	 ftDebug [任意命令]
 	#	 ftDebug echo test
 	#=========================================================
@@ -561,13 +561,13 @@ EOF
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
-	if [ -z "$mRoIsDebug" ];then
+	if [ -z "$rIsDebug" ];then
 		ftEcho -eax "函数[${ftName}]的参数错误 \
 			参数数量=$#[def=$valCount] \
-			mRoIsDebug=$mRoIsDebug"
+			rIsDebug=$rIsDebug"
 	fi
 
-	 # if [ "$mRoIsDebug" = "true" ]; then
+	 # if [ "$rIsDebug" = "true" ]; then
 		$@
 		trap 'echo “行:$LINENO, path_avail=$path_avail”' DEBUG
 	#  else
@@ -729,7 +729,7 @@ EOF
 		read -n1 sel
 		case "$sel" in
 			y | Y )
-				local filePath=/home/${mRoNameUser}/${dirNamePackageName}
+				local filePath=/home/${rNameUser}/${dirNamePackageName}
 				if [ -f $filePath ];then
 					while true; do
 					echo
@@ -737,7 +737,7 @@ EOF
 					read -n1 sel
 					case "$sel" in
 						y | Y )	break;;
-						n | N)	mv $filePath /home/${mRoNameUser}/${dirNamePackageName/.zip/_old.zip};break;;
+						n | N)	mv $filePath /home/${rNameUser}/${dirNamePackageName/.zip/_old.zip};break;;
 						q |Q)	exit;;
 						* )
 							ftEcho -e 错误的选择：$sel
@@ -780,7 +780,7 @@ EOF
 			done
 		fi
 
-		dirPathAnimationTraget=/home/${mRoNameUser}/${dirNameAnimation}
+		dirPathAnimationTraget=/home/${rNameUser}/${dirNameAnimation}
 
 		ftFileDirEdit -e false $dirPathAnimationTraget
 		if [ -d $dirPathAnimationTraget ]||[ $? -eq   "3" ];then
@@ -888,15 +888,15 @@ EOF
 
 	#耦合变量校验
 	local valCount=0
-	if(( $#!=$valCount ))||[ -z "$mRoDirPathUserHome" ];then
+	if(( $#!=$valCount ))||[ -z "$rDirPathUserHome" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				参数数量=$#[def=$valCount] \
-				mRoDirPathUserHome=$mRoDirPathUserHome \
+				rDirPathUserHome=$rDirPathUserHome \
 				请查看下面说明:"
 		ftGjh -h
 	fi
 
-	local filePath=${mRoDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar
+	local filePath=${rDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar
 	if [ -f $filePath ];then
 		$filePath
 	else
@@ -920,19 +920,19 @@ EOF
 
 	#耦合变量校验
 	local valCount=0
-	if(( $#!=$valCount ))||[ -z "$mRoDirPathUserHome" ]\
-				||[ -z "$mRoDirNameLog" ];then
+	if(( $#!=$valCount ))||[ -z "$rDirPathUserHome" ]\
+				||[ -z "$rDirNameLog" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				参数数量=$#[def=$valCount] \
-				mRoDirPathUserHome=$mRoDirPathUserHome \
-				mRoDirNameLog=$mRoDirNameLog \
+				rDirPathUserHome=$rDirPathUserHome \
+				rDirNameLog=$rDirNameLog \
 				请查看下面说明:"
 		ftLog -h
 	fi
 	#初始化命令log目录
 
 	local diarNameCmdLog=null
-	if [ -z "$mRoBaseShellParameter2" ];then
+	if [ -z "$rBaseShellParameter2" ];then
 		diarNameCmdLog=other
 	else
 		while true; do case $XCMD in
@@ -940,12 +940,12 @@ EOF
 			diarNameCmdLog=${XCMD}_ftKillPhoneAppByPackageName
 			break;;
 		*)
-			diarNameCmdLog=${XCMD}_${mRoBaseShellParameter2}
+			diarNameCmdLog=${XCMD}_${rBaseShellParameter2}
 			break;;
 		esac;done
 	fi
 
-	dirPath=${mRoDirPathUserHome}${mRoDirNameLog}/${diarNameCmdLog}
+	dirPath=${rDirPathUserHome}${rDirNameLog}/${diarNameCmdLog}
 
 	#不存在新建命令log目录
 	if [ ! -d "$dirPath" ];then
@@ -975,17 +975,18 @@ EOF
 
 	#耦合变量校验
 	local valCount=0
-	if(( $#!=$valCount ))||[ -z "$mRoDirPathCmdModule" ]\
-		||[ ! -f "${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest}" ];then
+	local dirNameCmdModuleTest=test
+	local filePathCmdModuleTest=${rDirPathCmdsModule}/${dirNameCmdModuleTest}/${rFileNameCmdModuleTestBase}
+	if(( $#!=$valCount ))||[ -z "$rDirPathCmdsModule" ]\
+			||[ ! -f "$filePathCmdModuleTest" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				参数数量=$#[def=$valCount] \
-				TestBashFile=$mRoDirPathCmdModule \
-				mRoDirNameLog=${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest} \
+				filePathCmdModuleTest=$filePathCmdModuleTest \
 				请查看下面说明:"
 		ftTest -h
 	fi
 
-	${mRoDirPathCmdModule}/${mRoFileNameCmdModuleTest}
+	$filePathCmdModuleTest
 }
 
 ftBoot()
@@ -1012,8 +1013,8 @@ EOF
 	fi
 
 	local waitLong=10
-	if [ ! -z "$mRoBaseShellParameter3" ];then
-		waitLong=$mRoBaseShellParameter3
+	if [ ! -z "$rBaseShellParameter3" ];then
+		waitLong=$rBaseShellParameter3
 	fi
 
 	while true; do
@@ -1193,20 +1194,20 @@ EOF
 	#耦合变量校验
 	local valCount=2
 	if (( $#>$valCount ))||[ -z "$devDirPath" ]\
-				||[ -z "$mRoDirPathCmdData" ];then
+				||[ -z "$rDirPathCmdsData" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				参数数量=$#[def=$valCount] \
 				devDirPath=$devDirPath \
-				mRoDirPathCmdData=$mRoDirPathCmdData \
+				rDirPathCmdsData=$rDirPathCmdsData \
 				请查看下面说明:"
 		ftDevAvailableSpace -h
 	elif [ ! -d $devDirPath ];then
 		ftEcho -ex "设备[$devDirPath]不存在"
-	elif [ ! -d $mRoDirPathCmdData ];then
-		ftEcho -ex "目录[$mRoDirPathCmdData]不存在"
+	elif [ ! -d $rDirPathCmdsData ];then
+		ftEcho -ex "目录[$rDirPathCmdsData]不存在"
 	fi
 
-	local filePathDevStatus=${mRoDirPathCmdData}/devs_status
+	local filePathDevStatus=${rDirPathCmdsData}/devs_status
 	local filePathTmpRootAvail=/tmp/tmp_root_avail
 
 	if [ "${devDirPath:0:1}" = "/" ];then

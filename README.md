@@ -4,12 +4,12 @@
 ####Xrnsd-extensions-to-bash在下面简写为xbash
 	cmds
 	├── config	-----------------------	工具相关配置
-	│		├── base.config					全局参数
+	│		├── config_base					全局参数
 	│		├── bashrc_base					为普通用户相关bash配置文件
 	│		├── bashrc_home					为作者使用的普通用户相关bash配置文件
 	│		├── bashrc_root_work_lz			为root相关bash配置文件
 	│		├── bashrc_work_lz				为普通用户相关bash配置文件
-	│		└── init_system.config			android build环境初始化工具的配置文件
+	│		└── config_system_init			android build环境初始化工具的配置文件
 	│
 	├── data	-----------------------	工具相关数据
 	│		├── logo.png
@@ -19,12 +19,12 @@
 	├── module	-----------------------	脚本实现文件[具体功能]
 	│		├── compile.sh					xbash的项目编译初始化
 	│		├── init_system.sh				android build环境初始化工具
-	│		├── init_xbah.sh					xbash环境初始化工具
-	│		├── pytools						xbash的脚本测试工具
-	│		│		├── README
-	│		│		└── shtest.py
-	│		├── system_backup_restore.sh	xbash的系统维护
-	│		├── test.sh					xbash的demo测试,请忽略此文件的修改
+	│		├── init_xbash.sh					xbash环境初始化工具
+	│		├── test						xbash的脚本测试工具
+	│		│		├── base.sh				demo测试,请忽略此文件的修改
+	│		│		├── pytools.README
+	│		│		└── pytools.py				脚本语法逻辑校验高亮工具
+	│		├── maintain_system.sh			xbash的系统维护
 	│		└── tools.sh					xbash的函数实现
 	│
 	├── main.sh	-----------------------	xbash主入口
@@ -33,7 +33,7 @@
 ##2.初始化环境
 
 	cd Xrnsd-extensions-to-bash
-	./module/init_xbah.sh
+	./module/init_xbash.sh
 	xc help
 
 ##3.其他
