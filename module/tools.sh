@@ -33,7 +33,7 @@ EOF
 	if(( $#!=$valCount ))||[ -z "$example1" ]\
 				||[ -z "$example2" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
-			参数数量=$#[def=$valCount] \
+			[参数数量def=$valCount]valCount=$# \
 			example1=$example1 \
 			example2=$example2 \
 			请查看下面说明:"
@@ -52,7 +52,7 @@ ftWhoAmI()## #命令权限判定
 				||[ -z "$rCmdsPermissionBase" ]\
 				||[ -z "$rCmdsPermissionRoot" ];then
 		ftEcho -e "[${XCMD}]的参数错误 \n\
-参数数量=$#[def=$valCount] \n\
+[参数数量def=$valCount]valCount=$# \n\
 cmdName=$cmdName \n\
 rCmdsPermissionBase=${rCmdsPermissionBase[@]} \n\
 rCmdsPermissionRoot=${rCmdsPermissionRoot[@]} \n\
@@ -80,7 +80,7 @@ ftMain()
 	local ftName=工具主入口
 	while true; do
 	case $rBaseShellParameter2 in
-	"test")		ftTest	 ;break;;
+	"test")		ftTest "$@" ;break;;
 	"shutdown")	ftBoot	shutdown ;break;;
 	"reboot")	ftBoot	reboot ;break;;
 	"help")		ftReadMe $rBaseShellParameter3	;break;;
@@ -297,7 +297,7 @@ EOF
 	local valCount=1
 	if(( $#!=$valCount ))||[ -z "$packageName" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				packageName=$packageName \
 				请查看下面说明:"
 		  ftKillPhoneAppByPackageName -h
@@ -327,7 +327,7 @@ ftRestartAdb()
 	local valCount=0
 	if(( $#!=$valCount ))||[ -z "$mUserPwd" ];then
 		ftEcho -eax "函数[${ftName}]的参数错误 \
-			参数数量=$#[def=$valCount] \
+			[参数数量def=$valCount]valCount=$# \
 			mUserPwd=$mUserPwd"
 	fi
 
@@ -362,7 +362,7 @@ EOF
 	if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ]\
 				||[ -z "$rNameUser" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				rDirPathUserHome=$rDirPathUserHome \
 				rNameUser=$rNameUser \
 				请查看下面说明:"
@@ -417,7 +417,7 @@ ftCleanDataGarbage()
 	local valCount=0
 	if(( $#!=$valCount ))||[ -z "$mCmdsModuleDataDevicesList" ];then
 		ftEcho -ex "函数[${ftName}]的参数错误 \
-参数数量=$#[def=$valCount] \
+[参数数量def=$valCount]valCount=$# \
 mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}"
 	fi
 
@@ -452,7 +452,7 @@ ftMtkFlashTool()
 	if(( $#!=$valCount ))||[ -z "$tempDirPath" ]\
 				||[ -z "$rDirPathTools" ];then
 		ftEcho -eax "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				tempDirPath=$tempDirPath \
 				rDirPathTools=$rDirPathTools"
 	fi
@@ -495,7 +495,7 @@ EOF
 						||[ -z "$isCreate" ]\
 						||[ -z "$path" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				type=$type \
 				isCreate=$isCreate \
 				path=$path \
@@ -563,7 +563,7 @@ EOF
 	#耦合变量校验
 	if [ -z "$rIsDebug" ];then
 		ftEcho -eax "函数[${ftName}]的参数错误 \
-			参数数量=$#[def=$valCount] \
+			[参数数量def=$valCount]valCount=$# \
 			rIsDebug=$rIsDebug"
 	fi
 
@@ -695,7 +695,7 @@ EOF
 	local valCount=2
 	if(( $#!=$valCount ))||[ -z "$dirPathAnimation" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				dirPathAnimation=$dirPathAnimation \
 				请查看下面说明:"
 		ftBootAnimation -h
@@ -890,7 +890,7 @@ EOF
 	local valCount=0
 	if(( $#!=$valCount ))||[ -z "$rDirPathUserHome" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				rDirPathUserHome=$rDirPathUserHome \
 				请查看下面说明:"
 		ftGjh -h
@@ -923,7 +923,7 @@ EOF
 	if(( $#!=$valCount ))||[ -z "$rDirPathUserHome" ]\
 				||[ -z "$rDirNameLog" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				rDirPathUserHome=$rDirPathUserHome \
 				rDirNameLog=$rDirNameLog \
 				请查看下面说明:"
@@ -968,25 +968,24 @@ ftTest()
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 	#=================== ${ftName}的使用示例=============
 	#
-	#	ftTest 无参数
+	#	ftTest 任意参数
 	#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
-	local valCount=0
 	local dirNameCmdModuleTest=test
 	local filePathCmdModuleTest=${rDirPathCmdsModule}/${dirNameCmdModuleTest}/${rFileNameCmdModuleTestBase}
-	if(( $#!=$valCount ))||[ -z "$rDirPathCmdsModule" ]\
+	if [ -z "$rDirPathCmdsModule" ]\
 			||[ ! -f "$filePathCmdModuleTest" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				filePathCmdModuleTest=$filePathCmdModuleTest \
 				请查看下面说明:"
 		ftTest -h
 	fi
 
-	$filePathCmdModuleTest
+	$filePathCmdModuleTest "$@"
 }
 
 ftBoot()
@@ -995,19 +994,25 @@ ftBoot()
 	local edittype=$1
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#	ftBoot 关机/重启
-	#	ftBoot shutdown/reboot
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#	ftBoot 关机/重启 时间/秒
+#	ftBoot shutdown/reboot 100
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
-	if [ -z "$mUserPwd" ]||[ -z "$edittype" ];then
+
+	local valCount=1
+	if(( $#<$valCount ))\
+		||[ $([ ! -z $rBaseShellParameter3 ]) -a $(echo -n $rBaseShellParameter3 | grep -q -e "^[0-9][0-9]*$") ]\
+		||[ -z "$mUserPwd" ]\
+		||[ -z "$edittype" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量_def=1/2]valCount=$# \
 				mUserPwd=$mUserPwd \
 				edittype=$edittype \
+				[时间/秒]rBaseShellParameter3=$rBaseShellParameter3 \
 				请查看下面说明:"
 		ftBoot -h
 	fi
@@ -1017,32 +1022,32 @@ EOF
 		waitLong=$rBaseShellParameter3
 	fi
 
-	while true; do
-	case "$edittype" in
-		shutdown )
-		for i in `seq -w $waitLong -1 1`
-		do
-			echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后关机，ctrl+c 取消\033[0m"
-			sleep 1
-		done
-		echo -e "\b\b"
-		echo $mUserPwd | sudo -S shutdown -h now
-		break;;
-		reboot)
-		for i in `seq -w $waitLong -1 1`
-		do
-			echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后重启，ctrl+c 取消\033[0m";
-			sleep 1
-		done
-		echo -e "\b\b"
-		echo $mUserPwd | sudo -S reboot
-		break;;
-		* )
-			ftEcho -e 错误的选择：$sel
-			echo "输入q，离开"
-			;;
-	esac
-	done
+	# while true; do
+	# case "$edittype" in
+	# 	shutdown )
+	# 	for i in `seq -w $waitLong -1 1`
+	# 	do
+	# 		echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后关机，ctrl+c 取消\033[0m"
+	# 		sleep 1
+	# 	done
+	# 	echo -e "\b\b"
+	# 	echo $mUserPwd | sudo -S shutdown -h now
+	# 	break;;
+	# 	reboot)
+	# 	for i in `seq -w $waitLong -1 1`
+	# 	do
+	# 		echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后重启，ctrl+c 取消\033[0m";
+	# 		sleep 1
+	# 	done
+	# 	echo -e "\b\b"
+	# 	echo $mUserPwd | sudo -S reboot
+	# 	break;;
+	# 	* )
+	# 		ftEcho -e 错误的选择：$sel
+	# 		echo "输入q，离开"
+	# 		;;
+	# esac
+	# done
 }
 
 ftSynchronous()
@@ -1076,7 +1081,7 @@ EOF
 	if(( $#!=$valCount ))||[ -z "$dirPathArray" ]\
 				||[ -z "$fileTypeList" ];then
 		ftEcho -e "函数[${ftName}]的参数错误 \
-参数数量=$#[def=$valCount] \
+[参数数量def=$valCount]valCount=$# \
 synchronousType=$synchronousType \
 dirPathArray=${dirPathArray[@]} \
 fileTypeList=$fileTypeList \
@@ -1135,7 +1140,7 @@ EOF
 				||[ -z "$blockName" ]\
 				||[ -z "$keyName" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				filePath=$filePath \
 				blockName=$blockName \
 				keyName=$keyName \
@@ -1196,7 +1201,7 @@ EOF
 	if (( $#>$valCount ))||[ -z "$devDirPath" ]\
 				||[ -z "$rDirPathCmdsData" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				devDirPath=$devDirPath \
 				rDirPathCmdsData=$rDirPathCmdsData \
 				请查看下面说明:"
@@ -1306,7 +1311,7 @@ EOF
 				||[ -z "$keyName" ]\
 				||[ -z "$keyValue" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				filePath=$filePath \
 				blockName=$blockName \
 				keyName=$keyName \
@@ -1346,7 +1351,7 @@ EOF
 	local valCount=1
 	if(( $#!=$valCount ))||[ ! -f "$filePath" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				filePath=$filePath \
 				请查看下面说明:"
 		ftExample -h

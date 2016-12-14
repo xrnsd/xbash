@@ -173,7 +173,7 @@ EOF
 	if (( $#>$valCount ))||[ ! -f "$filePathHosts" ]\
 				||[ ! -d "$rDirPathCmdsData" ];then
 		ftEcho -ea "[${ftName}]参数错误 \
-			参数数量=$#[def=$valCount] \
+			[参数数量def=$valCount]valCount=$# \
 			filePathHosts=$filePathHosts \
 			rDirPathCmdsData=rDirPathCmdsData \
 			请查看下面说明:"

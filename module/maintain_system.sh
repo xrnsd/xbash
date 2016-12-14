@@ -76,7 +76,7 @@ ftRestoreChoiceSource()
 				||[ ! -d $mDirPathStoreSource ]\
 				||[ ! -d $dirPathBackupNote ];then
 		ftEcho -ex "函数[${ftName}]的参数错误 \
-参数数量=$#[def=$valCount] \
+[参数数量def=$valCount]valCount=$# \
 mDirPathStoreSource=$mDirPathStoreSource \
 dirPathBackupNote=${dirPathBackupNote[@]} \
 请查看下面说明:"
@@ -191,7 +191,7 @@ EOF
 	local valCount=1
 	if(( $#!=$valCount ))||[ -z "$infoType" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-			参数数量=$#[def=$valCount] \
+			[参数数量def=$valCount]valCount=$# \
 			infoType=$infoType \
 			请查看下面说明:"
 		ftEchoInfo -h
@@ -249,7 +249,7 @@ EOF
 	if(( $#!=$valCount ))||[ -z "$mCmdsModuleDataDevicesList" ]\
 				||[ -z "$rNameUser" ];then
 		ftEcho -e "函数[${ftName}]的参数错误 \
-参数数量=$#[def=$valCount] \
+[参数数量def=$valCount]valCount=$# \
 mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \
 rNameUser=$rNameUser \
 请查看下面说明:"
@@ -345,7 +345,7 @@ ftSetRestoreType()
 	local valCount=1
 	if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ];then
 		ftEcho -eax "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				rDirPathUserHome=$rDirPathUserHome \
 				请查看下面说明:"
 	elif [ ! -d "$rDirPathUserHome" ];then
@@ -496,7 +496,7 @@ EOF
 	if (( $#<$valCount ))||[ -z "$dirPathBackupRoot" ]\
 				||[ -z "$versionName" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				dirPathBackupRoot=$dirPathBackupRoot \
 				versionName=$versionName \
 				noteBase=$noteBase \
@@ -567,7 +567,7 @@ EOF
 				||[ -z "$dirPathBackupRoot" ]\
 				||[ -z "$versionName" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				typeEdit=$typeEdit \
 				dirPathBackupRoot=$dirPathBackupRoot \
 				versionName=$versionName \
@@ -669,7 +669,7 @@ EOF
 				||[ -z "$dirPathBackupRoot" ]\
 				||[ -z "$dirNameBackupInfoVersion" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-			参数数量=$#[def=$valCount] \
+			[参数数量def=$valCount]valCount=$# \
 			typeEdit=$typeEdit \
 			dirPathBackupRoot=$dirPathBackupRoot \
 			dirNameBackupInfoVersion=$dirNameBackupInfoVersion \
@@ -816,7 +816,7 @@ EOF
 				||[ -z "$note" ]\
 				||[ -z "$devList" ];then
 		ftEcho -e "函数[${ftName}]的参数错误 \
-参数数量=$#[def=$valCount] \
+[参数数量def=$valCount]valCount=$# \
 version=$version \
 note=$note \
 devList=${devList[@]} \
@@ -902,7 +902,7 @@ EOF
 	local valCount=0
 	if(( $#!=$valCount ))||[ -z $mFilePathVersion ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
-				参数数量=$#[def=$valCount] \
+				[参数数量def=$valCount]valCount=$# \
 				mFilePathVersion=$mFilePathVersion \
 				请查看下面说明:"
 		ftVersionPackageIsCreated -h

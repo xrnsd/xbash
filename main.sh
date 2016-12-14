@@ -32,6 +32,6 @@ fi
 #####-------------------执行------------------------------#########
 ftTiming
 ftLog
-ftMain 2>&1|tee -a $mFilePathLog
+ftMain $@ 2>&1|tee -a $mFilePathLog
 ftTiming
 exit

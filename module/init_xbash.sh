@@ -29,7 +29,7 @@ ftXrnsdExtensionsToBashInit()
 	if(( $#!=$valCount ))||[ -z "$userName" ]\
 				||[ ! -d "$dirPathHome" ];then
 		echo -e "	[${ftName}]参数错误 \n\
-	参数数量=$#[def=$valCount] \n\
+	[参数数量def=$valCount]valCount=$# \n\
 	userName=$userName \n\
 	dirPathHome=dirPathHome \n\
 	\033[0m"
