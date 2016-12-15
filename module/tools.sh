@@ -945,7 +945,7 @@ EOF
 		esac;done
 	fi
 
-	dirPath=${rDirPathUserHome}${rDirNameLog}/${diarNameCmdLog}
+	dirPath=${rDirPathUserHome}/${rDirNameLog}/${diarNameCmdLog}
 
 	#不存在新建命令log目录
 	if [ ! -d "$dirPath" ];then

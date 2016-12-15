@@ -127,7 +127,12 @@ shopt -s histappend
 
 
 #--------------------------基础变量----------------------------------
-userName=`who am i | awk '{print $1}'|sort -u`
+userName=$(who am i | awk '{print $1}'|sort -u)
+userName=${userName:-`whoami | awk '{print $1}'|sort -u`}
+if [ "${S/ /}" != "$S" ];then
+    userName=$(whoami)
+fi
+
 dirPathHome=/home/${userName}
 dirPathHomeCmd=${dirPathHome}/cmds
 dirPathHomeTools=${dirPathHome}/tools

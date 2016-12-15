@@ -18,7 +18,11 @@ ftXrnsdExtensionsToBashInit()
 
 
 	local ftName=xbash配置初始化
-	userName=`who am i | awk '{print $1}'|sort -u`
+	local userName=$(who am i | awk '{print $1}'|sort -u)
+	userName=${userName:-`whoami | awk '{print $1}'|sort -u`}
+	if [ "${S/ /}" != "$S" ];then
+	    userName=$(whoami)
+	fi
 	local dirPathHome=/home/${userName}
 
 	#--------------------------变量校验--------------------------

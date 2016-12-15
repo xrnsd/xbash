@@ -389,8 +389,8 @@ ftBackupOs()
 	#/home/wgx/cmds/data/excludeDirsBase.list
 	fileNameExcludeBase=excludeDirsBase.list
 	fileNameExcludeAll=excludeDirsAll.list
-	mFilePathExcludeBase=${rDirPathUserHome}${rDirNameCmd}/${rDirNameCmdData}/${fileNameExcludeBase}
-	mFilePathExcludeAll=${rDirPathUserHome}${rDirNameCmd}/${rDirNameCmdData}/${fileNameExcludeAll}
+	mFilePathExcludeBase=${rDirPathUserHome}/${rDirNameCmd}/${rDirNameCmdData}/${fileNameExcludeBase}
+	mFilePathExcludeAll=${rDirPathUserHome}/${rDirNameCmd}/${rDirNameCmdData}/${fileNameExcludeAll}
 
 	mDirPathsExcludeBase=(/proc \
 				/android \
@@ -399,28 +399,28 @@ ftBackupOs()
 				/sys \
 				/.Trash-0 \
 				/media \
-				${rDirPathUserHome}workspaces \
-				${rDirPathUserHome}workspace \
-				${rDirPathUserHome}download \
-				${rDirPathUserHome}packages \
-				${rDirPathUserHome}Pictures \
-				${rDirPathUserHome}projects \
-				${rDirPathUserHome}backup \
-				${rDirPathUserHome}media  \
-				${rDirPathUserHome}temp \
-				${rDirPathUserHome}tools \
-				${rDirPathUserHome}cmds \
-				${rDirPathUserHome}code \
-				${rDirPathUserHome}log  \
-				${rDirPathUserHome}doc  \
-				${rDirPathUserHome}.AndroidStudio2.1 \
-				${rDirPathUserHome}.thumbnails \
-				${rDirPathUserHome}.software \
-				${rDirPathUserHome}.cache \
-				${rDirPathUserHome}.local \
-				${rDirPathUserHome}.wine \
-				${rDirPathUserHome}.other \
-				${rDirPathUserHome}.gvfs)
+				${rDirPathUserHome}/workspaces \
+				${rDirPathUserHome}/workspace \
+				${rDirPathUserHome}/download \
+				${rDirPathUserHome}/packages \
+				${rDirPathUserHome}/Pictures \
+				${rDirPathUserHome}/projects \
+				${rDirPathUserHome}/backup \
+				${rDirPathUserHome}/media  \
+				${rDirPathUserHome}/temp \
+				${rDirPathUserHome}/tools \
+				${rDirPathUserHome}/cmds \
+				${rDirPathUserHome}/code \
+				${rDirPathUserHome}/log  \
+				${rDirPathUserHome}/doc  \
+				${rDirPathUserHome}/.AndroidStudio2.1 \
+				${rDirPathUserHome}/.thumbnails \
+				${rDirPathUserHome}/.software \
+				${rDirPathUserHome}/.cache \
+				${rDirPathUserHome}/.local \
+				${rDirPathUserHome}/.wine \
+				${rDirPathUserHome}/.other \
+				${rDirPathUserHome}/.gvfs)
 
 	mDirPathsExcludeAll=(/proc \
 				/android \
@@ -428,20 +428,20 @@ ftBackupOs()
 				/mnt  \
 				/sys  \
 				/media \
-				${rDirPathUserHome}.AndroidStudio2.1 \
-				${rDirPathUserHome}backup \
-				${rDirPathUserHome}.software \
-				${rDirPathUserHome}download \
-				${rDirPathUserHome}log  \
-				${rDirPathUserHome}temp \
-				${rDirPathUserHome}Pictures \
-				${rDirPathUserHome}projects \
-				${rDirPathUserHome}workspaces \
-				${rDirPathUserHome}.cache \
-				${rDirPathUserHome}.thumbnails \
-				${rDirPathUserHome}.local \
-				${rDirPathUserHome}.other \
-				${rDirPathUserHome}.gvfs)
+				${rDirPathUserHome}/.AndroidStudio2.1 \
+				${rDirPathUserHome}/backup \
+				${rDirPathUserHome}/.software \
+				${rDirPathUserHome}/download \
+				${rDirPathUserHome}/log  \
+				${rDirPathUserHome}/temp \
+				${rDirPathUserHome}/Pictures \
+				${rDirPathUserHome}/projects \
+				${rDirPathUserHome}/workspaces \
+				${rDirPathUserHome}/.cache \
+				${rDirPathUserHome}/.thumbnails \
+				${rDirPathUserHome}/.local \
+				${rDirPathUserHome}/.other \
+				${rDirPathUserHome}/.gvfs)
 
 	local dirsExclude
 	local fileNameExclude
