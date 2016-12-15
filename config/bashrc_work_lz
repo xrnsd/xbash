@@ -127,15 +127,12 @@ shopt -s histappend
 
 
 #--------------------------基础变量----------------------------------
-userName=`who | awk '{print $1}'|sort -u`
+userName=`who am i | awk '{print $1}'|sort -u`
 dirPathHome=/home/${userName}
 dirPathHomeCmd=${dirPathHome}/cmds
-dirPathHomeCmdConfig=${dirPathHomeCmd}/config
 dirPathHomeTools=${dirPathHome}/tools
 userPwd=123
 
-fileNameXbashTragetConfigBase=config_base
-filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
 
 
 #--------------------------部分环境变量---------------------------
@@ -151,20 +148,23 @@ export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:/usr/local/cuda-7.5/bin:$ANDROID_SD
 
 #--------------------------环境检测---------------------------
 if [ ! -d "$JAVA_HOME" ];then
-    echo -e "\033[1;31mJava_环境配置错误\033[0m"
+    echo -e "\033[1;31mJava_环境配置错误\n$JAVA_HOME不存在\n\033[0m"
 fi
 if [ ! -d "$ANDROID_SDK" ];then
-    echo -e "\033[1;31mAndroid_SDK_环境配置错误\033[0m"
+    echo -e "\033[1;31mAndroid_SDK_环境配置错误\n$ANDROID_SDK 不存在\n\033[0m"
 else
 	alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
 fi
 if [ ! -d "$ANDROID_NDK" ];then
-    echo -e "\033[1;31mAndroid_NDK_环境配置错误\033[0m"
+    echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
 fi
 
 if [ ! -d "$dirPathHomeCmd" ];then
     echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
 else
+    dirPathHomeCmdConfig=${dirPathHomeCmd}/config
+    fileNameXbashTragetConfigBase=config_base
+    filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
     #全局变量
     if [ -f $filePathXbashTragetConfigBase ];then
         source  $filePathXbashTragetConfigBase
@@ -191,10 +191,10 @@ else
 			complete -W "restartadb help gjh test clean_data_garbage vvv bootanim" xc
 
         else
-            echo -e "\033[1;31m函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
+            echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
         fi
     else
-        echo -e "\033[1;31m全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
+        echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
     fi
 fi
 
@@ -214,7 +214,7 @@ alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progr
 alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version"'
 
 #---------------------------------不稳定命令---------------------------------
-alias xx='echo '$userPwd' |  sudo -S pm-hibernate'
+alias xx='echo '$userPwd' | sudo -S pm-hibernate'
 
 #---------------------------------临时命令---------------------------------
 alias xg6572='git clone git@192.168.1.188:mtk6572.git -b'

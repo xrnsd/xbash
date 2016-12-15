@@ -33,7 +33,7 @@
 ##2.初始化环境
 
 	cd Xrnsd-extensions-to-bash
-	./module/init_xbash.sh
+	./init.sh
 	xc help
 
 ##3.其他

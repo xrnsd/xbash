@@ -2,10 +2,10 @@
 #####----------------------变量--------------------------#########
 
 # 基本配置
-export readonly rXbashVersion="V0.5.9.5 beta"
-mUserPwdBase=
+export readonly rXbashVersion="V0.5.9.7 beta"
+mUserPwdBase=123
 export mUserPwd=${mUserPwdBase:-'123'}
-export readonly rNameUser=`who | awk '{print $1}'|sort -u`
+export readonly rNameUser=`who am i | awk '{print $1}'|sort -u`
 export readonly rDirPathUserHome=/home/${rNameUser}/
 # home/xxxx
 export readonly rDirNameLog=log
