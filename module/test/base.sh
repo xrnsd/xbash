@@ -29,13 +29,3 @@ else
 fi
 
 #####----------------------demo函数--------------------------#########
-# if [ $1 =="memory" -o $1 == "Memory" ];then
-if [ ! $2 ]; then
-	echo 11
-fi
-# if [ $1 ="test" -o $1 = "222" ];then 
-if [ $([ ! -z $2 ]) -a $(echo -n $2 | grep -q -e "^[0-9][0-9]*$") ];then
-	echo 11
-else
-	echo 22
-fi

@@ -1002,10 +1002,7 @@ EOF
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
-
-	local valCount=1
-	if(( $#<$valCount ))\
-		||[ $([ ! -z $rBaseShellParameter3 ]) -a $(echo -n $rBaseShellParameter3 | grep -q -e "^[0-9][0-9]*$") ]\
+	if ( ! echo -n $rBaseShellParameter3 | grep -q -e "^[0-9][0-9]*$" )\
 		||[ -z "$mUserPwd" ]\
 		||[ -z "$edittype" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
@@ -1022,32 +1019,32 @@ EOF
 		waitLong=$rBaseShellParameter3
 	fi
 
-	# while true; do
-	# case "$edittype" in
-	# 	shutdown )
-	# 	for i in `seq -w $waitLong -1 1`
-	# 	do
-	# 		echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后关机，ctrl+c 取消\033[0m"
-	# 		sleep 1
-	# 	done
-	# 	echo -e "\b\b"
-	# 	echo $mUserPwd | sudo -S shutdown -h now
-	# 	break;;
-	# 	reboot)
-	# 	for i in `seq -w $waitLong -1 1`
-	# 	do
-	# 		echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后重启，ctrl+c 取消\033[0m";
-	# 		sleep 1
-	# 	done
-	# 	echo -e "\b\b"
-	# 	echo $mUserPwd | sudo -S reboot
-	# 	break;;
-	# 	* )
-	# 		ftEcho -e 错误的选择：$sel
-	# 		echo "输入q，离开"
-	# 		;;
-	# esac
-	# done
+	while true; do
+	case "$edittype" in
+		shutdown )
+		for i in `seq -w $waitLong -1 1`
+		do
+			echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后关机，ctrl+c 取消\033[0m"
+			sleep 1
+		done
+		echo -e "\b\b"
+		echo $mUserPwd | sudo -S shutdown -h now
+		break;;
+		reboot)
+		for i in `seq -w $waitLong -1 1`
+		do
+			echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后重启，ctrl+c 取消\033[0m";
+			sleep 1
+		done
+		echo -e "\b\b"
+		echo $mUserPwd | sudo -S reboot
+		break;;
+		* )
+			ftEcho -e 错误的选择：$sel
+			echo "输入q，离开"
+			;;
+	esac
+	done
 }
 
 ftSynchronous()
