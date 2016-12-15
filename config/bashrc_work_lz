@@ -117,7 +117,7 @@ export PS1='xrnsd\[\033[44m\][\w]\[\033[0m\]:'
 # 忽略[连续]重复命令
 export HISTCONTROL=ignoredups
 # 忽略特定命令
-export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:xc:xd:xk:xu;xr:xbh:xs:xss:xh:xp:xb:xt:xgl:xi:xl:xkd:Xversion:xx:history*"
+export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:xc:xd:xk:xu;xr:xbh:xs:xss:xh:xp:xb:xt:xgl:xi:xl:xkd:xversion:xx:history*"
 # 命令历史文件大小
 export HISTFILESIZE=10000000000
 # 保存历史命令条数
@@ -211,7 +211,7 @@ alias xgl='git log --pretty=oneline -10'
 alias xl='export XCMD=xl;adb logcat -c;adb logcat | grep'
 alias xle='export XCMD=xle;adb logcat -c;adb logcat "*:E"'
 alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
-alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version"'
+alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "KEY_BUILD_NUMBER"'
 
 #---------------------------------不稳定命令---------------------------------
 alias xx='echo '$userPwd' | sudo -S pm-hibernate'

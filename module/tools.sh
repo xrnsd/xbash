@@ -113,7 +113,7 @@ ftMain()
 					"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
 					"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
 					"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
-					"bootanim")		ftBootAnimation $rBaseShellParameter3 $(pwd);break;;
+					"bootanim")		ftBootAnimation $rBaseShellParameter3 $rBaseShellParameter2;break;;
 					"gjh")			ftGjh;break;;
 					# "gjh")			ftEcho -e [$rBaseShellParameter2]已关闭，请修改脚本打开
 					# 			ftReadMe $rBaseShellParameter2
