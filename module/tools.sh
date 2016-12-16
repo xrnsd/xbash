@@ -1176,6 +1176,61 @@ EOF
 	return 0
 }
 
+ftReNameFile()
+{
+	local ftName=批量重命名文件
+	# local extensionName=$1
+	local dirPathFileList=$1
+	# 1 耦合变量校验[耦合变量包含全局变量，输入参数，输入变量]
+	# 3 提供可执行前提说明
+	# 4 提供执行流程说明
+	# 5 提供使用示例
+	# le            //小于等于
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#
+	#	ftReNameFile 目录
+	#	ftReNameFile .png /home/xxxx/temp
+	#	ftReNameFile null /home/xxxx/temp
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if(( $#!=$valCount ))||[ -z "$dirPathFileList" ]\
+				||[ ! -d "$dirPathFileList" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			dirPathFileList=$dirPathFileList \
+			请查看下面说明:"
+		ftReNameFile -h
+	fi
+	 # fileList=`ls $dirPathFileList|grep '.png'`
+	 fileList=`ls $dirPathFileList`
+
+	local dirNameFileListRename=RenameFiles
+	local dirPathFileListRename=${dirPathFileList}/${dirNameFileListRename}
+	if [ -d $dirPathFileListRename ];then
+		rm -rf $dirPathFileListRename
+	fi
+	mkdir $dirPathFileListRename
+	index=0
+	for file in $fileList
+	do
+		# echo “filename: ${file%.*}”
+		# echo “extension: ${file##*.}”
+		if [ $file == $dirNameFileListRename ];then
+			continue
+		fi
+		a=$((10000+$index))
+		cp -f ${dirPathFileList}/${file} ${dirPathFileListRename}/${a:1}.${file##*.}
+		index=`expr $index + 1`
+	done
+}
+
 ftDevAvailableSpace()
 {
 	local ftName=设备可用空间
