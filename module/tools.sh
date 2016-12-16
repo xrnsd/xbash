@@ -17,6 +17,11 @@ ftExample()
 	# ge            //大于等于
 	# le            //小于等于
 
+	# ${dirPathFileList%/*}父目录路径
+	# ${dirPathFileList##*/}父目录名
+	# echo 文件名: ${file%.*}”
+	# echo 后缀名: ${file##*.}”
+
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 	#=================== ${ftName}的使用示例=============
@@ -1181,11 +1186,6 @@ ftReNameFile()
 	local ftName=批量重命名文件
 	# local extensionName=$1
 	local dirPathFileList=$1
-	# 1 耦合变量校验[耦合变量包含全局变量，输入参数，输入变量]
-	# 3 提供可执行前提说明
-	# 4 提供执行流程说明
-	# 5 提供使用示例
-	# le            //小于等于
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -1207,6 +1207,17 @@ EOF
 			dirPathFileList=$dirPathFileList \
 			请查看下面说明:"
 		ftReNameFile -h
+	fi
+	ftFileDirEdit -e false $dirPathFileList
+	if [ $? -eq "2" ];then
+		ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
+	# else
+	# 	for file in `ls $dirPathFileList`
+	# 	do
+	# 		if [ ! -f $file ];then
+	# 			ftEcho -ex 资源目录包含不是文件的东东：[${dirPathFileList}/${file}]
+	# 		fi
+	# 	done
 	fi
 	 # fileList=`ls $dirPathFileList|grep '.png'`
 	 fileList=`ls $dirPathFileList`
