@@ -995,21 +995,22 @@ EOF
 
 ftBoot()
 {
-	local ftName=函数demo调试
+	local ftName=延时免密码关机重启
 	local edittype=$1
+
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #	ftBoot 关机/重启 时间/秒
 #	ftBoot shutdown/reboot 100
+# 	xs 时间/秒 #制定时间后关机
+# 	xss 时间/秒 #制定时间后重启
 #=========================================================
 EOF
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
-	if ( ! echo -n $rBaseShellParameter3 | grep -q -e "^[0-9][0-9]*$" )\
-		||[ -z "$mUserPwd" ]\
-		||[ -z "$edittype" ];then
+	if [ -z "$mUserPwd" ]||[ -z "$edittype" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量_def=1/2]valCount=$# \
 				mUserPwd=$mUserPwd \
@@ -1018,11 +1019,17 @@ EOF
 				请查看下面说明:"
 		ftBoot -h
 	fi
-
 	local waitLong=10
-	if [ ! -z "$rBaseShellParameter3" ];then
-		waitLong=$rBaseShellParameter3
+	if [ ! -z $rBaseShellParameter3 ];then
+		if ( echo -n $rBaseShellParameter3 | grep -q -e "^[0-9][0-9]*$" );then
+			waitLong=$rBaseShellParameter3
+		else
+			ftEcho -ea "函数[${ftName}]的参数错误 \
+						请查看下面说明:"
+			ftBoot -h
+		fi
 	fi
+
 
 	while true; do
 	case "$edittype" in

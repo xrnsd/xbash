@@ -29,22 +29,3 @@ else
 fi
 
 #####----------------------demo函数--------------------------#########
-# mDirPathStoreSource=/home/wgx/cmds/config
-#  fileList=`ls $mDirPathStoreSource|grep 'bashrc'`
-
-# for file in $fileList
-# do
-# 	echo $file
-# done
-
-mDirPathStoreSource=/home/wgx/download/L-MAX-480x854
- fileList=`ls $mDirPathStoreSource|grep '.png'`
-
-index=0
-for file in $fileList
-do
-	if [ $(expr $index % 2) -eq 0 ];then
-		rm -f ${mDirPathStoreSource}/${file}
-	fi
-	index=`expr $index + 1`
-done
