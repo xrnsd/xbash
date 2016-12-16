@@ -1118,6 +1118,91 @@ fileTypeList=$fileTypeList \
 	done
 }
 
+ftReduceFileList()
+{
+	local ftName=精简动画帧文件
+	local percentage=$1
+	local dirPathFileList=$2
+	local editType=del #surplus
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	#=================== ${ftName}的使用示例=============
+	#
+	#	ftReduceFileList2 百分比 目录
+	#	ftReduceFileList2 60 /home/xxxx/temp
+	# 由于水平有限，实现对60%和50%之类的比例不敏感
+	#=========================================================
+EOF
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=2
+	if(( $#!=$valCount ))||[ -z "$percentage" ]\
+				||[ -z "$dirPathFileList" ]\
+				||[ ! -d "$dirPathFileList" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			percentage=$percentage \
+			dirPathFileList=$dirPathFileList \
+			请查看下面说明:"
+		ftReduceFileList2 -h
+	fi
+	ftFileDirEdit -e false $dirPathFileList
+	if [ $? -eq "2" ];then
+		ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
+	else
+		for file in `ls $dirPathFileList`
+		do
+			if [ ! -f $file ];then
+				ftEcho -ex 资源目录包含不是文件的东东：[${dirPathFileList}/${file}]
+			fi
+		done
+	fi
+
+	if (( $percentage>50 ));then
+		percentage=`expr 100 - $percentage`
+		editType=surplus
+	fi
+	continueThreshold=`expr 100 / $percentage`
+
+	local dirNameFileListBase=${dirPathFileList##*/}
+	local dirNameFileListBackup=${dirNameFileListBase}_bakup
+	local dirPathFileListBackup=${dirPathFileList%/*}/${dirNameFileListBackup}
+	if [ ! -d $dirPathFileListBackup ];then
+		mkdir $dirPathFileListBackup
+		cp -rf ${dirPathFileList}/*  $dirPathFileListBackup
+	fi
+
+	 fileList=`ls $dirPathFileList`
+	index=0
+	for file in $fileList
+	do
+		index=`expr $index + 1`
+		# if (( `expr $index % $continueThreshold`== 0 ));then
+		# 	if [ $editType = "del" ];then
+		# 		echo del_file=$file
+		# 	elif [ $editType = "surplus" ];then
+		# 		continue;
+		# 	fi
+		# else
+		# 	if [ $editType = "del" ];then
+		# 		continue;
+		# 	elif [ $editType = "surplus" ];then
+		# 		echo del_file=$file
+		# 	fi
+		# fi
+		if (( `expr $index % $continueThreshold`== 0 ));then
+			if [ $editType = "surplus" ];then
+				continue;
+			fi
+		elif [ $editType = "del" ];then
+			continue;
+		fi
+		rm -f ${dirPathFileList}/$file
+	done
+}
+
 ftGetKeyValueByBlockAndKey()
 {
 	local ftName=读取ini文件指定字段
