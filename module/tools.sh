@@ -24,12 +24,12 @@ ftExample()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftExample 无参
-	#	ftExample [example]
-	#	ftExample xxxx
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftExample 无参
+#	ftExample [example]
+#	ftExample xxxx
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -290,11 +290,11 @@ ftKillPhoneAppByPackageName()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftKillPhoneAppByPackageName [packageName]
-	#	ftKillPhoneAppByPackageName com.android.settings
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftKillPhoneAppByPackageName [packageName]
+#	ftKillPhoneAppByPackageName com.android.settings
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -354,11 +354,11 @@ ftInitDevicesList()
 	local devMinAvailableSpace=${1:-'0'}
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例===================
-	#
-	#	ftInitDevicesList [devMinAvailableSpace 单位M]
-	#	ftInitDevicesList 4096M
-	#=========================================================
+#=================== ${ftName}的使用示例===================
+#
+#	ftInitDevicesList [devMinAvailableSpace 单位M]
+#	ftInitDevicesList 4096M
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -554,14 +554,14 @@ ftDebug()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例===================
-	#
-	#	 trap 'echo “行:$LINENO, a=$a,b=$b,c=$c”' DEBUG
-	#	 根据需要修改 a，b，c
-	#	rIsDebug设为true
-	#	 ftDebug [任意命令]
-	#	 ftDebug echo test
-	#=========================================================
+#=================== ${ftName}的使用示例===================
+#
+#	 trap 'echo “行:$LINENO, a=$a,b=$b,c=$c”' DEBUG
+#	 根据需要修改 a，b，c
+#	rIsDebug设为true
+#	 ftDebug [任意命令]
+#	 ftDebug echo test
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -884,10 +884,10 @@ ftGjh()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftGjh 无参数
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftGjh 无参数
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -915,11 +915,11 @@ ftLog()
 	local ftName=初始化运行日志记录所需的参数
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftLog 无参数
-	#	初始化log记录所需的参数
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftLog 无参数
+#	初始化log记录所需的参数
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -971,10 +971,10 @@ ftTest()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftTest 任意参数
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftTest 任意参数
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -1003,8 +1003,8 @@ ftBoot()
 #=================== ${ftName}的使用示例=============
 #	ftBoot 关机/重启 时间/秒
 #	ftBoot shutdown/reboot 100
-# 	xs 时间/秒 #制定时间后关机
-# 	xss 时间/秒 #制定时间后重启
+# 	xs 时间/秒 #制定时间后关机,不带时间则默认十秒
+# 	xss 时间/秒 #制定时间后重启,不带时间则默认十秒
 #=========================================================
 EOF
 	exit;; * )break;; esac;done
@@ -1067,21 +1067,21 @@ ftSynchronous()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftSynchronous [dirPathArray] [fileTypeList]
-	#
-	# 	所有存储设备之间同步
-	#	ftSynchronous "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
-	#
-	# 	本次备份存储设备和指定存储设备之间同步
-	#	ftSynchronous "/media/data_xx $mDirPathStoreTarget" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
-	#
-	# 	自定义 存储设备和存储设备之间同步
-	#	ftSynchronous "/media/data_xx /media/data_xx" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
-	#未实现特性
-	# 	1 根据时间阀同步备份
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftSynchronous [dirPathArray] [fileTypeList]
+#
+# 	所有存储设备之间同步
+#	ftSynchronous "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
+#
+# 	本次备份存储设备和指定存储设备之间同步
+#	ftSynchronous "/media/data_xx $mDirPathStoreTarget" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
+#
+# 	自定义 存储设备和存储设备之间同步
+#	ftSynchronous "/media/data_xx /media/data_xx" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
+#未实现特性
+# 	1 根据时间阀同步备份
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -1134,12 +1134,12 @@ ftReduceFileList()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftReduceFileList2 百分比 目录
-	#	ftReduceFileList2 60 /home/xxxx/temp
-	# 由于水平有限，实现对60%和50%之类的比例不敏感
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftReduceFileList2 百分比 目录
+#	ftReduceFileList2 60 /home/xxxx/temp
+# 由于水平有限，实现对60%和50%之类的比例不敏感
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -1219,12 +1219,12 @@ ftGetKeyValueByBlockAndKey()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftGetKeyValueByBlockAndKey2 [文件] [块名] [键名]
-	#	value=$(ftGetKeyValueByBlockAndKey2 /temp/odbcinst.ini PostgreSQL Setup)
-	# 	value表示对应字段的值
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftGetKeyValueByBlockAndKey2 [文件] [块名] [键名]
+#	value=$(ftGetKeyValueByBlockAndKey2 /temp/odbcinst.ini PostgreSQL Setup)
+# 	value表示对应字段的值
+#=========================================================
 EOF
 	exit 1;; * )break;; esac;done
 
@@ -1281,12 +1281,12 @@ ftReNameFile()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftReNameFile 目录
-	#	ftReNameFile .png /home/xxxx/temp
-	#	ftReNameFile null /home/xxxx/temp
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftReNameFile 目录
+#	ftReNameFile .png /home/xxxx/temp
+#	ftReNameFile null /home/xxxx/temp
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -1342,12 +1342,12 @@ ftDevAvailableSpace()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftDevAvailableSpace [devDirPath] [[isReturn]]
-	#	ftDevAvailableSpace /media/test
-	#	ftDevAvailableSpace /media/test true
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftDevAvailableSpace [devDirPath] [[isReturn]]
+#	ftDevAvailableSpace /media/test
+#	ftDevAvailableSpace /media/test true
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -1451,11 +1451,11 @@ ftSetKeyValueByBlockAndKey()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftSetKeyValueByBlockAndKey2 [文件] [块名] [键名] [键对应的值]
-	#	ftSetKeyValueByBlockAndKey2 /temp/odbcinst.ini PostgreSQL Setup 1232
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftSetKeyValueByBlockAndKey [文件] [块名] [键名] [键对应的值]
+#	ftSetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup 1232
+#=========================================================
 EOF
 	exit 1;; * )break;; esac;done
 
@@ -1494,11 +1494,11 @@ function ftCheckIniConfigSyntax()
 	local filePath=$1
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftCheckIniConfigSyntax2 [file path]
-	#	ftCheckIniConfigSyntax2 123/config.ini
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftCheckIniConfigSyntax [file path]
+#	ftCheckIniConfigSyntax 123/config.ini
+#=========================================================
 EOF
 	exit 1;; * )break;; esac;done
 

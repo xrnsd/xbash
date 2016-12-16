@@ -157,14 +157,14 @@ ftUpdateHosts()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#使用默认hosts源
-	#	ftUpdateHosts 无参
-	#
-	#使用自定义hosts源
-	#	ftUpdateHosts [URL]
-	#	ftUpdateHosts https://raw.githubusercontent.com/racaljk/hosts/master/hosts
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#使用默认hosts源
+#	ftUpdateHosts 无参
+#
+#使用自定义hosts源
+#	ftUpdateHosts [URL]
+#	ftUpdateHosts https://raw.githubusercontent.com/racaljk/hosts/master/hosts
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 

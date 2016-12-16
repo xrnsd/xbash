@@ -179,11 +179,11 @@ ftEchoInfo()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftEchoInfo [editType]
-	#	ftEchoInfo backup/restore
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftEchoInfo [editType]
+#	ftEchoInfo backup/restore
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -482,12 +482,12 @@ ftAddNote()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-		#=================== ${ftName}的使用示例===================
-		#
-		#	ftAddNote [dirPathBackupRoot] [versionName]
-		#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
-		#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase “常规”
-		#=========================================================
+#=================== ${ftName}的使用示例===================
+#
+#	ftAddNote [dirPathBackupRoot] [versionName]
+#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
+#	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase “常规”
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -553,11 +553,11 @@ ftMD5()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-		#=================== ${ftName}的使用示例===================
-		#
-		#	ftMD5 [type] [path] [fileNameBase/VersionName]
-		#	ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
-		#=========================================================
+#=================== ${ftName}的使用示例===================
+#
+#	ftMD5 [type] [path] [fileNameBase/VersionName]
+#	ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -802,11 +802,11 @@ ftBackUpDevScanning()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftBackUpDevScanning [version] [note] [backup_dev_list]
-	#	ftBackUpDevScanning backup_cg_wgx_20161202 常规 "${mCmdsModuleDataDevicesList[*]}"
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftBackUpDevScanning [version] [note] [backup_dev_list]
+#	ftBackUpDevScanning backup_cg_wgx_20161202 常规 "${mCmdsModuleDataDevicesList[*]}"
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
@@ -891,10 +891,10 @@ ftVersionPackageIsCreated()
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-	#=================== ${ftName}的使用示例=============
-	#
-	#	ftVersionPackageIsCreated 无参
-	#=========================================================
+#=================== ${ftName}的使用示例=============
+#
+#	ftVersionPackageIsCreated 无参
+#=========================================================
 EOF
 	exit;; * )break;; esac;done
 
