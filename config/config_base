@@ -31,7 +31,6 @@ export readonly rDirPathCmds=${rDirPathUserHome}/${rDirNameCmd}
 export readonly rDirPathCmdsData=${rDirPathCmds}/${rDirNameCmdData}
 export readonly rDirPathCmdsConfig=${rDirPathCmds}/${rDirNameCmdConfig}
 export readonly rDirPathCmdsModule=${rDirPathCmds}/${rDirNameCmdModule}
-export readonly rNameUser=${rDirPathCmds}/${rDirNameCmdModule}
 export readonly rDirPathCmdsModuleTest=${rDirPathCmdsModule}/${rDirNameCmdModuleTest}
 
 # home/$rNameUser/cmds/modiule/test/xxxx
