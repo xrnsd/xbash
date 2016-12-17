@@ -54,7 +54,3 @@
 	6 提示找不到命令
 		打开终端
 		sudo chmod 777 -R /home/xxxx/cmds
-	7 在终端直接使用tools.sh中方法，下列方法在参数错误情况下行为异常
-		ftBootAnimation
-		ftBoot
-		ftSynchronous
