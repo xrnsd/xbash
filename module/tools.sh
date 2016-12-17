@@ -31,6 +31,9 @@ ftExample()
 #	ftExample xxxx
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -43,6 +46,7 @@ EOF
 			example2=$example2 \
 			请查看下面说明:"
 		ftExample -h
+		return
 	fi
 }
 
@@ -296,6 +300,9 @@ ftKillPhoneAppByPackageName()
 #	ftKillPhoneAppByPackageName com.android.settings
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -305,7 +312,8 @@ EOF
 				[参数数量def=$valCount]valCount=$# \
 				packageName=$packageName \
 				请查看下面说明:"
-		  ftKillPhoneAppByPackageName -h
+		ftKillPhoneAppByPackageName -h
+		return
 	fi
 
 	#adb状态检测
@@ -360,6 +368,9 @@ ftInitDevicesList()
 #	ftInitDevicesList 4096M
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -371,7 +382,8 @@ EOF
 				rDirPathUserHome=$rDirPathUserHome \
 				rNameUser=$rNameUser \
 				请查看下面说明:"
-		  ftInitDevicesList -h
+		ftInitDevicesList -h
+		return
 	fi
 
 	unset mCmdsModuleDataDevicesList
@@ -492,6 +504,9 @@ ftFileDirEdit()
 #	echo $?
 #===============================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -505,7 +520,8 @@ EOF
 				isCreate=$isCreate \
 				path=$path \
 				请查看下面说明:"
-		  ftFileDirEdit -h
+		ftFileDirEdit -h
+		return
 	fi
 
 	while true; do
@@ -563,6 +579,9 @@ ftDebug()
 #	 ftDebug echo test
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -684,16 +703,34 @@ ftBootAnimation()
 	local dirPathBase=$(pwd)
 
 	#使用示例
-	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	while true; do case "$1" in    h | H |-h | -H)
+		cat<<EOF
 #=================== 函数${ftName}的使用示例============
 #	请进入动画资源目录后执行xc bootanim xxx
 #	ftBootAnimation [edittype] [path]
+#
 #	生成bootanimation2.zip,进入已new处理或解压的文件夹后可运行
 #	ftBootAnimation create /home/xxxx/test/bootanimation2
+#
 #	初始化生成bootanimation2.zip所需要的东东，然后生成动画包
 #	ftBootAnimation new /home/xxxx/test/bootanimation2
 #============================================================
 EOF
+
+	if [ $XMODULE = "script" ];then
+		cat<<EOF
+#=================== 命令[xc bootanim]的使用示例============
+# 	重命名文件，生成配置文件，生成动画包
+# 	xc bootanim new /home/xxxx/test/bootanimation2
+#
+# 	直接生成动画包
+# 	xc bootanim create /home/xxxx/test/bootanimation2
+#============================================================
+EOF
+	else
+		return
+	fi
+
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -704,9 +741,10 @@ EOF
 				dirPathAnimation=$dirPathAnimation \
 				请查看下面说明:"
 		ftBootAnimation -h
+		return
 	fi
-
-	while true; do case "$typeEdit" in
+	while true; do
+	case "$typeEdit" in
 	create)
 		#默认运行前提环境
 		#所在文件夹为动画包解压生成的，也就是该参数默认只能重新打包
@@ -755,8 +793,7 @@ EOF
 				rm -rf $dirPathAnimation
 				break;;
 			n | N| q |Q)  exit;;
-			* )
-				ftEcho -e 错误的选择：$sel
+			* )	ftEcho -e 错误的选择：$sel
 				echo "输入n，q，离开"
 				;;
 		esac
@@ -810,8 +847,8 @@ EOF
 
 		#文件名去空格
 		for loop in `ls -1 | tr ' '  '#'`
-		 do
-		    mv  "`echo $loop | sed 's/#/ /g' `"  "`echo $loop |sed 's/#//g' `"  2> /dev/null
+		do
+			mv  "`echo $loop | sed 's/#/ /g' `"  "`echo $loop |sed 's/#//g' `"  2> /dev/null
 		done
 
 		local file1=${filelist[0]}
@@ -875,7 +912,10 @@ p 0 0 part1" >${dirPathAnimationTraget}/${fileNameDesc}
 		break;;
 	 * )
 		ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
-		ftBootAnimation -h;; esac;done
+		ftBootAnimation -h
+		break;;
+	esac
+	done
 }
 
 ftGjh()
@@ -889,6 +929,9 @@ ftGjh()
 #	ftGjh 无参数
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -899,6 +942,7 @@ EOF
 				rDirPathUserHome=$rDirPathUserHome \
 				请查看下面说明:"
 		ftGjh -h
+		return
 	fi
 
 	local filePath=${rDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar
@@ -921,6 +965,9 @@ ftLog()
 #	初始化log记录所需的参数
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -933,6 +980,7 @@ EOF
 				rDirNameLog=$rDirNameLog \
 				请查看下面说明:"
 		ftLog -h
+		return
 	fi
 	#初始化命令log目录
 
@@ -976,6 +1024,9 @@ ftTest()
 #	ftTest 任意参数
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -988,6 +1039,7 @@ EOF
 				filePathCmdModuleTest=$filePathCmdModuleTest \
 				请查看下面说明:"
 		ftTest -h
+		return
 	fi
 
 	$filePathCmdModuleTest "$@"
@@ -1007,6 +1059,9 @@ ftBoot()
 # 	xss 时间/秒 #制定时间后重启,不带时间则默认十秒
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -1018,6 +1073,7 @@ EOF
 				[时间/秒]rBaseShellParameter3=$rBaseShellParameter3 \
 				请查看下面说明:"
 		ftBoot -h
+		return
 	fi
 	local waitLong=10
 	if [ ! -z $rBaseShellParameter3 ];then
@@ -1083,6 +1139,9 @@ ftSynchronous()
 # 	1 根据时间阀同步备份
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -1096,6 +1155,7 @@ dirPathArray=${dirPathArray[@]} \
 fileTypeList=$fileTypeList \
 请查看下面说明:"
 		ftSynchronous -h
+		return
 	fi
 
 	while true; do
@@ -1141,6 +1201,9 @@ ftReduceFileList()
 # 由于水平有限，实现对60%和50%之类的比例不敏感
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -1154,6 +1217,7 @@ EOF
 			dirPathFileList=$dirPathFileList \
 			请查看下面说明:"
 		ftReduceFileList2 -h
+		return
 	fi
 	ftFileDirEdit -e false $dirPathFileList
 	if [ $? -eq "2" ];then
@@ -1240,6 +1304,7 @@ EOF
 				keyName=$keyName \
 				请查看下面说明:"
 		ftGetKeyValueByBlockAndKey2 -h
+		return
 	fi
 
 	begin_block=0
@@ -1288,6 +1353,9 @@ ftReNameFile()
 #	ftReNameFile null /home/xxxx/temp
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -1299,6 +1367,7 @@ EOF
 			dirPathFileList=$dirPathFileList \
 			请查看下面说明:"
 		ftReNameFile -h
+		return
 	fi
 	ftFileDirEdit -e false $dirPathFileList
 	if [ $? -eq "2" ];then
@@ -1349,6 +1418,9 @@ ftDevAvailableSpace()
 #	ftDevAvailableSpace /media/test true
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -1473,6 +1545,7 @@ EOF
 				keyValue=$keyValue \
 				请查看下面说明:"
 		ftSetKeyValueByBlockAndKey2 -h
+		return
 	fi
 	return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s/^$keyName*=.*/$keyName=$keyValue/g;}" $filePath`
 }
@@ -1510,6 +1583,7 @@ EOF
 				filePath=$filePath \
 				请查看下面说明:"
 		ftExample -h
+		return
 	fi
 
 	ret=$(awk -F= 'BEGIN{valid=1}

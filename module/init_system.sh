@@ -166,6 +166,9 @@ ftUpdateHosts()
 #	ftUpdateHosts https://raw.githubusercontent.com/racaljk/hosts/master/hosts
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -178,6 +181,7 @@ EOF
 			rDirPathCmdsData=rDirPathCmdsData \
 			请查看下面说明:"
 		ftUpdateHosts -h
+		return
 	fi
 
 	# 下载hosts文件

@@ -185,6 +185,9 @@ ftEchoInfo()
 #	ftEchoInfo backup/restore
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -195,6 +198,7 @@ EOF
 			infoType=$infoType \
 			请查看下面说明:"
 		ftEchoInfo -h
+		return
 	fi
 
 	local mVersionChangs="Android build : mtk_KK  mtk_L mtk_M\n\
@@ -242,6 +246,9 @@ ftSetBackupDevDir()
 #	ftSetBackupDevDir 无参
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -254,6 +261,7 @@ mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \
 rNameUser=$rNameUser \
 请查看下面说明:"
 		ftSetBackupDevDir -h
+		return
 	fi
 
 	ftEcho -b 请${ftName}
@@ -489,6 +497,9 @@ ftAddNote()
 #	ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase “常规”
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -502,6 +513,7 @@ EOF
 				noteBase=$noteBase \
 				请查看下面说明:"
 		ftAddNote -h
+		return
 	fi
 	local dirPathBackupNote=${dirPathBackupRoot}/.notes
 	local fileNameNote=${versionName}.note
@@ -559,6 +571,9 @@ ftMD5()
 #	ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -573,6 +588,7 @@ EOF
 				versionName=$versionName \
 				请查看下面说明:"
 		ftMD5 -h
+		return
 	fi
 
 	local fileNameMd5=${versionName}.md5
@@ -661,6 +677,9 @@ ftAddOrCheckSystemHwSwInfo()
 #	ftAddOrCheckSystemHwSwInfo -check
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -675,6 +694,7 @@ EOF
 			dirNameBackupInfoVersion=$dirNameBackupInfoVersion \
 			请查看下面说明:"
 		ftAddOrCheckSystemHwSwInfo -h
+		return
 	fi
 	local dirPathBackupInfo=${dirPathBackupRoot}/.info
 	local dirPathBackupInfoVersion=${dirPathBackupInfo}/${dirNameBackupInfoVersion}
@@ -808,6 +828,9 @@ ftBackUpDevScanning()
 #	ftBackUpDevScanning backup_cg_wgx_20161202 常规 "${mCmdsModuleDataDevicesList[*]}"
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -822,6 +845,7 @@ note=$note \
 devList=${devList[@]} \
 请查看下面说明:"
 		ftBackUpDevScanning -h
+		return
 	fi
 
 	local md5InfoCheckfail=8
@@ -896,6 +920,9 @@ ftVersionPackageIsCreated()
 #	ftVersionPackageIsCreated 无参
 #=========================================================
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 	exit;; * )break;; esac;done
 
 	#耦合变量校验
@@ -906,6 +933,7 @@ EOF
 				mFilePathVersion=$mFilePathVersion \
 				请查看下面说明:"
 		ftVersionPackageIsCreated -h
+		return
 	fi
 
 	if [ -f $mFilePathVersion ];then

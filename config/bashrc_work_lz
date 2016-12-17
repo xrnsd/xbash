@@ -202,7 +202,8 @@ else
         echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
     fi
 fi
-
+# 标记为环境模式，此模式说明直接调用脚本实现
+export  XMODULE="env"
 
 #--------------------------命令封装---------------------------
 alias ..="cd .."

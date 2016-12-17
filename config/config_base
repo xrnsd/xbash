@@ -2,7 +2,9 @@
 #####----------------------变量--------------------------#########
 
 # 基本配置
-export readonly rXbashVersion="V0.5.9.7 beta"
+export readonly rXbashVersion="V0.6.0.0 beta"
+# 标记为脚本模式，此模式说明使用实现对应的封装命令
+export XMODULE="script"
 mUserPwdBase=123
 export mUserPwd=${mUserPwdBase:-'123'}
 
