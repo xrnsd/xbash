@@ -34,7 +34,7 @@
 
 	cd Xrnsd-extensions-to-bash
 	./init.sh
-	xc help
+	ftReadMe
 
 ##3.其他
 	1 已验证环境

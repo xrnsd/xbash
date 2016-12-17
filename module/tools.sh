@@ -92,7 +92,7 @@ ftMain()
 	"test")		ftTest "$@" ;break;;
 	"shutdown")	ftBoot	shutdown ;break;;
 	"reboot")	ftBoot	reboot ;break;;
-	"help")		ftReadMe $rBaseShellParameter3	;break;;
+	"help")		 ftReadMe $rBaseShellParameter3	;break;;
 	"clean_data_garbage")	ftCleanDataGarbage ; break;;
 	v | V | -v |-V)	ftVersion;break;;
 	vvv)	ftEcho -b xbash;		ftVersion
@@ -227,6 +227,9 @@ xversion--[无参] / 查看软件版本
 xg6572 ----- 下载mtk6572的工程
 	|// xg6572 分支名
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 exit;;
 	xc |test | clean_data_garbage|restartadb | help | gjh)ftEcho -g;
 cat<<EOF
@@ -241,6 +244,9 @@ xc	----- 常规自定义命令和扩展
 	|-- vvv						系统环境关键参数查看
 	|-- gjh		--------------------------	生成国际化所需的xml文件
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 exit;;
 	xb | backup | restore)ftEcho -g;
 cat<<EOF
@@ -250,6 +256,9 @@ xb	----- 系统维护
 	|-- backup	---------------- [root] ------	备份系统
 	|-- restore	---------------- [root] ------	还原系统
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 exit;;
 xk | monkey | systemui)ftEcho -g;
 cat<<EOF
@@ -260,18 +269,27 @@ xk	----- 关闭手机指定进程
 	|-- systemui	-----------------------------	关闭systemui
 	|-- 应用包名	-----------------------------	关闭指定app
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 exit;;
 	xt)
 cat<<EOF
 xt ----- 检测shell脚本，语法检测和测试运行
 	|// xt 脚本文件名
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 exit;;
 	xh)
 cat<<EOF
 xh ----- 查看具体命令说明
 	|// xh 命令名
 EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
 exit;;
 	*)ftReadMe -a;break;;
 	esac
