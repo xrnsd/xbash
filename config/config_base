@@ -2,7 +2,7 @@
 #####----------------------变量--------------------------#########
 
 # 基本配置
-export readonly rXbashVersion="V0.6.0.0 beta"
+export rXbashVersion="V0.6.0.0 beta"
 # 标记为脚本模式，此模式说明使用实现对应的封装命令
 export XMODULE="script"
 mUserPwdBase=123
@@ -13,57 +13,100 @@ rNameUser=${rNameUser:-`whoami | awk '{print $1}'|sort -u`}
 if [ "${S/ /}" != "$S" ];then
 	rNameUser=$(whoami)
 fi
-export readonly rNameUser
+export rNameUser
 
-export readonly rDirPathUserHome=/home/${rNameUser}
+export rDirPathUserHome=/home/${rNameUser}
 # home/xxxx
-export readonly rDirNameLog=log
-export readonly rDirNameTools=tools
-export readonly rDirNameCmd=cmds
+export rDirNameLog=log
+export rDirNameTools=tools
+export rDirNameCmd=cmds
 # home/$rNameUser/xxxx
-export readonly rDirNameCmdConfig=config
-export readonly rDirNameCmdData=data
-export readonly rDirNameCmdModule=module
+export rDirNameCmdConfig=config
+export rDirNameCmdData=data
+export rDirNameCmdModule=module
 # home/$rNameUser/cmds/modiule/test
-export readonly rDirNameCmdModuleTest=test
+export rDirNameCmdModuleTest=test
 
 # home/$rNameUser/xxxx
-export readonly rDirPathCmds=${rDirPathUserHome}/${rDirNameCmd}
+export rDirPathCmds=${rDirPathUserHome}/${rDirNameCmd}
 # home/$rNameUser/cmds/xxxx
-export readonly rDirPathCmdsData=${rDirPathCmds}/${rDirNameCmdData}
-export readonly rDirPathCmdsConfig=${rDirPathCmds}/${rDirNameCmdConfig}
-export readonly rDirPathCmdsModule=${rDirPathCmds}/${rDirNameCmdModule}
-export readonly rDirPathCmdsModuleTest=${rDirPathCmdsModule}/${rDirNameCmdModuleTest}
+export rDirPathCmdsData=${rDirPathCmds}/${rDirNameCmdData}
+export rDirPathCmdsConfig=${rDirPathCmds}/${rDirNameCmdConfig}
+export rDirPathCmdsModule=${rDirPathCmds}/${rDirNameCmdModule}
+export rDirPathCmdsModuleTest=${rDirPathCmdsModule}/${rDirNameCmdModuleTest}
 
 # home/$rNameUser/cmds/modiule/test/xxxx
-export readonly rFileNameCmdModuleTestBase=base.sh
+export rFileNameCmdModuleTestBase=base.sh
 # home/$rNameUser/cmds/modiule/xxxx
-export readonly rFileNameCmdModuleTools=tools.sh
-export readonly rFileNameCmdModuleCompile=compile.sh
-export readonly rFileNameCmdModuleMS=maintain_system.sh
+export rFileNameCmdModuleTools=tools.sh
+export rFileNameCmdModuleCompile=compile.sh
+export rFileNameCmdModuleMS=maintain_system.sh
 
 # home/$rNameUser/cmds/modiule/xxxx
-export readonly rFilePathCmdModuleTools=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
-export readonly rFilePathCmdModuleTestBase=${rDirPathCmdsModuleTest}/${rFileNameCmdModuleTestBase}
+export rFilePathCmdModuleTools=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
+export rFilePathCmdModuleTestBase=${rDirPathCmdsModuleTest}/${rFileNameCmdModuleTestBase}
 
-export readonly rCmdsPermissionRoot=(xb backup restore)
-export readonly rCmdsPermissionBase=(restartadb help monkey systemui launcher mtk_flashtool gjh bootanim)
+export rCmdsPermissionRoot=(xb backup restore)
+export rCmdsPermissionBase=(restartadb help monkey systemui launcher mtk_flashtool gjh bootanim)
 
 export mCmdsModuleDataDevicesList=()
 export mFilePathLog #=${rDirPathUserHome}/${rDirNameLog}/${rBaseShellParameter2}.log
 export mTimingStart
-export readonly rTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
+export rTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
 
-export readonly rIsDebug=false
+export rIsDebug=false
 
 commandAuthority=null
 
 
 # 非基本配置
-export readonly rDirPathTools=${rDirPathUserHome}/${rDirNameTools}
+export rDirPathTools=${rDirPathUserHome}/${rDirNameTools}
 
 
 #外部参数
-export readonly rBaseShellParameter1=$0
-export readonly rBaseShellParameter2=$1
-export readonly rBaseShellParameter3=$2
+export rBaseShellParameter1=$0
+export rBaseShellParameter2=$1
+export rBaseShellParameter3=$2
+
+# ========设定只读=========
+
+# 基本配置
+readonly rXbashVersion
+readonly mUserPwd
+readonly rNameUser
+readonly rDirPathUserHome
+
+readonly rDirNameLog
+readonly rDirNameTools
+readonly rDirNameCmd
+
+readonly rDirNameCmdConfig
+readonly rDirNameCmdData
+readonly rDirNameCmdModule
+
+readonly rDirNameCmdModuleTest
+
+readonly rDirPathCmds
+readonly rDirPathCmdsData
+readonly rDirPathCmdsConfig
+readonly rDirPathCmdsModule
+readonly rDirPathCmdsModuleTest
+
+readonly rFileNameCmdModuleTestBase
+readonly rFileNameCmdModuleTools
+readonly rFileNameCmdModuleCompile
+readonly rFileNameCmdModuleMS
+
+readonly rFilePathCmdModuleTools
+readonly rFilePathCmdModuleTestBase
+
+readonly rCmdsPermissionRoot
+readonly rCmdsPermissionBase
+readonly rTimeBackup
+readonly rIsDebug
+# 非基本配置
+readonly rDirPathTools
+#外部参数
+readonly rBaseShellParameter1
+readonly rBaseShellParameter2
+readonly rBaseShellParameter3
