@@ -124,10 +124,6 @@ ftMain()
 					"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
 					"bootanim")		ftBootAnimation $rBaseShellParameter3 $rBaseShellParameter2;break;;
 					"gjh")			ftGjh;break;;
-					# "gjh")			ftEcho -e [$rBaseShellParameter2]已关闭，请修改脚本打开
-					# 			ftReadMe $rBaseShellParameter2
-					# 			#java -jar ${rDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar;
-					# 			break;;
 				esac
 				done
 			else
@@ -158,6 +154,7 @@ ftReadMe()
 	while true; do
 		case "$1" in
 		a | A | -a |-A)
+	ftEcho -s “命令 参数 -h#可查看参数具体说明”
 	cat<<EOF
 =========================================================================
 	命令	--- 参数/命令说明
@@ -481,15 +478,28 @@ ftMtkFlashTool()
 {
 	local ftName=mtk下载工具
 	local tempDirPath=`pwd`
+	#使用示例
+	while true; do case "$1" in	h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftMtkFlashTool 无参
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * )break;; esac;done
 
 	#耦合变量校验
 	local valCount=0
 	if(( $#!=$valCount ))||[ -z "$tempDirPath" ]\
-				||[ -z "$rDirPathTools" ];then
-		ftEcho -eax "函数[${ftName}]的参数错误 \
+				||[ -z "$rDirPathTools" ]\
+				||[ ! -d "$rDirPathTools" ];then
+		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
 				tempDirPath=$tempDirPath \
 				rDirPathTools=$rDirPathTools"
+		ftMtkFlashTool -h
 	fi
 	local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1548
 
@@ -620,13 +630,35 @@ EOF
 
 ftEcho()
 {
-#=================== example=============================
-#
-#	 ftEcho [option] [Content]
-#	 ftEcho e 错误的选择1
-#	\033[47;30m  47背景色配置 30前景色配置
-#=========================================================
 	local ftName=工具信息提示
+	#使用示例
+	while true; do case "$1" in	h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftEcho		内容	# 直接显示内容
+#	ftEcho	-b	内容	# 标题，不换行，对字符串的缩进敏感
+#	ftEcho	-bh	内容	# 标题，换行，对字符串的缩进敏感
+#	ftEcho	-e	内容	# 错误信息显示，对字符串的缩进敏感
+#	ftEcho	-ex	内容	# 错误信息显示，显示完退出，对字符串的缩进敏感
+#	ftEcho	-ea	内容	# 错误信息多行显示，对字符串的缩进不敏感,包含内置数组会显示不正常
+#	ftEcho	-eax	内容	# 错误信息多行显示，对字符串的缩进不敏感,包含内置数组会显示不正常，显示完退出
+#	ftEcho	-y	内容	# 特定信息显示,y/n，对字符串的缩进敏感
+#	ftEcho	-s	内容	# 执行信息，对字符串的缩进敏感
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if(( $#<$valCount ));then
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				[参数数量def=1/2]valCount=$# "
+		ftEcho -h
+	fi
+
 	option=$1
 	option=${option:-'未制定显示信息'}
 	valList=$@
@@ -635,32 +667,28 @@ ftEcho()
 
 	while true; do
 	case $option in
-	#错误信息显示，对字符串的缩进敏感
+
 	e | E | -e | -E)		echo -e "\033[1;31m$content\033[0m"; break;;
-	#错误信息显示，显示退出，对字符串的缩进敏感
 	ex | EX | -ex | -EX)	echo -e "\033[1;31m$content\033[0m";sleep 3;exit;;
-	#执行信息，对字符串的缩进敏感
 	s | S | -s | -S)		echo;echo -e "\033[42;37m$content\033[0m"; break;;
-	# 标题，不换行，对字符串的缩进敏感
 	b | B| -b | -B)		echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
-	# 标题，换行，对字符串的缩进敏感
 	bh | BH | -bh | -BH)	echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
-	#特定信息显示,y/n，对字符串的缩进敏感
 	y | Y | -y | -Y)		echo;echo -en "${content}[y/n]"; break;;
-	#错误信息多行显示,对字符串的缩进不敏感,包含数组会显示不正常
 	ea| EA | -ea | -EA)	for val in ${content[@]}
 				do
 					echo -e "\033[1;31m$val\033[0m";
 				done
 				break;;
-	#错误信息多行显示，对字符串的缩进不敏感,包含数组会显示不正常
+
 	eax| EAX | -eax | -EAX)	for val in ${content[@]}
 				do
 					echo -e "\033[1;31m$val\033[0m";
 				done
 				exit;;
 	# 特定信息显示,命令说明的格式
-	g | G | -g | -G)cat<<EOF
+	g | G | -g | -G)
+	ftEcho -s “命令 参数 -h#可查看参数具体说明”
+	cat<<EOF
 =========================================================================
 命令	--- 参数/命令说明
 	|// 使用格式
@@ -727,7 +755,7 @@ ftBootAnimation()
 #	请进入动画资源目录后执行xc bootanim xxx
 #	ftBootAnimation [edittype] [path]
 #
-#	生成bootanimation2.zip,进入已new处理或解压的文件夹后可运行
+#	直接生成动画包，不做其他操作，不确认资源文件是否有效
 #	ftBootAnimation create /home/xxxx/test/bootanimation2
 #
 #	初始化生成bootanimation2.zip所需要的东东，然后生成动画包
