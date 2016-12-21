@@ -19,6 +19,8 @@ ftExample()
 
 	# ${dirPathFileList%/*}父目录路径
 	# ${dirPathFileList##*/}父目录名
+	# `basename /home/wgx` wgx
+	# `dirname /home/wgx` /home
 	# echo 文件名: ${file%.*}”
 	# echo 后缀名: ${file##*.}”
 
@@ -1229,6 +1231,109 @@ fileTypeList=$fileTypeList \
 			;;
 	esac
 	done
+}
+
+
+ftPushAppByName()
+{
+	# ====================    设定流程      ============================
+
+	# 确认ANDROID_PRODUCT_OUT非空,存在
+	# 确认当前目录有效
+	# 确认有对应模块名的apk文件存在
+	# 校验adb状态
+	# 确认adb权限
+	# 确认手机有对应模块名的apk文件存在
+	# 执行push操作
+
+	local ftName="push Apk文件"
+	local fileNameNewAppApkBase=$1
+	local dirPathOut=$ANDROID_PRODUCT_OUT
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftPushAppByName [AppName]
+#	ftPushAppByName SystemUI
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if(( $#!=$valCount ))||[ -z "$fileNameNewAppApkBase" ]\
+				||[ -z "$dirPathOut" ]\
+				||[ ! -d "$dirPathOut" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			fileNameNewAppApkBase=$fileNameNewAppApkBase \
+			dirPathOut=$dirPathOut \
+			请查看下面说明:"
+		ftExample -h
+		return
+	fi
+	dirList=(system/app system/priv-app)
+	local filePathAppApk=null
+	local filePathAppApkPhone=null
+	local dirPathAppApkPhone=null
+	for dir in ${dirList[*]}
+	do
+		local filePath=${ANDROID_PRODUCT_OUT}/${dir}/${fileNameNewAppApkBase}/${fileNameNewAppApkBase}.apk
+		if [ -f $filePath ];then
+			filePathAppApk=$filePath
+			dirPathAppApkPhone=${dir}/${fileNameNewAppApkBase}
+			filePathAppApkPhone=${dirPathAppApkPhone}/${fileNameNewAppApkBase}.apk
+		fi
+	done
+
+	if [ $filePath = "null" ];then
+		ftEcho -ex "[$ftName]出现错误，文件[$filePathAppApk]不存在"
+	fi
+
+	# 多个adb设备id遍历
+	# adb devices | while read line
+	# do
+	# 	if [ "$(echo $line | awk '{print $2}')" = "device" ];then
+	# 		echo $(echo $line | awk '{print $1}')
+	# 	fi
+	# done
+	#adb状态检测 ___当前没有设备或存在多个设备，状态都不是device
+	if [ $(adb get-state) = "device" ];then
+		#确定手机存在被覆盖的目标文件
+		local statusFileAppApkPhone=$(adb shell ls $filePathAppApkPhone)
+		if [[ ! $statusFileAppApkPhone =~ " No such file or directory" ]];then
+			# 确认adb权限
+			local statusAdbRoot=$(adb root)
+			# restarting adbd as root
+			# adbd is already running as root
+			# adbd cannot run as root in production builds
+			local statusAdbRemount=$(adb remount)
+			# remount succeeded
+			# remount of system failed: Permission denied remount failed
+
+			while [[ $statusAdbRoot =~ "cannot" ]]||[[ $statusAdbRemount =~ "failed" ]]; do
+				echo statusAdbRoot=$statusAdbRoot
+				echo statusAdbRemount=$statusAdbRemount
+				ftEcho -e adb状态初始化失败,按y退出，按除y任意键重新尝试
+				read -n1 sel
+				case "$sel" in
+					y | Y )	exit;;
+					* )	statusAdbRoot=$(adb root)
+						statusAdbRemount=$(adb remount)
+						;;
+				esac
+			done
+			adb push $filePathAppApk $dirPathAppApkPhone
+		else
+			ftEcho -ex "[$ftName]出现错误，手机里面不存在[$filePathAppApkPhone]"
+		fi
+	else
+		ftEcho -e adb状态异常,请重新尝试
+	fi
 }
 
 ftReduceFileList()
