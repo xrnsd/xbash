@@ -1233,7 +1233,6 @@ fileTypeList=$fileTypeList \
 	done
 }
 
-
 ftPushAppByName()
 {
 	# ====================    设定流程      ============================
@@ -1339,16 +1338,16 @@ EOF
 ftReduceFileList()
 {
 	local ftName=精简动画帧文件
-	local percentage=$1
-	local dirPathFileList=$2
-	local editType=del #surplus
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #
-#	ftReduceFileList2 百分比 目录
-#	ftReduceFileList2 60 /home/xxxx/temp
+#	ftReduceFileList 保留的百分比 目录
+#	ftReduceFileList 60 /home/xxxx/temp
+#
+#	ftReduceFileList 目录
+#	ftReduceFileList /home/xxxx/temp
 # 由于水平有限，实现对60%和50%之类的比例不敏感
 #=========================================================
 EOF
@@ -1357,29 +1356,43 @@ EOF
 	fi
 	exit;; * )break;; esac;done
 
+	if (( $#==2 ));then
+		local percentage=$1
+		local dirPathFileList=$2
+	elif (( $#==1 ));then
+		local dirPathFileList=$1
+		local percentage=100
+		echo -en "请输入保留的百分比:"
+		read percentage
+	fi
+	local editType=del #surplus
+
 	#耦合变量校验
 	local valCount=2
 	if(( $#!=$valCount ))||[ -z "$percentage" ]\
 				||[ -z "$dirPathFileList" ]\
+				||( ! echo -n $percentage | grep -q -e "^[0-9][0-9]*$")\
+				||(( $percentage<0 ))\
+				||(( $percentage>100 ))\
 				||[ ! -d "$dirPathFileList" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			percentage=$percentage \
+			[0<=*<=100]percentage=$percentage \
 			dirPathFileList=$dirPathFileList \
 			请查看下面说明:"
-		ftReduceFileList2 -h
+		ftReduceFileList -h
 		return
 	fi
 	ftFileDirEdit -e false $dirPathFileList
 	if [ $? -eq "2" ];then
 		ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
-	else
-		for file in `ls $dirPathFileList`
-		do
-			if [ ! -f $file ];then
-				ftEcho -ex 资源目录包含不是文件的东东：[${dirPathFileList}/${file}]
-			fi
-		done
+	# else
+	# 	for file in `ls $dirPathFileList`
+	# 	do
+	# 		if [ ! -f $file ];then
+	# 			ftEcho -e 资源目录包含不是文件的东东：[${dirPathFileList}/${file}]
+	# 		fi
+	# 	done
 	fi
 
 	if (( $percentage>50 ));then
