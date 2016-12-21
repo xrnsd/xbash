@@ -188,7 +188,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=1
@@ -249,7 +249,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=0
@@ -500,7 +500,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=2
@@ -574,7 +574,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=3
@@ -680,7 +680,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=3
@@ -831,7 +831,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=3
@@ -923,7 +923,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=0

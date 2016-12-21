@@ -169,7 +169,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=1

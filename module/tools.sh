@@ -1,6 +1,6 @@
 #!/bin/bash
 #####---------------------  说明  ---------------------------#########
-# 默认规划中，不可在此文件中出现，不被函数包裹的调用，定义
+# 不可在此文件中出现不被函数包裹的调用或定义
 # 人话，这里只放函数
 #####---------------------流程函数---------------------------#########
 ftExample()
@@ -36,7 +36,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=1
@@ -320,7 +320,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=1
@@ -388,7 +388,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=1
@@ -490,7 +490,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=0
@@ -537,7 +537,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=3
@@ -612,7 +612,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	if [ -z "$rIsDebug" ];then
@@ -651,7 +651,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=1
@@ -779,7 +779,7 @@ EOF
 		return
 	fi
 
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=2
@@ -980,7 +980,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=0
@@ -1016,7 +1016,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=0
@@ -1075,7 +1075,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local dirNameCmdModuleTest=test
@@ -1110,7 +1110,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	if [ -z "$mUserPwd" ]||[ -z "$edittype" ];then
@@ -1190,7 +1190,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=2
@@ -1260,7 +1260,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=1
@@ -1354,7 +1354,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	if (( $#==2 ));then
 		local percentage=$1
@@ -1520,7 +1520,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=1
@@ -1585,7 +1585,7 @@ EOF
 	if [ $XMODULE = "env" ];then
 		return
 	fi
-	exit;; * )break;; esac;done
+	exit;; * ) break;; esac;done
 
 	#耦合变量校验
 	local valCount=2
