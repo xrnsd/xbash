@@ -153,54 +153,53 @@ export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:/usr/local/cuda-7.5/bin:$ANDROID_SD
 
 #--------------------------环境检测---------------------------
 if [ ! -d "$JAVA_HOME" ];then
-    echo -e "\033[1;31mJava_环境配置错误\n$JAVA_HOME不存在\n\033[0m"
+	echo -e "\033[1;31mJava_环境配置错误\n$JAVA_HOME不存在\n\033[0m"
 fi
 if [ ! -d "$ANDROID_SDK" ];then
-    echo -e "\033[1;31mAndroid_SDK_环境配置错误\n$ANDROID_SDK 不存在\n\033[0m"
+	echo -e "\033[1;31mAndroid_SDK_环境配置错误\n$ANDROID_SDK 不存在\n\033[0m"
 else
 	alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
 fi
 if [ ! -d "$ANDROID_NDK" ];then
-    echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
+	echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
 fi
 
 if [ ! -d "$dirPathHomeCmd" ];then
-    echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
+	echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
 else
-    dirPathHomeCmdConfig=${dirPathHomeCmd}/config
-    fileNameXbashTragetConfigBase=config_base
-    filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
-    #全局变量
-    if [ -f $filePathXbashTragetConfigBase ];then
-        source  $filePathXbashTragetConfigBase
-        # 函数
-        if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
-            source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
+	dirPathHomeCmdConfig=${dirPathHomeCmd}/config
+	fileNameXbashTragetConfigBase=config_base
+	filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
+	#全局变量
+	if [ -f $filePathXbashTragetConfigBase ];then
+		source  $filePathXbashTragetConfigBase
+		# 函数
+		if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
+			source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
 			#命令封装
+			alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
 			alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
 			alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
-			alias xh='export XCMD=xh;${dirPathHomeCmd}/main.sh help $2'
 			alias xu='export XCMD=xu;gedit ${dirPathHome}/.bashrc'
-			alias xuu='export XCMD=xuu;gedit ${dirPathHomeCmd}'
+			alias xh='export XCMD=xh;${dirPathHomeCmd}/main.sh -h $2'
 			alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
 			alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
 			alias xd='export XCMD=xd;${dirPathHomeCmd}/main.sh mtk_flashtool'
-			alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
-			alias xt='export XCMD=xt;python ${dirPathHomeCmd}/module/test/pytools.py $2'
 			alias xi='export XCMD=xi;. ${dirPathHomeCmd}/${rFileNameCmdModuleCompile}'
+			alias xt='export XCMD=xt;python ${dirPathHomeCmd}/module/test/pytools.py $2'
 
 			#命令选项快速适配
-			complete -W "backup restore" xb
 			complete -W "compile" xi
+			complete -W "backup restore" xb
 			complete -W "systemui monkey launcher" xk
 			complete -W "restartadb help gjh test clean_data_garbage vvv bootanim" xc
 
-        else
-            echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
-        fi
-    else
-        echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
-    fi
+		else
+			echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
+		fi
+	else
+		echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
+	fi
 fi
 # 标记为环境模式，此模式说明直接调用脚本实现
 export  XMODULE="env"
@@ -208,14 +207,14 @@ export  XMODULE="env"
 #--------------------------命令封装---------------------------
 alias ..="cd .."
 alias ...="cd ../.."
-#alias xg='export XCMD=x;grep -irsn $2 ./'
 alias xr="source ~/.bashrc"
-alias xu='export XCMD=xu;gedit ${dirPathHome}/.bashrc'
-alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
-alias xp="export XCMD=xp;readlink -f"
 alias xgl='git log --pretty=oneline -10'
+alias xp="export XCMD=xp;readlink -f"
+#alias xg='export XCMD=x;grep -irsn $2 ./'
 alias xl='export XCMD=xl;adb logcat -c;adb logcat | grep'
+alias xu='export XCMD=xu;gedit ${dirPathHome}/.bashrc'
 alias xle='export XCMD=xle;adb logcat -c;adb logcat "*:E"'
+alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
 alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
 alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "KEY_BUILD_NUMBER"'
 
@@ -226,8 +225,7 @@ alias xx='echo '$userPwd' | sudo -S pm-hibernate'
 alias xg6572='git clone git@192.168.1.188:mtk6572.git -b'
 alias xg6820='git clone git@192.168.1.188:sprd6820.git -b'
 alias xg7731c='git clone git@192.168.1.188:sprd7731c.git -b'
-
-alias zz='git checkout -b'
+alias make7731c='mv out ../out_backup;source build/envsetup.sh ;lunch sp7731c_1h10_32v4_oversea-userdebug;kheader;make -j8 2>&1 |tee ~/log/build_userdebug.log;mv out ../out_userdebug;source build/envsetup.sh ;lunch sp7731c_1h10_32v4_oversea-user;kheader;make -j8 2>&1 |tee ~/log/build_user.log'
 
 #--------------------------命令选项快速适配---------------------------
 complete -W "123" xl

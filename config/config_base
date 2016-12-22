@@ -1,8 +1,13 @@
 #! /bin/bash
 #####----------------------变量--------------------------#########
 
+#外部参数
+export rBaseShellParameter1=$0
+export rBaseShellParameter2=$1
+export rBaseShellParameter3=$2
+
 # 基本配置
-export rXbashVersion="V0.6.0.0 beta"
+export rXbashVersion="V0.6.0.2 beta"
 # 标记为脚本模式，此模式说明使用实现对应的封装命令
 export XMODULE="script"
 mUserPwdBase=123
@@ -62,13 +67,11 @@ commandAuthority=null
 # 非基本配置
 export rDirPathTools=${rDirPathUserHome}/${rDirNameTools}
 
-
-#外部参数
-export rBaseShellParameter1=$0
-export rBaseShellParameter2=$1
-export rBaseShellParameter3=$2
-
 # ========设定只读=========
+#外部参数
+readonly rBaseShellParameter1
+readonly rBaseShellParameter2
+readonly rBaseShellParameter3
 
 # 基本配置
 readonly rXbashVersion
@@ -106,7 +109,3 @@ readonly rTimeBackup
 readonly rIsDebug
 # 非基本配置
 readonly rDirPathTools
-#外部参数
-readonly rBaseShellParameter1
-readonly rBaseShellParameter2
-readonly rBaseShellParameter3

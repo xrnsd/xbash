@@ -91,12 +91,12 @@ ftMain()
 	local ftName=工具主入口
 	while true; do
 	case $rBaseShellParameter2 in
-	"test")		ftTest "$@" ;break;;
-	"shutdown")	ftBoot	shutdown ;break;;
-	"reboot")	ftBoot	reboot ;break;;
-	"help")		 ftReadMe $rBaseShellParameter3	;break;;
-	"clean_data_garbage")	ftCleanDataGarbage ; break;;
-	v | V | -v |-V)	ftVersion;break;;
+	v | V | -v |-V)		ftVersion		;break;;
+	test)			ftTest "$@"		;break;;
+	reboot)			ftBoot	reboot		;break;;
+	shutdown)		ftBoot	shutdown	;break;;
+	clean_data_garbage)	ftCleanDataGarbage	; break;;
+	-h| -H| --help)		 ftReadMe $rBaseShellParameter3 $rBaseShellParameter2	;break;;
 	vvv)	ftEcho -b xbash;		ftVersion
 		ftEcho -b java;		java -version
 		ftEcho -b gcc;		gcc -v
@@ -172,12 +172,16 @@ xc ----- 常规自定义命令和扩展
 	|// xc ×××××
 	|
 	|-- test	--------------------------	shell测试
-	|-- clean_data_garbage				清空回收站
+	|-- clean_data_garbage	------------------	清空回收站
 	|-- restartadb	--------------------------	重启adb服务
 	|-- bootanim	--------------------------	制作开关机动画包
-	|-- v 						自定义命令版本
+	|	|-- xc bootanim	[edittype] [path]
+	|	|-- xc bootanim	 create	动画资源目录	不初始化，直接生成动画包
+	|	|-- xc bootanim	 new	动画资源目录	初始化后生成动画包
+	|
+	|-- v 		--------------------------	自定义命令版本
 	|-- help	--------------------------	查看自定义命令说明
-	|-- vvv						系统环境关键参数查看
+	|-- vvv		--------------------------	系统环境关键参数查看
 	|-- gjh		--------------------------	生成国际化所需的xml文件
 xk ----- 关闭手机指定进程
 	|// xk ×××××
@@ -206,7 +210,7 @@ xbh ----- 根据标签过滤命令历史
 xp ----- 查看文件绝对路径
 	|// xp 文件名
 	|
-xh ----- 查看具体命令说明
+//xh ----- 查看具体命令说明
 	|// xh 命令名
 	|
 xgl --- [无参] / 简单查看最近10次git commit
@@ -236,11 +240,16 @@ xc	----- 常规自定义命令和扩展
 	|// xc ×××××
 	|
 	|-- test	--------------------------	shell测试
-	|-- clean_data_garbage				清空回收站
+	|-- clean_data_garbage	------------------	清空回收站
 	|-- restartadb	--------------------------	重启adb服务
-	|-- v 						自定义命令版本
+	|-- bootanim	--------------------------	制作开关机动画包
+	|	|-- xc bootanim	[edittype] [path]
+	|	|-- xc bootanim	 create	动画资源目录	不初始化，直接生成动画包
+	|	|-- xc bootanim	 new	动画资源目录	初始化后生成动画包
+	|
+	|-- v 		--------------------------	自定义命令版本
 	|-- help	--------------------------	查看自定义命令说明
-	|-- vvv						系统环境关键参数查看
+	|-- vvv		--------------------------	系统环境关键参数查看
 	|-- gjh		--------------------------	生成国际化所需的xml文件
 EOF
 	if [ $XMODULE = "env" ];then
