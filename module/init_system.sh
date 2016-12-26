@@ -143,8 +143,8 @@ ftUpdateSoftware()
 	else
 		read -n1 sel
 	fi
-
-	listTargetVersionSoftwareName=${rListDevEnvCorrespondSftware["${rListDevEnv[$sel]}"]}
+	local devList=${rListDevEnv[$sel]}
+	listTargetVersionSoftwareName=${rListDevEnvCorrespondSftware["$devList"]}
 	eval listTargetVersionSoftware=\${$listTargetVersionSoftwareName[@]}
 	echo $rUserPwd | sudo -S apt-get install -y ${listTargetVersionSoftware[*]}
 }

@@ -1042,12 +1042,16 @@ EOF
 	#初始化命令log目录
 
 	local diarNameCmdLog=null
+	local parameterList=(-h shutdown vvv -v test restartadb)
+	local fileNameLogBase=$(date -d "today" +"%y%m%d__%H%M%S")
+
 	if [ -z "$rBaseShellParameter2" ];then
 		diarNameCmdLog=other
 	else
 		while true; do case $XCMD in
 		xk)
 			diarNameCmdLog=${XCMD}_ftKillPhoneAppByPackageName
+			fileNameLogBase=${fileNameLogBase}_${rBaseShellParameter2}
 			break;;
 		*)
 			diarNameCmdLog=${XCMD}_${rBaseShellParameter2}
@@ -1057,12 +1061,21 @@ EOF
 
 	dirPath=${rDirPathUserHome}/${rDirNameLog}/${diarNameCmdLog}
 
+	# 部分操作不记录日志
+	for parameter in ${parameterList[*]}
+	do
+		if [ $parameter = $rBaseShellParameter2 ];then
+			export mFilePathLog=/dev/null
+			return
+		fi
+	done
+
 	#不存在新建命令log目录
 	if [ ! -d "$dirPath" ];then
 		mkdir $dirPath
 	fi
 
-	export mFilePathLog=${dirPath}/$(date -d "today" +"%y%m%d_%H:%M:%S").log
+	export mFilePathLog=${dirPath}/${fileNameLogBase}.log
 	touch $mFilePathLog
 
 	if [ `whoami` = "root" ]; then

@@ -172,7 +172,9 @@ else
     filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
     #全局变量
     if [ -f $filePathXbashTragetConfigBase ];then
-        source  $filePathXbashTragetConfigBase
+        if [ -z "$rNameUser" ];then
+            source  $filePathXbashTragetConfigBase
+        fi
         # 函数
         if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
             source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}

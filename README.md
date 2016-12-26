@@ -49,12 +49,14 @@
 		│	    ├───── sdk  ---------------  android sdk
 		│	    └───── sp_flash_tool_v5.1548 全局参数
 		├── cmds      -------------------    xbash目录
+		├── log     -------------------    xbash的运行日志
 		└── .bashrc   -------------------    xbash中bashrc_work_lz的软连接
 
-	3 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现，xc为常用切稳定的实现
-	4 以root用户/权限运行xc clean_data_garbage，有使系统崩溃风险，请确认
-	5 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
-	6 xx[休眠]建议不要开启，这玩意脾气不好
-	7 提示找不到命令
-		打开终端
-		sudo chmod 777 -R /home/xxxx/cmds
+	3 提示找不到命令
+	sudo chmod -R a+x /home/xxxx/cmds/main.sh /home/xxxx/cmds/module /home/xxxx/cmds/config
+
+	4 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现，xc为常用切稳定的实现
+	5 直接在bash里面调用方法名不会被xbash记录日志
+	6 以root用户/权限运行xc clean_data_garbage，有使系统崩溃风险，请确认
+	7 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
+	8 xx[休眠]建议不要开启，这玩意脾气不好
