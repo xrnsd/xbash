@@ -91,16 +91,20 @@ ftMain()
 	local ftName=工具主入口
 	while true; do
 	case $rBaseShellParameter2 in
-	v | V | -v |-V)		ftVersion		;break;;
-	test)			ftTest "$@"		;break;;
-	reboot)			ftBoot	reboot		;break;;
-	shutdown)		ftBoot	shutdown	;break;;
-	clean_data_garbage)	ftCleanDataGarbage	; break;;
-	-h| -H| --help)		 ftReadMe $rBaseShellParameter3 $rBaseShellParameter2	;break;;
-	vvv)	ftEcho -b xbash;		ftVersion
-		ftEcho -b java;		java -version
-		ftEcho -b gcc;		gcc -v
-		break;;
+	v | V | -v |-V)		echo \"Xrnsd extensions to bash\" $rXbashVersion
+				break;;
+	test)			ftTest "$@"
+				break;;
+	reboot | shutdown)	ftBoot	$rBaseShellParameter2
+				break;;
+	clean_data_garbage)	ftCleanDataGarbage
+				break;;
+	-h| --help | -ft | -ftall)	ftReadMe $rBaseShellParameter3 $rBaseShellParameter2
+				break;;
+	vvv)			ftEcho -b xbash;		ftVersion
+				ftEcho -b java;		java -version
+				ftEcho -b gcc;		gcc -v
+	break;;
 	*)
 		#权限约束开始
 		ftWhoAmI $rBaseShellParameter2
@@ -155,6 +159,101 @@ ftReadMe()
 	local ftName=工具命令使用说明
 	while true; do
 		case "$1" in
+		ft | -ft )
+	cat<<EOF
+
+ftKillPhoneAppByPackageName      kill掉包名为packageName的应用
+ftCleanDataGarbage ------------- 清空回收站
+ftReduceFileList                 精简动画帧文件
+ftPushAppByName ---------------- push Apk文件
+ftBootAnimation                  生成开关机动画
+ftMtkFlashTool ----------------- mtk下载工具
+ftSynchronous                    文件同步
+ftReNameFile ------------------- 批量重命名
+ftRestartAdb                     重启adb sever
+ftBoot ------------------------- 延时免密码关机重启
+ftGjh                            生成国际化所需的xml文件
+
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+exit;;
+		ftall | -ftall )
+	cat<<EOF
+=========================================================================
+方法名 方法说明
+	|// 使用格式
+	|   说明
+	|-- 方法名 参数1 参数2
+例	|-- 方法名 参数1 参数2
+=========================================================================
+ftBootAnimation 生成开关机动画
+	|
+	|// ftBootAnimation [edittype] [path]
+	|   直接生成动画包，不做其他操作，不确认资源文件是否有效
+	|-- ftBootAnimation create path
+	|   初始化生成bootanimation2.zip所需要的东东，然后生成动画包
+	|-- ftBootAnimation new path
+	|
+ftBoot 延时免密码关机重启
+	|
+	|// ftBoot 关机/重启 时间/秒
+	|   100秒后自动关机/重启
+例	|-- ftBoot shutdown/shutdown 100
+	|
+ftReNameFile 批量重命名
+	|
+	|// ftReNameFile 目录
+	|// ftReNameFile 目录 文件名长度
+例	|-- ftReNameFile /home/xxxx/temp
+例	|-- ftReNameFile /home/xxxx/temp 5
+	|
+ftSynchronous 文件同步
+	|
+	|// ftSynchronous [dirPathArray] [fileTypeList]
+	|   在data_xx和data_xx之间同步类型为info或tgz的文件或目录
+例	|-- ftSynchronous "/media/data_xx /media/data_xx" ".*\.info\|.*\.tgz"
+	|
+ftPushAppByName push Apk文件
+	|
+	|// ftPushAppByName [AppName]
+	|// ftPushAppByName [filePathApk] [dirPath]
+	|   push SystemUI对应的apk到手机中,前提当前bash已初始化android build环境
+例	|-- ftPushAppByName SystemUI
+	|   push自定义apk 到/system/app
+例	|-- ftPushAppByName /home/xxx/xx.apk /system/app
+	|
+ftReduceFileList 精简动画帧文件
+	|
+	|// ftReduceFileList 目录
+	|// ftReduceFileList 保留的百分比 目录
+	|   另外输入保留比例
+例	|-- ftReduceFileList /home/xxxx/temp
+	|   保留百分之60的文件
+例	|-- ftReduceFileList 60 /home/xxxx/temp
+	|
+ftKillPhoneAppByPackageName kill掉包名为packageName的应用
+	|
+	|// ftKillPhoneAppByPackageName packageName
+	|
+ftGjh 生成国际化所需的xml文件
+	|// ftGjh 无参
+	|
+ftRestartAdb 重启adb sever
+	|// ftRestartAdb 无参
+	|
+ftCleanDataGarbage 清空回收站
+	|// ftCleanDataGarbage 无参
+	|
+ftMtkFlashTool mtk下载工具
+	|// ftMtkFlashTool 无参
+	|
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+exit;;
 		a | A | -a |-A)
 	ftEcho -s “命令 参数 -h#可查看参数具体说明”
 	cat<<EOF
@@ -304,18 +403,13 @@ exit;;
 done
 }
 
-ftVersion()
-{
-	echo \"Xrnsd extensions to bash\" $rXbashVersion
-}
-
 
 
 
 #####---------------------工具函数---------------------------#########
 ftKillPhoneAppByPackageName()
 {
-	local ftName=根据应用包名杀死应用
+	local ftName=kill掉包名为packageName的应用
 	local packageName=$1
 
 	#使用示例
@@ -1276,7 +1370,9 @@ ftPushAppByName()
 #=================== ${ftName}的使用示例=============
 #
 #	ftPushAppByName [AppName]
+#	ftPushAppByName [filePathApk] [dirPath]
 #	ftPushAppByName SystemUI
+#	ftPushAppByName ~/xx.apk /system/data
 #=========================================================
 EOF
 	if [ $XMODULE = "env" ];then
@@ -1285,10 +1381,10 @@ EOF
 	exit;; * ) break;; esac;done
 
 	#耦合变量校验
-	local valCount=1
-	if(( $#!=$valCount ))||[ -z "$fileNameNewAppApkBase" ]\
-				||[ -z "$dirPathOut" ]\
-				||[ ! -d "$dirPathOut" ];then
+	local valCount=2
+	if(( $#>$valCount ))||[ -z "$fileNameNewAppApkBase" ]\
+			||(( $#==1 ))&&[ ! -d "$dirPathOut" ]\
+			||(( $#==2 ))&&[ ! -f "$fileNameNewAppApkBase" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
 			fileNameNewAppApkBase=$fileNameNewAppApkBase \
@@ -1300,16 +1396,23 @@ EOF
 	dirList=(system/app system/priv-app)
 	local filePathAppApk=null
 	local filePathAppApkPhone=null
-	local dirPathAppApkPhone=null
-	for dir in ${dirList[*]}
-	do
-		local filePath=${ANDROID_PRODUCT_OUT}/${dir}/${fileNameNewAppApkBase}/${fileNameNewAppApkBase}.apk
-		if [ -f $filePath ];then
-			filePathAppApk=$filePath
-			dirPathAppApkPhone=${dir}/${fileNameNewAppApkBase}
-			filePathAppApkPhone=${dirPathAppApkPhone}/${fileNameNewAppApkBase}.apk
-		fi
-	done
+
+	#使用自定义apk
+	if [ -f $fileNameNewAppApkBase ];then
+		local filePath=$fileNameNewAppApkBase
+		dirPathAppApkPhone=$2
+	#不使用自定义apk
+	else
+		for dir in ${dirList[*]}
+		do
+			local filePath=${ANDROID_PRODUCT_OUT}/${dir}/${fileNameNewAppApkBase}/${fileNameNewAppApkBase}.apk
+			if [ -f $filePath ];then
+				filePathAppApk=$filePath
+				dirPathAppApkPhone=${dir}/${fileNameNewAppApkBase}
+				filePathAppApkPhone=${dirPathAppApkPhone}/${fileNameNewAppApkBase}.apk
+			fi
+		done
+	fi
 
 	if [ $filePath = "null" ];then
 		ftEcho -ex "[$ftName]出现错误，文件[$filePathAppApk]不存在"
@@ -1325,8 +1428,14 @@ EOF
 	#adb状态检测 ___当前没有设备或存在多个设备，状态都不是device
 	if [ $(adb get-state) = "device" ];then
 		#确定手机存在被覆盖的目标文件
+		local statusDirAppApkPhone=$(adb shell ls $dirPathAppApkPhone)
 		local statusFileAppApkPhone=$(adb shell ls $filePathAppApkPhone)
-		if [[ ! $statusFileAppApkPhone =~ " No such file or directory" ]];then
+		if [[ $statusDirAppApkPhone =~ " No such file or directory" ]]\
+			||(( $#==1 ))&&[[ $statusFileAppApkPhone =~ " No such file or directory" ]];then
+			ftEcho -eax "[$ftName]出现错误，设备不存在 \
+			dirPathAppApkPhone=$dirPathAppApkPhone \
+			filePathAppApkPhone=$filePathAppApkPhone]"
+		else
 			# 确认adb权限
 			local statusAdbRoot=$(adb root)
 			# restarting adbd as root
@@ -1349,8 +1458,6 @@ EOF
 				esac
 			done
 			adb push $filePathAppApk $dirPathAppApkPhone
-		else
-			ftEcho -ex "[$ftName]出现错误，手机里面不存在[$filePathAppApkPhone]"
 		fi
 	else
 		ftEcho -e adb状态异常,请重新尝试
@@ -1529,6 +1636,7 @@ ftReNameFile()
 	local ftName=批量重命名文件
 	# local extensionName=$1
 	local dirPathFileList=$1
+	local lengthFileName=$2
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -1545,11 +1653,12 @@ EOF
 	exit;; * ) break;; esac;done
 
 	#耦合变量校验
-	local valCount=1
-	if(( $#!=$valCount ))||[ -z "$dirPathFileList" ]\
-				||[ ! -d "$dirPathFileList" ];then
+	local valCount=2
+	if(( $#>$valCount ))||[ ! -d "$dirPathFileList" ]\
+		||(( $#==2 ));then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
+			lengthFileName=$lengthFileName \
 			dirPathFileList=$dirPathFileList \
 			请查看下面说明:"
 		ftReNameFile -h
@@ -1558,16 +1667,8 @@ EOF
 	ftFileDirEdit -e false $dirPathFileList
 	if [ $? -eq "2" ];then
 		ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
-	# else
-	# 	for file in `ls $dirPathFileList`
-	# 	do
-	# 		if [ ! -f $file ];then
-	# 			ftEcho -ex 资源目录包含不是文件的东东：[${dirPathFileList}/${file}]
-	# 		fi
-	# 	done
 	fi
-	 # fileList=`ls $dirPathFileList|grep '.png'`
-	 fileList=`ls $dirPathFileList`
+	fileList=`ls $dirPathFileList`
 
 	local dirNameFileListRename=RenameFiles
 	local dirPathFileListRename=${dirPathFileList}/${dirNameFileListRename}
@@ -1576,6 +1677,14 @@ EOF
 	fi
 	mkdir $dirPathFileListRename
 	index=0
+	if [ ! -z $lengthFileName ];then
+		lengthFileNameBase=1
+		while (( $lengthFileName > 0  ))
+		do
+			lengthFileName=`expr $lengthFileName - 1`
+			lengthFileNameBase=$(( $lengthFileNameBase * 10 ))
+		done
+	fi
 	for file in $fileList
 	do
 		# echo “filename: ${file%.*}”
@@ -1583,8 +1692,8 @@ EOF
 		if [ $file == $dirNameFileListRename ];then
 			continue
 		fi
-		a=$((10000+$index))
-		cp -f ${dirPathFileList}/${file} ${dirPathFileListRename}/${a:1}.${file##*.}
+		fileNameBase=$((lengthFileNameBase+$index))
+		cp -f ${dirPathFileList}/${file} ${dirPathFileListRename}/${fileNameBase:1}.${file##*.}
 		index=`expr $index + 1`
 	done
 }

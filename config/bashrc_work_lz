@@ -228,6 +228,9 @@ alias xg6572='git clone git@192.168.1.188:mtk6572.git -b'
 alias xg6820='git clone git@192.168.1.188:sprd6820.git -b'
 alias xg7731c='git clone git@192.168.1.188:sprd7731c.git -b'
 alias make7731c='mv out ../out_backup;source build/envsetup.sh ;lunch sp7731c_1h10_32v4_oversea-userdebug;kheader;make -j8 2>&1 |tee ~/log/build_userdebug.log;mv out ../out_userdebug;source build/envsetup.sh ;lunch sp7731c_1h10_32v4_oversea-user;kheader;make -j8 2>&1 |tee ~/log/build_user.log'
+alias xyhx='gedit vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c'
+
+
 
 #--------------------------命令选项快速适配---------------------------
 complete -W "123" xl
