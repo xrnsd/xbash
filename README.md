@@ -9,6 +9,7 @@
 	│		├── bashrc_home					为作者使用的普通用户相关bash配置文件
 	│		├── bashrc_root_work_lz			为root相关bash配置文件
 	│		├── bashrc_work_lz				为普通用户相关bash配置文件
+	│		├── config_bashrc_base			xbash的bashrc配置
 	│		└── config_system_init			android build环境初始化工具的配置文件
 	│
 	├── data	-----------------------	工具相关数据
@@ -38,7 +39,7 @@
 	./init.sh #初始化,下面命令3选1		
 		├── ./init.sh 	    初始化xbash
 		├── ./init.sh -system 初始化system
-		├── ./init.sh -all    初始化system,初始化xbash
+		└── ./init.sh -all    初始化system,初始化xbash
 	#重开一个终端	
 	ftReadMe或xc -h
 
