@@ -18,8 +18,9 @@
 	│
 	├── module	-----------------------	脚本实现文件[具体功能]
 	│		├── compile.sh					xbash的项目编译初始化
-	│		├── init_system.sh				android build环境初始化工具
-	│		├── init_xbash.sh					xbash环境初始化工具
+	│		├── init							初始化工具
+	│		│		├── init_xbash.sh			  xbash环境初始化工具
+	│		│		└── init_system.sh		  android build环境初始化工具
 	│		├── test							xbash的脚本测试工具
 	│		│		├── base.sh				  demo测试,请忽略此文件的修改
 	│		│		├── pytools.README
