@@ -74,7 +74,7 @@ ftXrnsdExtensionsToBashInit()
 		status=$?
 	done
 	# sed -i 's/被替换的内容/要替换成的内容/' file
-	sed -i "s/mUserPwdBase=/mUserPwdBase=$passwd #/" $filePathXbashTragetConfigBase
+	sed -i "s/rUserPwdBase=/rUserPwdBase=$passwd #/" $filePathXbashTragetConfigBase
 
 	#--------------------------备份bash配置文件--------------------------
 	local fileNameXbashTragetDataBashBaseBackup=bashrc_base_backup

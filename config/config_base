@@ -7,11 +7,11 @@ export rBaseShellParameter2=$1
 export rBaseShellParameter3=$2
 
 # 基本配置
-export rXbashVersion="V0.6.0.4 beta"
+export rXbashVersion="V0.6.0.5 beta"
 # 标记为脚本模式，此模式说明使用实现对应的封装命令
 export XMODULE="script"
-mUserPwdBase=123
-export mUserPwd=${mUserPwdBase:-'123'}
+rUserPwdBase=123
+export rUserPwd=${rUserPwdBase:-'123'}
 
 rNameUser=$(who am i | awk '{print $1}'|sort -u)
 rNameUser=${rNameUser:-`whoami | awk '{print $1}'|sort -u`}
@@ -75,7 +75,7 @@ readonly rBaseShellParameter3
 
 # 基本配置
 readonly rXbashVersion
-readonly mUserPwd
+readonly rUserPwd
 readonly rNameUser
 readonly rDirPathUserHome
 

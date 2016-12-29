@@ -172,6 +172,7 @@ else
 	filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
 	#全局变量
 	if [ -f $filePathXbashTragetConfigBase ];then
+		#不重复添加config_base的只读设定
 		if [ -z "$rNameUser" ];then
 			source  $filePathXbashTragetConfigBase
 		fi

@@ -1,1 +1,1 @@
-module/init_xbash.sh
+module/init/base.sh

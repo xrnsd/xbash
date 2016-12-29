@@ -1,3 +1,5 @@
 #config/bashrc_home
 data/excludeDirsAll.list
 data/excludeDirsBase.list
+data/hosts.base
+data/hosts.new

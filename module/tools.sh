@@ -163,12 +163,13 @@ ftReadMe()
 	cat<<EOF
 
 ftKillPhoneAppByPackageName      kill掉包名为packageName的应用
-ftCleanDataGarbage ------------- 清空回收站
+ftCleanDataGarbage ------------- 快速清空回收站
 ftReduceFileList                 精简动画帧文件
 ftPushAppByName ---------------- push Apk文件
 ftBootAnimation                  生成开关机动画
 ftMtkFlashTool ----------------- mtk下载工具
 ftSynchronous                    文件同步
+ftUpdateHosts ------------------ 更新hosts
 ftReNameFile ------------------- 批量重命名
 ftRestartAdb                     重启adb sever
 ftBoot ------------------------- 延时免密码关机重启
@@ -215,6 +216,14 @@ ftSynchronous 文件同步
 	|   在data_xx和data_xx之间同步类型为info或tgz的文件或目录
 例	|-- ftSynchronous "/media/data_xx /media/data_xx" ".*\.info\|.*\.tgz"
 	|
+ftUpdateHosts 更新hosts
+	|
+	|   使用默认hosts源[https://raw.githubusercontent.com/racaljk/hosts/master/hosts]
+	|// ftUpdateHosts 无参
+	|   使用自定义hosts源
+	|// ftUpdateHosts https://xxxx
+例	|-- ftUpdateHosts https://raw/hosts/master/hosts
+	|
 ftPushAppByName push Apk文件
 	|
 	|// ftPushAppByName [AppName]
@@ -243,7 +252,7 @@ ftGjh 生成国际化所需的xml文件
 ftRestartAdb 重启adb sever
 	|// ftRestartAdb 无参
 	|
-ftCleanDataGarbage 清空回收站
+ftCleanDataGarbage 快速清空回收站
 	|// ftCleanDataGarbage 无参
 	|
 ftMtkFlashTool mtk下载工具
@@ -271,7 +280,7 @@ xc ----- 常规自定义命令和扩展
 	|// xc ×××××
 	|
 	|-- test	--------------------------	shell测试
-	|-- clean_data_garbage	------------------	清空回收站
+	|-- clean_data_garbage	------------------	快速清空回收站
 	|-- restartadb	--------------------------	重启adb服务
 	|-- bootanim	--------------------------	制作开关机动画包
 	|	|-- xc bootanim	[edittype] [path]
@@ -339,7 +348,7 @@ xc	----- 常规自定义命令和扩展
 	|// xc ×××××
 	|
 	|-- test	--------------------------	shell测试
-	|-- clean_data_garbage	------------------	清空回收站
+	|-- clean_data_garbage	------------------	快速清空回收站
 	|-- restartadb	--------------------------	重启adb服务
 	|-- bootanim	--------------------------	制作开关机动画包
 	|	|-- xc bootanim	[edittype] [path]
@@ -458,17 +467,17 @@ ftRestartAdb()
 {
 	#耦合变量校验
 	local valCount=0
-	if(( $#!=$valCount ))||[ -z "$mUserPwd" ];then
+	if(( $#!=$valCount ))||[ -z "$rUserPwd" ];then
 		ftEcho -eax "函数[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			mUserPwd=$mUserPwd"
+			rUserPwd=$rUserPwd"
 	fi
 
 	local ftName=重启adb sever
-	echo $mUserPwd | sudo -S adb kill-server
+	echo $rUserPwd | sudo -S adb kill-server
 	echo
 	sleep 2
-	echo $mUserPwd | sudo -S adb start-server
+	echo $rUserPwd | sudo -S adb start-server
 	echo server-start
 	adb devices
 }
@@ -547,7 +556,7 @@ EOF
 
 ftCleanDataGarbage()
 {
-	local ftName=清空回收站
+	local ftName=快速清空回收站
 	ftInitDevicesList
 
 	#耦合变量校验
@@ -609,7 +618,7 @@ EOF
 	local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1548
 
 	cd $toolDirPath&&
-	echo "$mUserPwd" | sudo -S ./flash_tool&&
+	echo "$rUserPwd" | sudo -S ./flash_tool&&
 	cd $tempDirPath
 }
 
@@ -1229,10 +1238,10 @@ EOF
 	exit;; * ) break;; esac;done
 
 	#耦合变量校验
-	if [ -z "$mUserPwd" ]||[ -z "$edittype" ];then
+	if [ -z "$rUserPwd" ]||[ -z "$edittype" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量_def=1/2]valCount=$# \
-				mUserPwd=$mUserPwd \
+				rUserPwd=$rUserPwd \
 				edittype=$edittype \
 				[时间/秒]rBaseShellParameter3=$rBaseShellParameter3 \
 				请查看下面说明:"
@@ -1260,7 +1269,7 @@ EOF
 			sleep 1
 		done
 		echo -e "\b\b"
-		echo $mUserPwd | sudo -S shutdown -h now
+		echo $rUserPwd | sudo -S shutdown -h now
 		break;;
 		reboot)
 		for i in `seq -w $waitLong -1 1`
@@ -1269,7 +1278,7 @@ EOF
 			sleep 1
 		done
 		echo -e "\b\b"
-		echo $mUserPwd | sudo -S reboot
+		echo $rUserPwd | sudo -S reboot
 		break;;
 		* )
 			ftEcho -e 错误的选择：$sel
@@ -1918,5 +1927,83 @@ EOF
 		return 0
 	else
 		return 2
+	fi
+}
+
+ftUpdateHosts()
+{
+	local ftName=更新hosts
+	local filePathHosts=/etc/hosts
+	local urlCustomHosts=$1
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#使用默认hosts源
+#	ftUpdateHosts 无参
+#
+#使用自定义hosts源
+#	ftUpdateHosts [URL]
+#	ftUpdateHosts https://raw.githubusercontent.com/racaljk/hosts/master/hosts
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if (( $#>$valCount ))||[ ! -f "$filePathHosts" ]\
+				||[ ! -d "$rDirPathCmdsData" ];then
+		ftEcho -ea "[${ftName}]参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			filePathHosts=$filePathHosts \
+			rDirPathCmdsData=rDirPathCmdsData \
+			请查看下面说明:"
+		ftUpdateHosts -h
+		return
+	fi
+
+	# 下载hosts文件
+	local url="https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
+	local netTool=wget
+	local fileNameHostsNew="hosts.new"
+	local filePathHostsNew=${rDirPathCmdsData}/${fileNameHostsNew}
+	if [ ! -z "$urlCustomHosts" ];then
+		url=$urlCustomHosts
+	fi
+	"$netTool" -q "$url" -O "$filePathHostsNew"
+
+	# 对比hosts文件，确定有无更新
+	local hostsVersionBase="Last updated:"
+	local hostsVersionOld=$(cat $filePathHosts|grep "$hostsVersionBase"|sed s/[[:space:]]//g)
+	local hostsVersionNew=$(cat $filePathHostsNew|grep "$hostsVersionBase"|sed s/[[:space:]]//g)
+	if [ ! -f $filePathHostsNew ]||[ "$hostsVersionOld" = "$hostsVersionNew" ];then
+		rm -f $filePathHostsNew
+		ftEcho -ex hosts没有更新,将退出
+	else
+		local fileNameHostsBase=hosts.base
+		local filePathHostsBase=${rDirPathCmdsData}/${fileNameHostsBase}
+		if [ ! -f "$filePathHostsBase" ];then
+			echo "127.0.0.1	localhost
+127.0.1.1	$rNameUser
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+#added by $rNameUser" >$filePathHostsBase
+		fi
+		# 文件拼接
+		local fileNameHostsAllNew=hosts
+		local filePathHostsAllNew=${rDirPathCmdsData}/${fileNameHostsAllNew}
+		cat $filePathHostsBase $filePathHostsNew>$filePathHostsAllNew
+		# 覆盖文件
+		echo $rUserPwd | sudo -S mv $filePathHosts ${filePathHosts}_${hostsVersionOld}
+		echo $rUserPwd | sudo -S mv -f $filePathHostsAllNew $filePathHosts
 	fi
 }
