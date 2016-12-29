@@ -33,7 +33,12 @@
 ##2.初始化环境
 
 	cd Xrnsd-extensions-to-bash
-	./init.sh
+	sudo chmod -R a+x /home/xxxx/cmds/main.sh /home/xxxx/cmds/module /home/xxxx/cmds/config
+	./init.sh #初始化,下面命令3选1		
+		├── ./init.sh 	    初始化xbash
+		├── ./init.sh -system 初始化system
+		├── ./init.sh -all    初始化system,初始化xbash
+	#重开一个终端	
 	ftReadMe或xc -h
 
 ##3.其他
@@ -51,12 +56,10 @@
 		├── cmds      -------------------    xbash目录
 		├── log     -------------------    xbash的运行日志
 		└── .bashrc   -------------------    xbash中bashrc_work_lz的软连接
+		
 
-	3 提示找不到命令
-	sudo chmod -R a+x /home/xxxx/cmds/main.sh /home/xxxx/cmds/module /home/xxxx/cmds/config
-
-	4 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现，xc为常用切稳定的实现
-	5 直接在bash里面调用方法名不会被xbash记录日志
-	6 以root用户/权限运行xc clean_data_garbage，有使系统崩溃风险，请确认
-	7 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
-	8 xx[休眠]建议不要开启，这玩意脾气不好
+	3 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现，xc为常用切稳定的实现
+	4 直接在bash里面调用方法名不会被xbash记录日志
+	5 以root用户/权限运行xc clean_data_garbage，有使系统崩溃风险，请确认
+	6 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
+	7 xx[休眠]建议不要开启，这玩意脾气不好
