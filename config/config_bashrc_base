@@ -1,0 +1,107 @@
+#--------------------------终端自身设定---------------------------
+#终端提示
+export PS1='xrnsd\[\033[44m\][\w]\[\033[0m\]:'
+# 忽略[连续]重复命令
+export HISTCONTROL=ignoredups
+# 忽略特定命令
+export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:xc:xd:xk:xu;xr:xbh:xs:xss:xh:xp:xb:xt:xgl:xi:xl:xkd:xversion:xx:history*"
+# 命令历史文件大小
+export HISTFILESIZE=10000000000
+# 保存历史命令条数
+export HISTSIZE=1000000000
+# 以追加的方式保存命令历史
+shopt -s histappend
+
+#----------------	部分环境变量	---------------------------
+#export JAVA_HOME=${dirPathHomeTools}/jdk/1.6.038
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+export JRE_HOME=${JAVA_HOME}/jre
+export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+export ANDROID_SDK=${dirPathHomeTools}/sdk
+export ANDROID_SDK_HOME=$ANDROID_SDK
+export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r10c
+export LD_LIBRARY_PATH=${dirPathHomeTools}/sp_flash_tool_v5.1548:${dirPathHomeTools}/sp_flash_tool_v5.1548/lib:$LD_LIBRARY_PATH
+export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:/usr/local/cuda-7.5/bin:$ANDROID_SDK/platform-tools:$ANDROID_SDK/tools:$ANDROID_NDK:/usr/local/cuda-8.0/bin/:$PATH
+#缓存目录[android优化加速部分]
+export CCACHE_DIR=/media/data/.ccache
+
+#--------------------------环境检测---------------------------
+if [ ! -d "$JAVA_HOME" ];then
+	echo -e "\033[1;31mJava_环境配置错误\n$JAVA_HOME不存在\n\033[0m"
+fi
+if [ ! -d "$ANDROID_SDK" ];then
+	echo -e "\033[1;31mAndroid_SDK_环境配置错误\n$ANDROID_SDK 不存在\n\033[0m"
+else
+	alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
+fi
+if [ ! -d "$ANDROID_NDK" ];then
+	echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
+fi
+
+if [ ! -d "$dirPathHomeCmd" ];then
+	echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
+else
+	fileNameXbashTragetConfigBase=config_base
+	filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
+	#全局变量
+	if [ -f $filePathXbashTragetConfigBase ];then
+		#不重复添加config_base的只读设定
+		if [ -z "$rNameUser" ];then
+			source  $filePathXbashTragetConfigBase
+		fi
+		# 函数
+		if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
+			source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
+			#命令封装
+			alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
+			alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
+			alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
+			alias xu='export XCMD=xu;gedit ${dirPathHome}/.bashrc'
+			alias xh='export XCMD=xh;${dirPathHomeCmd}/main.sh -h $2'
+			alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
+			alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
+			alias xd='export XCMD=xd;${dirPathHomeCmd}/main.sh mtk_flashtool'
+			alias xi='export XCMD=xi;. ${dirPathHomeCmd}/${rFileNameCmdModuleCompile}'
+			alias xt='export XCMD=xt;python ${dirPathHomeCmd}/module/test/pytools.py $2'
+
+			#命令选项快速适配
+			complete -W "compile" xi
+			complete -W "backup restore" xb
+			complete -W "systemui monkey launcher" xk
+			complete -W "restartadb help gjh test clean_data_garbage vvv bootanim" xc
+
+		else
+			echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
+		fi
+	else
+		echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
+	fi
+fi
+# 标记为环境模式，此模式说明直接调用脚本实现
+export  XMODULE="env"
+
+#--------------------------命令封装---------------------------
+alias ..="cd .."
+alias ...="cd ../.."
+alias xr="source ~/.bashrc"
+alias xgl='git log --pretty=oneline -10'
+alias xp="export XCMD=xp;readlink -f"
+#alias xg='export XCMD=x;grep -irsn $2 ./'
+alias xl='export XCMD=xl;adb logcat -c;adb logcat | grep'
+alias xu='export XCMD=xu;gedit ${dirPathHome}/.bashrc'
+alias xle='export XCMD=xle;adb logcat -c;adb logcat "*:E"'
+alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
+alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
+alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "KEY_BUILD_NUMBER"'
+
+#--------------------------命令选项快速适配---------------------------
+complete -W "123" xl
+complete -W "123" xle
+
+#-------------------------android优化加速部分------------------
+#编译加速 c/c++ 部分
+export USE_CCACHE=1
+export CACHE_UMASK=002
+unset CCACHE_HARDLINK
+#分布式编译集群的IP组
+#export DISTCC_HOSTS="192.168.3.114"

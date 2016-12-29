@@ -122,12 +122,11 @@ EOF
 	local dirPathXbashTragetModule=${dirPathXbashTraget}/${dirNameXbashTragetModule}
 	# gnome-terminal -x bash -c "source $filePathXbashTragetConfigBase;\
 	# 			source ${dirPathXbashTragetModule}/tools.sh;\
-	# 			ftVersion;\
 	# 			echo 初始化完成;\
 	# 			read temp"
 	source $filePathXbashTragetConfigBase
 	source ${dirPathXbashTragetModule}/tools.sh
-	ftVersion
+	echo \"Xrnsd extensions to bash\" $rXbashVersion
 	echo 初始化完成
 
 }

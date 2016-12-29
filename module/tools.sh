@@ -101,7 +101,7 @@ ftMain()
 				break;;
 	-h| --help | -ft | -ftall)	ftReadMe $rBaseShellParameter3 $rBaseShellParameter2
 				break;;
-	vvv)			ftEcho -b xbash;		ftVersion
+	vvv)			ftEcho -b xbash;		echo \"Xrnsd extensions to bash\" $rXbashVersion
 				ftEcho -b java;		java -version
 				ftEcho -b gcc;		gcc -v
 	break;;
