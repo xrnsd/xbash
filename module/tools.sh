@@ -2007,3 +2007,49 @@ ff02::2 ip6-allrouters
 		echo $rUserPwd | sudo -S mv -f $filePathHostsAllNew $filePathHosts
 	fi
 }
+
+ftCopySprdPacFileList()
+{
+	local ftName=自动复制pac相关文件
+	local dirPathOut=$ANDROID_PRODUCT_OUT
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftExample 无参
+#	ftExample [example]
+#	ftExample xxxx
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=0
+	if(( $#!=$valCount ))||[ -z "$example1" ]\
+				||[ -z "$example2" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			example1=$example1 \
+			example2=$example2 \
+			请查看下面说明:"
+		ftExample -h
+		return
+	fi
+
+	fileNameList=(boot.img \
+			cache.img \
+			fdl1.bin \
+			fdl2.bin \
+			persist.img \
+			prodnv.img \
+			recovery.img \
+			sysinfo.img \
+			system.img \
+			u-boot.bin \
+			u-boot-spl-16k.bin \
+			userdata.img)
+}

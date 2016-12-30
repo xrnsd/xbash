@@ -108,7 +108,7 @@ fi
 
 #added by wgx
 #=========================================================================
-#======================  自定义配置 =======================================
+#====================== 自定义配置 =======================================
 #=========================================================================
 #----------------	基础变量	----------------------------------
 userName=$(who am i | awk '{print $1}'|sort -u)
@@ -119,12 +119,16 @@ fi
 dirPathHome=/home/${userName}
 dirPathHomeCmd=${dirPathHome}/cmds
 dirPathHomeTools=${dirPathHome}/tools
-dirPathHomeCmdConfig=${dirPathHomeCmd}/config
-fileNameXbashTragetBashrcConfigBase=config_bashrc_base
-filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetBashrcConfigBase}
+if [ ! -d "$dirPathHomeCmd" ];then
+    echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
+else
+    dirPathHomeCmdConfig=${dirPathHomeCmd}/config
+    fileNameXbashTragetBashrcConfigBase=config_bashrc_base
+    filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetBashrcConfigBase}
 
-#----------------	加载xbash的bashrc基础配置	------------------
-source $filePathXbashTragetBashrcConfigBase
+    #----------------   加载xbash的bashrc基础配置  ------------------
+    source $filePathXbashTragetBashrcConfigBase
+fi
 
 #---------------------------------不稳定命令---------------------------------
 alias xx='echo '$userPwd' | sudo -S pm-hibernate'

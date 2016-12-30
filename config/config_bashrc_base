@@ -38,44 +38,40 @@ if [ ! -d "$ANDROID_NDK" ];then
 	echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
 fi
 
-if [ ! -d "$dirPathHomeCmd" ];then
-	echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
-else
-	fileNameXbashTragetConfigBase=config_base
-	filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
-	#全局变量
-	if [ -f $filePathXbashTragetConfigBase ];then
-		#不重复添加config_base的只读设定
-		if [ -z "$rNameUser" ];then
-			source  $filePathXbashTragetConfigBase
-		fi
-		# 函数
-		if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
-			source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
-			#命令封装
-			alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
-			alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
-			alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
-			alias xu='export XCMD=xu;gedit ${dirPathHome}/.bashrc'
-			alias xh='export XCMD=xh;${dirPathHomeCmd}/main.sh -h $2'
-			alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
-			alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
-			alias xd='export XCMD=xd;${dirPathHomeCmd}/main.sh mtk_flashtool'
-			alias xi='export XCMD=xi;. ${dirPathHomeCmd}/${rFileNameCmdModuleCompile}'
-			alias xt='export XCMD=xt;python ${dirPathHomeCmd}/module/test/pytools.py $2'
-
-			#命令选项快速适配
-			complete -W "compile" xi
-			complete -W "backup restore" xb
-			complete -W "systemui monkey launcher" xk
-			complete -W "restartadb help gjh test clean_data_garbage vvv bootanim" xc
-
-		else
-			echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
-		fi
-	else
-		echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
+fileNameXbashTragetConfigBase=config_base
+filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
+#全局变量
+if [ -f $filePathXbashTragetConfigBase ];then
+	#不重复添加config_base的只读设定
+	if [ -z "$rNameUser" ];then
+		source  $filePathXbashTragetConfigBase
 	fi
+	# 函数
+	if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
+		source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
+		#命令封装
+		alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
+		alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
+		alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
+		alias xu='export XCMD=xu;gedit ${dirPathHomeCmdConfig}/config_bashrc_base'
+		alias xh='export XCMD=xh;${dirPathHomeCmd}/main.sh -h $2'
+		alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
+		alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
+		alias xd='export XCMD=xd;${dirPathHomeCmd}/main.sh mtk_flashtool'
+		alias xi='export XCMD=xi;. ${dirPathHomeCmd}/${rFileNameCmdModuleCompile}'
+		alias xt='export XCMD=xt;python ${dirPathHomeCmd}/module/test/pytools.py $2'
+
+		#命令选项快速适配
+		complete -W "compile" xi
+		complete -W "backup restore" xb
+		complete -W "systemui monkey launcher" xk
+		complete -W "restartadb help gjh test clean_data_garbage vvv bootanim" xc
+
+	else
+		echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
+	fi
+else
+	echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
 fi
 # 标记为环境模式，此模式说明直接调用脚本实现
 export  XMODULE="env"
@@ -88,11 +84,11 @@ alias xgl='git log --pretty=oneline -10'
 alias xp="export XCMD=xp;readlink -f"
 #alias xg='export XCMD=x;grep -irsn $2 ./'
 alias xl='export XCMD=xl;adb logcat -c;adb logcat | grep'
-alias xu='export XCMD=xu;gedit ${dirPathHome}/.bashrc'
 alias xle='export XCMD=xle;adb logcat -c;adb logcat "*:E"'
 alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
 alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
-alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "KEY_BUILD_NUMBER"'
+alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
+		cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "KEY_BUILD_NUMBER"'
 
 #--------------------------命令选项快速适配---------------------------
 complete -W "123" xl
