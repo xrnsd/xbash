@@ -1,6 +1,6 @@
 #!/bin/bash
 #####-----------------------变量------------------------------#########
-readonly rModuleName=test.sh
+readonly rModuleName=test/base.sh
 #####----------------------初始化demo环境--------------------------#######
 # 函数
 if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
@@ -27,5 +27,4 @@ else
 	dirPathHome=$dirPathHome\n\
 	\033[0m"
 fi
-
 #####----------------------demo函数--------------------------#########

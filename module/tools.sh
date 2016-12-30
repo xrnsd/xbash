@@ -125,6 +125,7 @@ ftMain()
 				case $rBaseShellParameter2 in
 					"mtk_flashtool")		ftMtkFlashTool ; break;;
 					"restartadb")		ftRestartAdb; break;;
+					"pac")			ftCopySprdPacFileList; break;;
 					"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
 					"systemui")		ftKillPhoneAppByPackageName com.android.systemui; break;;
 					"launcher")		ftKillPhoneAppByPackageName com.android.launcher3; break;;
@@ -163,6 +164,7 @@ ftReadMe()
 	cat<<EOF
 
 ftKillPhoneAppByPackageName      kill掉包名为packageName的应用
+ftCopySprdPacFileList ---------- 自动复制sprd的pac相关文件
 ftCleanDataGarbage ------------- 快速清空回收站
 ftReduceFileList                 精简动画帧文件
 ftPushAppByName ---------------- push Apk文件
@@ -246,6 +248,9 @@ ftKillPhoneAppByPackageName kill掉包名为packageName的应用
 	|
 	|// ftKillPhoneAppByPackageName packageName
 	|
+ftCopySprdPacFileList 自动复制sprd的pac相关文件
+	|// ftCopySprdPacFileList 无参
+	|
 ftGjh 生成国际化所需的xml文件
 	|// ftGjh 无参
 	|
@@ -279,6 +284,7 @@ xb ----- 系统维护
 xc ----- 常规自定义命令和扩展
 	|// xc ×××××
 	|
+	|-- pac		--------------------------	自动复制sprd的pac相关文件
 	|-- test	--------------------------	shell测试
 	|-- clean_data_garbage	------------------	快速清空回收站
 	|-- restartadb	--------------------------	重启adb服务
@@ -347,6 +353,7 @@ cat<<EOF
 xc	----- 常规自定义命令和扩展
 	|// xc ×××××
 	|
+	|-- pac		--------------------------	自动复制sprd的pac相关文件
 	|-- test	--------------------------	shell测试
 	|-- clean_data_garbage	------------------	快速清空回收站
 	|-- restartadb	--------------------------	重启adb服务
@@ -1205,8 +1212,7 @@ EOF
 	#耦合变量校验
 	local dirNameCmdModuleTest=test
 	local filePathCmdModuleTest=${rDirPathCmdsModule}/${dirNameCmdModuleTest}/${rFileNameCmdModuleTestBase}
-	if [ -z "$rDirPathCmdsModule" ]\
-			||[ ! -f "$filePathCmdModuleTest" ];then
+	if [ ! -d "$rDirPathCmdsModule" ]||[ ! -f "$filePathCmdModuleTest" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
 				filePathCmdModuleTest=$filePathCmdModuleTest \
@@ -1214,7 +1220,6 @@ EOF
 		ftTest -h
 		return
 	fi
-
 	$filePathCmdModuleTest "$@"
 }
 
@@ -2010,16 +2015,17 @@ ff02::2 ip6-allrouters
 
 ftCopySprdPacFileList()
 {
-	local ftName=自动复制pac相关文件
+	local ftName=自动复制sprd的pac相关文件
+	# ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
+	# ANDROID_PRODUCT_OUT=/media/data/ptkfier/code/sp7731c/code/out/target/product/sp7731c_1h10_32v4
+	local dirPathCode=$ANDROID_BUILD_TOP
 	local dirPathOut=$ANDROID_PRODUCT_OUT
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #
-#	ftExample 无参
-#	ftExample [example]
-#	ftExample xxxx
+#	ftCopySprdPacFileList 无参
 #=========================================================
 EOF
 	if [ $XMODULE = "env" ];then
@@ -2029,18 +2035,29 @@ EOF
 
 	#耦合变量校验
 	local valCount=0
-	if(( $#!=$valCount ))||[ -z "$example1" ]\
-				||[ -z "$example2" ];then
+	if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
+			||[ ! -d "$dirPathOut" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			example1=$example1 \
-			example2=$example2 \
+			dirPathCode=$dirPathCode \
+			dirPathOut=$dirPathOut \
 			请查看下面说明:"
-		ftExample -h
+		ftCopySprdPacFileList -h
 		return
 	fi
-
-	fileNameList=(boot.img \
+	cd $ANDROID_BUILD_TOP
+	local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+	local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+	local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+	local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+	versionName=${versionName/$keyVersion/}
+	versionName=${versionName/\");/}
+	versionName=$(echo $versionName |sed s/[[:space:]]//g)
+	local dirPathCodeRoot=${dirPathCode%/*}
+	local dirPathCodeRootPacres=${dirPathCodeRoot}/res
+	local dirNameBranchVersion=${branchName}____${versionName}
+	local dirPathBranchVersion=${dirPathCodeRootPacres}/${dirNameBranchVersion}
+	local fileNameList=(boot.img \
 			cache.img \
 			fdl1.bin \
 			fdl2.bin \
@@ -2052,4 +2069,18 @@ EOF
 			u-boot.bin \
 			u-boot-spl-16k.bin \
 			userdata.img)
+	if [ -d "$dirPathBranchVersion" ];then
+		rm -rf $dirPathBranchVersion
+	fi
+	mkdir $dirPathBranchVersion
+
+	for fileName in ${fileNameList[*]}
+	do
+		filePath=${dirPathOut}/${fileName}
+		if [ -f $filePath ];then
+			cp -v -f $filePath $dirPathBranchVersion
+		else
+			ftEcho -ex 文件[$filePath]不存在
+		fi
+	done
 }

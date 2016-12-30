@@ -1,4 +1,6 @@
 #!/bin/bash
+#####-----------------------变量------------------------------#########
+readonly rModuleName=init/base.sh
 shellParameter1=${1:-'base'}
 
 while true; do
@@ -19,4 +21,3 @@ while true; do
 				;;
 	esac
 done
-#####----------------------demo函数--------------------------#########

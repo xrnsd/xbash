@@ -52,7 +52,7 @@ export rFilePathCmdModuleTools=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
 export rFilePathCmdModuleTestBase=${rDirPathCmdsModuleTest}/${rFileNameCmdModuleTestBase}
 
 export rCmdsPermissionRoot=(xb backup restore)
-export rCmdsPermissionBase=(restartadb help monkey systemui launcher mtk_flashtool gjh bootanim)
+export rCmdsPermissionBase=(restartadb help monkey systemui launcher mtk_flashtool gjh bootanim pac)
 
 export mCmdsModuleDataDevicesList=()
 export mFilePathLog #=${rDirPathUserHome}/${rDirNameLog}/${rBaseShellParameter2}.log
