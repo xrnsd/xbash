@@ -1,4 +1,5 @@
 #config/bashrc_home
+log
 data/excludeDirsAll.list
 data/excludeDirsBase.list
 data/hosts.base

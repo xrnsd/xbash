@@ -51,15 +51,17 @@ export rFileNameCmdModuleMS=maintain_system.sh
 export rFilePathCmdModuleTools=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
 export rFilePathCmdModuleTestBase=${rDirPathCmdsModuleTest}/${rFileNameCmdModuleTestBase}
 
+export rDirPathCmdsLog=${rDirPathCmds}/${rDirNameLog}
+export mFilePathLog #=${rDirPathUserHome}/${rDirNameLog}/${rBaseShellParameter2}.log
+
+export rIsDebug=false
+export rTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
+
 export rCmdsPermissionRoot=(xb backup restore)
 export rCmdsPermissionBase=(restartadb help monkey systemui launcher mtk_flashtool gjh bootanim pac)
 
 export mCmdsModuleDataDevicesList=()
-export mFilePathLog #=${rDirPathUserHome}/${rDirNameLog}/${rBaseShellParameter2}.log
 export mTimingStart
-export rTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
-
-export rIsDebug=false
 
 commandAuthority=null
 
@@ -93,6 +95,7 @@ readonly rDirPathCmds
 readonly rDirPathCmdsData
 readonly rDirPathCmdsConfig
 readonly rDirPathCmdsModule
+readonly rDirPathCmdsLog
 readonly rDirPathCmdsModuleTest
 
 readonly rFileNameCmdModuleTestBase

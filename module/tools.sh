@@ -158,6 +158,16 @@ ftOther()
 ftReadMe()
 {
 	local ftName=工具命令使用说明
+
+	# 凡调用此方法的操作产生的日志都视为无效
+	dirPathLogExpired=${mFilePathLog%/*}
+	dirPathLogOther=${rDirPathCmdsLog}/other
+	if [ ! -d "$dirPathLogOther" ];then
+		mkdir -p $dirPathLogOther
+	fi
+	mv $dirPathLogExpired ${dirPathLogOther}/$(basename $dirPathLogExpired)
+	export mFilePathLog=${dirPathLogOther}/$(basename $mFilePathLog)
+
 	while true; do
 		case "$1" in
 		ft | -ft )
@@ -1149,10 +1159,19 @@ EOF
 		ftLog -h
 		return
 	fi
+	# 部分操作不记录日志
+	for parameter in ${parameterList[*]}
+	do
+		if [ $parameter = $XCMD ]||[ $parameter = $rBaseShellParameter2 ];then
+			export mFilePathLog=/dev/null
+			return
+		fi
+	done
+
 	#初始化命令log目录
 
 	local diarNameCmdLog=null
-	local parameterList=(-h shutdown vvv -v test restartadb)
+	local parameterList=(xs xss -h vvv -v test restartadb)
 	local fileNameLogBase=$(date -d "today" +"%y%m%d__%H%M%S")
 
 	if [ -z "$rBaseShellParameter2" ];then
@@ -1169,25 +1188,16 @@ EOF
 		esac;done
 	fi
 
-	dirPath=${rDirPathUserHome}/${rDirNameLog}/${diarNameCmdLog}
-
-	# 部分操作不记录日志
-	for parameter in ${parameterList[*]}
-	do
-		if [ $parameter = $rBaseShellParameter2 ];then
-			export mFilePathLog=/dev/null
-			return
-		fi
-	done
+	dirPath=${rDirPathCmdsLog}/${diarNameCmdLog}
 
 	#不存在新建命令log目录
 	if [ ! -d "$dirPath" ];then
 		mkdir $dirPath
 	fi
-
+	# 设定log路径
 	export mFilePathLog=${dirPath}/${fileNameLogBase}.log
 	touch $mFilePathLog
-
+	# 清除高权限
 	if [ `whoami` = "root" ]; then
 		chmod 777 -R $dirPath
 	fi
