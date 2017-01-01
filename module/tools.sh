@@ -91,7 +91,7 @@ ftMain()
 	local ftName=工具主入口
 	while true; do
 	case $rBaseShellParameter2 in
-	v | V | -v |-V)		echo \"Xrnsd extensions to bash\" $rXbashVersion
+	-v | --version )		echo \"Xrnsd extensions to bash\" $rXbashVersion
 				break;;
 	test)			ftTest "$@"
 				break;;
@@ -101,7 +101,7 @@ ftMain()
 				break;;
 	-h| --help | -ft | -ftall)	ftReadMe $rBaseShellParameter3 $rBaseShellParameter2
 				break;;
-	vvv)			ftEcho -b xbash;		echo \"Xrnsd extensions to bash\" $rXbashVersion
+	vvv | -vvv)			ftEcho -b xbash;		echo \"Xrnsd extensions to bash\" $rXbashVersion
 				ftEcho -b java;		java -version
 				ftEcho -b gcc;		gcc -v
 	break;;
@@ -165,8 +165,10 @@ ftReadMe()
 	if [ ! -d "$dirPathLogOther" ];then
 		mkdir -p $dirPathLogOther
 	fi
-	mv $dirPathLogExpired ${dirPathLogOther}/$(basename $dirPathLogExpired)
-	export mFilePathLog=${dirPathLogOther}/$(basename $mFilePathLog)
+	if [ $dirPathLogOther != $dirPathLogExpired ];then
+		mv $dirPathLogExpired ${dirPathLogOther}/$(basename $dirPathLogExpired)
+		export mFilePathLog=${dirPathLogOther}/$(basename $mFilePathLog)
+	fi
 
 	while true; do
 		case "$1" in
@@ -1159,6 +1161,12 @@ EOF
 		ftLog -h
 		return
 	fi
+
+	#初始化命令log目录
+
+	local diarNameCmdLog=null
+	local parameterList=(xs xss -h vvv -v test restartadb)
+	local fileNameLogBase=$(date -d "today" +"%y%m%d__%H%M%S")
 	# 部分操作不记录日志
 	for parameter in ${parameterList[*]}
 	do
@@ -1167,12 +1175,6 @@ EOF
 			return
 		fi
 	done
-
-	#初始化命令log目录
-
-	local diarNameCmdLog=null
-	local parameterList=(xs xss -h vvv -v test restartadb)
-	local fileNameLogBase=$(date -d "today" +"%y%m%d__%H%M%S")
 
 	if [ -z "$rBaseShellParameter2" ];then
 		diarNameCmdLog=other
