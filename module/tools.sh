@@ -165,7 +165,7 @@ ftReadMe()
 	if [ ! -d "$dirPathLogOther" ];then
 		mkdir -p $dirPathLogOther
 	fi
-	if [ $dirPathLogOther != $dirPathLogExpired ];then
+	if [ $dirPathLogOther != $dirPathLogExpired ]&&[ $mFilePathLog != "/dev/null" ];then
 		mv $dirPathLogExpired ${dirPathLogOther}/$(basename $dirPathLogExpired)
 		export mFilePathLog=${dirPathLogOther}/$(basename $mFilePathLog)
 	fi
@@ -200,35 +200,35 @@ exit;;
 方法名 方法说明
 	|// 使用格式
 	|   说明
-	|-- 方法名 参数1 参数2
-例	|-- 方法名 参数1 参数2
+	|  方法名 参数1 参数2
+例	|  方法名 参数1 参数2
 =========================================================================
 ftBootAnimation 生成开关机动画
 	|
 	|// ftBootAnimation [edittype] [path]
 	|   直接生成动画包，不做其他操作，不确认资源文件是否有效
-	|-- ftBootAnimation create path
+	|  ftBootAnimation create path
 	|   初始化生成bootanimation2.zip所需要的东东，然后生成动画包
-	|-- ftBootAnimation new path
+	|  ftBootAnimation new path
 	|
 ftBoot 延时免密码关机重启
 	|
 	|// ftBoot 关机/重启 时间/秒
 	|   100秒后自动关机/重启
-例	|-- ftBoot shutdown/shutdown 100
+例	|  ftBoot shutdown/shutdown 100
 	|
 ftReNameFile 批量重命名
 	|
 	|// ftReNameFile 目录
 	|// ftReNameFile 目录 文件名长度
-例	|-- ftReNameFile /home/xxxx/temp
-例	|-- ftReNameFile /home/xxxx/temp 5
+例	|  ftReNameFile /home/xxxx/temp
+例	|  ftReNameFile /home/xxxx/temp 5
 	|
 ftSynchronous 文件同步
 	|
 	|// ftSynchronous [dirPathArray] [fileTypeList]
 	|   在data_xx和data_xx之间同步类型为info或tgz的文件或目录
-例	|-- ftSynchronous "/media/data_xx /media/data_xx" ".*\.info\|.*\.tgz"
+例	|  ftSynchronous "/media/data_xx /media/data_xx" ".*\.info\|.*\.tgz"
 	|
 ftUpdateHosts 更新hosts
 	|
@@ -236,25 +236,25 @@ ftUpdateHosts 更新hosts
 	|// ftUpdateHosts 无参
 	|   使用自定义hosts源
 	|// ftUpdateHosts https://xxxx
-例	|-- ftUpdateHosts https://raw/hosts/master/hosts
+例	|  ftUpdateHosts https://raw/hosts/master/hosts
 	|
 ftPushAppByName push Apk文件
 	|
 	|// ftPushAppByName [AppName]
 	|// ftPushAppByName [filePathApk] [dirPath]
 	|   push SystemUI对应的apk到手机中,前提当前bash已初始化android build环境
-例	|-- ftPushAppByName SystemUI
+例	|  ftPushAppByName SystemUI
 	|   push自定义apk 到/system/app
-例	|-- ftPushAppByName /home/xxx/xx.apk /system/app
+例	|  ftPushAppByName /home/xxx/xx.apk /system/app
 	|
 ftReduceFileList 精简动画帧文件
 	|
 	|// ftReduceFileList 目录
 	|// ftReduceFileList 保留的百分比 目录
 	|   另外输入保留比例
-例	|-- ftReduceFileList /home/xxxx/temp
+例	|  ftReduceFileList /home/xxxx/temp
 	|   保留百分之60的文件
-例	|-- ftReduceFileList 60 /home/xxxx/temp
+例	|  ftReduceFileList 60 /home/xxxx/temp
 	|
 ftKillPhoneAppByPackageName kill掉包名为packageName的应用
 	|
@@ -286,35 +286,35 @@ exit;;
 =========================================================================
 	命令	--- 参数/命令说明
 	|// 使用格式
-	|-- 参数	 ---------------- [参数权限] ----	参数说明
+	|  参数	 ---------------- [参数权限] ----	参数说明
 =========================================================================
 xb ----- 系统维护
 	|// xb ×××××
 	|
-	|-- backup	---------------- [root] ------	备份系统
-	|-- restore	---------------- [root] ------	还原系统
+	|  backup	---------------- [root] ------	备份系统
+	|  restore	---------------- [root] ------	还原系统
 xc ----- 常规自定义命令和扩展
 	|// xc ×××××
 	|
-	|-- pac		--------------------------	自动复制sprd的pac相关文件
-	|-- test	--------------------------	shell测试
-	|-- clean_data_garbage	------------------	快速清空回收站
-	|-- restartadb	--------------------------	重启adb服务
-	|-- bootanim	--------------------------	制作开关机动画包
-	|	|-- xc bootanim	[edittype] [path]
-	|	|-- xc bootanim	 create	动画资源目录	不初始化，直接生成动画包
-	|	|-- xc bootanim	 new	动画资源目录	初始化后生成动画包
+	|  pac		--------------------------	自动复制sprd的pac相关文件
+	|  test		--------------------------	shell测试
+	|  clean_data_garbage	------------------	快速清空回收站
+	|  restartadb	--------------------------	重启adb服务
+	|  bootanim	--------------------------	制作开关机动画包
+	|	|  xc bootanim	[edittype] [path]
+	|	|  xc bootanim	 create	动画资源目录	不初始化，直接生成动画包
+	|	|  xc bootanim	 new	动画资源目录	初始化后生成动画包
 	|
-	|-- v 		--------------------------	自定义命令版本
-	|-- help	--------------------------	查看自定义命令说明
-	|-- vvv		--------------------------	系统环境关键参数查看
-	|-- gjh		--------------------------	生成国际化所需的xml文件
+	|  v 		--------------------------	自定义命令版本
+	|  help		--------------------------	查看自定义命令说明
+	|  vvv		--------------------------	系统环境关键参数查看
+	|  gjh		--------------------------	生成国际化所需的xml文件
 xk ----- 关闭手机指定进程
 	|// xk ×××××
 	|
-	|-- monkey	-----------------------------	关闭monkey
-	|-- systemui	-----------------------------	关闭systemui
-	|-- 应用包名	-----------------------------	关闭指定app
+	|  monkey	-----------------------------	关闭monkey
+	|  systemui	-----------------------------	关闭systemui
+	|  应用包名	-----------------------------	关闭指定app
 xl ----- 过滤 android 含有tag的所有等级的log
 	|// xl tag
 	|
@@ -365,19 +365,19 @@ cat<<EOF
 xc	----- 常规自定义命令和扩展
 	|// xc ×××××
 	|
-	|-- pac		--------------------------	自动复制sprd的pac相关文件
-	|-- test	--------------------------	shell测试
-	|-- clean_data_garbage	------------------	快速清空回收站
-	|-- restartadb	--------------------------	重启adb服务
-	|-- bootanim	--------------------------	制作开关机动画包
-	|	|-- xc bootanim	[edittype] [path]
-	|	|-- xc bootanim	 create	动画资源目录	不初始化，直接生成动画包
-	|	|-- xc bootanim	 new	动画资源目录	初始化后生成动画包
+	|  pac		--------------------------	自动复制sprd的pac相关文件
+	|  test		--------------------------	shell测试
+	|  clean_data_garbage	------------------	快速清空回收站
+	|  restartadb	--------------------------	重启adb服务
+	|  bootanim	--------------------------	制作开关机动画包
+	|	|  xc bootanim	[edittype] [path]
+	|	|  xc bootanim	 create	动画资源目录	不初始化，直接生成动画包
+	|	|  xc bootanim	 new	动画资源目录	初始化后生成动画包
 	|
-	|-- v 		--------------------------	自定义命令版本
-	|-- help	--------------------------	查看自定义命令说明
-	|-- vvv		--------------------------	系统环境关键参数查看
-	|-- gjh		--------------------------	生成国际化所需的xml文件
+	|  v 		--------------------------	自定义命令版本
+	|  help		--------------------------	查看自定义命令说明
+	|  vvv		--------------------------	系统环境关键参数查看
+	|  gjh		--------------------------	生成国际化所需的xml文件
 EOF
 	if [ $XMODULE = "env" ];then
 		return
@@ -388,8 +388,8 @@ cat<<EOF
 xb	----- 系统维护
 	|// xb ×××××
 	|
-	|-- backup	---------------- [root] ------	备份系统
-	|-- restore	---------------- [root] ------	还原系统
+	|  backup	---------------- [root] ------	备份系统
+	|  restore	---------------- [root] ------	还原系统
 EOF
 	if [ $XMODULE = "env" ];then
 		return
@@ -400,9 +400,9 @@ cat<<EOF
 xk	----- 关闭手机指定进程
 	|// xk ×××××
 	|
-	|-- monkey	-------------------------------	关闭monkey
-	|-- systemui	-----------------------------	关闭systemui
-	|-- 应用包名	-----------------------------	关闭指定app
+	|  monkey	-------------------------------	关闭monkey
+	|  systemui	-----------------------------	关闭systemui
+	|  应用包名	-----------------------------	关闭指定app
 EOF
 	if [ $XMODULE = "env" ];then
 		return
@@ -825,7 +825,7 @@ EOF
 =========================================================================
 命令	--- 参数/命令说明
 	|// 使用格式
-	|-- 参数	 ---------------- [参数权限] ----	参数说明
+	|  参数	 ---------------- [参数权限] ----	参数说明
 =========================================================================
 EOF
 break;;
