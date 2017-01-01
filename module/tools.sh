@@ -2021,7 +2021,7 @@ ff02::2 ip6-allrouters
 		cat $filePathHostsBase $filePathHostsNew>$filePathHostsAllNew
 		# 覆盖文件
 		echo $rUserPwd | sudo -S mv $filePathHosts ${filePathHosts}_${hostsVersionOld}
-		echo $rUserPwd | sudo -S mv -f $filePathHostsAllNew $filePathHosts
+		echo $rUserPwd | sudo -S mv $filePathHostsAllNew $filePathHosts
 	fi
 }
 
