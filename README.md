@@ -12,10 +12,12 @@
 	│		├── config_bashrc_base			xbash的bashrc配置
 	│		└── config_system_init			android build环境初始化工具的配置文件
 	│
-	├── data	-----------------------	工具相关数据
+	├── data	--------------------------- 工具相关数据
 	│		├── logo.png
 	│		├── logo.psd
 	│		└── user-dirs.dirs				home下默认文件夹配置
+	|
+	├── log   --------------------------- xbash的运行日志	
 	│
 	├── module	-----------------------	脚本实现文件[具体功能]
 	│		├── compile.sh					xbash的项目编译初始化
@@ -55,8 +57,7 @@
 		│	    ├───── jdk  ---------------    java jdk
 		│	    ├───── sdk  ---------------    android sdk
 		│	    └───── sp_flash_tool_v5.1548   全局参数
-		├── cmds      -------------------  xbash目录
-		├── log     ---------------------  xbash的运行日志
+		├── cmds      -------------------  xbash目		
 		└── .bashrc   -------------------  xbash中bashrc_work_lz的软连接
 		
 
