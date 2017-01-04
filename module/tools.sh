@@ -177,6 +177,7 @@ ftReadMe()
 
 ftKillPhoneAppByPackageName      kill掉包名为packageName的应用
 ftCopySprdPacFileList ---------- 自动复制sprd的pac相关文件
+ftBackupOutsByMove               备份out
 ftCleanDataGarbage ------------- 快速清空回收站
 ftReduceFileList                 精简动画帧文件
 ftPushAppByName ---------------- push Apk文件
@@ -268,6 +269,9 @@ ftGjh 生成国际化所需的xml文件
 	|
 ftRestartAdb 重启adb sever
 	|// ftRestartAdb 无参
+	|
+ftBackupOutsByMove 备份out
+	|// ftBackupOutsByMove 无参
 	|
 ftCleanDataGarbage 快速清空回收站
 	|// ftCleanDataGarbage 无参
@@ -2095,4 +2099,57 @@ EOF
 			ftEcho -ex 文件[$filePath]不存在
 		fi
 	done
+}
+
+ftBackupOutsByMove()
+{
+	local ftName=移动备份out
+	# ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
+	# ANDROID_PRODUCT_OUT=/media/data/ptkfier/code/sp7731c/code/out/target/product/sp7731c_1h10_32v4
+	local dirPathCode=$ANDROID_BUILD_TOP
+	local dirPathOut=$ANDROID_PRODUCT_OUT
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftBackupOutsByMove 无参
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=0
+	if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
+			||[ ! -d "$dirPathOut" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			dirPathCode=$dirPathCode \
+			dirPathOut=$dirPathOut \
+			请查看下面说明:"
+		ftBackupOutsByMove -h
+		return
+	fi
+	cd $ANDROID_BUILD_TOP
+	local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+	local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+	local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+	local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+	versionName=${versionName/$keyVersion/}
+	versionName=${versionName/\");/}
+	versionName=$(echo $versionName |sed s/[[:space:]]//g)
+	local dirPathCodeRoot=${dirPathCode%/*}
+	local dirPathCodeRootOuts=${dirPathCodeRoot}/outs
+	local dirNameBranchVersion=${branchName}____${versionName}
+	local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
+	if [ ! -d "$dirPathOutBranchVersion" ];then
+		mv out/ $dirPathOutBranchVersion
+	else
+		ftEcho -ex 存在相同out
+	fi
+
+
 }
