@@ -166,8 +166,6 @@ ftReadMe()
 		mkdir $dirPathLogOther
 	fi
 	if [ $dirPathLogOther != $dirPathLogExpired ]&&[ $mFilePathLog != "/dev/null" ];then
-		echo $dirPathLogOther
-		echo $(basename $dirPathLogExpired)
 		local dirPathExpired=${dirPathLogOther}/$(basename $dirPathLogExpired)
 		if [ -d $dirPathExpired ];then
 			cp ${dirPathLogExpired}/* $dirPathExpired
