@@ -439,9 +439,6 @@ exit;;
 done
 }
 
-
-
-
 #####---------------------工具函数---------------------------#########
 ftKillPhoneAppByPackageName()
 {
@@ -733,6 +730,7 @@ EOF
 	esac
 	done
 }
+
 ftDebug()
 {
 	local ftName=调试用，实时跟踪变量变化
@@ -880,7 +878,6 @@ ftTiming()
 	fi
 	mTimingStart=
 }
-
 
 ftBootAnimation()
 {
@@ -2154,6 +2151,4 @@ EOF
 	else
 		ftEcho -ex 存在相同out
 	fi
-
-
 }
