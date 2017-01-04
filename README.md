@@ -16,8 +16,8 @@
 	│		├── logo.png
 	│		├── logo.psd
 	│		└── user-dirs.dirs				home下默认文件夹配置
-	|
-	├── log   --------------------------- xbash的运行日志	
+	│
+	├── log   --------------------------- xbash的运行日志
 	│
 	├── module	-----------------------	脚本实现文件[具体功能]
 	│		├── compile.sh					xbash的项目编译初始化
@@ -38,11 +38,11 @@
 
 	cd Xrnsd-extensions-to-bash
 	sudo chmod -R a+x /home/xxxx/cmds/main.sh /home/xxxx/cmds/module /home/xxxx/cmds/config
-	./init.sh #初始化,下面命令3选1		
+	./init.sh #初始化,下面命令3选1
 		├── ./init.sh 	    初始化xbash
 		├── ./init.sh -system 初始化system
 		└── ./init.sh -all    初始化system,初始化xbash
-	#重开一个终端	
+	#重开一个终端
 	ftReadMe或xc -h
 
 ##3.其他
@@ -57,9 +57,9 @@
 		│	    ├───── jdk  ---------------    java jdk
 		│	    ├───── sdk  ---------------    android sdk
 		│	    └───── sp_flash_tool_v5.1548   全局参数
-		├── cmds      -------------------  xbash目		
+		├── cmds      -------------------  xbash目
 		└── .bashrc   -------------------  xbash中bashrc_work_lz的软连接
-		
+
 
 	3 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现，xc为常用切稳定的实现
 	4 直接在bash里面调用方法名不会被xbash记录日志

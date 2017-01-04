@@ -160,13 +160,21 @@ ftReadMe()
 	local ftName=工具命令使用说明
 
 	# 凡调用此方法的操作产生的日志都视为无效
-	dirPathLogExpired=${mFilePathLog%/*}
-	dirPathLogOther=${rDirPathCmdsLog}/other
+	local dirPathLogExpired=${mFilePathLog%/*}
+	local dirPathLogOther=${rDirPathCmdsLog}/other
 	if [ ! -d "$dirPathLogOther" ];then
-		mkdir -p $dirPathLogOther
+		mkdir $dirPathLogOther
 	fi
 	if [ $dirPathLogOther != $dirPathLogExpired ]&&[ $mFilePathLog != "/dev/null" ];then
-		mv $dirPathLogExpired ${dirPathLogOther}/$(basename $dirPathLogExpired)
+		echo $dirPathLogOther
+		echo $(basename $dirPathLogExpired)
+		local dirPathExpired=${dirPathLogOther}/$(basename $dirPathLogExpired)
+		if [ -d $dirPathExpired ];then
+			cp ${dirPathLogExpired}/* $dirPathExpired
+			rm -rf $dirPathLogExpired
+		else
+			mv $dirPathLogExpired $dirPathExpired
+		fi
 		export mFilePathLog=${dirPathLogOther}/$(basename $mFilePathLog)
 	fi
 
@@ -261,23 +269,21 @@ ftKillPhoneAppByPackageName kill掉包名为packageName的应用
 	|
 	|// ftKillPhoneAppByPackageName packageName
 	|
+==========================================
+======= 下面实现全部无参
+==========================================
+	|
 ftCopySprdPacFileList 自动复制sprd的pac相关文件
-	|// ftCopySprdPacFileList 无参
-	|
-ftGjh 生成国际化所需的xml文件
-	|// ftGjh 无参
-	|
-ftRestartAdb 重启adb sever
-	|// ftRestartAdb 无参
 	|
 ftBackupOutsByMove 备份out
-	|// ftBackupOutsByMove 无参
 	|
 ftCleanDataGarbage 快速清空回收站
-	|// ftCleanDataGarbage 无参
 	|
 ftMtkFlashTool mtk下载工具
-	|// ftMtkFlashTool 无参
+	|
+ftRestartAdb 重启adb sever
+	|
+ftGjh 生成国际化所需的xml文件
 	|
 EOF
 	if [ $XMODULE = "env" ];then
