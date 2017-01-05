@@ -808,7 +808,12 @@ EOF
 	case $option in
 
 	e | E | -e | -E)		echo -e "\033[1;31m$content\033[0m"; break;;
-	ex | EX | -ex | -EX)	echo -e "\033[1;31m$content\033[0m";sleep 3;exit;;
+	ex | EX | -ex | -EX)	echo -e "\033[1;31m$content\033[0m"
+				sleep 3
+				if [ $XMODULE = "env" ];then
+					return
+				fi
+				exit;;
 	s | S | -s | -S)		echo;echo -e "\033[42;37m$content\033[0m"; break;;
 	b | B| -b | -B)		echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
 	bh | BH | -bh | -BH)	echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
@@ -2151,4 +2156,41 @@ EOF
 	else
 		ftEcho -ex 存在相同out
 	fi
+}
+
+
+ftJdkVersionTempSwitch()
+{
+	local ftName=临时切换jdk版本
+	local jdkVersion=$1
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftJdkVersionTempSwitch [verison]
+#	ftJdkVersionTempSwitch 1.6/7
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	while true; do case "$1" in
+	1.6 | 6)	
+		jdk2=/home/wgx/tools/jdk/1.6.038
+		break;;
+	1.7 | 7)	
+		jdk2=/usr/lib/jvm/java-7-openjdk-amd64
+		break;;
+	 * ) break;; esac;done
+
+	export JAVA_HOME=$jdk2
+	export JRE_HOME=${JAVA_HOME}/jre
+	export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+	export PATH=${JAVA_HOME}/bin:$PATH
+	java -version
+
+	
 }
