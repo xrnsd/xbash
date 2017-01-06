@@ -10,12 +10,9 @@ ftExample()
 	# 3 提供可执行前提说明
 	# 4 提供执行流程说明
 	# 5 提供使用示例
-	# -eq           //等于
-	# -ne           //不等于
-	# -gt            //大于
-	# -lt            //小于
-	# ge            //大于等于
-	# le            //小于等于
+	# -eq = 		# -ne !=
+	# -gt >		# -lt <
+	# ge >=		# le <=
 
 	# ${dirPathFileList%/*}父目录路径
 	# ${dirPathFileList##*/}父目录名
@@ -23,6 +20,10 @@ ftExample()
 	# `dirname /home/wgx` /home
 	# echo 文件名: ${file%.*}”
 	# echo 后缀名: ${file##*.}”
+	# sed -i 's/被替换的内容/要替换成的内容/' file #内容包含空格需要转义
+	#sed -i "s:被替换的内容:要替换成的内容:g" file #被替换的内容为路径，内容包含空格需要转义
+	#filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l #文件数量获取
+	#b=${a/123/321};将${a}里的第一个123替换为321\
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -181,7 +182,8 @@ ftReadMe()
 		ft | -ft )
 	cat<<EOF
 
-ftKillPhoneAppByPackageName      kill掉包名为packageName的应用
+ftKillPhoneAppByPackageName ---- kill掉包名为packageName的应用
+ftJdkVersionTempSwitch           临时切换jdk版本
 ftCopySprdPacFileList ---------- 自动复制sprd的pac相关文件
 ftBackupOutsByMove               备份out
 ftCleanDataGarbage ------------- 快速清空回收站
@@ -193,6 +195,7 @@ ftSynchronous                    文件同步
 ftUpdateHosts ------------------ 更新hosts
 ftReNameFile ------------------- 批量重命名
 ftRestartAdb                     重启adb sever
+ftYKSwitch                       切换永恒星和康龙配置 sever
 ftBoot ------------------------- 延时免密码关机重启
 ftGjh                            生成国际化所需的xml文件
 
@@ -266,6 +269,15 @@ ftReduceFileList 精简动画帧文件
 ftKillPhoneAppByPackageName kill掉包名为packageName的应用
 	|
 	|// ftKillPhoneAppByPackageName packageName
+	|
+ftJdkVersionTempSwitch 临时切换jdk版本
+	|
+	|// ftJdkVersionTempSwitch 版本
+	|   ftJdkVersionTempSwitch 1.6/1.7
+	|
+ftYKSwitch 切换永恒星和康龙配置
+	|
+	|// ftYKSwitch yhx/kl
 	|
 ==========================================
 ======= 下面实现全部无参
@@ -2035,6 +2047,9 @@ ff02::2 ip6-allrouters
 	fi
 }
 
+
+
+#===================    非通用实现[高度耦合]    ==========================
 ftCopySprdPacFileList()
 {
 	local ftName=自动复制sprd的pac相关文件
@@ -2077,7 +2092,7 @@ EOF
 	versionName=$(echo $versionName |sed s/[[:space:]]//g)
 	local dirPathCodeRoot=${dirPathCode%/*}
 	local dirPathCodeRootPacres=${dirPathCodeRoot}/res
-	local dirNameBranchVersion=${branchName}____${versionName}
+	local dirNameBranchVersion=${branchName}____${versionName}____$(date -d "today" +"%y%m%d[%H:%M]")
 	local dirPathBranchVersion=${dirPathCodeRootPacres}/${dirNameBranchVersion}
 	local fileNameList=(boot.img \
 			cache.img \
@@ -2193,4 +2208,52 @@ EOF
 	java -version
 
 	
+}
+
+ftYKSwitch()
+{
+	local ftName=切换永恒星和康龙配置
+	local type=$1
+	# ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
+	local dirPathCode=$ANDROID_BUILD_TOP
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftYKSwitch yhx/kl
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if(( $#!=$valCount ))||[ -z "$type" ]\
+			||[ ! -d "$dirPathCode" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			type=$type \
+			dirPathCode=$dirPathCode \
+			请查看下面说明:"
+		ftYKSwitch -h
+		return
+	fi
+
+	local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
+	local tagYhx=//#define\ CAMERA_USE_KANGLONG_GC2365
+	local tagKl=#define\ CAMERA_USE_KANGLONG_GC2365
+
+	while true; do case "$type" in
+	yhx )
+		sed -i "s:$tagKl:$tagYhx:g" $filePathTraget
+		break;;
+	kl )
+		 sed -i "s:$tagYhx:$tagKl:g" $filePathTraget
+		break;;
+	* )	ftEcho -ex 错误参数[type=$type]
+		break;; 
+	esac;done
 }

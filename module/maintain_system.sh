@@ -85,9 +85,6 @@ dirPathBackupNote=${dirPathBackupNote[@]} \
 	local fileList=`ls $mDirPathStoreSource|grep '.tgz'`
 	local dirPathBackupNote=${mDirPathStoreSource}/.notes
 
-	#文件数量获取
-	#filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l
-	#b=${a/123/321};将${a}里的第一个123替换为321\
 
 	if [ -z "$fileList" ];then
 		ftEcho -ex 在${mDirPathStoreSource}没找到有效的版本包
