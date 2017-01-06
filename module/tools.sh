@@ -45,8 +45,8 @@ EOF
 				||[ -z "$example2" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			example1=$example1 \
-			example2=$example2 \
+			[示例1]example1=$example1 \
+			[示例2]example2=$example2 \
 			请查看下面说明:"
 		ftExample -h
 		return
@@ -65,9 +65,9 @@ ftWhoAmI()## #命令权限判定
 				||[ -z "$rCmdsPermissionRoot" ];then
 		ftEcho -e "[${XCMD}]的参数错误 \n\
 [参数数量def=$valCount]valCount=$# \n\
-cmdName=$cmdName \n\
-rCmdsPermissionBase=${rCmdsPermissionBase[@]} \n\
-rCmdsPermissionRoot=${rCmdsPermissionRoot[@]} \n\
+[命令名] cmdName=$cmdName \n\
+[基础权限命令名列表]rCmdsPermissionBase=${rCmdsPermissionBase[@]} \n\
+[特殊权限命令名列表]rCmdsPermissionRoot=${rCmdsPermissionRoot[@]} \n\
 请查看下面说明:"
 		ftReadMe $XCMD
 	fi
@@ -228,7 +228,7 @@ ftBoot 延时免密码关机重启
 例	|  ftBoot shutdown/shutdown 100
 	|
 ftReNameFile 批量重命名
-	|
+	|不指定文件名长度默认为4
 	|// ftReNameFile 目录
 	|// ftReNameFile 目录 文件名长度
 例	|  ftReNameFile /home/xxxx/temp
@@ -475,7 +475,7 @@ EOF
 	if(( $#!=$valCount ))||[ -z "$packageName" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				packageName=$packageName \
+				[应用包名]packageName=$packageName \
 				请查看下面说明:"
 		ftKillPhoneAppByPackageName -h
 		return
@@ -506,7 +506,7 @@ ftRestartAdb()
 	if(( $#!=$valCount ))||[ -z "$rUserPwd" ];then
 		ftEcho -eax "函数[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			rUserPwd=$rUserPwd"
+			[默认用户密码]rUserPwd=$rUserPwd"
 	fi
 
 	local ftName=重启adb sever
@@ -544,8 +544,8 @@ EOF
 				||[ -z "$rNameUser" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				rDirPathUserHome=$rDirPathUserHome \
-				rNameUser=$rNameUser \
+				[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome \
+				[默认用户名]rNameUser=$rNameUser \
 				请查看下面说明:"
 		ftInitDevicesList -h
 		return
@@ -600,7 +600,7 @@ ftCleanDataGarbage()
 	if(( $#!=$valCount ))||[ -z "$mCmdsModuleDataDevicesList" ];then
 		ftEcho -ex "函数[${ftName}]的参数错误 \
 [参数数量def=$valCount]valCount=$# \
-mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}"
+[被清空回收站的设备的目录列表]mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}"
 	fi
 
 	for dirDev in ${mCmdsModuleDataDevicesList[*]}
@@ -642,13 +642,11 @@ EOF
 
 	#耦合变量校验
 	local valCount=0
-	if(( $#!=$valCount ))||[ -z "$tempDirPath" ]\
-				||[ -z "$rDirPathTools" ]\
+	if(( $#!=$valCount ))||[ -z "$rDirPathTools" ]\
 				||[ ! -d "$rDirPathTools" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				tempDirPath=$tempDirPath \
-				rDirPathTools=$rDirPathTools"
+				[mtk下载工具路径]rDirPathTools=$rDirPathTools"
 		ftMtkFlashTool -h
 	fi
 	local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1548
@@ -694,9 +692,9 @@ EOF
 						||[ -z "$path" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				type=$type \
-				isCreate=$isCreate \
-				path=$path \
+				[操作参数]type=$type \
+				[是否新建]isCreate=$isCreate \
+				[被操作的目录或路径]path=$path \
 				请查看下面说明:"
 		ftFileDirEdit -h
 		return
@@ -741,42 +739,6 @@ EOF
 			;;
 	esac
 	done
-}
-
-ftDebug()
-{
-	local ftName=调试用，实时跟踪变量变化
-
-	#使用示例
-	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例===================
-#
-#	 trap 'echo “行:$LINENO, a=$a,b=$b,c=$c”' DEBUG
-#	 根据需要修改 a，b，c
-#	rIsDebug设为true
-#	 ftDebug [任意命令]
-#	 ftDebug echo test
-#=========================================================
-EOF
-	if [ $XMODULE = "env" ];then
-		return
-	fi
-	exit;; * ) break;; esac;done
-
-	#耦合变量校验
-	if [ -z "$rIsDebug" ];then
-		ftEcho -eax "函数[${ftName}]的参数错误 \
-			[参数数量def=$valCount]valCount=$# \
-			rIsDebug=$rIsDebug"
-	fi
-
-	 # if [ "$rIsDebug" = "true" ]; then
-		$@
-		trap 'echo “行:$LINENO, path_avail=$path_avail”' DEBUG
-	#  else
-	#  	ftEcho -ex 当前非调试模式
-	# fi
-
 }
 
 ftEcho()
@@ -939,7 +901,7 @@ EOF
 	if(( $#!=$valCount ))||[ -z "$dirPathAnimation" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				dirPathAnimation=$dirPathAnimation \
+				[动画资源目录]dirPathAnimation=$dirPathAnimation \
 				请查看下面说明:"
 		ftBootAnimation -h
 		return
@@ -1140,7 +1102,7 @@ EOF
 	if(( $#!=$valCount ))||[ -z "$rDirPathUserHome" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				rDirPathUserHome=$rDirPathUserHome \
+				[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome \
 				请查看下面说明:"
 		ftGjh -h
 		return
@@ -1177,8 +1139,8 @@ EOF
 				||[ -z "$rDirNameLog" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				rDirPathUserHome=$rDirPathUserHome \
-				rDirNameLog=$rDirNameLog \
+				[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome \
+				[xbash的日志目录名]rDirNameLog=$rDirNameLog \
 				请查看下面说明:"
 		ftLog -h
 		return
@@ -1280,8 +1242,8 @@ EOF
 	if [ -z "$rUserPwd" ]||[ -z "$edittype" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量_def=1/2]valCount=$# \
-				rUserPwd=$rUserPwd \
-				edittype=$edittype \
+				[默认用户密码]rUserPwd=$rUserPwd \
+				[操作参数]edittype=$edittype \
 				[时间/秒]rBaseShellParameter3=$rBaseShellParameter3 \
 				请查看下面说明:"
 		ftBoot -h
@@ -1362,9 +1324,8 @@ EOF
 				||[ -z "$fileTypeList" ];then
 		ftEcho -e "函数[${ftName}]的参数错误 \
 [参数数量def=$valCount]valCount=$# \
-synchronousType=$synchronousType \
-dirPathArray=${dirPathArray[@]} \
-fileTypeList=$fileTypeList \
+[同步设备目录列表]dirPathArray=${dirPathArray[@]} \
+[同步类型列表]fileTypeList=$fileTypeList \
 请查看下面说明:"
 		ftSynchronous -h
 		return
@@ -1435,8 +1396,8 @@ EOF
 			||(( $#==2 ))&&[ ! -f "$fileNameNewAppApkBase" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			fileNameNewAppApkBase=$fileNameNewAppApkBase \
-			dirPathOut=$dirPathOut \
+			[目标app的名字]fileNameNewAppApkBase=$fileNameNewAppApkBase \
+			[工程out目录]dirPathOut=$dirPathOut \
 			请查看下面说明:"
 		ftExample -h
 		return
@@ -1555,7 +1516,7 @@ EOF
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
 			[0<=*<=100]percentage=$percentage \
-			dirPathFileList=$dirPathFileList \
+			[目标目录]dirPathFileList=$dirPathFileList \
 			请查看下面说明:"
 		ftReduceFileList -h
 		return
@@ -1615,84 +1576,23 @@ EOF
 	done
 }
 
-ftGetKeyValueByBlockAndKey()
-{
-	local ftName=读取ini文件指定字段
-	local filePath=$1
-	local blockName=$2
-	local keyName=$3
-
-	#使用示例
-	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
-#
-#	ftGetKeyValueByBlockAndKey2 [文件] [块名] [键名]
-#	value=$(ftGetKeyValueByBlockAndKey2 /temp/odbcinst.ini PostgreSQL Setup)
-# 	value表示对应字段的值
-#=========================================================
-EOF
-	exit 1;; * )break;; esac;done
-
-	#耦合变量校验
-	local valCount=3
-	if(( $#!=$valCount ))||[ ! -f "$filePath" ]\
-				||[ -z "$blockName" ]\
-				||[ -z "$keyName" ];then
-		ftEcho -ea "函数[${ftName}]的参数错误 \
-				[参数数量def=$valCount]valCount=$# \
-				filePath=$filePath \
-				blockName=$blockName \
-				keyName=$keyName \
-				请查看下面说明:"
-		ftGetKeyValueByBlockAndKey2 -h
-		return
-	fi
-
-	begin_block=0
-	end_block=0
-
-	cat $filePath | while read line
-	do
-		if [ "X$line" = "X[$blockName]" ];then
-			begin_block=1
-			continue
-		fi
-		if [ $begin_block -eq 1 ];then
-			end_block=$(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')
-			if [ $end_block -eq 1 ];then
-				break
-			fi
-
-			need_ignore=$(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')
-			if [ $need_ignore -eq 1 ];then
-				continue
-			fi
-			key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
-			value=$(echo $line | awk -F= '{gsub(" |\t","",$2); print $2}')
-
-			if [ "X$keyName" = "X$key" ];then
-				echo $value
-				break
-			fi
-		fi
-	done
-	return 0
-}
-
 ftReNameFile()
 {
 	local ftName=批量重命名文件
 	# local extensionName=$1
 	local dirPathFileList=$1
 	local lengthFileName=$2
+	lengthFileName=${lengthFileName:-'4'}
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #
+#	不指定文件名长度默认为4
 #	ftReNameFile 目录
-#	ftReNameFile .png /home/xxxx/temp
-#	ftReNameFile null /home/xxxx/temp
+#	ftReNameFile /home/xxxx/temp 
+#	ftReNameFile 目录 修改后的文件长度
+#	ftReNameFile /home/xxxx/temp 5
 #=========================================================
 EOF
 	if [ $XMODULE = "env" ];then
@@ -1702,12 +1602,11 @@ EOF
 
 	#耦合变量校验
 	local valCount=2
-	if(( $#>$valCount ))||[ ! -d "$dirPathFileList" ]\
-		||(( $#==2 ));then
+	if(( $#>$valCount ))||[ ! -d "$dirPathFileList" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			lengthFileName=$lengthFileName \
-			dirPathFileList=$dirPathFileList \
+			[修改后的文件长度]lengthFileName=$lengthFileName \
+			[目标目录]dirPathFileList=$dirPathFileList \
 			请查看下面说明:"
 		ftReNameFile -h
 		return
@@ -1735,8 +1634,6 @@ EOF
 	fi
 	for file in $fileList
 	do
-		# echo “filename: ${file%.*}”
-		# echo “extension: ${file##*.}”
 		if [ $file == $dirNameFileListRename ];then
 			continue
 		fi
@@ -1772,8 +1669,8 @@ EOF
 				||[ -z "$rDirPathCmdsData" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				devDirPath=$devDirPath \
-				rDirPathCmdsData=$rDirPathCmdsData \
+				[设备路径]devDirPath=$devDirPath \
+				[xbash的data目录]rDirPathCmdsData=$rDirPathCmdsData \
 				请查看下面说明:"
 		ftDevAvailableSpace -h
 	elif [ ! -d $devDirPath ];then
@@ -1856,6 +1753,70 @@ EOF
 
 
 
+ftGetKeyValueByBlockAndKey()
+{
+	local ftName=读取ini文件指定字段
+	local filePath=$1
+	local blockName=$2
+	local keyName=$3
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftGetKeyValueByBlockAndKey2 [文件] [块名] [键名]
+#	value=$(ftGetKeyValueByBlockAndKey2 /temp/odbcinst.ini PostgreSQL Setup)
+# 	value表示对应字段的值
+#=========================================================
+EOF
+	exit 1;; * )break;; esac;done
+
+	#耦合变量校验
+	local valCount=3
+	if(( $#!=$valCount ))||[ ! -f "$filePath" ]\
+				||[ -z "$blockName" ]\
+				||[ -z "$keyName" ];then
+		ftEcho -ea "函数[${ftName}]的参数错误 \
+				[参数数量def=$valCount]valCount=$# \
+				filePath=$filePath \
+				blockName=$blockName \
+				keyName=$keyName \
+				请查看下面说明:"
+		ftGetKeyValueByBlockAndKey2 -h
+		return
+	fi
+
+	begin_block=0
+	end_block=0
+
+	cat $filePath | while read line
+	do
+		if [ "X$line" = "X[$blockName]" ];then
+			begin_block=1
+			continue
+		fi
+		if [ $begin_block -eq 1 ];then
+			end_block=$(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')
+			if [ $end_block -eq 1 ];then
+				break
+			fi
+
+			need_ignore=$(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')
+			if [ $need_ignore -eq 1 ];then
+				continue
+			fi
+			key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
+			value=$(echo $line | awk -F= '{gsub(" |\t","",$2); print $2}')
+
+			if [ "X$keyName" = "X$key" ];then
+				echo $value
+				break
+			fi
+		fi
+	done
+	return 0
+}
+
 ftSetKeyValueByBlockAndKey()
 {
 	local ftName=修改ini文件指定字段
@@ -1882,10 +1843,10 @@ EOF
 				||[ -z "$keyValue" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				filePath=$filePath \
-				blockName=$blockName \
-				keyName=$keyName \
-				keyValue=$keyValue \
+				[目标ini文件路径]filePath=$filePath \
+				[目标块TAG]blockName=$blockName \
+				[目标Key]keyName=$keyName \
+				[目标Key对应的Value]keyValue=$keyValue \
 				请查看下面说明:"
 		ftSetKeyValueByBlockAndKey2 -h
 		return
@@ -1923,7 +1884,7 @@ EOF
 	if(( $#!=$valCount ))||[ ! -f "$filePath" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				filePath=$filePath \
+				[目标ini文件路径]filePath=$filePath \
 				请查看下面说明:"
 		ftExample -h
 		return
@@ -1997,8 +1958,8 @@ EOF
 				||[ ! -d "$rDirPathCmdsData" ];then
 		ftEcho -ea "[${ftName}]参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			filePathHosts=$filePathHosts \
-			rDirPathCmdsData=rDirPathCmdsData \
+			[目标hosts配置文件路径，ubuntu默认]filePathHosts=$filePathHosts \
+			[xbash的data目录]rDirPathCmdsData=rDirPathCmdsData \
 			请查看下面说明:"
 		ftUpdateHosts -h
 		return
@@ -2076,8 +2037,8 @@ EOF
 			||[ ! -d "$dirPathOut" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			dirPathCode=$dirPathCode \
-			dirPathOut=$dirPathOut \
+			[工程根目录]dirPathCode=$dirPathCode \
+			[工程out目录]dirPathOut=$dirPathOut \
 			请查看下面说明:"
 		ftCopySprdPacFileList -h
 		return
@@ -2148,8 +2109,8 @@ EOF
 			||[ ! -d "$dirPathOut" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			dirPathCode=$dirPathCode \
-			dirPathOut=$dirPathOut \
+			[工程根目录]dirPathCode=$dirPathCode \
+			[工程out目录]dirPathOut=$dirPathOut \
 			请查看下面说明:"
 		ftBackupOutsByMove -h
 		return
@@ -2191,6 +2152,17 @@ EOF
 		return
 	fi
 	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if(( $#!=$valCount ))||[ ! -z "$jdkVersion" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			[目标jdk版本]jdkVersion=$jdkVersion \
+			请查看下面说明:"
+		ftJdkVersionTempSwitch -h
+		return
+	fi
 
 	while true; do case "$1" in
 	1.6 | 6)	
@@ -2235,8 +2207,8 @@ EOF
 			||[ ! -d "$dirPathCode" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			type=$type \
-			dirPathCode=$dirPathCode \
+			[操作参数]type=$type \
+			[工程根目录]dirPathCode=$dirPathCode \
 			请查看下面说明:"
 		ftYKSwitch -h
 		return

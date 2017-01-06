@@ -80,7 +80,7 @@ export  XMODULE="env"
 alias ..="cd .."
 alias ...="cd ../.."
 alias xr="source ~/.bashrc"
-alias xgl='git log --pretty=oneline -10'
+alias xgl='echo 'q'|git log --pretty=oneline -10'
 alias xp="export XCMD=xp;readlink -f"
 #alias xg='export XCMD=x;grep -irsn $2 ./'
 alias xl='export XCMD=xl;adb logcat -c;adb logcat | grep'

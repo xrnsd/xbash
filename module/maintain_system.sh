@@ -73,12 +73,10 @@ ftRestoreChoiceSource()
 	#耦合变量校验
 	local valCount=0
 	if(( $#!=$valCount ))||[ -z "$mDirPathStoreSource" ]\
-				||[ ! -d $mDirPathStoreSource ]\
-				||[ ! -d $dirPathBackupNote ];then
+				||[ ! -d $mDirPathStoreSource ];then
 		ftEcho -ex "函数[${ftName}]的参数错误 \
 [参数数量def=$valCount]valCount=$# \
-mDirPathStoreSource=$mDirPathStoreSource \
-dirPathBackupNote=${dirPathBackupNote[@]} \
+[版本包存放的设备根目录]mDirPathStoreSource=$mDirPathStoreSource \
 请查看下面说明:"
 	fi
 	local index=0;
@@ -192,7 +190,7 @@ EOF
 	if(( $#!=$valCount ))||[ -z "$infoType" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			infoType=$infoType \
+			[显示信息类型]infoType=$infoType \
 			请查看下面说明:"
 		ftEchoInfo -h
 		return
@@ -200,7 +198,7 @@ EOF
 
 	local mVersionChangs="Android build : mtk_KK  mtk_L mtk_M\n\
 		Android app : 4.4\n\
-		custom bash : Xrnsd-extensions-to-bash\n\
+		custom bash : xbash ${rXbashVersion}\n\
 		tools : jdk1.6 openjdk1.7 sdk ndk flash_tool eclipse"
 
 	ftEcho -bh 请确认下面信息
@@ -254,8 +252,8 @@ EOF
 				||[ -z "$rNameUser" ];then
 		ftEcho -e "函数[${ftName}]的参数错误 \
 [参数数量def=$valCount]valCount=$# \
-mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \
-rNameUser=$rNameUser \
+[可版本包的设备列表]mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \
+[默认用户名]rNameUser=$rNameUser \
 请查看下面说明:"
 		ftSetBackupDevDir -h
 		return
@@ -269,7 +267,7 @@ rNameUser=$rNameUser \
 
 	for dev in ${mCmdsModuleDataDevicesList[*]}
 	do
-		echo [ ${index} ] $dev $(ftDevAvailableSpace $dev)
+		echo [ ${index} ] $dev 可用$(ftDevAvailableSpace $dev)
 		# echo [ ${index} ] ${mCmdsModuleDataDevicesList[$index]}
 		index=`expr $index + 1`
 	done
@@ -351,7 +349,7 @@ ftSetRestoreType()
 	if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ];then
 		ftEcho -eax "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				rDirPathUserHome=$rDirPathUserHome \
+				[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome \
 				请查看下面说明:"
 	elif [ ! -d "$rDirPathUserHome" ];then
 		ftEcho -ex "目录[$rDirPathUserHome]不存在"
@@ -505,9 +503,9 @@ EOF
 				||[ -z "$versionName" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				dirPathBackupRoot=$dirPathBackupRoot \
-				versionName=$versionName \
-				noteBase=$noteBase \
+				[版本包存放的设备根目录]dirPathBackupRoot=$dirPathBackupRoot \
+				[版本包名]versionName=$versionName \
+				[版本包对应的备注]noteBase=$noteBase \
 				请查看下面说明:"
 		ftAddNote -h
 		return
@@ -580,9 +578,9 @@ EOF
 				||[ -z "$versionName" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				typeEdit=$typeEdit \
-				dirPathBackupRoot=$dirPathBackupRoot \
-				versionName=$versionName \
+				[操作参数]typeEdit=$typeEdit \
+				[版本包存放的设备根目录]dirPathBackupRoot=$dirPathBackupRoot \
+				[版本包名]versionName=$versionName \
 				请查看下面说明:"
 		ftMD5 -h
 		return
@@ -686,9 +684,9 @@ EOF
 				||[ -z "$dirNameBackupInfoVersion" ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			typeEdit=$typeEdit \
-			dirPathBackupRoot=$dirPathBackupRoot \
-			dirNameBackupInfoVersion=$dirNameBackupInfoVersion \
+			[操作参数]typeEdit=$typeEdit \
+			[版本包存放的设备根目录]dirPathBackupRoot=$dirPathBackupRoot \
+			[版本包名]dirNameBackupInfoVersion=$dirNameBackupInfoVersion \
 			请查看下面说明:"
 		ftAddOrCheckSystemHwSwInfo -h
 		return
@@ -837,9 +835,9 @@ EOF
 				||[ -z "$devList" ];then
 		ftEcho -e "函数[${ftName}]的参数错误 \
 [参数数量def=$valCount]valCount=$# \
-version=$version \
-note=$note \
-devList=${devList[@]} \
+[目标版本包名]version=$version \
+[目标版本包的备注]note=$note \
+[存放版本包的设备目录列表]devList=${devList[@]} \
 请查看下面说明:"
 		ftBackUpDevScanning -h
 		return
@@ -927,7 +925,7 @@ EOF
 	if(( $#!=$valCount ))||[ -z $mFilePathVersion ];then
 		ftEcho -ea "函数[${ftName}]的参数错误 \
 				[参数数量def=$valCount]valCount=$# \
-				mFilePathVersion=$mFilePathVersion \
+				[将生成版本包路径]mFilePathVersion=$mFilePathVersion \
 				请查看下面说明:"
 		ftVersionPackageIsCreated -h
 		return
@@ -979,7 +977,7 @@ elif [ $mTypeEdit = "backup" ];then
 		ftSetBackupType&&
 		# 检查版本包是否已经存在
 		ftVersionPackageIsCreated&&
-		#当前配置信息显示
+		#显示当前配置信息
 		ftEchoInfo backup&&
 		while true; do
 		ftEcho -y 是否开始备份
@@ -993,7 +991,7 @@ elif [ $mTypeEdit = "backup" ];then
 			ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mCmdsModuleDataDevicesList[*]}"
 			#清理临时文件
 			ftAutoCleanTemp
-			#备份系统生成版本包
+			#生成版本包
 			ftBackupOs&&
 			#记录版本包校验信息
 			ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
