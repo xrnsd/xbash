@@ -124,7 +124,7 @@ ftMain()
 			if [ `whoami` = $rNameUser ]; then
 				while true; do
 				case $rBaseShellParameter2 in
-					"mtk_flashtool")		ftMtkFlashTool ; break;;
+					"mtk_flashtool")	ftMtkFlashTool ; break;;
 					"restartadb")		ftRestartAdb; break;;
 					"pac")			ftCopySprdPacFileList; break;;
 					"monkey")		ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
@@ -2066,7 +2066,8 @@ EOF
 			system.img \
 			u-boot.bin \
 			u-boot-spl-16k.bin \
-			userdata.img)
+			userdata.img\
+			SC7720_UMS.xml)
 	if [ -d "$dirPathBranchVersion" ];then
 		rm -rf $dirPathBranchVersion
 	fi
@@ -2079,6 +2080,7 @@ EOF
 			cp -v -f $filePath $dirPathBranchVersion
 		else
 			ftEcho -ex 文件[$filePath]不存在
+			rm -rf $dirPathBranchVersion
 		fi
 	done
 }
