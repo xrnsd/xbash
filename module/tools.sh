@@ -190,11 +190,13 @@ ftCleanDataGarbage ------------- 快速清空回收站
 ftReduceFileList                 精简动画帧文件
 ftPushAppByName ---------------- push Apk文件
 ftBootAnimation                  生成开关机动画
+ftRmNormalBin                    清空pac相关资源文件
 ftMtkFlashTool ----------------- mtk下载工具
 ftSynchronous                    文件同步
 ftUpdateHosts ------------------ 更新hosts
 ftReNameFile ------------------- 批量重命名
 ftRestartAdb                     重启adb sever
+ftAutoPacket ------------------- 生成pac
 ftYKSwitch                       切换永恒星和康龙配置 sever
 ftBoot ------------------------- 延时免密码关机重启
 ftGjh                            生成国际化所需的xml文件
@@ -275,6 +277,10 @@ ftJdkVersionTempSwitch 临时切换jdk版本
 	|// ftJdkVersionTempSwitch 版本
 	|   ftJdkVersionTempSwitch 1.6/1.7
 	|
+ftRmNormalBin 清空pac相关资源文件
+	|
+	|ftRmNormalBin [dir_path_pac_res] #生成pac的目录，和生成所需的文件存放的目录
+	|
 ftYKSwitch 切换永恒星和康龙配置
 	|
 	|// ftYKSwitch yhx/kl
@@ -292,6 +298,8 @@ ftCleanDataGarbage 快速清空回收站
 ftMtkFlashTool mtk下载工具
 	|
 ftRestartAdb 重启adb sever
+	|
+ftAutoPacket 生成pac
 	|
 ftGjh 生成国际化所需的xml文件
 	|
@@ -2314,8 +2322,7 @@ function ftAutoPacket
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #	
-#	ftAutoPacket [dir_path_pac_res] #生成pac的目录，和生成所需的文件存放的目录
-#	ftAutoPacket out/pac
+#	ftAutoPacket 无参
 #=========================================================
 EOF
 	if [ $XMODULE = "env" ];then
@@ -2331,6 +2338,7 @@ EOF
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
 			[工程根目录]dirPathCode=$dirPathCode \
+			[packet打包脚本]filePathPacketScript=$filePathPacketScript \
 			[工程out目录]dirPathOut=$dirPathOut \
 			请查看下面说明:"
 		ftAutoPacket -h
@@ -2354,7 +2362,7 @@ EOF
 	if [ ! -d $dirPathPacRes ];then
 		mkdir $dirPathPacRes
 	fi
-	
+
 	cd $dirPathPacRes
 
 	/usr/bin/perl $filePathPacketScript \
