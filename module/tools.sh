@@ -2316,13 +2316,14 @@ function ftAutoPacket
 	local ftName=生成pac
 	local dirPathCode=$ANDROID_BUILD_TOP
 	local dirPathOut=$ANDROID_PRODUCT_OUT
-	local filePathPacketScript=${dirPathCode}/vendor/sprd/open-source/tools/build/pac_7731c.pl
+	local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #	
 #	ftAutoPacket 无参
+#	ftAutoPacket -y #生成后自动移动
 #=========================================================
 EOF
 	if [ $XMODULE = "env" ];then
@@ -2331,8 +2332,8 @@ EOF
 	exit;; * ) break;; esac;done
 
 	#耦合变量校验
-	local valCount=0
-	if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
+	local valCount=1
+	if(( $#>$valCount ))||[ ! -d "$dirPathCode" ]\
 			||[ ! -f "$filePathPacketScript" ]\
 			||[ ! -d "$dirPathOut" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
@@ -2345,7 +2346,7 @@ EOF
 		return
 	fi
 	local dirNamePacRes=packet
-	local dirPathPacRes=${dirPathOut}/${dirNamePacRes}
+	local dirPathPacRes=${dirPathCode}/out/${dirNamePacRes}
 	local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
 	local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
 	local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
@@ -2355,10 +2356,14 @@ EOF
 	versionName=$(echo $versionName |sed s/[[:space:]]//g)
 
 	local dirPathNormalBin=$dirPathOut
-	local dirPathModemBin=device/sprd/scx20/packet_modem
-	local dirPathLogo=vendor/sprd/open-source/res/boot
-
+	local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
+	local dirPathLogo=${dirPathCode%/*}/res
+	local dirPatPacs=${dirPathCode%/*}/pacs
 	local dirPathLocal=$PWD
+
+	if [ ! -d $dirPatPacs ];then
+		mkdir $dirPatPacs
+	fi
 	if [ ! -d $dirPathPacRes ];then
 		mkdir $dirPathPacRes
 	fi
@@ -2388,10 +2393,11 @@ EOF
 		${dirPathNormalBin}/cache.img \
 		${dirPathNormalBin}/sysinfo.img \
 		${dirPathNormalBin}/u-boot.bin \
-		${dirPathNormalBin}/persist.img
-
+		${dirPathNormalBin}/persist.img&&
+	ftEcho -s 生成pac[${dirPathPacRes}/${versionName}.pac]&&
+	if [ $1 = "-y" ];then
+		mv ${dirPathPacRes}/${versionName}.pac ${dirPatPacs}/${versionName}.pac
+	fi
 	cd $dirPathLocal
-	ftEcho -s 生成pac[${dirPathPacRes}/${versionName}.pac]
-	# echo $dirPathPacRes
 }
 
