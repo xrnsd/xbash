@@ -2231,3 +2231,159 @@ EOF
 		break;; 
 	esac;done
 }
+
+function ftRmNormalBin
+{
+	local ftName=清空pac相关资源文件
+	local dirPathCode=$ANDROID_BUILD_TOP
+	local dirPathOut=$ANDROID_PRODUCT_OUT
+	local dirPathPacRes=$1
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#	
+#	ftRmNormalBin [dir_path_pac_res] #生成pac的目录，和生成所需的文件存放的目录
+#	ftRmNormalBin out/pac
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
+			||[ ! -d "$dirPathPacRes" ]\
+			||[ ! -d "$dirPathOut" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			[工程根目录]dirPathCode=$dirPathCode \
+			[工程out目录]dirPathOut=$dirPathOut \
+			[工程Pac生成目录]dirPathPacRes=$dirPathPacRes \
+			请查看下面说明:"
+		ftRmNormalBin -h
+		return
+	fi
+	local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+	local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+	local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+	versionName=${versionName/$keyVersion/}
+	versionName=${versionName/\");/}
+	versionName=$(echo $versionName |sed s/[[:space:]]//g)
+
+	fileList=(SC7720_UMS.xml \
+		pac_7731c.pl \
+		fdl1.bin \
+		fdl2.bin \
+		nvitem.bin \
+		nvitem_wcn.bin \
+		prodnv.img \
+		u-boot-spl-16k.bin \
+		SC7702_pike_modem_AndroidM.dat \
+		DSP_DM_G2.bin \
+		SC8800G_pike_wcn_dts_modem.bin \
+		boot.img \
+		recovery.img \
+		system.img \
+		userdata.img \
+		"logo.bmp" \
+		cache.img \
+		sysinfo.img \
+		u-boot.bin \
+		persist.img)
+	cd $dirPathPacRes
+	for fileName in ${fileList[@]}
+	do
+		if [ -f "$fileName" ]; then
+			rm $fileName
+			echo "rm $fileName"
+		fi
+	done
+}
+
+function ftAutoPacket
+{
+	local ftName=生成pac
+	local dirPathCode=$ANDROID_BUILD_TOP
+	local dirPathOut=$ANDROID_PRODUCT_OUT
+	local filePathPacketScript=${dirPathCode}/vendor/sprd/open-source/tools/build/pac_7731c.pl
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#	
+#	ftAutoPacket [dir_path_pac_res] #生成pac的目录，和生成所需的文件存放的目录
+#	ftAutoPacket out/pac
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=0
+	if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
+			||[ ! -f "$filePathPacketScript" ]\
+			||[ ! -d "$dirPathOut" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			[工程根目录]dirPathCode=$dirPathCode \
+			[工程out目录]dirPathOut=$dirPathOut \
+			请查看下面说明:"
+		ftAutoPacket -h
+		return
+	fi
+	local dirNamePacRes=packet
+	local dirPathPacRes=${dirPathOut}/${dirNamePacRes}
+	local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
+	local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+	local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+	local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+	versionName=${versionName/$keyVersion/}
+	versionName=${versionName/\");/}
+	versionName=$(echo $versionName |sed s/[[:space:]]//g)
+
+	local dirPathNormalBin=$dirPathOut
+	local dirPathModemBin=device/sprd/scx20/packet_modem
+	local dirPathLogo=vendor/sprd/open-source/res/boot
+
+	local dirPathLocal=$PWD
+	if [ ! -d $dirPathPacRes ];then
+		mkdir $dirPathPacRes
+	fi
+	
+	cd $dirPathPacRes
+
+	/usr/bin/perl $filePathPacketScript \
+		$versionName.pac \
+		SC77xx \
+		${versionName}_${softwareVersion} \
+		${dirPathNormalBin}/SC7720_UMS.xml \
+		${dirPathNormalBin}/fdl1.bin \
+		${dirPathNormalBin}/fdl2.bin \
+		${dirPathModemBin}/nvitem.bin \
+		${dirPathModemBin}/nvitem_wcn.bin \
+		${dirPathNormalBin}/prodnv.img \
+		${dirPathNormalBin}/u-boot-spl-16k.bin \
+		${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
+		${dirPathModemBin}/DSP_DM_G2.bin \
+		${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
+		${dirPathNormalBin}/boot.img \
+		${dirPathNormalBin}/recovery.img \
+		${dirPathNormalBin}/system.img \
+		${dirPathNormalBin}/userdata.img \
+		${dirPathLogo}/logo.bmp \
+		${dirPathLogo}/logo.bmp \
+		${dirPathNormalBin}/cache.img \
+		${dirPathNormalBin}/sysinfo.img \
+		${dirPathNormalBin}/u-boot.bin \
+		${dirPathNormalBin}/persist.img
+
+	cd $dirPathLocal
+	ftEcho -s 生成pac[${dirPathPacRes}/${versionName}.pac]
+	# echo $dirPathPacRes
+}
+
