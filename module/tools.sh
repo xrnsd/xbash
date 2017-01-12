@@ -2127,7 +2127,7 @@ EOF
 	versionName=$(echo $versionName |sed s/[[:space:]]//g)
 	local dirPathCodeRoot=${dirPathCode%/*}
 	local dirPathCodeRootOuts=${dirPathCodeRoot}/outs
-	local dirNameBranchVersion=${branchName}____${versionName}
+	local dirNameBranchVersion=${branchName}____${versionName}_$(date -d "today" +"%y%m%d[%H:%M]")
 	local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
 	if [ ! -d "$dirPathOutBranchVersion" ];then
 		mv out/ $dirPathOutBranchVersion
