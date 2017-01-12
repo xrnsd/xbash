@@ -22,8 +22,11 @@
 	├── module	-----------------------	脚本实现文件[具体功能]
 	│		├── compile.sh					xbash的项目编译初始化
 	│		├── init							初始化工具
+	│		│		├── base.sh				 xbash的初始化工具
 	│		│		├── init_xbash.sh			  xbash环境初始化工具
 	│		│		└── init_system.sh		  android mmi 环境初始化工具
+	│		├── packet						packet工具
+	│		│		└── pac_7731c.pl			  sprd的7731c的packet生成工具
 	│		├── test							xbash的脚本测试工具
 	│		│		├── base.sh				  demo测试,请忽略此文件的修改
 	│		│		├── pytools.README
