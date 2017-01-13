@@ -281,6 +281,11 @@ ftRmNormalBin 清空pac相关资源文件
 	|
 	|ftRmNormalBin [dir_path_pac_res] #生成pac的目录，和生成所需的文件存放的目录
 	|
+ftAutoPacket 生成pac
+	|
+	|ftAutoPacket  #自动打包
+	|ftAutoPacket -y #自动打包，上传到188服务器
+	|
 ftYKSwitch 切换永恒星和康龙配置
 	|
 	|// ftYKSwitch yhx/kl
@@ -298,8 +303,6 @@ ftCleanDataGarbage 快速清空回收站
 ftMtkFlashTool mtk下载工具
 	|
 ftRestartAdb 重启adb sever
-	|
-ftAutoPacket 生成pac
 	|
 ftGjh 生成国际化所需的xml文件
 	|
@@ -2240,7 +2243,7 @@ EOF
 	esac;done
 }
 
-function ftRmNormalBin
+ftRmNormalBin()
 {
 	local ftName=清空pac相关资源文件
 	local dirPathCode=$ANDROID_BUILD_TOP
@@ -2311,7 +2314,54 @@ EOF
 	done
 }
 
-function ftAutoPacket
+ftAutoUpload()
+{
+	local ftName=上传文件到制定smb服务器路径
+	local filePathUploadSource=$1
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftAutoUpload [example]
+#	ftAutoUpload xxxx
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if(( $#!=$valCount ))||[ ! -f "$filePathUploadSource" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			[上传的源文件]filePathUploadSource=$filePathUploadSource \
+			请查看下面说明:"
+		ftAutoUpload -h
+		return
+	fi
+
+
+	local serverIp=192.168.1.188
+	local userName=server
+	local pasword=123456
+
+	local dirPathMoule=智能机软件
+	local dirPathUpload=SPRD7731C/鹏明珠/autoUpload
+
+	local fileNameUploadSource=$(basename $filePathUploadSource)
+	
+	ftEcho -s "开始上传${fileNameUploadSource} 到 ${dirPathUpload}..."
+smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
+	mkdir $dirPathUpload
+	put $filePathUploadSource ${dirPathUpload}/${fileNameUploadSource}
+EOF
+	ftEcho -s "${filePathUploadSource} 上传结束"
+}
+
+ftAutoPacket()
 {
 	local ftName=生成pac
 	local dirPathCode=$ANDROID_BUILD_TOP
@@ -2396,7 +2446,8 @@ EOF
 		${dirPathNormalBin}/persist.img&&
 	ftEcho -s 生成pac[${dirPathPacRes}/${versionName}.pac]&&
 	if [ $1 = "-y" ];then
-		mv ${dirPathPacRes}/${versionName}.pac ${dirPatPacs}/${versionName}.pac
+		ftAutoUpload ${dirPathPacRes}/${versionName}.pac
+		#mv ${dirPathPacRes}/${versionName}.pac ${dirPatPacs}/${versionName}.pac
 	fi
 	cd $dirPathLocal
 }
