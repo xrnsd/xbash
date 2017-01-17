@@ -13,6 +13,10 @@ ftExample()
 	# -eq = 		# -ne !=
 	# -gt >		# -lt <
 	# ge >=		# le <=
+	
+	# if [ $test1 = "1" -o $test2 = "1" ]&&[ $test3 = "3" -a $test4 = "4" ]
+	# -o 或
+	# -a 与
 
 	# ${dirPathFileList%/*}父目录路径
 	# ${dirPathFileList##*/}父目录名
@@ -2129,18 +2133,29 @@ EOF
 		return
 	fi
 	cd $ANDROID_BUILD_TOP
+	#分支名
 	local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+	#软件版本名
 	local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
 	local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
 	local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
 	versionName=${versionName/$keyVersion/}
 	versionName=${versionName/\");/}
 	versionName=$(echo $versionName |sed s/[[:space:]]//g)
-	local dirPathCodeRoot=${dirPathCode%/*}
-	local dirPathCodeRootOuts=${dirPathCodeRoot}/outs
-	local dirNameBranchVersion=${branchName}____${versionName}_$(date -d "today" +"%y%m%d[%H:%M]")
+	#软件编译类型
+	local filePathDeviceInfoSettings=${dirPathOut}/system/build.prop
+	local keybuildType="ro.build.type="
+	local buildType="null"
+	buildType=$(cat $filePathDeviceInfoSettings|grep $keybuildType)
+	buildType=${buildType/$keybuildType/}
+
+	local dirPathCodeRootOuts=${dirPathCode%/*}/outs
+	local dirNameBranchVersion=${branchName}____${versionName}____${buildType}_$(date -d "today" +"%y%m%d[%H:%M]")
 	local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
+
 	if [ ! -d "$dirPathOutBranchVersion" ];then
+		ftEcho -s "移动[$dirNameBranchVersion]\n\
+ 到[$dirPathCodeRootOuts]"
 		mv out/ $dirPathOutBranchVersion
 	else
 		ftEcho -ex 存在相同out
@@ -2353,12 +2368,14 @@ EOF
 
 	local fileNameUploadSource=$(basename $filePathUploadSource)
 	
-	ftEcho -s "开始上传${fileNameUploadSource} 到 ${dirPathUpload}..."
+	ftEcho -s "开始上传${fileNameUploadSource} 到\n\
+ ${serverIp}/${dirPathUpload}..."
 smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
 	mkdir $dirPathUpload
 	put $filePathUploadSource ${dirPathUpload}/${fileNameUploadSource}
 EOF
-	ftEcho -s "${filePathUploadSource} 上传结束"
+	ftEcho -s "${filePathUploadSource}\n\
+ 上传结束"
 }
 
 ftAutoPacket()
@@ -2423,7 +2440,7 @@ EOF
 	/usr/bin/perl $filePathPacketScript \
 		$versionName.pac \
 		SC77xx \
-		${versionName}_${softwareVersion} \
+		${versionName}\
 		${dirPathNormalBin}/SC7720_UMS.xml \
 		${dirPathNormalBin}/fdl1.bin \
 		${dirPathNormalBin}/fdl2.bin \

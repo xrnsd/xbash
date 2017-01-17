@@ -99,6 +99,7 @@ alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMg
 #--------------------------命令选项快速适配---------------------------
 complete -W "123" xl
 complete -W "123" xle
+complete -W "edl_auto=packet_upload EDL_ATUO_PACKET=true" make
 
 #-------------------------android优化加速部分------------------
 #编译加速 c/c++ 部分
