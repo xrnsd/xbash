@@ -2467,4 +2467,116 @@ EOF
 		#mv ${dirPathPacRes}/${versionName}.pac ${dirPatPacs}/${versionName}.pac
 	fi
 	cd $dirPathLocal
+}ftLanguageUtils()
+{
+	local ftName=语言缩写转换
+	local ftLanguageContent=$@
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftLanguageUtils 无参
+#	ftLanguageUtils [example]
+#	ftLanguageUtils xxxx
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if(( $#!=$valCount ))||[ -z "$ftLanguageContent" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			[语言]ftLanguageContent=$ftLanguageContent \
+			请查看下面说明:"
+		ftLanguageUtils -h
+		return
+	fi
+
+	allList=(阿拉伯语 孟加拉语 缅甸语 简体中文 繁体中文 捷克语 荷兰语 \
+英语 法语 德语 希腊语 希伯来语 印地语 匈牙利语 印度尼西亚语 \
+意大利语 高棉语 韩语 马来语 波斯语 葡萄牙语 葡萄牙语 \
+罗马尼亚语/摩尔多瓦语  俄语 西班牙语 他加禄语/菲律宾语 \
+泰语 土耳其语 乌尔都语 越南语 阿拉伯语 保加利亚语 \
+加泰罗尼亚语 克罗地亚语 丹麦语 荷兰语 英语 英语 英语 \
+英语 英语 英语 英语 英语 芬兰语 法语 法语 法语 德语 德语 \
+德语 印地语/印度 意大利语 日语 坎纳达语/印度 拉脱维亚语 \
+立陶宛语 马拉雅拉姆语/印度 挪威语 波兰语 塞尔维亚语 斯洛伐克语 \
+斯洛文尼亚语 西班牙语 瑞典语 泰卢固语/印度 乌克兰语 繁体中文/香港 印尼语 斯瓦希里语/坦桑尼亚 阿姆哈拉语/埃塞俄比亚)
+
+	shortList=(ar_IL bn_BD my_MM zh_CN zh_TW cs_CZ nl_NL \
+en_US fr_FR de_DE el_GR he_IL/iw_IL hi_IN hu_HU id_ID \
+it_IT km_KH ko_KR ms_MY fa_IR pt_BR pt_PT ro_RO \
+ru_RU es_ES tl_PH th_TH tr_TR ur_PK vi_VN ar_EG bg_BG \
+ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
+ en_NZ en_SG en_ZA fi_FI fr_BE fr_CA fr_CH de_AT de_LI \
+ de_CH hi_IN it_CH ja_JP hi_IN lv_LV lt_LT hi_IN nb_NO \
+ pl_PL sr_RS sk_SK sl_SI es_US sv_SE hi_IN uk_UA zh_HK in_ID sw_TZ am_ET)
+
+
+# 去掉重复语言
+	# index=0
+	# strB="_isdbwb"
+	# strC="_dddd"
+	# for cmd in ${shortList[@]}
+	# do
+	# 	if [[ ${allList[index]} =~ $strC ]];then
+	# 	   continue;
+	# 	fi
+
+	# 	time=0
+	# 	index2=0
+	# 	for dd in ${shortList[@]}
+	# 	do
+	# 		if [ $dd = $cmd ];then
+	# 			if(( $time!=0 ));then
+	# 				# echo 11 $dd
+	# 				echo "${dd}_`expr $index + 1`____`expr $index2 + 1`"
+	# 				allList[$index]=${allList[index]}_isdbwb
+	# 				allList[$index2]=${allList[index2]}_dddd
+	# 			fi
+	# 			time=`expr $time + 1`
+	# 		fi
+	# 		index2=`expr $index2 + 1`
+	# 	done
+	# 	index=`expr $index + 1`
+	# done
+	ftLanguageContent2=$(echo $ftLanguageContent|sed 's/_//g')
+	ftLanguageContent2=$(echo $ftLanguageContent2|sed s/[[:space:]]//g)
+	if [[ $ftLanguageContent2 =~ ^[a-zA-Z]+$ ]]; then
+		for lc in ${ftLanguageContent[@]}
+		do
+			index=0
+			for base in ${shortList[@]}
+			do
+				if [ $lc = $base ];then
+					echo ${allList[index]}
+					break;
+				fi
+				if((${#shortList[@]}==`expr $index + 1`));then
+					echo ${lc}_未知
+				fi
+				index=`expr $index + 1`
+			done
+		done
+	else 
+		for lc in ${ftLanguageContent[@]}
+		do
+			for base in ${shortList[@]}
+			do
+				if [ $lc = $base ];then
+					echo ${allList[index]}
+					break;
+				fi
+				if((${#shortList[@]}==`expr $index + 1`));then
+					echo ${lc}___未知
+				fi
+				index=`expr $index + 1`
+			done
+		done
+	fi
 }
