@@ -2467,7 +2467,8 @@ EOF
 		#mv ${dirPathPacRes}/${versionName}.pac ${dirPatPacs}/${versionName}.pac
 	fi
 	cd $dirPathLocal
-}ftLanguageUtils()
+}
+ftLanguageUtils()
 {
 	local ftName=语言缩写转换
 	local ftLanguageContent=$@
@@ -2506,7 +2507,11 @@ EOF
 英语 英语 英语 英语 英语 芬兰语 法语 法语 法语 德语 德语 \
 德语 印地语/印度 意大利语 日语 坎纳达语/印度 拉脱维亚语 \
 立陶宛语 马拉雅拉姆语/印度 挪威语 波兰语 塞尔维亚语 斯洛伐克语 \
-斯洛文尼亚语 西班牙语 瑞典语 泰卢固语/印度 乌克兰语 繁体中文/香港 印尼语 斯瓦希里语/坦桑尼亚 阿姆哈拉语/埃塞俄比亚)
+斯洛文尼亚语 西班牙语 瑞典语 泰卢固语/印度 乌克兰语 繁体中文/香港 \
+印尼语 斯瓦希里语/坦桑尼亚 阿姆哈拉语/埃塞俄比亚 孟加拉语/印度 \
+希伯来语/以色列 希伯来语/以色列 南非语 罗曼什语/瑞士 缅甸语/民间 \
+白俄罗斯语 爱沙尼亚语 祖鲁语/南非 阿塞拜疆语 亚美尼亚语/亚美尼亚 \
+格鲁吉亚语/格鲁吉亚 老挝语/老挝 蒙古语 尼泊尔语 哈萨克语 僧加罗语/斯里兰卡)
 
 	shortList=(ar_IL bn_BD my_MM zh_CN zh_TW cs_CZ nl_NL \
 en_US fr_FR de_DE el_GR he_IL/iw_IL hi_IN hu_HU id_ID \
@@ -2515,7 +2520,10 @@ ru_RU es_ES tl_PH th_TH tr_TR ur_PK vi_VN ar_EG bg_BG \
 ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
  en_NZ en_SG en_ZA fi_FI fr_BE fr_CA fr_CH de_AT de_LI \
  de_CH hi_IN it_CH ja_JP hi_IN lv_LV lt_LT hi_IN nb_NO \
- pl_PL sr_RS sk_SK sl_SI es_US sv_SE hi_IN uk_UA zh_HK in_ID sw_TZ am_ET)
+ pl_PL sr_RS sk_SK sl_SI es_US sv_SE hi_IN uk_UA zh_HK \
+ in_ID sw_TZ am_ET bn_IN he_IL iw_IL af_ZA rm_CH \
+ my_ZG be_BY et_EE zu_ZA az_AZ hy_AM ka_GE lo_LA \
+ mn_MN ne_NP kk_KZ si_LK)
 
 
 # 去掉重复语言
@@ -2548,35 +2556,28 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
 	ftLanguageContent2=$(echo $ftLanguageContent|sed 's/_//g')
 	ftLanguageContent2=$(echo $ftLanguageContent2|sed s/[[:space:]]//g)
 	if [[ $ftLanguageContent2 =~ ^[a-zA-Z]+$ ]]; then
-		for lc in ${ftLanguageContent[@]}
-		do
-			index=0
-			for base in ${shortList[@]}
-			do
-				if [ $lc = $base ];then
-					echo ${allList[index]}
-					break;
-				fi
-				if((${#shortList[@]}==`expr $index + 1`));then
-					echo ${lc}_未知
-				fi
-				index=`expr $index + 1`
-			done
-		done
-	else 
-		for lc in ${ftLanguageContent[@]}
-		do
-			for base in ${shortList[@]}
-			do
-				if [ $lc = $base ];then
-					echo ${allList[index]}
-					break;
-				fi
-				if((${#shortList[@]}==`expr $index + 1`));then
-					echo ${lc}___未知
-				fi
-				index=`expr $index + 1`
-			done
-		done
+		sourceList=(${shortList[@]})
+		tragetList=(${allList[@]})
+	elif [[ $ftLanguageContent2 =~ ^[a-zA-Z] ]];then
+		ftEcho -e 错误的参数:\\n${ftLanguageContent[@]}
+		exit
+	else
+		sourceList=(${allList[@]})
+		tragetList=(${shortList[@]})
 	fi
+	for lc in ${ftLanguageContent[@]}
+	do
+		index=0
+		for base in ${sourceList[@]}
+		do
+			if [ $lc = $base ];then
+				echo ${tragetList[index]}
+				break;
+			fi
+			if((${#sourceList[@]}==`expr $index + 1`));then
+				ftEcho -e 参数[${lc}] 转换失败
+			fi
+			index=`expr $index + 1`
+		done
+	done
 }
