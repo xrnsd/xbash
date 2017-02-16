@@ -29,6 +29,8 @@ ftExample()
 	#filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l #文件数量获取
 	#b=${a/123/321};将${a}里的第一个123替换为321\
 
+	# note=${note:-'常规'}
+
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
@@ -38,7 +40,7 @@ ftExample()
 #	ftExample xxxx
 #=========================================================
 EOF
-	if [ $XMODULE = "env" ];then
+	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
 		return
 	fi
 	exit;; * ) break;; esac;done
@@ -295,7 +297,7 @@ ftYKSwitch 切换永恒星和康龙配置
 	|// ftYKSwitch yhx/kl
 	|
 ==========================================
-======= 下面实现全部无参
+======= 无参部分
 ==========================================
 	|
 ftCopySprdPacFileList 自动复制sprd的pac相关文件
@@ -356,9 +358,6 @@ xl ----- 过滤 android 含有tag的所有等级的log
 xt ----- 检测shell脚本，语法检测和测试运行
 	|// xt 脚本文件名
 	|
-//xg	---- [无参] / 搜索文件里面的字符串
-	|// xg 字符串
-	|
 xle ----- 过滤 android 含有tag的E级log
 	|// xle tag
 	|
@@ -371,20 +370,21 @@ xbh ----- 根据标签过滤命令历史
 xp ----- 查看文件绝对路径
 	|// xp 文件名
 	|
-//xh ----- 查看具体命令说明
-	|// xh 命令名
+==========================================
+======= 无参部分
+==========================================
 	|
-xgl --- [无参] / 简单查看最近10次git commit
-xi ---- [无参] / 快速初始化模块编译环境
-xr ---- [无参] / 使.bashrc修改生效
-.  ---- [无参] / 进入上一级目录
-.. ---- [无参] / 进入上两级目录
-xd ---- [无参] / mtk下载工具
-xu ---- [无参] / 打开.bashrc
-.9 ---- [无参] / 打开.9工具
-xx ---- [无参] / 休眠
-xs ---- [无参] / 关机
-xss --- [无参] / 重启
+xgl ----- 简单查看最近10次git commit
+xi ------ 快速初始化模块编译环境
+xr ------ 使.bashrc修改生效
+.  ------ 进入上一级目录
+.. ------ 进入上两级目录
+xd ------ mtk下载工具
+xu ------ 打开.bashrc
+.9 ------ 打开.9工具
+xx ------ 休眠
+xs ------ 关机
+xss ----- 重启
 
 ===============	临时命令 ===================
 xversion--[无参] / 查看软件版本
@@ -2390,7 +2390,7 @@ ftAutoPacket()
 #=================== ${ftName}的使用示例=============
 #	
 #	ftAutoPacket 无参
-#	ftAutoPacket -y #生成后自动移动
+#	ftAutoPacket -y #自动打包，上传到188服务器
 #=========================================================
 EOF
 	if [ $XMODULE = "env" ];then
@@ -2468,4 +2468,116 @@ EOF
 	fi
 	cd $dirPathLocal
 }
+ftLanguageUtils()
+{
+	local ftName=语言缩写转换
+	local ftLanguageContent=$@
 
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftLanguageUtils 无参
+#	ftLanguageUtils [example]
+#	ftLanguageUtils xxxx
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if(( $#!=$valCount ))||[ -z "$ftLanguageContent" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			[语言]ftLanguageContent=$ftLanguageContent \
+			请查看下面说明:"
+		ftLanguageUtils -h
+		return
+	fi
+
+	allList=(阿拉伯语 孟加拉语 缅甸语 简体中文 繁体中文 捷克语 荷兰语 \
+英语 法语 德语 希腊语 希伯来语 印地语 匈牙利语 印度尼西亚语 \
+意大利语 高棉语 韩语 马来语 波斯语 葡萄牙语 葡萄牙语 \
+罗马尼亚语/摩尔多瓦语  俄语 西班牙语 他加禄语/菲律宾语 \
+泰语 土耳其语 乌尔都语 越南语 阿拉伯语 保加利亚语 \
+加泰罗尼亚语 克罗地亚语 丹麦语 荷兰语 英语 英语 英语 \
+英语 英语 英语 英语 英语 芬兰语 法语 法语 法语 德语 德语 \
+德语 印地语/印度 意大利语 日语 坎纳达语/印度 拉脱维亚语 \
+立陶宛语 马拉雅拉姆语/印度 挪威语 波兰语 塞尔维亚语 斯洛伐克语 \
+斯洛文尼亚语 西班牙语 瑞典语 泰卢固语/印度 乌克兰语 繁体中文/香港 \
+印尼语 斯瓦希里语/坦桑尼亚 阿姆哈拉语/埃塞俄比亚 孟加拉语/印度 \
+希伯来语/以色列 希伯来语/以色列 南非语 罗曼什语/瑞士 缅甸语/民间 \
+白俄罗斯语 爱沙尼亚语 祖鲁语/南非 阿塞拜疆语 亚美尼亚语/亚美尼亚 \
+格鲁吉亚语/格鲁吉亚 老挝语/老挝 蒙古语 尼泊尔语 哈萨克语 僧加罗语/斯里兰卡)
+
+	shortList=(ar_IL bn_BD my_MM zh_CN zh_TW cs_CZ nl_NL \
+en_US fr_FR de_DE el_GR he_IL/iw_IL hi_IN hu_HU id_ID \
+it_IT km_KH ko_KR ms_MY fa_IR pt_BR pt_PT ro_RO \
+ru_RU es_ES tl_PH th_TH tr_TR ur_PK vi_VN ar_EG bg_BG \
+ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
+ en_NZ en_SG en_ZA fi_FI fr_BE fr_CA fr_CH de_AT de_LI \
+ de_CH hi_IN it_CH ja_JP hi_IN lv_LV lt_LT hi_IN nb_NO \
+ pl_PL sr_RS sk_SK sl_SI es_US sv_SE hi_IN uk_UA zh_HK \
+ in_ID sw_TZ am_ET bn_IN he_IL iw_IL af_ZA rm_CH \
+ my_ZG be_BY et_EE zu_ZA az_AZ hy_AM ka_GE lo_LA \
+ mn_MN ne_NP kk_KZ si_LK)
+
+
+# 去掉重复语言
+	# index=0
+	# strB="_isdbwb"
+	# strC="_dddd"
+	# for cmd in ${shortList[@]}
+	# do
+	# 	if [[ ${allList[index]} =~ $strC ]];then
+	# 	   continue;
+	# 	fi
+
+	# 	time=0
+	# 	index2=0
+	# 	for dd in ${shortList[@]}
+	# 	do
+	# 		if [ $dd = $cmd ];then
+	# 			if(( $time!=0 ));then
+	# 				# echo 11 $dd
+	# 				echo "${dd}_`expr $index + 1`____`expr $index2 + 1`"
+	# 				allList[$index]=${allList[index]}_isdbwb
+	# 				allList[$index2]=${allList[index2]}_dddd
+	# 			fi
+	# 			time=`expr $time + 1`
+	# 		fi
+	# 		index2=`expr $index2 + 1`
+	# 	done
+	# 	index=`expr $index + 1`
+	# done
+	ftLanguageContent2=$(echo $ftLanguageContent|sed 's/_//g')
+	ftLanguageContent2=$(echo $ftLanguageContent2|sed s/[[:space:]]//g)
+	if [[ $ftLanguageContent2 =~ ^[a-zA-Z]+$ ]]; then
+		sourceList=(${shortList[@]})
+		tragetList=(${allList[@]})
+	elif [[ $ftLanguageContent2 =~ ^[a-zA-Z] ]];then
+		ftEcho -e 错误的参数:\\n${ftLanguageContent[@]}
+		exit
+	else
+		sourceList=(${allList[@]})
+		tragetList=(${shortList[@]})
+	fi
+	for lc in ${ftLanguageContent[@]}
+	do
+		index=0
+		for base in ${sourceList[@]}
+		do
+			if [ $lc = $base ];then
+				echo ${tragetList[index]}
+				break;
+			fi
+			if((${#sourceList[@]}==`expr $index + 1`));then
+				ftEcho -e 参数[${lc}] 转换失败
+			fi
+			index=`expr $index + 1`
+		done
+	done
+}
