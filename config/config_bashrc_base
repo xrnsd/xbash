@@ -5,7 +5,7 @@ export PS1='xrnsd\[\033[44m\][\w]\[\033[0m\]:'
 # 忽略[连续]重复命令
 export HISTCONTROL=ignoredups
 # 忽略特定命令
-export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:xc:xd:xk:xu;xr:xbh:xs:xss:xh:xp:xb:xt:xgl:xi:xl:xkd:xversion:xx:history*"
+export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
 # 命令历史文件大小
 export HISTFILESIZE=10000000000
 # 保存历史命令条数
