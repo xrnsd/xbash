@@ -2466,6 +2466,19 @@ EOF
 		ftAutoUpload ${dirPathPacRes}/${versionName}.pac
 		#mv ${dirPathPacRes}/${versionName}.pac ${dirPatPacs}/${versionName}.pac
 	fi
+	if [ $1 = "-b" ];then
+		local serverIp=192.168.1.105
+		local userName=share
+		local pasword=123456
+		local dirPathMoule=desktop
+		ftEcho -s "开始上传${fileNameUploadSource} 到\n\
+ ${serverIp}/${dirPathMoule}..."
+smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
+	put ${dirPathPacRes}/${versionName}.pac ${versionName}.pac
+EOF
+		ftEcho -s "${filePathUploadSource}\n\
+ 上传结束"
+	fi
 	cd $dirPathLocal
 }
 ftLanguageUtils()
