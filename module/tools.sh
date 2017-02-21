@@ -2700,3 +2700,85 @@ EOF
 
 	echo ${projectName}/${clentName}/${cameraConfig}/${versionName}
 }
+
+ftUpload()
+{
+	local ftName=上传文件到服务器[低耦合版]
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftUpload filePathUploadSource serverIp userName userPassword dirPathServerMouleContent
+#
+#	ftUpload /home/xxx/1.test 192.168.1.188 server 123456 智能机软件/7731c/....
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	local filePathUploadSource=$1
+	local serverIp=$2
+	local userName=$3
+	local userPassword=$4
+	local dirPathServerMouleContent=$5
+	local dirPathServerMoule=$(dirname $dirPathServerMouleContent)
+	local fileNameUploadSource=$(basename $filePathUploadSource)
+
+	if [ $dirPathServerMoule = "." ];then
+		dirPathServerMoule=$dirPathServerMouleContent
+	fi
+
+	#耦合变量校验
+	local valCount=5
+	if(( $#!=$valCount ))||[ ! -f "$filePathUploadSource" ]\
+						||[ -z "$serverIp" ]\
+						||[ -z "$userName" ]\
+						||[ -z "$userPassword" ]\
+						||[ -z "$dirPathServerMoule" ]\
+						||[ -z "$dirPathServerMouleContent" ]\
+						||[ -z "$rUserPwd" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			[源文件路径]filePathUploadSource=$filePathUploadSource \
+			[服务器IP地址]serverIp=$serverIp \
+			[服务器用户]userName=$userName \
+			[服务器密码]userPassword=$userPassword \
+			[服务器根文件夹名]dirPathServerMoule=$dirPathServerMoule \
+			[服务器上传的目录]dirPathServerMouleContent=$dirPathServerMouleContent \
+			[root用户密码]rUserPwd=$rUserPwd \
+			[home目录]rDirPathUserHome=$rDirPathUserHome \
+			请查看下面说明:"
+		ftUpload -h
+		return
+	fi
+
+	local dirPathLocal=${rDirPathUserHome}/upload
+
+	if [ ! -d $dirPathLocal ];then
+		mkdir $dirPathLocal
+	else
+		ftEcho -s "尝试卸载[$dirPathLocal]"
+		echo $rUserPwd | sudo -S umount $dirPathLocal
+	fi
+
+	ftEcho -s "尝试挂载[//${serverIp}/${dirPathServerMoule}] 到 $dirPathLocal"
+	echo $rUserPwd | sudo -S mount -t cifs //${serverIp}/${dirPathServerMoule} $dirPathLocal -o username=$userName,password=$userPassword
+
+	if(( $?!=0 ));then
+		echo 错误
+	else
+		echo $rUserPwd | sudo -S mkdir -p ${dirPathLocal}/${dirPathServerMouleContent}
+		echo $rUserPwd | sudo -S chmod 777 -R ${dirPathLocal}/${dirPathServerMouleContent}
+	fi
+
+	ftEcho -s "开始上传${fileNameUploadSource} 到\n\
+ ${serverIp}/${dirPathServerMouleContent}..."
+ 	cp -v $filePathUploadSource ${dirPathLocal}/${dirPathServerMouleContent}
+	ftEcho -s "${filePathUploadSource}\n\
+ 上传结束"
+ 	# 收尾
+ 	echo $rUserPwd | sudo -S umount $dirPathLocal&&
+ 	rm -rf $dirPathLocal
+}
