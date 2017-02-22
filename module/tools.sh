@@ -2524,7 +2524,7 @@ EOF
 印尼语 斯瓦希里语/坦桑尼亚 阿姆哈拉语/埃塞俄比亚 孟加拉语/印度 \
 希伯来语/以色列 希伯来语/以色列 南非语 罗曼什语/瑞士 缅甸语/民间 \
 白俄罗斯语 爱沙尼亚语 祖鲁语/南非 阿塞拜疆语 亚美尼亚语/亚美尼亚 \
-格鲁吉亚语/格鲁吉亚 老挝语/老挝 蒙古语 尼泊尔语 哈萨克语 僧加罗语/斯里兰卡)
+格鲁吉亚语/格鲁吉亚 老挝语/老挝 蒙古语 尼泊尔语 哈萨克语 僧加罗语/斯里兰卡 )
 
 	shortList=(ar_IL bn_BD my_MM zh_CN zh_TW cs_CZ nl_NL \
 en_US fr_FR de_DE el_GR he_IL/iw_IL hi_IN hu_HU id_ID \
@@ -2578,17 +2578,21 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
 		sourceList=(${allList[@]})
 		tragetList=(${shortList[@]})
 	fi
+
 	for lc in ${ftLanguageContent[@]}
 	do
+		title="参数[${lc}] 转换失败"
 		index=0
 		for base in ${sourceList[@]}
 		do
 			if [ $lc = $base ];then
 				echo ${tragetList[index]}
 				break;
-			fi
-			if((${#sourceList[@]}==`expr $index + 1`));then
-				ftEcho -e 参数[${lc}] 转换失败
+			elif [[ $base =~ "/" ]]&&[[ $base =~ $lc ]]; then
+				echo "[${lc}]>${tragetList[index]}>[${base}]"
+				title=${lc}可能存在多种结果
+			elif((${#sourceList[@]}==`expr $index + 1`));then
+				ftEcho -e $title
 			fi
 			index=`expr $index + 1`
 		done
