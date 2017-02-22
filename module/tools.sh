@@ -1193,7 +1193,7 @@ EOF
 
 	#不存在新建命令log目录
 	if [ ! -d "$dirPath" ];then
-		mkdir $dirPath
+		mkdir -p $dirPath
 	fi
 	# 设定log路径
 	export mFilePathLog=${dirPath}/${fileNameLogBase}.log
