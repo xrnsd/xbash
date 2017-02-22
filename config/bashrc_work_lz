@@ -124,9 +124,12 @@ if [ ! -d "$dirPathHomeCmd" ];then
 else
     dirPathHomeCmdConfig=${dirPathHomeCmd}/config
     fileNameXbashTragetBashrcConfigBase=config_bashrc_base
+    fileNameXbashTragetBashrcConfigBaseGonre=config_bashrc_base.gonre
     filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetBashrcConfigBase}
+    filePathXbashTragetBashrcConfigBaseGonre=${dirPathHomeCmdConfig}/${fileNameXbashTragetBashrcConfigBaseGonre}
 
     #----------------   加载xbash的bashrc基础配置  ------------------
+    source $filePathXbashTragetBashrcConfigBaseGonre
     source $filePathXbashTragetBashrcConfigBase
 fi
 

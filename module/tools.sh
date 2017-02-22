@@ -2150,7 +2150,7 @@ EOF
 	buildType=${buildType/$keybuildType/}
 
 	local dirPathCodeRootOuts=${dirPathCode%/*}/outs
-	local dirNameBranchVersion=${branchName}____${versionName}____${buildType}_$(date -d "today" +"%y%m%d[%H:%M]")
+	local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----$(date -d "today" +"%y%m%d[%H:%M]")
 	local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
 
 	if [ ! -d "$dirPathOutBranchVersion" ];then
