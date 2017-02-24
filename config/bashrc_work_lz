@@ -119,19 +119,6 @@ fi
 dirPathHome=/home/${userName}
 dirPathHomeCmd=${dirPathHome}/cmds
 dirPathHomeTools=${dirPathHome}/tools
-#---------------- 自动整理bash历史记录  ----------------------------------
-filePathBashHistory=/home/wgx/.bash_history
-filePathBashHistoryTemp=${filePathBashHistory}_temp
-filePathBashHistoryArchive=${filePathBashHistory}_archive
-
-lineCountMax=10000
-lineCount=$(wc -l < $filePathBashHistory)
-if (($lineCount > $lineCountMax)); then
-    prune_lines=$(($lineCount - $lineCountMax))
-    head -$prune_lines $filePathBashHistory >> $filePathBashHistoryArchive \
-    && sed -e "1,${prune_lines}d"  $filePathBashHistory > $filePathBashHistoryTemp \
-    && mv $filePathBashHistoryTemp  $filePathBashHistory
-fi
 #---------------- xbash部分  ----------------------------------
 if [ ! -d "$dirPathHomeCmd" ];then
     echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"

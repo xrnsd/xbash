@@ -168,7 +168,7 @@ ftReadMe()
 
 	# 凡调用此方法的操作产生的日志都视为无效
 	local dirPathLogExpired=${mFilePathLog%/*}
-	local dirPathLogOther=${rDirPathCmdsLog}/other
+	local dirPathLogOther=${rDirPathLog}/other
 	if [ ! -d "$dirPathLogOther" ];then
 		mkdir $dirPathLogOther
 	fi
@@ -1164,24 +1164,27 @@ EOF
 	#初始化命令log目录
 
 	local diarNameCmdLog=null
-	local parameterList=(xs xss -h vvv -v test restartadb)
+	#local parameterList=(xs xss -h vvv -v test restartadb)
 	local fileNameLogBase=$(date -d "today" +"%y%m%d__%H%M%S")
 	# 部分操作不记录日志
-	for parameter in ${parameterList[*]}
-	do
-		if [ $parameter = $XCMD ]||[ $parameter = $rBaseShellParameter2 ];then
-			export mFilePathLog=/dev/null
-			return
-		fi
-	done
+	# for parameter in ${parameterList[*]}
+	# do
+	# 	if [ $parameter = $XCMD ]||[ $parameter = $rBaseShellParameter2 ];then
+	# 		export mFilePathLog=/dev/null
+	# 		return
+	# 	fi
+	# done
 
 	if [ -z "$rBaseShellParameter2" ];then
 		diarNameCmdLog=other
+		if [ ! -z "$XCMD" ];then
+			diarNameCmdLog=${diarNameCmdLog}/${XCMD}
+		fi
 	else
 		while true; do case $XCMD in
 		xk)
 			diarNameCmdLog=${XCMD}_ftKillPhoneAppByPackageName
-			fileNameLogBase=${fileNameLogBase}_${rBaseShellParameter2}
+			fileNameLogBase=${rBaseShellParameter2}_${fileNameLogBase}
 			break;;
 		*)
 			diarNameCmdLog=${XCMD}_${rBaseShellParameter2}
@@ -1189,7 +1192,7 @@ EOF
 		esac;done
 	fi
 
-	dirPath=${rDirPathCmdsLog}/${diarNameCmdLog}
+	dirPath=${rDirPathLog}/${diarNameCmdLog}
 
 	#不存在新建命令log目录
 	if [ ! -d "$dirPath" ];then
@@ -1197,7 +1200,7 @@ EOF
 	fi
 	# 设定log路径
 	export mFilePathLog=${dirPath}/${fileNameLogBase}.log
-	touch $mFilePathLog
+	# touch $mFilePathLog
 	# 清除高权限
 	if [ `whoami` = "root" ]; then
 		chmod 777 -R $dirPath

@@ -14,6 +14,20 @@ export HISTSIZE=10000
 shopt -s histappend
 export PROMPT_COMMAND="history -a"
 
+#---------------- 自动整理bash历史记录  ----------------------------------
+filePathBashHistory=${dirPathHome}/.bash_history
+filePathBashHistoryTemp=${filePathBashHistory}_temp
+filePathBashHistoryArchive=${filePathBashHistory}_archive
+
+lineCountMax=10000
+lineCount=$(wc -l < $filePathBashHistory)
+if (($lineCount > $lineCountMax)); then
+    prune_lines=$(($lineCount - $lineCountMax))
+    head -$prune_lines $filePathBashHistory >> $filePathBashHistoryArchive \
+    && sed -e "1,${prune_lines}d"  $filePathBashHistory > $filePathBashHistoryTemp \
+    && mv $filePathBashHistoryTemp  $filePathBashHistory
+fi
+
 #----------------	部分环境变量	---------------------------
 export ANDROID_SDK=${dirPathHomeTools}/sdk
 export ANDROID_SDK_HOME=$ANDROID_SDK
@@ -47,6 +61,9 @@ if [ -f $filePathXbashTragetConfigBase ];then
 	# 函数
 	if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
 		source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
+		
+		ftLog
+		
 		#命令封装
 		alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
 		alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
@@ -78,12 +95,15 @@ export  XMODULE="env"
 alias ..="cd .."
 alias ...="cd ../.."
 alias xr="source ~/.bashrc"
-alias xgl='echo 'q'|git log --pretty=oneline -10'
+alias xgl='export XCMD=xgl;\
+	ftLog;\
+	echo 'q'|git log --pretty=oneline -10 2>&1|tee -a $mFilePathLog'
 alias xp="export XCMD=xp;readlink -f"
 #alias xg='export XCMD=x;grep -irsn $2 ./'
 alias xl='export XCMD=xl;adb logcat -c;adb logcat | grep'
 alias xle='export XCMD=xle;adb logcat -c;adb logcat "*:E"'
-alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
+alias xbh='export XCMD=xbh;cat $filePathBashHistory |grep $2;\
+		cat $filePathBashHistoryArchive |grep $2'
 alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
 alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
 		cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "KEY_BUILD_NUMBER";\
@@ -92,6 +112,7 @@ alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSe
 alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SAM_FACTORYMODE";\
 			cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "TESTMODE_LIST";\
 			cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "VERALION"'
+
 
 #--------------------------命令选项快速适配---------------------------
 complete -W "123" xl
