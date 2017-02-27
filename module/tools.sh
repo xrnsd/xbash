@@ -187,7 +187,7 @@ ftReadMe()
 		case "$1" in
 		ft | -ft )
 	cat<<EOF
-
+ftCreate7731CSoftwareVersionPathByGitBranchName  ---  生成服务器上传的路径
 ftKillPhoneAppByPackageName ---- kill掉包名为packageName的应用
 ftJdkVersionTempSwitch           临时切换jdk版本
 ftCopySprdPacFileList ---------- 自动复制sprd的pac相关文件
@@ -196,13 +196,16 @@ ftCleanDataGarbage ------------- 快速清空回收站
 ftReduceFileList                 精简动画帧文件
 ftPushAppByName ---------------- push Apk文件
 ftBootAnimation                  生成开关机动画
-ftRmNormalBin                    清空pac相关资源文件
+ftAutoUploadPro ---------------- 上传文件到服务器[低耦合版]
+ftLanguageUtils                  语言缩写转换
 ftMtkFlashTool ----------------- mtk下载工具
+ftRmNormalBin                    清空pac相关资源文件
+ftAutoUpload ------------------- 上传文件到固定服务器
 ftSynchronous                    文件同步
 ftUpdateHosts ------------------ 更新hosts
 ftReNameFile ------------------- 批量重命名
 ftRestartAdb                     重启adb sever
-ftAutoPacket ------------------- 生成pac
+ftAutoPacket ------------------- 生成7731c使用的pac
 ftYKSwitch                       切换永恒星和康龙配置 sever
 ftBoot ------------------------- 延时免密码关机重启
 ftGjh                            生成国际化所需的xml文件
@@ -283,11 +286,29 @@ ftJdkVersionTempSwitch 临时切换jdk版本
 	|// ftJdkVersionTempSwitch 版本
 	|   ftJdkVersionTempSwitch 1.6/1.7
 	|
+ftLanguageUtils 语言缩写转换
+	|
+	|//ftLanguageUtils "语音缩写列表/语言列表"
+	|
+	|ftLanguageUtils "ar_IL bn_BD my_MM"
+	|ftLanguageUtils "阿拉伯语 孟加拉语 缅甸语"
+	|
+ftAutoUploadPro 上传文件到服务器[低耦合版]
+	|
+	|//ftAutoUploadPro 上传源文件路径 服务器IP地址 用户名 用户密码 服务器的存放路径
+	|ftAutoUploadPro /home/xxx/1.test 192.168.1.188 server 123456 智能机软件/7731c/....
+	|
+	|
+ftAutoUpload 上传文件到固定服务器
+	|
+	|//ftAutoUpload 上传源文件路径
+	|ftAutoUpload /home/xxx/1.test
+	|
 ftRmNormalBin 清空pac相关资源文件
 	|
-	|ftRmNormalBin [dir_path_pac_res] #生成pac的目录，和生成所需的文件存放的目录
+	|ftRmNormalBin [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
 	|
-ftAutoPacket 生成pac
+ftAutoPacket 生成7731c使用的pac
 	|
 	|ftAutoPacket  #自动打包
 	|ftAutoPacket -y #自动打包，上传到188服务器
@@ -1164,16 +1185,16 @@ EOF
 	#初始化命令log目录
 
 	local diarNameCmdLog=null
-	#local parameterList=(xs xss -h vvv -v test restartadb)
+	local parameterList=(xs xss -h vvv -v test restartadb -ftall -ft)
 	local fileNameLogBase=$(date -d "today" +"%y%m%d__%H%M%S")
 	# 部分操作不记录日志
-	# for parameter in ${parameterList[*]}
-	# do
-	# 	if [ $parameter = $XCMD ]||[ $parameter = $rBaseShellParameter2 ];then
-	# 		export mFilePathLog=/dev/null
-	# 		return
-	# 	fi
-	# done
+	for parameter in ${parameterList[@]}
+	do
+		if [ "$parameter" = "$XCMD" ]||[ "$parameter" = "$rBaseShellParameter2" ];then
+			export mFilePathLog=/dev/null
+			return
+		fi
+	done
 
 	if [ -z "$rBaseShellParameter2" ];then
 		diarNameCmdLog=other
@@ -2272,7 +2293,7 @@ ftRmNormalBin()
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #	
-#	ftRmNormalBin [dir_path_pac_res] #生成pac的目录，和生成所需的文件存放的目录
+#	ftRmNormalBin [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
 #	ftRmNormalBin out/pac
 #=========================================================
 EOF
@@ -2341,7 +2362,7 @@ ftAutoUpload()
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #
-#	ftAutoUpload [example]
+#	ftAutoUpload [源文件路径]
 #	ftAutoUpload xxxx
 #=========================================================
 EOF
@@ -2383,7 +2404,7 @@ EOF
 
 ftAutoPacket()
 {
-	local ftName=生成pac
+	local ftName=生成7731c使用的pac
 	local dirPathCode=$ANDROID_BUILD_TOP
 	local dirPathOut=$ANDROID_PRODUCT_OUT
 	local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
@@ -2464,7 +2485,7 @@ EOF
 		${dirPathNormalBin}/sysinfo.img \
 		${dirPathNormalBin}/u-boot.bin \
 		${dirPathNormalBin}/persist.img&&
-	ftEcho -s 生成pac[${dirPathPacRes}/${versionName}.pac]&&
+	ftEcho -s 生成7731c使用的pac[${dirPathPacRes}/${versionName}.pac]&&
 	if [ $1 = "-y" ];then
 		ftAutoUpload ${dirPathPacRes}/${versionName}.pac
 		#mv ${dirPathPacRes}/${versionName}.pac ${dirPatPacs}/${versionName}.pac
@@ -2708,16 +2729,16 @@ EOF
 	echo ${projectName}/${clentName}/${cameraConfig}/${versionName}
 }
 
-ftUpload()
+ftAutoUploadPro()
 {
 	local ftName=上传文件到服务器[低耦合版]
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #
-#	ftUpload filePathUploadSource serverIp userName userPassword dirPathServerMouleContent
+#	ftAutoUploadPro filePathUploadSource serverIp userName userPassword dirPathServerMouleContent
 #
-#	ftUpload /home/xxx/1.test 192.168.1.188 server 123456 智能机软件/7731c/....
+#	ftAutoUploadPro /home/xxx/1.test 192.168.1.188 server 123456 智能机软件/7731c/....
 #=========================================================
 EOF
 	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
@@ -2757,7 +2778,7 @@ EOF
 			[root用户密码]rUserPwd=$rUserPwd \
 			[home目录]rDirPathUserHome=$rDirPathUserHome \
 			请查看下面说明:"
-		ftUpload -h
+		ftAutoUploadPro -h
 		return
 	fi
 
