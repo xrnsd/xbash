@@ -19,7 +19,7 @@ filePathBashHistory=${dirPathHome}/.bash_history
 filePathBashHistoryTemp=${filePathBashHistory}_temp
 filePathBashHistoryArchive=${filePathBashHistory}_archive
 
-lineCountMax=10000
+lineCountMax=1000
 lineCount=$(wc -l < $filePathBashHistory)
 if (($lineCount > $lineCountMax)); then
     prune_lines=$(($lineCount - $lineCountMax))
@@ -68,7 +68,8 @@ if [ -f $filePathXbashTragetConfigBase ];then
 		alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
 		alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
 		alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
-		alias xu='export XCMD=xu;gedit ${dirPathHomeCmdConfig}/config_bashrc_base ${dirPathHomeCmdConfig}/config_bashrc_base.gonre'
+		alias xu='export XCMD=xu;gedit ${dirPathHomeCmdConfig}/config_bashrc_base \
+										${dirPathHomeCmdConfig}/config_bashrc_base.gonre'
 		alias xh='export XCMD=xh;${dirPathHomeCmd}/main.sh -h $2'
 		alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
 		alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
@@ -97,7 +98,7 @@ alias ...="cd ../.."
 alias xr="source ~/.bashrc"
 alias xgl='export XCMD=xgl;\
 	ftLog;\
-	echo 'q'|git log --pretty=oneline -10 2>&1|tee -a $mFilePathLog'
+	git log --pretty=oneline -10 2>&1|tee -a $mFilePathLog'
 alias xp="export XCMD=xp;readlink -f"
 #alias xg='export XCMD=x;grep -irsn $2 ./'
 alias xl='export XCMD=xl;adb logcat -c;adb logcat | grep'
