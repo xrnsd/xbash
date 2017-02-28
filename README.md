@@ -4,12 +4,11 @@
 ####Xrnsd-extensions-to-bash在下面简写为xbash
 	cmds
 	├── config	-----------------------	工具相关配置
+	│		├── bashrc						bashrc通用配置
+	│		│		├── config_bashrc_base			bashrc配置
+	│		│		└── config_bashrc_base.gonre		bashrc部分可忽略配置
+	│		│
 	│		├── config_base					全局参数
-	│		├── bashrc_base					为普通用户相关bash配置文件
-	│		├── bashrc_home					为作者使用的普通用户相关bash配置文件
-	│		├── bashrc_root_work_lz			为root相关bash配置文件
-	│		├── bashrc_work_lz				为普通用户相关bash配置文件
-	│		├── config_bashrc_base			xbash的bashrc配置
 	│		└── config_system_init			android build环境初始化工具的配置文件
 	│
 	├── data	--------------------------- 工具相关数据
@@ -17,24 +16,32 @@
 	│		├── logo.psd
 	│		└── user-dirs.dirs				home下默认文件夹配置
 	│
-	├── log   --------------------------- xbash的运行日志
+	├── log   --------------------------- 运行日志
 	│
 	├── module	-----------------------	脚本实现文件[具体功能]
-	│		├── compile.sh					xbash的项目编译初始化
+	│		│
+	│		├── compile.sh					项目编译初始化
+	│		├── bashrc						bashrc独立配置
+	│		│		├── bashrc_base					为普通用户相关bash配置文件
+	│		│		├── bashrc_home					为作者使用的普通用户相关bash配置文件
+	│		│		├── bashrc_work_lz				为普通用户相关bash配置文件
+	│		│		└── bashrc_root_work_lz			为root相关bash配置文件
 	│		├── init							初始化工具
-	│		│		├── base.sh				  xbash的初始化工具
-	│		│		├── init_xbash.sh			  xbash环境初始化工具
-	│		│		└── init_system.sh		  android mmi 环境初始化工具
+	│		│		├── base.sh				  		初始化工具
+	│		│		├── init_xbash.sh			  		环境初始化工具
+	│		│		└── init_system.sh		  		android mmi 环境初始化工具
 	│		├── packet						packet工具
-	│		│		└── pac_7731c.pl			  sprd的7731c的packet生成工具
-	│		├── test							xbash的脚本测试工具
-	│		│		├── base.sh				  demo测试,请忽略此文件的修改
-	│		│		├── pytools.README
-	│		│		└── pytools.py			  脚本语法逻辑校验高亮工具
-	│		├── maintain_system.sh			xbash的系统维护
-	│		└── tools.sh						xbash的函数实现
+	│		│		└── pac_7731c.pl			  		sprd的7731c的packet生成工具
+	│		├── test							脚本测试工具
+	│		│		├── base.sh				  		demo测试,请忽略此文件的修改
+	│		│		├── pytools.py			  		脚本语法逻辑校验高亮工具
+	│		│		└── pytools.README
+	│		├── maintain_system.sh			系统维护
+	│		│
+	│		└── tools.sh						函数实现
 	│
-	├── main.sh	-----------------------	xbash主入口
+	├── main.sh	-----------------------	主入口
+	│
 	└── README.md
 
 ##2.初始化环境
