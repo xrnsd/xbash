@@ -113,6 +113,10 @@ alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSe
 alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SAM_FACTORYMODE";\
 			cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "TESTMODE_LIST";\
 			cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "VERALION"'
+			
+			
+alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
+alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
 
 
 #--------------------------命令选项快速适配---------------------------
