@@ -379,13 +379,13 @@ xl ----- 过滤 android 含有tag的所有等级的log
 xt ----- 检测shell脚本，语法检测和测试运行
 	|// xt 脚本文件名
 	|
-xle ----- 过滤 android 含有tag的E级log
+xle ---- 过滤 android 含有tag的E级log
 	|// xle tag
 	|
-xkd	---- [无参] / 快速删除海量文件
+xkd ---- 快速删除海量文件
 	|// xkd 文件夹
 	|
-xbh ----- 根据标签过滤命令历史
+xbh ---- 根据标签过滤命令历史
 	|// xbh 标签
 	|
 xp ----- 查看文件绝对路径

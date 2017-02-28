@@ -69,7 +69,7 @@ if [ -f $filePathXbashTragetConfigBase ];then
 		alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
 		alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
 		alias xu='export XCMD=xu;gedit ${dirPathHomeCmdConfig}/config_bashrc_base \
-										${dirPathHomeCmdConfig}/config_bashrc_base.gonre'
+						${dirPathHomeCmdConfig}/config_bashrc_base.gonre'
 		alias xh='export XCMD=xh;${dirPathHomeCmd}/main.sh -h $2'
 		alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
 		alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
@@ -100,24 +100,25 @@ alias xgl='export XCMD=xgl;\
 	ftLog;\
 	git log --pretty=oneline -10 2>&1|tee -a $mFilePathLog'
 alias xp="export XCMD=xp;readlink -f"
-#alias xg='export XCMD=x;grep -irsn $2 ./'
-alias xl='export XCMD=xl;adb logcat -c;adb logcat | grep'
-alias xle='export XCMD=xle;adb logcat -c;adb logcat "*:E"'
+alias xl='export XCMD=xl;\
+	ftLog;\
+	adb logcat -c;adb logcat | grep $2 2>&1|tee -a $mFilePathLog'
+alias xle='export XCMD=xle;\
+	ftLog;\
+	adb logcat -c;adb logcat "*:E" 2>&1|tee -a $mFilePathLog'
 alias xbh='export XCMD=xbh;cat $filePathBashHistory |grep $2;\
 		cat $filePathBashHistoryArchive |grep $2'
 alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
 alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
 		cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "KEY_BUILD_NUMBER";\
 		cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"'
-		
+
 alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SAM_FACTORYMODE";\
-			cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "TESTMODE_LIST";\
-			cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "VERALION"'
-			
-			
+		cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "TESTMODE_LIST";\
+		cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "VERALION"'
+
 alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
 alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
-
 
 #--------------------------命令选项快速适配---------------------------
 complete -W "123" xl
