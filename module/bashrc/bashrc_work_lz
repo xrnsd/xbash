@@ -124,10 +124,11 @@ if [ ! -d "$dirPathHomeCmd" ];then
     echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
 else
     dirPathHomeCmdConfig=${dirPathHomeCmd}/config
+    dirPathHomeCmdConfigBashrc=${dirPathHomeCmd}/config/bashrc
     fileNameXbashTragetBashrcConfigBase=config_bashrc_base
     fileNameXbashTragetBashrcConfigBaseGonre=config_bashrc_base.gonre
-    filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetBashrcConfigBase}
-    filePathXbashTragetBashrcConfigBaseGonre=${dirPathHomeCmdConfig}/${fileNameXbashTragetBashrcConfigBaseGonre}
+    filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBase}
+    filePathXbashTragetBashrcConfigBaseGonre=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGonre}
 
     #----------------   加载xbash的bashrc基础配置  ------------------
     source $filePathXbashTragetBashrcConfigBaseGonre
