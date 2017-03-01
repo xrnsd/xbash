@@ -18,12 +18,15 @@ export PROMPT_COMMAND="history -a"
 filePathBashHistory=${dirPathHome}/.bash_history
 filePathBashHistoryTemp=${filePathBashHistory}_temp
 filePathBashHistoryArchive=${filePathBashHistory}_archive
+filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
 
 lineCountMax=1000
 lineCount=$(wc -l < $filePathBashHistory)
 if (($lineCount > $lineCountMax)); then
     prune_lines=$(($lineCount - $lineCountMax))
     head -$prune_lines $filePathBashHistory >> $filePathBashHistoryArchive \
+    && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
+    && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive \
     && sed -e "1,${prune_lines}d"  $filePathBashHistory > $filePathBashHistoryTemp \
     && mv $filePathBashHistoryTemp  $filePathBashHistory
 fi
@@ -106,8 +109,7 @@ alias xl='export XCMD=xl;\
 alias xle='export XCMD=xle;\
 	ftLog;\
 	adb logcat -c;adb logcat "*:E" 2>&1|tee -a $mFilePathLog'
-alias xbh='export XCMD=xbh;cat $filePathBashHistory |grep $2;\
-		cat $filePathBashHistoryArchive |grep $2'
+alias xbh='export XCMD=xbh;cat $filePathBashHistory $filePathBashHistoryArchive |grep $2'
 alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
 alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
 		cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "KEY_BUILD_NUMBER";\
