@@ -2810,3 +2810,101 @@ EOF
  	echo $rUserPwd | sudo -S umount $dirPathLocal&&
  	rm -rf $dirPathLocal
 }
+
+ftCreateReadMeBySoftwareVersion()
+{
+	local ftName=创建软件版本相关修改记录和版本说明
+	local dirPathCode=$ANDROID_BUILD_TOP
+	local dirPathOut=$ANDROID_PRODUCT_OUT
+	local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
+	local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
+	local dirPathPacRes=$1
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#	
+#	ftCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
+#	ftCreateReadMeBySoftwareVersion out/pac
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=1
+	if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
+			||[ ! -d "$dirPathPacRes" ]\
+			||[ ! -d "$dirPathOut" ]\
+			||[ ! -f "$filePathDevice" ]\
+			||[ ! -f "$filePathPawInfo" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			[工程根目录]dirPathCode=$dirPathCode \
+			[工程out目录]dirPathOut=$dirPathOut \
+			[工程Device的make文件]filePathDevice=$filePathDevice \
+			[工程暗码清单文件]filePathPawInfo=$filePathPawInfo \
+			[工程Pac生成目录]dirPathPacRes=$dirPathPacRes \
+			请查看下面说明:"
+		ftCreateReadMeBySoftwareVersion -h
+		return
+	fi
+
+	local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+	local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+	local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+	versionName=${versionName/$keyVersion/}
+	versionName=${versionName/\");/}
+	versionName=$(echo $versionName |sed s/[[:space:]]//g)
+
+	LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
+	LanguageList=${LanguageList//PRODUCT_LOCALES :=/};  #删除PRODUCT_LOCALES :=
+	LanguageList=`ftLanguageUtils "$LanguageList"`  #缩写转化为中文
+	LanguageList=${LanguageList//
+/ };  # 删除回车
+	LanguageList=(默认)${LanguageList}
+
+	cd $dirPathCode
+	gitCommitList=$(git log --pretty=format:"%s" -10)
+
+	pawNuminfo=$(cat $filePathPawInfo|grep "private static final String PAW_NUM_INFO")  #获取暗码清单信息
+	pawNuminfo=${pawNuminfo//private static final String PAW_NUM_INFO =/};
+	# pawNuminfo=${pawNuminfo//";/};
+	#客户说明模板
+# 1. 版本号：A451_N9_3GW_ORRO_V1.2_20170225
+
+# 2. 语言:
+	
+# 	英语(默认) 葡萄牙语 法语 意大利语 西班牙语 德语
+
+# 3. 修改点：
+	
+# 	添加 RAM 128G，256G项
+
+	# 修改记录模板
+# 暗码清单：*070809##
+# 修改记录：
+# 	A451_N9_3GW_ORRO_V1.2_20170228
+# 	修改 隐藏 RAM max=4G,ROM max=64G
+# 	修改 更新whatspp
+
+	local fileNameReadMeTemplate=客户说明.txt
+	local fileNameChangeListTemplate=修改记录.txt
+	local filePathReadMeTemplate=${dirPathPacRes}/${versionName}/${fileNameReadMeTemplate}
+	local filePathChangeListTemplate=${dirPathPacRes}/${versionName}/${fileNameChangeListTemplate}
+	# 开始生成模板文件
+	echo -e "1. 版本号：$versionName
+
+2. 语言: 
+	
+	$LanguageList
+
+3. 修改点：
+	
+$gitCommitList">$filePathReadMeTemplate
+	echo -e "﻿暗码清单：$pawNuminfo
+修改记录：
+$gitCommitList">$filePathChangeListTemplate
+}
