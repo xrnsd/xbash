@@ -6,7 +6,7 @@
 	├── config	-----------------------	工具相关配置
 	│		├── bashrc						bashrc通用配置
 	│		│		├── config_bashrc_base			bashrc配置
-	│		│		└── config_bashrc_base.gonre		bashrc部分可忽略配置
+	│		│		└── config_bashrc_base.gone		bashrc部分可忽略配置
 	│		│
 	│		├── config_base					全局参数
 	│		└── config_system_init			android build环境初始化工具的配置文件

@@ -126,7 +126,7 @@ else
     dirPathHomeCmdConfig=${dirPathHomeCmd}/config
     dirPathHomeCmdConfigBashrc=${dirPathHomeCmd}/config/bashrc
     fileNameXbashTragetBashrcConfigBase=config_bashrc_base
-    fileNameXbashTragetBashrcConfigBaseGonre=config_bashrc_base.gonre
+    fileNameXbashTragetBashrcConfigBaseGonre=config_bashrc_base.gone
     filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBase}
     filePathXbashTragetBashrcConfigBaseGonre=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGonre}
 

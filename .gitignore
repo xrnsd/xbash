@@ -5,4 +5,4 @@ data/excludeDirsBase.list
 data/hosts.base
 data/hosts.new
 
-config/config_bashrc_base.gonre
+config/bashrc/config_bashrc_base.gone

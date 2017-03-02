@@ -55,6 +55,7 @@ fi
 
 fileNameXbashTragetConfigBase=config_base
 filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
+dirPathHomeCmdConfigBashrc=${dirPathHomeCmdConfig}/bashrc
 #全局变量
 if [ -f $filePathXbashTragetConfigBase ];then
 	#不重复添加config_base的只读设定
@@ -71,8 +72,8 @@ if [ -f $filePathXbashTragetConfigBase ];then
 		alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
 		alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
 		alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
-		alias xu='export XCMD=xu;gedit ${dirPathHomeCmdConfig}/config_bashrc_base \
-						${dirPathHomeCmdConfig}/config_bashrc_base.gonre'
+		alias xu='export XCMD=xu;gedit ${dirPathHomeCmdConfigBashrc}/config_bashrc_base \
+						${dirPathHomeCmdConfigBashrc}/config_bashrc_base.gone'
 		alias xh='export XCMD=xh;${dirPathHomeCmd}/main.sh -h $2'
 		alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
 		alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
