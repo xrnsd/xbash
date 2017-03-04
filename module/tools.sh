@@ -6,44 +6,28 @@
 ftExample()
 {
 	local ftName=函数模板
-	# 1 耦合变量校验[耦合变量包含全局变量，输入参数，输入变量]
-	# 3 提供可执行前提说明
-	# 4 提供执行流程说明
-	# 5 提供使用示例
-	# -eq = 		# -ne !=
-	# -gt >		# -lt <
-	# ge >=		# le <=
-	
-	# if [ $test1 = "1" -o $test2 = "1" ]&&[ $test3 = "3" -a $test4 = "4" ]
-	# -o 或
-	# -a 与
-
-	# ${dirPathFileList%/*}父目录路径
-	# ${dirPathFileList##*/}父目录名
-	# `basename /home/wgx` wgx
-	# `dirname /home/wgx` /home
-	# echo 文件名: ${file%.*}”
-	# echo 后缀名: ${file##*.}”
-	# sed -i 's/被替换的内容/要替换成的内容/' file #内容包含空格需要转义
-	#sed -i "s:被替换的内容:要替换成的内容:g" file #被替换的内容为路径，内容包含空格需要转义
-	#filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l #文件数量获取
-	#b=${a//123/321};将${a}里的所有123替换为321\
-
-	# note=${note:-'常规'}
+	local isSecondTime=false
 
 	#使用示例
-	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+	while true; do case "$1" in
+	#方法使用说明 
+	h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #
 #	ftExample 无参
 #	ftExample [example]
-#	ftExample xxxx
 #=========================================================
 EOF
 	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
 		return
 	fi
-	exit;; * ) break;; esac;done
+	exit;; 
+	#出现错误之后的尝试
+	x | X |-x | -X)
+		isSecondTime=true
+		ftEcho -s "尝试重新开始 [ftName]"
+	break;; 
+	* ) break;;esac;done
 
 	#耦合变量校验
 	local valCount=1
@@ -52,8 +36,10 @@ EOF
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
 			[示例1]example1=$example1 \
-			[示例2]example2=$example2 \
 			请查看下面说明:"
+		if [ $isSecondTime = "false" ];then
+			ftExample -x
+		fi
 		ftExample -h
 		return
 	fi
