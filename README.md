@@ -44,35 +44,35 @@
 	│
 	└── README.md
 
-##2.初始化环境
 
-	cd Xrnsd-extensions-to-bash
-	sudo chmod -R a+x /home/xxxx/cmds/main.sh /home/xxxx/cmds/module /home/xxxx/cmds/config
-	./init.sh #初始化,下面命令3选1
-		├── ./init.sh 	    初始化xbash
-		├── ./init.sh -system 初始化system
-		└── ./init.sh -all    初始化system,初始化xbash
-	#重开一个终端
-	ftReadMe或xc -h
-
-##3.其他
-	1 已验证环境
-		ubuntu12.04 x64
-		ubuntu14.04 x64
-		ubuntu16.04 x64
-
-	2 环境目录
+##2 环境目录[参考]
 		/home/xxx/
 		├── tools     -------------------  环境相关
 		│	    ├───── jdk  ---------------    java jdk
 		│	    ├───── sdk  ---------------    android sdk
 		│	    └───── sp_flash_tool_v5.1548   全局参数
-		├── cmds      -------------------  xbash目
+		├── cmds      -------------------  xbash目录
 		└── .bashrc   -------------------  xbash中bashrc_work_lz的软连接
 
+##3.初始化环境
 
-	3 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现，xc为常用切稳定的实现
-	4 直接在bash里面调用方法名不会被xbash记录日志
-	5 以root用户/权限运行xc clean_data_garbage，有使系统崩溃风险，请确认
+	1 cd Xrnsd-extensions-to-bash
+	2 sudo chmod -R a+x main.sh module/ config/
+	3 ./init.sh #初始化,下面命令3选1
+		├── ./init.sh 	    初始化xbash
+		├── ./init.sh -system 初始化system
+		└── ./init.sh -all    初始化system,初始化xbash
+	
+	4 重开一个终端,输入ftReadMe 或 xc -h
+
+##4.其他
+	1 已验证环境
+		ubuntu12.04 x64
+		ubuntu14.04 x64
+		ubuntu16.04 x64
+
+	2 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现，xc为常用且稳定的实现
+	3 在bash直接使用方法,不会记录xbash日志
+	4 建议,不要以root权限运行xc clean_data_garbage
+	5 建议,不要开启xx[休眠]，这玩意脾气不好
 	6 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
-	7 xx[休眠]建议不要开启，这玩意脾气不好
