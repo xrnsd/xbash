@@ -126,12 +126,12 @@ else
     dirPathHomeCmdConfig=${dirPathHomeCmd}/config
     dirPathHomeCmdConfigBashrc=${dirPathHomeCmd}/config/bashrc
     fileNameXbashTragetBashrcConfigBase=config_bashrc_base
-    fileNameXbashTragetBashrcConfigBaseGonre=config_bashrc_base.gone
+    fileNameXbashTragetBashrcConfigBaseGone=config_bashrc_base.gone
     filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBase}
-    filePathXbashTragetBashrcConfigBaseGonre=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGonre}
+    filePathXbashTragetBashrcConfigBaseGone=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGone}
 
     #----------------   加载xbash的bashrc基础配置  ------------------
-    source $filePathXbashTragetBashrcConfigBaseGonre
+    source $filePathXbashTragetBashrcConfigBaseGone
     source $filePathXbashTragetBashrcConfigBase
 fi
 
