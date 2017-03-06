@@ -1,6 +1,6 @@
 #!/bin/bash
 #####-----------------------变量------------------------------#########
-readonly rModuleName=maintain_system.sh
+readonly rModuleName=maintain.sh
 mTypeEdit=$1
 mTypeBackupEdit=null
 
