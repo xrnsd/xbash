@@ -2486,16 +2486,31 @@ EOF
 		ftLnUtil -h
 		return
 	fi
-	#根据/分解路径
-	# 判断成员是否为软连接,是进行转换
-	# 转换后进行替换
 
-	[[ $lnPath =~ ^/  ]] && lnRealPath=$lnPath || lnRealPath=`pwd`/$lnPath
-	while [ -h $lnRealPath ]
+	OLD_IFS="$IFS"
+	IFS="/"
+	arr=($lnPath)
+	IFS="$OLD_IFS"
+
+	i=${#arr[@]}
+	let i--
+	delDir=
+	while [ $i -ge 0 ]
 	do
-	   b=`ls -ld $lnRealPath|awk '{print $NF}'`
-	   c=`ls -ld $lnRealPath|awk '{print $(NF-2)}'`
-	   [[ $b =~ ^/ ]] && lnRealPath=$b  || lnRealPath=`dirname $c`/$b
+		[[ $lnPath =~ ^/  ]] && lnRealPath=$lnPath || lnRealPath=`pwd`/$lnPath
+		while [ -h $lnRealPath ]
+		do
+		   b=`ls -ld $lnRealPath|awk '{print $NF}'`
+		   c=`ls -ld $lnRealPath|awk '{print $(NF-2)}'`
+		   [[ $b =~ ^/ ]] && lnRealPath=$b  || lnRealPath=`dirname $c`/$b
+		done
+	    if [ $lnRealPath = $lnPath ];then
+	    	lnPath=${lnPath%/*}
+	    	delDir=${arr[$i]}/$delDir
+	    else
+	    	echo ${lnRealPath}${delDir}
+	    	break
+	    fi
+	    let i--
 	done
-	echo $lnRealPath
 }
