@@ -2003,6 +2003,8 @@ ftLanguageUtils()
 {
 	local ftName=语言缩写转换
 	local ftLanguageContent=$@
+	local dirPathCode=$ANDROID_BUILD_TOP
+	local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -2018,11 +2020,10 @@ EOF
 	exit;; * ) break;; esac;done
 
 	#耦合变量校验
-	local valCount=1
-	if(( $#!=$valCount ))||[ -z "$ftLanguageContent" ];then
+	if [ -z "$ftLanguageContent" ]&&[ ! -f "$filePathDevice" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
-			[参数数量def=$valCount]valCount=$# \
 			[语言]ftLanguageContent=$ftLanguageContent \
+			[工程Device的make文件]filePathDevice=$filePathDevice \
 			请查看下面说明:"
 		ftLanguageUtils -h
 		return
@@ -2083,6 +2084,13 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
 	# 	done
 	# 	index=`expr $index + 1`
 	# done
+
+	if [ -z "$ftLanguageContent" ];then
+		LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
+		LanguageList=${LanguageList//PRODUCT_LOCALES :=/};  #删除PRODUCT_LOCALES :=
+		ftLanguageContent="$LanguageList"
+	fi
+
 	ftLanguageContent2=$(echo $ftLanguageContent|sed 's/_//g')
 	ftLanguageContent2=$(echo $ftLanguageContent2|sed s/[[:space:]]//g)
 	if [[ $ftLanguageContent2 =~ ^[a-zA-Z]+$ ]]; then
