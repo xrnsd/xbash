@@ -86,9 +86,22 @@ EOF
             adb shell kill $pid
         else
             ftEcho -e 包名[${packageName}]不存在，请确认
+            while [ ! -n "$(adb shell pm list packages|grep $packageName)" ]; do
+                ftEcho -y 是否重新开始
+                read -n1 sel
+                case "$sel" in
+                    y | Y )
+                        ftKillPhoneAppByPackageName $packageName
+                        break;;
+                    * )if [ $XMODULE = "env" ];then
+                            return
+                       fi
+                        exit;;
+            esac
+            done
         fi
     else
-        ftEcho -e adb状态异常,请重新尝试
+        ftEcho -e adb状态[$adbStatus]异常,请重新尝试
     fi
 }
 
