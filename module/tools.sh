@@ -18,7 +18,7 @@ ftExample()
 #	ftExample [example]
 #=========================================================
 EOF
-	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
+	if [ $XMODULE = "env" ];then
 		return
 	fi
 	exit;;
@@ -2014,7 +2014,7 @@ ftLanguageUtils()
 #	ftLanguageUtils “ar_IL bn_BD my_MM zh_CN”
 #=========================================================
 EOF
-	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
+	if [ $XMODULE = "env" ];then
 		return
 	fi
 	exit;; * ) break;; esac;done
@@ -2244,7 +2244,7 @@ ftAutoUploadPro()
 #	ftAutoUploadPro /home/xxx/1/ 192.168.1.188 server 123456 智能机软件/7731c/....
 #=========================================================
 EOF
-	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
+	if [ $XMODULE = "env" ];then
 		return
 	fi
 	exit;; * ) break;; esac;done
@@ -2433,7 +2433,7 @@ ftAutoLanguageUtil()
 #	ftAutoLanguageUtil 无参
 #=========================================================
 EOF
-	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
+	if [ $XMODULE = "env" ];then
 		return
 	fi
 	exit;; * ) break;; esac;done
@@ -2475,7 +2475,7 @@ ftLnUtil()
 #	ftLnUtil /home/xian-hp-u16/log/xb_backup
 #=========================================================
 EOF
-	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
+	if [ $XMODULE = "env" ];then
 		return
 	fi
 	exit;;
