@@ -137,8 +137,7 @@ ftReadMe()
 	local ftName=工具命令使用说明
 
 	# 凡调用此方法的操作产生的日志都视为无效
-	local dirPathLogExpired=${mFilePathLog%/*}
-	dirPathLogExpired=`ftLnUtil ${mFilePathLog%/*}`
+	local dirPathLogExpired=`ftLnUtil ${mFilePathLog%/*}`
 	local dirPathLogOther=${rDirPathLog}/other
 	if [ ! -d "$dirPathLogOther" ];then
 		mkdir $dirPathLogOther
@@ -147,7 +146,7 @@ ftReadMe()
 		&&[ $mFilePathLog != "/dev/null" ];then
 		local dirPathExpired=${dirPathLogOther}/$(basename $dirPathLogExpired)
 		if [ -d $dirPathExpired ];then
-			cp ${dirPathLogExpired}/* $dirPathExpired
+			mv ${dirPathLogExpired}/* $dirPathExpired
 			rm -rf $dirPathLogExpired
 		else
 			mv $dirPathLogExpired $dirPathExpired
