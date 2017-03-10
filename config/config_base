@@ -16,7 +16,7 @@ export rUserPwd=${rUserPwdBase:-'123'}
 rNameUser=$(who am i | awk '{print $1}'|sort -u)
 rNameUser=${rNameUser:-`whoami | awk '{print $1}'|sort -u`}
 if [ "${S/ /}" != "$S" ];then
-	rNameUser=$(whoami)
+    rNameUser=$(whoami)
 fi
 export rNameUser
 

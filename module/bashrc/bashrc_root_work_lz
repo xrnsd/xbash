@@ -125,17 +125,17 @@ if [ ! -d "$dirPathHomeCmd" ];then
     echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
 else
     #命令封装
-	alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
-	alias xr="export XCMD=xr;source ~/.bashrc"
-	alias xu='export XCMD=xu;gedit /root/.bashrc'
-	alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
-	alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
-	alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
-	alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
+    alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
+    alias xr="export XCMD=xr;source ~/.bashrc"
+    alias xu='export XCMD=xu;gedit /root/.bashrc'
+    alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
+    alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
+    alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
+    alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
 
-	#命令选项快速适配
-	complete -W "backup restore" xb
-	complete -W "test clean_data_garbage" xc
+    #命令选项快速适配
+    complete -W "backup restore" xb
+    complete -W "test clean_data_garbage" xc
 fi
 
 alias ..="cd .."

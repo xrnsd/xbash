@@ -17,20 +17,20 @@ export readonly rListVersionSoftware1404=(libc6-dev libncurses5-dev:i386 x11prot
 export readonly rListVersionSoftware1604=(openjdk-7-jdk nitruxos faenza-icon-theme awoken-icon-theme vibrancy-colors fs-icons-ubuntu emerald compizconfig-settings-manager ambiance-flat-colors radiance-flat-colors nitrux-umd zukitwo-gtk-theme zukitwo-dark-gtk-theme tree ranger htop zsh autojump tmux guake gitg shutter virtualbox classicmenu-indicator albert calibre okular  catfish gedit-plugins nemo nemo-fileroller lsyncd dos2unix numlockx xfonts-wqy)
 
 export readonly rListDevEnv=(\
-	Ubuntu12045LTS___x86_64___Android_KK \
-	Ubuntu12045LTS___x86_64___Android_L \
-	Ubuntu12045LTS___x86_64___Android_M \
-	Ubuntu14045LTS___x86_64___Android_KK \
-	Ubuntu14045LTS___x86_64___Android_L \
-	Ubuntu14045LTS___x86_64___Android_M \
-	Ubuntu16045LTS___x86_64___Android_M)
+    Ubuntu12045LTS___x86_64___Android_KK \
+    Ubuntu12045LTS___x86_64___Android_L \
+    Ubuntu12045LTS___x86_64___Android_M \
+    Ubuntu14045LTS___x86_64___Android_KK \
+    Ubuntu14045LTS___x86_64___Android_L \
+    Ubuntu14045LTS___x86_64___Android_M \
+    Ubuntu16045LTS___x86_64___Android_M)
 
 declare -A rListDevEnvCorrespondSftware
 export readonly rListDevEnvCorrespondSftware=(\
-	[Ubuntu12045LTS___x86_64___Android_KK]=rListVersionSoftware1204 \
-	[Ubuntu12045LTS___x86_64___Android_L]=rListVersionSoftware1204 \
-	[Ubuntu12045LTS___x86_64___Android_M]=rListVersionSoftware1204 \
-	[Ubuntu14045LTS___x86_64___Android_KK]=rListVersionSoftware1404 \
-	[Ubuntu14045LTS___x86_64___Android_L]=rListVersionSoftware1404 \
-	[Ubuntu14045LTS___x86_64___Android_M]=rListVersionSoftware1404 \
-	[Ubuntu16045LTS___x86_64___Android_M]=rListVersionSoftware1604)
+    [Ubuntu12045LTS___x86_64___Android_KK]=rListVersionSoftware1204 \
+    [Ubuntu12045LTS___x86_64___Android_L]=rListVersionSoftware1204 \
+    [Ubuntu12045LTS___x86_64___Android_M]=rListVersionSoftware1204 \
+    [Ubuntu14045LTS___x86_64___Android_KK]=rListVersionSoftware1404 \
+    [Ubuntu14045LTS___x86_64___Android_L]=rListVersionSoftware1404 \
+    [Ubuntu14045LTS___x86_64___Android_M]=rListVersionSoftware1404 \
+    [Ubuntu16045LTS___x86_64___Android_M]=rListVersionSoftware1604)

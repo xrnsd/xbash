@@ -4,17 +4,17 @@
 # Only packet for SC77xx
 #----------------------------------------------#
 
-my $number = scalar @ARGV;	
+my $number = scalar @ARGV;
 my $i=0;
 my $start = time();
 
 print "\n\n--------------------------------------\n";
 for($i=0;$i<$number;$i++)
 {
-	print ${ARGV[$i]}." "
+    print ${ARGV[$i]}." "
 }
 print "\n--------------------------------------\n\n";
-					
+
 if($number ne 23){
     die "\nInvalid parameters, param number must be 25.\n\n";
 }
@@ -26,7 +26,7 @@ my $config         =${ARGV[3]};
 
 my $index = 4;
 my @param = (
-   #ID              , file_path          , file_flag, check_flag, omit_flag, addr1     , addr2 
+   #ID              , file_path          , file_flag, check_flag, omit_flag, addr1     , addr2
    ["FDL"           , ${ARGV[$index+0]}  , 0x0101   , 1        , 0        , 0x50000000, 0xFFFFFFFF  ],
    ["FDL2"          , ${ARGV[$index+1]}  , 0x0101   , 1        , 0        , 0x9f000000, 0xFFFFFFFF  ],
    ["NV_W"          , ${ARGV[$index+2]}  , 1        , 1        , 0        , 0x80000010, 0xFFFFFFFF  ],
@@ -44,58 +44,58 @@ my @param = (
    ["UserData"      , ${ARGV[$index+12]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
    ["BootLogo"      , ${ARGV[$index+13]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
    ["Fastboot_Logo" , ${ARGV[$index+14]} , 1        , 1        , 1        , 0x0       , 0xFFFFFFFF  ],
-   ["FLASH" 	    , ""                 , 0        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
+   ["FLASH"         , ""                 , 0        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
    ["FLASH_WCN"     , ""                 , 0        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
    ["Cache"         , ${ARGV[$index+15]} , 1        , 2        , 0        , 0x0       , 0xFFFFFFFF  ],
-   ["EraseMisc"     , ""                 , 0        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],     
-   ["SysInfo"       , ${ARGV[$index+16]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],  
-   ["UBOOTLoader"   , ${ARGV[$index+17]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ], 
-   ["Persist"       , ${ARGV[$index+18]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ], 
+   ["EraseMisc"     , ""                 , 0        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
+   ["SysInfo"       , ${ARGV[$index+16]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
+   ["UBOOTLoader"   , ${ARGV[$index+17]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
+   ["Persist"       , ${ARGV[$index+18]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
    [""              , $config            , 2        , 0        , 0        , 0x0       , 0xFFFFFFFF  ],
 );
 
 #File validity checking
 for($i=3;$i<$number;$i++)
 {
-	my $file_path = ${ARGV[$i]}; 
-	if(!-f $file_path)
-	{
-		die "\nInvalid parameters, file [".$file_path."] don't exist.\n\n";
-	}
-	if(0 == -s $file_path)
-	{
-		die "\nInvalid file [".$file_path."] : it's a empty file.\n\n";
-	}
+    my $file_path = ${ARGV[$i]};
+    if(!-f $file_path)
+    {
+        die "\nInvalid parameters, file [".$file_path."] don't exist.\n\n";
+    }
+    if(0 == -s $file_path)
+    {
+        die "\nInvalid file [".$file_path."] : it's a empty file.\n\n";
+    }
 }
 
 #product name validity checking
 if(!open(DEF, "<$config"))
 {
-	unlink  $pac_file; 
-	die "Can not open $config\n";
+    unlink  $pac_file;
+    die "Can not open $config\n";
 }
 my $bValidProduct = 0;
 while($line = <DEF>)
 {
-	if($line =~s/\s*<\s*Product\s+name\s*=\s*\"([^\"]*)\"\s*>\s*/$1/g )
-	{
-		print $line."\n";
-		if($line eq $pac_prj)
-		{
-			$bValidProduct = 1;
-			last;
-	 	}
-	}
+    if($line =~s/\s*<\s*Product\s+name\s*=\s*\"([^\"]*)\"\s*>\s*/$1/g )
+    {
+        print $line."\n";
+        if($line eq $pac_prj)
+        {
+            $bValidProduct = 1;
+            last;
+         }
+    }
 }
 close DEF;
 
 if($bValidProduct == 0)
 {
-	unlink  $pac_file;
-	die "\nInvalid product [".$pac_prj."]\n\n";
+    unlink  $pac_file;
+    die "\nInvalid product [".$pac_prj."]\n\n";
 }
 
-my $file_count = scalar @param;	
+my $file_count = scalar @param;
 print "\n file count: $file_count\n";
 
 my @crc16_table = (
@@ -134,40 +134,40 @@ my @crc16_table = (
 
 if(!CheckParam())
 {
-	unlink  $pac_file;
-	die "parameter error";
+    unlink  $pac_file;
+    die "parameter error";
 }
 
 my $fhTarget;
 if(!open($fhTarget, "+>$pac_file") )
 {
-	unlink  $pac_file;
-	die "Can't open $pac_file";
+    unlink  $pac_file;
+    die "Can't open $pac_file";
 }
 
 binmode $fhTarget;
 
 
 #[[ pack file header
-my $szVersion; 			# packet struct version, unicode, total size is 48 bytes
-my $dwSize;           		# the whole packet size, 4 bytes
-my $szPrdName;   		# product name, total size is 512 bytes
-my $szPrdVersion;       	# product version, total size is 512 bytes
-my $nFileCount;         	# the number of files that will be downloaded, the file may be an operation, 4 bytes
-my $dwFileOffset;		# the offset from the packet file header to the array of FILE_T struct buffer, 4 bytes
-my $dwMode;			# 4 bytes
-my $dwFlashType;		# 4 bytes
-my $dwNandStrategy;		# 4 bytes
-my $dwIsNvBackup;		# 4 bytes
-my $dwNandPageType;		# 4 bytes
-my $szPrdAlias;    		# 200 bytes
-my $dwOmaDmProductFlag;		# 4 bytes
-my $dwIsOmaDM;			# 4 bytes
-my $dwIsPreload;		# 4 bytes
-my $dwReserved;			# 800 bytes
-my $dwMagic;			# 4 bytes
-my $wCRC1;			# 2 bytes
-my $wCRC2;			# 2 bytes
+my $szVersion;             # packet struct version, unicode, total size is 48 bytes
+my $dwSize;                   # the whole packet size, 4 bytes
+my $szPrdName;           # product name, total size is 512 bytes
+my $szPrdVersion;           # product version, total size is 512 bytes
+my $nFileCount;             # the number of files that will be downloaded, the file may be an operation, 4 bytes
+my $dwFileOffset;        # the offset from the packet file header to the array of FILE_T struct buffer, 4 bytes
+my $dwMode;            # 4 bytes
+my $dwFlashType;        # 4 bytes
+my $dwNandStrategy;        # 4 bytes
+my $dwIsNvBackup;        # 4 bytes
+my $dwNandPageType;        # 4 bytes
+my $szPrdAlias;            # 200 bytes
+my $dwOmaDmProductFlag;        # 4 bytes
+my $dwIsOmaDM;            # 4 bytes
+my $dwIsPreload;        # 4 bytes
+my $dwReserved;            # 800 bytes
+my $dwMagic;            # 4 bytes
+my $wCRC1;            # 2 bytes
+my $wCRC2;            # 2 bytes
 #]] total 2124 bytes
 
 $tmp = MakeUnicode("BP_R1.0.0");
@@ -198,7 +198,7 @@ do{use bytes;$szPrdAlias = $tmp.(pack("C",0) x (200 - length($tmp)));};
 $dwOmaDmProductFlag= GetDWORD(0);
 $dwIsOmaDM= GetDWORD(1);
 $dwIsPreload= GetDWORD(1);
-$dwReserved = pack("C",0) x 800; 
+$dwReserved = pack("C",0) x 800;
 $dwMagic= GetDWORD(0xFFFAFFFA);
 $wCRC1= GetWORD(0);
 $wCRC2= GetWORD(0);
@@ -208,7 +208,7 @@ $offset += ($file_count * 2580);
 
 my $cur_offset = $offset;
 
-do{	
+do{
 use bytes;
 print $fhTarget $szVersion;
 print $fhTarget $dwSize;
@@ -233,18 +233,18 @@ print $fhTarget $wCRC2;
 
 for($i=0; $i<$file_count; $i++)
 {
-   WriteFileInfoHeader($fhTarget,$i); 
+   WriteFileInfoHeader($fhTarget,$i);
 }
 
 for($i=0; $i<$file_count; $i++)
 {
-   WriteDLFile($fhTarget,$i); 
+   WriteDLFile($fhTarget,$i);
 }
 
 
 seek $fhTarget,48,SEEK_SET;
 
-$dwSize = GetDWORD($offset); 
+$dwSize = GetDWORD($offset);
 
 print $fhTarget $dwSize;
 
@@ -252,8 +252,8 @@ close $fhTarget;
 
 if (!CalcCrc())
 {
-	unlink  $pac_file;
-	die "\ncompute crc failed.\n" 
+    unlink  $pac_file;
+    die "\ncompute crc failed.\n"
 }
 
 
@@ -273,313 +273,313 @@ sub MakeUnicode{
     return $d;
 }
 
-sub GetDWORD{    
+sub GetDWORD{
     my ($d) = @_;
     #use bytes;
     $d = pack("V",$d);
-    return $d;	
+    return $d;
 }
 
-sub GetWORD{    
+sub GetWORD{
     my ($d) = @_;
     #use bytes;
     $d = pack("v",$d);
-    return $d;	
+    return $d;
 }
 
 
 sub WriteFileInfoHeader
 {
         my $fh = shift;
-	my $index = shift;
-	my $id = $param[$index][0];
-	my $file_path = $param[$index][1];
+    my $index = shift;
+    my $id = $param[$index][0];
+    my $file_path = $param[$index][1];
         my $file_flag = $param[$index][2];
-	my $check_flag = $param[$index][3];
+    my $check_flag = $param[$index][3];
         my $omit_flag = $param[$index][4];
-	my $addr = $param[$index][5];
+    my $addr = $param[$index][5];
         my $addr2 = $param[$index][6];
 
-	my $data;	
-	my $temp;
-       
-	my $dwSize;		# size of this struct itself
-	my $szFileID;		# file ID,such as FDL,Fdl2,NV and etc. 512 bytes
-	my $szFileName;    	# file name,in the packet bin file,it only stores file name. 512 bytes
-	                       	# but after unpacketing, it stores the full path of bin file
-	my $szFileVersion;  	# Reserved now. 512 bytes
-	my $nFileSize;          # file size
-	my $nFileFlag;          # if "0", means that it need not a file, and 
-	                        # it is only an operation or a list of operations, such as file ID is "FLASH"
-	                        # if "1", means that it need a file
-	my $nCheckFlag;         # if "1", this file must be downloaded; 
-	                        # if "0", this file can not be downloaded;										
-	my $dwDataOffset;       # the offset from the packet file header to this file data
-	my $dwCanOmitFlag;	# if "1", this file can not be downloaded and not check it as "All files" 
-				# in download and spupgrade tool.
-	my $dwAddrNum;
-	my $dwAddr;		# 4*5 bytes
-	my $dwReserved;     	# Reserved for future,not used now. 249x4 bytes
+    my $data;
+    my $temp;
 
-	
-	$dwSize = GetDWORD(2580);
-	$data = $data.$dwSize;
+    my $dwSize;        # size of this struct itself
+    my $szFileID;        # file ID,such as FDL,Fdl2,NV and etc. 512 bytes
+    my $szFileName;        # file name,in the packet bin file,it only stores file name. 512 bytes
+                               # but after unpacketing, it stores the full path of bin file
+    my $szFileVersion;      # Reserved now. 512 bytes
+    my $nFileSize;          # file size
+    my $nFileFlag;          # if "0", means that it need not a file, and
+                            # it is only an operation or a list of operations, such as file ID is "FLASH"
+                            # if "1", means that it need a file
+    my $nCheckFlag;         # if "1", this file must be downloaded;
+                            # if "0", this file can not be downloaded;
+    my $dwDataOffset;       # the offset from the packet file header to this file data
+    my $dwCanOmitFlag;    # if "1", this file can not be downloaded and not check it as "All files"
+                # in download and spupgrade tool.
+    my $dwAddrNum;
+    my $dwAddr;        # 4*5 bytes
+    my $dwReserved;         # Reserved for future,not used now. 249x4 bytes
 
-	$tmp = MakeUnicode($id);
-	do{use bytes;$szFileID = $tmp.(pack("C",0) x (512 - length($tmp)));};
-	$data = $data.$szFileID;
 
-	$tmp = $file_path;
-	$tmp =~ s/\\/\//g;
-	$tmp =~ s/.*\/(.*)$/$1/g;
+    $dwSize = GetDWORD(2580);
+    $data = $data.$dwSize;
+
+    $tmp = MakeUnicode($id);
+    do{use bytes;$szFileID = $tmp.(pack("C",0) x (512 - length($tmp)));};
+    $data = $data.$szFileID;
+
+    $tmp = $file_path;
+    $tmp =~ s/\\/\//g;
+    $tmp =~ s/.*\/(.*)$/$1/g;
         $tmp = MakeUnicode($tmp);
-	do{use bytes;$szFileName = $tmp.(pack("C",0) x (512 - length($tmp)));};
-	$data = $data.$szFileName;
+    do{use bytes;$szFileName = $tmp.(pack("C",0) x (512 - length($tmp)));};
+    $data = $data.$szFileName;
 
-	$szFileVersion = pack("C",0) x 512; 
-	$data = $data.$szFileVersion;
+    $szFileVersion = pack("C",0) x 512;
+    $data = $data.$szFileVersion;
 
-	my $file_size = 0;
-	if($file_flag != 0 && ($check_flag != 0 || $file_flag == 2))
-	{		
-		$file_size = -s $file_path;
-		$nFileSize = GetDWORD($file_size); 
-	}
-	else
-	{
-		$nFileSize = GetDWORD(0); 	       
-	}
+    my $file_size = 0;
+    if($file_flag != 0 && ($check_flag != 0 || $file_flag == 2))
+    {
+        $file_size = -s $file_path;
+        $nFileSize = GetDWORD($file_size);
+    }
+    else
+    {
+        $nFileSize = GetDWORD(0);
+    }
 
-	$data = $data.$nFileSize;
-      
-	$nFileFlag = GetDWORD($file_flag);
-	$data = $data.$nFileFlag;
- 
-	$nCheckFlag = GetDWORD($check_flag);
-	$data = $data.$nCheckFlag;
-	      
-	if($file_flag != 0 && ($check_flag != 0 || $file_flag == 2))
-	{                 									
-		$dwDataOffset = GetDWORD($offset);  
-	}
+    $data = $data.$nFileSize;
+
+    $nFileFlag = GetDWORD($file_flag);
+    $data = $data.$nFileFlag;
+
+    $nCheckFlag = GetDWORD($check_flag);
+    $data = $data.$nCheckFlag;
+
+    if($file_flag != 0 && ($check_flag != 0 || $file_flag == 2))
+    {
+        $dwDataOffset = GetDWORD($offset);
+    }
         else
-	{
-		$dwDataOffset = GetDWORD(0);  
-	}
-	$data = $data.$dwDataOffset;
-	
-	$dwCanOmitFlag = GetDWORD($omit_flag);  
-	$data = $data.$dwCanOmitFlag;
+    {
+        $dwDataOffset = GetDWORD(0);
+    }
+    $data = $data.$dwDataOffset;
 
-	if($file_flag != 2)
-	{
-		if($addr2 != 0xFFFFFFFF)
-		{
-			$dwAddrNum = GetDWORD(2); 
-		        $data = $data.$dwAddrNum;
+    $dwCanOmitFlag = GetDWORD($omit_flag);
+    $data = $data.$dwCanOmitFlag;
 
-		        my $dwAddr=GetDWORD($addr);
-			$data = $data.$dwAddr;
+    if($file_flag != 2)
+    {
+        if($addr2 != 0xFFFFFFFF)
+        {
+            $dwAddrNum = GetDWORD(2);
+                $data = $data.$dwAddrNum;
 
-			my $dwAddr2=GetDWORD($addr2);
-			$data = $data.$dwAddr2;
+                my $dwAddr=GetDWORD($addr);
+            $data = $data.$dwAddr;
 
-			my $dwAddr3 = pack("C",0) x 12; 
-			$data = $data.$dwAddr3;
-		}
-		else
-		{
-			$dwAddrNum = GetDWORD(1);  
-		        $data = $data.$dwAddrNum;
+            my $dwAddr2=GetDWORD($addr2);
+            $data = $data.$dwAddr2;
 
-		        my $dwAddr=GetDWORD($addr);
-			$data = $data.$dwAddr;
-		
-			my $dwAddr3 = pack("C",0) x 16; 
-			$data = $data.$dwAddr3;
-		}	
-	}
-	else
-	{
-		my $dwTmp = pack("C",0) x 24; 
-		$data = $data.$dwTmp;
-	}
+            my $dwAddr3 = pack("C",0) x 12;
+            $data = $data.$dwAddr3;
+        }
+        else
+        {
+            $dwAddrNum = GetDWORD(1);
+                $data = $data.$dwAddrNum;
 
-	my $dwReserved= pack("C",0) x (249*4);  #249x4 bytes
-	$data = $data.$dwReserved;
+                my $dwAddr=GetDWORD($addr);
+            $data = $data.$dwAddr;
 
-	$offset += $file_size;	
-	#$offset = (($offset+3) & 0xFFFFFFFC);
-	#print "\n--- $offset ----- \n";
+            my $dwAddr3 = pack("C",0) x 16;
+            $data = $data.$dwAddr3;
+        }
+    }
+    else
+    {
+        my $dwTmp = pack("C",0) x 24;
+        $data = $data.$dwTmp;
+    }
 
-	use bytes;
-	print $fh $data;
+    my $dwReserved= pack("C",0) x (249*4);  #249x4 bytes
+    $data = $data.$dwReserved;
+
+    $offset += $file_size;
+    #$offset = (($offset+3) & 0xFFFFFFFC);
+    #print "\n--- $offset ----- \n";
+
+    use bytes;
+    print $fh $data;
 }
 
 sub WriteDLFile
 {
     my $fh = shift;
     my $index = shift;
-    my $file_path = $param[$index][1]; 
+    my $file_path = $param[$index][1];
 
     my $len;
-    $len = do{use bytes; length $file_path};     
+    $len = do{use bytes; length $file_path};
     return 0 if ($len == 0 || !(-e $file_path)) ;
 
-    
+
     if (!open(FILE, "<$file_path"))
     {
-    	unlink  $pac_file;
-    	die "Can't open $file_path";
-  	}
-    binmode FILE; 
+        unlink  $pac_file;
+        die "Can't open $file_path";
+      }
+    binmode FILE;
 
     my $file_size = -s $file_path;
     print " deal with [$file_path]: file size: $file_size ...\n";
     my $max_size = 1024*1024*50;
     my $left = $file_size;
     my $buf;
-    
-    do{
-	if($left > $max_size)
-	{
-	     $len = $max_size;
-	}
-	else
-        {
-	     $len = $left;
-	}
 
-	use bytes;
-	read FILE,$buf,$len;
-	
-	#print $fh pack("C" x $len,$buf);
+    do{
+    if($left > $max_size)
+    {
+         $len = $max_size;
+    }
+    else
+        {
+         $len = $left;
+    }
+
+    use bytes;
+    read FILE,$buf,$len;
+
+    #print $fh pack("C" x $len,$buf);
         print $fh $buf;
-	
-	$left -=  $len;
-	
+
+    $left -=  $len;
+
     }while($left>0);
 
     #my $align = (($file_size+3) & 0xFFFFFFFC) - $file_size ;
     #if($align>0)
     #{
-    #	print $fh (pack("C",0) x $align);
-    #}   
+    #    print $fh (pack("C",0) x $align);
+    #}
 }
 
 sub CalcCrc
 {
-	if (!open(TARGET, "+<$pac_file"))
-	{
-		unlink  $pac_file;
-	 	die "Can't open $pac_file";
+    if (!open(TARGET, "+<$pac_file"))
+    {
+        unlink  $pac_file;
+         die "Can't open $pac_file";
     }
-	binmode TARGET;	
+    binmode TARGET;
 
-	my $buf;
+    my $buf;
 
-	print "\ncrc first part...\n";
-	seek TARGET,0,SEEK_SET;
+    print "\ncrc first part...\n";
+    seek TARGET,0,SEEK_SET;
 
-	my $wCRC1 = 0;		
-	read(TARGET,$buf,2120);
-	my @part1 = unpack("C" x 2120,$buf);  		
-	$wCRC1 = crc16($wCRC1,@part1);	
-	@part1=();
-	$wCRC1 = GetWORD($wCRC1);
-	seek TARGET,2120,SEEK_SET;
-	print TARGET $wCRC1;
+    my $wCRC1 = 0;
+    read(TARGET,$buf,2120);
+    my @part1 = unpack("C" x 2120,$buf);
+    $wCRC1 = crc16($wCRC1,@part1);
+    @part1=();
+    $wCRC1 = GetWORD($wCRC1);
+    seek TARGET,2120,SEEK_SET;
+    print TARGET $wCRC1;
 
-	
-	print "\ncrc second part...\n";
-	seek TARGET,2124,SEEK_SET;
-	my $wCRC2 = 0;
 
-	my $size = $offset-2124;	
-	my $max_size = 1024*1024;
-	my $left = $size;
-	    
-	do{
-		if($left > $max_size)
-		{
-		     $len = $max_size;
-		}
-		else
-		{
-		     $len = $left;
-		}		
-		read TARGET,$buf,$len;
-		
-		my @part = unpack("C" x $len,$buf); 	
-		$wCRC2 = crc16($wCRC2,@part);	
-		@part = ();
-	
-		$left -=  $len;	
-	 }while($left>0);	
+    print "\ncrc second part...\n";
+    seek TARGET,2124,SEEK_SET;
+    my $wCRC2 = 0;
 
-	$wCRC2 = GetWORD($wCRC2);
-	seek TARGET,2122,SEEK_SET;
-	print TARGET $wCRC2;
+    my $size = $offset-2124;
+    my $max_size = 1024*1024;
+    my $left = $size;
 
-	close TARGET;
-	return True;
+    do{
+        if($left > $max_size)
+        {
+             $len = $max_size;
+        }
+        else
+        {
+             $len = $left;
+        }
+        read TARGET,$buf,$len;
+
+        my @part = unpack("C" x $len,$buf);
+        $wCRC2 = crc16($wCRC2,@part);
+        @part = ();
+
+        $left -=  $len;
+     }while($left>0);
+
+    $wCRC2 = GetWORD($wCRC2);
+    seek TARGET,2122,SEEK_SET;
+    print TARGET $wCRC2;
+
+    close TARGET;
+    return True;
 }
 
 sub crc16
-{	
-	my $crc    = shift;  
-        my @data   = @_;		
-	
-	foreach $b (@data) {$crc = (($crc >> 8)^( ${ crc16_table[ ($crc^$b) & 0xff] } )) & 0xFFFF;}	
-     
-        return $crc & 0xFFFF; 	        
+{
+    my $crc    = shift;
+        my @data   = @_;
+
+    foreach $b (@data) {$crc = (($crc >> 8)^( ${ crc16_table[ ($crc^$b) & 0xff] } )) & 0xFFFF;}
+
+        return $crc & 0xFFFF;
 }
 
 sub CheckParam
 {
-	my $j;
-	my $error_msg = "";
-	for ($j = 0; $j < $file_count; $j++)
-	{
-		my $id = $param[$j][0];
-		my $file_path = $param[$j][1];
-        	my $file_flag = $param[$j][2];
-		my $check_flag = $param[$j][3];
-        	my $omit_flag = $param[$j][4];
-		
-		if($file_flag == 0x0101)
-		{
-			if(!(-e $file_path))
-			{	
-				$error_msg .= "$id: [$file_path] does not exist\n";
-			}
-			else
-			{
-				$param[$j][3] = 1;
-				$param[$j][4] = 0;
-			}			
-		}
-		elsif($file_flag == 1)
-		{
-			if(!(-e $file_path))
-			{	
-					$param[$j][3] = 0;
-			}	
-		}
-		elsif($file_flag == 1)
-		{
-			$param[$j][1] = "";	
-		}
-	}
+    my $j;
+    my $error_msg = "";
+    for ($j = 0; $j < $file_count; $j++)
+    {
+        my $id = $param[$j][0];
+        my $file_path = $param[$j][1];
+            my $file_flag = $param[$j][2];
+        my $check_flag = $param[$j][3];
+            my $omit_flag = $param[$j][4];
 
-	if(length($error_msg)>0)
-	{
-		print $error_msg;
-		return 0;
-	}	
-	
-	return true;
-	
+        if($file_flag == 0x0101)
+        {
+            if(!(-e $file_path))
+            {
+                $error_msg .= "$id: [$file_path] does not exist\n";
+            }
+            else
+            {
+                $param[$j][3] = 1;
+                $param[$j][4] = 0;
+            }
+        }
+        elsif($file_flag == 1)
+        {
+            if(!(-e $file_path))
+            {
+                    $param[$j][3] = 0;
+            }
+        }
+        elsif($file_flag == 1)
+        {
+            $param[$j][1] = "";
+        }
+    }
+
+    if(length($error_msg)>0)
+    {
+        print $error_msg;
+        return 0;
+    }
+
+    return true;
+
 }
 
 
