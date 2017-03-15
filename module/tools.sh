@@ -1777,16 +1777,17 @@ EOF
     local tagYhx=//#define\ CAMERA_USE_KANGLONG_GC2365
     local tagKl=#define\ CAMERA_USE_KANGLONG_GC2365
 
+    export mCameraType=$type
     while true; do case "$type" in
     yhx )
         sed -i "s:$tagKl:$tagYhx:g" $filePathTraget
-        source mCameraType=yhx
         break;;
     kl )
          sed -i "s:$tagYhx:$tagKl:g" $filePathTraget
-        source mCameraType=kl
         break;;
-    * )    ftEcho -ex 错误参数[type=$type]
+    * )
+         export mCameraType=
+        ftEcho -ex 错误参数[type=$type]
         break;;
     esac;done
 }
@@ -1909,7 +1910,10 @@ smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
 EOF
     ftEcho -s "${contentUploadSource}\n\
  上传结束"
-     mv $contentUploadSource ${contentUploadSource}_${mCameraType}
+
+ if [ ! -z "$mCameraType" ];then
+         mv $contentUploadSource ${contentUploadSource}_${mCameraType}
+  fi
 }
 
 ftAutoPacket()
