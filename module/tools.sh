@@ -1674,10 +1674,10 @@ EOF
     versionName=${versionName/\");/}
     versionName=$(echo $versionName |sed s/[[:space:]]//g)
     #软件编译类型
-    local filePathDeviceInfoSettings=${dirPathOut}/system/build.prop
+    local filePathBuildInfo=${dirPathOut}/system/build.prop
     local keybuildType="ro.build.type="
     local buildType="null"
-    buildType=$(cat $filePathDeviceInfoSettings|grep $keybuildType)
+    buildType=$(cat $filePathBuildInfo|grep $keybuildType)
     buildType=${buildType/$keybuildType/}
 
     local dirPathCodeRootOuts=${dirPathCode%/*}/outs
@@ -1964,6 +1964,17 @@ EOF
     local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
     local dirPathLogo=${dirPathCode%/*}/res
     local dirPathLocal=$PWD
+
+    local filePathBuildInfo=${dirPathOut}/system/build.prop
+    local keybuildType="ro.build.type="
+    local buildType=
+    if [ ! -f "$filePathBuildInfo" ];then
+        buildType=$(cat $filePathBuildInfo|grep $keybuildType)
+        buildType=${buildType/$keybuildType/}
+        if [ ! -z "$buildType" ]&&[ "$buildType" != "user" ];then
+            versionName=${versionName}__${buildType}
+        fi
+    fi
 
     if [ ! -d $dirPathPacRes ];then
         mkdir $dirPathPacRes
