@@ -105,6 +105,7 @@ alias xgl='export XCMD=xgl;\
     git log --pretty=oneline -10 2>&1|tee -a $mFilePathLog'
 alias xp="export XCMD=xp;readlink -f"
 alias xl='export XCMD=xl;\
+    adb logcat -c;\
     adb logcat | grep '
 alias xle='export XCMD=xle;\
     ftLog;\
