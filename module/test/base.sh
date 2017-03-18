@@ -89,3 +89,61 @@ EOF
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####-------------------------------------------------------#########
 # ===================================================================
+
+ftJdkVersionTempSwitch2()
+{
+    local ftName=临时切换jdk版本
+    local jdkVersion=$1
+
+    #使用示例
+    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#    ftJdkVersionTempSwitch [verison]
+#    ftJdkVersionTempSwitch 1.6/7
+#=========================================================
+EOF
+    if [ $XMODULE = "env" ];then
+        return
+    fi
+    exit;; * ) break;; esac;done
+
+    #耦合变量校验
+    # local valCount=1
+    # if(( $#!=$valCount ))||[ -z "$jdkVersion" ];then
+    #     ftEcho -ea "[${ftName}]的参数错误 \
+    #         [参数数量def=$valCount]valCount=$# \
+    #         [目标jdk版本]jdkVersion=$jdkVersion \
+    #         请查看下面说明:"
+    #     ftJdkVersionTempSwitch -h
+    #     return
+    # fi
+
+
+    local filePathConfig=${rDirPathCmdsConfig}/bashrc/config_bashrc_base.gone
+
+    local enable1.6="export JAVA_HOME=${dirPathHomeTools}/jdk/1.6.038"
+    local disable1.6="#export JAVA_HOME=${dirPathHomeTools}/jdk/1.6.038"
+    local enable7="export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64"
+    local disable1.6="#export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64"
+
+    echo cat $filePathConfig |grep $enable1.6
+    echo cat $filePathConfig |grep $enable7
+    # while true; do case "$type" in
+    # 1.6 | 6)
+    #     jdk2=/home/wgx/tools/jdk/1.6.038
+    #     break;;
+    # 1.7 | 7)
+    #     jdk2=/usr/lib/jvm/java-7-openjdk-amd64
+    #     break;;
+    # * )
+    #     ftEcho -ex 错误参数[type=$type]
+    #     break;;
+    # esac;done
+
+    java -version
+
+
+}
+
+ftJdkVersionTempSwitch2
