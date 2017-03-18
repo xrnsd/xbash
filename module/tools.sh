@@ -1982,6 +1982,7 @@ EOF
 
     cd $dirPathPacRes
 
+    ftEcho -s "开始生成 ${versionName}.pac\n"
     /usr/bin/perl $filePathPacketScript \
         $versionName.pac \
         SC77xx \

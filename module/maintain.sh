@@ -536,7 +536,12 @@ EOF
         echo
         echo -en $tt
         read note
-        note=${note:-'常规'} #未输入写入默认值
+        #未输入写入默认值
+        if [ $mTypeBackupEdit = "cg" ];then
+            note=${note:-'常规_默认'} 
+        elif [ $mTypeBackupEdit = "bx" ];then
+            note=${note:-'全部_默认'}
+        fi
     else
         note=$noteBase
     fi
