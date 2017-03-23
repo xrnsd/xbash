@@ -8,10 +8,18 @@ my $number = scalar @ARGV;
 my $i=0;
 my $start = time();
 
-print "\n\n--------------------------------------\n";
-for($i=0;$i<$number;$i++)
+print "\n\033[33;1m配置平台:\033[0m";
+print $ARGV[1]. "\n";
+print "\033[33;1mpacket包文件名:\033[0m";
+print $ARGV[0]. "\n";
+print "\033[33;1mResearchDownload显示的包名:\033[0m";
+print $ARGV[2]. "\n";
+print "\n\n---------------------------------------------\n";
+print "--------    Resources file list   -----------";
+print "\n---------------------------------------------\n";
+for($i=3;$i<$number;$i++)
 {
-    print ${ARGV[$i]}." "
+    print ${ARGV[$i]}." \n"
 }
 print "\n--------------------------------------\n\n";
 
@@ -581,6 +589,3 @@ sub CheckParam
     return true;
 
 }
-
-
-

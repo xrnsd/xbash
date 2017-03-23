@@ -34,9 +34,10 @@ fi
 #----------------    部分环境变量    ---------------------------
 export ANDROID_SDK=${dirPathHomeTools}/sdk
 export ANDROID_SDK_HOME=$ANDROID_SDK
+export ANDROID_SDK_BUILD_TOOL=${ANDROID_SDK_HOME}/build-tools/android-4.4W
 export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r10c
 export LD_LIBRARY_PATH=${dirPathHomeTools}/sp_flash_tool_v5.1548:${dirPathHomeTools}/sp_flash_tool_v5.1548/lib:$LD_LIBRARY_PATH
-export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:/usr/local/cuda-7.5/bin:$ANDROID_SDK/platform-tools:$ANDROID_SDK/tools:$ANDROID_NDK:/usr/local/cuda-8.0/bin/:$PATH
+export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$ANDROID_SDK_BUILD_TOOL:/usr/local/cuda-7.5/bin:$ANDROID_SDK/platform-tools:$ANDROID_SDK/tools:$ANDROID_NDK:/usr/local/cuda-8.0/bin/:$PATH
 #缓存目录[android优化加速部分]
 export CCACHE_DIR=/media/data/.ccache
 
@@ -72,8 +73,8 @@ if [ -f $filePathXbashTragetConfigBase ];then
         alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
         alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
         alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
-        alias xu='export XCMD=xu;gedit ${dirPathHomeCmdConfigBashrc}/config_bashrc_base \
-                        ${dirPathHomeCmdConfigBashrc}/config_bashrc_base.gone'
+        alias xu='export XCMD=xu;gedit  ${dirPathHomeCmdConfigBashrc}/config_bashrc_base.gone\
+                        ${dirPathHomeCmdConfigBashrc}/config_bashrc_base'
         alias xh='export XCMD=xh;${dirPathHomeCmd}/main.sh -h $2'
         alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
         alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
