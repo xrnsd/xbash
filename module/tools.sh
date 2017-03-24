@@ -2556,3 +2556,110 @@ EOF
         let i--
     done
 }
+
+ftAutoUpdateSoftwareVersion()
+{
+    local ftName=更新软件版本
+    # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
+    # ANDROID_PRODUCT_OUT=/media/data/ptkfier/code/sp7731c/code/out/target/product/sp7731c_1h10_32v4
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local dirPathOut=$ANDROID_PRODUCT_OUT
+
+    #使用示例
+    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#    ftAutoUpdateSoftwareVersion 无参
+#=========================================================
+EOF
+    if [ $XMODULE = "env" ];then
+        return
+    fi
+    exit;; * ) break;; esac;done
+
+    #耦合变量校验
+    local valCount=1
+    if(( $#>$valCount ))||[ ! -d "$dirPathCode" ]\
+            ||[ ! -d "$dirPathOut" ];then
+        ftEcho -ea "[${ftName}]的参数错误 \
+            [参数数量def=$valCount]valCount=$# \
+            [工程根目录]dirPathCode=$dirPathCode \
+            [工程out目录]dirPathOut=$dirPathOut \
+            请查看下面说明:"
+        ftAutoUpdateSoftwareVersion -h
+        return
+    fi
+    cd $ANDROID_BUILD_TOP
+    #分支名
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    #软件版本名1
+    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+    local filePathDeviceInfoSettingsBase=packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+    local filePathDeviceInfoSettings=${dirPathCode}/${filePathDeviceInfoSettingsBase}
+    local versionNameSet=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+    versionNameSet=${versionNameSet/$keyVersion/}
+    versionNameSet=${versionNameSet/\");/}
+    versionNameSet=$(echo $versionNameSet |sed s/[[:space:]]//g)
+
+    local keyVersion2="R.string.build_number"
+    local filePathSystemVersionTestBase=packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java
+    local filePathSystemVersionTest=${dirPathCode}/${filePathSystemVersionTestBase}
+    local versionNameTest=$(cat $filePathSystemVersionTest |sed s/[[:space:]]//g|grep -C 1 "$keyVersion2")
+    versionNameTest=$(echo $versionNameTest |sed s/[[:space:]]//g)
+    versionNameTest=${versionNameTest//\"/}
+    versionNameTest=${versionNameTest//\\n/}
+    versionNameTest=${versionNameTest//+/}
+    versionNameTest=${versionNameTest//);/}
+    versionNameTest=${versionNameTest//linuxVersion.setText(getString(R.string.prop_version)getPropVersion()platformVersion.setText(getString(R.string.build_number)/}
+
+    # 更新版本号的日期段
+    local dateNew=$(date -d "today" +"%Y%m%d")
+
+    local dateOldSet=$(echo $versionNameSet | awk -F "_" '{print $NF}')
+    local versionNameSetNew=${versionNameSet//$dateOldSet/$dateNew}
+    local dateOldTest=$(echo $versionNameTest | awk -F "_" '{print $NF}')
+    local versionNameTestNew=${versionNameTest//$dateOldTest/$dateNew}
+
+    local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
+    local tagYhx=//#define\ CAMERA_USE_KANGLONG_GC2365
+    local tagKl=#define\ CAMERA_USE_KANGLONG_GC2365
+
+    if [ ! -z "$1" ]&&[ "$1" = "-y" ];then
+                sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings&&
+                sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest&&
+                git add $filePathDeviceInfoSettingsBase $filePathSystemVersionTestBase&&
+                git commit -m "版本 ${versionNameTestNew}"
+                return
+    fi
+
+     while true; do
+        ftEcho -y "是否更新软件版本号"
+        read -n1 sel
+        case "$sel" in
+            y | Y )    
+                    sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings
+                    sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest
+                     while true; do
+                        ftEcho -y "是否提交修改"
+                        read -n1 sel
+                        case "$sel" in
+                            y | Y )
+                                ftEcho -s 提交开始，请稍等
+                                git add $filePathDeviceInfoSettingsBase $filePathSystemVersionTestBase&&git commit -m "版本 ${versionNameTestNew}"
+                                break;;
+                            n | N | q |Q)    exit;;
+                            * )
+                                ftEcho -e 错误的选择：$sel
+                                echo "输入n，q，离开";
+                                ;;
+                            esac
+                            done
+                break;;
+            n | N | q |Q)    exit;;
+            * )
+                ftEcho -e 错误的选择：$sel
+                echo "输入n，q，离开";
+                ;;
+        esac
+        done
+}
