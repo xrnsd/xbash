@@ -31,7 +31,7 @@ fi
 #####---------------------流程函数---------------------------#########
 ftWhoAmI()## #命令权限判定
 {
-    local ftName=命令权限判定
+    local ftEffect=命令权限判定
     local cmdName=$1
 
     #耦合变量校验
@@ -65,7 +65,7 @@ ftWhoAmI()## #命令权限判定
 
 ftMain()
 {
-    local ftName=工具主入口
+    local ftEffect=工具主入口
     while true; do
     case $rBaseShellParameter2 in
     -v | --version )        echo \"Xrnsd extensions to bash\" $rXbashVersion
@@ -134,7 +134,7 @@ ftOther()
 
 ftReadMe()
 {
-    local ftName=工具命令使用说明
+    local ftEffect=工具命令使用说明
 
     # 凡调用此方法的操作产生的日志都视为无效
     local dirPathLogExpired=`ftLnUtil ${mFilePathLog%/*}`
@@ -158,7 +158,6 @@ ftReadMe()
         case "$1" in
         ft | -ft )
     cat<<EOF
-ftCreate7731CSoftwareVersionPathByGitBranchName  ---  生成服务器上传的路径
 ftKillPhoneAppByPackageName ---- kill掉包名为packageName的应用
 ftJdkVersionTempSwitch           临时切换jdk版本
 ftCopySprdPacFileList ---------- 自动复制sprd的pac相关文件

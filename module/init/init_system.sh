@@ -37,12 +37,12 @@ source  $(cd `dirname $0`; pwd)/tools
 
 ftCheckEnv()
 {
-    local ftName=系统环境检测
+    local ftEffect=系统环境检测
 }
 
 ftCheckNetwork()
 {
-    local ftName=检测网络是否链接
+    local ftEffect=检测网络是否链接
     local timeout=5
     local target=www.baidu.com
 
@@ -109,11 +109,11 @@ sudo cp data/hosts /etc/hosts
 
 ftUpdateSoftware()
 {
+    local ftEffect=更新系统软件
 #     添加软件源
 #     更新软件源
 #     更新系统软件
 #     根据环境安装软件包
-    local ftName=更新系统软件
 
     # 开发版本
     local versionDev=null

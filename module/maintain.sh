@@ -39,7 +39,7 @@ fi
 
 ftRestoreOperate()
 {
-    local ftName=使用tar还原系统
+    local ftEffect=使用tar还原系统
     while true; do
     ftEcho -y 是否开始还原
     read -n1 sel
@@ -68,7 +68,7 @@ ftRestoreOperate()
 
 ftRestoreChoiceSource()
 {
-    local ftName=选择还原使用的版本[备份]包
+    local ftEffect=选择还原使用的版本[备份]包
 
     #耦合变量校验
     local valCount=0
@@ -137,7 +137,7 @@ ftRestoreChoiceSource()
 
 ftRestoreChoiceTarget()
 {
-    local ftName=选择还原的目标目录
+    local ftEffect=选择还原的目标目录
     ftEcho -bh 还原的目标目录
     echo -e "[1]\t系统"
     echo -e "[2]\t自定义"
@@ -169,7 +169,7 @@ ftRestoreChoiceTarget()
 
 ftEchoInfo()
 {
-    local ftName=脚本操作信息显示，用于关键操作前的确认
+    local ftEffect=脚本操作信息显示，用于关键操作前的确认
     local infoType=$1
 
     #使用示例
@@ -230,7 +230,7 @@ EOF
 
 ftSetBackupDevDir()
 {
-    local ftName=选择备份包存放的设备
+    local ftEffect=选择备份包存放的设备
     # 初始化设备列表[mCmdsModuleDataDevicesList]
     ftInitDevicesList 4096
 
@@ -311,7 +311,7 @@ EOF
 
 ftSetBackupType()
 {
-    local ftName=选择备份类型
+    local ftEffect=选择备份类型
     mTypeBackupEdit=$1
     if [ -z "$mTypeBackupEdit" ];then
         ftEcho -b 请${ftName}
@@ -343,7 +343,7 @@ ftSetBackupType()
 
 ftSetRestoreType()
 {
-    local ftName=选择还原时忽略的目录
+    local ftEffect=选择还原时忽略的目录
     #耦合变量校验
     local valCount=1
     if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ];then
@@ -387,7 +387,7 @@ ftSetRestoreType()
 
 ftBackupOs()
 {
-    local ftName=生成版本包
+    local ftEffect=生成版本包
     ftEcho -bh 开始更新排除列表
     #/home/wgx/cmds/data/excludeDirsBase.list
     fileNameExcludeBase=excludeDirsBase.list
@@ -475,7 +475,7 @@ ftBackupOs()
 
 ftAddNote()
 {
-    local ftName=记录版本包相关备注
+    local ftEffect=记录版本包相关备注
     local dateOnly=$(date -d "today" +"%Y%m%d")
     local dateTime=$(date -d "today" +"%Y%m%d_%H%M%S")
     local dirPathBackupRoot=$1
@@ -556,7 +556,7 @@ EOF
 
 ftMD5()
 {
-    local ftName=记录和校验版本包的MD5
+    local ftEffect=记录和校验版本包的MD5
     local typeEdit=$1
     local dirPathBackupRoot=$2
     local versionName=$3
@@ -650,7 +650,7 @@ EOF
 
 ftAutoCleanTemp()
 {
-    local ftName=清理临时文件
+    local ftEffect=清理临时文件
     ftEcho -bh 开始${ftName}
 
     sudo apt-get autoclean
@@ -662,7 +662,7 @@ ftAutoCleanTemp()
 
 ftAddOrCheckSystemHwSwInfo()
 {
-    local ftName=记录和校验版本包软件和硬件信息
+    local ftEffect=记录和校验版本包软件和硬件信息
     local typeEdit=$1
     local dirPathBackupRoot=$2
     local dirNameBackupInfoVersion=$3
@@ -787,12 +787,7 @@ EOF
 
 ftSel()
 {
-#=================== example=============================
-#
-#        ftSel [title]
-#        ftSel test
-#=========================================================
-    local ftName=版本包软件和硬件信息校验操作选择
+    local ftEffect=版本包软件和硬件信息校验操作选择
     local title=$1
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$title" ];then
@@ -815,7 +810,7 @@ ftSel()
 
 ftBackUpDevScanning()
 {
-    local ftName=备份设备扫描,同步
+    local ftEffect=备份设备扫描,同步
     local version=$1
     local note=$2
     local devList=$3
@@ -911,7 +906,7 @@ EOF
 
 ftVersionPackageIsCreated()
 {
-    local ftName=检查版本包是否已经存在
+    local ftEffect=检查版本包是否已经存在
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -953,7 +948,7 @@ EOF
 
 ftSynchronous()
 {
-    local ftName=在不同设备间同步版本包
+    local ftEffect=在不同设备间同步版本包
     local dirPathArray=$1
     local fileTypeList=$2
 
