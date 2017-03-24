@@ -3,51 +3,9 @@
 # 不可在此文件中出现不被函数包裹的调用或定义
 # 人话，这里只放函数
 #####---------------------工具函数---------------------------#########
-ftExample()
-{
-    local ftName=函数模板
-    local isSecondTime=false
-
-    #使用示例
-    while true; do case "$1" in
-    #方法使用说明
-    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
-#
-#    ftExample 无参
-#    ftExample [example]
-#=========================================================
-EOF
-    if [ $XMODULE = "env" ];then
-        return
-    fi
-    exit;;
-    #出现错误之后的尝试
-    x | X |-x | -X)
-        isSecondTime=true
-        ftEcho -s "尝试重新开始 [ftName]"
-    break;;
-    * ) break;;esac;done
-
-    #耦合变量校验
-    local valCount=1
-    if(( $#!=$valCount ))||[ -z "$example1" ]\
-                ||[ -z "$example2" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
-            [参数数量def=$valCount]valCount=$# \
-            [示例1]example1=$example1 \
-            请查看下面说明:"
-        if [ $isSecondTime = "false" ];then
-            ftExample -x
-        fi
-        ftExample -h
-        return
-    fi
-}
-
 ftKillPhoneAppByPackageName()
 {
-    local ftName=kill掉包名为packageName的应用
+    local ftEffect=kill掉包名为packageName的应用
     local packageName=$1
 
     #使用示例
@@ -107,6 +65,7 @@ EOF
 
 ftRestartAdb()
 {
+    local ftEffect=重启adb sever
     #耦合变量校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rUserPwd" ];then
@@ -115,7 +74,6 @@ ftRestartAdb()
             [默认用户密码]rUserPwd=$rUserPwd"
     fi
 
-    local ftName=重启adb sever
     echo $rUserPwd | sudo -S adb kill-server
     echo
     sleep 2
@@ -126,7 +84,7 @@ ftRestartAdb()
 
 ftInitDevicesList()
 {
-    local ftName=存储设备列表初始化
+    local ftEffect=初始化存储设备的列表
     local devDir=/media
     local dirList=`ls $devDir`
     # 设备最小可用空间，小于则视为无效.单位M
@@ -198,7 +156,7 @@ EOF
 
 ftCleanDataGarbage()
 {
-    local ftName=快速清空回收站
+    local ftEffect=清空回收站
     ftInitDevicesList
 
     #耦合变量校验
@@ -232,7 +190,7 @@ ftCleanDataGarbage()
 
 ftMtkFlashTool()
 {
-    local ftName=mtk下载工具
+    local ftEffect=mtk下载工具
     local tempDirPath=`pwd`
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -264,7 +222,7 @@ EOF
 
 ftFileDirEdit()
 {
-    local ftName=路径合法性校验
+    local ftEffect=路径合法性校验
     type=$1
     isCreate=$2
     path=$3
@@ -349,7 +307,7 @@ EOF
 
 ftEcho()
 {
-    local ftName=工具信息提示
+    local ftEffect=工具信息提示
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
@@ -427,7 +385,7 @@ break;;
 
 ftTiming()
 {
-    local ftName=脚本操作耗时记录
+    local ftEffect=脚本操作耗时记录
 
     if [ -z "$mTimingStart" ];then
         mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
@@ -466,7 +424,7 @@ ftTiming()
 
 ftBootAnimation()
 {
-    local ftName=生成开关机动画
+    local ftEffect=生成开关机动画
     local typeEdit=$1
     local dirPathAnimation=$2
     local dirPathBase=$(pwd)
@@ -689,7 +647,7 @@ p 0 0 part1" >${dirPathAnimationTraget}/${fileNameDesc}
 
 ftGjh()
 {
-    local ftName=生成国际化所需的xml文件
+    local ftEffect=生成国际化所需的xml文件
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -725,7 +683,7 @@ EOF
 
 ftLog()
 {
-    local ftName=初始化运行日志记录所需的参数
+    local ftEffect=初始化运行日志记录所需的参数
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
@@ -800,7 +758,7 @@ EOF
 
 ftTest()
 {
-    local ftName=函数demo调试
+    local ftEffect=函数demo调试
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -830,7 +788,7 @@ EOF
 
 ftBoot()
 {
-    local ftName=延时免密码关机重启
+    local ftEffect=延时免密码关机重启
     local edittype=$1
 
     #使用示例
@@ -900,6 +858,7 @@ EOF
 
 ftPushAppByName()
 {
+    local ftEffect="push Apk文件"
     # ====================    设定流程      ============================
 
     # 确认ANDROID_PRODUCT_OUT非空,存在
@@ -910,7 +869,6 @@ ftPushAppByName()
     # 确认手机有对应模块名的apk文件存在
     # 执行push操作
 
-    local ftName="push Apk文件"
     local fileNameNewAppApkBase=$1
     local dirPathOut=$ANDROID_PRODUCT_OUT
 
@@ -1015,7 +973,7 @@ EOF
 
 ftReduceFileList()
 {
-    local ftName=精简动画帧文件
+    local ftEffect=精简动画帧文件
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -1118,7 +1076,7 @@ EOF
 
 ftReNameFile()
 {
-    local ftName=批量重命名文件
+    local ftEffect=批量重命名文件
     # local extensionName=$1
     local dirPathFileList=$1
     local lengthFileName=$2
@@ -1185,7 +1143,7 @@ EOF
 
 ftDevAvailableSpace()
 {
-    local ftName=设备可用空间
+    local ftEffect=设备可用空间
     local devDirPath=$1
     local isReturn=$2
 
@@ -1299,7 +1257,7 @@ EOF
 
 ftGetKeyValueByBlockAndKey()
 {
-    local ftName=读取ini文件指定字段
+    local ftEffect=读取ini文件指定字段
     local filePath=$1
     local blockName=$2
     local keyName=$3
@@ -1363,7 +1321,7 @@ EOF
 
 ftSetKeyValueByBlockAndKey()
 {
-    local ftName=修改ini文件指定字段
+    local ftEffect=修改ini文件指定字段
     local filePath=$1
     local blockName=$2
     local keyName=$3
@@ -1401,6 +1359,7 @@ EOF
 
 ftCheckIniConfigSyntax()
 {
+    local ftEffect=校验ini文件，确认文件有效
     #============ini文件模板=====================
     # # 注释１
     # [block1]
@@ -1411,7 +1370,6 @@ ftCheckIniConfigSyntax()
     # key2=val2
     #===========================================
 
-    local ftName=校验ini文件，确认文件有效
     local filePath=$1
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -1478,7 +1436,7 @@ EOF
 
 ftUpdateHosts()
 {
-    local ftName=更新hosts
+    local ftEffect=更新hosts
     local filePathHosts=/etc/hosts
     local urlCustomHosts=$1
 
@@ -1559,7 +1517,7 @@ ff02::2 ip6-allrouters
 #===================    非通用实现[高度耦合]    ==========================
 ftCopySprdPacFileList()
 {
-    local ftName=自动复制sprd的pac相关文件
+    local ftEffect=自动复制sprd的pac相关文件
     # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
     # ANDROID_PRODUCT_OUT=/media/data/ptkfier/code/sp7731c/code/out/target/product/sp7731c_1h10_32v4
     local dirPathCode=$ANDROID_BUILD_TOP
@@ -1633,7 +1591,7 @@ EOF
 
 ftBackupOutsByMove()
 {
-    local ftName=移动备份out
+    local ftEffect=移动备份out
     # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
     # ANDROID_PRODUCT_OUT=/media/data/ptkfier/code/sp7731c/code/out/target/product/sp7731c_1h10_32v4
     local dirPathCode=$ANDROID_BUILD_TOP
@@ -1696,7 +1654,7 @@ EOF
 
 ftJdkVersionTempSwitch()
 {
-    local ftName=临时切换jdk版本
+    local ftEffect=临时切换jdk版本
     local jdkVersion=$1
 
     #使用示例
@@ -1743,7 +1701,7 @@ EOF
 
 ftYKSwitch()
 {
-    local ftName=切换永恒星和康龙配置
+    local ftEffect=切换永恒星和康龙配置
     local type=$1
     # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
     local dirPathCode=$ANDROID_BUILD_TOP
@@ -1794,7 +1752,7 @@ EOF
 
 ftRmNormalBin()
 {
-    local ftName=清空pac相关资源文件
+    local ftEffect=清空pac相关资源文件
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local dirPathPacRes=$1
@@ -1865,7 +1823,7 @@ EOF
 
 ftAutoUpload()
 {
-    local ftName=上传文件到制定smb服务器路径
+    local ftEffect=上传文件到制定smb服务器路径
     local contentUploadSource=$1
 
     #使用示例
@@ -1918,7 +1876,7 @@ EOF
 
 ftAutoPacket()
 {
-    local ftName=生成7731c使用的pac
+    local ftEffect=生成7731c使用的pac
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
@@ -2030,7 +1988,7 @@ EOF
 
 ftLanguageUtils()
 {
-    local ftName=语言缩写转换
+    local ftEffect=语言缩写转换
     local ftLanguageContent=$@
     local dirPathCode=$ANDROID_BUILD_TOP
     local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
@@ -2153,116 +2111,9 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
     done
 }
 
-ftCreate7731CSoftwareVersionPathByGitBranchName()
-{
-    local ftName=生成服务器上传的路径
-    # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
-    # ANDROID_PRODUCT_OUT=/media/data/ptkfier/code/sp7731c/code/out/target/product/sp7731c_1h10_32v4
-    local dirPathCode=$ANDROID_BUILD_TOP
-    local dirPathOut=$ANDROID_PRODUCT_OUT
-
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
-#
-#    dirPath=$(ftCreate7731CSoftwareVersionPathByGitBranchName)
-#=========================================================
-EOF
-    if [ $XMODULE = "env" ];then
-        return
-    fi
-    exit;; * ) break;; esac;done
-
-    #耦合变量校验
-    local valCount=0
-    if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
-            ||[ ! -d "$dirPathOut" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
-            [参数数量def=$valCount]valCount=$# \
-            [工程根目录]dirPathCode=$dirPathCode \
-            [工程out目录]dirPathOut=$dirPathOut \
-            请查看下面说明:"
-        ftCreate7731CSoftwareVersionPathByGitBranchName -h
-        return
-    fi
-    cd $ANDROID_BUILD_TOP
-    # 分支名
-    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    if [[ ! $branchName =~ "CT(" ]]; then
-        ftEcho -ex "分支[$branchName],格式错误"
-    fi
-
-    # 版本名
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionName=${versionName/$keyVersion/}
-    versionName=${versionName/\");/}
-    versionName=$(echo $versionName |sed s/[[:space:]]//g)
-
-    projectName= # 项目名
-    modelName= # 手机名
-    clentName= # 客户名
-    bnList=$(echo $branchName|tr ")" "\n")
-    for lc in ${bnList[@]}
-    do
-        keyStr="CT(pmz"
-        if [[ $lc =~ "$keyStr" ]]; then
-            keyStr="_"
-            if [[ $lc =~ "$keyStr" ]]; then
-                ctList=($(echo $lc|tr "_" "\n"))
-                clentName=${ctList[1]}
-            fi
-        fi
-
-        keyStr="PMA("
-        if [[ $lc =~ "$keyStr" ]]||[[ $lc =~ "PM(" ]]; then
-            lc=${lc/$keyStr/}
-            keyStr="PM("
-            lc=${lc/$keyStr/}
-
-            keyStr="_"
-            if [[ $lc =~ "$keyStr" ]]; then
-                pmList=($(echo $lc|tr "_" "\n"))
-                projectName=${pmList[0]}
-                modelName=${pmList[1]}
-            fi
-
-        fi
-        keyStr="CP("
-        if [[ $lc =~ "$keyStr" ]]&&[[ $branchName =~ "BSA(zx" ]]; then
-            if [ ! -z "$clentName" ];then
-                ftEcho -ex "分支[$branchName],存在歧义"
-            fi
-            if [[ $lc =~ "CP(f_c_" ]]; then
-                keyStr="CP(f_c_"
-            else
-                keyStr="CP(c_"
-            fi
-            lc=${lc/$keyStr/}
-            clentName=$(echo $lc|sed s/_//g)
-        fi
-    done
-    # 摄像头区分永恒星或康龙
-    local cameraConfig=YHX
-    local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
-    local tagYhx=//#define\ CAMERA_USE_KANGLONG_GC2365
-    local tagKl=#define\ CAMERA_USE_KANGLONG_GC2365
-    if [ -z $(cat $filePathTraget|grep "$tagYhx") ];then
-        cameraConfig=KL
-    fi
-    #转为大写
-    projectName=$(echo $projectName | tr '[a-z]' '[A-Z]')
-    clentName=$(echo $clentName | tr '[a-z]' '[A-Z]')
-    cameraConfig=$(echo $cameraConfig | tr '[a-z]' '[A-Z]')
-    versionName=$(echo $versionName | tr '[a-z]' '[A-Z]')
-
-    echo ${projectName}/${clentName}/${cameraConfig}/${versionName}
-}
-
 ftAutoUploadPro()
 {
-    local ftName=上传文件到服务器[低耦合版]
+    local ftEffect=上传文件到服务器[低耦合版]
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
@@ -2353,7 +2204,7 @@ EOF
 
 ftCreateReadMeBySoftwareVersion()
 {
-    local ftName=创建软件版本相关修改记录和版本说明
+    local ftEffect=创建软件版本相关修改记录和版本说明
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
@@ -2451,7 +2302,7 @@ $gitCommitList">$filePathChangeListTemplate
 
 ftAutoLanguageUtil()
 {
-    local ftName=语言缩写转化为中文
+    local ftEffect=语言缩写转化为中文
     local dirPathCode=$ANDROID_BUILD_TOP
     local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
 
@@ -2490,7 +2341,7 @@ EOF
 
 ftLnUtil()
 {
-    local ftName=获取软连接的真实路径
+    local ftEffect=获取软连接的真实路径
     local isSecondTime=false
     local lnPath=$1
 
@@ -2559,7 +2410,7 @@ EOF
 
 ftAutoUpdateSoftwareVersion()
 {
-    local ftName=更新软件版本
+    local ftEffect=更新软件版本
     # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
     # ANDROID_PRODUCT_OUT=/media/data/ptkfier/code/sp7731c/code/out/target/product/sp7731c_1h10_32v4
     local dirPathCode=$ANDROID_BUILD_TOP

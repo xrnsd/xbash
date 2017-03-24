@@ -1,6 +1,7 @@
 #!/bin/bash
 ftXrnsdExtensionsToBashInit()
 {
+    local ftEffect=xbash配置初始化
 #===================           预定流程                   =============
 #
 #     1 复制工程文件到新目录cmds
@@ -17,7 +18,6 @@ ftXrnsdExtensionsToBashInit()
 # =========================================================
 
 
-    local ftName=xbash配置初始化
     local userName=$(who am i | awk '{print $1}'|sort -u)
     userName=${userName:-`whoami | awk '{print $1}'|sort -u`}
     if [ "${S/ /}" != "$S" ];then
