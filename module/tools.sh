@@ -718,7 +718,9 @@ EOF
     # 部分操作不记录日志
     for parameter in ${parameterList[@]}
     do
-        if [ "$parameter" = "$XCMD" ]||[ "$parameter" = "$rBaseShellParameter2" ];then
+        if [ "$parameter" = "$XCMD" ]\
+            ||[ -z "$rBaseShellParameter2" ]\
+            ||[ "$parameter" = "$rBaseShellParameter2" ];then
             export mFilePathLog=/dev/null
             return
         fi
