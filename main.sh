@@ -35,8 +35,13 @@ ftWhoAmI()## #命令权限判定
     local cmdName=$1
 
     #耦合变量校验
+
+    if [ -z "$cmdName" ];then
+        ftReadMe $XCMD
+    fi
+
     local valCount=1
-    if(( $#!=$valCount ))||[ -z "$cmdName" ]\
+    if(( $#!=$valCount ))\
                 ||[ -z "$rCmdsPermissionBase" ]\
                 ||[ -z "$rCmdsPermissionRoot" ];then
         ftEcho -e "[${XCMD}]的参数错误 \n\
@@ -146,10 +151,12 @@ ftReadMe()
         &&[ $mFilePathLog != "/dev/null" ];then
         local dirPathExpired=${dirPathLogOther}/$(basename $dirPathLogExpired)
         if [ -d $dirPathExpired ];then
-            mv ${dirPathLogExpired}/* $dirPathExpired
-            rm -rf $dirPathLogExpired
+            echo "${dirPathLogExpired}  > $dirPathExpired "
+           # mv ${dirPathLogExpired}/* $dirPathExpired
+            #rm -rf $dirPathLogExpired
         else
-            mv $dirPathLogExpired $dirPathExpired
+            echo "${dirPathLogExpired}  > $dirPathExpired "
+           # mv $dirPathLogExpired $dirPathExpired
         fi
         export mFilePathLog=${dirPathLogOther}/$(basename $mFilePathLog)
     fi
@@ -372,7 +379,7 @@ xc ----- 常规自定义命令和扩展
     |  v  -------------------------------------  自定义命令版本
     |  gjh                                       生成国际化所需的xml文件
     |  vvv  -----------------------------------  系统环境关键参数查看
-    |  help                                      查看自定义命令说明
+    |  -h/help                                   查看自定义命令说明
     |  test  ----------------------------------  shell测试
     |  restartadb                                重启adb服务
     |  clean_data_garbage  --------------------  快速清空回收站
