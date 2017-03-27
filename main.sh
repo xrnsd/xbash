@@ -166,7 +166,6 @@ ftReadMe()
         ft | -ft )
     cat<<EOF
 ftKillPhoneAppByPackageName ---- kill掉包名为packageName的应用
-ftJdkVersionTempSwitch           临时切换jdk版本
 ftCopySprdPacFileList ---------- 自动复制sprd的pac相关文件
 ftBackupOutsByMove               备份out
 ftCleanDataGarbage ------------- 快速清空回收站
@@ -250,11 +249,6 @@ ftReduceFileList 精简动画帧文件
 ftKillPhoneAppByPackageName kill掉包名为packageName的应用
     |
     |// ftKillPhoneAppByPackageName packageName
-    |
-ftJdkVersionTempSwitch 临时切换jdk版本
-    |
-    |// ftJdkVersionTempSwitch 版本
-    |   ftJdkVersionTempSwitch 1.6/1.7
     |
 ftLanguageUtils 语言缩写转换
     |
