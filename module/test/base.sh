@@ -66,7 +66,7 @@ EOF
 
 
 
-
+# complete -W "example example" ftExample
 ftExample()
 {
     local ftEffect=函数模板

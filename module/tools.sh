@@ -422,6 +422,7 @@ ftTiming()
     mTimingStart=
 }
 
+complete -W "create new" ftBootAnimation
 ftBootAnimation()
 {
     local ftEffect=生成开关机动画
@@ -1653,6 +1654,7 @@ EOF
     fi
 }
 
+complete -W "yhx kl" ftYKSwitch
 ftYKSwitch()
 {
     local ftEffect=切换永恒星和康龙配置
@@ -1828,6 +1830,8 @@ EOF
   fi
 }
 
+
+complete -W "-y" ftAutoPacket
 ftAutoPacket()
 {
     local ftEffect=生成7731c使用的pac
@@ -2368,7 +2372,6 @@ ftAutoUpdateSoftwareVersion()
     # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
     # ANDROID_PRODUCT_OUT=/media/data/ptkfier/code/sp7731c/code/out/target/product/sp7731c_1h10_32v4
     local dirPathCode=$ANDROID_BUILD_TOP
-    local dirPathOut=$ANDROID_PRODUCT_OUT
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -2384,12 +2387,10 @@ EOF
 
     #耦合变量校验
     local valCount=1
-    if(( $#>$valCount ))||[ ! -d "$dirPathCode" ]\
-            ||[ ! -d "$dirPathOut" ];then
+    if(( $#>$valCount ))||[ ! -d "$dirPathCode" ];then
         ftEcho -ea "[${ftName}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
-            [工程out目录]dirPathOut=$dirPathOut \
             请查看下面说明:"
         ftAutoUpdateSoftwareVersion -h
         return
@@ -2452,7 +2453,7 @@ EOF
                                 ftEcho -s 提交开始，请稍等
                                 git add $filePathDeviceInfoSettingsBase $filePathSystemVersionTestBase&&git commit -m "版本 ${versionNameTestNew}"
                                 break;;
-                            n | N | q |Q)    exit;;
+                            n | N | q |Q)    return;;
                             * )
                                 ftEcho -e 错误的选择：$sel
                                 echo "输入n，q，离开";
