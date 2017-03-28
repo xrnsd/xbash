@@ -1925,6 +1925,7 @@ EOF
         ${dirPathNormalBin}/persist.img&&
     ftEcho -s 生成7731c使用的pac[${dirPathPacRes}/${versionName}.pac]&&
     if [ $1 = "-y" ];then
+        ftCreateReadMeBySoftwareVersion $dirPathPacRes
         ftAutoUpload ${dirPathPacRes}/${versionName}.pac
         #mv ${dirPathPacRes}/${versionName}.pac ${dirPatPacs}/${versionName}.pac
     fi
@@ -2049,6 +2050,7 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
         tragetList=(${shortList[@]})
     fi
 
+    local orderIndex=0
     for lc in ${ftLanguageContent[@]}
     do
         title="参数[${lc}] 转换失败"
@@ -2056,7 +2058,12 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
         for base in ${sourceList[@]}
         do
             if [ $lc = $base ];then
-                echo ${tragetList[index]}
+                if [ $orderIndex -eq 0 ];then
+                    echo "${tragetList[index]}(默认)"
+                else
+                    echo ${tragetList[index]}
+                fi
+                orderIndex=`expr $orderIndex + 1`
                 break;
             elif [[ $base =~ "/" ]]&&[[ $base =~ $lc ]]; then
                 echo "[${lc}]>${tragetList[index]}>[${base}]"
