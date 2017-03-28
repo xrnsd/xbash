@@ -10,7 +10,7 @@ ftKillPhoneAppByPackageName()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftKillPhoneAppByPackageName [packageName]
 #    ftKillPhoneAppByPackageName com.android.settings
@@ -91,7 +91,7 @@ ftInitDevicesList()
     local devMinAvailableSpace=${1:-'0'}
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例===================
+#=================== [ ${ftEffect} ]的使用示例===================
 #
 #    ftInitDevicesList [devMinAvailableSpace 单位M]
 #    ftInitDevicesList 4096M
@@ -194,7 +194,7 @@ ftMtkFlashTool()
     local tempDirPath=`pwd`
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftMtkFlashTool 无参
 #=========================================================
@@ -229,7 +229,7 @@ ftFileDirEdit()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例===================
+#=================== [ ${ftEffect} ]的使用示例===================
 #
 #    ftFileDirEdit [type] [isCreate] [path]
 #
@@ -310,7 +310,7 @@ ftEcho()
     local ftEffect=工具信息提示
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftEcho        内容    # 直接显示内容
 #    ftEcho    -b    内容    # 标题，不换行，对字符串的缩进敏感
@@ -433,7 +433,7 @@ ftBootAnimation()
     #使用示例
     while true; do case "$1" in    h | H |-h | -H)
         cat<<EOF
-#=================== 函数${ftName}的使用示例============
+#=================== 函数[ ${ftEffect} ]的使用示例============
 #    请进入动画资源目录后执行xc bootanim xxx
 #    ftBootAnimation [edittype] [path]
 #
@@ -652,7 +652,7 @@ ftGjh()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftGjh 无参数
 #=========================================================
@@ -687,7 +687,7 @@ ftLog()
     local ftEffect=初始化运行日志记录所需的参数
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftLog 无参数
 #    初始化log记录所需的参数
@@ -765,7 +765,7 @@ ftTest()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftTest 任意参数
 #=========================================================
@@ -796,7 +796,7 @@ ftBoot()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #    ftBoot 关机/重启 时间/秒
 #    ftBoot shutdown/reboot 100
 #     xs 时间/秒 #制定时间后关机,不带时间则默认十秒
@@ -877,7 +877,7 @@ ftPushAppByName()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftPushAppByName [AppName]
 #    ftPushAppByName [filePathApk] [dirPath]
@@ -980,7 +980,7 @@ ftReduceFileList()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftReduceFileList 保留的百分比 目录
 #    ftReduceFileList 60 /home/xxxx/temp
@@ -1087,7 +1087,7 @@ ftReNameFile()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    不指定文件名长度默认为4
 #    ftReNameFile 目录
@@ -1152,7 +1152,7 @@ ftDevAvailableSpace()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftDevAvailableSpace [devDirPath] [[isReturn]]
 #    ftDevAvailableSpace /media/test
@@ -1267,7 +1267,7 @@ ftGetKeyValueByBlockAndKey()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftGetKeyValueByBlockAndKey [文件] [块名] [键名]
 #    value=$(ftGetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup)
@@ -1332,7 +1332,7 @@ ftSetKeyValueByBlockAndKey()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftSetKeyValueByBlockAndKey [文件] [块名] [键名] [键对应的值]
 #    ftSetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup 1232
@@ -1376,7 +1376,7 @@ ftCheckIniConfigSyntax()
     local filePath=$1
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftCheckIniConfigSyntax [file path]
 #    ftCheckIniConfigSyntax 123/config.ini
@@ -1445,7 +1445,7 @@ ftUpdateHosts()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #使用默认hosts源
 #    ftUpdateHosts 无参
 #
@@ -1528,7 +1528,7 @@ ftCopySprdPacFileList()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftCopySprdPacFileList 无参
 #=========================================================
@@ -1602,7 +1602,7 @@ ftBackupOutsByMove()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftBackupOutsByMove 无参
 #=========================================================
@@ -1664,7 +1664,7 @@ ftYKSwitch()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftYKSwitch yhx/kl
 #=========================================================
@@ -1715,7 +1715,7 @@ ftRmNormalBin()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftRmNormalBin [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
 #    ftRmNormalBin out/pac
@@ -1784,7 +1784,7 @@ ftAutoUpload()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftAutoUpload [源文件路径]
 #    ftAutoUpload xxxx
@@ -1841,7 +1841,7 @@ ftAutoPacket()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftAutoPacket 无参
 #    ftAutoPacket -y #自动打包，上传到188服务器
@@ -1954,7 +1954,7 @@ ftLanguageUtils()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftLanguageUtils 缩写列表
 #    ftLanguageUtils “ar_IL bn_BD my_MM zh_CN”
@@ -2081,7 +2081,7 @@ ftAutoUploadPro()
     local ftEffect=上传文件到服务器[低耦合版]
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftAutoUploadPro 需要上传的文件或目录 服务器 用户名 用户密码 服务器路径
 #
@@ -2178,7 +2178,7 @@ ftCreateReadMeBySoftwareVersion()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
 #    ftCreateReadMeBySoftwareVersion out/pac
@@ -2273,7 +2273,7 @@ ftAutoLanguageUtil()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftAutoLanguageUtil 无参
 #=========================================================
@@ -2314,7 +2314,7 @@ ftLnUtil()
     while true; do case "$1" in
     #方法使用说明
     h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftLnUtil 软连接路径
 #    ftLnUtil /home/xian-hp-u16/log/xb_backup
@@ -2382,7 +2382,7 @@ ftAutoUpdateSoftwareVersion()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftAutoUpdateSoftwareVersion 无参
 #=========================================================
