@@ -34,7 +34,7 @@ ftDebug()
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例===================
+#=================== [ ${ftEffect} ]的使用示例===================
 #
 #     trap 'echo “行:$LINENO, a=$a,b=$b,c=$c”' DEBUG
 #     根据需要修改 a，b，c
@@ -76,7 +76,7 @@ ftExample()
     while true; do case "$1" in
     #方法使用说明
     h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
+#=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftExample 无参
 #    ftExample [example]
