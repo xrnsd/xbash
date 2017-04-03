@@ -1,4 +1,4 @@
-android mmi开发环境中bash的简单扩展
+android mmi开发环境的简单扩展[shell]
 ![Logo](data/logo.png)
 =====
 1.工程结构
@@ -9,6 +9,9 @@ android mmi开发环境中bash的简单扩展
     │        ├── bashrc                           bashrc通用配置
     │        │     ├── config_bashrc_base         bashrc配置
     │        │     └── config_bashrc_base.gone    bashrc部分可忽略配置
+    │        │
+    │        ├── sublime_text                     sublime_text通用配置
+    │        │     └── Preferences.sublime-settings sublime_text的用户配置
     │        │
     │        ├── config_base                      全局参数
     │        └── config_system_init               android build环境初始化工具的配置文件
