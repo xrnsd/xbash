@@ -74,6 +74,14 @@ ftExample()
 
     #使用示例
     while true; do case "$1" in
+    #使用环境说明
+    e | -e |--env) cat<<EOF
+#=================== ${ftName}使用环境说明=============
+#
+#    工具依赖包 example
+#=========================================================
+EOF
+      return;;
     #方法使用说明
     h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
@@ -93,6 +101,10 @@ EOF
     break;;
     * ) break;;esac;done
 
+    #工具环境校验校验
+    if [ -z `which example` ]||[ -z `which example` ];then
+        ftExample -e
+    fi
     #耦合变量校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$example1" ]\

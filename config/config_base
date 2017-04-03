@@ -10,7 +10,7 @@ export rBaseShellParameter3=$2
 export rXbashVersion="V0.7.1.0 beta"
 # 标记为脚本模式，此模式说明使用实现对应的封装命令
 export XMODULE="script"
-rUserPwdBase=123
+rUserPwdBase=x@2w4ea
 export rUserPwd=${rUserPwdBase:-'123'}
 
 rNameUser=$(who am i | awk '{print $1}'|sort -u)
