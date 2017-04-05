@@ -134,7 +134,6 @@ else
     source $filePathXbashTragetBashrcConfigBaseGone
     source $filePathXbashTragetBashrcConfigBase
 fi
-
 #---------------------------------用户密码---------------------------------
 rUserPwdBase=123
 export rUserPwd=${rUserPwdBase:-'123'}
@@ -148,7 +147,4 @@ alias xg6572='git clone git@192.168.1.188:mtk6572.git -b'
 alias xg6820='git clone git@192.168.1.188:sprd6820.git -b'
 alias xg7731g='git clone git@192.168.1.188:sprd7731g_5_1.git -b'
 alias xg7731c='git clone git@192.168.1.188:sprd7731c.git -b'
-
-alias xyhx='ftYKSwitch yhx'
-alias xkl='ftYKSwitch kl'
-
+alias make7731c='mv out ../out_backup;source build/envsetup.sh ;lunch sp7731c_1h10_32v4_oversea-userdebug;kheader;make -j8 2>&1 |tee ~/log/build_userdebug.log;mv out ../out_userdebug;source build/envsetup.sh ;lunch sp7731c_1h10_32v4_oversea-user;kheader;make -j8 2>&1 |tee ~/log/build_user.log'
