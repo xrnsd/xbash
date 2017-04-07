@@ -2476,3 +2476,108 @@ EOF
         esac
         done
 }
+
+ftAutoBuildMultiBranch()
+{
+    local ftEffect=多版本[分支]编译
+    local filePathBranchList=/var/log/.bashrcs
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local editType=$1
+
+    #使用示例
+    while true; do case "$1" in
+    #方法使用说明
+    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftAutoBuildMultiBranch 无参
+#    ftAutoBuildMultiBranch -y 上传版本软件
+#    ftAutoBuildMultiBranch -yb 上传版本软件,备份out
+#=========================================================
+EOF
+    if [ $XMODULE = "env" ];then
+        return
+    fi
+    exit;;
+    * ) break;;esac;done
+
+    #耦合变量校验
+    local valCount=1
+    if(( $#>$valCount ))||[ -z "$dirPathCode" ]\
+                                        ||[ ! -d "$dirPathCode" ];then
+        ftEcho -ea "[${ftName}]的参数错误 \
+            [参数数量def=$valCount]valCount=$# \
+            [工程根目录]dirPathCode=$dirPathCode \
+            请查看下面说明:"
+        ftAutoBuildMultiBranch -h
+        return
+    fi
+    local isUpload=
+    local isBackupOut=
+    while true; do
+      case "$editType" in
+                -y | -Y )
+                   isUpload=true
+                    break;;
+                -yb | -by| -YB )
+                   isUpload=true
+                   isBackupOut=true
+                    break;;
+                * )break;;
+        esac
+    done
+
+
+    cd $dirPathCode
+    echo $PWD
+    git branch > $filePathBranchList&&
+    gedit $filePathBranchList&&
+    while [ ! -z "$(pgrep -f gedit)" ]
+    do
+        echo 等待中
+    done
+    content=`cat $filePathBranchList`
+    if [ ! -z "$content" ];then
+            ftEcho -b 将编译下面所有分支
+            cat $filePathBranchList | while read line
+            do
+                echo branshName=$line
+            done
+            while true; do
+                    echo
+                    ftEcho -y 是否开始编译
+                    read -n1 sel
+                    case "$sel" in
+                        y | Y )
+                                        cat $filePathBranchList | while read line
+                                        do
+                                            local branshName=$line
+
+                                            ftEcho -bh 将开始编译$branshName
+                                            rm -rf out
+                                            git reset --hard&&
+                                            git checkout   "$branshName"&&
+                                            source build/envsetup.sh&&
+                                            lunch sp7731c_1h10_32v4_oversea-user&&
+                                            kheader&&
+                                            make -j4&&
+                                            if [ $isUpload = "true" ];then
+                                                ftAutoPacket -y
+                                            else
+                                                ftAutoPacket
+                                            fi&&
+                                            if [ $isBackupOut = "true" ];then
+                                                ftBackupOutsByMove
+                                            fi
+                                        done
+                                       break;;
+                        n | N)    break;;
+                        q |Q)    exit;;
+                        * )
+                            ftEcho -e 错误的选择：$sel
+                            echo "输入q，离开"
+                            ;;
+                    esac
+            done
+    fi
+}
