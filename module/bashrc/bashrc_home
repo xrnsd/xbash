@@ -135,10 +135,11 @@ else
     source $filePathXbashTragetBashrcConfigBase
 fi
 #---------------------------------用户密码---------------------------------
-rUserPwdBase=x@2w4ea
-export rUserPwd=${rUserPwdBase:-'x@2w4ea'}
-readonly rUserPwd
-
+if [ -z "$rUserPwdBase" ];then
+    rUserPwdBase=x@2w4ea
+    export rUserPwd=${rUserPwdBase:-'x@2w4ea'}
+    readonly rUserPwd
+fi
 #---------------------------------不稳定命令---------------------------------
 alias xx='echo '$userPwd' | sudo -S pm-hibernate'
 
