@@ -402,6 +402,8 @@ ftBackupOs()
                 /sys \
                 /.Trash-0 \
                 /media \
+                /var/tmp \
+                /var/log \
                 ${rDirPathUserHome}/workspaces \
                 ${rDirPathUserHome}/workspace \
                 ${rDirPathUserHome}/download \
@@ -431,6 +433,8 @@ ftBackupOs()
                 /mnt  \
                 /sys  \
                 /media \
+                /var/tmp \
+                /var/log \
                 ${rDirPathUserHome}/.AndroidStudio2.1 \
                 ${rDirPathUserHome}/backup \
                 ${rDirPathUserHome}/.software \

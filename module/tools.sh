@@ -1897,12 +1897,17 @@ EOF
     fi
 
     cd $dirPathPacRes
+    local ResearchDownloadTitle=$versionName
+
+    if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
+        ResearchDownloadTitle=${ResearchDownloadTitle}____${buildType}
+    fi
 
     ftEcho -s "开始生成 ${versionName}.pac\n"
     /usr/bin/perl $filePathPacketScript \
         $versionName.pac \
         SC77xx \
-        ${versionName}\
+        ${ResearchDownloadTitle}\
         ${dirPathNormalBin}/SC7720_UMS.xml \
         ${dirPathNormalBin}/fdl1.bin \
         ${dirPathNormalBin}/fdl2.bin \
