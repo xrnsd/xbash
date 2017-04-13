@@ -50,7 +50,7 @@ EOF
 
     #耦合变量校验
     if [ -z "$rIsDebug" ];then
-        ftEcho -eax "函数[${ftName}]的参数错误 \
+        ftEcho -eax "函数[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             rIsDebug=$rIsDebug"
     fi
@@ -76,7 +76,7 @@ ftExample()
     while true; do case "$1" in
     #使用环境说明
     e | -e |--env) cat<<EOF
-#=================== ${ftName}使用环境说明=============
+#=================== ${ftEffect}使用环境说明=============
 #
 #    工具依赖包 example
 #=========================================================
@@ -97,7 +97,7 @@ EOF
     #出现错误之后的尝试
     x | X |-x | -X)
         isSecondTime=true
-        ftEcho -s "尝试重新开始 [ftName]"
+        ftEcho -s "尝试重新开始 [ftEffect]"
     break;;
     * ) break;;esac;done
 
@@ -109,7 +109,7 @@ EOF
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$example1" ]\
                 ||[ -z "$example2" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [示例1]example1=$example1 \
             请查看下面说明:"
@@ -150,3 +150,4 @@ EOF
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
+# 

@@ -29,7 +29,7 @@ ftXrnsdExtensionsToBashInit()
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$userName" ]\
                 ||[ ! -d "$dirPathHome" ];then
-        echo -e "    [${ftName}]参数错误 \n\
+        echo -e "    [${ftEffect}]参数错误 \n\
     [参数数量def=$valCount]valCount=$# \n\
     userName=$userName \n\
     dirPathHome=$dirPathHome \n\
@@ -54,14 +54,14 @@ ftXrnsdExtensionsToBashInit()
     local dirNameXbashTragetConfig=config
     local dirPathXbashTragetConfig=${dirPathXbashTraget}/$dirNameXbashTragetConfig
     if [ ! -d $dirPathXbashTragetConfig ];then
-        echo -e "\033[1;31m[${ftName}]错误[dirPathXbashTragetConfig=$dirPathXbashTragetConfig]\033[0m"
+        echo -e "\033[1;31m[${ftEffect}]错误[dirPathXbashTragetConfig=$dirPathXbashTragetConfig]\033[0m"
         exit
     fi
     local fileNameXbashTragetConfigBase=config_base
     local filePathXbashTragetConfigBase=${dirPathXbashTragetConfig}/${fileNameXbashTragetConfigBase}
     if [ ! -f $filePathXbashTragetConfigBase ];then
         # /home/xxxx/cmds/config/config_base
-        echo -e "\033[1;31m[${ftName}]错误[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
+        echo -e "\033[1;31m[${ftEffect}]错误[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
         exit
     fi
 
@@ -90,7 +90,7 @@ ftXrnsdExtensionsToBashInit()
     echo $passwd | sudo -S cp -rf  -v ${filePathBashRoot}_root_backup $filePathXbashTragetDataBashRootBackup
 
     if [ ! -f $filePathXbashTragetDataBashRootBackup ];then
-        echo -e "\033[1;31m[${ftName}]错误[filePathXbashTragetDataBashRootBackup=$filePathXbashTragetDataBashRootBackup]\033[0m"
+        echo -e "\033[1;31m[${ftEffect}]错误[filePathXbashTragetDataBashRootBackup=$filePathXbashTragetDataBashRootBackup]\033[0m"
         exit
     fi
 

@@ -1883,31 +1883,30 @@ EOF
 
     local filePathBuildInfo=${dirPathOut}/system/build.prop
     local keybuildType="ro.build.type="
-    local buildType=
-    if [ ! -f "$filePathBuildInfo" ];then
-        buildType=$(cat $filePathBuildInfo|grep $keybuildType)
-        buildType=${buildType/$keybuildType/}
-        if [ ! -z "$buildType" ]&&[ "$buildType" != "user" ];then
-            versionName=${versionName}__${buildType}
+    local buildTypeFile=
+    if [ -f "$filePathBuildInfo" ];then
+        buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
+        buildTypeFile=${buildTypeFile/$keybuildType/}
+        if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
+            ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
+            buildType=$buildTypeFile
         fi
+    fi
+
+    if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
+        versionName=${versionName}____${buildType}
     fi
 
     if [ ! -d $dirPathPacRes ];then
         mkdir $dirPathPacRes
     fi
-
     cd $dirPathPacRes
-    local ResearchDownloadTitle=$versionName
-
-    if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
-        ResearchDownloadTitle=${ResearchDownloadTitle}____${buildType}
-    fi
 
     ftEcho -s "开始生成 ${versionName}.pac\n"
     /usr/bin/perl $filePathPacketScript \
         $versionName.pac \
         SC77xx \
-        ${ResearchDownloadTitle}\
+        ${versionName}\
         ${dirPathNormalBin}/SC7720_UMS.xml \
         ${dirPathNormalBin}/fdl1.bin \
         ${dirPathNormalBin}/fdl2.bin \
