@@ -2470,7 +2470,7 @@ EOF
         ftEcho -y "是否更新软件版本号"
         read -n1 sel
         case "$sel" in
-            y | Y )    
+            y | Y )
                     sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings
                     sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest
                      while true; do
