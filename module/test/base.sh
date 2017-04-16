@@ -152,3 +152,6 @@ EOF
 # ===================================================================================================================================
 cd /media/data/code/7731c/out/packet
 tar -cv A453_N9_3GW_ORRO_V1.3_201611162| pigz -1 |sshpass -p '123' ssh xian@192.168.3.6 "gzip -d|tar -xPC /home/xian/test"
+
+
+LOCAL_CFLAGS += -DLIBUTILS_NATIVE=1
