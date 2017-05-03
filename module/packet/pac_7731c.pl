@@ -23,8 +23,8 @@ for($i=3;$i<$number;$i++)
 }
 print "\n--------------------------------------\n\n";
 
-if($number ne 23){
-    die "\nInvalid parameters, param number must be 25.\n\n";
+if($number ne 22){
+    die "\nInvalid parameters, param number must be 24.\n\n";
 }
 
 my $pac_file       =${ARGV[0]};
@@ -51,14 +51,14 @@ my @param = (
    ["System"        , ${ARGV[$index+11]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
    ["UserData"      , ${ARGV[$index+12]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
    ["BootLogo"      , ${ARGV[$index+13]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
-   ["Fastboot_Logo" , ${ARGV[$index+14]} , 1        , 1        , 1        , 0x0       , 0xFFFFFFFF  ],
+   #["Fastboot_Logo" , ${ARGV[$index+13]} , 1        , 1        , 1        , 0x0       , 0xFFFFFFFF  ],
    ["FLASH"         , ""                 , 0        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
    ["FLASH_WCN"     , ""                 , 0        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
-   ["Cache"         , ${ARGV[$index+15]} , 1        , 2        , 0        , 0x0       , 0xFFFFFFFF  ],
+   ["Cache"         , ${ARGV[$index+14]} , 1        , 2        , 0        , 0x0       , 0xFFFFFFFF  ],
    ["EraseMisc"     , ""                 , 0        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
-   ["SysInfo"       , ${ARGV[$index+16]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
-   ["UBOOTLoader"   , ${ARGV[$index+17]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
-   ["Persist"       , ${ARGV[$index+18]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
+   ["SysInfo"       , ${ARGV[$index+15]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
+   ["UBOOTLoader"   , ${ARGV[$index+16]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
+   ["Persist"       , ${ARGV[$index+17]} , 1        , 1        , 0        , 0x0       , 0xFFFFFFFF  ],
    [""              , $config            , 2        , 0        , 0        , 0x0       , 0xFFFFFFFF  ],
 );
 

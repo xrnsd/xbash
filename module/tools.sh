@@ -16,7 +16,7 @@ ftKillPhoneAppByPackageName()
 #    ftKillPhoneAppByPackageName com.android.settings
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -33,7 +33,7 @@ EOF
     fi
 
     #adb状态检测
-    adbStatus=`adb get-state`
+    local adbStatus=`adb get-state`
     if [ "$adbStatus" = "device" ];then
         #确定包存在
         if [ -n "$(adb shell pm list packages|grep $packageName)" ];then
@@ -51,7 +51,7 @@ EOF
                     y | Y )
                         ftKillPhoneAppByPackageName $packageName
                         break;;
-                    * )if [ $XMODULE = "env" ];then
+                    * )if [ "$XMODULE" = "env" ];then
                             return
                        fi
                         exit;;
@@ -97,7 +97,7 @@ ftInitDevicesList()
 #    ftInitDevicesList 4096M
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -199,7 +199,7 @@ ftMtkFlashTool()
 #    ftMtkFlashTool 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -244,7 +244,7 @@ ftFileDirEdit()
 #    echo $?
 #===============================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -323,7 +323,7 @@ ftEcho()
 #    ftEcho    -s    内容    # 执行信息，对字符串的缩进敏感
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -351,7 +351,7 @@ EOF
     e | E | -e | -E)        echo -e "\033[1;31m$content\033[0m"; break;;
     ex | EX | -ex | -EX)    echo -e "\033[1;31m$content\033[0m"
                 sleep 3
-                if [ $XMODULE = "env" ];then
+                if [ "$XMODULE" = "env" ];then
                     return
                 fi
                 exit;;
@@ -660,7 +660,7 @@ ftGjh()
 #    ftGjh 无参数
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -696,7 +696,7 @@ ftLog()
 #    初始化log记录所需的参数
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -773,7 +773,7 @@ ftTest()
 #    ftTest 任意参数
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -806,7 +806,7 @@ ftBoot()
 #     xss 时间/秒 #制定时间后重启,不带时间则默认十秒
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -888,7 +888,7 @@ ftPushAppByName()
 #    ftPushAppByName ~/xx.apk /system/data
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -993,7 +993,7 @@ ftReduceFileList()
 # 由于水平有限，实现对60%和50%之类的比例不敏感
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1099,7 +1099,7 @@ ftReNameFile()
 #    ftReNameFile /home/xxxx/temp 5
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1162,7 +1162,7 @@ ftDevAvailableSpace()
 #    ftDevAvailableSpace /media/test true
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1457,7 +1457,7 @@ ftUpdateHosts()
 #    ftUpdateHosts https://raw.githubusercontent.com/racaljk/hosts/master/hosts
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1536,7 +1536,7 @@ ftCopySprdPacFileList()
 #    ftCopySprdPacFileList 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1609,7 +1609,7 @@ ftBackupOutsByMove()
 #    ftBackupOutsByMove 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1681,7 +1681,7 @@ ftYKSwitch()
 #    ftYKSwitch yhx/kl
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1733,7 +1733,7 @@ ftRmNormalBin()
 #    ftRmNormalBin out/pac
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1802,7 +1802,7 @@ ftAutoUpload()
 #    ftAutoUpload xxxx
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1860,7 +1860,7 @@ ftAutoPacket()
 #    ftAutoPacket -y #自动打包，上传到188服务器
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1886,6 +1886,7 @@ EOF
     local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
     local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
     versionName=${versionName/$keyVersion/}
+    versionName=${versionName/"\n"/_}
     versionName=${versionName/\");/}
     versionName=$(echo $versionName |sed s/[[:space:]]//g)
 
@@ -1939,18 +1940,17 @@ EOF
         ${dirPathNormalBin}/system.img \
         ${dirPathNormalBin}/userdata.img \
         ${dirPathLogo}/logo.bmp \
-        ${dirPathLogo}/logo.bmp \
         ${dirPathNormalBin}/cache.img \
         ${dirPathNormalBin}/sysinfo.img \
         ${dirPathNormalBin}/u-boot.bin \
         ${dirPathNormalBin}/persist.img&&
-    ftEcho -s 生成7731c使用的pac[${dirPathPacRes}/${versionName}.pac]&&
-    if [ $1 = "-y" ];then
+    ftEcho -s 生成7731c使用的pac[${dirPathPacRes}/${versionName}.pac]
+    if [ "$1" = "-y" ];then
         ftCreateReadMeBySoftwareVersion $dirPathPacRes
         ftAutoUpload ${dirPathPacRes}/${versionName}.pac
         #mv ${dirPathPacRes}/${versionName}.pac ${dirPatPacs}/${versionName}.pac
     fi
-    if [ $1 = "-b" ];then
+    if [ "$1" = "-b" ];then
         local serverIp=192.168.1.105
         local userName=share
         local pasword=123456
@@ -1981,7 +1981,7 @@ ftLanguageUtils()
 #    ftLanguageUtils “ar_IL bn_BD my_MM zh_CN”
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -2110,7 +2110,7 @@ ftAutoUploadPro()
 #    ftAutoUploadPro /home/xxx/1/ 192.168.1.188 server 123456 智能机软件/7731c/....
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -2205,7 +2205,7 @@ ftCreateReadMeBySoftwareVersion()
 #    ftCreateReadMeBySoftwareVersion out/pac
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -2299,7 +2299,7 @@ ftAutoLanguageUtil()
 #    ftAutoLanguageUtil 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -2341,7 +2341,7 @@ ftLnUtil()
 #    ftLnUtil /home/xian-hp-u16/log/xb_backup
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;;
@@ -2408,7 +2408,7 @@ ftAutoUpdateSoftwareVersion()
 #    ftAutoUpdateSoftwareVersion 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -2470,7 +2470,7 @@ EOF
         ftEcho -y "是否更新软件版本号"
         read -n1 sel
         case "$sel" in
-            y | Y )
+            y | Y )    
                     sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings
                     sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest
                      while true; do
@@ -2516,7 +2516,7 @@ ftAutoBuildMultiBranch()
 #    ftAutoBuildMultiBranch -yb 上传版本软件,备份out
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;;
@@ -2535,6 +2535,9 @@ EOF
     fi
     local isUpload=
     local isBackupOut=
+    if [ -z "$1" ];then
+        echo 将不会上传软件包，备份out
+    fi
     while true; do
       case "$editType" in
                 -y | -Y )
@@ -2551,6 +2554,23 @@ EOF
 
     cd $dirPathCode
     echo $PWD
+    if [ ! -z "$(pgrep -f gedit)" ];then
+         while true; do
+                    echo
+                    ftEcho -y gedit 已打开是否关闭
+                    read -n1 sel
+                    case "$sel" in
+                        y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
+                                       break;;
+                        n | N)    return;;
+                        q |Q)    return;;
+                        * )
+                            ftEcho -e 错误的选择：$sel
+                            echo "输入n,q，离开"
+                            ;;
+                    esac
+            done
+    fi
     git branch > $filePathBranchList&&
     gedit $filePathBranchList&&
     while [ ! -z "$(pgrep -f gedit)" ]
@@ -2575,21 +2595,24 @@ EOF
                                             local branshName=$line
 
                                             ftEcho -bh 将开始编译$branshName
-                                            rm -rf out
+                                            #rm -rf out
                                             git reset --hard&&
                                             git checkout   "$branshName"&&
-                                            source build/envsetup.sh&&
-                                            lunch sp7731c_1h10_32v4_oversea-user&&
-                                            kheader&&
-                                            make -j4&&
-                                            if [ $isUpload = "true" ];then
-                                                ftAutoPacket -y
-                                            else
-                                                ftAutoPacket
-                                            fi&&
-                                            if [ $isBackupOut = "true" ];then
-                                                ftBackupOutsByMove
-                                            fi
+                                            git push origin "$branshName"
+                                            # source build/envsetup.sh&&
+                                            # lunch sp7731c_1h10_32v4_oversea-user&&
+                                            # kheader&&
+                                            # make -j4&&
+                                            # if [ $isUpload = "true" ];then
+                                            #     ftAutoPacket -y
+                                            # else
+                                            #     ftAutoPacket
+                                            # fi&&
+                                            #     ftBackupOutsByMove
+                                            
+                                            # if [ $isBackupOut = "true" ];then
+                                            #     ftBackupOutsByMove
+                                            # fi
                                         done
                                        break;;
                         n | N)    break;;

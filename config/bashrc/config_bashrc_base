@@ -138,6 +138,8 @@ alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.Cam
 alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
 alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
 
+alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
+
 #--------------------------命令选项快速适配---------------------------
 complete -W "123" xl
 complete -W "123" xle
