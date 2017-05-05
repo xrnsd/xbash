@@ -1789,6 +1789,56 @@ EOF
     done
 }
 
+ftAutoUploadHighSpeed()
+{
+    local ftEffect=上传文件到制定smb服务器路径[高速版]
+    local pathContentUploadSource=$1
+
+    #使用示例
+    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftAutoUploadHighSpeed [源路径]
+#    ftAutoUploadHighSpeed xxxx
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;; * ) break;; esac;done
+
+    #耦合变量校验
+    local valCount=1
+    if(( $#!=$valCount ))\
+    ||([ ! -d "$pathContentUploadSource" ]&&[ ! -f "$pathContentUploadSource" ])\
+    ||[ -d "$pathContentUploadSource" -a `ls $pathContentUploadSource|wc -w` = "0" ];then
+        ftEcho -ea "[${ftEffect}]的参数错误 \
+            [参数数量def=$valCount]valCount=$# \
+            [上传的源]pathContentUploadSource=$pathContentUploadSource \
+            请查看下面说明:"
+        ftAutoUploadHighSpeed -h
+        return
+    fi
+
+
+    local serverIp=192.168.1.188
+    local userName=server
+    local pasword=123456
+
+    local dirPathServer=/media/新卷
+    local dirPathUpload=智能机软件/SPRD7731C/鹏明珠/autoUpload
+
+    local dirPathContentUploadSource=$(dirname $pathContentUploadSource)
+    local fileNameContentUploadSource=$(basename $pathContentUploadSource)
+
+    ftEcho -s "开始上传${fileNameContentUploadSource} 到\n${serverIp}/${dirPathUpload}..."
+
+    cd $dirPathContentUploadSource
+    tar -cv  $fileNameContentUploadSource| pigz -1 |sshpass -p $pasword ssh $userName@$serverIp "gzip -d|tar -xPC ${dirPathServer}/${dirPathUpload}"
+
+    ftEcho -s "${fileNameContentUploadSource}\n上传结束"
+}
+
 ftAutoUpload()
 {
     local ftEffect=上传文件到制定smb服务器路径
@@ -1889,6 +1939,7 @@ EOF
     versionName=${versionName/"\n"/_}
     versionName=${versionName/\");/}
     versionName=$(echo $versionName |sed s/[[:space:]]//g)
+    local dirPathPacResVersion=${dirPathPacRes}/${versionName}
 
     local dirPathNormalBin=$dirPathOut
     local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
@@ -1915,40 +1966,40 @@ EOF
         versionName=${versionName}____${buildType}
     fi
 
-    if [ ! -d $dirPathPacRes ];then
-        mkdir $dirPathPacRes
+    if [ ! -d $dirPathPacResVersion ];then
+        mkdir $dirPathPacResVersion
     fi
-    cd $dirPathPacRes
+    cd $dirPathPacResVersion
 
     ftEcho -s "开始生成 ${versionName}.pac\n"
-    /usr/bin/perl $filePathPacketScript \
-        $versionName.pac \
-        SC77xx \
-        ${versionName}\
-        ${dirPathNormalBin}/SC7720_UMS.xml \
-        ${dirPathNormalBin}/fdl1.bin \
-        ${dirPathNormalBin}/fdl2.bin \
-        ${dirPathModemBin}/nvitem.bin \
-        ${dirPathModemBin}/nvitem_wcn.bin \
-        ${dirPathNormalBin}/prodnv.img \
-        ${dirPathNormalBin}/u-boot-spl-16k.bin \
-        ${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
-        ${dirPathModemBin}/DSP_DM_G2.bin \
-        ${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
-        ${dirPathNormalBin}/boot.img \
-        ${dirPathNormalBin}/recovery.img \
-        ${dirPathNormalBin}/system.img \
-        ${dirPathNormalBin}/userdata.img \
-        ${dirPathLogo}/logo.bmp \
-        ${dirPathNormalBin}/cache.img \
-        ${dirPathNormalBin}/sysinfo.img \
-        ${dirPathNormalBin}/u-boot.bin \
-        ${dirPathNormalBin}/persist.img&&
-    ftEcho -s 生成7731c使用的pac[${dirPathPacRes}/${versionName}.pac]
+    # /usr/bin/perl $filePathPacketScript \
+    #     $versionName.pac \
+    #     SC77xx \
+    #     ${versionName}\
+    #     ${dirPathNormalBin}/SC7720_UMS.xml \
+    #     ${dirPathNormalBin}/fdl1.bin \
+    #     ${dirPathNormalBin}/fdl2.bin \
+    #     ${dirPathModemBin}/nvitem.bin \
+    #     ${dirPathModemBin}/nvitem_wcn.bin \
+    #     ${dirPathNormalBin}/prodnv.img \
+    #     ${dirPathNormalBin}/u-boot-spl-16k.bin \
+    #     ${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
+    #     ${dirPathModemBin}/DSP_DM_G2.bin \
+    #     ${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
+    #     ${dirPathNormalBin}/boot.img \
+    #     ${dirPathNormalBin}/recovery.img \
+    #     ${dirPathNormalBin}/system.img \
+    #     ${dirPathNormalBin}/userdata.img \
+    #     ${dirPathLogo}/logo.bmp \
+    #     ${dirPathNormalBin}/cache.img \
+    #     ${dirPathNormalBin}/sysinfo.img \
+    #     ${dirPathNormalBin}/u-boot.bin \
+    #     ${dirPathNormalBin}/persist.img&&
+    ftEcho -s 生成7731c使用的pac[${dirPathPacResVersion}/${versionName}.pac]
     if [ "$1" = "-y" ];then
-        ftCreateReadMeBySoftwareVersion $dirPathPacRes
-        ftAutoUpload ${dirPathPacRes}/${versionName}.pac
-        #mv ${dirPathPacRes}/${versionName}.pac ${dirPatPacs}/${versionName}.pac
+        ftCreateReadMeBySoftwareVersion $dirPathPacResVersion
+        #ftAutoUpload ${dirPathPacRes}/${versionName}.pac
+        ftAutoUploadHighSpeed $dirPathPacResVersion
     fi
     if [ "$1" = "-b" ];then
         local serverIp=192.168.1.105
@@ -2210,10 +2261,13 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
+    if [ ! -d "$dirPathPacRes" ];then
+        mkdir $dirPathPacRes
+    fi
+
     #耦合变量校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
-            ||[ ! -d "$dirPathPacRes" ]\
             ||[ ! -d "$dirPathOut" ]\
             ||[ ! -f "$filePathDevice" ]\
             ||[ ! -f "$filePathPawInfo" ];then
@@ -2223,7 +2277,6 @@ EOF
             [工程out目录]dirPathOut=$dirPathOut \
             [工程Device的make文件]filePathDevice=$filePathDevice \
             [工程暗码清单文件]filePathPawInfo=$filePathPawInfo \
-            [工程Pac生成目录]dirPathPacRes=$dirPathPacRes \
             请查看下面说明:"
         ftCreateReadMeBySoftwareVersion -h
         return
@@ -2269,8 +2322,8 @@ EOF
 
     local fileNameReadMeTemplate=客户说明.txt
     local fileNameChangeListTemplate=修改记录.txt
-    local filePathReadMeTemplate=${dirPathPacRes}/${versionName}/${fileNameReadMeTemplate}
-    local filePathChangeListTemplate=${dirPathPacRes}/${versionName}/${fileNameChangeListTemplate}
+    local filePathReadMeTemplate=${dirPathPacRes}/${fileNameReadMeTemplate}
+    local filePathChangeListTemplate=${dirPathPacRes}/${fileNameChangeListTemplate}
     # 开始生成模板文件
     echo -e "1. 版本号：$versionName
 
@@ -2594,11 +2647,24 @@ EOF
                                         do
                                             local branshName=$line
 
-                                            ftEcho -bh 将开始编译$branshName
                                             #rm -rf out
                                             git reset --hard&&
-                                            git checkout   "$branshName"&&
-                                            git push origin "$branshName"
+                                            ftEcho -bh 将开始编译$branshName
+                                            git checkout   "$branshName"
+                                            
+                                            key="修改 相机[camera] 类型 默认"
+                                            git log --pretty=oneline |grep "$key"
+
+                                            # key="补充 修复 相机 缩略图显示异常"
+                                            # hashVal=$(git log --pretty=oneline |grep "$key")
+                                            # hashVal=${hashVal//"$key"/}
+                                            # hashVal=$(echo $hashVal |sed s/[[:space:]]//g)
+                                            # rm -rf vendor/sprd/partner/launcher
+                                            # git checkout $hashVal vendor/sprd/partner/launcher
+                                            # mv vendor/sprd/partner/launcher vendor/sprd/partner/launcher_${branshName}
+
+
+                                            #git push origin "$branshName"
                                             # source build/envsetup.sh&&
                                             # lunch sp7731c_1h10_32v4_oversea-user&&
                                             # kheader&&
@@ -2614,6 +2680,7 @@ EOF
                                             #     ftBackupOutsByMove
                                             # fi
                                         done
+                                        git reset --hard
                                        break;;
                         n | N)    break;;
                         q |Q)    exit;;
