@@ -544,13 +544,16 @@ EOF
         if [ $? -eq "2" ];then
             ftEcho -ex 空的动画资源，请确认[${dirPathAnimationSourceRes}]是否存在动画文件
         else
-            filelist=`ls $dirPathAnimationSourceRes`
+            filelist=$(ls $dirPathAnimationSourceRes)
+            local dirPathLocal=$PWD
+            cd $dirPathAnimationSourceRes
             for file in $filelist
             do
-                if [ ! -f $file ];then
+                if [ ! -f "$file" ];then
                     ftEcho -ex 动画资源包含错误类型的文件[${file}]，请确认
                 fi
             done
+            cd $dirPathLocal
         fi
 
         dirPathAnimationTraget=/home/${rNameUser}/${dirNameAnimation}
