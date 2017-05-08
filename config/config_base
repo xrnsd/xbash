@@ -7,7 +7,7 @@ export rBaseShellParameter2=$1
 export rBaseShellParameter3=$2
 
 # 基本配置
-export rXbashVersion="V0.7.2.0 beta"
+export rXbashVersion="V0.7.2.1 beta"
 # 标记为脚本模式，此模式说明使用实现对应的封装命令
 export XMODULE="script"
 
