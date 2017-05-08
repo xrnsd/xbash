@@ -2691,3 +2691,43 @@ EOF
             done
     fi
 }
+
+ftFindGitBranch()
+{
+    local ftEffect=获取git分支名
+    local dir=. head
+
+    #使用示例
+    while true; do case "$1" in
+    #方法使用说明
+    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftFindGitBranch 无参
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;;
+    * ) break;;esac;done
+
+        until [ "$dir" -ef / ]; do
+            if [ -f "$dir/.git/HEAD" ]; then
+                head=$(< "$dir/.git/HEAD")
+                if [[ $head = ref:\ refs/heads/* ]]; then
+                    git_branch="\nbranchName→ ${head#*/*/}"
+                elif [[ $head != '' ]]; then
+                    git_branch="\nbranchName→(detached)"
+                else
+                    git_branch="\nbranchName→(unknow)"
+                fi
+                export PS1="xrnsd\[\033[44m\][\w]\[\033[0m\]\
+\[\033[33m\]$git_branch:\[\033[0m\]"
+                return
+            fi
+            dir="../$dir"
+        done
+        export PS1="xrnsd\[\033[44m\][\w]\[\033[0m\]:"
+        git_branch=
+}
