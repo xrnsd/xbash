@@ -16,7 +16,7 @@ ftKillPhoneAppByPackageName()
 #    ftKillPhoneAppByPackageName com.android.settings
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -24,7 +24,7 @@ EOF
     #耦合变量校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$packageName" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [应用包名]packageName=$packageName \
                 请查看下面说明:"
@@ -33,7 +33,7 @@ EOF
     fi
 
     #adb状态检测
-    adbStatus=`adb get-state`
+    local adbStatus=`adb get-state`
     if [ "$adbStatus" = "device" ];then
         #确定包存在
         if [ -n "$(adb shell pm list packages|grep $packageName)" ];then
@@ -51,7 +51,7 @@ EOF
                     y | Y )
                         ftKillPhoneAppByPackageName $packageName
                         break;;
-                    * )if [ $XMODULE = "env" ];then
+                    * )if [ "$XMODULE" = "env" ];then
                             return
                        fi
                         exit;;
@@ -69,7 +69,7 @@ ftRestartAdb()
     #耦合变量校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rUserPwd" ];then
-        ftEcho -eax "函数[${ftName}]的参数错误 \
+        ftEcho -eax "函数[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [默认用户密码]rUserPwd=$rUserPwd"
     fi
@@ -97,7 +97,7 @@ ftInitDevicesList()
 #    ftInitDevicesList 4096M
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -106,7 +106,7 @@ EOF
     local valCount=1
     if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ]\
                 ||[ -z "$rNameUser" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [默认用户的home目录]rDirPathUserHome=$rDirPathUserHome \
                 [默认用户名]rNameUser=$rNameUser \
@@ -162,7 +162,7 @@ ftCleanDataGarbage()
     #耦合变量校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$mCmdsModuleDataDevicesList" ];then
-        ftEcho -ex "函数[${ftName}]的参数错误 \
+        ftEcho -ex "函数[${ftEffect}]的参数错误 \
 [参数数量def=$valCount]valCount=$# \
 [被清空回收站的设备的目录列表]mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}"
     fi
@@ -199,7 +199,7 @@ ftMtkFlashTool()
 #    ftMtkFlashTool 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -208,7 +208,7 @@ EOF
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rDirPathTools" ]\
                 ||[ ! -d "$rDirPathTools" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [mtk下载工具路径]rDirPathTools=$rDirPathTools"
         ftMtkFlashTool -h
@@ -244,7 +244,7 @@ ftFileDirEdit()
 #    echo $?
 #===============================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -254,7 +254,7 @@ EOF
     if(( $#!=$valCount ))||[ -z "$type" ]\
                         ||[ -z "$isCreate" ]\
                         ||[ -z "$path" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [操作参数]type=$type \
                 [是否新建]isCreate=$isCreate \
@@ -298,7 +298,7 @@ EOF
             fi
             break;;
         * )
-            ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+            ftEcho -e "函数[${ftEffect}]参数错误，请查看函数使用示例"
             ftFileDirEdit -h
             ;;
     esac
@@ -323,7 +323,7 @@ ftEcho()
 #    ftEcho    -s    内容    # 执行信息，对字符串的缩进敏感
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -331,7 +331,7 @@ EOF
     #耦合变量校验
     local valCount=1
     if(( $#<$valCount ));then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=1/2]valCount=$# "
         ftEcho -h
     fi
@@ -339,16 +339,19 @@ EOF
     option=$1
     option=${option:-'未制定显示信息'}
     valList=$@
-    #除第一个参数外的所有参数列表，可正常打印数组
-    content="${valList[@]/$option/}"
-
+    if [ ${#valList[@]} -eq 2 ];then
+        content=$(content |sed s/[[:space:]]//g)
+    else
+        #除第一个参数外的所有参数列表，可正常打印数组
+        content="${valList[@]/$option/}"
+    fi
     while true; do
     case $option in
 
     e | E | -e | -E)        echo -e "\033[1;31m$content\033[0m"; break;;
     ex | EX | -ex | -EX)    echo -e "\033[1;31m$content\033[0m"
                 sleep 3
-                if [ $XMODULE = "env" ];then
+                if [ "$XMODULE" = "env" ];then
                     return
                 fi
                 exit;;
@@ -464,7 +467,7 @@ EOF
     #耦合变量校验
     local valCount=2
     if(( $#!=$valCount ))||[ -z "$dirPathAnimation" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [动画资源目录]dirPathAnimation=$dirPathAnimation \
                 请查看下面说明:"
@@ -486,7 +489,7 @@ EOF
         fi
 
         if [ -z "$dirNamePackageName" ]||[ -z "$fileConfig" ];then
-            ftEcho -e "函数[${ftName}]运行出现错误，请查看函数"
+            ftEcho -e "函数[${ftEffect}]运行出现错误，请查看函数"
             echo dirNamePackageName=$dirNamePackageName
             echo fileConfig=$fileConfig
         fi
@@ -555,7 +558,7 @@ EOF
         ftFileDirEdit -e false $dirPathAnimationTraget
         if [ -d $dirPathAnimationTraget ]||[ $? -eq   "3" ];then
             while true; do
-            ftEcho -y ${ftName}的目标文件[${dirPathAnimationTraget}]夹非空，是否删除重建
+            ftEcho -y ${ftEffect}的目标文件[${dirPathAnimationTraget}]夹非空，是否删除重建
             read -n1 sel
             case "$sel" in
                 y|Y)
@@ -639,7 +642,7 @@ p 0 0 part1" >${dirPathAnimationTraget}/${fileNameDesc}
         ftBootAnimation create $dirPathAnimationTraget
         break;;
      * )
-        ftEcho -e "函数[${ftName}]参数错误，请查看函数使用示例"
+        ftEcho -e "函数[${ftEffect}]参数错误，请查看函数使用示例"
         ftBootAnimation -h
         break;;
     esac
@@ -657,7 +660,7 @@ ftGjh()
 #    ftGjh 无参数
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -665,7 +668,7 @@ EOF
     #耦合变量校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rDirPathUserHome" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [默认用户的home目录]rDirPathUserHome=$rDirPathUserHome \
                 请查看下面说明:"
@@ -677,7 +680,7 @@ EOF
     if [ -f $filePath ];then
         $filePath
     else
-        ftEcho -e "[${ftName}]找不到[$filePath]"
+        ftEcho -e "[${ftEffect}]找不到[$filePath]"
     fi
 
 }
@@ -693,7 +696,7 @@ ftLog()
 #    初始化log记录所需的参数
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -702,7 +705,7 @@ EOF
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rDirPathUserHome" ]\
                 ||[ -z "$rDirNameLog" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [默认用户的home目录]rDirPathUserHome=$rDirPathUserHome \
                 [xbash的日志目录名]rDirNameLog=$rDirNameLog \
@@ -770,7 +773,7 @@ ftTest()
 #    ftTest 任意参数
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -779,7 +782,7 @@ EOF
     local dirNameCmdModuleTest=test
     local filePathCmdModuleTest=${rDirPathCmdsModule}/${dirNameCmdModuleTest}/${rFileNameCmdModuleTestBase}
     if [ ! -d "$rDirPathCmdsModule" ]||[ ! -f "$filePathCmdModuleTest" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 filePathCmdModuleTest=$filePathCmdModuleTest \
                 请查看下面说明:"
@@ -803,14 +806,14 @@ ftBoot()
 #     xss 时间/秒 #制定时间后重启,不带时间则默认十秒
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
 
     #耦合变量校验
     if [ -z "$rUserPwd" ]||[ -z "$edittype" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量_def=1/2]valCount=$# \
                 [默认用户密码]rUserPwd=$rUserPwd \
                 [操作参数]edittype=$edittype \
@@ -824,7 +827,7 @@ EOF
         if ( echo -n $rBaseShellParameter3 | grep -q -e "^[0-9][0-9]*$" );then
             waitLong=$rBaseShellParameter3
         else
-            ftEcho -ea "函数[${ftName}]的参数错误 \
+            ftEcho -ea "函数[${ftEffect}]的参数错误 \
                         请查看下面说明:"
             ftBoot -h
         fi
@@ -885,7 +888,7 @@ ftPushAppByName()
 #    ftPushAppByName ~/xx.apk /system/data
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -895,7 +898,7 @@ EOF
     if(( $#>$valCount ))||[ -z "$fileNameNewAppApkBase" ]\
             ||(( $#==1 ))&&[ ! -d "$dirPathOut" ]\
             ||(( $#==2 ))&&[ ! -f "$fileNameNewAppApkBase" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [目标app的名字]fileNameNewAppApkBase=$fileNameNewAppApkBase \
             [工程out目录]dirPathOut=$dirPathOut \
@@ -925,7 +928,7 @@ EOF
     fi
 
     if [ $filePath = "null" ];then
-        ftEcho -ex "[$ftName]出现错误，文件[$filePathAppApk]不存在"
+        ftEcho -ex "[$ftEffect]出现错误，文件[$filePathAppApk]不存在"
     fi
 
     # 多个adb设备id遍历
@@ -942,7 +945,7 @@ EOF
         local statusFileAppApkPhone=$(adb shell ls $filePathAppApkPhone)
         if [[ $statusDirAppApkPhone =~ " No such file or directory" ]]\
             ||(( $#==1 ))&&[[ $statusFileAppApkPhone =~ " No such file or directory" ]];then
-            ftEcho -eax "[$ftName]出现错误，设备不存在 \
+            ftEcho -eax "[$ftEffect]出现错误，设备不存在 \
             dirPathAppApkPhone=$dirPathAppApkPhone \
             filePathAppApkPhone=$filePathAppApkPhone]"
         else
@@ -990,7 +993,7 @@ ftReduceFileList()
 # 由于水平有限，实现对60%和50%之类的比例不敏感
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1014,7 +1017,7 @@ EOF
                 ||(( $percentage<0 ))\
                 ||(( $percentage>100 ))\
                 ||[ ! -d "$dirPathFileList" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [0<=*<=100]percentage=$percentage \
             [目标目录]dirPathFileList=$dirPathFileList \
@@ -1096,7 +1099,7 @@ ftReNameFile()
 #    ftReNameFile /home/xxxx/temp 5
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1104,7 +1107,7 @@ EOF
     #耦合变量校验
     local valCount=2
     if(( $#>$valCount ))||[ ! -d "$dirPathFileList" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [修改后的文件长度]lengthFileName=$lengthFileName \
             [目标目录]dirPathFileList=$dirPathFileList \
@@ -1159,7 +1162,7 @@ ftDevAvailableSpace()
 #    ftDevAvailableSpace /media/test true
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1168,7 +1171,7 @@ EOF
     local valCount=2
     if (( $#>$valCount ))||[ -z "$devDirPath" ]\
                 ||[ -z "$rDirPathCmdsData" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [设备路径]devDirPath=$devDirPath \
                 [xbash的data目录]rDirPathCmdsData=$rDirPathCmdsData \
@@ -1281,7 +1284,7 @@ EOF
     if(( $#!=$valCount ))||[ ! -f "$filePath" ]\
                 ||[ -z "$blockName" ]\
                 ||[ -z "$keyName" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 filePath=$filePath \
                 blockName=$blockName \
@@ -1346,7 +1349,7 @@ EOF
                 ||[ -z "$blockName" ]\
                 ||[ -z "$keyName" ]\
                 ||[ -z "$keyValue" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [目标ini文件路径]filePath=$filePath \
                 [目标块TAG]blockName=$blockName \
@@ -1387,7 +1390,7 @@ EOF
     #耦合变量校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -f "$filePath" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [目标ini文件路径]filePath=$filePath \
                 请查看下面说明:"
@@ -1454,7 +1457,7 @@ ftUpdateHosts()
 #    ftUpdateHosts https://raw.githubusercontent.com/racaljk/hosts/master/hosts
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1463,7 +1466,7 @@ EOF
     local valCount=1
     if (( $#>$valCount ))||[ ! -f "$filePathHosts" ]\
                 ||[ ! -d "$rDirPathCmdsData" ];then
-        ftEcho -ea "[${ftName}]参数错误 \
+        ftEcho -ea "[${ftEffect}]参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [目标hosts配置文件路径，ubuntu默认]filePathHosts=$filePathHosts \
             [xbash的data目录]rDirPathCmdsData=rDirPathCmdsData \
@@ -1533,7 +1536,7 @@ ftCopySprdPacFileList()
 #    ftCopySprdPacFileList 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1542,7 +1545,7 @@ EOF
     local valCount=0
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -d "$dirPathOut" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
             [工程out目录]dirPathOut=$dirPathOut \
@@ -1595,10 +1598,9 @@ EOF
 ftBackupOutsByMove()
 {
     local ftEffect=移动备份out
-    # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
-    # ANDROID_PRODUCT_OUT=/media/data/ptkfier/code/sp7731c/code/out/target/product/sp7731c_1h10_32v4
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
+    local buildType=$TARGET_BUILD_VARIANT
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -1607,7 +1609,7 @@ ftBackupOutsByMove()
 #    ftBackupOutsByMove 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1616,7 +1618,7 @@ EOF
     local valCount=0
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -d "$dirPathOut" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
             [工程out目录]dirPathOut=$dirPathOut \
@@ -1637,9 +1639,19 @@ EOF
     #软件编译类型
     local filePathBuildInfo=${dirPathOut}/system/build.prop
     local keybuildType="ro.build.type="
-    local buildType="null"
-    buildType=$(cat $filePathBuildInfo|grep $keybuildType)
-    buildType=${buildType/$keybuildType/}
+    local buildTypeFile=
+    if [ -f "$filePathBuildInfo" ];then
+        buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
+        if [ ! -z "$buildTypeFile" ];then
+            buildTypeFile=${buildTypeFile/$keybuildType/}
+            if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
+                ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
+                buildType=$buildTypeFile
+            fi
+        else
+            ftEcho -e "[$filePathBuildInfo]中未找到编译类型"
+        fi
+    fi
 
     local dirPathCodeRootOuts=${dirPathCode%/*}/outs
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----$(date -d "today" +"%y%m%d[%H:%M]")
@@ -1669,7 +1681,7 @@ ftYKSwitch()
 #    ftYKSwitch yhx/kl
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1678,7 +1690,7 @@ EOF
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$type" ]\
             ||[ ! -d "$dirPathCode" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [操作参数]type=$type \
             [工程根目录]dirPathCode=$dirPathCode \
@@ -1721,7 +1733,7 @@ ftRmNormalBin()
 #    ftRmNormalBin out/pac
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1731,7 +1743,7 @@ EOF
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -d "$dirPathPacRes" ]\
             ||[ ! -d "$dirPathOut" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
             [工程out目录]dirPathOut=$dirPathOut \
@@ -1790,7 +1802,7 @@ ftAutoUpload()
 #    ftAutoUpload xxxx
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1798,7 +1810,7 @@ EOF
     #耦合变量校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -f "$contentUploadSource" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [上传的源文件]contentUploadSource=$contentUploadSource \
             请查看下面说明:"
@@ -1837,6 +1849,7 @@ ftAutoPacket()
     local ftEffect=生成7731c使用的pac
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
+    local buildType=$TARGET_BUILD_VARIANT
     local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
 
     #使用示例
@@ -1847,7 +1860,7 @@ ftAutoPacket()
 #    ftAutoPacket -y #自动打包，上传到188服务器
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -1857,7 +1870,7 @@ EOF
     if(( $#>$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -f "$filePathPacketScript" ]\
             ||[ ! -d "$dirPathOut" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
             [packet打包脚本]filePathPacketScript=$filePathPacketScript \
@@ -1873,6 +1886,7 @@ EOF
     local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
     local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
     versionName=${versionName/$keyVersion/}
+    versionName=${versionName/"\n"/_}
     versionName=${versionName/\");/}
     versionName=$(echo $versionName |sed s/[[:space:]]//g)
 
@@ -1883,19 +1897,27 @@ EOF
 
     local filePathBuildInfo=${dirPathOut}/system/build.prop
     local keybuildType="ro.build.type="
-    local buildType=
-    if [ ! -f "$filePathBuildInfo" ];then
-        buildType=$(cat $filePathBuildInfo|grep $keybuildType)
-        buildType=${buildType/$keybuildType/}
-        if [ ! -z "$buildType" ]&&[ "$buildType" != "user" ];then
-            versionName=${versionName}__${buildType}
+    local buildTypeFile=
+    if [ -f "$filePathBuildInfo" ];then
+        buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
+        if [ ! -z "$buildTypeFile" ];then
+            buildTypeFile=${buildTypeFile/$keybuildType/}
+            if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
+                ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
+                buildType=$buildTypeFile
+            fi
+        else
+            ftEcho -e "[$filePathBuildInfo]中未找到编译类型"
         fi
+    fi
+
+    if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
+        versionName=${versionName}____${buildType}
     fi
 
     if [ ! -d $dirPathPacRes ];then
         mkdir $dirPathPacRes
     fi
-
     cd $dirPathPacRes
 
     ftEcho -s "开始生成 ${versionName}.pac\n"
@@ -1918,18 +1940,17 @@ EOF
         ${dirPathNormalBin}/system.img \
         ${dirPathNormalBin}/userdata.img \
         ${dirPathLogo}/logo.bmp \
-        ${dirPathLogo}/logo.bmp \
         ${dirPathNormalBin}/cache.img \
         ${dirPathNormalBin}/sysinfo.img \
         ${dirPathNormalBin}/u-boot.bin \
         ${dirPathNormalBin}/persist.img&&
-    ftEcho -s 生成7731c使用的pac[${dirPathPacRes}/${versionName}.pac]&&
-    if [ $1 = "-y" ];then
+    ftEcho -s 生成7731c使用的pac[${dirPathPacRes}/${versionName}.pac]
+    if [ "$1" = "-y" ];then
         ftCreateReadMeBySoftwareVersion $dirPathPacRes
         ftAutoUpload ${dirPathPacRes}/${versionName}.pac
         #mv ${dirPathPacRes}/${versionName}.pac ${dirPatPacs}/${versionName}.pac
     fi
-    if [ $1 = "-b" ];then
+    if [ "$1" = "-b" ];then
         local serverIp=192.168.1.105
         local userName=share
         local pasword=123456
@@ -1960,14 +1981,14 @@ ftLanguageUtils()
 #    ftLanguageUtils “ar_IL bn_BD my_MM zh_CN”
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
 
     #耦合变量校验
     if [ -z "$ftLanguageContent" ]&&[ ! -f "$filePathDevice" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [语言]ftLanguageContent=$ftLanguageContent \
             [工程Device的make文件]filePathDevice=$filePathDevice \
             请查看下面说明:"
@@ -2089,7 +2110,7 @@ ftAutoUploadPro()
 #    ftAutoUploadPro /home/xxx/1/ 192.168.1.188 server 123456 智能机软件/7731c/....
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -2117,7 +2138,7 @@ EOF
                         ||[ -z "$dirPathServerMoule" ]\
                         ||[ -z "$dirPathServerMouleContent" ]\
                         ||[ -z "$rUserPwd" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [源文件路径]contentUploadSource=$contentUploadSource \
             [服务器IP地址]serverIp=$serverIp \
@@ -2184,7 +2205,7 @@ ftCreateReadMeBySoftwareVersion()
 #    ftCreateReadMeBySoftwareVersion out/pac
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -2196,7 +2217,7 @@ EOF
             ||[ ! -d "$dirPathOut" ]\
             ||[ ! -f "$filePathDevice" ]\
             ||[ ! -f "$filePathPawInfo" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
             [工程out目录]dirPathOut=$dirPathOut \
@@ -2278,7 +2299,7 @@ ftAutoLanguageUtil()
 #    ftAutoLanguageUtil 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -2287,7 +2308,7 @@ EOF
     local valCount=0
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -f "$filePathDevice" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
             [工程Device的make文件]filePathDevice=$filePathDevice \
@@ -2320,21 +2341,21 @@ ftLnUtil()
 #    ftLnUtil /home/xian-hp-u16/log/xb_backup
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;;
     #出现错误之后的尝试
     x | X |-x | -X)
         isSecondTime=true
-        ftEcho -s "尝试重新开始 [ftName]"
+        ftEcho -s "尝试重新开始 [ftEffect]"
     break;;
     * ) break;;esac;done
 
     #耦合变量校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$lnPath" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [软连接路径]lnPath=$lnPath \
             请查看下面说明:"
@@ -2387,7 +2408,7 @@ ftAutoUpdateSoftwareVersion()
 #    ftAutoUpdateSoftwareVersion 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -2395,7 +2416,7 @@ EOF
     #耦合变量校验
     local valCount=1
     if(( $#>$valCount ))||[ ! -d "$dirPathCode" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
             请查看下面说明:"
@@ -2495,7 +2516,7 @@ ftAutoBuildMultiBranch()
 #    ftAutoBuildMultiBranch -yb 上传版本软件,备份out
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;;
@@ -2505,7 +2526,7 @@ EOF
     local valCount=1
     if(( $#>$valCount ))||[ -z "$dirPathCode" ]\
                                         ||[ ! -d "$dirPathCode" ];then
-        ftEcho -ea "[${ftName}]的参数错误 \
+        ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
             请查看下面说明:"
@@ -2514,6 +2535,9 @@ EOF
     fi
     local isUpload=
     local isBackupOut=
+    if [ -z "$1" ];then
+        echo 将不会上传软件包，备份out
+    fi
     while true; do
       case "$editType" in
                 -y | -Y )
@@ -2530,6 +2554,23 @@ EOF
 
     cd $dirPathCode
     echo $PWD
+    if [ ! -z "$(pgrep -f gedit)" ];then
+         while true; do
+                    echo
+                    ftEcho -y gedit 已打开是否关闭
+                    read -n1 sel
+                    case "$sel" in
+                        y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
+                                       break;;
+                        n | N)    return;;
+                        q |Q)    return;;
+                        * )
+                            ftEcho -e 错误的选择：$sel
+                            echo "输入n,q，离开"
+                            ;;
+                    esac
+            done
+    fi
     git branch > $filePathBranchList&&
     gedit $filePathBranchList&&
     while [ ! -z "$(pgrep -f gedit)" ]
@@ -2554,21 +2595,24 @@ EOF
                                             local branshName=$line
 
                                             ftEcho -bh 将开始编译$branshName
-                                            rm -rf out
+                                            #rm -rf out
                                             git reset --hard&&
                                             git checkout   "$branshName"&&
-                                            source build/envsetup.sh&&
-                                            lunch sp7731c_1h10_32v4_oversea-user&&
-                                            kheader&&
-                                            make -j4&&
-                                            if [ $isUpload = "true" ];then
-                                                ftAutoPacket -y
-                                            else
-                                                ftAutoPacket
-                                            fi&&
-                                            if [ $isBackupOut = "true" ];then
-                                                ftBackupOutsByMove
-                                            fi
+                                            git push origin "$branshName"
+                                            # source build/envsetup.sh&&
+                                            # lunch sp7731c_1h10_32v4_oversea-user&&
+                                            # kheader&&
+                                            # make -j4&&
+                                            # if [ $isUpload = "true" ];then
+                                            #     ftAutoPacket -y
+                                            # else
+                                            #     ftAutoPacket
+                                            # fi&&
+                                            #     ftBackupOutsByMove
+                                            
+                                            # if [ $isBackupOut = "true" ];then
+                                            #     ftBackupOutsByMove
+                                            # fi
                                         done
                                        break;;
                         n | N)    break;;

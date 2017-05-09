@@ -9,7 +9,7 @@ export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
 # 命令历史文件大小
 export HISTFILESIZE=10000000000
 # 保存历史命令条数
-export HISTSIZE=10000
+export HISTSIZE=500
 # 以追加的方式保存命令历史
 shopt -s histappend
 export PROMPT_COMMAND="history -a"
@@ -20,15 +20,19 @@ filePathBashHistoryTemp=${filePathBashHistory}_temp
 filePathBashHistoryArchive=${filePathBashHistory}_archive
 filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
 
-lineCountMax=1000
+#去重
+sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
+mv $filePathBashHistoryTemp $filePathBashHistory
+
+#备份历史
+let lineCountMax=HISTSIZE-1
 lineCount=$(wc -l < $filePathBashHistory)
 if (($lineCount > $lineCountMax)); then
     prune_lines=$(($lineCount - $lineCountMax))
-    head -$prune_lines $filePathBashHistory >> $filePathBashHistoryArchive \
+    cat $filePathBashHistory >> $filePathBashHistoryArchive \
     && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
     && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive \
-    && sed -e "1,${prune_lines}d"  $filePathBashHistory > $filePathBashHistoryTemp \
-    && mv $filePathBashHistoryTemp  $filePathBashHistory
+    && > $filePathBashHistory
 fi
 
 #----------------    部分环境变量    ---------------------------
@@ -114,8 +118,17 @@ alias xle='export XCMD=xle;\
 alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
 alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
 alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
-        cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "KEY_BUILD_NUMBER";\
+        cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";\
         cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"'
+
+alias xmodel='cat build/tools/buildinfo.sh|grep "ro.product.model=";\
+                            cat build/tools/buildinfo.sh|grep "ro.product.brand=";\
+                            cat build/tools/buildinfo.sh|grep "ro.product.name=";\
+                            cat build/tools/buildinfo.sh|grep "ro.product.device=";\
+                            cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"
+                            cat device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk |grep "product.model.num"'
+
+alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :="'
 
 alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SAM_FACTORYMODE";\
         cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "TESTMODE_LIST";\
@@ -125,10 +138,11 @@ alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.Cam
 alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
 alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
 
+alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
+
 #--------------------------命令选项快速适配---------------------------
 complete -W "123" xl
 complete -W "123" xle
-complete -W "edl_auto=packet_upload EDL_ATUO_PACKET=true" make
 
 #-------------------------android优化加速部分------------------
 #编译加速 c/c++ 部分

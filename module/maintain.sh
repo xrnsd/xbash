@@ -74,7 +74,7 @@ ftRestoreChoiceSource()
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$mDirPathStoreSource" ]\
                 ||[ ! -d $mDirPathStoreSource ];then
-        ftEcho -ex "函数[${ftName}]的参数错误 \
+        ftEcho -ex "函数[${ftEffect}]的参数错误 \
 [参数数量def=$valCount]valCount=$# \
 [版本包存放的设备根目录]mDirPathStoreSource=$mDirPathStoreSource \
 请查看下面说明:"
@@ -87,7 +87,7 @@ ftRestoreChoiceSource()
     if [ -z "$fileList" ];then
         ftEcho -ex 在${mDirPathStoreSource}没找到有效的版本包
     else
-        ftEcho -b 请${ftName}
+        ftEcho -b 请${ftEffect}
         echo "[序号]        版本包名    ----------------    备注        "
         echo
         for file in $fileList
@@ -180,7 +180,7 @@ ftEchoInfo()
 #    ftEchoInfo backup/restore
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -188,7 +188,7 @@ EOF
     #耦合变量校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$infoType" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [显示信息类型]infoType=$infoType \
             请查看下面说明:"
@@ -241,7 +241,7 @@ ftSetBackupDevDir()
 #    ftSetBackupDevDir 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -250,7 +250,7 @@ EOF
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$mCmdsModuleDataDevicesList" ]\
                 ||[ -z "$rNameUser" ];then
-        ftEcho -e "函数[${ftName}]的参数错误 \
+        ftEcho -e "函数[${ftEffect}]的参数错误 \
 [参数数量def=$valCount]valCount=$# \
 [可版本包的设备列表]mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]} \
 [默认用户名]rNameUser=$rNameUser \
@@ -259,7 +259,7 @@ EOF
         return
     fi
 
-    ftEcho -b 请${ftName}
+    ftEcho -b 请${ftEffect}
 
     local devTarget
     local devTargetDir
@@ -314,7 +314,7 @@ ftSetBackupType()
     local ftEffect=选择备份类型
     mTypeBackupEdit=$1
     if [ -z "$mTypeBackupEdit" ];then
-        ftEcho -b 请${ftName}
+        ftEcho -b 请${ftEffect}
         echo -e "[1]\t基础"
         echo -e "[2]\t全部"
         echo
@@ -347,7 +347,7 @@ ftSetRestoreType()
     #耦合变量校验
     local valCount=1
     if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ];then
-        ftEcho -eax "函数[${ftName}]的参数错误 \
+        ftEcho -eax "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [默认用户的home目录]rDirPathUserHome=$rDirPathUserHome \
                 请查看下面说明:"
@@ -357,7 +357,7 @@ ftSetRestoreType()
 
     local typeIndex=$1
     if [ -z "$typeIndex" ];then
-        ftEcho -b 请${ftName}
+        ftEcho -b 请${ftEffect}
         echo -e "[1]\t忽略home"
         echo -e "[2]\t不忽略"
         echo
@@ -402,6 +402,8 @@ ftBackupOs()
                 /sys \
                 /.Trash-0 \
                 /media \
+                /var/tmp \
+                /var/log \
                 ${rDirPathUserHome}/workspaces \
                 ${rDirPathUserHome}/workspace \
                 ${rDirPathUserHome}/download \
@@ -431,6 +433,8 @@ ftBackupOs()
                 /mnt  \
                 /sys  \
                 /media \
+                /var/tmp \
+                /var/log \
                 ${rDirPathUserHome}/.AndroidStudio2.1 \
                 ${rDirPathUserHome}/backup \
                 ${rDirPathUserHome}/.software \
@@ -468,7 +472,7 @@ ftBackupOs()
      echo $dirpath >>$fileNameExclude
     done
 
-    ftEcho -bh 开始${ftName}
+    ftEcho -bh 开始${ftEffect}
     sudo tar -cvPzf  $mFilePathVersion --exclude-from=$fileNameExclude / \
      2>&1 |tee $mFilePathLog
 }
@@ -492,7 +496,7 @@ ftAddNote()
 #    ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase “常规”
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -501,7 +505,7 @@ EOF
     local valCount=2
     if (( $#<$valCount ))||[ -z "$dirPathBackupRoot" ]\
                 ||[ -z "$versionName" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [版本包存放的设备根目录]dirPathBackupRoot=$dirPathBackupRoot \
                 [版本包名]versionName=$versionName \
@@ -571,7 +575,7 @@ ftMD5()
 #    ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -581,7 +585,7 @@ EOF
     if (( $#<$valCount ))||[ -z "$typeEdit" ]\
                 ||[ -z "$dirPathBackupRoot" ]\
                 ||[ -z "$versionName" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [操作参数]typeEdit=$typeEdit \
                 [版本包存放的设备根目录]dirPathBackupRoot=$dirPathBackupRoot \
@@ -651,7 +655,7 @@ EOF
 ftAutoCleanTemp()
 {
     local ftEffect=清理临时文件
-    ftEcho -bh 开始${ftName}
+    ftEcho -bh 开始${ftEffect}
 
     sudo apt-get autoclean
     sudo apt-get clean
@@ -677,7 +681,7 @@ ftAddOrCheckSystemHwSwInfo()
 #    ftAddOrCheckSystemHwSwInfo -check
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -687,7 +691,7 @@ EOF
     if (( $#<$valCount ))||[ -z "$typeEdit" ]\
                 ||[ -z "$dirPathBackupRoot" ]\
                 ||[ -z "$dirNameBackupInfoVersion" ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [操作参数]typeEdit=$typeEdit \
             [版本包存放的设备根目录]dirPathBackupRoot=$dirPathBackupRoot \
@@ -791,7 +795,7 @@ ftSel()
     local title=$1
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$title" ];then
-        ftEcho -ex "函数[${ftName}]参数错误，请查看函数使用示例"
+        ftEcho -ex "函数[${ftEffect}]参数错误，请查看函数使用示例"
     fi
     while true; do
     ftEcho -y "$1有变动,是否忽悠"
@@ -823,7 +827,7 @@ ftBackUpDevScanning()
 #    ftBackUpDevScanning backup_cg_wgx_20161202 常规 "${mCmdsModuleDataDevicesList[*]}"
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -833,7 +837,7 @@ EOF
     if(( $#!=$valCount ))||[ -z "$version" ]\
                 ||[ -z "$note" ]\
                 ||[ -z "$devList" ];then
-        ftEcho -e "函数[${ftName}]的参数错误 \
+        ftEcho -e "函数[${ftEffect}]的参数错误 \
 [参数数量def=$valCount]valCount=$# \
 [目标版本包名]version=$version \
 [目标版本包的备注]note=$note \
@@ -915,7 +919,7 @@ ftVersionPackageIsCreated()
 #    ftVersionPackageIsCreated 无参
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -923,7 +927,7 @@ EOF
     #耦合变量校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z $mFilePathVersion ];then
-        ftEcho -ea "函数[${ftName}]的参数错误 \
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [将生成版本包路径]mFilePathVersion=$mFilePathVersion \
                 请查看下面说明:"
@@ -970,7 +974,7 @@ ftSynchronous()
 #     1 根据时间阀同步备份
 #=========================================================
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
     exit;; * ) break;; esac;done
@@ -979,7 +983,7 @@ EOF
     local valCount=2
     if(( $#!=$valCount ))||[ -z "$dirPathArray" ]\
                 ||[ -z "$fileTypeList" ];then
-        ftEcho -e "函数[${ftName}]的参数错误 \
+        ftEcho -e "函数[${ftEffect}]的参数错误 \
 [参数数量def=$valCount]valCount=$# \
 [同步设备目录列表]dirPathArray=${dirPathArray[@]} \
 [同步类型列表]fileTypeList=$fileTypeList \

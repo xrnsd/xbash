@@ -186,7 +186,7 @@ ftBoot ------------------------- 延时免密码关机重启
 ftGjh                            生成国际化所需的xml文件
 
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
 exit;;
@@ -197,90 +197,104 @@ exit;;
     |// 使用格式
     |   说明
     |  方法名 参数1 参数2
-例    |  方法名 参数1 参数2
+例  |  方法名 参数1 参数2
 =========================================================================
 ftBootAnimation 生成开关机动画
     |
-    |// ftBootAnimation [edittype] [path]
-    |   直接生成动画包，不做其他操作，不确认资源文件是否有效
-    |  ftBootAnimation create path
-    |   初始化生成bootanimation2.zip所需要的东东，然后生成动画包
-    |  ftBootAnimation new path
-    |
+    |// ftBootAnimation [操作类型] [动画资源目录]
+    |// ftBootAnimation [edittype] [dir_path]
+                            |
+                            |  create  #直接生成动画包，不做其他操作，不确认资源文件是否有效
+                        例  |  ftBootAnimation create dir_path
+                            |  new    #初始化生成bootanimation2.zip所需要的东东，然后生成动画包
+                        例  |  ftBootAnimation new dir_path
+
+
 ftBoot 延时免密码关机重启
     |
     |// ftBoot 关机/重启 时间/秒
-    |   100秒后自动关机/重启
-例    |  ftBoot shutdown/shutdown 100
-    |
+例  |   ftBoot shutdown/shutdown 100  #100秒后自动关机/重启
+
+
 ftReNameFile 批量重命名
+    |
     |不指定文件名长度默认为4
     |// ftReNameFile 目录
+例  |  ftReNameFile /home/xxxx/temp
     |// ftReNameFile 目录 文件名长度
-例    |  ftReNameFile /home/xxxx/temp
-例    |  ftReNameFile /home/xxxx/temp 5
-    |
+例  |  ftReNameFile /home/xxxx/temp 5
+
+
 ftUpdateHosts 更新hosts
     |
     |   使用默认hosts源[https://raw.githubusercontent.com/racaljk/hosts/master/hosts]
     |// ftUpdateHosts 无参
     |   使用自定义hosts源
     |// ftUpdateHosts https://xxxx
-例    |  ftUpdateHosts https://raw/hosts/master/hosts
-    |
+例  |  ftUpdateHosts https://raw/hosts/master/hosts
+
+
 ftPushAppByName push Apk文件
     |
     |// ftPushAppByName [AppName]
     |// ftPushAppByName [filePathApk] [dirPath]
     |   push SystemUI对应的apk到手机中,前提当前bash已初始化android build环境
-例    |  ftPushAppByName SystemUI
+例  |  ftPushAppByName SystemUI
     |   push自定义apk 到/system/app
-例    |  ftPushAppByName /home/xxx/xx.apk /system/app
-    |
+例  |  ftPushAppByName /home/xxx/xx.apk /system/app
+
+
 ftReduceFileList 精简动画帧文件
     |
     |// ftReduceFileList 目录
     |// ftReduceFileList 保留的百分比 目录
     |   另外输入保留比例
-例    |  ftReduceFileList /home/xxxx/temp
+例  |  ftReduceFileList /home/xxxx/temp
     |   保留百分之60的文件
-例    |  ftReduceFileList 60 /home/xxxx/temp
-    |
+例  |  ftReduceFileList 60 /home/xxxx/temp
+
+
 ftKillPhoneAppByPackageName kill掉包名为packageName的应用
     |
     |// ftKillPhoneAppByPackageName packageName
-    |
+
+
 ftLanguageUtils 语言缩写转换
     |
     |//ftLanguageUtils "语音缩写列表/语言列表"
     |
     |ftLanguageUtils "ar_IL bn_BD my_MM"
     |ftLanguageUtils "阿拉伯语 孟加拉语 缅甸语"
-    |
+
+
 ftAutoUploadPro 上传文件到服务器[低耦合版]
     |
     |//ftAutoUploadPro 上传源文件路径 服务器IP地址 用户名 用户密码 服务器的存放路径
     |ftAutoUploadPro /home/xxx/1.test 192.168.1.188 server 123456 智能机软件/7731c/....
-    |
-    |
+
+
 ftAutoUpload 上传文件到固定服务器
     |
     |//ftAutoUpload 上传源文件路径
     |ftAutoUpload /home/xxx/1.test
-    |
+
+
 ftRmNormalBin 清空pac相关资源文件
     |
     |ftRmNormalBin [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
-    |
+
+
 ftAutoPacket 生成7731c使用的pac
     |
     |ftAutoPacket  #自动打包
     |ftAutoPacket -y #自动打包，上传到188服务器
-    |
+
+
 ftYKSwitch 切换永恒星和康龙配置
     |
     |// ftYKSwitch yhx/kl
-    |
+
+
 ==========================================
 ======= 无参部分
 ==========================================
@@ -296,9 +310,8 @@ ftMtkFlashTool mtk下载工具
 ftRestartAdb 重启adb sever
     |
 ftGjh 生成国际化所需的xml文件
-    |
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
 exit;;
@@ -361,7 +374,7 @@ xversion--[无参] / 查看软件版本
 xg6572 ----- 下载mtk6572的工程
     |// xg6572 分支名
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
 exit;;
@@ -378,7 +391,7 @@ xc ----- 常规自定义命令和扩展
     |  restartadb                                重启adb服务
     |  clean_data_garbage  --------------------  快速清空回收站
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
 exit;;
@@ -390,7 +403,7 @@ xb ----- 系统维护
     |  backup  ---------------- [root] --------  备份系统
     |  restore  --------------- [root] --------  还原系统
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
 exit;;
@@ -403,7 +416,7 @@ xk ----- 关闭手机指定进程
     |  systemui                                  关闭systemui
     |  应用包名  ------------------------------  关闭指定app
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
 exit;;
@@ -412,7 +425,7 @@ cat<<EOF
 xt ----- 检测shell脚本，语法检测和测试运行
     |// xt 脚本文件名
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
 exit;;
@@ -421,7 +434,7 @@ cat<<EOF
 xh ----- 查看具体命令说明
     |// xh 命令名
 EOF
-    if [ $XMODULE = "env" ];then
+    if [ "$XMODULE" = "env" ];then
         return
     fi
 exit;;
