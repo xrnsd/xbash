@@ -1972,29 +1972,29 @@ EOF
     cd $dirPathPacResVersion
 
     ftEcho -s "开始生成 ${versionName}.pac\n"
-    # /usr/bin/perl $filePathPacketScript \
-    #     $versionName.pac \
-    #     SC77xx \
-    #     ${versionName}\
-    #     ${dirPathNormalBin}/SC7720_UMS.xml \
-    #     ${dirPathNormalBin}/fdl1.bin \
-    #     ${dirPathNormalBin}/fdl2.bin \
-    #     ${dirPathModemBin}/nvitem.bin \
-    #     ${dirPathModemBin}/nvitem_wcn.bin \
-    #     ${dirPathNormalBin}/prodnv.img \
-    #     ${dirPathNormalBin}/u-boot-spl-16k.bin \
-    #     ${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
-    #     ${dirPathModemBin}/DSP_DM_G2.bin \
-    #     ${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
-    #     ${dirPathNormalBin}/boot.img \
-    #     ${dirPathNormalBin}/recovery.img \
-    #     ${dirPathNormalBin}/system.img \
-    #     ${dirPathNormalBin}/userdata.img \
-    #     ${dirPathLogo}/logo.bmp \
-    #     ${dirPathNormalBin}/cache.img \
-    #     ${dirPathNormalBin}/sysinfo.img \
-    #     ${dirPathNormalBin}/u-boot.bin \
-    #     ${dirPathNormalBin}/persist.img&&
+    /usr/bin/perl $filePathPacketScript \
+        $versionName.pac \
+        SC77xx \
+        ${versionName}\
+        ${dirPathNormalBin}/SC7720_UMS.xml \
+        ${dirPathNormalBin}/fdl1.bin \
+        ${dirPathNormalBin}/fdl2.bin \
+        ${dirPathModemBin}/nvitem.bin \
+        ${dirPathModemBin}/nvitem_wcn.bin \
+        ${dirPathNormalBin}/prodnv.img \
+        ${dirPathNormalBin}/u-boot-spl-16k.bin \
+        ${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
+        ${dirPathModemBin}/DSP_DM_G2.bin \
+        ${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
+        ${dirPathNormalBin}/boot.img \
+        ${dirPathNormalBin}/recovery.img \
+        ${dirPathNormalBin}/system.img \
+        ${dirPathNormalBin}/userdata.img \
+        ${dirPathLogo}/logo.bmp \
+        ${dirPathNormalBin}/cache.img \
+        ${dirPathNormalBin}/sysinfo.img \
+        ${dirPathNormalBin}/u-boot.bin \
+        ${dirPathNormalBin}/persist.img&&
     ftEcho -s 生成7731c使用的pac[${dirPathPacResVersion}/${versionName}.pac]
     if [ "$1" = "-y" ];then
         ftCreateReadMeBySoftwareVersion $dirPathPacResVersion
@@ -2651,9 +2651,8 @@ EOF
                                             git reset --hard&&
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"
-                                            
-                                            key="修改 相机[camera] 类型 默认"
-                                            git log --pretty=oneline |grep "$key"
+                                            git cherry-pick 7f909f221e8f8ff18e73835a55fc1d6e7e691ee1&&
+                                            git push origin "$branshName"
 
                                             # key="补充 修复 相机 缩略图显示异常"
                                             # hashVal=$(git log --pretty=oneline |grep "$key")
