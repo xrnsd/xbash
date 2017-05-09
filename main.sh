@@ -138,12 +138,13 @@ ftReadMe()
 
 	# 凡调用此方法的操作产生的日志都视为无效
 	local dirPathLogExpired=${mFilePathLog%/*}
-	dirPathLogExpired=$(ftLnUtil dirPathLogExpired)
-	local dirPathLogOther=rDirPathLog/other
+	dirPathLogExpired=`ftLnUtil ${mFilePathLog%/*}`
+	local dirPathLogOther=${rDirPathLog}/other
 	if [ ! -d "$dirPathLogOther" ];then
 		mkdir $dirPathLogOther
 	fi
-	if [ $dirPathLogOther != $dirPathLogExpired ]&&[ $mFilePathLog != "/dev/null" ];then
+	if [ "$dirPathLogOther" != "$dirPathLogExpired" ]\
+		&&[ $mFilePathLog != "/dev/null" ];then
 		local dirPathExpired=${dirPathLogOther}/$(basename $dirPathLogExpired)
 		if [ -d $dirPathExpired ];then
 			cp ${dirPathLogExpired}/* $dirPathExpired

@@ -105,12 +105,11 @@ alias xgl='export XCMD=xgl;\
 	git log --pretty=oneline -10 2>&1|tee -a $mFilePathLog'
 alias xp="export XCMD=xp;readlink -f"
 alias xl='export XCMD=xl;\
-	ftLog;\
-	adb logcat -c;adb logcat | grep $2 2>&1|tee -a $mFilePathLog'
+	adb logcat | grep '
 alias xle='export XCMD=xle;\
 	ftLog;\
 	adb logcat -c;adb logcat "*:E" 2>&1|tee -a $mFilePathLog'
-alias xbh='export XCMD=xbh;cat $filePathBashHistory $filePathBashHistoryArchive |grep $2'
+alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
 alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
 alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
 		cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "KEY_BUILD_NUMBER";\
@@ -121,6 +120,7 @@ alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMg
 		cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "VERALION"'
 
 alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
+alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
 alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
 
 #--------------------------命令选项快速适配---------------------------

@@ -1701,7 +1701,7 @@ EOF
 
 	#耦合变量校验
 	local valCount=1
-	if(( $#!=$valCount ))||[ ! -z "$jdkVersion" ];then
+	if(( $#!=$valCount ))||[ -z "$jdkVersion" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
 			[目标jdk版本]jdkVersion=$jdkVersion \
@@ -1852,7 +1852,7 @@ EOF
 ftAutoUpload()
 {
 	local ftName=上传文件到制定smb服务器路径
-	local filePathUploadSource=$1
+	local contentUploadSource=$1
 
 	#使用示例
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -1869,10 +1869,10 @@ EOF
 
 	#耦合变量校验
 	local valCount=1
-	if(( $#!=$valCount ))||[ ! -f "$filePathUploadSource" ];then
+	if(( $#!=$valCount ))||[ ! -f "$contentUploadSource" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			[上传的源文件]filePathUploadSource=$filePathUploadSource \
+			[上传的源文件]contentUploadSource=$contentUploadSource \
 			请查看下面说明:"
 		ftAutoUpload -h
 		return
@@ -1886,17 +1886,17 @@ EOF
 	local dirPathMoule=智能机软件
 	local dirPathUpload=SPRD7731C/鹏明珠/autoUpload
 
-	local fileNameUploadSource=$(basename $filePathUploadSource)
+	local fileNameUploadSource=$(basename $contentUploadSource)
 
 	ftEcho -s "开始上传${fileNameUploadSource} 到\n\
  ${serverIp}/${dirPathUpload}..."
 smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
 	mkdir $dirPathUpload
-	put $filePathUploadSource ${dirPathUpload}/${fileNameUploadSource}
+	put $contentUploadSource ${dirPathUpload}/${fileNameUploadSource}
 EOF
-	ftEcho -s "${filePathUploadSource}\n\
+	ftEcho -s "${contentUploadSource}\n\
  上传结束"
- 	mv $filePathUploadSource ${filePathUploadSource}_${mCameraType}
+ 	mv $contentUploadSource ${contentUploadSource}_${mCameraType}
 }
 
 ftAutoPacket()
@@ -1946,12 +1946,8 @@ EOF
 	local dirPathNormalBin=$dirPathOut
 	local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
 	local dirPathLogo=${dirPathCode%/*}/res
-	local dirPatPacs=${dirPathCode%/*}/pacs
 	local dirPathLocal=$PWD
 
-	if [ ! -d $dirPatPacs ];then
-		mkdir $dirPatPacs
-	fi
 	if [ ! -d $dirPathPacRes ];then
 		mkdir $dirPathPacRes
 	fi
@@ -1997,7 +1993,7 @@ EOF
 smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
 	put ${dirPathPacRes}/${versionName}.pac ${versionName}.pac
 EOF
-		ftEcho -s "${filePathUploadSource}\n\
+		ftEcho -s "${contentUploadSource}\n\
  上传结束"
 	fi
 	cd $dirPathLocal
@@ -2234,9 +2230,10 @@ ftAutoUploadPro()
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #
-#	ftAutoUploadPro filePathUploadSource serverIp userName userPassword dirPathServerMouleContent
+#	ftAutoUploadPro 需要上传的文件或目录 服务器 用户名 用户密码 服务器路径
 #
 #	ftAutoUploadPro /home/xxx/1.test 192.168.1.188 server 123456 智能机软件/7731c/....
+#	ftAutoUploadPro /home/xxx/1/ 192.168.1.188 server 123456 智能机软件/7731c/....
 #=========================================================
 EOF
 	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
@@ -2244,13 +2241,13 @@ EOF
 	fi
 	exit;; * ) break;; esac;done
 
-	local filePathUploadSource=$1
+	local contentUploadSource=$1
 	local serverIp=$2
 	local userName=$3
 	local userPassword=$4
 	local dirPathServerMouleContent=$5
 	local dirPathServerMoule=$(dirname $dirPathServerMouleContent)
-	local fileNameUploadSource=$(basename $filePathUploadSource)
+	local fileNameUploadSource=$(basename $contentUploadSource)
 
 	if [ $dirPathServerMoule = "." ];then
 		dirPathServerMoule=$dirPathServerMouleContent
@@ -2258,7 +2255,9 @@ EOF
 
 	#耦合变量校验
 	local valCount=5
-	if(( $#!=$valCount ))||[ ! -f "$filePathUploadSource" ]\
+	if(( $#!=$valCount ))||[ ! -f "$contentUploadSource" ]\
+	||([ ! -d "$contentUploadSource" ]&&[ ! -f "$contentUploadSource" ])\
+	||[ -d "$contentUploadSource" -a `ls $contentUploadSource|wc -w` = "0" ]\
 						||[ -z "$serverIp" ]\
 						||[ -z "$userName" ]\
 						||[ -z "$userPassword" ]\
@@ -2267,7 +2266,7 @@ EOF
 						||[ -z "$rUserPwd" ];then
 		ftEcho -ea "[${ftName}]的参数错误 \
 			[参数数量def=$valCount]valCount=$# \
-			[源文件路径]filePathUploadSource=$filePathUploadSource \
+			[源文件路径]contentUploadSource=$contentUploadSource \
 			[服务器IP地址]serverIp=$serverIp \
 			[服务器用户]userName=$userName \
 			[服务器密码]userPassword=$userPassword \
@@ -2301,8 +2300,14 @@ EOF
 
 	ftEcho -s "开始上传${fileNameUploadSource} 到\n\
  ${serverIp}/${dirPathServerMouleContent}..."
- 	cp -v $filePathUploadSource ${dirPathLocal}/${dirPathServerMouleContent}
-	ftEcho -s "${filePathUploadSource}\n\
+ 	if [ -d $contentUploadSource ];then
+ 		cp -v -rf ${contentUploadSource}/* ${dirPathLocal}/${dirPathServerMouleContent}
+ 	elif [ -f $contentUploadSource ];then
+ 		cp -v $contentUploadSource ${dirPathLocal}/${dirPathServerMouleContent}
+ 	else
+		ftEcho -e "${contentUploadSource}\n  无效，上传失败"
+ 	fi
+	ftEcho -s "${contentUploadSource}\n\
  上传结束"
  	# 收尾
  	echo $rUserPwd | sudo -S umount $dirPathLocal&&
