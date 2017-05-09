@@ -201,7 +201,6 @@ ftLanguageUtils                  语言缩写转换
 ftMtkFlashTool ----------------- mtk下载工具
 ftRmNormalBin                    清空pac相关资源文件
 ftAutoUpload ------------------- 上传文件到固定服务器
-ftSynchronous                    文件同步
 ftUpdateHosts ------------------ 更新hosts
 ftReNameFile ------------------- 批量重命名
 ftRestartAdb                     重启adb sever
@@ -244,12 +243,6 @@ ftReNameFile 批量重命名
 	|// ftReNameFile 目录 文件名长度
 例	|  ftReNameFile /home/xxxx/temp
 例	|  ftReNameFile /home/xxxx/temp 5
-	|
-ftSynchronous 文件同步
-	|
-	|// ftSynchronous [dirPathArray] [fileTypeList]
-	|   在data_xx和data_xx之间同步类型为info或tgz的文件或目录
-例	|  ftSynchronous "/media/data_xx /media/data_xx" ".*\.info\|.*\.tgz"
 	|
 ftUpdateHosts 更新hosts
 	|
@@ -1328,75 +1321,6 @@ EOF
 	done
 }
 
-ftSynchronous()
-{
-	local ftName=在不同设备间同步版本包
-	local dirPathArray=$1
-	local fileTypeList=$2
-
-	#使用示例
-	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== ${ftName}的使用示例=============
-#
-#	ftSynchronous [dirPathArray] [fileTypeList]
-#
-# 	所有存储设备之间同步
-#	ftSynchronous "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
-#
-# 	本次备份存储设备和指定存储设备之间同步
-#	ftSynchronous "/media/data_xx $mDirPathStoreTarget" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
-#
-# 	自定义 存储设备和存储设备之间同步
-#	ftSynchronous "/media/data_xx /media/data_xx" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
-#未实现特性
-# 	1 根据时间阀同步备份
-#=========================================================
-EOF
-	if [ $XMODULE = "env" ];then
-		return
-	fi
-	exit;; * ) break;; esac;done
-
-	#耦合变量校验
-	local valCount=2
-	if(( $#!=$valCount ))||[ -z "$dirPathArray" ]\
-				||[ -z "$fileTypeList" ];then
-		ftEcho -e "函数[${ftName}]的参数错误 \
-[参数数量def=$valCount]valCount=$# \
-[同步设备目录列表]dirPathArray=${dirPathArray[@]} \
-[同步类型列表]fileTypeList=$fileTypeList \
-请查看下面说明:"
-		ftSynchronous -h
-		return
-	fi
-
-	while true; do
-	ftEcho -y 是否开始同步
-	read -n1 sel
-	case "$sel" in
-		y | Y )
-			ftEcho -bh 开始同步!
-
-			for dirpath in ${dirPathArray[@]}
-			do
-			for dirpath2 in ${dirPathArray[@]}
-			do
-				if [ ${dirpath} != ${dirpath2} ]; then
-					find $dirpath -regex "$fileTypeList" -exec cp {} -u -n -v -r $dirpath2 \;
-				fi
-			done
-			done
-			ftEcho -s 同步结束！
-			break;;
-		n | N| q |Q)  exit;;
-		* )
-			ftEcho -e 错误的选择：$sel
-			echo "输入n，q，离开";
-			;;
-	esac
-	done
-}
-
 ftPushAppByName()
 {
 	# ====================    设定流程      ============================
@@ -1790,7 +1714,11 @@ EOF
 	echo $size
 }
 
-
+#########################
+##                                                     ##
+##              ini文件操作实现            ##
+##                                                     ##
+#########################
 
 ftGetKeyValueByBlockAndKey()
 {
@@ -1803,8 +1731,8 @@ ftGetKeyValueByBlockAndKey()
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #
-#	ftGetKeyValueByBlockAndKey2 [文件] [块名] [键名]
-#	value=$(ftGetKeyValueByBlockAndKey2 /temp/odbcinst.ini PostgreSQL Setup)
+#	ftGetKeyValueByBlockAndKey [文件] [块名] [键名]
+#	value=$(ftGetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup)
 # 	value表示对应字段的值
 #=========================================================
 EOF
@@ -1821,7 +1749,7 @@ EOF
 				blockName=$blockName \
 				keyName=$keyName \
 				请查看下面说明:"
-		ftGetKeyValueByBlockAndKey2 -h
+		ftGetKeyValueByBlockAndKey -h
 		return
 	fi
 
@@ -1894,7 +1822,7 @@ EOF
 }
 
 
-function ftCheckIniConfigSyntax()
+ftCheckIniConfigSyntax()
 {
 	#============ini文件模板=====================
 	# # 注释１
@@ -1968,6 +1896,8 @@ EOF
 		return 2
 	fi
 }
+
+#######################结束
 
 ftUpdateHosts()
 {
@@ -2273,9 +2203,11 @@ EOF
 	while true; do case "$type" in
 	yhx )
 		sed -i "s:$tagKl:$tagYhx:g" $filePathTraget
+		source mCameraType=yhx
 		break;;
 	kl )
 		 sed -i "s:$tagYhx:$tagKl:g" $filePathTraget
+		source mCameraType=kl
 		break;;
 	* )	ftEcho -ex 错误参数[type=$type]
 		break;; 
@@ -2400,6 +2332,7 @@ smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
 EOF
 	ftEcho -s "${filePathUploadSource}\n\
  上传结束"
+ 	mv $filePathUploadSource ${filePathUploadSource}_${mCameraType}
 }
 
 ftAutoPacket()
@@ -2505,6 +2438,7 @@ EOF
 	fi
 	cd $dirPathLocal
 }
+
 ftLanguageUtils()
 {
 	local ftName=语言缩写转换
@@ -2514,9 +2448,8 @@ ftLanguageUtils()
 	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== ${ftName}的使用示例=============
 #
-#	ftLanguageUtils 无参
-#	ftLanguageUtils [example]
-#	ftLanguageUtils xxxx
+#	ftLanguageUtils 缩写列表
+#	ftLanguageUtils “ar_IL bn_BD my_MM zh_CN”
 #=========================================================
 EOF
 	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
@@ -2622,6 +2555,7 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
 		done
 	done
 }
+
 ftCreate7731CSoftwareVersionPathByGitBranchName()
 {
 	local ftName=生成服务器上传的路径
@@ -2907,4 +2841,43 @@ $gitCommitList">$filePathReadMeTemplate
 	echo -e "﻿暗码清单：$pawNuminfo
 修改记录：
 $gitCommitList">$filePathChangeListTemplate
+}
+
+ftAutoLanguageUtil()
+{
+	local ftName=语言缩写转化为中文
+	local dirPathCode=$ANDROID_BUILD_TOP
+	local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
+
+	#使用示例
+	while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== ${ftName}的使用示例=============
+#
+#	ftAutoLanguageUtil 无参
+#=========================================================
+EOF
+	if [ $XMODULE = "env" ]&&[ $2 != "-x" ];then
+		return
+	fi
+	exit;; * ) break;; esac;done
+
+	#耦合变量校验
+	local valCount=0
+	if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
+			||[ ! -f "$filePathDevice" ];then
+		ftEcho -ea "[${ftName}]的参数错误 \
+			[参数数量def=$valCount]valCount=$# \
+			[工程根目录]dirPathCode=$dirPathCode \
+			[工程Device的make文件]filePathDevice=$filePathDevice \
+			请查看下面说明:"
+		ftAutoLanguageUtil -h
+		return
+	fi
+
+	local LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
+	LanguageList=${LanguageList//PRODUCT_LOCALES :=/};  #删除PRODUCT_LOCALES :=
+	LanguageList=`ftLanguageUtils "$LanguageList"`  #缩写转化为中文
+	LanguageList=${LanguageList//
+/ };  # 删除回车
+	echo $LanguageList
 }
