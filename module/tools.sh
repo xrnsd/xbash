@@ -2,6 +2,62 @@
 #####---------------------  说明  ---------------------------#########
 # 不可在此文件中出现不被函数包裹的调用或定义
 # 人话，这里只放函数
+# complete -W "example example" ftExample
+#####---------------------示例函数---------------------------#########
+ftExample()
+{
+    local ftEffect=函数模板
+    local isSecondTime=false
+
+    #使用示例
+    while true; do case "$1" in
+    #使用环境说明
+    e | -e |--env) cat<<EOF
+#=================== ${ftEffect}使用环境说明=============
+#
+#    工具依赖包 example
+#=========================================================
+EOF
+      return;;
+    #方法使用说明
+    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftExample 无参
+#    ftExample [example]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;;
+    #出现错误之后的尝试
+    x | X |-x | -X)
+        isSecondTime=true
+        ftEcho -s "尝试重新开始 [ftEffect]"
+    break;;
+    * ) break;;esac;done
+
+    #工具环境校验校验
+    if [ -z `which example` ]||[ -z `which example` ];then
+        ftExample -e
+    fi
+    #耦合变量校验
+    local valCount=1
+    if(( $#!=$valCount ))||[ -z "$example1" ]\
+                ||[ -z "$example2" ];then
+        ftEcho -ea "[${ftEffect}]的参数错误 \
+            [参数数量def=$valCount]valCount=$# \
+            [示例1]example1=$example1 \
+            请查看下面说明:"
+        if [ $isSecondTime = "false" ];then
+            ftExample -x
+        fi
+        ftExample -h
+        return
+    fi
+}
+
 #####---------------------工具函数---------------------------#########
 ftKillPhoneAppByPackageName()
 {
@@ -2301,6 +2357,7 @@ EOF
 
     cd $dirPathCode
     gitCommitList=$(git log --pretty=format:"%s" -10)
+    gitCommitListAll=$(git log --pretty=format:"    %s")
 
     pawNuminfo=$(cat $filePathPawInfo|grep "private static final String PAW_NUM_INFO")  #获取暗码清单信息
     pawNuminfo=${pawNuminfo//private static final String PAW_NUM_INFO =/};
@@ -2339,7 +2396,7 @@ EOF
 $gitCommitList">$filePathReadMeTemplate
     echo -e "﻿暗码清单：$pawNuminfo
 修改记录：
-$gitCommitList">$filePathChangeListTemplate
+$gitCommitListAll">$filePathChangeListTemplate
 }
 
 ftAutoLanguageUtil()
