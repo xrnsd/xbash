@@ -36,9 +36,8 @@
 	│		│		├── base.sh				  		demo测试,请忽略此文件的修改
 	│		│		├── pytools.py			  		脚本语法逻辑校验高亮工具
 	│		│		└── pytools.README
-	│		├── maintain_system.sh			系统维护
-	│		│
-	│		└── tools.sh						函数实现
+	│		├── maintain.sh					系统维护
+	│		└── tools.sh						工具函数实现
 	│
 	├── main.sh	-----------------------	主入口
 	│
@@ -62,7 +61,7 @@
 		├── ./init.sh 	    初始化xbash
 		├── ./init.sh -system 初始化system
 		└── ./init.sh -all    初始化system,初始化xbash
-	
+
 	4 重开一个终端,输入ftReadMe 或 xc -h
 
 ##4.其他

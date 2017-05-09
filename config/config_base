@@ -7,7 +7,7 @@ export rBaseShellParameter2=$1
 export rBaseShellParameter3=$2
 
 # 基本配置
-export rXbashVersion="V0.7.0.0 beta"
+export rXbashVersion="V0.7.1.0 beta"
 # 标记为脚本模式，此模式说明使用实现对应的封装命令
 export XMODULE="script"
 rUserPwdBase=123
@@ -45,7 +45,7 @@ export rFileNameCmdModuleTestBase=base.sh
 # home/$rNameUser/cmds/modiule/xxxx
 export rFileNameCmdModuleTools=tools.sh
 export rFileNameCmdModuleCompile=compile.sh
-export rFileNameCmdModuleMS=maintain_system.sh
+export rFileNameCmdModuleMS=maintain.sh
 
 # home/$rNameUser/cmds/modiule/xxxx
 export rFilePathCmdModuleTools=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
