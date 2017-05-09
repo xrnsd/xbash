@@ -106,6 +106,7 @@ export  XMODULE="env"
 alias ..="cd .."
 alias ...="cd ../.."
 alias xr="source ~/.bashrc"
+alias xcc='cd $OLDPWD'
 alias xgl='export XCMD=xgl;\
     ftLog;\
     git log --pretty=oneline -10 2>&1|tee -a $mFilePathLog'
@@ -126,8 +127,8 @@ alias xmodel='cat build/tools/buildinfo.sh|grep "ro.product.model=";\
                             cat build/tools/buildinfo.sh|grep "ro.product.brand=";\
                             cat build/tools/buildinfo.sh|grep "ro.product.name=";\
                             cat build/tools/buildinfo.sh|grep "ro.product.device=";\
-                            cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"
-                            cat device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk |grep "product.model.num"'
+                            cat device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk |grep "product.model.num";\
+                            cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"'
 
 alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :="'
 

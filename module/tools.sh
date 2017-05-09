@@ -1970,7 +1970,7 @@ EOF
     fi
 
     if [ ! -d $dirPathPacResVersion ];then
-        mkdir $dirPathPacResVersion
+        mkdir -p $dirPathPacResVersion
     fi
     cd $dirPathPacResVersion
 
