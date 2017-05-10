@@ -2189,11 +2189,11 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
         for base in ${sourceList[@]}
         do
             if [ $lc = $base ];then
-                if [ $orderIndex -eq 0 ];then
-                    echo "${tragetList[index]}(默认)"
-                else
-                    echo ${tragetList[index]}
-                fi
+                # if [ $orderIndex -eq 0 ];then
+                #     echo "${tragetList[index]}(默认)"
+                # else
+                echo ${tragetList[index]}
+                # fi
                 orderIndex=`expr $orderIndex + 1`
                 break;
             elif [[ $base =~ "/" ]]&&[[ $base =~ $lc ]]; then
@@ -2356,8 +2356,18 @@ EOF
     LanguageList=(默认)${LanguageList}
 
     cd $dirPathCode
-    gitCommitList=$(git log --pretty=format:"%s" -10)
-    gitCommitListAll=$(git log --pretty=format:"    %s")
+
+    gitVersionMin="2.6.0"
+    gitVersionNow=$(git --version)
+    VERSION2=${VERSION2//git version /}
+
+    if version_lt $gitVersionMin $gitVersionNow; then
+        gitCommitList=$(git log --date=format-local:'%y%m%d' --pretty=format:"    %cn %ad %s" -10)
+        gitCommitListAll=$(git log --date=format-local:'%y%m%d' --pretty=format:"    %cn %ad %s" -10)
+    else
+        gitCommitList=$(git log --pretty=format:"    %s" -10)
+        gitCommitListAll=$(git log --pretty=format:"    %s")
+    fi
 
     pawNuminfo=$(cat $filePathPawInfo|grep "private static final String PAW_NUM_INFO")  #获取暗码清单信息
     pawNuminfo=${pawNuminfo//private static final String PAW_NUM_INFO =/};
@@ -2791,3 +2801,27 @@ EOF
         export PS1="xrnsd\[\033[44m\][\w]\[\033[0m\]:"
         git_branch=
 }
+
+#版本号大小对比
+VERSION="  1.9.1"
+VERSION2="   2.2"
+ 
+function version_gt() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"; }
+function version_le() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" == "$1"; }
+function version_lt() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1"; }
+function version_ge() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"; }
+# if version_gt $VERSION $VERSION2; then
+#    echo "$VERSION is greater than $VERSION2"
+# fi
+
+# if version_le $VERSION $VERSION2; then
+#    echo "$VERSION is less than or equal to $VERSION2"
+# fi
+
+# if version_lt $VERSION $VERSION2; then
+#    echo "$VERSION is less than $VERSION2"
+# fi
+
+# if version_ge $VERSION $VERSION2; then
+#    echo "$VERSION is greater than or equal to $VERSION2"
+# fi
