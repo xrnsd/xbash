@@ -18,6 +18,7 @@ filePathBashHistory=${dirPathHome}/.bash_history
 filePathBashHistoryTemp=${filePathBashHistory}_temp
 filePathBashHistoryArchive=${filePathBashHistory}_archive
 filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
+filePathGitBash=${dirPathHomeCmdConfig}/bashrc/git-completion.bash
 
 #去重
 sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
@@ -41,6 +42,7 @@ export ANDROID_SDK_BUILD_TOOL=${ANDROID_SDK_HOME}/build-tools/android-4.4W
 export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r12b
 export LD_LIBRARY_PATH=${dirPathHomeTools}/sp_flash_tool_v5.1548:${dirPathHomeTools}/sp_flash_tool_v5.1548/lib:$LD_LIBRARY_PATH
 export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$ANDROID_SDK_BUILD_TOOL:/usr/local/cuda-7.5/bin:$ANDROID_SDK/platform-tools:$ANDROID_SDK/tools:$ANDROID_NDK:/usr/local/cuda-8.0/bin/:$PATH
+export PATH=$PATH:/usr/libexec/git-core
 #缓存目录[android优化加速部分]
 export CCACHE_DIR=/media/data/.ccache
 
@@ -55,6 +57,11 @@ else
 fi
 if [ ! -d "$ANDROID_NDK" ];then
     echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
+fi
+if [ ! -f "$filePathGitBash" ];then
+    echo -e "\033[1;31mgit bash 配置文件:\n$filePathGitBash 不存在\033[0m"
+else
+    source $filePathGitBash
 fi
 
 fileNameXbashTragetConfigBase=config_base

@@ -475,6 +475,9 @@ ftBackupOs()
     ftEcho -bh 开始${ftEffect}
     sudo tar -cvPzf  $mFilePathVersion --exclude-from=$fileNameExclude / \
      2>&1 |tee $mFilePathLog
+
+    # tar -cvPzf  --exclude-from=$fileNameExclude / | pigz -1 >$mFilePathVersion \
+    # 2>&1 |tee $mFilePathLog
 }
 
 ftAddNote()
