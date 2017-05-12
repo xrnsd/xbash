@@ -2710,8 +2710,8 @@ EOF
             while true; do
                     echo
                     ftEcho -y 是否开始编译
-                    read -n1 sel
-                    case "$sel" in
+                    read -n1 select
+                    case "$select" in
                         y | Y )
                                         cat $filePathBranchList | while read line
                                         do
@@ -2720,10 +2720,10 @@ EOF
                                             #rm -rf out
                                             git reset --hard&&
                                             ftEcho -bh 将开始编译$branshName
-                                            git checkout   "$branshName"
-                                            git cherry-pick 7f909f221e8f8ff18e73835a55fc1d6e7e691ee1&&
+                                            git checkout   "$branshName"&&
+                                            git cherry-pick  76527972eb7b255480777c2aa464f1dfdb997374&&
                                             git push origin "$branshName"
-
+                                            
                                             # key="补充 修复 相机 缩略图显示异常"
                                             # hashVal=$(git log --pretty=oneline |grep "$key")
                                             # hashVal=${hashVal//"$key"/}
@@ -2732,8 +2732,8 @@ EOF
                                             # git checkout $hashVal vendor/sprd/partner/launcher
                                             # mv vendor/sprd/partner/launcher vendor/sprd/partner/launcher_${branshName}
 
+                                            # git push origin "$branshName"
 
-                                            #git push origin "$branshName"
                                             # source build/envsetup.sh&&
                                             # lunch sp7731c_1h10_32v4_oversea-user&&
                                             # kheader&&
@@ -2742,9 +2742,8 @@ EOF
                                             #     ftAutoPacket -y
                                             # else
                                             #     ftAutoPacket
-                                            # fi&&
-                                            #     ftBackupOutsByMove
-                                            
+                                            # fi
+
                                             # if [ $isBackupOut = "true" ];then
                                             #     ftBackupOutsByMove
                                             # fi

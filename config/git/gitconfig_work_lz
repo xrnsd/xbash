@@ -9,3 +9,5 @@
 	default = simple
 [gui]
 	spellingdictionary = none
+[core]
+	editor = nano

@@ -99,6 +99,11 @@ if [ -f $filePathXbashTragetConfigBase ];then
         complete -W "restartadb help gjh test clean_data_garbage vvv bootanim pac -v -vvv -ft -ftall" xc
 
 #----------------    shell 自身配置   ----------------------------------
+        # export PROMPT_COMMAND='\
+        # msg=$(history 1 | { read x y; echo $y; });\
+        # if [[ $msg =~ "git" ]];then
+        #     ftFindGitBranch
+        # fi'
         export PROMPT_COMMAND="ftFindGitBranch;$PROMPT_COMMAND"
     else
         echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
@@ -114,6 +119,7 @@ alias ..="cd .."
 alias ...="cd ../.."
 alias xr="source ~/.bashrc"
 alias xcc='cd $OLDPWD'
+alias xgd='git push origin --delete "$2"'
 alias xgl='git log --date=format-local:'%y%m%d' --pretty=format:"%C(bold blue) %h %Creset %cn %ad %s" -15'
 alias xp="export XCMD=xp;readlink -f"
 alias xl='export XCMD=xl;\
@@ -135,7 +141,8 @@ alias xmodel='cat build/tools/buildinfo.sh|grep "ro.product.model=";\
                             cat device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk |grep "product.model.num";\
                             cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"'
 
-alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :="'
+alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :=";\
+               cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "LZ_CONFIG_CAMERA_TYPE :="'
 
 alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SAM_FACTORYMODE";\
         cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "TESTMODE_LIST";\
@@ -144,6 +151,7 @@ alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMg
 alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
 alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
 alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
+alias xqchanglogo='adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
 
 alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
 

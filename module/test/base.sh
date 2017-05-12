@@ -47,6 +47,8 @@ fi
 #b=${a//123/321};将${a}里的所有123替换为321\
 # 分割字符串成数组bnList=$(echo $branchName|tr ")" "\n")
 
+# 字符串包含if [[ helloworld == *low* ]];then
+
 # note=${note:-'常规'}
 
 # 遍历目录
