@@ -2362,8 +2362,8 @@ EOF
     VERSION2=${VERSION2//git version /}
 
     if version_lt $gitVersionMin $gitVersionNow; then
-        gitCommitList=$(git log --date=format-local:'%y%m%d' --pretty=format:"    %cn %ad %s" -15)
-        gitCommitListAll=$(git log --date=format-local:'%y%m%d' --pretty=format:"    %cn %ad %s")
+        gitCommitList=$(git log --date=format-local:'%y%m%d' --pretty=format:" %cn %ad %s" -15)
+        gitCommitListAll=$(git log --date=format-local:'%y%m%d' --pretty=format:" %cn %ad %s")
     else
         gitCommitList=$(git log --pretty=format:"    %s" -15)
         gitCommitListAll=$(git log --pretty=format:"    %s")
@@ -2395,6 +2395,9 @@ EOF
     local filePathReadMeTemplate=${dirPathPacRes}/${fileNameReadMeTemplate}
     local filePathChangeListTemplate=${dirPathPacRes}/${fileNameChangeListTemplate}
     # 开始生成模板文件
+    echo -e "$gitCommitList">$filePathReadMeTemplate
+    seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathReadMeTemplate >${filePathReadMeTemplate}.temp
+
     echo -e "1. 版本号：$versionName
 
 2. 语言:
@@ -2403,10 +2406,16 @@ EOF
 
 3. 修改点：
 
-$gitCommitList">$filePathReadMeTemplate
-    echo -e "﻿暗码清单：$pawNuminfo
+"| cat - ${filePathReadMeTemplate}.temp >$filePathReadMeTemplate
+    rm ${filePathReadMeTemplate}.temp
+
+
+    echo -e "﻿$gitCommitListAll">$filePathChangeListTemplate
+    seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+        echo -e "﻿暗码清单：$pawNuminfo
 修改记录：
-$gitCommitListAll">$filePathChangeListTemplate
+"| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+    rm ${filePathChangeListTemplate}.temp
 }
 
 ftAutoLanguageUtil()
