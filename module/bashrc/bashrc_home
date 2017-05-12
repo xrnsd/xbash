@@ -138,5 +138,12 @@ else
         source $filePathXbashTragetBashrcConfigBase
     fi
 fi
+
+#---------------------------------用户密码---------------------------------
+if [ -z "$rUserPwdBase" ];then
+    rUserPwdBase=x@2w4ea
+    export rUserPwd=${rUserPwdBase:-'x@2w4ea'}
+    readonly rUserPwd
+fi
 #----------------    临时命令    ---------------------------------
 alias xg6572='git clone git@192.168.1.188:mtk6572.git -b'

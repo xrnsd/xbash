@@ -2362,10 +2362,10 @@ EOF
     VERSION2=${VERSION2//git version /}
 
     if version_lt $gitVersionMin $gitVersionNow; then
-        gitCommitList=$(git log --date=format-local:'%y%m%d' --pretty=format:"    %cn %ad %s" -10)
-        gitCommitListAll=$(git log --date=format-local:'%y%m%d' --pretty=format:"    %cn %ad %s" -10)
+        gitCommitList=$(git log --date=format-local:'%y%m%d' --pretty=format:"    %cn %ad %s" -15)
+        gitCommitListAll=$(git log --date=format-local:'%y%m%d' --pretty=format:"    %cn %ad %s")
     else
-        gitCommitList=$(git log --pretty=format:"    %s" -10)
+        gitCommitList=$(git log --pretty=format:"    %s" -15)
         gitCommitListAll=$(git log --pretty=format:"    %s")
     fi
 
@@ -2721,8 +2721,7 @@ EOF
                                             git reset --hard&&
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
-                                            git cherry-pick  76527972eb7b255480777c2aa464f1dfdb997374&&
-                                            git push origin "$branshName"
+                                            git cherry-pick  3ee34caf8164d86944579c0d2d0d58882aa10433
                                             
                                             # key="补充 修复 相机 缩略图显示异常"
                                             # hashVal=$(git log --pretty=oneline |grep "$key")
