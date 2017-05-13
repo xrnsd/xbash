@@ -2055,8 +2055,10 @@ EOF
         ${dirPathNormalBin}/u-boot.bin \
         ${dirPathNormalBin}/persist.img&&
     ftEcho -s 生成7731c使用的pac[${dirPathPacResVersion}/${versionName}.pac]
+
+    # 生成说明文件
+    ftCreateReadMeBySoftwareVersion $dirPathPacResVersion
     if [ "$1" = "-y" ];then
-        ftCreateReadMeBySoftwareVersion $dirPathPacResVersion
         #ftAutoUpload ${dirPathPacRes}/${versionName}.pac
         ftAutoUploadHighSpeed $dirPathPacResVersion
     fi
@@ -2362,59 +2364,47 @@ EOF
     VERSION2=${VERSION2//git version /}
 
     if version_lt $gitVersionMin $gitVersionNow; then
-        gitCommitList=$(git log --date=format-local:'%y%m%d' --pretty=format:" %cn %ad %s" -15)
-        gitCommitListAll=$(git log --date=format-local:'%y%m%d' --pretty=format:" %cn %ad %s")
+        gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:" %cn %ad %s")
+        gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:" %cn %ad %s")
     else
-        gitCommitList=$(git log --pretty=format:"    %s" -15)
-        gitCommitListAll=$(git log --pretty=format:"    %s")
+        gitCommitListOneDay=$(git log  --since=1.day.ago  --pretty=format:" %s")
+        gitCommitListBefore=$(git log  --before=1.day.ago  --pretty=format:" %s")
     fi
 
     pawNuminfo=$(cat $filePathPawInfo|grep "private static final String PAW_NUM_INFO")  #获取暗码清单信息
     pawNuminfo=${pawNuminfo//private static final String PAW_NUM_INFO =/};
-    # pawNuminfo=${pawNuminfo//";/};
-    #客户说明模板
-# 1. 版本号：A451_N9_3GW_ORRO_V1.2_20170225
-
-# 2. 语言:
-
-#     英语(默认) 葡萄牙语 法语 意大利语 西班牙语 德语
-
-# 3. 修改点：
-
-#     添加 RAM 128G，256G项
-
-    # 修改记录模板
-# 暗码清单：*070809##
-# 修改记录：
-#     A451_N9_3GW_ORRO_V1.2_20170228
-#     修改 隐藏 RAM max=4G,ROM max=64G
-#     修改 更新whatspp
+    pawNuminfo=$(echo $pawNuminfo |sed s/[[:space:]]//g)
 
     local fileNameReadMeTemplate=客户说明.txt
     local fileNameChangeListTemplate=修改记录.txt
     local filePathReadMeTemplate=${dirPathPacRes}/${fileNameReadMeTemplate}
     local filePathChangeListTemplate=${dirPathPacRes}/${fileNameChangeListTemplate}
-    # 开始生成模板文件
-    echo -e "$gitCommitList">$filePathReadMeTemplate
+    #============           客户说明          ====================
+    echo -e "$gitCommitListOneDay">$filePathReadMeTemplate
     seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathReadMeTemplate >${filePathReadMeTemplate}.temp
 
     echo -e "1. 版本号：$versionName
-
 2. 语言:
-
     $LanguageList
-
-3. 修改点：
-
+3. 修改点：\
 "| cat - ${filePathReadMeTemplate}.temp >$filePathReadMeTemplate
+
+    #============           修改记录          ====================
+    echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
+    local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
+    seq 10 | awk '{printf("    %02d %s\n", NR+$gitCommitListBeforeSize, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+    echo -e "﻿当前版本：$versionName
+暗码清单：$pawNuminfo
+修改记录：\
+"| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
+
+    echo -e "﻿    ==============================================================================\
+"| cat - ${filePathChangeListTemplate}.temp>>$filePathChangeListTemplate
+
+    unix2dos $filePathReadMeTemplate
+    unix2dos $filePathChangeListTemplate
+
     rm ${filePathReadMeTemplate}.temp
-
-
-    echo -e "﻿$gitCommitListAll">$filePathChangeListTemplate
-    seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
-        echo -e "﻿暗码清单：$pawNuminfo
-修改记录：
-"| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
     rm ${filePathChangeListTemplate}.temp
 }
 
