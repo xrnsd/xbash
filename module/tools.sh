@@ -2308,8 +2308,17 @@ ftCreateReadMeBySoftwareVersion()
     local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
     local dirPathPacRes=$1
 
+    while true; do case "$1"
+    #使用环境说明
+    e | -e |--env) cat<<EOF
+#=================== ${ftEffect}使用环境说明=============
+#
+#    工具依赖包 unix2dos #sudo apt-get install unix2dos
+#=========================================================
+EOF
+      return;;
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    in    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
@@ -2321,10 +2330,10 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    if [ ! -d "$dirPathPacRes" ];then
-        mkdir $dirPathPacRes
+    #工具环境校验校验
+    if [ -z `which unix2dos` ];then
+        ftCreateReadMeBySoftwareVersion -e
     fi
-
     #耦合变量校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
@@ -2340,13 +2349,28 @@ EOF
         return
     fi
 
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionName=${versionName/$keyVersion/}
-    versionName=${versionName/\");/}
-    versionName=$(echo $versionName |sed s/[[:space:]]//g)
+    if [ ! -d "$dirPathPacRes" ];then
+        mkdir $dirPathPacRes
+    fi
 
+    local fileNameReadMeTemplate=客户说明.txt
+    local fileNameChangeListTemplate=修改记录.txt
+    local filePathReadMeTemplate=${dirPathPacRes}/${fileNameReadMeTemplate}
+    local filePathChangeListTemplate=${dirPathPacRes}/${fileNameChangeListTemplate}
+
+    # 软件版本
+    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+    if [ -f $filePathDeviceInfoSettings ];then
+        local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+        local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+        versionName=${versionName/$keyVersion/}
+        versionName=${versionName/\");/}
+        versionName=$(echo $versionName |sed s/[[:space:]]//g)
+    else
+            ftEcho -e "[软件版本 配置文件不存在，获取失败]\n$filePathDeviceInfoSettings"
+    fi
+
+    # 语言列表
     LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
     LanguageList=${LanguageList//PRODUCT_LOCALES :=/};  #删除PRODUCT_LOCALES :=
     LanguageList=`ftLanguageUtils "$LanguageList"`  #缩写转化为中文
@@ -2356,6 +2380,7 @@ EOF
 
     cd $dirPathCode
 
+    #使用git 记录的修改记录
     gitVersionMin="2.6.0"
     gitVersionNow=$(git --version)
     gitVersionNow=${gitVersionNow//git version/}
@@ -2368,6 +2393,7 @@ EOF
         gitCommitListOneDay=$(git log  --since=1.day.ago  --pretty=format:" %s")
         gitCommitListBefore=$(git log  --before=1.day.ago  --pretty=format:" %s")
     fi
+
     # 暗码清单
     local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
     if [ -f $filePathPawInfo ];then
@@ -2375,8 +2401,9 @@ EOF
             pawNumInfo=${pawNumInfo//private static final String PAW_NUM_INFO =/};
             pawNumInfo=$(echo $pawNumInfo |sed s/[[:space:]]//g)
     else
-            ftEcho -e "[工程暗码清单文件不存在，获取失败]\nfilePathPawInfo=$filePathPawInfo"
+            ftEcho -e "[工程暗码清单文件不存在，获取失败]\n$filePathPawInfo"
     fi
+
     #摄像头配置相关
     local filePathCameraConfig=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk
     if [ -f $filePathCameraConfig ];then
@@ -2398,13 +2425,9 @@ EOF
             cameraSizeFront=$(echo $cameraSizeFront |sed s/[[:space:]]//g)
             cameraSizeBack=$(echo $cameraSizeBack |sed s/[[:space:]]//g)
     else
-            ftEcho -e "[相机配置文件不存在，获取失败]\filePathCameraConfig=$filePathCameraConfig"
+            ftEcho -e "[相机配置文件不存在，获取失败]\n$filePathCameraConfig"
     fi
 
-    local fileNameReadMeTemplate=客户说明.txt
-    local fileNameChangeListTemplate=修改记录.txt
-    local filePathReadMeTemplate=${dirPathPacRes}/${fileNameReadMeTemplate}
-    local filePathChangeListTemplate=${dirPathPacRes}/${fileNameChangeListTemplate}
     #============           客户说明          ====================
     echo -e "$gitCommitListOneDay">$filePathReadMeTemplate
     seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathReadMeTemplate >${filePathReadMeTemplate}.temp
