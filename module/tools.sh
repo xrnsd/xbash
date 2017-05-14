@@ -2306,7 +2306,6 @@ ftCreateReadMeBySoftwareVersion()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
-    local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
     local dirPathPacRes=$1
 
     #使用示例
@@ -2330,14 +2329,12 @@ EOF
     local valCount=1
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -d "$dirPathOut" ]\
-            ||[ ! -f "$filePathDevice" ]\
-            ||[ ! -f "$filePathPawInfo" ];then
+            ||[ ! -f "$filePathDevice" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
             [工程out目录]dirPathOut=$dirPathOut \
             [工程Device的make文件]filePathDevice=$filePathDevice \
-            [工程暗码清单文件]filePathPawInfo=$filePathPawInfo \
             请查看下面说明:"
         ftCreateReadMeBySoftwareVersion -h
         return
@@ -2361,7 +2358,8 @@ EOF
 
     gitVersionMin="2.6.0"
     gitVersionNow=$(git --version)
-    VERSION2=${VERSION2//git version /}
+    gitVersionNow=${gitVersionNow//git version/}
+    gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
     if version_lt $gitVersionMin $gitVersionNow; then
         gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:" %cn %ad %s")
@@ -2370,10 +2368,38 @@ EOF
         gitCommitListOneDay=$(git log  --since=1.day.ago  --pretty=format:" %s")
         gitCommitListBefore=$(git log  --before=1.day.ago  --pretty=format:" %s")
     fi
+    # 暗码清单
+    local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
+    if [ -f $filePathPawInfo ];then
+            local pawNumInfo=$(cat $filePathPawInfo|grep "private static final String PAW_NUM_INFO")  #获取暗码清单信息
+            pawNumInfo=${pawNumInfo//private static final String PAW_NUM_INFO =/};
+            pawNumInfo=$(echo $pawNumInfo |sed s/[[:space:]]//g)
+    else
+            ftEcho -e "[工程暗码清单文件不存在，获取失败]\nfilePathPawInfo=$filePathPawInfo"
+    fi
+    #摄像头配置相关
+    local filePathCameraConfig=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk
+    if [ -f $filePathCameraConfig ];then
+            local keyType="LZ_CAMEAR_TYPE := "
+            local keySizeBack="CAMERA_SUPPORT_SIZE := "
+            local keySizeFront="FRONT_CAMERA_SUPPORT_SIZE := "
 
-    pawNuminfo=$(cat $filePathPawInfo|grep "private static final String PAW_NUM_INFO")  #获取暗码清单信息
-    pawNuminfo=${pawNuminfo//private static final String PAW_NUM_INFO =/};
-    pawNuminfo=$(echo $pawNuminfo |sed s/[[:space:]]//g)
+            local cameraTypeInfo=$(cat $filePathCameraConfig|grep "$keyType")
+            local cameraSizeBack=$(cat $filePathCameraConfig|grep "$keySizeBack")
+            local cameraSizeFront=$(cat $filePathCameraConfig|grep "$keySizeFront")
+
+            cameraTypeInfo=${cameraTypeInfo//$keyType/};
+            cameraSizeFront=${cameraSizeFront//$keySizeFront/};
+
+            cameraSizeBack=${cameraSizeBack//${keySizeFront}$cameraSizeFront/};
+            cameraSizeBack=${cameraSizeBack//$keySizeBack/};
+
+            cameraTypeInfo=$(echo $cameraTypeInfo |sed s/[[:space:]]//g)
+            cameraSizeFront=$(echo $cameraSizeFront |sed s/[[:space:]]//g)
+            cameraSizeBack=$(echo $cameraSizeBack |sed s/[[:space:]]//g)
+    else
+            ftEcho -e "[相机配置文件不存在，获取失败]\filePathCameraConfig=$filePathCameraConfig"
+    fi
 
     local fileNameReadMeTemplate=客户说明.txt
     local fileNameChangeListTemplate=修改记录.txt
@@ -2392,15 +2418,25 @@ EOF
     #============           修改记录          ====================
     echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
     local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
-    seq 10 | awk '{printf("    %02d %s\n", NR+$gitCommitListBeforeSize, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
-    echo -e "﻿当前版本：$versionName
-暗码清单：$pawNuminfo
+    echo | awk -v test="$gitCommitListBeforeSize" '{print "gitCommitListBeforeSize="test}'
+   seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+    echo -e "﻿======================     修改记录有误要及时更正哦     =======================
+当前版本：$versionName
+暗码清单：$pawNumInfo
+设备信息暗码：
+屏幕正扫/反扫：
+摄像头类型：$cameraTypeInfo
+默认 前/后摄大小：$cameraSizeFront/$cameraSizeBack
+默认 RAM/ROM：
+RAM 列表：
+ROM 列表 :
 修改记录：\
 "| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
 
-    echo -e "﻿    ==============================================================================\
+    echo -e "﻿==============================================================================\
 "| cat - ${filePathChangeListTemplate}.temp>>$filePathChangeListTemplate
 
+    # 转化为windows下格式
     unix2dos $filePathReadMeTemplate
     unix2dos $filePathChangeListTemplate
 
@@ -2592,7 +2628,7 @@ EOF
         ftEcho -y "是否更新软件版本号"
         read -n1 sel
         case "$sel" in
-            y | Y )    
+            y | Y )
                     sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings
                     sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest
                      while true; do
@@ -2721,7 +2757,7 @@ EOF
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
                                             git cherry-pick  3ee34caf8164d86944579c0d2d0d58882aa10433
-                                            
+
                                             # key="补充 修复 相机 缩略图显示异常"
                                             # hashVal=$(git log --pretty=oneline |grep "$key")
                                             # hashVal=${hashVal//"$key"/}
@@ -2802,7 +2838,7 @@ EOF
 #版本号大小对比
 VERSION="  1.9.1"
 VERSION2="   2.2"
- 
+
 function version_gt() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"; }
 function version_le() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" == "$1"; }
 function version_lt() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1"; }
