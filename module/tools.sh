@@ -2308,7 +2308,7 @@ ftCreateReadMeBySoftwareVersion()
     local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
     local dirPathPacRes=$1
 
-    while true; do case "$1"
+    while true; do case "$1" in
     #使用环境说明
     e | -e |--env) cat<<EOF
 #=================== ${ftEffect}使用环境说明=============
@@ -2318,7 +2318,7 @@ ftCreateReadMeBySoftwareVersion()
 EOF
       return;;
     #使用示例
-    in    h | H |-h | -H) cat<<EOF
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
