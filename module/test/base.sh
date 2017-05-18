@@ -13,14 +13,14 @@ else
 fi
 
 dirNameDebug=temp
-dirPathHome=/home/${rNameUser}/${dirNameDebug}
-dirPathHomeDebug=/home/${rNameUser}/${dirNameDebug}
+dirPathHome=/home/${rNameUser}
+dirPathHomeDebug=${dirPathHome}/${dirNameDebug}
 if [ -d $dirPathHome ];then
-    if [ ! -d $dirPathDebug ];then
-        mkdir  $dirPathDebug
-        ftEcho -s 测试用目录[$dirPathDebug]不存在，已新建
+    if [ ! -d $dirPathHomeDebug ];then
+        mkdir  $dirPathHomeDebug
+        ftEcho -s 测试用目录[$dirPathHomeDebug]不存在，已新建
     fi
-    cd $dirPathDebug
+    cd $dirPathHomeDebug
 else
     echo -e "\033[1;31m    初始化demo环境失败\n\
     模块=$rModuleName\n\
@@ -71,3 +71,4 @@ mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
+

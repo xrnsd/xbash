@@ -848,7 +848,10 @@ EOF
         ftTest -h
         return
     fi
+
+    local dirPathLocal=$PWD
     $filePathCmdModuleTest "$@"
+    cd $dirPathLocal
 }
 
 ftBoot()
@@ -1935,6 +1938,7 @@ ftAutoPacket()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
+    ftAutoInitEnv
     local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
 
     #使用示例
@@ -1953,32 +1957,24 @@ EOF
     #耦合变量校验
     local valCount=1
     if(( $#>$valCount ))||[ ! -d "$dirPathCode" ]\
-            ||[ ! -f "$filePathPacketScript" ]\
             ||[ ! -d "$dirPathOut" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
-            [packet打包脚本]filePathPacketScript=$filePathPacketScript \
             [工程out目录]dirPathOut=$dirPathOut \
             请查看下面说明:"
         ftAutoPacket -h
         return
     fi
+
     local dirNamePacRes=packet
     local dirPathPacRes=${dirPathCode}/out/${dirNamePacRes}
     local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
 
-    ftAutoInitEnv
     local buildType=$AutoEnv_buildType
     local versionName=$AutoEnv_versionName
 
     local dirPathPacResVersion=${dirPathPacRes}/${versionName}
-
-    local dirPathNormalBin=$dirPathOut
-    local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
-    local dirPathLogo=${dirPathCode%/*}/res
-    local dirPathLocal=$PWD
-
 
     if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
         versionName=${versionName}____${buildType}
@@ -1989,50 +1985,77 @@ EOF
     fi
     cd $dirPathPacResVersion
 
-    ftEcho -s "开始生成 ${versionName}.pac\n"
-    /usr/bin/perl $filePathPacketScript \
-        $versionName.pac \
-        SC77xx \
-        ${versionName}\
-        ${dirPathNormalBin}/SC7720_UMS.xml \
-        ${dirPathNormalBin}/fdl1.bin \
-        ${dirPathNormalBin}/fdl2.bin \
-        ${dirPathModemBin}/nvitem.bin \
-        ${dirPathModemBin}/nvitem_wcn.bin \
-        ${dirPathNormalBin}/prodnv.img \
-        ${dirPathNormalBin}/u-boot-spl-16k.bin \
-        ${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
-        ${dirPathModemBin}/DSP_DM_G2.bin \
-        ${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
-        ${dirPathNormalBin}/boot.img \
-        ${dirPathNormalBin}/recovery.img \
-        ${dirPathNormalBin}/system.img \
-        ${dirPathNormalBin}/userdata.img \
-        ${dirPathLogo}/logo.bmp \
-        ${dirPathNormalBin}/cache.img \
-        ${dirPathNormalBin}/sysinfo.img \
-        ${dirPathNormalBin}/u-boot.bin \
-        ${dirPathNormalBin}/persist.img&&
-    ftEcho -s 生成7731c使用的pac[${dirPathPacResVersion}/${versionName}.pac]
+    local dirPathLocal=$PWD
+
+    if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+            local dirPathNormalBin=$dirPathOut
+            local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
+            local dirPathLogo=${dirPathCode%/*}/res
+
+            ftEcho -s "开始生成 ${versionName}.pac\n"
+            /usr/bin/perl $filePathPacketScript \
+                $versionName.pac \
+                SC77xx \
+                ${versionName}\
+                ${dirPathNormalBin}/SC7720_UMS.xml \
+                ${dirPathNormalBin}/fdl1.bin \
+                ${dirPathNormalBin}/fdl2.bin \
+                ${dirPathModemBin}/nvitem.bin \
+                ${dirPathModemBin}/nvitem_wcn.bin \
+                ${dirPathNormalBin}/prodnv.img \
+                ${dirPathNormalBin}/u-boot-spl-16k.bin \
+                ${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
+                ${dirPathModemBin}/DSP_DM_G2.bin \
+                ${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
+                ${dirPathNormalBin}/boot.img \
+                ${dirPathNormalBin}/recovery.img \
+                ${dirPathNormalBin}/system.img \
+                ${dirPathNormalBin}/userdata.img \
+                ${dirPathLogo}/logo.bmp \
+                ${dirPathNormalBin}/cache.img \
+                ${dirPathNormalBin}/sysinfo.img \
+                ${dirPathNormalBin}/u-boot.bin \
+                ${dirPathNormalBin}/persist.img&&
+            ftEcho -s 生成7731c使用的pac[${dirPathPacResVersion}/${versionName}.pac]
+
+    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+            local dirNamePackage="packages"
+            local dirNamePackageDataBase="dataBase"
+
+            local dirPathPackage=${dirPathPacResVersion}/${dirNamePackage}
+            local dirPathPackageDataBase=${dirPathPackage}/${dirNamePackageDataBase}
+
+            mkdir -p $dirPathPackageDataBase
+
+            fileList=(boot.img \
+                            cache.img \
+                            logo.bin \
+                            MT6580_Android_scatter.txt \
+                            preloader_m9_xinhaufei_r9_hd.bin \
+                            ramdisk.img \
+                            recovery.img \
+                            secro.img \
+                            system.img \
+                            userdata.img)
+
+            dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
+obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
+
+            for file in ${fileList[@]}
+            do
+                cp -v ${dirPathOut}/${file} ${dirPathPacResVersion}/${dirNamePackage}
+            done
+            for file in ${dataBaseFileList[@]}
+            do
+                cp -v ${dirPathOut}/${file} ${dirPathPacResVersion}/${dirNamePackage}/${dirNamePackageDataBase}
+            done
+    fi
 
     # 生成说明文件
     ftCreateReadMeBySoftwareVersion $dirPathPacResVersion
+
     if [ "$1" = "-y" ];then
-        #ftAutoUpload ${dirPathPacRes}/${versionName}.pac
         ftAutoUploadHighSpeed $dirPathPacResVersion
-    fi
-    if [ "$1" = "-b" ];then
-        local serverIp=192.168.1.105
-        local userName=share
-        local pasword=123456
-        local dirPathMoule=desktop
-        ftEcho -s "开始上传${fileNameUploadSource} 到\n\
- ${serverIp}/${dirPathMoule}..."
-smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
-    put ${dirPathPacRes}/${versionName}.pac ${versionName}.pac
-EOF
-        ftEcho -s "${contentUploadSource}\n\
- 上传结束"
     fi
     cd $dirPathLocal
 }
@@ -2264,8 +2287,8 @@ ftCreateReadMeBySoftwareVersion()
     local ftEffect=创建软件版本相关修改记录和版本说明
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
-    local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
     local dirPathPacRes=$1
+    ftAutoInitEnv
 
     while true; do case "$1" in
     #使用环境说明
@@ -2296,13 +2319,11 @@ EOF
     #耦合变量校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
-            ||[ ! -d "$dirPathOut" ]\
-            ||[ ! -f "$filePathDevice" ];then
+            ||[ ! -d "$dirPathOut" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
             [工程out目录]dirPathOut=$dirPathOut \
-            [工程Device的make文件]filePathDevice=$filePathDevice \
             请查看下面说明:"
         ftCreateReadMeBySoftwareVersion -h
         return
@@ -2312,17 +2333,37 @@ EOF
         mkdir $dirPathPacRes
     fi
 
+
     local fileNameReadMeTemplate=客户说明.txt
     local fileNameChangeListTemplate=修改记录.txt
     local filePathReadMeTemplate=${dirPathPacRes}/${fileNameReadMeTemplate}
     local filePathChangeListTemplate=${dirPathPacRes}/${fileNameChangeListTemplate}
 
-    ftAutoInitEnv
     local versionName=$AutoEnv_versionName
 
     # 语言列表
-    LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
-    LanguageList=${LanguageList//PRODUCT_LOCALES :=/};  #删除PRODUCT_LOCALES :=
+    # 
+    #获取缩写列表
+    if [ $AutoEnv_mnufacturers = "sprd" ];then
+                local filePathDeviceSprd=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
+                if [[ -f "$filePathDeviceSprd" ]]; then
+                    local key="PRODUCT_LOCALES :="
+                    LanguageList=$(cat $filePathDeviceSprd|grep "$key")
+                    LanguageList=${LanguageList//$key/};
+                else
+                    ftEcho -e "[工程文件不存在:${filePathDeviceSprd}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
+                fi
+   elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+                local filePathDeviceMtk=${dirPathCode}/device/kdragon/m9_xinhaufei_r9_hd/ProjectConfig.mk
+                if [[ -f "$filePathDeviceMtk" ]]; then
+                    local key="MTK_PRODUCT_LOCALES = "
+                    LanguageList=$(cat $filePathDeviceMtk|grep "$key")
+                else
+                    ftEcho -e "[工程文件不存在:${filePathDeviceMtk}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
+                fi
+    fi
+
+    LanguageList=${LanguageList//$key/};
     LanguageList=`ftLanguageUtils "$LanguageList"`  #缩写转化为中文
     LanguageList=${LanguageList//
 / };  # 删除回车
@@ -2349,10 +2390,14 @@ EOF
     if [ -f $filePathPawInfo ];then
             local pawNumInfo=$(cat $filePathPawInfo|grep "private static final String PAW_NUM_INFO")  #获取暗码清单信息
             pawNumInfo=${pawNumInfo//private static final String PAW_NUM_INFO =/};
+            pawNumInfo=${pawNumInfo//\";/};
+            pawNumInfo=${pawNumInfo//\"/};
             pawNumInfo=$(echo $pawNumInfo |sed s/[[:space:]]//g)
     else
             ftEcho -e "[工程暗码清单文件不存在，获取失败]\n$filePathPawInfo"
     fi
+
+    if [ $AutoEnv_mnufacturers = "sprd" ];then
 
     #摄像头配置相关
     local filePathCameraConfig=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk
@@ -2390,6 +2435,7 @@ EOF
     else
             ftEcho -e "[envsetup.sh不存在，获取失败]\n$filePathEnvsetup"
     fi
+    fi
 
     #============           客户说明          ====================
     echo -e "$gitCommitListOneDay">$filePathReadMeTemplate
@@ -2404,8 +2450,7 @@ EOF
     #============           修改记录          ====================
     echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
     local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
-    echo | awk -v test="$gitCommitListBeforeSize" '{print "gitCommitListBeforeSize="test}'
-   seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+    seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
     echo -e "﻿======================     修改记录有误要及时更正哦     =======================
 当前版本：$versionName
 暗码清单：$pawNumInfo
@@ -2415,7 +2460,8 @@ EOF
 默认 前/后摄大小：$cameraSizeFront/$cameraSizeBack
 默认 RAM/ROM：$sizeRam/$sizeRom
 RAM 列表：$ramSizeListSel
-ROM 列表 : $romSizeListSel
+ROM 列表：$romSizeListSel
+
 修改记录：\
 "| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
 
@@ -2876,9 +2922,27 @@ EOF
         return
     fi
     local dirPathLocal=$PWD
-    cd $ANDROID_BUILD_TOP
+    cd $dirPathCode
+
+    # 项目平台
+    local dirPathVendor=${dirPathCode}/vendor
+    if [ -d $dirPathVendor ];then
+            dirList=`ls $dirPathVendor`
+            for item in $dirList
+            do
+                if [ $item = "sprd" ];then
+                    local mnufacturers=sprd
+               elif [[ $item = "mediatek" ]]; then
+                    local mnufacturers=mtk
+               fi
+            done
+    else
+              ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败"
+    fi
+
     #分支名
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+
     #软件版本名
     local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
     local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
@@ -2890,27 +2954,34 @@ EOF
     else
         ftEcho -e "未找到 $filePathDeviceInfoSettings\n version name 获取失败"
     fi
-    #软件编译类型
-    local filePathBuildInfo=${dirPathOut}/system/build.prop
-    if [ -f $filePathBuildInfo ];then
-                local keybuildType="ro.build.type="
-                local buildTypeFile=
-                if [ -f "$filePathBuildInfo" ];then
-                    buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
-                    if [ ! -z "$buildTypeFile" ];then
-                        buildTypeFile=${buildTypeFile/$keybuildType/}
-                        if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
-                            ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
-                            buildType=$buildTypeFile
-                        fi
-                    else
-                        ftEcho -e "[$filePathBuildInfo]中未找到编译类型"
-                    fi
-                fi
-    else
-                ftEcho -e "未找到 $filePathBuildInfo\n build Type 获取失败"
+    if [[ $mnufacturers = "mtk" ]]; then
+        versionName=$LZ_BUILD_VERSION
     fi
 
+    #软件编译类型
+    if [ -d $dirPathOut ];then
+           local filePathBuildInfo=${dirPathOut}/system/build.prop
+            if [ -f $filePathBuildInfo ];then
+                        local keybuildType="ro.build.type="
+                        local buildTypeFile=
+                        if [ -f "$filePathBuildInfo" ];then
+                            buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
+                            if [ ! -z "$buildTypeFile" ];then
+                                buildTypeFile=${buildTypeFile/$keybuildType/}
+                                if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
+                                    ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
+                                    buildType=$buildTypeFile
+                                fi
+                            else
+                                ftEcho -e "[$filePathBuildInfo]中未找到编译类型"
+                            fi
+                        fi
+            else
+                        ftEcho -e "未找到 $filePathBuildInfo\n build Type[本地] 获取失败"
+            fi
+    fi
+
+    export AutoEnv_mnufacturers=$mnufacturers
     export AutoEnv_branchName=$branchName
     export AutoEnv_versionName=$versionName
     export AutoEnv_buildType=$buildType
