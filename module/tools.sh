@@ -269,7 +269,7 @@ EOF
                 [mtk下载工具路径]rDirPathTools=$rDirPathTools"
         ftMtkFlashTool -h
     fi
-    local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1548
+    local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1612.00.100
 
     cd $toolDirPath&&
     echo "$rUserPwd" | sudo -S ./flash_tool&&
@@ -1577,14 +1577,10 @@ ff02::2 ip6-allrouters
     fi
 }
 
-
-
 #===================    非通用实现[高度耦合]    ==========================
 ftCopySprdPacFileList()
 {
     local ftEffect=自动复制sprd的pac相关文件
-    # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
-    # ANDROID_PRODUCT_OUT=/media/data/ptkfier/code/sp7731c/code/out/target/product/sp7731c_1h10_32v4
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
 
@@ -1613,13 +1609,13 @@ EOF
         return
     fi
     cd $ANDROID_BUILD_TOP
-    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionName=${versionName/$keyVersion/}
-    versionName=${versionName/\");/}
-    versionName=$(echo $versionName |sed s/[[:space:]]//g)
+
+    ftAutoInitEnv
+
+    local buildType=$AutoEnv_buildType
+    local versionName=$AutoEnv_versionName
+    local branchName=$AutoEnv_branchName
+
     local dirPathCodeRoot=${dirPathCode%/*}
     local dirPathCodeRootPacres=${dirPathCodeRoot}/res
     local dirNameBranchVersion=${branchName}____${versionName}____$(date -d "today" +"%y%m%d[%H:%M]")
@@ -1659,7 +1655,6 @@ ftBackupOutsByMove()
     local ftEffect=移动备份out
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
-    local buildType=$TARGET_BUILD_VARIANT
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -1688,37 +1683,21 @@ EOF
     cd $ANDROID_BUILD_TOP
     #分支名
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    #软件版本名
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionName=${versionName/$keyVersion/}
-    versionName=${versionName/\");/}
-    versionName=$(echo $versionName |sed s/[[:space:]]//g)
-    #软件编译类型
-    local filePathBuildInfo=${dirPathOut}/system/build.prop
-    local keybuildType="ro.build.type="
-    local buildTypeFile=
-    if [ -f "$filePathBuildInfo" ];then
-        buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
-        if [ ! -z "$buildTypeFile" ];then
-            buildTypeFile=${buildTypeFile/$keybuildType/}
-            if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
-                ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
-                buildType=$buildTypeFile
-            fi
-        else
-            ftEcho -e "[$filePathBuildInfo]中未找到编译类型"
-        fi
-    fi
+
+    ftAutoInitEnv
+    local buildType=$AutoEnv_buildType
+    local versionName=$AutoEnv_versionName
 
     local dirPathCodeRootOuts=${dirPathCode%/*}/outs
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----$(date -d "today" +"%y%m%d[%H:%M]")
     local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
 
+    if [ ! -d "$dirPathCodeRootOuts" ];then
+        mkdir -p $dirPathCodeRootOuts
+    fi
+
     if [ ! -d "$dirPathOutBranchVersion" ];then
-        ftEcho -s "移动[$dirNameBranchVersion]\n\
- 到[$dirPathCodeRootOuts]"
+        ftEcho -s "移动[$dirNameBranchVersion]\n到[$dirPathCodeRootOuts]"
         mv out/ $dirPathOutBranchVersion
     else
         ftEcho -ex 存在相同out
@@ -1811,12 +1790,9 @@ EOF
         ftRmNormalBin -h
         return
     fi
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionName=${versionName/$keyVersion/}
-    versionName=${versionName/\");/}
-    versionName=$(echo $versionName |sed s/[[:space:]]//g)
+
+    ftAutoInitEnv
+    local versionName=$AutoEnv_versionName
 
     fileList=(SC7720_UMS.xml \
         pac_7731c.pl \
@@ -1991,13 +1967,11 @@ EOF
     local dirNamePacRes=packet
     local dirPathPacRes=${dirPathCode}/out/${dirNamePacRes}
     local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionName=${versionName/$keyVersion/}
-    versionName=${versionName/"\n"/_}
-    versionName=${versionName/\");/}
-    versionName=$(echo $versionName |sed s/[[:space:]]//g)
+
+    ftAutoInitEnv
+    local buildType=$AutoEnv_buildType
+    local versionName=$AutoEnv_versionName
+
     local dirPathPacResVersion=${dirPathPacRes}/${versionName}
 
     local dirPathNormalBin=$dirPathOut
@@ -2005,21 +1979,6 @@ EOF
     local dirPathLogo=${dirPathCode%/*}/res
     local dirPathLocal=$PWD
 
-    local filePathBuildInfo=${dirPathOut}/system/build.prop
-    local keybuildType="ro.build.type="
-    local buildTypeFile=
-    if [ -f "$filePathBuildInfo" ];then
-        buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
-        if [ ! -z "$buildTypeFile" ];then
-            buildTypeFile=${buildTypeFile/$keybuildType/}
-            if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
-                ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
-                buildType=$buildTypeFile
-            fi
-        else
-            ftEcho -e "[$filePathBuildInfo]中未找到编译类型"
-        fi
-    fi
 
     if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
         versionName=${versionName}____${buildType}
@@ -2358,17 +2317,8 @@ EOF
     local filePathReadMeTemplate=${dirPathPacRes}/${fileNameReadMeTemplate}
     local filePathChangeListTemplate=${dirPathPacRes}/${fileNameChangeListTemplate}
 
-    # 软件版本
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    if [ -f $filePathDeviceInfoSettings ];then
-        local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-        local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-        versionName=${versionName/$keyVersion/}
-        versionName=${versionName/\");/}
-        versionName=$(echo $versionName |sed s/[[:space:]]//g)
-    else
-            ftEcho -e "[软件版本 配置文件不存在，获取失败]\n$filePathDeviceInfoSettings"
-    fi
+    ftAutoInitEnv
+    local versionName=$AutoEnv_versionName
 
     # 语言列表
     LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
@@ -2387,8 +2337,8 @@ EOF
     gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
     if version_lt $gitVersionMin $gitVersionNow; then
-        gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:" %cn %ad %s")
-        gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:" %cn %ad %s")
+        gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:" %an %ad %s")
+        gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:" %an %ad %s")
     else
         gitCommitListOneDay=$(git log  --since=1.day.ago  --pretty=format:" %s")
         gitCommitListBefore=$(git log  --before=1.day.ago  --pretty=format:" %s")
@@ -2407,7 +2357,7 @@ EOF
     #摄像头配置相关
     local filePathCameraConfig=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk
     if [ -f $filePathCameraConfig ];then
-            local keyType="LZ_CAMEAR_TYPE := "
+            local keyType="LZ_CONFIG_CAMERA_TYPE := "
             local keySizeBack="CAMERA_SUPPORT_SIZE := "
             local keySizeFront="FRONT_CAMERA_SUPPORT_SIZE := "
 
@@ -2426,6 +2376,19 @@ EOF
             cameraSizeBack=$(echo $cameraSizeBack |sed s/[[:space:]]//g)
     else
             ftEcho -e "[相机配置文件不存在，获取失败]\n$filePathCameraConfig"
+    fi
+
+    #RAM/ROM
+    local filePathEnvsetup=${dirPathCode}/build/envsetup.sh
+    if [ -f $filePathEnvsetup ];then
+            local keyRom="export sizeRom="
+            local keyRam="export sizeRam="
+            local sizeRom=$(cat $filePathEnvsetup|grep "$keyRom")
+            local sizeRam=$(cat $filePathEnvsetup|grep "$keyRam")
+            sizeRom=${sizeRom//$keyRom/};
+            sizeRam=${sizeRam//$keyRam/};
+    else
+            ftEcho -e "[envsetup.sh不存在，获取失败]\n$filePathEnvsetup"
     fi
 
     #============           客户说明          ====================
@@ -2450,9 +2413,9 @@ EOF
 屏幕正扫/反扫：
 摄像头类型：$cameraTypeInfo
 默认 前/后摄大小：$cameraSizeFront/$cameraSizeBack
-默认 RAM/ROM：
-RAM 列表：
-ROM 列表 :
+默认 RAM/ROM：$sizeRam/$sizeRom
+RAM 列表：$ramSizeListSel
+ROM 列表 : $romSizeListSel
 修改记录：\
 "| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
 
@@ -2779,7 +2742,8 @@ EOF
                                             git reset --hard&&
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
-                                            git cherry-pick  3ee34caf8164d86944579c0d2d0d58882aa10433
+
+                                            # git cherry-pick  3ee34caf8164d86944579c0d2d0d58882aa10433
 
                                             # key="补充 修复 相机 缩略图显示异常"
                                             # hashVal=$(git log --pretty=oneline |grep "$key")
@@ -2789,7 +2753,7 @@ EOF
                                             # git checkout $hashVal vendor/sprd/partner/launcher
                                             # mv vendor/sprd/partner/launcher vendor/sprd/partner/launcher_${branshName}
 
-                                            # git push origin "$branshName"
+                                            git push origin "$branshName"
 
                                             # source build/envsetup.sh&&
                                             # lunch sp7731c_1h10_32v4_oversea-user&&
@@ -2881,3 +2845,75 @@ function version_ge() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)"
 # if version_ge $VERSION $VERSION2; then
 #    echo "$VERSION is greater than or equal to $VERSION2"
 # fi
+
+ftAutoInitEnv()
+{
+    local ftEffect=初始化基于Android_Build_Env的Auto_Env
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local dirPathOut=$ANDROID_PRODUCT_OUT
+    local buildType=$TARGET_BUILD_VARIANT
+
+    #使用示例
+    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftAutoInitEnv 无参
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;; * ) break;; esac;done
+
+    #耦合变量校验
+    local valCount=0
+    if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ];then
+        ftEcho -ea "[${ftEffect}]的参数错误 \
+            [参数数量def=$valCount]valCount=$# \
+            [工程根目录]dirPathCode=$dirPathCode \
+            请查看下面说明:"
+        ftAutoInitEnv -h
+        return
+    fi
+    local dirPathLocal=$PWD
+    cd $ANDROID_BUILD_TOP
+    #分支名
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    #软件版本名
+    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+    if [ -f $filePathDeviceInfoSettings ];then
+        local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+        versionName=${versionName/$keyVersion/}
+        versionName=${versionName/\");/}
+        versionName=$(echo $versionName |sed s/[[:space:]]//g)
+    else
+        ftEcho -e "未找到 $filePathDeviceInfoSettings\n version name 获取失败"
+    fi
+    #软件编译类型
+    local filePathBuildInfo=${dirPathOut}/system/build.prop
+    if [ -f $filePathBuildInfo ];then
+                local keybuildType="ro.build.type="
+                local buildTypeFile=
+                if [ -f "$filePathBuildInfo" ];then
+                    buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
+                    if [ ! -z "$buildTypeFile" ];then
+                        buildTypeFile=${buildTypeFile/$keybuildType/}
+                        if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
+                            ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
+                            buildType=$buildTypeFile
+                        fi
+                    else
+                        ftEcho -e "[$filePathBuildInfo]中未找到编译类型"
+                    fi
+                fi
+    else
+                ftEcho -e "未找到 $filePathBuildInfo\n build Type 获取失败"
+    fi
+
+    export AutoEnv_branchName=$branchName
+    export AutoEnv_versionName=$versionName
+    export AutoEnv_buildType=$buildType
+
+    cd $dirPathLocal
+}

@@ -99,11 +99,11 @@ if [ -f $filePathXbashTragetConfigBase ];then
         complete -W "restartadb help gjh test clean_data_garbage vvv bootanim pac -v -vvv -ft -ftall" xc
 
 #----------------    shell 自身配置   ----------------------------------
-        # export PROMPT_COMMAND='\
-        # msg=$(history 1 | { read x y; echo $y; });\
-        # if [[ $msg =~ "git" ]];then
-        #     ftFindGitBranch
-        # fi'
+         export PROMPT_COMMAND='\
+         msg=$(history 1 | { read x y; echo $y; });\
+         if [[ $msg =~ "git" ]];then
+             ftFindGitBranch
+         fi'
         export PROMPT_COMMAND="ftFindGitBranch;$PROMPT_COMMAND"
     else
         echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
@@ -120,7 +120,7 @@ alias ...="cd ../.."
 alias xr="source ~/.bashrc"
 alias xcc='cd $OLDPWD'
 alias xgd='git push origin --delete "$2"'
-alias xgl='git log --date=format-local:'%y%m%d' --pretty=format:"%C(bold blue) %h %Creset %cn %ad %s" -15'
+alias xgl='git log --date=format-local:'%y%m%d' --pretty=format:"%C(bold blue) %H %Creset %an %ad %s" -15'
 alias xp="export XCMD=xp;readlink -f"
 alias xl='export XCMD=xl;\
     adb logcat -c;\
