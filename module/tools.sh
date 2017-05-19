@@ -1864,7 +1864,12 @@ EOF
     local pasword=123456
 
     local dirPathServer=/media/新卷
-    local dirPathUpload=智能机软件/SPRD7731C/鹏明珠/autoUpload
+
+    if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+        local dirPathUpload=智能机软件/SPRD7731C/鹏明珠/autoUpload
+    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+        local dirPathUpload=智能机软件/MTK6580/autoUpload
+    fi
 
     local dirPathContentUploadSource=$(dirname $pathContentUploadSource)
     local fileNameContentUploadSource=$(basename $pathContentUploadSource)
@@ -2025,10 +2030,9 @@ EOF
             local dirPathPackage=${dirPathPacResVersion}/${dirNamePackage}
             local dirPathPackageDataBase=${dirPathPackage}/${dirNamePackageDataBase}
 
-            mkdir -p $dirPathPackageDataBase
-
-            fileList=(boot.img \
+            local fileList=(boot.img \
                             cache.img \
+                            lk.bin \
                             logo.bin \
                             MT6580_Android_scatter.txt \
                             preloader_m9_xinhaufei_r9_hd.bin \
@@ -2038,16 +2042,20 @@ EOF
                             system.img \
                             userdata.img)
 
-            dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
+            local dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
 obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
 
+
+            mkdir -p $dirPathPackageDataBase
+            #packages
             for file in ${fileList[@]}
             do
-                cp -v ${dirPathOut}/${file} ${dirPathPacResVersion}/${dirNamePackage}
+                cp -v -r -f ${dirPathOut}/${file} ${dirPathPacResVersion}/${dirNamePackage}
             done
+            # database
             for file in ${dataBaseFileList[@]}
             do
-                cp -v ${dirPathOut}/${file} ${dirPathPacResVersion}/${dirNamePackage}/${dirNamePackageDataBase}
+                cp -v -r -f ${dirPathOut}/${file} ${dirPathPacResVersion}/${dirNamePackage}/${dirNamePackageDataBase}
             done
     fi
 
@@ -2116,35 +2124,6 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
  in_ID sw_TZ am_ET bn_IN he_IL iw_IL af_ZA rm_CH \
  my_ZG be_BY et_EE zu_ZA az_AZ hy_AM ka_GE lo_LA \
  mn_MN ne_NP kk_KZ si_LK)
-
-
-# 去掉重复语言
-    # index=0
-    # strB="_isdbwb"
-    # strC="_dddd"
-    # for cmd in ${shortList[@]}
-    # do
-    #     if [[ ${allList[index]} =~ $strC ]];then
-    #        continue;
-    #     fi
-
-    #     time=0
-    #     index2=0
-    #     for dd in ${shortList[@]}
-    #     do
-    #         if [ $dd = $cmd ];then
-    #             if(( $time!=0 ));then
-    #                 # echo 11 $dd
-    #                 echo "${dd}_`expr $index + 1`____`expr $index2 + 1`"
-    #                 allList[$index]=${allList[index]}_isdbwb
-    #                 allList[$index2]=${allList[index2]}_dddd
-    #             fi
-    #             time=`expr $time + 1`
-    #         fi
-    #         index2=`expr $index2 + 1`
-    #     done
-    #     index=`expr $index + 1`
-    # done
 
     if [ -z "$ftLanguageContent" ];then
         LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
@@ -2789,6 +2768,7 @@ EOF
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
 
+                                           cat /home/wgx/code/sp7731c/code/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk| grep "PRODUCT_LOCALES :="
                                             # git cherry-pick  3ee34caf8164d86944579c0d2d0d58882aa10433
 
                                             # key="补充 修复 相机 缩略图显示异常"
@@ -2799,7 +2779,7 @@ EOF
                                             # git checkout $hashVal vendor/sprd/partner/launcher
                                             # mv vendor/sprd/partner/launcher vendor/sprd/partner/launcher_${branshName}
 
-                                            git push origin "$branshName"
+                                           # git push origin "$branshName"
 
                                             # source build/envsetup.sh&&
                                             # lunch sp7731c_1h10_32v4_oversea-user&&
