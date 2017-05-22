@@ -38,11 +38,11 @@ EOF
     break;;
     * ) break;;esac;done
 
-    #工具环境校验校验
+    #环境校验
     if [ -z `which example` ]||[ -z `which example` ];then
         ftExample -e
     fi
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$example1" ]\
                 ||[ -z "$example2" ];then
@@ -77,7 +77,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$packageName" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -122,7 +122,7 @@ EOF
 ftRestartAdb()
 {
     local ftEffect=重启adb sever
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rUserPwd" ];then
         ftEcho -eax "函数[${ftEffect}]的参数错误 \
@@ -158,7 +158,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ]\
                 ||[ -z "$rNameUser" ];then
@@ -215,7 +215,7 @@ ftCleanDataGarbage()
     local ftEffect=清空回收站
     ftInitDevicesList
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$mCmdsModuleDataDevicesList" ];then
         ftEcho -ex "函数[${ftEffect}]的参数错误 \
@@ -260,7 +260,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rDirPathTools" ]\
                 ||[ ! -d "$rDirPathTools" ];then
@@ -305,7 +305,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=3
     if(( $#!=$valCount ))||[ -z "$type" ]\
                         ||[ -z "$isCreate" ]\
@@ -384,7 +384,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#<$valCount ));then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -520,7 +520,7 @@ EOF
 
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if(( $#!=$valCount ))||[ -z "$dirPathAnimation" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -724,7 +724,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rDirPathUserHome" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -760,7 +760,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rDirPathUserHome" ]\
                 ||[ -z "$rDirNameLog" ];then
@@ -837,7 +837,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local dirNameCmdModuleTest=test
     local filePathCmdModuleTest=${rDirPathCmdsModule}/${dirNameCmdModuleTest}/${rFileNameCmdModuleTestBase}
     if [ ! -d "$rDirPathCmdsModule" ]||[ ! -f "$filePathCmdModuleTest" ];then
@@ -873,7 +873,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     if [ -z "$rUserPwd" ]||[ -z "$edittype" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量_def=1/2]valCount=$# \
@@ -955,7 +955,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if(( $#>$valCount ))||[ -z "$fileNameNewAppApkBase" ]\
             ||(( $#==1 ))&&[ ! -d "$dirPathOut" ]\
@@ -1071,7 +1071,7 @@ EOF
     fi
     local editType=del #surplus
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if(( $#!=$valCount ))||[ -z "$percentage" ]\
                 ||[ -z "$dirPathFileList" ]\
@@ -1166,7 +1166,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if(( $#>$valCount ))||[ ! -d "$dirPathFileList" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
@@ -1229,7 +1229,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if (( $#>$valCount ))||[ -z "$devDirPath" ]\
                 ||[ -z "$rDirPathCmdsData" ];then
@@ -1341,7 +1341,7 @@ ftGetKeyValueByBlockAndKey()
 EOF
     exit 1;; * )break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=3
     if(( $#!=$valCount ))||[ ! -f "$filePath" ]\
                 ||[ -z "$blockName" ]\
@@ -1405,7 +1405,7 @@ ftSetKeyValueByBlockAndKey()
 EOF
     exit 1;; * )break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=4
     if(( $#!=$valCount ))||[ ! -f "$filePath" ]\
                 ||[ -z "$blockName" ]\
@@ -1449,7 +1449,7 @@ ftCheckIniConfigSyntax()
 EOF
     exit 1;; * )break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -f "$filePath" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -1524,7 +1524,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if (( $#>$valCount ))||[ ! -f "$filePathHosts" ]\
                 ||[ ! -d "$rDirPathCmdsData" ];then
@@ -1599,7 +1599,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -d "$dirPathOut" ];then
@@ -1611,9 +1611,9 @@ EOF
         ftCopySprdPacFileList -h
         return
     fi
+    ftAutoInitEnv
     cd $ANDROID_BUILD_TOP
 
-    ftAutoInitEnv
 
     local buildType=$AutoEnv_buildType
     local versionName=$AutoEnv_versionName
@@ -1656,6 +1656,7 @@ EOF
 ftBackupOutsByMove()
 {
     local ftEffect=移动备份out
+    ftAutoInitEnv
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
 
@@ -1671,7 +1672,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -d "$dirPathOut" ];then
@@ -1687,7 +1688,6 @@ EOF
     #分支名
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
-    ftAutoInitEnv
     local buildType=$AutoEnv_buildType
     local versionName=$AutoEnv_versionName
 
@@ -1727,7 +1727,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$type" ]\
             ||[ ! -d "$dirPathCode" ];then
@@ -1762,6 +1762,7 @@ EOF
 ftRmNormalBin()
 {
     local ftEffect=清空pac相关资源文件
+    ftAutoInitEnv
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local dirPathPacRes=$1
@@ -1779,7 +1780,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -d "$dirPathPacRes" ]\
@@ -1794,7 +1795,6 @@ EOF
         return
     fi
 
-    ftAutoInitEnv
     local versionName=$AutoEnv_versionName
 
     fileList=(SC7720_UMS.xml \
@@ -1845,7 +1845,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))\
     ||([ ! -d "$pathContentUploadSource" ]&&[ ! -f "$pathContentUploadSource" ])\
@@ -1900,7 +1900,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -f "$contentUploadSource" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
@@ -1943,12 +1943,11 @@ ftAutoPacket()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
-    ftAutoInitEnv
     local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== [   ${ftEffect}   ]的使用示例=============
 #
 #    ftAutoPacket 无参
 #    ftAutoPacket -y #自动打包，上传到188服务器
@@ -1957,9 +1956,28 @@ EOF
     if [ "$XMODULE" = "env" ];then
         return
     fi
-    exit;; * ) break;; esac;done
+    exit;;
+    env | -env |-ENV ) cat<<EOF
+#============== [   ${ftEffect}   ]的使用环境说明============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;;
+    * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ]\
+            ||[ -z "$ANDROID_PRODUCT_OUT" ]\
+            ||[ -z "$TARGET_BUILD_VARIANT" ];then
+        ftAutoPacket -env
+        return
+    fi
     local valCount=1
     if(( $#>$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -d "$dirPathOut" ];then
@@ -1972,6 +1990,7 @@ EOF
         return
     fi
 
+    ftAutoInitEnv
     local dirNamePacRes=packet
     local dirPathPacRes=${dirPathCode}/out/${dirNamePacRes}
     local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
@@ -1988,9 +2007,8 @@ EOF
     if [ ! -d $dirPathPacResVersion ];then
         mkdir -p $dirPathPacResVersion
     fi
-    cd $dirPathPacResVersion
-
     local dirPathLocal=$PWD
+    cd $dirPathPacResVersion
 
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             local dirPathNormalBin=$dirPathOut
@@ -2088,7 +2106,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     if [ -z "$ftLanguageContent" ]&&[ ! -f "$filePathDevice" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
             [语言]ftLanguageContent=$ftLanguageContent \
@@ -2200,7 +2218,7 @@ EOF
         dirPathServerMoule=$dirPathServerMouleContent
     fi
 
-    #耦合变量校验
+    #耦合校验
     local valCount=5
     if(( $#!=$valCount ))||[ ! -f "$contentUploadSource" ]\
     ||([ ! -d "$contentUploadSource" ]&&[ ! -f "$contentUploadSource" ])\
@@ -2291,11 +2309,11 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #工具环境校验校验
+    #环境校验
     if [ -z `which unix2dos` ];then
         ftCreateReadMeBySoftwareVersion -e
     fi
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -d "$dirPathOut" ];then
@@ -2473,7 +2491,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -f "$filePathDevice" ];then
@@ -2521,7 +2539,7 @@ EOF
     break;;
     * ) break;;esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$lnPath" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
@@ -2582,7 +2600,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#>$valCount ))||[ ! -d "$dirPathCode" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
@@ -2691,7 +2709,7 @@ EOF
     exit;;
     * ) break;;esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#>$valCount ))||[ -z "$dirPathCode" ]\
                                         ||[ ! -d "$dirPathCode" ];then
@@ -2891,7 +2909,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \

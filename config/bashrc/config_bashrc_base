@@ -168,4 +168,5 @@ alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivi
 alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
 alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
 alias xqchanglogo='adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
+alias xqcamera_test_sub='adb shell am start -n com.mediatek.factorymode/com.mediatek.factorymode.camera.SubCamera'
 
