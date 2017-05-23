@@ -2292,7 +2292,7 @@ ftCreateReadMeBySoftwareVersion()
     e | -e |--env) cat<<EOF
 #=================== ${ftEffect}使用环境说明=============
 #
-#    工具依赖包 unix2dos #sudo apt-get install unix2dos
+#    工具依赖包 unix2dos #sudo apt-get install tofrodos 
 #=========================================================
 EOF
       return;;
@@ -2309,8 +2309,9 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
+
     #环境校验
-    if [ -z `which unix2dos` ];then
+    if [ -z `which todos` ]||[ -z `which fromdos` ];then
         ftCreateReadMeBySoftwareVersion -e
     fi
     #耦合校验
@@ -2688,7 +2689,7 @@ EOF
 ftAutoBuildMultiBranch()
 {
     local ftEffect=多版本[分支]编译
-    local filePathBranchList=/var/log/.bashrcs
+    local filePathBranchList=branch.list
     local dirPathCode=$ANDROID_BUILD_TOP
     local editType=$1
 
@@ -2786,9 +2787,6 @@ EOF
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
 
-                                           cat /home/wgx/code/sp7731c/code/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk| grep "PRODUCT_LOCALES :="
-                                            # git cherry-pick  3ee34caf8164d86944579c0d2d0d58882aa10433
-
                                             # key="补充 修复 相机 缩略图显示异常"
                                             # hashVal=$(git log --pretty=oneline |grep "$key")
                                             # hashVal=${hashVal//"$key"/}
@@ -2799,19 +2797,19 @@ EOF
 
                                            # git push origin "$branshName"
 
-                                            # source build/envsetup.sh&&
-                                            # lunch sp7731c_1h10_32v4_oversea-user&&
-                                            # kheader&&
-                                            # make -j4&&
-                                            # if [ $isUpload = "true" ];then
-                                            #     ftAutoPacket -y
-                                            # else
-                                            #     ftAutoPacket
-                                            # fi
+                                            source build/envsetup.sh&&
+                                            lunch sp7731c_1h10_32v4_oversea-user&&
+                                            kheader&&
+                                            make -j4&&
+                                            if [ $isUpload = "true" ];then
+                                                ftAutoPacket -y
+                                            else
+                                                ftAutoPacket
+                                            fi
 
-                                            # if [ $isBackupOut = "true" ];then
-                                            #     ftBackupOutsByMove
-                                            # fi
+                                            if [ $isBackupOut = "true" ];then
+                                                ftBackupOutsByMove
+                                            fi
                                         done
                                         git reset --hard
                                        break;;
@@ -2985,4 +2983,60 @@ EOF
     export AutoEnv_buildType=$buildType
 
     cd $dirPathLocal
+}
+
+ftMonkeyTestByDevicesName()
+{
+    local ftEffect=kill掉包名为packageName的应用
+    local eventCount=$1
+
+    #使用示例
+    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftMonkeyTestByDevicesName [eventCount]
+#    ftMonkeyTestByDevicesName 1000000
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;; * ) break;; esac;done
+
+    #耦合校验
+    local valCount=1
+    if(( $#>$valCount ))||( ! echo -n $eventCount | grep -q -e "^[0-9][0-9]*$");then
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
+                [参数数量def=$valCount]valCount=$# \
+                [事件数必须为整数]eventCount=$eventCount \
+                请查看下面说明:"
+        ftMonkeyTestByDevicesName -h
+        return
+    fi
+    #adb状态检测
+    local adbStatus=`adb get-state`
+    if [ "$adbStatus" = "device" ];then
+            local keyModel="ro.product.model="
+            local keySoftType="ro.build.type="
+            local fileNameLogBase="$(date -d "today" +"%y%m%d_%H%M")"
+
+            local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
+            deviceModelName=${deviceModelName//$keyModel/}
+            deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
+            deviceModelName=${deviceModelName:-'null'}
+
+            local deviceSoftType=$(adb shell cat /system/build.prop|grep "$keySoftType")
+            deviceSoftType=${deviceSoftType//$keySoftType/}
+            deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
+            deviceSoftType=${deviceSoftType:-'null'}
+
+            eventCount=${eventCount:-'1000000'}
+
+            filePathLog=$(pwd)/monkey_${deviceModelName}_${deviceSoftType}_${fileNameLogBase}.log
+
+            adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions -v -v -v $eventCount 2>&1 |tee $filePathLog
+    else
+        ftEcho -e adb状态[$adbStatus]异常,请重新尝试
+    fi
+
 }

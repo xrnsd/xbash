@@ -43,8 +43,6 @@ export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r12b
 export LD_LIBRARY_PATH=${dirPathHomeTools}/sp_flash_tool_v5.1548:${dirPathHomeTools}/sp_flash_tool_v5.1548/lib:$LD_LIBRARY_PATH
 export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$ANDROID_SDK_BUILD_TOOL:/usr/local/cuda-7.5/bin:$ANDROID_SDK/platform-tools:$ANDROID_SDK/tools:$ANDROID_NDK:/usr/local/cuda-8.0/bin/:$PATH
 export PATH=$PATH:/usr/libexec/git-core
-#缓存目录[android优化加速部分]
-export CCACHE_DIR=/media/data/.ccache
 
 #-------------------------标记为环境模式，此模式说明直接调用脚本实现------------------
 export  XMODULE="env"
@@ -129,6 +127,8 @@ else
 fi
 #-------------------------android优化加速部分------------------
 #编译加速 c/c++ 部分
+#缓存目录[android优化加速部分]
+export CCACHE_DIR=/media/data/.ccache
 export USE_CCACHE=1
 export CACHE_UMASK=002
 unset CCACHE_HARDLINK
@@ -144,6 +144,9 @@ alias xl='export XCMD=xl;\
                 adb logcat -c;\
                 adb logcat | grep '
 alias xp="export XCMD=xp;readlink -f"
+
+alias unix2dos=todos
+alias dos2unix=fromdos
 
 #--------------------------命令封装[AOSP部分]---------------------------
 alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
@@ -163,6 +166,7 @@ alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMg
                     cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "VERALION"'
 
 alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
+alias xmonkey='ftMonkeyTestByDevicesName'
 
 alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
 alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
