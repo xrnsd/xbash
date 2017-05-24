@@ -133,9 +133,9 @@ if [ -f $filePathXbashTragetConfigBase ];then
          export PROMPT_COMMAND='\
          msg=$(history 1 | { read x y; echo $y; });\
          if [[ $msg =~ "git" ]];then
-             ftFindGitBranch
+             ftSetBashPs1ByGitBranch
          fi'
-        export PROMPT_COMMAND="ftFindGitBranch;$PROMPT_COMMAND"
+        export PROMPT_COMMAND="ftSetBashPs1ByGitBranch;$PROMPT_COMMAND"
     else
         echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
     fi

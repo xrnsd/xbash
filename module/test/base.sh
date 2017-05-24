@@ -44,7 +44,9 @@ fi
 #sed -i 's/被替换的内容/要替换成的内容/' file #内容包含空格需要转义
 #sed -i "s:被替换的内容:要替换成的内容:g" file #被替换的内容为路径，内容包含空格需要转义
 #filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l #文件数量获取
-#b=${a//123/321};将${a}里的所有123替换为321\
+#b=${a//123/321}#将${a}里的所有123替换为321\
+# versionName=$(echo $versionName |sed s/[[:space:]]//g)#删除所有空格
+# LOWERCASE=$(echo $VARIABLE | tr '[A-Z]' '[a-z]') #转小写
 # 分割字符串成数组bnList=$(echo $branchName|tr ")" "\n")
 
 # 字符串包含if [[ helloworld == *low* ]];then

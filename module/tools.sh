@@ -1712,7 +1712,6 @@ ftYKSwitch()
 {
     local ftEffect=切换永恒星和康龙配置
     local type=$1
-    # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
     local dirPathCode=$ANDROID_BUILD_TOP
 
     #使用示例
@@ -1740,23 +1739,53 @@ EOF
         return
     fi
 
+    local filePathConfig=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk
     local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
-    local tagYhx=//#define\ CAMERA_USE_KANGLONG_GC2365
-    local tagKl=#define\ CAMERA_USE_KANGLONG_GC2365
+    local key="LZ_CONFIG_CAMERA_TYPE :="
+    local configType=$(cat $filePathConfig|grep "$key")
+    if [ -f $filePathConfig ]&&[ ! -z "$configType" ];then
+        rm -rf ${ANDROID_PRODUCT_OUT}/obj/SHARED_LIBRARIES/camera.sc8830_intermediates
 
-    export mCameraType=$type
-    while true; do case "$type" in
-    yhx )
-        sed -i "s:$tagKl:$tagYhx:g" $filePathTraget
-        break;;
-    kl )
-         sed -i "s:$tagYhx:$tagKl:g" $filePathTraget
-        break;;
-    * )
-         export mCameraType=
-        ftEcho -ex 错误参数[type=$type]
-        break;;
-    esac;done
+            local tagYhx="LZ_CONFIG_CAMERA_TYPE\ \:\=\ YHX"
+            local tagKl="LZ_CONFIG_CAMERA_TYPE\ \:\=\ KL"
+            configType=${configType//$key/}
+            configType=$(echo $configType |sed s/[[:space:]]//g)
+            configType=$(echo $configType | tr '[A-Z]' '[a-z]')
+
+            if [ "$configType" != "$type" ];then
+                    while true; do case "$type" in
+                    yhx )
+                        sed -i "s:$tagKl:$tagYhx:g" $filePathConfig
+                        break;;
+                    kl )
+                        sed -i "s:$tagYhx:$tagKl:g" $filePathConfig
+                        break;;
+                    * )
+                         export mCameraType=
+                         ftEcho -ex 错误参数[type=$type]
+                        break;;
+                    esac;done
+                else
+                    ftEcho -e 参数相同configType=$configType type=$type
+                fi
+    elif [ -f $filePathTraget ];then
+            local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
+            local tagYhx=//#define\ CAMERA_USE_KANGLONG_GC2365
+            local tagKl=#define\ CAMERA_USE_KANGLONG_GC2365
+                while true; do case "$type" in
+                yhx )
+                    sed -i "s:$tagKl:$tagYhx:g" $filePathTraget
+                    break;;
+                kl )
+                     sed -i "s:$tagYhx:$tagKl:g" $filePathTraget
+                    break;;
+                * )
+                     export mCameraType=
+                    ftEcho -ex 错误参数[type=$type]
+                    break;;
+                esac;done
+    fi
+        export mCameraType=$type
 }
 
 ftRmNormalBin()
@@ -2046,7 +2075,7 @@ EOF
             local dirNamePackageDataBase="dataBase"
 
             local dirPathPackage=${dirPathPacResVersion}/${dirNamePackage}
-            local dirPathPackageDataBase=${dirPathPackage}/${dirNamePackageDataBase}
+            local dirPathPackageDataBase=${dirPathPacResVersion}/${dirNamePackageDataBase}
 
             local fileList=(boot.img \
                             cache.img \
@@ -2064,6 +2093,7 @@ EOF
 obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
 
 
+            mkdir -p $dirPathPackage
             mkdir -p $dirPathPackageDataBase
             #packages
             for file in ${fileList[@]}
@@ -2449,7 +2479,10 @@ EOF
     echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
     local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
     seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
-    echo -e "﻿======================     修改记录有误要及时更正哦     =======================
+    echo -e "﻿/////////////////////////////////////////////////////////////////////////////\
+///     修改记录有误要及时更正哦
+///     修改记录横线以上为新修改
+/////////////////////////////////////////////////////////////////////////////
 当前版本：$versionName
 暗码清单：$pawNumInfo
 设备信息暗码：
@@ -2642,10 +2675,6 @@ EOF
     local dateOldTest=$(echo $versionNameTest | awk -F "_" '{print $NF}')
     local versionNameTestNew=${versionNameTest//$dateOldTest/$dateNew}
 
-    local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
-    local tagYhx=//#define\ CAMERA_USE_KANGLONG_GC2365
-    local tagKl=#define\ CAMERA_USE_KANGLONG_GC2365
-
     if [ ! -z "$1" ]&&[ "$1" = "-y" ];then
                 sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings&&
                 sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest&&
@@ -2824,9 +2853,9 @@ EOF
     fi
 }
 
-ftFindGitBranch()
+ftSetBashPs1ByGitBranch()
 {
-    local ftEffect=获取git分支名
+    local ftEffect=根据git分支名,设定bash的PS1
     local dir=. head
 
     #使用示例
@@ -2835,7 +2864,7 @@ ftFindGitBranch()
     h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
-#    ftFindGitBranch 无参
+#    ftSetBashPs1ByGitBranch 无参
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then
@@ -2843,8 +2872,12 @@ EOF
     fi
     exit;;
     * ) break;;esac;done
+    local defaultPrefix=xrnsd
+    if [ ! -z "$rNameUser" ]&&[ "$rNameUser" != "wgx" ];then
+        defaultPrefix=$rNameUser
+    fi
 
-        until [ "$dir" -ef / ]; do
+    until [ "$dir" -ef / ]; do
             if [ -f "$dir/.git/HEAD" ]; then
                 head=$(< "$dir/.git/HEAD")
                 if [[ $head = ref:\ refs/heads/* ]]; then
@@ -2854,13 +2887,13 @@ EOF
                 else
                     git_branch="\nbranchName→(unknow)"
                 fi
-                export PS1="xrnsd\[\033[44m\][\w]\[\033[0m\]\
+                export PS1="$defaultPrefix\[\033[44m\][\w]\[\033[0m\]\
 \[\033[33m\]$git_branch:\[\033[0m\]"
                 return
             fi
             dir="../$dir"
         done
-        export PS1="xrnsd\[\033[44m\][\w]\[\033[0m\]:"
+        export PS1="$defaultPrefix\[\033[44m\][\w]\[\033[0m\]:"
         git_branch=
 }
 
