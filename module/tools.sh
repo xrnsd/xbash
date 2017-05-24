@@ -1581,78 +1581,6 @@ ff02::2 ip6-allrouters
 }
 
 #===================    非通用实现[高度耦合]    ==========================
-ftCopySprdPacFileList()
-{
-    local ftEffect=自动复制sprd的pac相关文件
-    local dirPathCode=$ANDROID_BUILD_TOP
-    local dirPathOut=$ANDROID_PRODUCT_OUT
-
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
-#
-#    ftCopySprdPacFileList 无参
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
-    exit;; * ) break;; esac;done
-
-    #耦合校验
-    local valCount=0
-    if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
-            ||[ ! -d "$dirPathOut" ];then
-        ftEcho -ea "[${ftEffect}]的参数错误 \
-            [参数数量def=$valCount]valCount=$# \
-            [工程根目录]dirPathCode=$dirPathCode \
-            [工程out目录]dirPathOut=$dirPathOut \
-            请查看下面说明:"
-        ftCopySprdPacFileList -h
-        return
-    fi
-    ftAutoInitEnv
-    cd $ANDROID_BUILD_TOP
-
-
-    local buildType=$AutoEnv_buildType
-    local versionName=$AutoEnv_versionName
-    local branchName=$AutoEnv_branchName
-
-    local dirPathCodeRoot=${dirPathCode%/*}
-    local dirPathCodeRootPacres=${dirPathCodeRoot}/res
-    local dirNameBranchVersion=${branchName}____${versionName}____$(date -d "today" +"%y%m%d[%H:%M]")
-    local dirPathBranchVersion=${dirPathCodeRootPacres}/${dirNameBranchVersion}
-    local fileNameList=(boot.img \
-            cache.img \
-            fdl1.bin \
-            fdl2.bin \
-            persist.img \
-            prodnv.img \
-            recovery.img \
-            sysinfo.img \
-            system.img \
-            u-boot.bin \
-            u-boot-spl-16k.bin \
-            userdata.img\
-            SC7720_UMS.xml)
-    if [ -d "$dirPathBranchVersion" ];then
-        rm -rf $dirPathBranchVersion
-    fi
-    mkdir $dirPathBranchVersion
-
-    for fileName in ${fileNameList[*]}
-    do
-        filePath=${dirPathOut}/${fileName}
-        if [ -f $filePath ];then
-            cp -v -f $filePath $dirPathBranchVersion
-        else
-            ftEcho -ex 文件[$filePath]不存在
-            rm -rf $dirPathBranchVersion
-        fi
-    done
-}
-
 ftBackupOutsByMove()
 {
     local ftEffect=移动备份out
@@ -1724,8 +1652,25 @@ EOF
     if [ "$XMODULE" = "env" ];then
         return
     fi
-    exit;; * ) break;; esac;done
+    exit;;
+ e | E |-e | -E) cat<<EOF
+#=================== [ ${ftEffect} ]的使用环境说明=============
+#
+#    ftYKSwitch 仅可用于 SPRD > 7731C > N9 的项目
+#=======================================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;;
+     * ) break;; esac;done
 
+# 环境检测
+    ftAutoInitEnv
+    if [[ $AutoEnv_mnufacturers != "sprd" ]]; then
+        ftYKSwitch -e
+        return
+    fi
     #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$type" ]\
@@ -1786,74 +1731,6 @@ EOF
                 esac;done
     fi
         export mCameraType=$type
-}
-
-ftRmNormalBin()
-{
-    local ftEffect=清空pac相关资源文件
-    ftAutoInitEnv
-    local dirPathCode=$ANDROID_BUILD_TOP
-    local dirPathOut=$ANDROID_PRODUCT_OUT
-    local dirPathPacRes=$1
-
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
-#
-#    ftRmNormalBin [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
-#    ftRmNormalBin out/pac
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
-    exit;; * ) break;; esac;done
-
-    #耦合校验
-    local valCount=1
-    if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
-            ||[ ! -d "$dirPathPacRes" ]\
-            ||[ ! -d "$dirPathOut" ];then
-        ftEcho -ea "[${ftEffect}]的参数错误 \
-            [参数数量def=$valCount]valCount=$# \
-            [工程根目录]dirPathCode=$dirPathCode \
-            [工程out目录]dirPathOut=$dirPathOut \
-            [工程Pac生成目录]dirPathPacRes=$dirPathPacRes \
-            请查看下面说明:"
-        ftRmNormalBin -h
-        return
-    fi
-
-    local versionName=$AutoEnv_versionName
-
-    fileList=(SC7720_UMS.xml \
-        pac_7731c.pl \
-        fdl1.bin \
-        fdl2.bin \
-        nvitem.bin \
-        nvitem_wcn.bin \
-        prodnv.img \
-        u-boot-spl-16k.bin \
-        SC7702_pike_modem_AndroidM.dat \
-        DSP_DM_G2.bin \
-        SC8800G_pike_wcn_dts_modem.bin \
-        boot.img \
-        recovery.img \
-        system.img \
-        userdata.img \
-        "logo.bmp" \
-        cache.img \
-        sysinfo.img \
-        u-boot.bin \
-        persist.img)
-    cd $dirPathPacRes
-    for fileName in ${fileList[@]}
-    do
-        if [ -f "$fileName" ]; then
-            rm $fileName
-            echo "rm $fileName"
-        fi
-    done
 }
 
 ftAutoUploadHighSpeed()
