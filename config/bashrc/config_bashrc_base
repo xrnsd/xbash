@@ -13,6 +13,12 @@ export HISTSIZE=500
 # 以追加的方式保存命令历史
 shopt -s histappend
 
+alias ..="cd .."
+alias ...="cd ../.."
+alias xcc='cd $OLDPWD'
+alias xr="source ~/.bashrc"
+alias xp="export XCMD=xp;readlink -f"
+
 #---------------- 自动整理bash历史记录  ----------------------------------
 filePathBashHistory=${dirPathHome}/.bash_history
 filePathBashHistoryTemp=${filePathBashHistory}_temp
@@ -47,14 +53,24 @@ export PATH=$PATH:/usr/libexec/git-core
 #-------------------------标记为环境模式，此模式说明直接调用脚本实现------------------
 export  XMODULE="env"
 
-#--------------------------环境检测---------------------------
+#------------------------------------  环境检测  ----------------------------------
 if [ ! -d "$JAVA_HOME" ];then
     echo -e "\033[1;31mJava_环境配置错误\n$JAVA_HOME不存在\n\033[0m"
 fi
 if [ ! -d "$ANDROID_SDK" ];then
     echo -e "\033[1;31mAndroid_SDK_环境配置错误\n$ANDROID_SDK 不存在\n\033[0m"
 else
-    alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
+            alias xl='export XCMD=xl;\
+                        adb logcat -c;\
+                        adb logcat | grep '
+            alias xlc='adb logcat | grep androidrun -i'
+            alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
+            alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
+            alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
+            alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
+            alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
+            alias xqchanglogo='adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
+            alias xqcamera_test_sub='adb shell am start -n com.mediatek.factorymode/com.mediatek.factorymode.camera.SubCamera'
 fi
 if [ ! -d "$ANDROID_NDK" ];then
     echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
@@ -63,6 +79,10 @@ if [ ! -f "$filePathGitBash" ];then
     echo -e "\033[1;31mgit bash 配置文件:\n$filePathGitBash 不存在\033[0m"
 else
     source $filePathGitBash
+fi
+if [ ! -z `which todos` ]||[ ! -z `which fromdos` ];then
+    alias unix2dos=todos
+    alias dos2unix=fromdos
 fi
 
 fileNameXbashTragetConfigBase=config_base
@@ -78,12 +98,8 @@ if [ -f $filePathXbashTragetConfigBase ];then
     if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
         source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
 
-        ftLog
-
-        #命令封装
         alias xle='export XCMD=xle;\
-            ftLog;\
-            adb logcat -c;adb logcat "*:E" 2>&1|tee -a $mFilePathLog'
+                        adb logcat "*:E"'
         alias xgl='gitVersionMin="2.6.0";\
             gitVersionNow=$(git --version);\
             gitVersionNow=${gitVersionNow//git version/};\
@@ -93,6 +109,7 @@ if [ -f $filePathXbashTragetConfigBase ];then
             else
                 git log --date=short --pretty=format:"%C(bold blue) %H %Creset %an %ad %s" -15
             fi'
+        alias xmonkey='ftMonkeyTestByDevicesName'
         alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
         alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
         alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
@@ -112,7 +129,7 @@ if [ -f $filePathXbashTragetConfigBase ];then
         complete -W "systemui monkey launcher" xk
         complete -W "restartadb help gjh test clean_data_garbage vvv bootanim pac -v -vvv -ft -ftall" xc
 
-#----------------    shell 自身配置   ----------------------------------
+        # bash shell PS1 配置
          export PROMPT_COMMAND='\
          msg=$(history 1 | { read x y; echo $y; });\
          if [[ $msg =~ "git" ]];then
@@ -125,29 +142,6 @@ if [ -f $filePathXbashTragetConfigBase ];then
 else
     echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
 fi
-#-------------------------android优化加速部分------------------
-#编译加速 c/c++ 部分
-#缓存目录[android优化加速部分]
-export CCACHE_DIR=/media/data/.ccache
-export USE_CCACHE=1
-export CACHE_UMASK=002
-unset CCACHE_HARDLINK
-#分布式编译集群的IP组
-#export DISTCC_HOSTS="192.168.3.114"
-
-#--------------------------命令封装---------------------------
-alias ..="cd .."
-alias ...="cd ../.."
-alias xcc='cd $OLDPWD'
-alias xr="source ~/.bashrc"
-alias xl='export XCMD=xl;\
-                adb logcat -c;\
-                adb logcat | grep '
-alias xp="export XCMD=xp;readlink -f"
-
-alias unix2dos=todos
-alias dos2unix=fromdos
-
 #--------------------------命令封装[AOSP部分]---------------------------
 alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
                             cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";\
@@ -165,12 +159,10 @@ alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMg
                     cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "TESTMODE_LIST";\
                     cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "VERALION"'
 
-alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
-alias xmonkey='ftMonkeyTestByDevicesName'
-
-alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
-alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
-alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
-alias xqchanglogo='adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
-alias xqcamera_test_sub='adb shell am start -n com.mediatek.factorymode/com.mediatek.factorymode.camera.SubCamera'
-
+#-------------------------android优化加速部分------------------
+#编译加速 c/c++ 部分
+export USE_CCACHE=1
+export CACHE_UMASK=002
+unset CCACHE_HARDLINK
+#分布式编译集群的IP组
+#export DISTCC_HOSTS="192.168.3.114"

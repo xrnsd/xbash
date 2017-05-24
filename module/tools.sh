@@ -88,7 +88,7 @@ EOF
         return
     fi
 
-    #adb状态检测
+    #adb连接状态检测
     local adbStatus=`adb get-state`
     if [ "$adbStatus" = "device" ];then
         #确定包存在
@@ -115,7 +115,7 @@ EOF
             done
         fi
     else
-        ftEcho -e adb状态[$adbStatus]异常,请重新尝试
+        ftEcho -e adb连接状态[$adbStatus]异常,请重新尝试
     fi
 }
 
@@ -932,7 +932,7 @@ ftPushAppByName()
     # 确认ANDROID_PRODUCT_OUT非空,存在
     # 确认当前目录有效
     # 确认有对应模块名的apk文件存在
-    # 校验adb状态
+    # 校验adb连接状态
     # 确认adb权限
     # 确认手机有对应模块名的apk文件存在
     # 执行push操作
@@ -1000,7 +1000,7 @@ EOF
     #         echo $(echo $line | awk '{print $1}')
     #     fi
     # done
-    #adb状态检测 ___当前没有设备或存在多个设备，状态都不是device
+    #adb连接状态检测 ___当前没有设备或存在多个设备，状态都不是device
     if [ $(adb get-state) = "device" ];then
         #确定手机存在被覆盖的目标文件
         local statusDirAppApkPhone=$(adb shell ls $dirPathAppApkPhone)
@@ -1023,7 +1023,7 @@ EOF
             while [[ $statusAdbRoot =~ "cannot" ]]||[[ $statusAdbRemount =~ "failed" ]]; do
                 echo statusAdbRoot=$statusAdbRoot
                 echo statusAdbRemount=$statusAdbRemount
-                ftEcho -e adb状态初始化失败,按y退出，按除y任意键重新尝试
+                ftEcho -e adb连接状态初始化失败,按y退出，按除y任意键重新尝试
                 read -n1 sel
                 case "$sel" in
                     y | Y )    exit;;
@@ -1035,7 +1035,7 @@ EOF
             adb push $filePathAppApk $dirPathAppApkPhone
         fi
     else
-        ftEcho -e adb状态异常,请重新尝试
+        ftEcho -e adb连接状态异常,请重新尝试
     fi
 }
 
@@ -3013,7 +3013,7 @@ EOF
         ftMonkeyTestByDevicesName -h
         return
     fi
-    #adb状态检测
+    #adb连接状态检测
     local adbStatus=`adb get-state`
     if [ "$adbStatus" = "device" ];then
             local keyModel="ro.product.model="
@@ -3036,7 +3036,7 @@ EOF
 
             adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions -v -v -v $eventCount 2>&1 |tee $filePathLog
     else
-        ftEcho -e adb状态[$adbStatus]异常,请重新尝试
+        ftEcho -e adb连接状态[$adbStatus]异常,请重新尝试
     fi
 
 }
