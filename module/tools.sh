@@ -1845,11 +1845,11 @@ EOF
 complete -W "-y" ftAutoPacket
 ftAutoPacket()
 {
-    local ftEffect=生成7731c使用的pac
+    local ftEffect=基于android的out生成版本软件
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
-    local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
+    local isUpload=$1
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -1897,29 +1897,35 @@ EOF
     fi
 
     ftAutoInitEnv
-    local dirNamePacRes=packet
-    local dirPathPacRes=${dirPathCode}/out/${dirNamePacRes}
-    local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
-
-    local buildType=$AutoEnv_buildType
-    local versionName=$AutoEnv_versionName
-
-    local dirPathPacResVersion=${dirPathPacRes}/${versionName}
-
-    if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
-        versionName=${versionName}____${buildType}
-    fi
-
-    if [ ! -d $dirPathPacResVersion ];then
-        mkdir -p $dirPathPacResVersion
-    fi
     local dirPathLocal=$PWD
-    cd $dirPathPacResVersion
+    local dirNamePacRes=packet
+    local buildType=$AutoEnv_buildType
+    local dirPathPacRes=${dirPathCode}/out/${dirNamePacRes}
 
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             local dirPathNormalBin=$dirPathOut
-            local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
             local dirPathLogo=${dirPathCode%/*}/res
+            local versionName=$AutoEnv_versionName
+            local dirPathPacResVersion=${dirPathPacRes}/${versionName}
+            local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
+            local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
+            local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
+
+            if [ ! -f "$filePathPacketScript" ];then
+                    ftEcho -ea "[${ftEffect}]的参数错误 \
+                       找不到 [sprd的打包工具]filePathPacketScript=$filePathPacketScript \
+                        请查看下面说明:"
+                    ftAutoPacket -h
+                    return
+            fi
+
+            if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
+                    versionName=${versionName}____${buildType}
+                    dirPathPacResVersion=${dirPathPacRes}/${versionName}
+            fi
+
+            mkdir -p $dirPathPacResVersion
+            cd $dirPathPacResVersion
 
             ftEcho -s "开始生成 ${versionName}.pac\n"
             /usr/bin/perl $filePathPacketScript \
@@ -1950,46 +1956,57 @@ EOF
     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
             local dirNamePackage="packages"
             local dirNamePackageDataBase="dataBase"
-
+            local deviceName=`basename $ANDROID_PRODUCT_OUT`
+            local dirPathPacResVersion=${dirPathPacRes}/buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$(date -d "today" +"%Y%m%d")
             local dirPathPackage=${dirPathPacResVersion}/${dirNamePackage}
             local dirPathPackageDataBase=${dirPathPacResVersion}/${dirNamePackageDataBase}
-
             local fileList=(boot.img \
                             cache.img \
                             lk.bin \
                             logo.bin \
                             MT6580_Android_scatter.txt \
-                            preloader_m9_xinhaufei_r9_hd.bin \
+                            preloader_${deviceName}.bin
                             ramdisk.img \
                             recovery.img \
                             secro.img \
                             system.img \
                             userdata.img)
 
-            local dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
-obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
+            local dataBaseFileList=
+            if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
+                dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
+                                                 obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
+            elif [ $deviceName = "keytak6580_weg_l" ];then
+                dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15 \
+                                                 obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
+            fi
 
-
+            mkdir -p $dirPathPacResVersion
             mkdir -p $dirPathPackage
             mkdir -p $dirPathPackageDataBase
+            cd $dirPathPacResVersion
+
             #packages
             for file in ${fileList[@]}
             do
-                cp -v -r -f ${dirPathOut}/${file} ${dirPathPacResVersion}/${dirNamePackage}
+                 cp -v -r -f  ${dirPathOut}/${file} ${dirPathPacResVersion}/${dirNamePackage}
             done
             # database
-            for file in ${dataBaseFileList[@]}
-            do
-                cp -v -r -f ${dirPathOut}/${file} ${dirPathPacResVersion}/${dirNamePackage}/${dirNamePackageDataBase}
-            done
+            if [ ! -z "$dataBaseFileList" ];then
+                for file in ${dataBaseFileList[@]}
+                do
+                     cp -v -r -f  ${dirPathOut}/${file} ${dirPathPackageDataBase}
+                done
+            fi
     fi
 
     # 生成说明文件
     ftCreateReadMeBySoftwareVersion $dirPathPacResVersion
 
-    if [ "$1" = "-y" ];then
+    while true; do case "$isUpload" in    y | Y |-y | -Y)
         ftAutoUploadHighSpeed $dirPathPacResVersion
-    fi
+    break;; * ) break;; esac;done
+
     cd $dirPathLocal
 }
 
@@ -2260,9 +2277,13 @@ EOF
                 fi
    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
                 local filePathDeviceMtk=${dirPathCode}/device/kdragon/m9_xinhaufei_r9_hd/ProjectConfig.mk
-                if [[ -f "$filePathDeviceMtk" ]]; then
+                local filePathDeviceMtk2=${dirPathCode}/device/keytak/keytak6580_weg_l/ProjectConfig.mk
+                if [ -f "$filePathDeviceMtk" ]; then
                     local key="MTK_PRODUCT_LOCALES = "
                     LanguageList=$(cat $filePathDeviceMtk|grep "$key")
+                elif [ -f "$filePathDeviceMtk2" ]; then
+                    local key="MTK_PRODUCT_LOCALES = "
+                    LanguageList=$(cat $filePathDeviceMtk2|grep "$key")
                 else
                     ftEcho -e "[工程文件不存在:${filePathDeviceMtk}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
                 fi
@@ -2356,7 +2377,7 @@ EOF
     echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
     local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
     seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
-    echo -e "﻿/////////////////////////////////////////////////////////////////////////////\
+    echo -e "﻿/////////////////////////////////////////////////////////////////////////////
 ///     修改记录有误要及时更正哦
 ///     修改记录横线以上为新修改
 /////////////////////////////////////////////////////////////////////////////
@@ -2764,13 +2785,13 @@ EOF
                 else
                     git_branch="\nbranchName→(unknow)"
                 fi
-                export PS1="$defaultPrefix\[\033[44m\][\w]\[\033[0m\]\
+                export PS1="$defaultPrefix[\[\033[44m\]\w\[\033[0m\]]\
 \[\033[33m\]$git_branch:\[\033[0m\]"
                 return
             fi
             dir="../$dir"
         done
-        export PS1="$defaultPrefix\[\033[44m\][\w]\[\033[0m\]:"
+        export PS1="$defaultPrefix[\[\033[44m\]\w\[\033[0m\]]:"
         git_branch=
 }
 
@@ -2854,13 +2875,17 @@ EOF
     local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
     if [ -f $filePathDeviceInfoSettings ];then
         local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-        versionName=${versionName/$keyVersion/}
-        versionName=${versionName/\");/}
-        versionName=$(echo $versionName |sed s/[[:space:]]//g)
+        if [ -z "$versionName" ];then
+            versionName=`basename $ANDROID_PRODUCT_OUT`
+        else
+            versionName=${versionName/$keyVersion/}
+            versionName=${versionName/\");/}
+            versionName=$(echo $versionName |sed s/[[:space:]]//g)
+        fi
     else
         ftEcho -e "未找到 $filePathDeviceInfoSettings\n version name 获取失败"
     fi
-    if [[ $mnufacturers = "mtk" ]]; then
+    if [ $mnufacturers = "mtk" ]&&[ ! -z "$LZ_BUILD_VERSION" ]; then
         versionName=$LZ_BUILD_VERSION
     fi
 
@@ -2886,6 +2911,11 @@ EOF
                         ftEcho -e "未找到 $filePathBuildInfo\n build Type[本地] 获取失败"
             fi
     fi
+
+    export AutoEnv_mnufacturers=
+    export AutoEnv_branchName=
+    export AutoEnv_versionName=
+    export AutoEnv_buildType=
 
     export AutoEnv_mnufacturers=$mnufacturers
     export AutoEnv_branchName=$branchName
