@@ -142,15 +142,18 @@ ftInitDevicesList()
 {
     local ftEffect=初始化存储设备的列表
     local devDir=/media
-    local dirList=`ls $devDir`
+    local devNameDirPathList=`df -lh | awk '{print $1}'`
+    local devMountDirPathList=(`df -lh | awk '{print $6}'`)
     # 设备最小可用空间，小于则视为无效.单位M
     local devMinAvailableSpace=${1:-'0'}
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例===================
 #
-#    ftInitDevicesList [devMinAvailableSpace 单位M]
+#    ftInitDevicesList [devMinAvailableSpace 单位默认为MB]
 #    ftInitDevicesList 4096M
+#    ftInitDevicesList 4096G
+#    ftInitDevicesList 409600K
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then
@@ -159,12 +162,19 @@ EOF
     exit;; * ) break;; esac;done
 
     #耦合校验
+    local devMinAvailableSpaceTemp=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//g/}
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//m/}
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//k/}
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//b/}
     local valCount=1
     if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ]\
-                ||[ -z "$rNameUser" ];then
+                ||[ -z "$rNameUser" ]\
+                ||( ! echo -n $devMinAvailableSpaceTemp | grep -q -e "^[0-9][0-9]*$" );then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [默认用户的home目录]rDirPathUserHome=$rDirPathUserHome \
+                [可用空间限制]devMinAvailableSpace=$devMinAvailableSpace \
                 [默认用户名]rNameUser=$rNameUser \
                 请查看下面说明:"
         ftInitDevicesList -h
@@ -172,40 +182,42 @@ EOF
     fi
 
     unset mCmdsModuleDataDevicesList
+    local dirPathHome=(${rDirPathUserHome/$rNameUser\//$rNameUser})
+    local indexDevMount=0
+    local indexDevName=0
+    local sizeHome=$(ftDevAvailableSpace $dirPathHome true)
 
-    local index=0
-    mCmdsModuleDataDevicesList=(${rDirPathUserHome/$rNameUser\//$rNameUser})
-    #设备可用空间大小符合限制
-    sizeHome=$(ftDevAvailableSpace $mCmdsModuleDataDevicesList true)
-    if [ "$sizeHome" -gt "$devMinAvailableSpace" ];then
-        index=1;
+    devMinAvailableSpace=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
+    if [[ $devMinAvailableSpace =~ "g" ]]||[[ $devMinAvailableSpace =~ "gb" ]];then
+            devMinAvailableSpace=${devMinAvailableSpace//g/}
+            devMinAvailableSpace=$(( devMinAvailableSpace * 1024 ))
+
+    elif [[ $devMinAvailableSpace =~ "m" ]]||[[ $devMinAvailableSpace =~ "mb" ]];then
+            devMinAvailableSpace=${devMinAvailableSpace//m/}
+
+    elif [[ $devMinAvailableSpace =~ "k" ]]||[[ $devMinAvailableSpace =~ "kb" ]];then
+            devMinAvailableSpace=${devMinAvailableSpace//kb/}
+            devMinAvailableSpace=${devMinAvailableSpace//k/}
+            let devMinAvailableSpace=devMinAvailableSpace/1024
+    fi
+
+    if (($sizeHome>=$devMinAvailableSpace));then
+        mCmdsModuleDataDevicesList=$dirPathHome
+        indexDevMount=1;
     fi
     #开始记录设备文件
-    for dir in $dirList
+    for dir in ${devNameDirPathList[*]}
     do
-        #临时挂载设备
-        if [ ${dir} == $rNameUser ]; then
-            local dirTempList=`ls ${devDir}/${dir}`
-            for dirTemp in $dirTempList
-            do
-                devPathTemp=${devDir}/${dir}/${dirTemp}
-                sizeTemp=$(ftDevAvailableSpace $devPathTemp true)
-                # 确定目录已挂载,设备可用空间大小符合限制
-                if mountpoint -q $devPathTemp&&[ "$sizeTemp" -gt "$devMinAvailableSpace" ];then
-                    mCmdsModuleDataDevicesList[$index]=$devPathTemp
-                    index=`expr $index + 1`
-                fi
-            done
-        #长期挂载设备
-        else
-            devPath=${devDir}/${dir}
-            size=$(ftDevAvailableSpace $devPath true)
-            # 确定目录已挂载,设备可用空间大小符合限制
-            if mountpoint -q $devPath&&[ "$size" -gt "$devMinAvailableSpace" ];then
-                mCmdsModuleDataDevicesList[$index]=$devPath
-                index=`expr $index + 1`
+            devMountDirPath=${devMountDirPathList[indexDevName]}
+            if [[ $dir =~ "/dev/s" ]]&&[[ $devMountDirPath != "/" ]];then
+                    sizeTemp=$(ftDevAvailableSpace $devMountDirPath true)
+                    # 确定目录已挂载,设备可用空间大小符合限制
+                    if mountpoint -q $devMountDirPath&&(($sizeTemp>=$devMinAvailableSpace));then
+                        mCmdsModuleDataDevicesList[$indexDevMount]=$devMountDirPath
+                        indexDevMount=`expr $indexDevMount + 1`
+                    fi
             fi
-        fi
+            indexDevName=`expr $indexDevName + 1`
     done
     export mCmdsModuleDataDevicesList
 }
@@ -228,18 +240,19 @@ ftCleanDataGarbage()
         dir=null
         if [ -d ${dirDev}/.Trash-1000 ];then
             dir=${dirDev}/.Trash-1000
-        else
-            if [ -d ${dirDev}/.local/share/Trash ];then
-                dir=${dirDev}/.local/share/Trash
-            fi
+        elif [ -d ${dirDev}/.local/share/Trash ];then
+            dir=${dirDev}/.local/share/Trash
         fi
         if [ -d $dir ];then
+            local dirPathLocal=$(pwd)
             cd $dir
-            if [ ! -d empty ];then
-                mkdir empty
-            fi
+
+            mkdir empty
             rsync --delete-before -d -a -H -v --progress --stats empty/ files/
             rm -rf files/*
+            rm -r empty
+
+            cd $dirPathLocal
         fi
     done
 }
@@ -2216,7 +2229,7 @@ ftCreateReadMeBySoftwareVersion()
     e | -e |--env) cat<<EOF
 #=================== ${ftEffect}使用环境说明=============
 #
-#    工具依赖包 unix2dos #sudo apt-get install tofrodos 
+#    工具依赖包 unix2dos #sudo apt-get install tofrodos
 #=========================================================
 EOF
       return;;
@@ -2264,7 +2277,7 @@ EOF
     local versionName=$AutoEnv_versionName
 
     # 语言列表
-    # 
+    #
     #获取缩写列表
     if [ $AutoEnv_mnufacturers = "sprd" ];then
                 local filePathDeviceSprd=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
