@@ -293,6 +293,8 @@ ftYKSwitch 切换永恒星和康龙配置
     |
 ftCopySprdPacFileList 自动复制sprd的pac相关文件
     |
+ftBackupOutsByMove 备份out
+    |
 ftCleanDataGarbage 快速清空回收站
     |
 ftMtkFlashTool mtk下载工具

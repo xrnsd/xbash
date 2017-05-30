@@ -1,4 +1,4 @@
-#-------------------------android优化加速部分------------------
+#-------------------------android环境部分------------------
 #export JAVA_HOME=/home/wgx/tools/jdk/1.6.038
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 export JRE_HOME=${JAVA_HOME}/jre 
