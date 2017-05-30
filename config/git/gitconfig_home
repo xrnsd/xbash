@@ -1,5 +1,15 @@
 [user]
 	name = wgx_home
-	email = ziliaokuxian@163.com/15019962261
+	email = ziliaokuxian@163.com/15019962261/qq:1718686576
 [push]
 	default = simple
+[color "status"]
+    added = white
+    changed = yellow
+    untracked = cyan
+[push]
+	default = simple
+[gui]
+	spellingdictionary = none
+[core]
+	editor = nano

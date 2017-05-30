@@ -45,7 +45,7 @@ fi
 export ANDROID_SDK=${dirPathHomeTools}/sdk/4.4
 export ANDROID_SDK_HOME=$ANDROID_SDK
 export ANDROID_SDK_BUILD_TOOL=${ANDROID_SDK_HOME}/build-tools/android-4.4W
-export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r12b
+export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r10c
 export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$ANDROID_SDK_BUILD_TOOL:/usr/local/cuda-7.5/bin:$ANDROID_SDK/tools:$ANDROID_NDK:/usr/local/cuda-8.0/bin/:$PATH
 export PATH=$PATH:/usr/libexec/git-core
 
