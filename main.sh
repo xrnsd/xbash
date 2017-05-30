@@ -34,7 +34,7 @@ ftWhoAmI()## #命令权限判定
     local ftEffect=命令权限判定
     local cmdName=$1
 
-    #耦合变量校验
+    #耦合校验
 
     if [ -z "$cmdName" ];then
         ftReadMe $XCMD
@@ -107,7 +107,6 @@ ftMain()
                 case $rBaseShellParameter2 in
                     "mtk_flashtool")    ftMtkFlashTool ; break;;
                     "restartadb")        ftRestartAdb; break;;
-                    "pac")            ftCopySprdPacFileList; break;;
                     "monkey")        ftKillPhoneAppByPackageName com.android.commands.monkey; break;;
                     "systemui")        ftKillPhoneAppByPackageName com.android.systemui; break;;
                     "launcher")        ftKillPhoneAppByPackageName com.android.launcher3; break;;
@@ -166,7 +165,6 @@ ftReadMe()
         ft | -ft )
     cat<<EOF
 ftKillPhoneAppByPackageName ---- kill掉包名为packageName的应用
-ftCopySprdPacFileList ---------- 自动复制sprd的pac相关文件
 ftBackupOutsByMove               备份out
 ftCleanDataGarbage ------------- 快速清空回收站
 ftReduceFileList                 精简动画帧文件
@@ -175,7 +173,6 @@ ftBootAnimation                  生成开关机动画
 ftAutoUploadPro ---------------- 上传文件到服务器[低耦合版]
 ftLanguageUtils                  语言缩写转换
 ftMtkFlashTool ----------------- mtk下载工具
-ftRmNormalBin                    清空pac相关资源文件
 ftAutoUpload ------------------- 上传文件到固定服务器
 ftUpdateHosts ------------------ 更新hosts
 ftReNameFile ------------------- 批量重命名
@@ -277,11 +274,6 @@ ftAutoUpload 上传文件到固定服务器
     |
     |//ftAutoUpload 上传源文件路径
     |ftAutoUpload /home/xxx/1.test
-
-
-ftRmNormalBin 清空pac相关资源文件
-    |
-    |ftRmNormalBin [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
 
 
 ftAutoPacket 生成7731c使用的pac

@@ -131,21 +131,23 @@ else
     filePathXbashTragetBashrcConfigBaseGone=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGone}
 
     #----------------   加载xbash的bashrc基础配置  ------------------
-    source $filePathXbashTragetBashrcConfigBaseGone
-    source $filePathXbashTragetBashrcConfigBase
+    if [ ! -f "$filePathXbashTragetBashrcConfigBaseGone" ];then
+        echo -e "\033[1;31mXbash下实现的自定义命令需要的隐藏配置\n[filePathXbashTragetBashrcConfigBaseGone=$filePathXbashTragetBashrcConfigBaseGone]\033[0m不存在"
+    else
+        source $filePathXbashTragetBashrcConfigBaseGone
+        source $filePathXbashTragetBashrcConfigBase
+    fi
 fi
+
 #---------------------------------用户密码---------------------------------
 if [ -z "$rUserPwdBase" ];then
     rUserPwdBase=x@2w4ea
     export rUserPwd=${rUserPwdBase:-'x@2w4ea'}
     readonly rUserPwd
 fi
-#---------------------------------不稳定命令---------------------------------
-alias xx='echo '$userPwd' | sudo -S pm-hibernate'
-
 #----------------    临时命令    ---------------------------------
 alias xg6572='git clone git@192.168.1.188:mtk6572.git -b'
-alias xg6820='git clone git@192.168.1.188:sprd6820.git -b'
-alias xg7731g='git clone git@192.168.1.188:sprd7731g_5_1.git -b'
-alias xg7731c='git clone git@192.168.1.188:sprd7731c.git -b'
-alias make7731c='mv out ../out_backup;source build/envsetup.sh ;lunch sp7731c_1h10_32v4_oversea-userdebug;kheader;make -j8 2>&1 |tee ~/log/build_userdebug.log;mv out ../out_userdebug;source build/envsetup.sh ;lunch sp7731c_1h10_32v4_oversea-user;kheader;make -j8 2>&1 |tee ~/log/build_user.log'
+
+#-------------------------android优化加速部分------------------
+#缓存目录[android优化加速部分]
+export CCACHE_DIR=/media/data/.ccache

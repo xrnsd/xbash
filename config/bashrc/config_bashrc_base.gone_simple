@@ -1,3 +1,14 @@
+#-------------------------android环境部分------------------
+#export JAVA_HOME=/home/wgx/tools/jdk/1.6.038
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 export JRE_HOME=${JAVA_HOME}/jre 
 export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+#-------------------------android优化加速部分------------------
+#编译加速 c/c++ 部分
+#缓存目录[android优化加速部分]
+export CCACHE_DIR=/media/data/.ccache
+export USE_CCACHE=1
+export CACHE_UMASK=002
+unset CCACHE_HARDLINK
+#分布式编译集群的IP组
+#export DISTCC_HOSTS="192.168.3.114"
