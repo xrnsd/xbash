@@ -131,6 +131,7 @@ ftRestartAdb()
     fi
 
     echo $rUserPwd | sudo -S adb kill-server
+    echo server-kill
     echo
     sleep 2
     echo $rUserPwd | sudo -S adb start-server
@@ -141,11 +142,11 @@ ftRestartAdb()
 ftInitDevicesList()
 {
     local ftEffect=初始化存储设备的列表
-    local devDir=/media
     local devNameDirPathList=`df -lh | awk '{print $1}'`
     local devMountDirPathList=(`df -lh | awk '{print $6}'`)
     # 设备最小可用空间，小于则视为无效.单位M
     local devMinAvailableSpace=${1:-'0'}
+    devMinAvailableSpace=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例===================
@@ -162,7 +163,7 @@ EOF
     exit;; * ) break;; esac;done
 
     #耦合校验
-    local devMinAvailableSpaceTemp=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
+    local devMinAvailableSpaceTemp=$devMinAvailableSpace
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//g/}
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//m/}
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//k/}
@@ -181,13 +182,11 @@ EOF
         return
     fi
 
-    unset mCmdsModuleDataDevicesList
-    local dirPathHome=(${rDirPathUserHome/$rNameUser\//$rNameUser})
     local indexDevMount=0
     local indexDevName=0
+    local dirPathHome=(${rDirPathUserHome/$rNameUser\//$rNameUser})
     local sizeHome=$(ftDevAvailableSpace $dirPathHome true)
 
-    devMinAvailableSpace=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
     if [[ $devMinAvailableSpace =~ "g" ]]||[[ $devMinAvailableSpace =~ "gb" ]];then
             devMinAvailableSpace=${devMinAvailableSpace//g/}
             devMinAvailableSpace=$(( devMinAvailableSpace * 1024 ))
@@ -201,6 +200,7 @@ EOF
             let devMinAvailableSpace=devMinAvailableSpace/1024
     fi
 
+    unset mCmdsModuleDataDevicesList
     if (($sizeHome>=$devMinAvailableSpace));then
         mCmdsModuleDataDevicesList=$dirPathHome
         indexDevMount=1;
@@ -1253,9 +1253,11 @@ EOF
                 请查看下面说明:"
         ftDevAvailableSpace -h
     elif [ ! -d $devDirPath ];then
-        ftEcho -ex "设备[$devDirPath]不存在"
+        ftEcho -e "设备[$devDirPath]不存在"
+        ftDevAvailableSpace -h
     elif [ ! -d $rDirPathCmdsData ];then
-        ftEcho -ex "目录[$rDirPathCmdsData]不存在"
+        ftEcho -e "目录[$rDirPathCmdsData]不存在"
+        ftDevAvailableSpace -h
     fi
 
     local filePathDevStatus=${rDirPathCmdsData}/devs_status
