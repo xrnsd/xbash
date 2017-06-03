@@ -2942,8 +2942,9 @@ EOF
 
 ftMonkeyTestByDevicesName()
 {
-    local ftEffect=kill掉包名为packageName的应用
+    local ftEffect=自动化monkey测试
     local eventCount=$1
+    eventCount=${eventCount:-'1000000'}
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -2959,10 +2960,10 @@ EOF
     exit;; * ) break;; esac;done
 
     #耦合校验
-    local valCount=1
-    if(( $#>$valCount ))||( ! echo -n $eventCount | grep -q -e "^[0-9][0-9]*$");then
+    if( ! echo -n $eventCount | grep -q -e "^[0-9][0-9]*$")\
+        ||[ -z "$rNameUser" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
-                [参数数量def=$valCount]valCount=$# \
+                [用户名]rNameUser=$rNameUser \
                 [事件数必须为整数]eventCount=$eventCount \
                 请查看下面说明:"
         ftMonkeyTestByDevicesName -h
@@ -2973,7 +2974,11 @@ EOF
     if [ "$adbStatus" = "device" ];then
             local keyModel="ro.product.model="
             local keySoftType="ro.build.type="
-            local fileNameLogBase="$(date -d "today" +"%y%m%d_%H%M")"
+            local keySDKVersion="ro.build.version.sdk="
+            local keySoftVersion="ro.custom.build.version="
+
+            local logDate="$(date -d "today" +"%y%m%d")"
+            local logDateTime="$(date -d "today" +"%y%m%d-%H%M")"
 
             local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
             deviceModelName=${deviceModelName//$keyModel/}
@@ -2985,13 +2990,79 @@ EOF
             deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
             deviceSoftType=${deviceSoftType:-'null'}
 
-            eventCount=${eventCount:-'1000000'}
+            local SoftVersion=$(adb shell cat /system/build.prop|grep "$keySoftVersion")
+            SoftVersion=${SoftVersion//$keySoftVersion/}
+            SoftVersion=$(echo $SoftVersion |sed s/[[:space:]]//g)
+            SoftVersion=${SoftVersion:-'null'}
 
-            filePathLog=$(pwd)/monkey_${deviceModelName}_${deviceSoftType}_${fileNameLogBase}.log
+            local SDKVersion=$(adb shell cat /system/build.prop|grep "$keySDKVersion")
+            SDKVersion=${SDKVersion//$keySDKVersion/}
+            SDKVersion=$(echo $SDKVersion |sed s/[[:space:]]//g)
+            SDKVersion=${SDKVersion:-'null'}
+            local AndroidVersion=$(ftGetAndroidVersionBySDKVersion $SDKVersion)
 
-            adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions -v -v -v $eventCount 2>&1 |tee $filePathLog
+
+            local dirPathLocal=$(pwd)
+            local dirPathMoneyLog=${dirPathLocal}/monkey/PcName[${rNameUser}]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]____${logDate}
+            local filePathLogLogcat=${dirPathMoneyLog}/${logDateTime}.logcat
+            local filePathLogMonkey=${dirPathMoneyLog}/${logDateTime}.monkey
+
+            mkdir -p $dirPathMoneyLog
+            adb logcat "*:E" 2>&1|tee $filePathLogLogcat&
+            adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions -v -v -v $eventCount 2>&1 |tee $filePathLogMonkey
+            exit
     else
         ftEcho -e adb连接状态[$adbStatus]异常,请重新尝试
     fi
 
+}
+
+ftGetAndroidVersionBySDKVersion()
+{
+    local ftEffect=根据SDK版本获取Android版本
+    local sdkVersion=$1
+
+    #使用示例
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftGetAndroidVersionBySDKVersion 1.0~25
+#    ftGetAndroidVersionBySDKVersion 22
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=1
+    if(( $#!=$valCount ))||[ -z "$sdkVersion" ];then
+        ftEcho -ea "[${ftEffect}]的参数错误 \
+            [参数数量def=$valCount]valCount=$# \
+            [sdk版本]sdkVersion=$sdkVersion \
+            请查看下面说明:"
+        ftGetAndroidVersionBySDKVersion -h
+        return
+    fi
+        while true; do case "$sdkVersion" in
+        25) echo Android7.1              ;break;;
+        24) echo Android7.0              ;break;;
+        23) echo Android6.0              ;break;;
+        22) echo Android5.1              ;break;;
+        21) echo Android5.0              ;break;;
+        19) echo Android4.4              ;break;;
+        18) echo Android4.3              ;break;;
+        17) echo Android4.2              ;break;;
+        16) echo Android4.1              ;break;;
+        15) echo Android4.0.3-4.0.4  ;break;;
+        14) echo Android4.0.1-4.0.2  ;break;;
+        13) echo Android3.2x             ;break;;
+        12) echo Android3.1               ;break;;
+        11) echo Android3.0               ;break;;
+        10) echo Android2.3.3-2.3.7   ;break;;
+        9) echo Android2.3-2.3.2        ;break;;
+        * ) echo "unkonwSdkVersion=${sdkVersion}"; break;;esac;done
 }
