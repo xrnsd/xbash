@@ -20,9 +20,6 @@ export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r12b
 export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$ANDROID_SDK_BUILD_TOOL:/usr/local/cuda-7.5/bin:$ANDROID_SDK/tools:$ANDROID_NDK:/usr/local/cuda-8.0/bin/:$PATH
 export PATH=$PATH:/usr/libexec/git-core
 
-#-------------------------标记为环境模式，此模式说明直接调用脚本实现------------------
-export  XMODULE="env"
-
 #------------------------------------  环境检测  ----------------------------------
 filePathGitBash=${dirPathHomeCmdConfig}/bashrc/git-completion.bash
 

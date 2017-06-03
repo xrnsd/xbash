@@ -55,6 +55,8 @@ if [ -f $filePathXbashTragetConfigBase ];then
     if [ -z "$rNameUser" ];then
         source  $filePathXbashTragetConfigBase
     fi
+    #标记为环境模式，此模式说明直接调用脚本实现
+    export XMODULE="env"
     # 函数
     if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
         source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
