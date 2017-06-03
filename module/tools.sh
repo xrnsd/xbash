@@ -1993,7 +1993,7 @@ EOF
                                                  obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
             elif [ $deviceName = "keytak6580_weg_l" ];then
                 dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15 \
-                                                 obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
+                                            obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V6_P7_1_wg_n.n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V6_P7_1_wg_n.n)
             fi
 
             mkdir -p $dirPathPacResVersion
