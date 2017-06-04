@@ -99,10 +99,12 @@ if [ -f $filePathXbashTragetConfigBase ];then
             gitVersionNow=${gitVersionNow//git version/};\
             gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g);\
             if version_lt $gitVersionMin $gitVersionNow; then
-                git log --date=format-local:'%y%m%d' --pretty=format:"%C(bold blue) %H %Creset %an %ad %s" -15
+                git log --date=format-local:'%y%m%d' --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(10,trunc)%an%Creset %Cblue%h%Creset %s" -15
             else
-                git log --date=short --pretty=format:"%C(bold blue) %H %Creset %an %ad %s" -15
+                #%Cblue%h%Creset %<(40,trunc)%s [%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%an%Creset%C(yellow)%d%Creset]
+                git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(10,trunc)%an%Creset %Cblue%h%Creset %s" -15
             fi'
+        alias xgll='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(10,trunc)%an%Creset %Cblue%h%Creset %s" -100'
         alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
         alias xk='ftKillPhoneAppByPackageName'
         alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
