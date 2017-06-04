@@ -141,8 +141,8 @@ fi
 
 #---------------------------------用户密码---------------------------------
 if [ -z "$rUserPwdBase" ];then
-    rUserPwdBase=x@2w4ea
-    export rUserPwd=${rUserPwdBase:-'x@2w4ea'}
+    rUserPwdBase=123
+    export rUserPwd=${rUserPwdBase:-'123'}
     readonly rUserPwd
 fi
 #----------------    临时命令    ---------------------------------
