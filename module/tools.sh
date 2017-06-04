@@ -2235,11 +2235,11 @@ EOF
     gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
     if version_lt $gitVersionMin $gitVersionNow; then
-        gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:" %an %ad %s")
-        gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:" %an %ad %s")
+        gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(10,trunc)%an%Creset %s")
+        gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(10,trunc)%an%Creset %s")
     else
-        gitCommitListOneDay=$(git log  --since=1.day.ago  --pretty=format:" %s")
-        gitCommitListBefore=$(git log  --before=1.day.ago  --pretty=format:" %s")
+        gitCommitListOneDay=$(git log  --since=1.day.ago  --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(10,trunc)%an%Creset %s")
+        gitCommitListBefore=$(git log  --before=1.day.ago  --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(10,trunc)%an%Creset %s")
     fi
 
     # 暗码清单
