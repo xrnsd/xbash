@@ -904,8 +904,8 @@ ftBoot()
 {
     local ftEffect=延时免密码关机重启
     local edittype=$1
-    local timeLong=$2
-    timeLong=${timeLong:-'rBaseShellParameter3'}
+    local timeLong=$rBaseShellParameter3
+    timeLong=${timeLong:-$2}
     timeLong=${timeLong:-'10'}
 
     #使用示例
