@@ -1,34 +1,20 @@
 #! /bin/bash
-#--------------------------终端自身设定---------------------------
-#终端提示
-export PS1='xrnsd\[\033[44m\][\w]\[\033[0m\]:'
-# 忽略重复命令
-export HISTCONTROL=erasedups
+#----------------    终端自身设定    ---------------------------
 # 忽略特定命令
 export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
-# 命令历史文件大小
-export HISTFILESIZE=10000000000
 # 保存历史命令条数
 export HISTSIZE=500
 # 以追加的方式保存命令历史
 shopt -s histappend
-
-alias ..="cd .."
-alias ...="cd ../.."
-alias xcc='cd $OLDPWD'
-alias xr="source ~/.bashrc"
-alias xp="export XCMD=xp;readlink -f"
-
-#---------------- 自动整理bash历史记录  ----------------------------------
+#自动去重备份bash历史记录
 filePathBashHistory=${dirPathHome}/.bash_history
 filePathBashHistoryTemp=${filePathBashHistory}_temp
 filePathBashHistoryArchive=${filePathBashHistory}_archive
 filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
-
+filePathGitBash=${dirPathHomeCmdConfig}/bashrc/git-completion.bash
 #去重
 sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
 mv $filePathBashHistoryTemp $filePathBashHistory
-
 #备份历史
 let lineCountMax=HISTSIZE-1
 lineCount=$(wc -l < $filePathBashHistory)
@@ -40,15 +26,60 @@ if (($lineCount > $lineCountMax)); then
     && > $filePathBashHistory
 fi
 
-#----------------    命令封装部分   ---------------------------
+#----------------    Android Dev Env Config    ---------------------------
+#环境变量
+export ANDROID_SDK=${dirPathHomeTools}/sdk/4.4
+export ANDROID_SDK_HOME=$ANDROID_SDK
+export ANDROID_SDK_BUILD_TOOL=${ANDROID_SDK_HOME}/build-tools/android-4.4W
+export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r10c
+export PATH=$PATH:${JAVA_HOME}/bin:${JRE_HOME}/bin
+export PATH=$PATH:$ANDROID_SDK_BUILD_TOOL
+export PATH=$PATH:$ANDROID_NDK
+#export PATH=$PATH:/usr/local/cuda-7.5/bin:/usr/local/cuda-8.0/bin
+export PATH=$PATH:/usr/libexec/git-core
+#编译加速 c/c++ 部分
+export USE_CCACHE=1
+export CACHE_UMASK=002
+unset CCACHE_HARDLINK
+#分布式编译集群的IP组
+#export DISTCC_HOSTS="192.168.3.114"
+
+#----------------    xbash init    ---------------------------
+fileNameXbashTragetConfigBase=config_base
+filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
+dirPathHomeCmdConfigBashrc=${dirPathHomeCmdConfig}/bashrc
+
+if [ ! -d "$JAVA_HOME" ];then
+    echo -e "\033[1;31mJava_环境配置错误\n$JAVA_HOME不存在\n\033[0m"
+fi
+if [ ! -d "$ANDROID_SDK" ];then
+    echo -e "\033[1;31mAndroid_SDK_环境配置错误\n$ANDROID_SDK 不存在\n\033[0m"
+else
+    alias xl='export XCMD=xl;\
+                  adb logcat -c;\
+                  adb logcat | grep '
+    alias xlc='adb logcat | grep androidrun -i'
+    alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
+    alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
+    alias xqselect='adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.mtk.select'
+    alias xqsetting='adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.android.settings '
+    alias xqcamera='adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.android.camera2 '
+    alias xqchanglogo='adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.sprd.bootres'
+    alias xqcamera_test_sub='adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.mediatek.factorymode'
+fi
+if [ ! -d "$ANDROID_NDK" ];then
+    echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
+fi
+if [ ! -f "$filePathGitBash" ];then
+    echo -e "\033[1;31mgit bash 配置文件:\n$filePathGitBash 不存在\033[0m"
+else
+    source $filePathGitBash
+fi
 if [ ! -z `which todos` ]||[ ! -z `which fromdos` ];then
     alias unix2dos=todos
     alias dos2unix=fromdos
 fi
 
-fileNameXbashTragetConfigBase=config_base
-filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
-dirPathHomeCmdConfigBashrc=${dirPathHomeCmdConfig}/bashrc
 #全局变量
 if [ -f $filePathXbashTragetConfigBase ];then
     #不重复添加config_base的只读设定
@@ -57,7 +88,7 @@ if [ -f $filePathXbashTragetConfigBase ];then
     fi
     #标记为环境模式，此模式说明直接调用脚本实现
     export XMODULE="env"
-    # 函数
+
     if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
         source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
 
@@ -72,18 +103,14 @@ if [ -f $filePathXbashTragetConfigBase ];then
             else
                 git log --date=short --pretty=format:"%C(bold blue) %H %Creset %an %ad %s" -15
             fi'
-        alias xmonkey='ftMonkeyTestByDevicesName'
         alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
-        alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
+        alias xk='ftKillPhoneAppByPackageName'
         alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
         alias xu='export XCMD=xu;gedit  ${dirPathHomeCmdConfigBashrc}/config_bashrc_base.gone\
                         ${dirPathHomeCmdConfigBashrc}/config_bashrc_base'
-        alias xh='export XCMD=xh;${dirPathHomeCmd}/main.sh -h $2'
         alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
         alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
         alias xd='export XCMD=xd;${dirPathHomeCmd}/main.sh mtk_flashtool'
-        alias xt='export XCMD=xt;python ${dirPathHomeCmd}/module/test/pytools.py $2'
-        alias xi='export XCMD=xi;. ${dirPathHomeCmd}/${rFileNameCmdModuleCompile}'
         alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
 
         #命令选项快速适配
@@ -105,27 +132,24 @@ if [ -f $filePathXbashTragetConfigBase ];then
 else
     echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
 fi
-#--------------------------命令封装[AOSP部分]---------------------------
-alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
-                            cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";\
-                            cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"'
-alias xmodel='cat build/tools/buildinfo.sh|grep "ro.product.model=";\
-                            cat build/tools/buildinfo.sh|grep "ro.product.brand=";\
-                            cat build/tools/buildinfo.sh|grep "ro.product.name=";\
-                            cat build/tools/buildinfo.sh|grep "ro.product.device=";\
-                            cat device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk |grep "product.model.num";\
-                            cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"'
-alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :=";\
-                             cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "LZ_CONFIG_CAMERA_TYPE :="'
 
-alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SAM_FACTORYMODE";\
-                    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "TESTMODE_LIST";\
-                    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "VERALION"'
+if [ -d "vendor/sprd" ];then
+        alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
+                                    cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";\
+                                    cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"'
+        alias xmodel='cat build/tools/buildinfo.sh|grep "ro.product.model=";\
+                                  cat build/tools/buildinfo.sh|grep "ro.product.brand=";\
+                                  cat build/tools/buildinfo.sh|grep "ro.product.name=";\
+                                  cat build/tools/buildinfo.sh|grep "ro.product.device=";\
+                                  cat device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk |grep "product.model.num";\
+                                  cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"'
+        alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :=";\
+                                    cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "LZ_CONFIG_CAMERA_TYPE :="'
+fi
 
-#-------------------------android优化加速部分------------------
-#编译加速 c/c++ 部分
-export USE_CCACHE=1
-export CACHE_UMASK=002
-unset CCACHE_HARDLINK
-#分布式编译集群的IP组
-#export DISTCC_HOSTS="192.168.3.114"
+#----------------    常用命令封装    ---------------------------
+alias ..="cd .."
+alias ...="cd ../.."
+alias xcc='cd $OLDPWD'
+alias xr="source ~/.bashrc"
+alias xp="export XCMD=xp;readlink -f"

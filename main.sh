@@ -35,7 +35,6 @@ ftWhoAmI()## #命令权限判定
     local cmdName=$1
 
     #耦合校验
-
     if [ -z "$cmdName" ];then
         ftReadMe $XCMD
     fi
