@@ -1497,7 +1497,6 @@ ff02::2 ip6-allrouters
 ftBackupOutsByMove()
 {
     local ftEffect=移动备份out
-    ftAutoInitEnv
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
 
@@ -1511,9 +1510,26 @@ EOF
     if [ "$XMODULE" = "env" ];then
         return
     fi
+    exit;;
+    env | -env |-ENV ) cat<<EOF
+#============== [   ${ftEffect}   ]的使用环境说明============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
     exit;; * ) break;; esac;done
 
     #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
+        ftBackupOutsByMove -env
+        return
+    fi
+
     local valCount=0
     local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
@@ -1529,6 +1545,7 @@ EOF
     #分支名
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
+    ftAutoInitEnv
     local buildType=$AutoEnv_buildType
     local versionName=$AutoEnv_versionName
 
@@ -1576,7 +1593,25 @@ EOF
         return
     fi
     exit;;
+    env | -env |-ENV ) cat<<EOF
+#============== [   ${ftEffect}   ]的使用环境说明============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;;
      * ) break;; esac;done
+
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftYKSwitch -env
+        return
+    fi
 
 # 环境检测
     ftAutoInitEnv
@@ -1925,19 +1960,6 @@ ftLanguageUtils()
     local ftLanguageContent=$@
     local dirPathCode=$ANDROID_BUILD_TOP
     local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
-    ftAutoInitEnv
-    if [ $AutoEnv_mnufacturers = "sprd" ];then
-            local filePathDeviceSprd=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
-            filePathDevice=$filePathDeviceSprd
-    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-            local filePathDeviceMtk=${dirPathCode}/device/kdragon/m9_xinhaufei_r9_hd/ProjectConfig.mk
-            local filePathDeviceMtk2=${dirPathCode}/device/keytak/keytak6580_weg_l/ProjectConfig.mk
-            if [ -f "$filePathDeviceMtk" ]; then
-                filePathDevice=$filePathDeviceMtk
-            elif [ -f "$filePathDeviceMtk2" ]; then
-                filePathDevice=$filePathDeviceMtk2
-            fi
-    fi
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -1950,9 +1972,37 @@ EOF
     if [ "$XMODULE" = "env" ];then
         return
     fi
+    exit;;
+    env | -env |-ENV ) cat<<EOF
+#============== [   ${ftEffect}   ]的使用环境说明============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
     exit;; * ) break;; esac;done
 
     #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftLanguageUtils -env
+        return
+    fi
+    ftAutoInitEnv
+    if [ $AutoEnv_mnufacturers = "sprd" ];then
+            local filePathDeviceSprd=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
+            filePathDevice=$filePathDeviceSprd
+    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+            local filePathDeviceMtk=${dirPathCode}/device/kdragon/m9_xinhaufei_r9_hd/ProjectConfig.mk
+            if [ -f "$filePathDeviceMtk" ]; then
+                filePathDevice=$filePathDeviceMtk
+            else
+                filePathDevice=${dirPathCode}/device/keytak/keytak6580_weg_l/ProjectConfig.mk
+            fi
+    fi
     local errorContent=
     if [ -z "$ftLanguageContent" ];then    errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
     elif [ ! -f "$filePathDevice" ];then    errorContent="${errorContent}\\n[工程Device的语言配置文件不存在]filePathDevice=$filePathDevice" ; fi
@@ -2125,11 +2175,10 @@ ftCreateReadMeBySoftwareVersion()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local dirPathPacRes=$1
-    ftAutoInitEnv
 
     while true; do case "$1" in
     #使用环境说明
-    e | -e |--env) cat<<EOF
+    e | -e) cat<<EOF
 #=================== ${ftEffect}使用环境说明=============
 #
 #    工具依赖包 unix2dos #sudo apt-get install tofrodos
@@ -2147,12 +2196,27 @@ EOF
     if [ "$XMODULE" = "env" ];then
         return
     fi
+    exit;;
+    env | -env |-ENV ) cat<<EOF
+#============== [   ${ftEffect}   ]的使用环境说明============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
     exit;; * ) break;; esac;done
-
 
     #环境校验
     if [ -z `which todos` ]||[ -z `which fromdos` ];then
         ftCreateReadMeBySoftwareVersion -e
+    fi
+    if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
+        ftCreateReadMeBySoftwareVersion -env
+        return
     fi
     #耦合校验
     local valCount=1
@@ -2169,13 +2233,12 @@ EOF
     if [ ! -d "$dirPathPacRes" ];then
         mkdir $dirPathPacRes
     fi
-
+    ftAutoInitEnv
 
     local fileNameReadMeTemplate=客户说明.txt
     local fileNameChangeListTemplate=修改记录.txt
     local filePathReadMeTemplate=${dirPathPacRes}/${fileNameReadMeTemplate}
     local filePathChangeListTemplate=${dirPathPacRes}/${fileNameChangeListTemplate}
-
     local versionName=$AutoEnv_versionName
 
     # 语言列表
@@ -2194,17 +2257,17 @@ EOF
                 local filePathDeviceMtk=${dirPathCode}/device/kdragon/m9_xinhaufei_r9_hd/ProjectConfig.mk
                 local filePathDeviceMtk2=${dirPathCode}/device/keytak/keytak6580_weg_l/ProjectConfig.mk
                 if [ -f "$filePathDeviceMtk" ]; then
-                    local key="MTK_PRODUCT_LOCALES = "
-                    LanguageList=$(cat $filePathDeviceMtk|grep "$key")
+                    LanguageList=$(grep ^$key $filePathDeviceMtk)
                 elif [ -f "$filePathDeviceMtk2" ]; then
-                    local key="MTK_PRODUCT_LOCALES = "
-                    LanguageList=$(cat $filePathDeviceMtk2|grep "$key")
+                    local key="MTK_PRODUCT_LOCALES"
+                    LanguageList=$(grep ^$key $filePathDeviceMtk2)
                     LanguageList=${LanguageList//$key/};
+                    LanguageList=${LanguageList//=/};
                 else
                     ftEcho -e "[工程文件不存在:${filePathDeviceMtk}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
                 fi
     fi
-    echo $LanguageList
+
     LanguageList=${LanguageList//$key/};
     LanguageList=`ftLanguageUtils "$LanguageList"`  #缩写转化为中文
     LanguageList=${LanguageList//
@@ -2339,9 +2402,25 @@ EOF
     if [ "$XMODULE" = "env" ];then
         return
     fi
+    exit;;
+    env | -env |-ENV ) cat<<EOF
+#============== [   ${ftEffect}   ]的使用环境说明============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
     exit;; * ) break;; esac;done
 
     #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftAutoLanguageUtil -env
+        return
+    fi
     local valCount=0
     local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
@@ -2436,9 +2515,25 @@ EOF
     if [ "$XMODULE" = "env" ];then
         return
     fi
+    exit;;
+    env | -env |-ENV ) cat<<EOF
+#============== [   ${ftEffect}   ]的使用环境说明============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
     exit;; * ) break;; esac;done
 
     #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftAutoUpdateSoftwareVersion -env
+        return
+    fi
     local valCount=1
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
@@ -2542,9 +2637,25 @@ EOF
         return
     fi
     exit;;
+    env | -env |-ENV ) cat<<EOF
+#============== [   ${ftEffect}   ]的使用环境说明============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;;
     * ) break;;esac;done
 
     #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftAutoBuildMultiBranch -env
+        return
+    fi
     local valCount=1
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
@@ -2743,9 +2854,27 @@ EOF
     if [ "$XMODULE" = "env" ];then
         return
     fi
+    exit;;
+    env | -env |-ENV ) cat<<EOF
+#============== [   ${ftEffect}   ]的使用环境说明============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
     exit;; * ) break;; esac;done
 
     #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ]\
+        ||[ -z "$ANDROID_PRODUCT_OUT" ]\
+        ||[ -z "$TARGET_BUILD_VARIANT" ];then
+        ftAutoInitEnv -env
+        return
+    fi
     local valCount=0
     local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
