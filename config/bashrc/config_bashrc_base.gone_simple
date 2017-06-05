@@ -16,7 +16,8 @@ export PATH=$PATH:$ANDROID_NDK
 #export PATH=$PATH:/usr/local/cuda-7.5/bin:/usr/local/cuda-8.0/bin
 export PATH=$PATH:/usr/libexec/git-core
 
-# export CCACHE_DIR=/media/data/.ccache
+#缓存目录[android优化加速部分]
+export CCACHE_DIR=/media/cache/.ccache
 export USE_CCACHE=1
 export CACHE_UMASK=002
 unset CCACHE_HARDLINK
