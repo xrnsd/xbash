@@ -72,11 +72,10 @@ ftRestoreChoiceSource()
 
     #耦合校验
     local valCount=0
-    local errorContent="函数[${ftEffect}]的参数错误"
-    local errorContentBase=$errorContent
+    local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d $mDirPathStoreSource ];then    errorContent="${errorContent}\\n[版本包存放的设备根目录不存在]mDirPathStoreSource=$mDirPathStoreSource" ; fi
-    if [ "$errorContentBase" != "$errorContent" ];then
+    if [ ! -z "$errorContent" ];then
             ftEcho -ea "$errorContent"
             # ftRestoreChoiceSource -h
             # return
@@ -186,12 +185,11 @@ EOF
 
     #耦合校验
     local valCount=1
-    local errorContent="函数[${ftEffect}]的参数错误"
-    local errorContentBase=$errorContent
+    local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$infoType" ];then    errorContent="${errorContent}\\n[显示信息类型为空]infoType=$infoType" ; fi
-    if [ "$errorContentBase" != "$errorContent" ];then
-            ftEcho -ea "$errorContent \\n请查看下面说明:"
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftEchoInfo -h
             return
     fi
@@ -248,13 +246,12 @@ EOF
 
     #耦合校验
     local valCount=0
-    local errorContent="函数[${ftEffect}]的参数错误"
-    local errorContentBase=$errorContent
+    local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$rNameUser" ];then    errorContent="${rNameUser}\\n[默认用户名为空]rNameUser=$rNameUser" ; fi
     if [ -z "$mCmdsModuleDataDevicesList" ];then    errorContent="${errorContent}\\n[可用的版本包备份存储设备列表为空]mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}" ; fi
-    if [ "$errorContentBase" != "$errorContent" ];then
-            ftEcho -ea "$errorContent \\n请查看下面说明:"
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftSetBackupDevDir -h
             return
     fi
@@ -346,11 +343,10 @@ ftSetRestoreType()
     local ftEffect=选择还原时忽略的目录
     #耦合校验
     local valCount=1
-    local errorContent="函数[${ftEffect}]的参数错误"
-    local errorContentBase=$errorContent
+    local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[默认用户的home目录不存在]rDirPathUserHome=$rDirPathUserHome" ; fi
-    if [ "$errorContentBase" != "$errorContent" ];then
+    if [ ! -z "$errorContent" ];then
             ftEcho -ea "$errorContent"
             # ftSetRestoreType -h
             # return
@@ -507,13 +503,12 @@ EOF
 
     #耦合校验
     local valCount=2
-    local errorContent="函数[${ftEffect}]的参数错误"
-    local errorContentBase=$errorContent
+    local errorContent=
     if (( $#<$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$dirPathBackupRoot" ];then    errorContent="${errorContent}\\n[dirPathBackupRoot为空]dirPathBackupRoot=$dirPathBackupRoot" ; fi
     if [ -z "$versionName" ];then    errorContent="${errorContent}\\n[版本包名为空]versionName=$versionName" ; fi
-    if [ "$errorContentBase" != "$errorContent" ];then
-            ftEcho -ea "$errorContent \\n请查看下面说明:"
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAddNote -h
             return
     fi
@@ -585,14 +580,13 @@ EOF
 
     #耦合校验
     local valCount=3
-    local errorContent="函数[${ftEffect}]的参数错误"
-    local errorContentBase=$errorContent
+    local errorContent=
     if (( $#<$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$typeEdit" ];then    errorContent="${errorContent}\\n[操作参数为空]typeEdit=$typeEdit" ; fi
     if [ -z "$dirPathBackupRoot" ];then    errorContent="${errorContent}\\n[版本包存放的设备根目录为空]dirPathBackupRoot=$dirPathBackupRoot" ; fi
     if [ -z "$versionName" ];then    errorContent="${errorContent}\\n[版本包名为空]versionName=$versionName" ; fi
-    if [ "$errorContentBase" != "$errorContent" ];then
-            ftEcho -ea "$errorContent \\n请查看下面说明:"
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftMD5 -h
             return
     fi
@@ -690,14 +684,13 @@ EOF
 
     #耦合校验
     local valCount=3
-    local errorContent="函数[${ftEffect}]的参数错误"
-    local errorContentBase=$errorContent
+    local errorContent=
     if (( $#<$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$typeEdit" ];then    errorContent="${errorContent}\\n[操作参数为空]typeEdit=$typeEdit" ; fi
     if [ -z "$dirPathBackupRoot" ];then    errorContent="${errorContent}\\n[版本包存放的设备根目录为空]dirPathBackupRoot=$dirPathBackupRoot" ; fi
     if [ -z "$dirNameBackupInfoVersion" ];then    errorContent="${errorContent}\\n[版本包名为空]dirNameBackupInfoVersion=$dirNameBackupInfoVersion" ; fi
-    if [ "$errorContentBase" != "$errorContent" ];then
-            ftEcho -ea "$errorContent \\n请查看下面说明:"
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAddOrCheckSystemHwSwInfo -h
             return
     fi
@@ -836,14 +829,13 @@ EOF
 
     #耦合校验
     local valCount=3
-    local errorContent="函数[${ftEffect}]的参数错误"
-    local errorContentBase=$errorContent
+    local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$version" ];then    errorContent="${errorContent}\\n[目标版本包名为空]version=$version" ; fi
     if [ -z "$note" ];then    errorContent="${errorContent}\\n[目标版本包的备注为空]note=$note" ; fi
     if [ -z "$devList" ];then    errorContent="${errorContent}\\n[存放版本包的设备目录列表为空]devList=${devList[@]} " ; fi
-    if [ "$errorContentBase" != "$errorContent" ];then
-            ftEcho -ea "$errorContent \\n请查看下面说明:"
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftBackUpDevScanning -h
             return
     fi
@@ -927,12 +919,11 @@ EOF
 
     #耦合校验
     local valCount=0
-    local errorContent="函数[${ftEffect}]的参数错误"
-    local errorContentBase=$errorContent
+    local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$mFilePathVersion" ];then    errorContent="${errorContent}\\n[将生成版本包路径为空]mFilePathVersion=$mFilePathVersion" ; fi
-    if [ "$errorContentBase" != "$errorContent" ];then
-            ftEcho -ea "$errorContent \\n请查看下面说明:"
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftVersionPackageIsCreated -h
             return
     fi
@@ -983,13 +974,12 @@ EOF
 
     #耦合校验
     local valCount=2
-    local errorContent="函数[${ftEffect}]的参数错误"
-    local errorContentBase=$errorContent
+    local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$fileTypeList" ];then    errorContent="${errorContent}\\n[同步类型列表为空]fileTypeList=$fileTypeList" ; fi
     if [ -z "$dirPathArray" ];then    errorContent="${errorContent}\\n[同步设备目录列表为空]dirPathArray=${dirPathArray[@]}" ; fi
-    if [ "$errorContentBase" != "$errorContent" ];then
-            ftEcho -ea "$errorContent \\n请查看下面说明:"
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftSynchronous -h
             return
     fi
