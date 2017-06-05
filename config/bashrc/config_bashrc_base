@@ -1,5 +1,5 @@
 #! /bin/bash
-#----------------    终端自身设定    ---------------------------
+#----------------    bash config    ---------------------------
 # 忽略特定命令
 export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
 # 保存历史命令条数
@@ -7,7 +7,7 @@ export HISTSIZE=500
 # 以追加的方式保存命令历史
 shopt -s histappend
 #自动去重备份bash历史记录
-filePathBashHistory=${dirPathHome}/.bash_history
+filePathBashHistory=${dirPathHome}/.bash_history 
 filePathBashHistoryTemp=${filePathBashHistory}_temp
 filePathBashHistoryArchive=${filePathBashHistory}_archive
 filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
@@ -25,56 +25,17 @@ if (($lineCount > $lineCountMax)); then
     && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive \
     && > $filePathBashHistory
 fi
+alias ..="cd .."
+alias ...="cd ../.."
+alias xcc='cd $OLDPWD'
+alias xr="source ~/.bashrc"
 
-#----------------    Android Dev Env Config    ---------------------------
-#环境变量
-export ANDROID_SDK=${dirPathHomeTools}/sdk/4.4
-export ANDROID_SDK_HOME=$ANDROID_SDK
-export ANDROID_SDK_BUILD_TOOL=${ANDROID_SDK_HOME}/build-tools/android-4.4W
-export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r10c
-export PATH=$PATH:${JAVA_HOME}/bin:${JRE_HOME}/bin
-export PATH=$PATH:$ANDROID_SDK_BUILD_TOOL
-export PATH=$PATH:$ANDROID_NDK
-#export PATH=$PATH:/usr/local/cuda-7.5/bin:/usr/local/cuda-8.0/bin
-export PATH=$PATH:/usr/libexec/git-core
-#编译加速 c/c++ 部分
-export USE_CCACHE=1
-export CACHE_UMASK=002
-unset CCACHE_HARDLINK
-#分布式编译集群的IP组
-#export DISTCC_HOSTS="192.168.3.114"
 
-#----------------    xbash init    ---------------------------
+#----------------    xbash config  ---------------------------
 fileNameXbashTragetConfigBase=config_base
 filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
 dirPathHomeCmdConfigBashrc=${dirPathHomeCmdConfig}/bashrc
 
-if [ ! -d "$JAVA_HOME" ];then
-    echo -e "\033[1;31mJava_环境配置错误\n$JAVA_HOME不存在\n\033[0m"
-fi
-if [ ! -d "$ANDROID_SDK" ];then
-    echo -e "\033[1;31mAndroid_SDK_环境配置错误\n$ANDROID_SDK 不存在\n\033[0m"
-else
-    alias xl='export XCMD=xl;\
-                  adb logcat -c;\
-                  adb logcat | grep '
-    alias xlc='adb logcat | grep androidrun -i'
-    alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
-    alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
-    alias xqselect='adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.mtk.select'
-    alias xqsetting='adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.android.settings '
-    alias xqcamera='adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.android.camera2 '
-    alias xqchanglogo='adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.sprd.bootres'
-    alias xqcamera_test_sub='adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.mediatek.factorymode'
-fi
-if [ ! -d "$ANDROID_NDK" ];then
-    echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
-fi
-if [ ! -f "$filePathGitBash" ];then
-    echo -e "\033[1;31mgit bash 配置文件:\n$filePathGitBash 不存在\033[0m"
-else
-    source $filePathGitBash
-fi
 if [ ! -z `which todos` ]||[ ! -z `which fromdos` ];then
     alias unix2dos=todos
     alias dos2unix=fromdos
@@ -92,19 +53,10 @@ if [ -f $filePathXbashTragetConfigBase ];then
     if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
         source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
 
-        alias xle='export XCMD=xle;\
-                        adb logcat "*:E"'
-        alias xgl='gitVersionMin="2.6.0";\
-            gitVersionNow=$(git --version);\
-            gitVersionNow=${gitVersionNow//git version/};\
-            gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g);\
-            if version_lt $gitVersionMin $gitVersionNow; then
-                git log --date=format-local:'%y%m%d' --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(10,trunc)%an%Creset %Cblue%h%Creset %s" -15
-            else
-                #%Cblue%h%Creset %<(40,trunc)%s [%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%an%Creset%C(yellow)%d%Creset]
-                git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(10,trunc)%an%Creset %Cblue%h%Creset %s" -15
-            fi'
-        alias xgll='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(10,trunc)%an%Creset %Cblue%h%Creset %s" -100'
+        alias xle='export XCMD=xle;adb logcat "*:E"'
+        #%Cblue%h%Creset %<(40,trunc)%s [%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%an%Creset%C(yellow)%d%Creset]
+        alias xgl='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
+        alias xgll='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
         alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
         alias xk='ftKillPhoneAppByPackageName'
         alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
@@ -134,24 +86,16 @@ if [ -f $filePathXbashTragetConfigBase ];then
 else
     echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
 fi
-
 if [ -d "vendor/sprd" ];then
         alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
-                                    cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";\
-                                    cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"'
+                                cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";\
+                                cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"'
         alias xmodel='cat build/tools/buildinfo.sh|grep "ro.product.model=";\
-                                  cat build/tools/buildinfo.sh|grep "ro.product.brand=";\
-                                  cat build/tools/buildinfo.sh|grep "ro.product.name=";\
-                                  cat build/tools/buildinfo.sh|grep "ro.product.device=";\
-                                  cat device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk |grep "product.model.num";\
-                                  cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"'
+                               cat build/tools/buildinfo.sh|grep "ro.product.brand=";\
+                               cat build/tools/buildinfo.sh|grep "ro.product.name=";\
+                               cat build/tools/buildinfo.sh|grep "ro.product.device=";\
+                               cat device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk |grep "product.model.num";\
+                               cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"'
         alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :=";\
-                                    cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "LZ_CONFIG_CAMERA_TYPE :="'
+                                cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "LZ_CONFIG_CAMERA_TYPE :="'
 fi
-
-#----------------    常用命令封装    ---------------------------
-alias ..="cd .."
-alias ...="cd ../.."
-alias xcc='cd $OLDPWD'
-alias xr="source ~/.bashrc"
-alias xp="export XCMD=xp;readlink -f"
