@@ -2965,15 +2965,28 @@ EOF
 ftMonkeyTestByDevicesName()
 {
     local ftEffect=自动化monkey测试
-    local eventCount=$1
+    local editType=$1
+    local eventCount=$2
+
+    editType=${editType:-'-a'}
     eventCount=${eventCount:-'1000000'}
+    if (  echo -n $editType | grep -q -e "^[0-9][0-9]*$");then
+        eventCount=$editType
+        editType=-a
+    fi
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
+#    ftMonkeyTestByDevicesName #无参数 默认错误不退出,1000000次
 #    ftMonkeyTestByDevicesName [eventCount]
 #    ftMonkeyTestByDevicesName 1000000
+#    ftMonkeyTestByDevicesName [editType]
+#    ftMonkeyTestByDevicesName -b #黑名单功能
+#    ftMonkeyTestByDevicesName -w #白名单功能
+#    ftMonkeyTestByDevicesName [editType] [eventCount]
+#    ftMonkeyTestByDevicesName -b/-w 1000000
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then
@@ -2982,11 +2995,12 @@ EOF
     exit;; * ) break;; esac;done
 
     #耦合校验
-    local valCount=1
+    local valCount=2
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$rNameUser" ];then    errorContent="${errorContent}\\n[用户名为空]rNameUser=$rNameUser" ; fi
-    if ( ! echo -n $eventCount | grep -q -e "^[0-9][0-9]*$");then    errorContent="${errorContent}\\n[事件数不是整数]eventCount=$eventCount" ; fi
+    if ( ! echo -n $editType | grep -q -e "^[0-9][0-9]*$")\
+        &&( ! echo -n $eventCount | grep -q -e "^[0-9][0-9]*$");then    errorContent="${errorContent}\\n[事件数不是整数]eventCount=$eventCount" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftMonkeyTestByDevicesName -h
@@ -3025,18 +3039,103 @@ EOF
             SDKVersion=${SDKVersion:-'null'}
             local AndroidVersion=$(ftGetAndroidVersionBySDKVersion $SDKVersion)
 
-
             local dirPathLocal=$(pwd)
             local dirPathMoneyLog=${dirPathLocal}/monkey/PcName[${rNameUser}]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]____${logDate}
             local filePathLogLogcat=${dirPathMoneyLog}/${logDateTime}.logcat
             local filePathLogMonkey=${dirPathMoneyLog}/${logDateTime}.monkey
+            local fileNamePackageNameListWhite=${logDateTime}.whitelist
+            local fileNamePackageNameListBlack=${logDateTime}.blacklist
 
-            mkdir -p $dirPathMoneyLog
-            adb logcat "*:E" 2>&1|tee $filePathLogLogcat&
-            adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions -v -v -v $eventCount 2>&1 |tee $filePathLogMonkey
-            exit
+            local dirPathDevice=/data/local/tmp/
+            local FilePathXbashDataMonkeyConfigLocalWhite=${dirPathMoneyLog}/${fileNamePackageNameListWhite}
+            local FilePathXbashDataMonkeyConfigLocalBlack=${dirPathMoneyLog}/${fileNamePackageNameListBlack}
+            local FilePathXbashDataMonkeyConfigDeviceWhite=${dirPathDevice}/${fileNamePackageNameListWhite}
+            local FilePathXbashDataMonkeyConfigDeviceBlack=${dirPathDevice}/${fileNamePackageNameListBlack}
+
+            while true; do case "$editType" in
+            -a | -A)
+                        mkdir -p $dirPathMoneyLog
+                        adb logcat 2>&1|tee $filePathLogLogcat&
+                        adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions \
+                                                    -v -v -v $eventCount 2>&1 |tee $filePathLogMonkey
+                       exit
+                        break;;
+            -b | -B)
+                        if [ ! -z "$(pgrep -f gedit)" ];then
+                             while true; do
+                                        echo
+                                        ftEcho -y gedit 已打开是否关闭
+                                        read -n1 sel
+                                        case "$sel" in
+                                            y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
+                                                           break;;
+                                            n | N)    return;;
+                                            q |Q)    return;;
+                                            * )
+                                                ftEcho -e 错误的选择：$sel
+                                                echo "输入n,q，离开"
+                                                ;;
+                                        esac
+                                done
+                        fi
+                        gedit $FilePathXbashDataMonkeyConfigLocalBlack&&
+                        while [ ! -z "$(pgrep -f gedit)" ]
+                        do
+                            echo 等待中
+                        done
+                        if [ -f "$FilePathXbashDataMonkeyConfigLocalBlack" ];then
+                            mkdir -p $dirPathMoneyLog
+                            adb push $FilePathXbashDataMonkeyConfigLocalBlack $FilePathXbashDataMonkeyConfigDeviceBlack
+                            adb logcat 2>&1|tee $filePathLogLogcat&
+                            adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions \
+                                                        --pkg-blacklist-file $FilePathXbashDataMonkeyConfigDeviceBlack \
+                                                        -v -v -v $eventCount 2>&1 |tee $filePathLogMonkey
+                           exit
+                        else
+                            ftEcho -e "Monkey测试黑名单配置文件不存在[$FilePathXbashDataMonkeyConfigLocalBlack]"
+                        fi
+                        break;;
+            -w | -W)
+                    if [ ! -z "$(pgrep -f gedit)" ];then
+                         while true; do
+                                    echo
+                                    ftEcho -y gedit 已打开是否关闭
+                                    read -n1 sel
+                                    case "$sel" in
+                                        y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
+                                                       break;;
+                                        n | N)    return;;
+                                        q |Q)    return;;
+                                        * )
+                                            ftEcho -e 错误的选择：$sel
+                                            echo "输入n,q，离开"
+                                            ;;
+                                    esac
+                            done
+                    fi
+                    gedit $FilePathXbashDataMonkeyConfigLocalWhite&&
+                    while [ ! -z "$(pgrep -f gedit)" ]
+                    do
+                        echo 等待中
+                    done
+                    if [ -f "$FilePathXbashDataMonkeyConfigLocalWhite" ];then
+                        mkdir -p $dirPathMoneyLog
+                        adb push $FilePathXbashDataMonkeyConfigLocalWhite $FilePathXbashDataMonkeyConfigDeviceWhite
+                        adb logcat 2>&1|tee $filePathLogLogcat&
+                        adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions \
+                                                    --pkg-whitelist-file $FilePathXbashDataMonkeyConfigDeviceWhite \
+                                                    -v -v -v $eventCount 2>&1 |tee $filePathLogMonkey
+                       exit
+                    else
+                        ftEcho -e "Monkey测试白名单配置文件不存在[$FilePathXbashDataMonkeyConfigLocalWhite]"
+                    fi
+                    break;;
+            * )
+            ftEcho -ea "函数[${ftEffect}]的参数错误${editType}\\n请查看下面说明:"
+            ftMonkeyTestByDevicesName -h
+             break;; esac;done
     else
-        ftEcho -e adb连接状态[$adbStatus]异常,请重新尝试
+        ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
     fi
 
 }
