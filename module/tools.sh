@@ -550,7 +550,6 @@ EOF
     else
         return
     fi
-
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -1243,6 +1242,9 @@ ftGetKeyValueByBlockAndKey()
 #     value表示对应字段的值
 #=========================================================
 EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
     exit 1;; * )break;; esac;done
 
     #耦合校验
@@ -1311,6 +1313,9 @@ ftSetKeyValueByBlockAndKey()
 #    ftSetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup 1232
 #=========================================================
 EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
     exit 1;; * )break;; esac;done
 
     #耦合校验
@@ -1361,6 +1366,9 @@ ftCheckIniConfigSyntax()
 #    ftCheckIniConfigSyntax 123/config.ini
 #=========================================================
 EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
     exit 1;; * )break;; esac;done
 
     #耦合校验
@@ -2082,91 +2090,6 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
             index=`expr $index + 1`
         done
     done
-}
-
-ftAutoUploadPro()
-{
-    local ftEffect=上传文件到服务器[低耦合版]
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
-#
-#    ftAutoUploadPro 需要上传的文件或目录 服务器 用户名 用户密码 服务器路径
-#
-#    ftAutoUploadPro /home/xxx/1.test 192.168.1.188 server 123456 智能机软件/7731c/....
-#    ftAutoUploadPro /home/xxx/1/ 192.168.1.188 server 123456 智能机软件/7731c/....
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
-    exit;; * ) break;; esac;done
-
-    local contentUploadSource=$1
-    local serverIp=$2
-    local userName=$3
-    local userPassword=$4
-    local dirPathServerMouleContent=$5
-    local dirPathServerMoule=$(dirname $dirPathServerMouleContent)
-    local fileNameUploadSource=$(basename $contentUploadSource)
-
-    if [ $dirPathServerMoule = "." ];then
-        dirPathServerMoule=$dirPathServerMouleContent
-    fi
-
-    #耦合校验
-    local valCount=5
-    local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -f "$contentUploadSource" ];then    errorContent="${errorContent}\\n[源文件路径不存在]contentUploadSource=$contentUploadSource" ; fi
-    if ([ ! -d "$contentUploadSource" ]&&[ ! -f "$contentUploadSource" ]);then    errorContent="${errorContent}\\n[上传源无效]contentUploadSource=$contentUploadSource" ; fi
-    if [ -d "$contentUploadSource" -a `ls $contentUploadSource|wc -w` = "0" ];then    errorContent="${errorContent}\\n[上传源为空]contentUploadSource=$contentUploadSource" ; fi
-    if [ -z "$serverIp" ];then    errorContent="${errorContent}\\n[服务器IP地址为空]serverIp=$serverIp" ; fi
-    if [ -z "$rUserPwd" ];then    errorContent="${errorContent}\\n[本地用户密码为空]rUserPwd=$rUserPwd" ; fi
-    if [ -z "$userName" ];then    errorContent="${errorContent}\\n[服务器用户名为空]userName=$userName" ; fi
-    if [ -z "$userPassword" ];then    errorContent="${errorContent}\\n[服务器用户名密码为空]userPassword=$userPassword" ; fi
-    if [ -z "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[本地用户home目录为空]rDirPathUserHome=$rDirPathUserHome" ; fi
-    if [ -z "$dirPathServerMoule" ];then    errorContent="${errorContent}\\n[服务器根文件夹名为空]dirPathServerMoule=$dirPathServerMoule" ; fi
-    if [ -z "$dirPathServerMouleContent" ];then    errorContent="${errorContent}\\n[示服务器上传的目录为空]dirPathServerMouleContent=$dirPathServerMouleContent" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftAutoUploadPro -h
-            return
-    fi
-
-    local dirPathLocal=${rDirPathUserHome}/upload
-
-    if [ ! -d $dirPathLocal ];then
-        mkdir $dirPathLocal
-    else
-        ftEcho -s "尝试卸载[$dirPathLocal]"
-        echo $rUserPwd | sudo -S umount $dirPathLocal
-    fi
-
-    ftEcho -s "尝试挂载[//${serverIp}/${dirPathServerMoule}] 到 $dirPathLocal"
-    echo $rUserPwd | sudo -S mount -t cifs //${serverIp}/${dirPathServerMoule} $dirPathLocal -o username=$userName,password=$userPassword
-
-    if(( $?!=0 ));then
-        echo 错误
-    else
-        echo $rUserPwd | sudo -S mkdir -p ${dirPathLocal}/${dirPathServerMouleContent}
-        echo $rUserPwd | sudo -S chmod 777 -R ${dirPathLocal}/${dirPathServerMouleContent}
-    fi
-
-    ftEcho -s "开始上传${fileNameUploadSource} 到\n\
- ${serverIp}/${dirPathServerMouleContent}..."
-     if [ -d $contentUploadSource ];then
-         cp -v -rf ${contentUploadSource}/* ${dirPathLocal}/${dirPathServerMouleContent}
-     elif [ -f $contentUploadSource ];then
-         cp -v $contentUploadSource ${dirPathLocal}/${dirPathServerMouleContent}
-     else
-        ftEcho -e "${contentUploadSource}\n  无效，上传失败"
-     fi
-    ftEcho -s "${contentUploadSource}\n\
- 上传结束"
-     # 收尾
-     echo $rUserPwd | sudo -S umount $dirPathLocal&&
-     rm -rf $dirPathLocal
 }
 
 ftCreateReadMeBySoftwareVersion()

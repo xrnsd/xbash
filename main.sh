@@ -169,7 +169,6 @@ ftCleanDataGarbage ------------- 快速清空回收站
 ftReduceFileList                 精简动画帧文件
 ftPushAppByName ---------------- push Apk文件
 ftBootAnimation                  生成开关机动画
-ftAutoUploadPro ---------------- 上传文件到服务器[低耦合版]
 ftLanguageUtils                  语言缩写转换
 ftMtkFlashTool ----------------- mtk下载工具
 ftAutoUpload ------------------- 上传文件到固定服务器
@@ -261,12 +260,6 @@ ftLanguageUtils 语言缩写转换
     |
     |ftLanguageUtils "ar_IL bn_BD my_MM"
     |ftLanguageUtils "阿拉伯语 孟加拉语 缅甸语"
-
-
-ftAutoUploadPro 上传文件到服务器[低耦合版]
-    |
-    |//ftAutoUploadPro 上传源文件路径 服务器IP地址 用户名 用户密码 服务器的存放路径
-    |ftAutoUploadPro /home/xxx/1.test 192.168.1.188 server 123456 智能机软件/7731c/....
 
 
 ftAutoUpload 上传文件到固定服务器
