@@ -433,6 +433,7 @@ EOF
     else
         #除第一个参数外的所有参数列表，可正常打印数组
         content="${valList[@]/$option/}"
+        content=${content/ /}
     fi
     while true; do
     case $option in
@@ -2890,12 +2891,17 @@ ftMonkeyTestByDevicesName()
     local ftEffect=自动化monkey测试
     local editType=$1
     local eventCount=$2
+    local throttleTimeLong=300
+    local configList=
 
     editType=${editType:-'-a'}
     eventCount=${eventCount:-'1000000'}
     if (  echo -n $editType | grep -q -e "^[0-9][0-9]*$");then
         eventCount=$editType
         editType=-a
+    fi
+    if (( $throttleTimeLong>-1 ));then
+        configList=" --throttle $throttleTimeLong "
     fi
 
     #使用示例
@@ -2912,6 +2918,7 @@ ftMonkeyTestByDevicesName()
 #    ftMonkeyTestByDevicesName -b/-w 1000000
 #=========================================================
 EOF
+    rm -rf $dirPathMoneyLog
     if [ "$XMODULE" = "env" ];then
         return
     fi
@@ -2931,15 +2938,19 @@ EOF
     fi
 
     #adb连接状态检测
+    adb wait-for-device
     local adbStatus=`adb get-state`
     if [ "$adbStatus" = "device" ];then
-            local keyModel="ro.product.model="
+            #======================================================
+            #==============  手机设备信息 ===========================
+            #========================== ===========================
             local keySoftType="ro.build.type="
+            local keyModel="ro.product.model="
+            local keySoftVersion="ro.build.display.id="
             local keySDKVersion="ro.build.version.sdk="
-            local keySoftVersion="ro.custom.build.version="
 
             local logDate="$(date -d "today" +"%y%m%d")"
-            local logDateTime="$(date -d "today" +"%y%m%d-%H%M")"
+            local logDateTime="$(date -d "today" +"%y%m%d-%H%M%S")"
 
             local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
             deviceModelName=${deviceModelName//$keyModel/}
@@ -2962,101 +2973,109 @@ EOF
             SDKVersion=${SDKVersion:-'null'}
             local AndroidVersion=$(ftGetAndroidVersionBySDKVersion $SDKVersion)
 
+            #======================================================
+            #==============  monkey命令配置 =========================
+            #========================== ===========================
             local dirPathLocal=$(pwd)
-            local dirPathMoneyLog=${dirPathLocal}/monkey/PcName[${rNameUser}]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]____${logDate}
+            local dirPathDevice=/data/local/tmp
+            local dirPathDeviceSDCard=/storage/sdcard0
+            local dirPathDeviceBuiltinSDCard=/storage/sdcard1
+
+            local deviceSDCardState=$(adb shell ls $dirPathDeviceSDCard|grep "No such file or directory")
+            if [ -z "$deviceSDCardState" ];then
+                local dirPathMoneyLog=${dirPathDeviceSDCard}/monkey/softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]_____${logDate}
+                adb shell mkdir -p $dirPathMoneyLog
+            else
+                local dirPathMoneyLog=${dirPathLocal}/monkey/PcName[${rNameUser}]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]____${logDate}
+                mkdir -p $dirPathMoneyLog
+            fi
+            local dirPathMoneyLogLocal=${dirPathLocal}/monkey/PcName[${rNameUser}]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]____${logDate}
             local filePathLogLogcat=${dirPathMoneyLog}/${logDateTime}.logcat
             local filePathLogMonkey=${dirPathMoneyLog}/${logDateTime}.monkey
             local fileNamePackageNameListWhite=${logDateTime}.whitelist
             local fileNamePackageNameListBlack=${logDateTime}.blacklist
-
-            local dirPathDevice=/data/local/tmp/
-            local FilePathXbashDataMonkeyConfigLocalWhite=${dirPathMoneyLog}/${fileNamePackageNameListWhite}
-            local FilePathXbashDataMonkeyConfigLocalBlack=${dirPathMoneyLog}/${fileNamePackageNameListBlack}
+            local FilePathXbashDataMonkeyConfigLocalWhite=${dirPathMoneyLogLocal}/${fileNamePackageNameListWhite}
+            local FilePathXbashDataMonkeyConfigLocalBlack=${dirPathMoneyLogLocal}/${fileNamePackageNameListBlack}
             local FilePathXbashDataMonkeyConfigDeviceWhite=${dirPathDevice}/${fileNamePackageNameListWhite}
             local FilePathXbashDataMonkeyConfigDeviceBlack=${dirPathDevice}/${fileNamePackageNameListBlack}
 
+            configList="${configList} --ignore-crashes --ignore-timeouts --ignore-security-exceptions "
+
             while true; do case "$editType" in
-            -a | -A)
-                        mkdir -p $dirPathMoneyLog
-                        adb logcat 2>&1|tee $filePathLogLogcat&
-                        adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions \
-                                                    -v -v -v $eventCount 2>&1 |tee $filePathLogMonkey
-                       exit
-                        break;;
             -b | -B)
-                        if [ ! -z "$(pgrep -f gedit)" ];then
-                             while true; do
-                                        echo
-                                        ftEcho -y gedit 已打开是否关闭
-                                        read -n1 sel
-                                        case "$sel" in
-                                            y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
-                                                           break;;
-                                            n | N)    return;;
-                                            q |Q)    return;;
-                                            * )
-                                                ftEcho -e 错误的选择：$sel
-                                                echo "输入n,q，离开"
-                                                ;;
-                                        esac
-                                done
-                        fi
-                        gedit $FilePathXbashDataMonkeyConfigLocalBlack&&
-                        while [ ! -z "$(pgrep -f gedit)" ]
-                        do
-                            echo 等待中
-                        done
-                        if [ -f "$FilePathXbashDataMonkeyConfigLocalBlack" ];then
-                            mkdir -p $dirPathMoneyLog
-                            adb push $FilePathXbashDataMonkeyConfigLocalBlack $FilePathXbashDataMonkeyConfigDeviceBlack
-                            adb logcat 2>&1|tee $filePathLogLogcat&
-                            adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions \
-                                                        --pkg-blacklist-file $FilePathXbashDataMonkeyConfigDeviceBlack \
-                                                        -v -v -v $eventCount 2>&1 |tee $filePathLogMonkey
-                           exit
-                        else
-                            ftEcho -e "Monkey测试黑名单配置文件不存在[$FilePathXbashDataMonkeyConfigLocalBlack]"
-                        fi
+                        local FilePathXbashDataMonkeyConfigLocalTraget=$FilePathXbashDataMonkeyConfigLocalBlack
+                        local FilePathXbashDataMonkeyConfigDeviceTraget=$FilePathXbashDataMonkeyConfigDeviceBlack
                         break;;
             -w | -W)
-                    if [ ! -z "$(pgrep -f gedit)" ];then
-                         while true; do
+                        local FilePathXbashDataMonkeyConfigLocalTraget=$FilePathXbashDataMonkeyConfigLocalWhite
+                        local FilePathXbashDataMonkeyConfigDeviceTraget=$FilePathXbashDataMonkeyConfigDeviceWhite
+                        break;;
+            * ) break;; esac;done
+
+            while true; do case "$editType" in
+            -a | -A)
+                        configList="${configList} -v -v -v "
+                        break;;
+            -b | -B| -w | -W)
+                        if [ ! -z "$(pgrep -f gedit)" ];then
+                             while true; do
                                     echo
                                     ftEcho -y gedit 已打开是否关闭
                                     read -n1 sel
                                     case "$sel" in
                                         y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
                                                        break;;
-                                        n | N)    return;;
-                                        q |Q)    return;;
-                                        * )
-                                            ftEcho -e 错误的选择：$sel
+                                        n | N |q |Q)    return;;
+                                        * ) ftEcho -e 错误的选择：$sel
                                             echo "输入n,q，离开"
-                                            ;;
-                                    esac
-                            done
-                    fi
-                    gedit $FilePathXbashDataMonkeyConfigLocalWhite&&
-                    while [ ! -z "$(pgrep -f gedit)" ]
-                    do
-                        echo 等待中
-                    done
-                    if [ -f "$FilePathXbashDataMonkeyConfigLocalWhite" ];then
-                        mkdir -p $dirPathMoneyLog
-                        adb push $FilePathXbashDataMonkeyConfigLocalWhite $FilePathXbashDataMonkeyConfigDeviceWhite
-                        adb logcat 2>&1|tee $filePathLogLogcat&
-                        adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions \
-                                                    --pkg-whitelist-file $FilePathXbashDataMonkeyConfigDeviceWhite \
-                                                    -v -v -v $eventCount 2>&1 |tee $filePathLogMonkey
-                       exit
-                    else
-                        ftEcho -e "Monkey测试白名单配置文件不存在[$FilePathXbashDataMonkeyConfigLocalWhite]"
-                    fi
-                    break;;
+                                ;; esac;done
+                        fi
+
+                        rm -f $FilePathXbashDataMonkeyConfigLocalBlack
+                        rm -f $FilePathXbashDataMonkeyConfigLocalWhite
+                        gedit $FilePathXbashDataMonkeyConfigLocalTraget&&
+                        while [ ! -z "$(pgrep -f gedit)" ]
+                        do
+                            echo 等待中
+                        done
+                        if [ -f "$FilePathXbashDataMonkeyConfigLocalBlack" ];then
+                            adb push $FilePathXbashDataMonkeyConfigLocalBlack $dirPathDevice
+                            rm -f $FilePathXbashDataMonkeyConfigLocalBlack
+                            configList="${configList} --pkg-blacklist-file $FilePathXbashDataMonkeyConfigDeviceTraget"
+                            configList="${configList} -v -v -v "
+
+                        elif [ -f "$FilePathXbashDataMonkeyConfigLocalWhite" ];then
+                            adb push $FilePathXbashDataMonkeyConfigLocalWhite $dirPathDevice
+                            rm -f $FilePathXbashDataMonkeyConfigLocalWhite
+                            configList="${configList} --pkg-whitelist-file $FilePathXbashDataMonkeyConfigDeviceTraget"
+                            configList="${configList} -v -v -v "
+
+                        else
+                            ftEcho -e "Monkey测试配置--pkg-xxxxlist文件不存在[$FilePathXbashDataMonkeyConfigDeviceTraget]\\n请查看下面说明:"
+                            ftMonkeyTestByDevicesName -h
+                            return
+                        fi
+                        break;;
             * )
-            ftEcho -ea "函数[${ftEffect}]的参数错误${editType}\\n请查看下面说明:"
-            ftMonkeyTestByDevicesName -h
-             break;; esac;done
+                        ftEcho -ea "函数[${ftEffect}]的参数错误${editType}\\n请查看下面说明:"
+                        ftMonkeyTestByDevicesName -h
+                        return
+                         break;;
+            esac;done
+
+            if [ "$deviceSoftType" != "user" ];then
+                adb shell "echo $logDateTime>/sys/class/android_usb/android0/iSerial"
+                configList="-s $logDateTime ${configList}"
+            fi
+
+            if [ -z "$deviceSDCardState" ];then
+                adb shell "logcat 1>> $filePathLogLogcat 2>> $filePathLogLogcat"&
+                adb shell "monkey ${configList} $eventCount 1>> $filePathLogMonkey 2>> $filePathLogMonkey"
+            else
+                adb logcat 2>&1|tee $filePathLogLogcat&
+                adb shell "monkey ${configList} $eventCount" 2>&1 |tee $filePathLogMonkey
+                exit
+            fi
     else
         ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
     fi
