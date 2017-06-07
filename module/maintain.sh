@@ -178,9 +178,7 @@ ftEchoInfo()
 #    ftEchoInfo backup/restore
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -239,9 +237,7 @@ ftSetBackupDevDir()
 #    ftSetBackupDevDir 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -496,9 +492,7 @@ ftAddNote()
 #    ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase “常规”
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -573,9 +567,7 @@ ftMD5()
 #    ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -677,9 +669,7 @@ ftAddOrCheckSystemHwSwInfo()
 #    ftAddOrCheckSystemHwSwInfo -check
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -822,9 +812,7 @@ ftBackUpDevScanning()
 #    ftBackUpDevScanning backup_cg_wgx_20161202 常规 "${mCmdsModuleDataDevicesList[*]}"
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -912,9 +900,7 @@ ftVersionPackageIsCreated()
 #    ftVersionPackageIsCreated 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -967,9 +953,7 @@ ftSynchronous()
 #     1 根据时间阀同步备份
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验

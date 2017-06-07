@@ -26,9 +26,7 @@ EOF
 #    ftExample [example]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     * ) break;;esac;done
 
@@ -63,9 +61,7 @@ ftKillPhoneAppByPackageName()
 #    ftKillPhoneAppByPackageName com.android.settings
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -98,9 +94,7 @@ EOF
                     y | Y )
                         ftKillPhoneAppByPackageName $packageName
                         break;;
-                    * )if [ "$XMODULE" = "env" ];then
-                            return
-                       fi
+                    * )if [ "$XMODULE" = "env" ];then    return ; fi
                         exit;;
             esac
             done
@@ -121,9 +115,7 @@ ftRestartAdb()
 #    ftRestartAdb [无参]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -164,9 +156,7 @@ ftInitDevicesList()
 #    ftInitDevicesList 409600K
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -238,9 +228,7 @@ ftCleanDataGarbage()
 #    ftCleanDataGarbage [无参]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
     #耦合校验
     local valCount=0
@@ -287,9 +275,7 @@ ftMtkFlashTool()
 #    ftMtkFlashTool 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -333,9 +319,7 @@ ftFileDirEdit()
 #    echo $?
 #===============================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -410,9 +394,7 @@ ftEcho()
 #    ftEcho    -s    内容    # 执行信息，对字符串的缩进敏感
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -441,9 +423,7 @@ EOF
     e | E | -e | -E)        echo -e "\033[1;31m$content\033[0m"; break;;
     ex | EX | -ex | -EX)    echo -e "\033[1;31m$content\033[0m"
                 sleep 3
-                if [ "$XMODULE" = "env" ];then
-                    return
-                fi
+                if [ "$XMODULE" = "env" ];then    return ; fi
                 exit;;
     s | S | -s | -S)        echo;echo -e "\033[42;37m$content\033[0m"; break;;
     b | B| -b | -B)        echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
@@ -753,9 +733,7 @@ ftGjh()
 #    ftGjh 无参数
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -789,9 +767,7 @@ ftLog()
 #    初始化log记录所需的参数
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -865,9 +841,7 @@ ftTest()
 #    ftTest 任意参数
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     local dirNameCmdModuleTest=test
@@ -905,9 +879,7 @@ ftBoot()
 #    xss 时间/秒 #制定时间后重启,不带时间则默认十秒
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -965,9 +937,7 @@ ftReduceFileList()
 # 由于水平有限，实现对60%和50%之类的比例不敏感
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     if (( $#==2 ));then
@@ -1069,9 +1039,7 @@ ftReNameFile()
 #    ftReNameFile /home/xxxx/temp 5
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -1132,9 +1100,7 @@ ftDevAvailableSpace()
 #    ftDevAvailableSpace /media/test true
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -1243,9 +1209,7 @@ ftGetKeyValueByBlockAndKey()
 #     value表示对应字段的值
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit 1;; * )break;; esac;done
 
     #耦合校验
@@ -1314,9 +1278,7 @@ ftSetKeyValueByBlockAndKey()
 #    ftSetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup 1232
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit 1;; * )break;; esac;done
 
     #耦合校验
@@ -1367,9 +1329,7 @@ ftCheckIniConfigSyntax()
 #    ftCheckIniConfigSyntax 123/config.ini
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit 1;; * )break;; esac;done
 
     #耦合校验
@@ -1442,9 +1402,7 @@ ftUpdateHosts()
 #    ftUpdateHosts https://raw.githubusercontent.com/racaljk/hosts/master/hosts
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -1516,9 +1474,7 @@ ftBackupOutsByMove()
 #    ftBackupOutsByMove 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     env | -env |-ENV ) cat<<EOF
 #============== [   ${ftEffect}   ]的使用环境说明============
@@ -1528,9 +1484,7 @@ EOF
 #
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -1588,9 +1542,7 @@ ftYKSwitch()
 #    ftYKSwitch yhx/kl
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
  e | E |-e | -E) cat<<EOF
 #=================== [ ${ftEffect} ]的使用环境说明=============
@@ -1598,9 +1550,7 @@ EOF
 #    ftYKSwitch 仅可用于 SPRD > 7731C > N9 的项目
 #=======================================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     env | -env |-ENV ) cat<<EOF
 #============== [   ${ftEffect}   ]的使用环境说明============
@@ -1610,9 +1560,7 @@ EOF
 #
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
      * ) break;; esac;done
 
@@ -1702,9 +1650,7 @@ ftAutoUploadHighSpeed()
 #    ftAutoUploadHighSpeed xxxx
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -1755,9 +1701,7 @@ ftAutoUpload()
 #    ftAutoUpload xxxx
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -1813,9 +1757,7 @@ ftAutoPacket()
 #    ftAutoPacket -y #自动打包，上传到188服务器
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     env | -env |-ENV ) cat<<EOF
 #============== [   ${ftEffect}   ]的使用环境说明============
@@ -1825,9 +1767,7 @@ EOF
 #
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     * ) break;; esac;done
 
@@ -1978,9 +1918,7 @@ ftLanguageUtils()
 #    ftLanguageUtils “ar_IL bn_BD my_MM zh_CN”
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     env | -env |-ENV ) cat<<EOF
 #============== [   ${ftEffect}   ]的使用环境说明============
@@ -1990,9 +1928,7 @@ EOF
 #
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -2117,9 +2053,7 @@ EOF
 #    ftCreateReadMeBySoftwareVersion out/pac
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     env | -env |-ENV ) cat<<EOF
 #============== [   ${ftEffect}   ]的使用环境说明============
@@ -2129,9 +2063,7 @@ EOF
 #
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #环境校验
@@ -2323,9 +2255,7 @@ ftAutoLanguageUtil()
 #    ftAutoLanguageUtil 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     env | -env |-ENV ) cat<<EOF
 #============== [   ${ftEffect}   ]的使用环境说明============
@@ -2335,9 +2265,7 @@ EOF
 #
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -2379,9 +2307,7 @@ ftLnUtil()
 #    ftLnUtil /home/xian-hp-u16/log/xb_backup
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     * ) break;;esac;done
 
@@ -2436,9 +2362,7 @@ ftAutoUpdateSoftwareVersion()
 #    ftAutoUpdateSoftwareVersion 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     env | -env |-ENV ) cat<<EOF
 #============== [   ${ftEffect}   ]的使用环境说明============
@@ -2448,9 +2372,7 @@ EOF
 #
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -2541,7 +2463,7 @@ EOF
 
 ftAutoBuildMultiBranch()
 {
-    local ftEffect=多版本[分支]编译
+    local ftEffect=多版本[分支]串行编译
     local filePathBranchList=branch.list
     local dirPathCode=$ANDROID_BUILD_TOP
     local editType=$1
@@ -2557,9 +2479,7 @@ ftAutoBuildMultiBranch()
 #    ftAutoBuildMultiBranch -yb 上传版本软件,备份out
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     env | -env |-ENV ) cat<<EOF
 #============== [   ${ftEffect}   ]的使用环境说明============
@@ -2569,9 +2489,7 @@ EOF
 #
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     * ) break;;esac;done
 
@@ -2707,9 +2625,7 @@ ftSetBashPs1ByGitBranch()
 #    ftSetBashPs1ByGitBranch 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     * ) break;;esac;done
     local defaultPrefix=xrnsd
@@ -2775,9 +2691,7 @@ ftAutoInitEnv()
 #    ftAutoInitEnv 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     env | -env |-ENV ) cat<<EOF
 #============== [   ${ftEffect}   ]的使用环境说明============
@@ -2787,9 +2701,7 @@ EOF
 #
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -2919,9 +2831,7 @@ ftMonkeyTestByDevicesName()
 #=========================================================
 EOF
     rm -rf $dirPathMoneyLog
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
     #耦合校验
@@ -3063,12 +2973,14 @@ EOF
                          break;;
             esac;done
 
-            if [ "$deviceSoftType" != "user" ];then
-                adb shell "echo $logDateTime>/sys/class/android_usb/android0/iSerial"
+            local changDeviceSerialNumber=$(adb shell "echo $logDateTime>/sys/class/android_usb/android0/iSerial")
+            if [ -z "$deviceSDCardState" ];then
                 configList="-s $logDateTime ${configList}"
             fi
 
             if [ -z "$deviceSDCardState" ];then
+                adb shell "echo 'logcat starting, log save in $filePathLogLogcat...' > $filePathLogLogcat"
+                adb shell "echo 'monkey starting, log save in $filePathLogMonkey...' > $filePathLogMonkey"
                 adb shell "logcat 1>> $filePathLogLogcat 2>> $filePathLogLogcat"&
                 adb shell "monkey ${configList} $eventCount 1>> $filePathLogMonkey 2>> $filePathLogMonkey"
             else
@@ -3096,9 +3008,7 @@ ftGetAndroidVersionBySDKVersion()
 #    ftGetAndroidVersionBySDKVersion 22
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
+    if [ "$XMODULE" = "env" ];then    return ; fi
     exit;;
     * ) break;;esac;done
 
