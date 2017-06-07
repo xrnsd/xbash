@@ -2614,43 +2614,22 @@ EOF
 ftSetBashPs1ByGitBranch()
 {
     local ftEffect=根据git分支名,设定bash的PS1
-    local dir=. head
 
-    #使用示例
-    while true; do case "$1" in
-    #方法使用说明
-    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
-#
-#    ftSetBashPs1ByGitBranch 无参
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
-    * ) break;;esac;done
     local defaultPrefix=xrnsd
     if [ ! -z "$rNameUser" ]&&[ "$rNameUser" != "wgx" ];then
         defaultPrefix=$rNameUser
     fi
-
-    until [ "$dir" -ef / ]; do
-            if [ -f "$dir/.git/HEAD" ]; then
-                head=$(< "$dir/.git/HEAD")
-                if [[ $head = ref:\ refs/heads/* ]]; then
-                    git_branch="\nbranchName→ ${head#*/*/}"
-                elif [[ $head != '' ]]; then
-                    git_branch="\nbranchName→(detached)"
-                else
-                    git_branch="\nbranchName→(unknow)"
-                fi
-                export PS1="$defaultPrefix[\[\033[44m\]\w\[\033[0m\]]\
-\[\033[33m\]$git_branch:\[\033[0m\]"
-                return
-            fi
-            dir="../$dir"
-        done
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    if [ ! -z "$branchName" ];then
+        if [ ${#branchName} -gt "10" ];then
+            branchName="\nbranchName→ ${branchName}"
+        else
+            branchName="branchName→ ${branchName}"
+        fi
+        export PS1="$defaultPrefix[\[\033[44m\]\w\[\033[0m\]]\[\033[33m\]$branchName:\[\033[0m\]"
+    else
         export PS1="$defaultPrefix[\[\033[44m\]\w\[\033[0m\]]:"
-        git_branch=
+    fi
 }
 
 #版本号大小对比
