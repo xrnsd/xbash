@@ -2658,7 +2658,7 @@ function version_ge() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)"
 
 ftAutoInitEnv()
 {
-    local ftEffect=初始化基于Android_Build_Env的Auto_Env
+    local ftEffect=
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
@@ -2723,22 +2723,28 @@ EOF
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
     #软件版本名
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    if [ -f $filePathDeviceInfoSettings ];then
-        local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-        if [ -z "$versionName" ];then
-            versionName=`basename $ANDROID_PRODUCT_OUT`
-        else
-            versionName=${versionName/$keyVersion/}
-            versionName=${versionName/\");/}
+    if [ $mnufacturers = "sprd" ];then
+        local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+        local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+        if [ -f $filePathDeviceInfoSettings ];then
+            local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+            versionName=${versionName//$keyVersion/}
+            versionName=${versionName//\");/}
             versionName=$(echo $versionName |sed s/[[:space:]]//g)
         fi
-    else
-        ftEcho -e "未找到 $filePathDeviceInfoSettings\n version name 获取失败"
+   elif [[ $mnufacturers = "mtk" ]]; then
+        local keyVersion="ro.build.display.id="
+        local filePathOutBuildProp=${dirPathOut}/system/build.prop
+        if [ ! -z "$LZ_BUILD_VERSION" ];then
+                local versionName=$LZ_BUILD_VERSION
+        elif [ -f $filePathDeviceInfoSettings ];then
+                local versionName=$(cat $filePathOutBuildProp|grep $keyVersion)
+                versionName=${versionName//$keyVersion/}
+                versionName=${versionName// /_}
+        fi
     fi
-    if [ $mnufacturers = "mtk" ]&&[ ! -z "$LZ_BUILD_VERSION" ]; then
-        versionName=$LZ_BUILD_VERSION
+    if [ -z "$versionName" ];then
+        versionName=`basename $ANDROID_PRODUCT_OUT`
     fi
 
     #软件编译类型
