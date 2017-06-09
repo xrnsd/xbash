@@ -1788,12 +1788,13 @@ EOF
             ftAutoPacket -h
             return
     fi
-
     ftAutoInitEnv
     local dirPathLocal=$PWD
     local dirNamePacRes=packet
     local buildType=$AutoEnv_buildType
     local dirPathPacRes=${dirPathCode}/out/${dirNamePacRes}
+    #进程意外结束时扫尾
+    #trap '{ ftEcho -s ${ftEffect}未完成操作，请勿使用${dirPathPacRes};cd $dirPathLocal }' INT
 
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             local dirPathNormalBin=$dirPathOut
@@ -1850,7 +1851,12 @@ EOF
             local dirNamePackage="packages"
             local dirNamePackageDataBase="dataBase"
             local deviceName=`basename $ANDROID_PRODUCT_OUT`
-            local dirPathPacResVersion=${dirPathPacRes}/buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$(date -d "today" +"%Y%m%d")
+
+            if [ ! -z "$AutoEnv_clientName" ];then
+                local dirPathPacResVersion=${dirPathPacRes}/buildType[${buildType}]__motherboardName[${AutoEnv_motherboardName}]__clientName[${AutoEnv_clientName}]__projrctName[${AutoEnv_projrctName}]__demandSignName[${AutoEnv_demandSignName}]__versionName[${AutoEnv_versionName}]_____$(date -d "today" +"%Y%m%d")
+            else
+                local dirPathPacResVersion=${dirPathPacRes}/buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$(date -d "today" +"%Y%m%d")
+            fi
             local dirPathPackage=${dirPathPacResVersion}/${dirNamePackage}
             local dirPathPackageDataBase=${dirPathPacResVersion}/${dirNamePackageDataBase}
             local fileList=(boot.img \
@@ -2770,15 +2776,57 @@ EOF
             fi
     fi
 
+    #git分知名解析
+    if [[ $mnufacturers = "mtk" ]]; then
+            local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+            if [ ! -z "$branchName" ];then
+                local OLD_IFS="$IFS"
+                IFS=")"
+                local arrayItems=($branchName)
+                IFS="$OLD_IFS" 
+                if [ "$branchName" = "$arrayItems" ];then
+                    echo 不合法
+                fi
+                for item in ${arrayItems[@]} 
+                do
+                        local valShort=${item:0:4}
+                        local valLong=${item:0:5}
+
+                         if [[ $valShort = "_CT(" ]];then
+                            gitBranchInfoClientName=${item//$valShort/}
+                         elif [[ $valShort = "_PJ(" ]];then
+                            gitBranchInfoProjrctName=${item//$valShort/}
+                        elif [[ $valShort = "_DM(" ]];then
+                            gitBranchInfoDemandSignName=${item//$valShort/}
+                        elif [[ $valLong = "MBML(" ]];then
+                            gitBranchInfoMotherboardName=${item//$valLong/}
+                        elif [[ $valLong = "_PMA(" ]];then
+                            gitBranchInfoModelAllName=${item//$valLong/}
+                        fi
+                done
+            fi
+    fi
+
+
     export AutoEnv_mnufacturers=
-    export AutoEnv_branchName=
     export AutoEnv_versionName=
     export AutoEnv_buildType=
+    export AutoEnv_branchName=
+    export AutoEnv_clientName=
+    export AutoEnv_projrctName=
+    export AutoEnv_motherboardName=
+    export AutoEnv_modelAllName=
+    export AutoEnv_demandSignName=
 
     export AutoEnv_mnufacturers=$mnufacturers
-    export AutoEnv_branchName=$branchName
     export AutoEnv_versionName=$versionName
     export AutoEnv_buildType=$buildType
+    export AutoEnv_branchName=$branchName
+    export AutoEnv_clientName=$gitBranchInfoClientName
+    export AutoEnv_projrctName=$gitBranchInfoProjrctName
+    export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
+    export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
+    export AutoEnv_modelAllName=$gitBranchInfoModelAllName
 
     cd $dirPathLocal
 }
