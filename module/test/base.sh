@@ -75,17 +75,3 @@ mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
-# ftBdddd()
-# {
-
-#     echo "source $rFilePathCmdModuleTools">cmd.temp
-#     echo "$1 -h">>cmd.temp
-#     echo $rUserPwd | sudo -S chmod a+x cmd.temp
-#     ./cmd.temp
-# }
-# for dir in $(cat ~/cmds/module/tools.sh |grep '^ft')
-# do
-#     dir=${dir//()/}
-#     ftEcho -s $dir
-#     ftBdddd $dir
-# done

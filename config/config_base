@@ -56,7 +56,7 @@ export rIsDebug=false
 export rTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
 
 export rCmdsPermissionRoot=(xb backup restore)
-export rCmdsPermissionBase=(restartadb help monkey systemui launcher mtk_flashtool gjh bootanim pac)
+export rCmdsPermissionBase=(restartadb help  clean_data_garbage)
 
 export mCmdsModuleDataDevicesList=()
 export mTimingStart

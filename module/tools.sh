@@ -2669,7 +2669,7 @@ function version_ge() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)"
 
 ftAutoInitEnv()
 {
-    local ftEffect=
+    local ftEffect=初始化xbash所需的部分环境变量
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
@@ -2941,7 +2941,6 @@ EOF
             local dirPathLocal=$(pwd)
             local dirPathDevice=/data/local/tmp
             local dirPathDeviceSDCard=/storage/sdcard0
-            local dirPathDeviceBuiltinSDCard=/storage/sdcard1
 
             local deviceSDCardState=$(adb shell ls $dirPathDeviceSDCard|grep "No such file or directory")
             if [ -z "$deviceSDCardState" ]&&[ -z "$(adb shell ls $dirPathDeviceSDCard)" ];then #空目录
