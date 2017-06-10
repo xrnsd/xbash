@@ -2865,7 +2865,7 @@ ftMonkeyTestByDevicesName()
         editType=-a
     fi
     if (( $throttleTimeLong>-1 ));then
-        configList=" --throttle $throttleTimeLong "
+        configList=" --throttle $throttleTimeLong"
     fi
 
     #使用示例
@@ -2912,7 +2912,7 @@ EOF
             local keySDKVersion="ro.build.version.sdk="
 
             local logDate="$(date -d "today" +"%y%m%d")"
-            local logDateTime="$(date -d "today" +"%y%m%d-%H%M%S")"
+            local logDateTime="$(date -d "today" +"%y%m%d%H%M%S")"
 
             local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
             deviceModelName=${deviceModelName//$keyModel/}
@@ -2944,6 +2944,9 @@ EOF
             local dirPathDeviceBuiltinSDCard=/storage/sdcard1
 
             local deviceSDCardState=$(adb shell ls $dirPathDeviceSDCard|grep "No such file or directory")
+            if [ -z "$deviceSDCardState" ]&&[ -z "$(adb shell ls $dirPathDeviceSDCard)" ];then #空目录
+                deviceSDCardState=null
+            fi
             if [ -z "$deviceSDCardState" ];then
                 local dirPathMoneyLog=${dirPathDeviceSDCard}/monkey/softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]_____${logDate}
                 adb shell mkdir -p $dirPathMoneyLog
@@ -3025,8 +3028,9 @@ EOF
                          break;;
             esac;done
 
+            adb root;adb remount
             local changDeviceSerialNumber=$(adb shell "echo $logDateTime>/sys/class/android_usb/android0/iSerial")
-            if [ -z "$deviceSDCardState" ];then
+            if [ -z "$changDeviceSerialNumber" ];then
                 configList="-s $logDateTime ${configList}"
             fi
 
