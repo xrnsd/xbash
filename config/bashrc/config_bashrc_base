@@ -71,7 +71,7 @@ if [ -f $filePathXbashTragetConfigBase ];then
         complete -W "compile" xi
         complete -W "backup restore" xb
         complete -W "systemui monkey launcher" xk
-        complete -W "restartadb help gjh test clean_data_garbage vvv bootanim pac -v -vvv -ft -ftall" xc
+        complete -W "restartadb test clean_data_garbage  -v -vvv -ft -ftall" xc
 
         # bash shell PS1 配置
          export PROMPT_COMMAND='\
