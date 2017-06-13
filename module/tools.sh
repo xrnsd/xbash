@@ -291,7 +291,7 @@ EOF
     fi
 
     cd $toolDirPath&&
-    echo "$rUserPwd" | sudo -S ./flash_tool&&
+    echo "$rUserPwd" | sudo -S ${rDirPathTools}/sp_flash_tool_v5.1612.00.100/flash_tool&&
     cd $tempDirPath
 }
 
@@ -1506,11 +1506,11 @@ EOF
 
     cd $ANDROID_BUILD_TOP
     #分支名
-    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
     ftAutoInitEnv
     local buildType=$AutoEnv_buildType
     local versionName=$AutoEnv_versionName
+    local branchName=$AutoEnv_branchName
 
     local dirPathCodeRootOuts=${dirPathCode%/*}/outs
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----$(date -d "today" +"%y%m%d[%H:%M]")
@@ -1853,7 +1853,7 @@ EOF
             local deviceName=`basename $ANDROID_PRODUCT_OUT`
 
             local key="最近更改："
-            lcoal fileChangeTime=$(stat system.img|grep $key|awk '{print $1}'|sed s/-//g)
+            local fileChangeTime=$(stat ${dirPathOut}/system.img|grep $key|awk '{print $1}'|sed s/-//g)
             fileChangeTime=${fileChangeTime//$key/}
             fileChangeTime=${fileChangeTime:-$(date -d "today" +"%Y%m%d")}
 
@@ -2625,13 +2625,14 @@ EOF
 ftSetBashPs1ByGitBranch()
 {
     local ftEffect=根据git分支名,设定bash的PS1
+    local editType=$1
 
     local defaultPrefix=xrnsd
     if [ ! -z "$rNameUser" ]&&[ "$rNameUser" != "wgx" ];then
         defaultPrefix=$rNameUser
     fi
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    if [ ! -z "$branchName" ];then
+    if [ ! -z "$branchName" ]&&[ "$editType" != "-b" ];then
         if [ ${#branchName} -gt "10" ];then
             branchName="\nbranchName→ ${branchName}"
         else
@@ -2748,7 +2749,7 @@ EOF
         local filePathOutBuildProp=${dirPathOut}/system/build.prop
         if [ ! -z "$LZ_BUILD_VERSION" ];then
                 local versionName=$LZ_BUILD_VERSION
-        elif [ -f $filePathDeviceInfoSettings ];then
+        elif [ -f $filePathOutBuildProp ];then
                 local versionName=$(cat $filePathOutBuildProp|grep $keyVersion)
                 versionName=${versionName//$keyVersion/}
                 versionName=${versionName// /_}
@@ -2901,7 +2902,7 @@ EOF
 
     #adb连接状态检测
     adb wait-for-device
-    local adbStatus=`adb get-state`
+    local adbStatus=$(adb get-state)
     if [ "$adbStatus" = "device" ];then
             #======================================================
             #==============  手机设备信息 ===========================
@@ -2947,10 +2948,10 @@ EOF
                 deviceSDCardState=null
             fi
             if [ -z "$deviceSDCardState" ];then
-                local dirPathMoneyLog=${dirPathDeviceSDCard}/monkey/softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]_____${logDate}
+                local dirPathMoneyLog=${dirPathDeviceSDCard}/monkey/EditDevice[oneself]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]_____${logDate}
                 adb shell mkdir -p $dirPathMoneyLog
             else
-                local dirPathMoneyLog=${dirPathLocal}/monkey/PcName[${rNameUser}]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]____${logDate}
+                local dirPathMoneyLog=${dirPathLocal}/monkey/EditDevice[${rNameUser}]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]____${logDate}
                 mkdir -p $dirPathMoneyLog
             fi
             local dirPathMoneyLogLocal=${dirPathLocal}/monkey/PcName[${rNameUser}]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]____${logDate}
@@ -2988,7 +2989,7 @@ EOF
                                     read -n1 sel
                                     case "$sel" in
                                         y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
-                                                       break;;
+                                                    break;;
                                         n | N |q |Q)    return;;
                                         * ) ftEcho -e 错误的选择：$sel
                                             echo "输入n,q，离开"
@@ -3027,19 +3028,17 @@ EOF
                          break;;
             esac;done
 
-            adb root;adb remount
+            local upgradeAdbPermissionsStae=$(adb root;adb remount)
             local changDeviceSerialNumber=$(adb shell "echo $logDateTime>/sys/class/android_usb/android0/iSerial")
             if [ -z "$changDeviceSerialNumber" ];then
                 configList="-s $logDateTime ${configList}"
             fi
 
             if [ -z "$deviceSDCardState" ];then
-                adb shell "echo 'logcat starting, log save in $filePathLogLogcat...' > $filePathLogLogcat"
                 adb shell "echo 'monkey starting, log save in $filePathLogMonkey...' > $filePathLogMonkey"
-                adb shell "logcat 1>> $filePathLogLogcat 2>> $filePathLogLogcat"&
                 adb shell "monkey ${configList} $eventCount 1>> $filePathLogMonkey 2>> $filePathLogMonkey"
             else
-                adb logcat 2>&1|tee $filePathLogLogcat&
+                adb logcat "*:E" 2>&1|tee $filePathLogLogcat&
                 adb shell "monkey ${configList} $eventCount" 2>&1 |tee $filePathLogMonkey
                 exit
             fi
