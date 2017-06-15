@@ -1797,6 +1797,12 @@ EOF
     #trap '{ ftEcho -s ${ftEffect}未完成操作，请勿使用${dirPathPacRes};cd $dirPathLocal }' INT
 
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+            if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
+                ftEcho -ea "平台${AutoEnv_mnufacturers}的项目${TARGET_PRODUCT}无效\
+                \n请查看下面说明:"
+                ftAutoPacket -h
+                return
+            fi
             local dirPathNormalBin=$dirPathOut
             local dirPathLogo=${dirPathCode%/*}/res
             local versionName=$AutoEnv_versionName
@@ -2854,11 +2860,11 @@ EOF
                 local OLD_IFS="$IFS"
                 IFS=")"
                 local arrayItems=($branchName)
-                IFS="$OLD_IFS" 
+                IFS="$OLD_IFS"
                 if [ "$branchName" = "$arrayItems" ];then
                     echo 不合法
                 fi
-                for item in ${arrayItems[@]} 
+                for item in ${arrayItems[@]}
                 do
                         local valShort=${item:0:4}
                         local valLong=${item:0:5}
