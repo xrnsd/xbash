@@ -75,3 +75,8 @@ mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
+adb shell << EOF
+    mkdir /storage/sdcard0/monkey
+    monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions  -v -v -v  1000000 > /storage/sdcard0/monkey/0614_test.log
+    exit
+EOF
