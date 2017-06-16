@@ -33,6 +33,7 @@ EOF
     #环境校验
     if [ -z `which example` ]||[ -z `which example` ];then
         ftExample -e
+        return
     fi
     #耦合校验
     local valCount=1
@@ -1643,7 +1644,17 @@ ftAutoUploadHighSpeed()
     local pathContentUploadSource=$1
 
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    while true; do case "$1" in
+    #使用环境说明
+    e | -e |--env) cat<<EOF
+#=================== ${ftEffect}使用环境说明=============
+#
+#    依赖 sshpass pigz,请使用下面命令安装
+#    sudo apt-get install sshpass pigz
+#=========================================================
+EOF
+      return;;
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftAutoUploadHighSpeed [源路径]
@@ -1653,6 +1664,11 @@ EOF
     if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
 
+    #环境校验
+    if [ -z `which sshpass` ]||[ -z `which pigz` ];then
+        ftAutoUploadHighSpeed -e
+        return
+    fi
     #耦合校验
     local valCount=1
     local errorContent=
@@ -2161,8 +2177,8 @@ EOF
         gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
         gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
     else
-        gitCommitListOneDay=$(git log  --since=1.day.ago  --pretty=format:"%h %ad %<(8,trunc)%an %s")
-        gitCommitListBefore=$(git log  --before=1.day.ago  --pretty=format:"%h %ad %<(8,trunc)%an %s")
+        gitCommitListOneDay=$(git log --date=short  --since=1.day.ago  --pretty=format:"%h %ad %<(8,trunc)%an %s")
+        gitCommitListBefore=$(git log --date=short  --before=1.day.ago  --pretty=format:"%h %ad %<(8,trunc)%an %s")
     fi
 
     # 暗码清单
