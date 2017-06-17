@@ -1640,8 +1640,20 @@ EOF
 
 ftAutoUploadHighSpeed()
 {
-    local ftEffect=上传文件到制定smb服务器路径[高速版]
-    local pathContentUploadSource=$1
+    local ftEffect=上传文件到制定smb服务器路径[高速版]\
+    #存放上传源的目录
+    local dirPathContentUploadSource=$1
+    #目录下存放的目录或文件
+    local pathContentUploadSource=$2
+    local pathContentUploadTraget=$3
+    if [ -z "$pathContentUploadTraget" ];then
+        if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+             pathContentUploadTraget=智能机软件/SPRD7731C/鹏明珠/autoUpload
+        elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+             pathContentUploadTraget=智能机软件/MTK6580/autoUpload
+        fi
+    fi
+    local dirPathLocal=$(pwd)
 
     #使用示例
     while true; do case "$1" in
@@ -1657,8 +1669,8 @@ EOF
     h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
-#    ftAutoUploadHighSpeed [源路径]
-#    ftAutoUploadHighSpeed xxxx
+#    ftAutoUploadHighSpeed 源存放目录 [源文件名活目录名，不要是路径] 服务器路径
+#    ftAutoUploadHighSpeed xxxx xxxx xxxx
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi
@@ -1670,11 +1682,13 @@ EOF
         return
     fi
     #耦合校验
-    local valCount=1
+    local valCount=3
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if ([ ! -d "$pathContentUploadSource" ]&&[ ! -f "$pathContentUploadSource" ]);then    errorContent="${errorContent}\\n[上传源不存在]pathContentUploadSource=$pathContentUploadSource" ; fi
-    if [ -d "$pathContentUploadSource" -a `ls $pathContentUploadSource|wc -w` = "0" ];then    errorContent="${errorContent}\\n[上传源为空]pathContentUploadSource=$pathContentUploadSource" ; fi
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathContentUploadSource" ];then    errorContent="${errorContent}\\n上传源存放目录不存在:dirPathContentUploadSource=dirPathContentUploadSource" ;
+    elif [ `ls $dirPathContentUploadSource|wc -w` = "0" ];then    errorContent="${errorContent}\\n[上传源为空目录]dirPathContentUploadSource=$dirPathContentUploadSource" ;
+    elif [ -d "${dirPathContentUploadSource}/${pathContentUploadSource}" -a `ls ${dirPathContentUploadSource}/${pathContentUploadSource}|wc -w` = "0" ];then    errorContent="${errorContent}\\n[上传源为空目录]dirPathContentUploadSource=$dirPathContentUploadSource" ; fi
+    if [ -z "$pathContentUploadTraget" ];then    errorContent="${errorContent}\\n服务器的存放路径未指定:pathContentUploadTraget" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoUploadHighSpeed -h
@@ -1684,24 +1698,15 @@ EOF
     local serverIp=192.168.1.188
     local userName=server
     local pasword=123456
-
     local dirPathServer=/media/新卷
 
-    if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
-        local dirPathUpload=智能机软件/SPRD7731C/鹏明珠/autoUpload
-    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-        local dirPathUpload=智能机软件/MTK6580/autoUpload
-    fi
-
-    local dirPathContentUploadSource=$(dirname $pathContentUploadSource)
-    local fileNameContentUploadSource=$(basename $pathContentUploadSource)
-
-    ftEcho -s "开始上传${fileNameContentUploadSource} 到\n${serverIp}/${dirPathUpload}..."
-
+    ftEcho -s "开始上传${pathContentUploadSource} 到\n${serverIp}/${pathContentUploadTraget}..."
     cd $dirPathContentUploadSource
-    tar -cv  $fileNameContentUploadSource| pigz -1 |sshpass -p $pasword ssh $userName@$serverIp "gzip -d|tar -xPC ${dirPathServer}/${dirPathUpload}"
 
-    ftEcho -s "${fileNameContentUploadSource}\n上传结束"
+    tar -cv  $pathContentUploadSource| pigz -1 |sshpass -p $pasword ssh $userName@$serverIp "gzip -d|tar -xPC ${dirPathServer}/${pathContentUploadTraget}"
+
+    cd $dirPathLocal
+    ftEcho -s "${pathContentUploadSource}\n上传结束"
 }
 
 ftAutoUpload()
@@ -1806,11 +1811,11 @@ EOF
     fi
     ftAutoInitEnv
     local dirPathLocal=$PWD
-    local dirNamePacRes=packet
+    local dirNameVersionSoftware=packet
     local buildType=$AutoEnv_buildType
-    local dirPathPacRes=${dirPathCode}/out/${dirNamePacRes}
+    local dirPathVersionSoftware=${dirPathCode}/out/${dirNameVersionSoftware}
     #进程意外结束时扫尾
-    #trap '{ ftEcho -s ${ftEffect}未完成操作，请勿使用${dirPathPacRes};cd $dirPathLocal }' INT
+    #trap '{ ftEcho -s ${ftEffect}未完成操作，请勿使用${dirPathVersionSoftware};cd $dirPathLocal }' INT
 
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
@@ -1822,7 +1827,7 @@ EOF
             local dirPathNormalBin=$dirPathOut
             local dirPathLogo=${dirPathCode%/*}/res
             local versionName=$AutoEnv_versionName
-            local dirPathPacResVersion=${dirPathPacRes}/${versionName}
+            local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${versionName}
             local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
             local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
             local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
@@ -1837,11 +1842,11 @@ EOF
 
             if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
                     versionName=${versionName}____${buildType}
-                    dirPathPacResVersion=${dirPathPacRes}/${versionName}
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${versionName}
             fi
 
-            mkdir -p $dirPathPacResVersion
-            cd $dirPathPacResVersion
+            mkdir -p $dirPathVersionSoftwareVersion
+            cd $dirPathVersionSoftwareVersion
 
             ftEcho -s "开始生成 ${versionName}.pac\n"
             /usr/bin/perl $filePathPacketScript \
@@ -1867,7 +1872,14 @@ EOF
                 ${dirPathNormalBin}/sysinfo.img \
                 ${dirPathNormalBin}/u-boot.bin \
                 ${dirPathNormalBin}/persist.img&&
-            ftEcho -s 生成7731c使用的pac[${dirPathPacResVersion}/${versionName}.pac]
+            ftEcho -s 生成7731c使用的pac[${dirPathVersionSoftwareVersion}/${versionName}.pac]
+
+            # 生成说明文件
+            ftCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
+            #上传服务器
+            while true; do case "$isUpload" in    y | Y |-y | -Y)
+                ftAutoUploadHighSpeed $dirPathVersionSoftware $(basename $dirPathVersionSoftwareVersion) $dirPathUploadTraget
+            break;; * ) break;; esac;done
 
     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
             local dirNamePackage="packages"
@@ -1877,15 +1889,47 @@ EOF
             local key="最近更改："
             local fileChangeTime=$(stat ${dirPathOut}/system.img|grep $key|awk '{print $1}'|sed s/-//g)
             fileChangeTime=${fileChangeTime//$key/}
-            fileChangeTime=${fileChangeTime:-$(date -d "today" +"%Y%m%d")}
+            fileChangeTime=${fileChangeTime:-$(date -d "today" +"%y%m%d")}
 
-            if [ ! -z "$AutoEnv_clientName" ];then
-                local dirPathPacResVersion=${dirPathPacRes}/buildType[${buildType}]__motherboardName[${AutoEnv_motherboardName}]__clientName[${AutoEnv_clientName}]__projrctName[${AutoEnv_projrctName}]__demandSignName[${AutoEnv_demandSignName}]__versionName[${AutoEnv_versionName}]_____$fileChangeTime
+            local dataBaseFileList=
+            if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
+                dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
+                                                 obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
+            elif [ $deviceName = "keytak6580_weg_l" ];then
+                dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15 \
+                                            obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V6_P7_1_wg_n.n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V6_P7_1_wg_n.n)
             else
-                local dirPathPacResVersion=${dirPathPacRes}/buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$fileChangeTime
+                ftEcho -ea "工具没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的配置\
+                \n请查看下面说明:"
+                ftAutoPacket -h
+                return
             fi
-            local dirPathPackage=${dirPathPacResVersion}/${dirNamePackage}
-            local dirPathPackageDataBase=${dirPathPacResVersion}/${dirNamePackageDataBase}
+
+            if [ ! -z "$AutoEnv_clientName" ];then #git解析成功获取到客户等相关信息
+                local dirNameersionSoftwareVersionBase=${AutoEnv_AndroidVersion}
+                local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirNameersionSoftwareVersionBase}/${AutoEnv_motherboardName}__${AutoEnv_projrctName}__${AutoEnv_demandSignName}/${AutoEnv_deviceModelName}
+                local dirNameVeriosionBase=${AutoEnv_versionName}
+                #非user版本标记编译类型
+                if [ "$AutoEnv_buildType" != "user" ];then 
+                    local dirNameVeriosionBase=${buildType}____${dirNameVeriosionBase}
+                fi
+                #软件版本的日期与当前时间不一致就设定编译时间
+                arr=(${AutoEnv_versionName//_/ })
+                length=${#arr[@]}
+                length=`expr $length - 1`
+                local versionNameDate=${arr[$length]}
+                if [ "$versionNameDate" != "${fileChangeTime}" ];then 
+                    local dirNameVeriosionBase=${dirNameVeriosionBase}____buildtime____${fileChangeTime}
+                fi
+                dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
+            else
+                local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${fileChangeTime}____buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$fileChangeTime
+            fi
+            if [ "$AutoEnv_clientName" = "XHF" ];then
+                local dirPathUploadTraget=智能机软件/MTK6580/新华菲
+            fi
+            local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
+            local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
             local fileList=(boot.img \
                             cache.img \
                             lk.bin \
@@ -1898,24 +1942,15 @@ EOF
                             system.img \
                             userdata.img)
 
-            local dataBaseFileList=
-            if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
-                dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
-                                                 obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
-            elif [ $deviceName = "keytak6580_weg_l" ];then
-                dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15 \
-                                            obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V6_P7_1_wg_n.n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V6_P7_1_wg_n.n)
-            fi
-
-            mkdir -p $dirPathPacResVersion
+            mkdir -p $dirPathVersionSoftwareVersion
             mkdir -p $dirPathPackage
             mkdir -p $dirPathPackageDataBase
-            cd $dirPathPacResVersion
+            cd $dirPathVersionSoftwareVersion
 
             #packages
             for file in ${fileList[@]}
             do
-                 cp -v -r -f  ${dirPathOut}/${file} ${dirPathPacResVersion}/${dirNamePackage}
+                 cp -v -r -f  ${dirPathOut}/${file} ${dirPathVersionSoftwareVersion}/${dirNamePackage}
             done
             # database
             if [ ! -z "$dataBaseFileList" ];then
@@ -1924,15 +1959,13 @@ EOF
                      cp -v -r -f  ${dirPathOut}/${file} ${dirPathPackageDataBase}
                 done
             fi
+            # 生成说明文件
+            ftCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
+            #上传服务器
+            while true; do case "$isUpload" in    y | Y |-y | -Y)
+                ftAutoUploadHighSpeed $dirPathVersionSoftware $dirNameersionSoftwareVersionBase $dirPathUploadTraget
+            break;; * ) break;; esac;done
     fi
-
-    # 生成说明文件
-    ftCreateReadMeBySoftwareVersion $dirPathPacResVersion
-
-    while true; do case "$isUpload" in    y | Y |-y | -Y)
-        ftAutoUploadHighSpeed $dirPathPacResVersion
-    break;; * ) break;; esac;done
-
     cd $dirPathLocal
 }
 
@@ -2067,7 +2100,7 @@ ftCreateReadMeBySoftwareVersion()
     local ftEffect=创建软件版本相关修改记录和版本说明
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
-    local dirPathPacRes=$1
+    local dirPathVersionSoftware=$1
 
     while true; do case "$1" in
     #使用环境说明
@@ -2119,15 +2152,15 @@ EOF
             return
     fi
 
-    if [ ! -d "$dirPathPacRes" ];then
-        mkdir $dirPathPacRes
+    if [ ! -d "$dirPathVersionSoftware" ];then
+        mkdir $dirPathVersionSoftware
     fi
     ftAutoInitEnv
 
     local fileNameReadMeTemplate=客户说明.txt
     local fileNameChangeListTemplate=修改记录.txt
-    local filePathReadMeTemplate=${dirPathPacRes}/${fileNameReadMeTemplate}
-    local filePathChangeListTemplate=${dirPathPacRes}/${fileNameChangeListTemplate}
+    local filePathReadMeTemplate=${dirPathVersionSoftware}/${fileNameReadMeTemplate}
+    local filePathChangeListTemplate=${dirPathVersionSoftware}/${fileNameChangeListTemplate}
     local versionName=$AutoEnv_versionName
 
     # 语言列表
@@ -2725,9 +2758,9 @@ EOF
         ftAutoInitEnv -env
         return
     fi
-    local valCount=0
+    local valCount=2
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
@@ -2736,52 +2769,61 @@ EOF
     fi
 
     # build.prop高级信息读取
-    if [ "$1" = "-bp" ];then
+     if [ "$1" = "-bp" ];then
+        export AutoEnv_deviceModelName=
+        export AutoEnv_deviceSoftType=
+        export AutoEnv_deviceSoftVersion=
+        export AutoEnv_deviceSdkVersion=
+        export AutoEnv_AndroidVersion=
 
-        adb wait-for-device
-        local adbStatus=$(adb get-state)
-        if [ "$adbStatus" = "device" ];then
+        local keySoftType="ro.build.type="
+        local keyModel="ro.product.model="
+        local keySoftVersion="ro.build.display.id="
+        local keySDKVersion="ro.build.version.sdk="
 
-                export AutoEnv_deviceModelName=
-                export AutoEnv_deviceSoftType=
-                export AutoEnv_deviceSoftVersion=
-                export AutoEnv_deviceSdkVersion=
-                export AutoEnv_AndroidVersion=
-
-                local keySoftType="ro.build.type="
-                local keyModel="ro.product.model="
-                local keySoftVersion="ro.build.display.id="
-                local keySDKVersion="ro.build.version.sdk="
-
-                local logDate="$(date -d "today" +"%y%m%d")"
-                local logDateTime="$(date -d "today" +"%y%m%d%H%M%S")"
-
+        if [ "$2" = "-mobile" ];then
+            adb wait-for-device
+            local adbStatus=$(adb get-state)
+            if [ "$adbStatus" = "device" ];then
                 local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
-                deviceModelName=${deviceModelName//$keyModel/}
-                deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
-                deviceModelName=${deviceModelName:-'null'}
-                export AutoEnv_deviceModelName=deviceModelName
-
                 local deviceSoftType=$(adb shell cat /system/build.prop|grep "$keySoftType")
-                deviceSoftType=${deviceSoftType//$keySoftType/}
-                deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
-                deviceSoftType=${deviceSoftType:-'null'}
-                export AutoEnv_deviceSoftType=deviceSoftType
-
                 local deviceSoftVersion=$(adb shell cat /system/build.prop|grep "$keySoftVersion")
-                deviceSoftVersion=${deviceSoftVersion//$keySoftVersion/}
-                deviceSoftVersion=$(echo $deviceSoftVersion |sed s/[[:space:]]//g)
-                deviceSoftVersion=${deviceSoftVersion:-'null'}
-                export AutoEnv_deviceSoftVersion=deviceSoftVersion
-
                 local deviceSdkVersion=$(adb shell cat /system/build.prop|grep "$keySDKVersion")
-                deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
-                deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
-                deviceSdkVersion=${deviceSdkVersion:-'null'}
-                export AutoEnv_deviceSdkVersion=deviceSdkVersion
-                local AndroidVersion=$(ftGetAndroidVersionBySDKVersion $deviceSdkVersion)
-                export AutoEnv_AndroidVersion=AndroidVersion
             fi
+        else
+                local filePathSystemBuildprop=${dirPathOut}/system/build.prop
+                local deviceModelName=$(cat $filePathSystemBuildprop|grep "$keyModel")
+                local deviceSoftType=$(cat $filePathSystemBuildprop|grep "$keySoftType")
+                local deviceSoftVersion=$(cat $filePathSystemBuildprop|grep "$keySoftVersion")
+                local deviceSdkVersion=$(cat $filePathSystemBuildprop|grep "$keySDKVersion")
+        fi
+
+        local logDate="$(date -d "today" +"%y%m%d")"
+        local logDateTime="$(date -d "today" +"%y%m%d%H%M%S")"
+
+        deviceModelName=${deviceModelName//$keyModel/}
+        deviceModelName=${deviceModelName// /_}
+        deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
+        deviceModelName=${deviceModelName:-'null'}
+        export AutoEnv_deviceModelName=$deviceModelName
+
+        deviceSoftType=${deviceSoftType//$keySoftType/}
+        deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
+        deviceSoftType=${deviceSoftType:-'null'}
+        export AutoEnv_deviceSoftType=$deviceSoftType
+
+        deviceSoftVersion=${deviceSoftVersion//$keySoftVersion/}
+        deviceSoftVersion=$(echo $deviceSoftVersion |sed s/[[:space:]]//g)
+        deviceSoftVersion=${deviceSoftVersion:-'null'}
+        export AutoEnv_deviceSoftVersion=$deviceSoftVersion
+
+        deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
+        deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
+        deviceSdkVersion=${deviceSdkVersion:-'null'}
+        export AutoEnv_deviceSdkVersion=$deviceSdkVersion
+        local AndroidVersion=$(ftGetAndroidVersionBySDKVersion $deviceSdkVersion)
+        export AutoEnv_AndroidVersion=$AndroidVersion
+
         return
     fi
 
@@ -2980,7 +3022,7 @@ EOF
             #======================================================
             #==============  手机设备信息 ===========================
             #========================== ===========================
-            ftAutoInitEnv -bp
+            ftAutoInitEnv -bp -mobile
             local deviceModelName=$AutoEnv_deviceModelName
             local deviceSoftType=$AutoEnv_deviceSoftType
             local SoftVersion=$AutoEnv_deviceSoftVersion
