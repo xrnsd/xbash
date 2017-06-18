@@ -25,7 +25,6 @@ android mmi开发环境的简单扩展[shell]
     │
     ├── module    -----------------------    脚本实现文件[具体功能]
     │        │
-    │        ├── compile.sh                     项目编译初始化
     │        ├── bashrc   --------------------  bashrc独立配置
     │        │      ├── bashrc_base                为普通用户相关bash配置文件
     │        │      ├── bashrc_home                为作者使用的普通用户相关bash配置文件
@@ -43,8 +42,6 @@ android mmi开发环境的简单扩展[shell]
     │        │      └── pytools.README
     │        ├── maintain.sh                    系统维护
     │        └── tools.sh   -----------------   工具函数实现
-    │
-    ├── main.sh    -----------------------    主入口
     │
     └── README.md
 
@@ -67,7 +64,7 @@ android mmi开发环境的简单扩展[shell]
 4.初始化环境
 ----------
     1 cd Xrnsd-extensions-to-bash
-    2 sudo chmod -R a+x main.sh module/ config/
+    2 sudo chmod -R a+x module/ config/
     3 ./init.sh #初始化,下面命令3选1
         ├── ./init.sh         初始化xbash
         ├── ./init.sh -system 初始化system

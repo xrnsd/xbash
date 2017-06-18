@@ -6,7 +6,7 @@
 #####---------------------示例函数---------------------------#########
 ftExample()
 {
-    local ftEffect=函数模板
+    local ftEffect=函数模板_nodisplay
 
     #使用示例
     while true; do case "$1" in
@@ -49,6 +49,116 @@ EOF
 }
 
 #####---------------------工具函数---------------------------#########
+ftMain()
+{
+    local ftEffect=早期工具主入口
+    while true; do
+    case $1 in
+    "clean_data_garbage")    ftCleanDataGarbage
+                break;;
+    test)            ftTest "$@"
+                break;;
+    -v | --version )        echo \"Xrnsd extensions to bash\" $rXbashVersion
+                break;;
+    -h)    ftReadMe -a
+                break;;
+    -ft)    ftReadMe -ft
+                break;;
+    vvv | -vvv)            ftEcho -b xbash;        echo \"Xrnsd extensions to bash\" $rXbashVersion
+                ftEcho -b java;        java -version
+                ftEcho -b gcc;        gcc -v
+                break;;
+    *)    ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftReadMe $XCMD; break;;
+    esac
+    done
+}
+
+ftReadAllFt()
+{
+        local ftEffect=显示tools下所有实现说明_nodisplay
+
+        local key="local ftEffect="
+        for effectName in $(cat ~/cmds/module/tools.sh |grep '^ft')
+        do
+            effectName=${effectName//()/}
+            effectDescription=$(cat ~/cmds/module/tools.sh |grep  -C 3 $effectName|grep "$key")
+            effectDescription=${effectDescription//$key/}
+            effectDescription=$(echo $effectDescription |sed s/[[:space:]]//g)
+            if [[ ${effectDescription: -9} = "nodisplay" ]];then
+                continue;
+            fi
+            echo "$effectName $effectDescription"
+        done
+}
+
+ftReadMe()
+{
+    local ftEffect=工具命令使用说明_nodisplay
+    while true; do
+        case "$1" in
+    ft | -ft )
+               ftReadAllFt | column -t
+                if [ "$XMODULE" = "env" ];then    return ; fi
+                exit;;
+    a | A | -a |-A)
+    cat<<EOF
+=========================================================
+命令 ---- 参数/命令说明
+    |// 使用格式
+    |  参数  ----------------- [参数权限] ----  参数说明
+=========================================================
+xb ----- 系统维护
+    |// xb ×××××
+    |
+    |  backup  ---------------- [root] --------  备份系统
+    |  restore  --------------- [root] --------  还原系统
+    |
+xc ----- 常规自定义命令和扩展
+    |// xc ×××××
+    |
+    |  v  -------------------------------------  自定义命令版本
+    |  gjh                                       生成国际化所需的xml文件
+    |  vvv  -----------------------------------  系统环境关键参数查看
+    |  help                                      查看自定义命令说明
+    |  test  ----------------------------------  shell测试
+    |  restartadb                                重启adb服务
+    |  clean_data_garbage  --------------------  快速清空回收站
+    |
+xk ----- 关闭手机指定进程
+    |// xk ×××××
+    |
+    |  monkey  --------------------------------  关闭monkey
+    |  systemui                                  关闭systemui
+    |  应用包名  ------------------------------  关闭指定app
+    |
+xl ----- 过滤 android 含有tag的所有等级的log
+    |// xl tag
+    |
+xle ---- 过滤 android 含有tag的E级log
+    |// xle tag
+    |
+xbh ---- 根据标签过滤命令历史
+    |// xbh 标签
+    |
+==============================================================
+=======                     无参部分                 =========
+==============================================================
+
+xgl ----- 简单查看最近10次git log
+xr ------ 使.bashrc修改生效
+xd ------ mtk下载工具
+xu ------ 打开xbash配置
+.9 ------ 打开.9工具
+xs ------ 关机
+xss ----- 重启
+
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi
+exit;;
+    esac
+done
+}
+
 ftKillPhoneAppByPackageName()
 {
     local ftEffect=kill掉包名为packageName的应用
@@ -80,11 +190,10 @@ EOF
     local adbStatus=`adb get-state`
     if [ "$adbStatus" = "device" ];then
         #确定包存在
-        if [ -n "$(adb shell pm list packages|grep $packageName)" ];then
+        if [ -z "$(adb shell pm list packages|grep $packageName)" ];then
             adb root
             adb remount
             pid=`adb shell ps | grep $packageName | awk '{print $2}'`
-            #pid=`adb shell "ps" | awk '/com.android.systemui/{print $2}'`
             adb shell kill $pid
         else
             ftEcho -e 包名[${packageName}]不存在，请确认
@@ -223,7 +332,17 @@ ftCleanDataGarbage()
     local ftEffect=清空回收站
     ftInitDevicesList
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    while true; do case "$1" in
+    #使用环境说明
+    e | -e |--env) cat<<EOF
+#=================== ${ftEffect}使用环境说明=============
+#
+#    禁止在高权限下运行,转化普通用户后，再次尝试
+#=========================================================
+EOF
+      return;;
+    #方法使用说明
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例===================
 #
 #    ftCleanDataGarbage [无参]
@@ -231,6 +350,12 @@ ftCleanDataGarbage()
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi
     exit;; * ) break;; esac;done
+
+    #环境校验
+    if [ `whoami` != $rNameUser ]; then
+        ftCleanDataGarbage -e
+        return
+    fi
     #耦合校验
     local valCount=0
     local errorContent=
@@ -754,81 +879,6 @@ EOF
     else
         ftEcho -e "[${ftEffect}]找不到[$filePath]"
     fi
-
-}
-
-ftLog()
-{
-    local ftEffect=初始化运行日志记录所需的参数
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
-#
-#    ftLog 无参数
-#    初始化log记录所需的参数
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
-
-    #耦合校验
-    local valCount=0
-    local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome" ; fi
-    if [ -z "$rDirNameLog" ];then    errorContent="${errorContent}\\n[xbash的日志目录名]rDirNameLog=$rDirNameLog" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftLog -h
-            return
-    fi
-
-    #初始化命令log目录
-
-    local diarNameCmdLog=null
-    local parameterList=(xs xss -h vvv -v test restartadb -ftall -ft)
-    local fileNameLogBase=$(date -d "today" +"%y%m%d__%H%M%S")
-    # 部分操作不记录日志
-    for parameter in ${parameterList[@]}
-    do
-        if [ "$parameter" = "$XCMD" ]\
-            ||[ -z "$rBaseShellParameter2" ]\
-            ||[ "$parameter" = "$rBaseShellParameter2" ];then
-            export mFilePathLog=/dev/null
-            return
-        fi
-    done
-
-    if [ -z "$rBaseShellParameter2" ];then
-        diarNameCmdLog=other
-        if [ ! -z "$XCMD" ];then
-            diarNameCmdLog=${diarNameCmdLog}/${XCMD}
-        fi
-    else
-        while true; do case $XCMD in
-        xk)
-            diarNameCmdLog=${XCMD}_ftKillPhoneAppByPackageName
-            fileNameLogBase=${rBaseShellParameter2}_${fileNameLogBase}
-            break;;
-        *)
-            diarNameCmdLog=${XCMD}_${rBaseShellParameter2}
-            break;;
-        esac;done
-    fi
-
-    dirPath=${rDirPathLog}/${diarNameCmdLog}
-
-    #不存在新建命令log目录
-    if [ ! -d "$dirPath" ];then
-        mkdir -p $dirPath
-    fi
-    # 设定log路径
-    export mFilePathLog=${dirPath}/${fileNameLogBase}.log
-    # touch $mFilePathLog
-    # 清除高权限
-    if [ `whoami` = "root" ]; then
-        chmod 777 -R $dirPath
-    fi
 }
 
 ftTest()
@@ -863,19 +913,19 @@ EOF
     cd $dirPathLocal
 }
 
-ftBoot()
+ftPowerManagement()
 {
     local ftEffect=延时免密码关机重启
     local edittype=$1
-    local timeLong=$rBaseShellParameter3
+    local timeLong=$2
     timeLong=${timeLong:-$2}
     timeLong=${timeLong:-'10'}
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
-#    ftBoot 关机/重启 时间/秒
-#    ftBoot shutdown/reboot 100
+#    ftPowerManagement 关机/重启 时间/秒
+#    ftPowerManagement shutdown/reboot 100
 #    xs 时间/秒 #制定时间后关机,不带时间则默认十秒
 #    xss 时间/秒 #制定时间后重启,不带时间则默认十秒
 #=========================================================
@@ -890,7 +940,7 @@ EOF
     if ( ! echo -n $timeLong | grep -q -e "^[0-9][0-9]*$" );then    errorContent="${errorContent}\\n[倒计时时长无效]timeLong=$timeLong" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftBoot -h
+            ftPowerManagement -h
             return
     fi
 
@@ -1814,8 +1864,6 @@ EOF
     local dirNameVersionSoftware=packet
     local buildType=$AutoEnv_buildType
     local dirPathVersionSoftware=${dirPathCode}/out/${dirNameVersionSoftware}
-    #进程意外结束时扫尾
-    #trap '{ ftEcho -s ${ftEffect}未完成操作，请勿使用${dirPathVersionSoftware};cd $dirPathLocal }' INT
 
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
@@ -1910,7 +1958,7 @@ EOF
                 local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirNameersionSoftwareVersionBase}/${AutoEnv_motherboardName}__${AutoEnv_projrctName}__${AutoEnv_demandSignName}/${AutoEnv_deviceModelName}
                 local dirNameVeriosionBase=${AutoEnv_versionName}
                 #非user版本标记编译类型
-                if [ "$AutoEnv_buildType" != "user" ];then 
+                if [ "$AutoEnv_buildType" != "user" ];then
                     local dirNameVeriosionBase=${buildType}____${dirNameVeriosionBase}
                 fi
                 #软件版本的日期与当前时间不一致就设定编译时间
@@ -1918,7 +1966,7 @@ EOF
                 length=${#arr[@]}
                 length=`expr $length - 1`
                 local versionNameDate=${arr[$length]}
-                if [ "$versionNameDate" != "${fileChangeTime}" ];then 
+                if [ "$versionNameDate" != "${fileChangeTime}" ];then
                     local dirNameVeriosionBase=${dirNameVeriosionBase}____buildtime____${fileChangeTime}
                 fi
                 dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
@@ -3211,4 +3259,55 @@ EOF
     #     10) echo "Android 2.3.3-2.3.7 Gingerbread"  ;break;;
     #       9) echo "Android 2.3-2.3.2 Gingerbread"       ;break;;
     #     * ) echo "unkonwSdkVersion=${sdkVersion}"; break;;esac;done
+}
+
+complete -W "backup restore" ftMaintainSystem
+ftMaintainSystem()
+{
+    local ftEffect=ubuntu系统维护
+    local fileNameMaintain=maintain.sh
+    local filePathMaintain=${rDirPathCmdsModule}/${fileNameMaintain}
+    local editType=$1
+    editType=${editType:-'backup'}
+
+    #使用示例
+    while true; do case "$1" in
+    #使用环境说明
+    e | -e |--env) cat<<EOF
+#=================== ${ftEffect}使用环境说明=============
+#
+#    当前用户权限过低，请转换为root 用户后重新运行
+#=========================================================
+EOF
+      return;;
+    #方法使用说明
+    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftMaintainSystem 操作类型
+#    ftMaintainSystem backup #备份系统
+#    ftMaintainSystem restore #还原备份
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi
+    exit;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ "$(whoami)" != "root" ];then
+        ftMaintainSystem -e
+        return
+    fi
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -f "$filePathMaintain" ];then    errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftMaintainSystem -h
+            return
+    fi
+
+    $filePathMaintain $editType
 }

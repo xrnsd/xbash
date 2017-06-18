@@ -7,11 +7,10 @@ export HISTSIZE=500
 # 以追加的方式保存命令历史
 shopt -s histappend
 #自动去重备份bash历史记录
-filePathBashHistory=${dirPathHome}/.bash_history 
+filePathBashHistory=${dirPathHome}/.bash_history
 filePathBashHistoryTemp=${filePathBashHistory}_temp
 filePathBashHistoryArchive=${filePathBashHistory}_archive
 filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
-filePathGitBash=${dirPathHomeCmdConfig}/bashrc/git-completion.bash
 #去重
 sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
 mv $filePathBashHistoryTemp $filePathBashHistory
@@ -34,13 +33,6 @@ alias xr="source ~/.bashrc"
 #----------------    xbash config  ---------------------------
 fileNameXbashTragetConfigBase=config_base
 filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
-dirPathHomeCmdConfigBashrc=${dirPathHomeCmdConfig}/bashrc
-
-if [ ! -z `which todos` ]||[ ! -z `which fromdos` ];then
-    alias unix2dos=todos
-    alias dos2unix=fromdos
-fi
-
 #全局变量
 if [ -f $filePathXbashTragetConfigBase ];then
     #不重复添加config_base的只读设定
@@ -48,34 +40,35 @@ if [ -f $filePathXbashTragetConfigBase ];then
     #标记为环境模式，此模式说明直接调用脚本实现
     export XMODULE="env"
 
-    if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
-        source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
+    dirPathHomeCmdConfigBashrc=${dirPathHomeCmdConfig}/bashrc
+    filePathCmdModuleTools=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
+    if [ -f $filePathCmdModuleTools ];then
+        source  $filePathCmdModuleTools
         #bash PS1 配置
         export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
 
         alias xd='ftMtkFlashTool'
+        alias xb='ftMaintainSystem'
+        alias xss='ftPowerManagement reboot'
+        alias xs='ftPowerManagement shutdown'
         alias xk='ftKillPhoneAppByPackageName'
-        alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
-        alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
-        alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
-        alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
+        alias xc='ftMain'
         alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
         alias xu='export XCMD=xu;gedit  ${dirPathHomeCmdConfigBashrc}/config_bashrc_base.gone\
                         ${dirPathHomeCmdConfigBashrc}/config_bashrc_base'
 
         #命令选项快速适配
-        complete -W "compile" xi
         complete -W "backup restore" xb
         complete -W "systemui monkey launcher" xk
-        complete -W "restartadb test clean_data_garbage  -v -vvv -ft -ftall" xc
+        complete -W "restartadb test clean_data_garbage  -v -vvv -ft" xc
     else
-        echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
+        echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$filePathCmdModuleTools]\033[0m"
     fi
 else
     echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
 fi
+
 if [ ! -z `which git` ];then
-    #%Cblue%h%Creset %<(40,trunc)%s [%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%an%Creset%C(yellow)%d%Creset]
     alias xgl='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
     alias xgll='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
     export PROMPT_COMMAND='\
@@ -83,6 +76,10 @@ if [ ! -z `which git` ];then
     if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
      ftSetBashPs1ByGitBranch
     fi'
+fi
+if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then
+    alias unix2dos=todos
+    alias dos2unix=fromdos
 fi
 if [ -d "vendor/sprd" ];then
         alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\

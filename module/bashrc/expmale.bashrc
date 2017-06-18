@@ -5,9 +5,9 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
-# don't put duplicate lines in the history. See bash(1) for more options
-# ... or force ignoredups and ignorespace
-HISTCONTROL=ignoredups:ignorespace
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
 
 # append to the history file, don't overwrite it
 shopt -s histappend
@@ -19,6 +19,10 @@ HISTFILESIZE=2000
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
 
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
@@ -82,6 +86,10 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
 # Alias definitions.
 # You may want to put all your additions into a separate file like
 # ~/.bash_aliases, instead of adding them here directly.
@@ -94,48 +102,46 @@ fi
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
-#if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
-#    . /etc/bash_completion
-#fi
+if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+    . /etc/bash_completion
+fi
 
 #added by wgx
 #=========================================================================
-#======================  自定义配置 =======================================
+#====================== 自定义配置 =======================================
 #=========================================================================
-# 标记为环境模式，此模式说明直接调用脚本实现
-export  XMODULE="env"
-#--------------------------终端自身设定---------------------------
-#终端提示
-export PS1='root\[\033[42m\][\w]\[\033[0m\]:'
-
-
-#--------------------------基础变量----------------------------------
+#----------------    基础变量    ----------------------------------
 userName=$(who am i | awk '{print $1}'|sort -u)
 userName=${userName:-`whoami | awk '{print $1}'|sort -u`}
 if [ "${S/ /}" != "$S" ];then
-    userName=$(whoami)
+    userName=$(whoami) 
 fi
-
 dirPathHome=/home/${userName}
 dirPathHomeCmd=${dirPathHome}/cmds
-
-
-#--------------------------命令封装---------------------------
+dirPathHomeTools=${dirPathHome}/tools
+#---------------- xbash部分  ----------------------------------
 if [ ! -d "$dirPathHomeCmd" ];then
     echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
 else
-    #命令封装
-    alias xr="export XCMD=xr;source ~/.bashrc"
-    alias xu='export XCMD=xu;gedit /root/.bashrc'
-    alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
-    alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
-    alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
-    alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
+    dirPathHomeCmdConfig=${dirPathHomeCmd}/config
+    dirPathHomeCmdConfigBashrc=${dirPathHomeCmd}/config/bashrc
+    fileNameXbashTragetBashrcConfigBase=config_bashrc_base
+    fileNameXbashTragetBashrcConfigBaseGone=config_bashrc_base.gone
+    filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBase}
+    filePathXbashTragetBashrcConfigBaseGone=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGone}
 
-    #命令选项快速适配
-    complete -W "backup restore" xb
-    complete -W "test clean_data_garbage" xc
+    #----------------   加载xbash的bashrc基础配置  ------------------
+    if [ ! -f "$filePathXbashTragetBashrcConfigBaseGone" ];then
+        echo -e "\033[1;31mXbash下实现的自定义命令需要的隐藏配置\n[filePathXbashTragetBashrcConfigBaseGone=$filePathXbashTragetBashrcConfigBaseGone]\033[0m不存在"
+    else
+        source $filePathXbashTragetBashrcConfigBaseGone
+        source $filePathXbashTragetBashrcConfigBase
+    fi
 fi
 
-alias ..="cd .."
-alias ...="cd ../.."
+#---------------------------------用户密码---------------------------------
+if [ -z "$rUserPwdBase" ];then
+    export rUserPwd=${rUserPwdBase:-'123'}
+    rUserPwdBase=rUserPwd
+    readonly rUserPwd
+fi
