@@ -2,20 +2,13 @@
 ftXrnsdExtensionsToBashInit()
 {
     local ftEffect=xbash配置初始化
-#===================           预定流程                   =============
-#
-#     1 复制工程文件到新目录cmds
-#    2 读取用户密码，更新cmds的config_base
-#    3 备份原始的普通用户的bash配置到cmds/dtata/bash_base_backup
-#        备份root用户的bash配置到cmds/dtata/bash_root_backup
-#    4 确认3操作成功，更新对应用户的bash配置
-#     5 初始化完成
-#
-#=================== xbash配置初始化的使用示例=============
-#
-#    ftXrnsdExtensionsToBashInit 无参
-#
-# =========================================================
+    #===================           预定流程                   =============
+    # 获取xbash所在目录 获取用户名,根据 config/example.config 新建 config/用户名.config，在.gitignore中插入记录
+    # 备份用户的.bashrc到module/bashrc/backup.bashrc
+    # 读取用户密码 更新 config/用户名.config
+    # 根据 module/bashrc/example.bashrc 新建 module/bashrc/用户名.bashrc ，在.gitignore中插入记录
+    # 复制工程文件到新目录cmds
+    # =========================================================
 
 
     local userName=$(who am i | awk '{print $1}'|sort -u)

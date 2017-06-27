@@ -385,8 +385,8 @@ ftBackupOs()
     #/home/wgx/cmds/data/excludeDirsBase.list
     fileNameExcludeBase=excludeDirsBase.list
     fileNameExcludeAll=excludeDirsAll.list
-    mFilePathExcludeBase=${rDirPathUserHome}/${rDirNameCmd}/${rDirNameCmdData}/${fileNameExcludeBase}
-    mFilePathExcludeAll=${rDirPathUserHome}/${rDirNameCmd}/${rDirNameCmdData}/${fileNameExcludeAll}
+    mFilePathExcludeBase=${rDirPathCmdsData}/${fileNameExcludeBase}
+    mFilePathExcludeAll=${rDirPathCmdsData}/${fileNameExcludeAll}
 
     mDirPathsExcludeBase=(/proc \
                 /android \

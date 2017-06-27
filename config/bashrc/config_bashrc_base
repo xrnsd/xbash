@@ -52,7 +52,7 @@ if [ -f $filePathXbashTragetConfigBase ];then
         alias xss='ftPowerManagement reboot'
         alias xs='ftPowerManagement shutdown'
         alias xk='ftKillPhoneAppByPackageName'
-        alias xc='ftMain'
+        alias xc='export XCMD=xc;ftMain'
         alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
         alias xu='export XCMD=xu;gedit  ${dirPathHomeCmdConfigBashrc}/config_bashrc_base.gone\
                         ${dirPathHomeCmdConfigBashrc}/config_bashrc_base'
@@ -69,8 +69,8 @@ else
 fi
 
 if [ ! -z `which git` ];then
-    alias xgl='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
-    alias xgll='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
+    alias xgl='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
+    alias xgll='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
     export PROMPT_COMMAND='\
     ftSetBashPs1ByGitBranch
     if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then

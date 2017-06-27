@@ -68,6 +68,8 @@ ftMain()
                 ftEcho -b java;        java -version
                 ftEcho -b gcc;        gcc -v
                 break;;
+    restartadb)    ftRestartAdb
+                break;;
     *)    ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftReadMe $XCMD; break;;
     esac
     done
@@ -80,14 +82,16 @@ ftReadAllFt()
         local key="local ftEffect="
         for effectName in $(cat ~/cmds/module/tools.sh |grep '^ft')
         do
-            effectName=${effectName//()/}
             effectDescription=$(cat ~/cmds/module/tools.sh |grep  -C 3 $effectName|grep "$key")
             effectDescription=${effectDescription//$key/}
             effectDescription=$(echo $effectDescription |sed s/[[:space:]]//g)
             if [[ ${effectDescription: -9} = "nodisplay" ]];then
                 continue;
             fi
-            echo "$effectName $effectDescription"
+            effectName=${effectName//()/}
+            #echo "$effectName $effectDescription"
+
+            printf "%40s    " $effectName;echo $effectDescription
         done
 }
 
@@ -190,7 +194,7 @@ EOF
     local adbStatus=`adb get-state`
     if [ "$adbStatus" = "device" ];then
         #确定包存在
-        if [ -z "$(adb shell pm list packages|grep $packageName)" ];then
+        if [ ! -z "$(adb shell pm list packages|grep $packageName)" ];then
             adb root
             adb remount
             pid=`adb shell ps | grep $packageName | awk '{print $2}'`
@@ -238,13 +242,13 @@ EOF
             ftRestartAdb -h
             return
     fi
-
-    echo $rUserPwd | sudo -S adb kill-server
+    echo $rUserPwd | sudo -S echo test >/dev/null
+    echo $rUserPwd | sudo -S adb kill-server >/dev/null
     echo
-    echo server-kill
+    echo "server kill ......"
     sleep 2
-    echo $rUserPwd | sudo -S adb start-server
-    echo server-start
+    echo $rUserPwd | sudo -S adb start-server >/dev/null
+    echo "server start ......"
     adb devices
 }
 
@@ -1561,7 +1565,7 @@ EOF
     ftAutoInitEnv
     local buildType=$AutoEnv_buildType
     local versionName=$AutoEnv_versionName
-    local branchName=$AutoEnv_branchName
+    local branchName="$AutoEnv_branchName"
 
     local dirPathCodeRootOuts=${dirPathCode%/*}/outs
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----$(date -d "today" +"%y%m%d[%H:%M]")
@@ -1690,7 +1694,7 @@ EOF
 
 ftAutoUploadHighSpeed()
 {
-    local ftEffect=上传文件到制定smb服务器路径[高速版]\
+    local ftEffect=上传文件到制定smb服务器路径[高速版]
     #存放上传源的目录
     local dirPathContentUploadSource=$1
     #目录下存放的目录或文件
@@ -1750,7 +1754,7 @@ EOF
     local pasword=123456
     local dirPathServer=/media/新卷
 
-    ftEcho -s "开始上传${pathContentUploadSource} 到\n${serverIp}/${pathContentUploadTraget}..."
+    ftEcho -s "开始上传${dirPathContentUploadSource} 到\n${serverIp}/${pathContentUploadTraget}..."
     cd $dirPathContentUploadSource
 
     tar -cv  $pathContentUploadSource| pigz -1 |sshpass -p $pasword ssh $userName@$serverIp "gzip -d|tar -xPC ${dirPathServer}/${pathContentUploadTraget}"
@@ -1844,6 +1848,7 @@ EOF
 
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ]\
+            ||[ -z "$TARGET_PRODUCT" ]\
             ||[ -z "$ANDROID_PRODUCT_OUT" ]\
             ||[ -z "$TARGET_BUILD_VARIANT" ];then
         ftAutoPacket -env
@@ -1931,6 +1936,7 @@ EOF
 
     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
             local dirNamePackage="packages"
+            local dirNameOtaPackage="otaPackages"
             local dirNamePackageDataBase="dataBase"
             local deviceName=`basename $ANDROID_PRODUCT_OUT`
 
@@ -1954,6 +1960,7 @@ EOF
             fi
 
             if [ ! -z "$AutoEnv_clientName" ];then #git解析成功获取到客户等相关信息
+                ftAutoInitEnv -bp
                 local dirNameersionSoftwareVersionBase=${AutoEnv_AndroidVersion}
                 local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirNameersionSoftwareVersionBase}/${AutoEnv_motherboardName}__${AutoEnv_projrctName}__${AutoEnv_demandSignName}/${AutoEnv_deviceModelName}
                 local dirNameVeriosionBase=${AutoEnv_versionName}
@@ -1977,7 +1984,9 @@ EOF
                 local dirPathUploadTraget=智能机软件/MTK6580/新华菲
             fi
             local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
+            local dirPathOtaPackage=${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
             local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
+            local otaFileList=$(ls ${dirPathOut}/obj/PACKAGING/target_files_intermediates/${TARGET_PRODUCT}-target_files-* |grep .zip)
             local fileList=(boot.img \
                             cache.img \
                             lk.bin \
@@ -1992,6 +2001,7 @@ EOF
 
             mkdir -p $dirPathVersionSoftwareVersion
             mkdir -p $dirPathPackage
+            mkdir -p $dirPathOtaPackage
             mkdir -p $dirPathPackageDataBase
             cd $dirPathVersionSoftwareVersion
 
@@ -1999,6 +2009,11 @@ EOF
             for file in ${fileList[@]}
             do
                  cp -v -r -f  ${dirPathOut}/${file} ${dirPathVersionSoftwareVersion}/${dirNamePackage}
+            done
+            #otaPackages
+            for file in ${otaFileList[@]}
+            do
+                 cp -v -r -f  $file ${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
             done
             # database
             if [ ! -z "$dataBaseFileList" ];then
@@ -2688,29 +2703,41 @@ EOF
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
 
-                                            # key="补充 修复 相机 缩略图显示异常"
-                                            # hashVal=$(git log --pretty=oneline |grep "$key")
-                                            # hashVal=${hashVal//"$key"/}
-                                            # hashVal=$(echo $hashVal |sed s/[[:space:]]//g)
-                                            # rm -rf vendor/sprd/partner/launcher
-                                            # git checkout $hashVal vendor/sprd/partner/launcher
-                                            # mv vendor/sprd/partner/launcher vendor/sprd/partner/launcher_${branshName}
+                                           #  git cherry-pick 2e64289&&
+                                           git push origin "$branshName"
 
-                                           # git push origin "$branshName"
+                                            # ftAutoInitEnv
+                                            # local deviceName=`basename $ANDROID_PRODUCT_OUT`
+                                            # if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+                                            #             #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
+                                            #             source build/envsetup.sh&&
+                                            #             lunch sp7731c_1h10_32v4_oversea-user&&
+                                            #             kheader&&
+                                            #             make -j4&&
+                                            #             if [ $isUpload = "true" ];then
+                                            #                 ftAutoPacket -y
+                                            #             else
+                                            #                 ftAutoPacket
+                                            #             fi
+                                            # elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+                                            #         if [ $deviceName = "keytak6580_weg_l" ];then
+                                            #             source build/envsetup.sh&&
+                                            #             lunch full_keytak6580_weg_l-user&&
+                                            #             mkdir out
+                                            #             hs=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
+                                            #             make -j${hs} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                            #             make otapackage&&
+                                            #             ftAutoPacket -y&&
+                                            #             ftBackupOutsByMove
+                                            #         else
+                                            #             ftAutoBuildMultiBranch -e
+                                            #             return;
+                                            #         fi
+                                            # fi
 
-                                            source build/envsetup.sh&&
-                                            lunch sp7731c_1h10_32v4_oversea-user&&
-                                            kheader&&
-                                            make -j4&&
-                                            if [ $isUpload = "true" ];then
-                                                ftAutoPacket -y
-                                            else
-                                                ftAutoPacket
-                                            fi
-
-                                            if [ $isBackupOut = "true" ];then
-                                                ftBackupOutsByMove
-                                            fi
+                                            # if [ $isBackupOut = "true" ];then
+                                            #     ftBackupOutsByMove
+                                            # fi
                                         done
                                         git reset --hard
                                        break;;
@@ -2817,63 +2844,69 @@ EOF
     fi
 
     # build.prop高级信息读取
-     if [ "$1" = "-bp" ];then
-        export AutoEnv_deviceModelName=
-        export AutoEnv_deviceSoftType=
-        export AutoEnv_deviceSoftVersion=
-        export AutoEnv_deviceSdkVersion=
-        export AutoEnv_AndroidVersion=
+    export AutoEnv_deviceModelName=
+    export AutoEnv_deviceSoftType=
+    export AutoEnv_deviceSoftVersion=
+    export AutoEnv_deviceSdkVersion=
+    export AutoEnv_AndroidVersion=
 
-        local keySoftType="ro.build.type="
-        local keyModel="ro.product.model="
-        local keySoftVersion="ro.build.display.id="
-        local keySDKVersion="ro.build.version.sdk="
+    local keySoftType="ro.build.type="
+    local keyModel="ro.product.model="
+    local keySoftVersion="ro.build.display.id="
+    local keySDKVersion="ro.build.version.sdk="
+    local filePathSystemBuildprop=${dirPathOut}/system/build.prop
 
-        if [ "$2" = "-mobile" ];then
-            adb wait-for-device
-            local adbStatus=$(adb get-state)
-            if [ "$adbStatus" = "device" ];then
-                local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
-                local deviceSoftType=$(adb shell cat /system/build.prop|grep "$keySoftType")
-                local deviceSoftVersion=$(adb shell cat /system/build.prop|grep "$keySoftVersion")
-                local deviceSdkVersion=$(adb shell cat /system/build.prop|grep "$keySDKVersion")
-            fi
-        else
-                local filePathSystemBuildprop=${dirPathOut}/system/build.prop
+    if [ "$2" = "-mobile" ];then
+                adb wait-for-device
+                local adbStatus=$(adb get-state)
+                if [ "$adbStatus" = "device" ];then
+                    local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
+                    local deviceSoftType=$(adb shell cat /system/build.prop|grep "$keySoftType")
+                    local deviceSoftVersion=$(adb shell cat /system/build.prop|grep "$keySoftVersion")
+                    local deviceSdkVersion=$(adb shell cat /system/build.prop|grep "$keySDKVersion")
+                else
+                        ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
+                       return
+                fi
+    elif [ -f "$filePathSystemBuildprop" ];then
                 local deviceModelName=$(cat $filePathSystemBuildprop|grep "$keyModel")
                 local deviceSoftType=$(cat $filePathSystemBuildprop|grep "$keySoftType")
                 local deviceSoftVersion=$(cat $filePathSystemBuildprop|grep "$keySoftVersion")
                 local deviceSdkVersion=$(cat $filePathSystemBuildprop|grep "$keySDKVersion")
-        fi
+    elif [ "$1" = "-bp" ];then
+               ftEcho -s "未找到 $filePathSystemBuildprop\n版本软件信息未获取"
+               return
+    fi
 
-        local logDate="$(date -d "today" +"%y%m%d")"
-        local logDateTime="$(date -d "today" +"%y%m%d%H%M%S")"
+    if [ ! -z "$deviceSoftVersion" ];then
+            deviceModelName=${deviceModelName//$keyModel/}
+            deviceModelName=${deviceModelName// /_}
+            deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
+            deviceModelName=${deviceModelName:-'null'}
+            export AutoEnv_deviceModelName=$deviceModelName
 
-        deviceModelName=${deviceModelName//$keyModel/}
-        deviceModelName=${deviceModelName// /_}
-        deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
-        deviceModelName=${deviceModelName:-'null'}
-        export AutoEnv_deviceModelName=$deviceModelName
+            deviceSoftType=${deviceSoftType//$keySoftType/}
+            deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
+            deviceSoftType=${deviceSoftType:-'null'}
+            export AutoEnv_deviceSoftType=$deviceSoftType
 
-        deviceSoftType=${deviceSoftType//$keySoftType/}
-        deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
-        deviceSoftType=${deviceSoftType:-'null'}
-        export AutoEnv_deviceSoftType=$deviceSoftType
+            deviceSoftVersion=${deviceSoftVersion//$keySoftVersion/}
+            deviceSoftVersion=$(echo $deviceSoftVersion |sed s/[[:space:]]//g)
+            deviceSoftVersion=${deviceSoftVersion:-'null'}
+            export AutoEnv_deviceSoftVersion=$deviceSoftVersion
 
-        deviceSoftVersion=${deviceSoftVersion//$keySoftVersion/}
-        deviceSoftVersion=$(echo $deviceSoftVersion |sed s/[[:space:]]//g)
-        deviceSoftVersion=${deviceSoftVersion:-'null'}
-        export AutoEnv_deviceSoftVersion=$deviceSoftVersion
+            deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
+            deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
+            deviceSdkVersion=${deviceSdkVersion:-'null'}
+            export AutoEnv_deviceSdkVersion=$deviceSdkVersion
+            local AndroidVersion=$(ftGetAndroidVersionBySDKVersion $deviceSdkVersion)
+            export AutoEnv_AndroidVersion=$AndroidVersion
+    fi
 
-        deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
-        deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
-        deviceSdkVersion=${deviceSdkVersion:-'null'}
-        export AutoEnv_deviceSdkVersion=$deviceSdkVersion
-        local AndroidVersion=$(ftGetAndroidVersionBySDKVersion $deviceSdkVersion)
-        export AutoEnv_AndroidVersion=$AndroidVersion
-
+     if [ "$1" = "-bp" ];then
         return
     fi
+    # build.prop高级信息读取 end 
 
     local dirPathLocal=$PWD
     cd $dirPathCode
@@ -2899,28 +2932,33 @@ EOF
 
     #软件版本名
     if [ $mnufacturers = "sprd" ];then
-        local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-        local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-        if [ -f $filePathDeviceInfoSettings ];then
-            local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-            versionName=${versionName//$keyVersion/}
-            versionName=${versionName//\");/}
-            versionName=$(echo $versionName |sed s/[[:space:]]//g)
-        fi
-   elif [[ $mnufacturers = "mtk" ]]; then
-        local keyVersion="ro.build.display.id="
-        local filePathOutBuildProp=${dirPathOut}/system/build.prop
-        if [ ! -z "$LZ_BUILD_VERSION" ];then
-                local versionName=$LZ_BUILD_VERSION
-        elif [ -f $filePathOutBuildProp ];then
-                local versionName=$(cat $filePathOutBuildProp|grep $keyVersion)
+            local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+            local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+            if [ -f $filePathDeviceInfoSettings ];then
+                local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
                 versionName=${versionName//$keyVersion/}
-                versionName=${versionName// /_}
-        fi
+                versionName=${versionName//\");/}
+                versionName=$(echo $versionName |sed s/[[:space:]]//g)
+            fi
+   elif [[ $mnufacturers = "mtk" ]]; then
+            local filePathOutBuildProp=${dirPathOut}/system/build.prop
+            if [ -f $filePathOutBuildProp ];then
+                    local keyVersion="ro.build.display.id="
+                    local versionName=$(cat $filePathOutBuildProp|grep $keyVersion)
+                    versionName=${versionName//$keyVersion/}
+                    if [ ! -z "$LZ_BUILD_VERSION" ]&&[[ "$versionName" != "$LZ_BUILD_VERSION" ]]; then
+                            ftEcho -e "环境与本地，软件版本不一致:\n本地:${versionName}\n环境:${LZ_BUILD_VERSION}"
+                    fi
+            elif [ ! -z "$LZ_BUILD_VERSION" ];then
+                    local versionName=$LZ_BUILD_VERSION
+            fi
     fi
     if [ -z "$versionName" ];then
         versionName=`basename $ANDROID_PRODUCT_OUT`
     fi
+    versionName=${versionName// /_}
+    versionName=${versionName//
+/_}
 
     #软件编译类型
     if [ -d $dirPathOut ];then
@@ -2986,30 +3024,31 @@ EOF
                         elif [[ $valLong = "_PMA(" ]];then
                             gitBranchInfoModelAllName=${item//$valLong/}
                         fi
+
+                        export AutoEnv_clientName=
+                        export AutoEnv_projrctName=
+                        export AutoEnv_modelAllName=
+                        export AutoEnv_demandSignName=
+                        export AutoEnv_motherboardName=
+
+                        export AutoEnv_clientName=$gitBranchInfoClientName
+                        export AutoEnv_projrctName=$gitBranchInfoProjrctName
+                        export AutoEnv_modelAllName=$gitBranchInfoModelAllName
+                        export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
+                        export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
                 done
             fi
     fi
 
-
-    export AutoEnv_mnufacturers=
-    export AutoEnv_versionName=
     export AutoEnv_buildType=
     export AutoEnv_branchName=
-    export AutoEnv_clientName=
-    export AutoEnv_projrctName=
-    export AutoEnv_motherboardName=
-    export AutoEnv_modelAllName=
-    export AutoEnv_demandSignName=
+    export AutoEnv_versionName=
+    export AutoEnv_mnufacturers=
 
-    export AutoEnv_mnufacturers=$mnufacturers
-    export AutoEnv_versionName=$versionName
     export AutoEnv_buildType=$buildType
     export AutoEnv_branchName=$branchName
-    export AutoEnv_clientName=$gitBranchInfoClientName
-    export AutoEnv_projrctName=$gitBranchInfoProjrctName
-    export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
-    export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
-    export AutoEnv_modelAllName=$gitBranchInfoModelAllName
+    export AutoEnv_versionName=$versionName
+    export AutoEnv_mnufacturers=$mnufacturers
 
     cd $dirPathLocal
 }
@@ -3142,6 +3181,7 @@ EOF
 
                         rm -f $FilePathXbashDataMonkeyConfigLocalBlack
                         rm -f $FilePathXbashDataMonkeyConfigLocalWhite
+                        mkdir -p $dirPathMoneyLogLocal
                         gedit $FilePathXbashDataMonkeyConfigLocalTraget&&
                         while [ ! -z "$(pgrep -f gedit)" ]
                         do
@@ -3172,6 +3212,7 @@ EOF
                          break;;
             esac;done
 
+            mkdir -p $dirPathMoneyLogLocal
             local upgradeAdbPermissionsStae=$(adb root;adb remount)
             local changDeviceSerialNumber=$(adb shell "echo $logDateTime>/sys/class/android_usb/android0/iSerial")
             if [ -z "$changDeviceSerialNumber" ];then

@@ -35,7 +35,7 @@ android mmi开发环境的简单扩展[shell]
     │        │      ├── init_xbash.sh              环境初始化工具
     │        │      └── init_system.sh             android mmi 环境初始化工具
     │        ├── packet   -------------------   packet工具
-    │        │      └── pac_7731c.pl               sprd的7731c的packet生成工具
+    │        │      └── 7731C_AndroidL.pl               sprd的7731c的packet生成工具
     │        ├── test    --------------------   脚本测试工具
     │        │      ├── base.sh                     demo测试,请忽略此文件的修改
     │        │      ├── pytools.py                  脚本语法逻辑校验高亮工具
@@ -71,9 +71,9 @@ android mmi开发环境的简单扩展[shell]
         └── ./init.sh -all    初始化system,初始化xbash
     4 重开一个终端,输入ftReadMe 或 xc -h
 
-5.bug_list
+5.初始化环境
 ----------
-    1 ftInitDevicesList 获取的设备列表不全
+    在新环境下低耦合自动初始化
 
 6.其他
 ----------
