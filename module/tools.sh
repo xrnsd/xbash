@@ -1723,8 +1723,13 @@ EOF
     h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
-#    ftAutoUploadHighSpeed 源存放目录 [源文件名活目录名，不要是路径] 服务器路径
-#    ftAutoUploadHighSpeed xxxx xxxx xxxx
+#    ftAutoUploadHighSpeed 源存放目录 [源文件名或目录名，不要是路径] 服务器路径
+#
+#    路径:acb/def/123/kkk.zip
+#    ftAutoUploadHighSpeed acb/def/123 kkk.zip 智能机软件/MTK6580   #上传文件kkk.zip
+#
+#    路径acb/def/123/kkk/ddd/XXXXXXXXX
+#    ftAutoUploadHighSpeed acb/def/123 kkk 智能机软件/MTK6580 #上传目录kkk包含子目录
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi
@@ -1754,13 +1759,15 @@ EOF
     local pasword=123456
     local dirPathServer=/media/新卷
 
-    ftEcho -s "开始上传${dirPathContentUploadSource} 到\n${serverIp}/${pathContentUploadTraget}..."
+    ftEcho -s "开始上传到  ${serverIp}/${pathContentUploadTraget}..."
     cd $dirPathContentUploadSource
+    mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 
     tar -cv  $pathContentUploadSource| pigz -1 |sshpass -p $pasword ssh $userName@$serverIp "gzip -d|tar -xPC ${dirPathServer}/${pathContentUploadTraget}"
 
     cd $dirPathLocal
-    ftEcho -s "${pathContentUploadSource}\n上传结束"
+    ftEcho -s "上传结束"
+    ftTiming
 }
 
 ftAutoUpload()

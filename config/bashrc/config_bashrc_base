@@ -76,6 +76,7 @@ if [ ! -z `which git` ];then
     if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
      ftSetBashPs1ByGitBranch
     fi'
+    alias xcheckout='git checkout vendor/mediatek/proprietary/scripts'
 fi
 if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then
     alias unix2dos=todos
