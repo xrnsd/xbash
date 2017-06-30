@@ -2012,21 +2012,36 @@ EOF
             mkdir -p $dirPathPackageDataBase
             cd $dirPathVersionSoftwareVersion
 
+            ftEcho -s "开始生成版本软件包:\n${dirNameVeriosionBase}"
             #packages
             for file in ${fileList[@]}
             do
-                 cp -v -r -f  ${dirPathOut}/${file} ${dirPathVersionSoftwareVersion}/${dirNamePackage}
+                local filePath=${dirPathOut}/${file}
+                 if [[ ! -f "$filePath" ]]; then
+                     ftEcho -e "${filePath}\n不存在"
+                     return;
+                 fi
+                 cp -v -r -f  $filePath ${dirPathVersionSoftwareVersion}/${dirNamePackage}
             done
             #otaPackages
             for file in ${otaFileList[@]}
             do
+                 if [[ ! -f "$file" ]]; then
+                     ftEcho -e "${file}\n不存在"
+                     return;
+                 fi
                  cp -v -r -f  $file ${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
             done
             # database
             if [ ! -z "$dataBaseFileList" ];then
                 for file in ${dataBaseFileList[@]}
                 do
-                     cp -v -r -f  ${dirPathOut}/${file} ${dirPathPackageDataBase}
+                    local filePath=${dirPathOut}/${file}
+                     if [[ ! -f "$filePath" ]]; then
+                         ftEcho -e "${filePath}\n不存在"
+                         return;
+                     fi
+                     cp -v -r -f  $filePath ${dirPathPackageDataBase}
                 done
             fi
             # 生成说明文件
@@ -2710,7 +2725,7 @@ EOF
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
 
-                                           #  git cherry-pick 2e64289&&
+                                           git cherry-pick 42a90c5&&
                                            git push origin "$branshName"
 
                                             # ftAutoInitEnv
