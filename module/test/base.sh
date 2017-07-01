@@ -51,6 +51,10 @@ fi
 
 # 字符串包含if [[ helloworld == *low* ]];then
 
+# 路径替换
+# a=/aa2344aa/123bb
+# echo b=$(echo $a | sed "s 123/  222/ ")
+
 # note=${note:-'常规'}
 
 # 遍历目录
