@@ -203,7 +203,7 @@ EOF
             ftEcho -e 包名[${packageName}]不存在，请确认
             while [ ! -n "$(adb shell pm list packages|grep $packageName)" ]; do
                 ftEcho -y 是否重新开始
-                read -n1 sel
+                read -n 1 sel
                 case "$sel" in
                     y | Y )
                         ftKillPhoneAppByPackageName $packageName
@@ -700,7 +700,7 @@ EOF
 
         while true; do
         ftEcho -y 已生成${dirNamePackageName}，是否清尾
-        read -n1 sel
+        read -n 1 sel
         case "$sel" in
             y | Y )
                 local filePath=/home/${rNameUser}/${dirNamePackageName}
@@ -708,7 +708,7 @@ EOF
                     while true; do
                     echo
                     ftEcho -y 有旧的${dirNamePackageName}，是否覆盖
-                    read -n1 sel
+                    read -n 1 sel
                     case "$sel" in
                         y | Y )    break;;
                         n | N)    mv $filePath /home/${rNameUser}/${dirNamePackageName/.zip/_old.zip};break;;
@@ -762,7 +762,7 @@ EOF
         if [ -d $dirPathAnimationTraget ]||[ $? -eq   "3" ];then
             while true; do
             ftEcho -y ${ftEffect}的目标文件[${dirPathAnimationTraget}]夹非空，是否删除重建
-            read -n1 sel
+            read -n 1 sel
             case "$sel" in
                 y|Y)
                     rm -rf $dirPathAnimationTraget
@@ -1877,6 +1877,21 @@ EOF
     local buildType=$AutoEnv_buildType
     local dirPathVersionSoftware=${dirPathCode}/out/${dirNameVersionSoftware}
 
+    if [[ -d "$dirPathVersionSoftware" ]]; then
+          while true; do
+                        ftEcho -y "${dirPathVersionSoftware}\n已存在,是否是否删除"
+                        read -n 1 sel
+                        case "$sel" in
+                            y | Y ) rm  -rf $dirPathVersionSoftware
+                                       break;;
+                            n | N | q |Q)    break ;;
+                            * ) ftEcho -e 错误的选择：$sel
+                                echo "输入n，q，离开";
+                                ;;
+                            esac
+        done
+    fi
+
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
                 ftEcho -ea "平台${AutoEnv_mnufacturers}的项目${TARGET_PRODUCT}无效\
@@ -2582,14 +2597,14 @@ EOF
 
      while true; do
         ftEcho -y "是否更新软件版本号"
-        read -n1 sel
+        read -n 1 sel
         case "$sel" in
             y | Y )
                     sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings
                     sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest
                      while true; do
                         ftEcho -y "是否提交修改"
-                        read -n1 sel
+                        read -n 1 sel
                         case "$sel" in
                             y | Y )
                                 ftEcho -s 提交开始，请稍等
@@ -2684,14 +2699,12 @@ EOF
          while true; do
                     echo
                     ftEcho -y gedit 已打开是否关闭
-                    read -n1 sel
+                    read -n 1 sel
                     case "$sel" in
                         y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
-                                       break;;
-                        n | N)    return;;
-                        q |Q)    return;;
-                        * )
-                            ftEcho -e 错误的选择：$sel
+                                      break;;
+                        n | N |q | Q)    return;;
+                        * ) ftEcho -e 错误的选择：$sel
                             echo "输入n,q，离开"
                             ;;
                     esac
@@ -2713,19 +2726,18 @@ EOF
             while true; do
                     echo
                     ftEcho -y 是否开始编译
-                    read -n1 select
+                    read -n 1 select
                     case "$select" in
                         y | Y )
                                         cat $filePathBranchList | while read line
                                         do
                                             local branshName=$line
-
                                             #rm -rf out
                                             git reset --hard&&
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
 
-                                           git cherry-pick 42a90c5&&
+                                           git cherry-pick fe4a08e&&
                                            git push origin "$branshName"
 
                                             # ftAutoInitEnv
@@ -3013,7 +3025,11 @@ EOF
             if [ -f "$filePathGitConfigInfoLocal" ];then
                 local bn=$(cat $filePathGitConfigInfoLocal|grep "$key")
                 if [ ! -z "$bn" ];then
-                    branchName=${bn//$key/}
+                    local branchNameFile=${bn//$key/}
+                    if [[ "$branchNameFile" != "$branchName" ]]; then
+                            ftEcho -e "环境与本地，分支不一致:\n本地:$branchNameFile\n环境:$branchName"
+                    fi
+                    branchName=$branchNameFile
                 else
                     echo "${key}${branchName}" >>$filePathGitConfigInfoLocal
                 fi
@@ -3191,7 +3207,7 @@ EOF
                              while true; do
                                     echo
                                     ftEcho -y gedit 已打开是否关闭
-                                    read -n1 sel
+                                    read -n 1 sel
                                     case "$sel" in
                                         y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
                                                     break;;

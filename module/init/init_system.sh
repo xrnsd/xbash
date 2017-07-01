@@ -47,7 +47,7 @@ ftCheckNetwork()
     local target=www.baidu.com
 
     #获取响应状态码
-    local ret_code=`curl -I -s --connect-timeout $timeout $target -w %{http_code} | tail -n1`
+    local ret_code=`curl -I -s --connect-timeout $timeout $target -w %{http_code} | tail -n 1`
 
     if [ "x$ret_code" = "x200" ]; then
         echo 网络畅通
@@ -141,7 +141,7 @@ ftUpdateSoftware()
     if [ ${#rListDevEnv[@]} -gt 9 ];then
         read sel
     else
-        read -n1 sel
+        read -n 1 sel
     fi
     local devList=${rListDevEnv[$sel]}
     listTargetVersionSoftwareName=${rListDevEnvCorrespondSftware["$devList"]}
