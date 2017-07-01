@@ -1516,17 +1516,20 @@ ff02::2 ip6-allrouters
 }
 
 #===================    非通用实现[高度耦合]    ==========================
-ftBackupOutsByMove()
+ftBackupOrRestoreOuts()
 {
-    local ftEffect=移动备份out
+    local ftEffect=维护out
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
+    local editType=$1
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
-#
-#    ftBackupOutsByMove 无参
+#    备份out
+#    ftBackupOrRestoreOuts 无参
+#    移动匹配out到单前项目
+#    ftBackupOrRestoreOuts -m
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi
@@ -1544,18 +1547,17 @@ EOF
 
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
-        ftBackupOutsByMove -env
+        ftBackupOrRestoreOuts -env
         return
     fi
 
-    local valCount=0
+    local valCount=1
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
-    if [ ! -d "$dirPathOut" ];then    errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftBackupOutsByMove -h
+            ftBackupOrRestoreOuts -h
             return
     fi
 
@@ -1567,17 +1569,59 @@ EOF
     local versionName=$AutoEnv_versionName
     local branchName="$AutoEnv_branchName"
 
-    local dirPathCodeRootOuts=${dirPathCode%/*}/outs
+    local dirNameCodeRootOuts=outs
+    local dirPathCodeRootOuts=${dirPathCode%/*}/${dirNameCodeRootOuts}
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----$(date -d "today" +"%y%m%d[%H:%M]")
     local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
 
     if [ ! -d "$dirPathCodeRootOuts" ];then
+        if [[ "$editType" = "-m" ]]; then
+            ftEcho -e "${dirNameCodeRootOuts}为空"
+            return
+        fi
         mkdir -p $dirPathCodeRootOuts
     fi
 
+    if [[ "$editType" = "-m" ]]; then
+        if [[ -d "$dirPathOut" ]]; then
+            ftEcho -e "out已存在 ,请先备份"
+            return
+        fi
+        local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+        local dirPathOutList=($(ls $dirPathCodeRootOuts|grep $branchName))
+        local itemCount=${#dirPathOutList[@]}
+        local dirNameOutTraget=$dirPathOutList
+        if (( $itemCount>1 ));then
+            ftEcho -s 对应分支对应多个out,请选择
+            local index=0
+            for item in ${dirPathOutList[@]}
+            do
+                printf "%-4s %-4s\n" [$index] $item
+                index=`expr $index + 1`
+            done
+            echo -en "请输入对应的序号(回车默认0):"
+            if (( $itemCount>9 ));then
+                read tIndex
+            else
+                read -n 1 tIndex
+            fi
+            #设定默认值
+            if [ ${#tIndex} == 0 ]; then
+                tIndex=0
+            elif (( $itemCount<=$tIndex ))||(( $tIndex<0 ));then
+                ftEcho -e "\n无效的序号:${tIndex}"
+                 return
+            fi
+            dirNameOutTraget=${dirPathOutList[$tIndex]}
+        fi
+        mv ${dirPathCodeRootOuts}/${dirNameOutTraget} ${ANDROID_BUILD_TOP}/out&&
+        ftEcho -s "移动 ${dirPathCodeRootOuts}/${dirNameOutTraget}\n 到  ${ANDROID_BUILD_TOP}/out"
+        return
+    fi
+
     if [ ! -d "$dirPathOutBranchVersion" ];then
-        ftEcho -s "移动[$dirNameBranchVersion]\n到[$dirPathCodeRootOuts]"
-        mv out/ $dirPathOutBranchVersion
+        mv ${ANDROID_BUILD_TOP}/out/ $dirPathOutBranchVersion&&
+        ftEcho -s "移动 ${ANDROID_BUILD_TOP}/out \n到  ${dirPathCodeRootOuts}/${dirNameBranchVersion}"
     else
         ftEcho -ex 存在相同out
     fi
@@ -2766,7 +2810,7 @@ EOF
                                             #             make -j${hs} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
                                             #             make otapackage&&
                                             #             ftAutoPacket -y&&
-                                            #             ftBackupOutsByMove
+                                            #             ftBackupOrRestoreOuts
                                             #         else
                                             #             ftAutoBuildMultiBranch -e
                                             #             return;
@@ -2774,7 +2818,7 @@ EOF
                                             # fi
 
                                             # if [ $isBackupOut = "true" ];then
-                                            #     ftBackupOutsByMove
+                                            #     ftBackupOrRestoreOuts
                                             # fi
                                         done
                                         git reset --hard
