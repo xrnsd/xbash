@@ -2008,13 +2008,14 @@ EOF
             local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
             local dirPathOtaPackage=${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
             local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
+
             local otaFileList=$(ls ${dirPathOut}/obj/PACKAGING/target_files_intermediates/${TARGET_PRODUCT}-target_files-* |grep .zip)
             local fileList=(boot.img \
                             cache.img \
                             lk.bin \
                             logo.bin \
                             MT6580_Android_scatter.txt \
-                            preloader_${deviceName}.bin
+                            preloader_${deviceName}.bin \
                             ramdisk.img \
                             recovery.img \
                             secro.img \
@@ -2027,7 +2028,7 @@ EOF
             mkdir -p $dirPathPackageDataBase
             cd $dirPathVersionSoftwareVersion
 
-            ftEcho -s "开始生成版本软件包:\n${dirNameVeriosionBase}"
+            ftEcho -s "开始生成版本软件包: \n${dirNameVeriosionBase}\n路径: \n${dirPathVersionSoftwareVersion}"
             #packages
             for file in ${fileList[@]}
             do
@@ -2036,7 +2037,8 @@ EOF
                      ftEcho -e "${filePath}\n不存在"
                      return;
                  fi
-                 cp -v -r -f  $filePath ${dirPathVersionSoftwareVersion}/${dirNamePackage}
+                 printf "%-2s %-30s\n" 复制 $file
+                 cp -r -f  $filePath ${dirPathVersionSoftwareVersion}/${dirNamePackage}
             done
             #otaPackages
             for file in ${otaFileList[@]}
@@ -2045,7 +2047,8 @@ EOF
                      ftEcho -e "${file}\n不存在"
                      return;
                  fi
-                 cp -v -r -f  $file ${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
+                 printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
+                 cp -r -f  $file ${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
             done
             # database
             if [ ! -z "$dataBaseFileList" ];then
@@ -2056,7 +2059,8 @@ EOF
                          ftEcho -e "${filePath}\n不存在"
                          return;
                      fi
-                     cp -v -r -f  $filePath ${dirPathPackageDataBase}
+                    printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}  ")
+                     cp -r -f  $filePath ${dirPathPackageDataBase}
                 done
             fi
             # 生成说明文件
