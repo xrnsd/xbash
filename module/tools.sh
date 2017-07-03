@@ -1687,7 +1687,7 @@ EOF
             return
     fi
 
-    local filePathConfig=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk
+    local filePathConfig=${dirPathCode}/${AutoEnv_deviceDirPath}/BoardConfig.mk
     local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
     local key="LZ_CONFIG_CAMERA_TYPE :="
     local configType=$(cat $filePathConfig|grep "$key")
@@ -2122,7 +2122,6 @@ ftLanguageUtils()
     local ftEffect=语言缩写转换
     local ftLanguageContent=$@
     local dirPathCode=$ANDROID_BUILD_TOP
-    local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -2152,15 +2151,9 @@ EOF
     fi
     ftAutoInitEnv
     if [ $AutoEnv_mnufacturers = "sprd" ];then
-            local filePathDeviceSprd=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
-            filePathDevice=$filePathDeviceSprd
+            local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-            local filePathDeviceMtk=${dirPathCode}/device/kdragon/m9_xinhaufei_r9_hd/ProjectConfig.mk
-            if [ -f "$filePathDeviceMtk" ]; then
-                filePathDevice=$filePathDeviceMtk
-            else
-                filePathDevice=${dirPathCode}/device/keytak/keytak6580_weg_l/ProjectConfig.mk
-            fi
+            local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/ProjectConfig.mk
     fi
     local errorContent=
     if [ -z "$ftLanguageContent" ];then    errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
@@ -2311,11 +2304,9 @@ EOF
     local filePathChangeListTemplate=${dirPathVersionSoftware}/${fileNameChangeListTemplate}
     local versionName=$AutoEnv_versionName
 
-    # 语言列表
-    #
     #获取缩写列表
     if [ $AutoEnv_mnufacturers = "sprd" ];then
-                local filePathDeviceSprd=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
+                local filePathDeviceSprd=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
                 if [[ -f "$filePathDeviceSprd" ]]; then
                     local key="PRODUCT_LOCALES :="
                     LanguageList=$(cat $filePathDeviceSprd|grep "$key")
@@ -2324,13 +2315,10 @@ EOF
                     ftEcho -e "[工程文件不存在:${filePathDeviceSprd}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
                 fi
    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                local filePathDeviceMtk=${dirPathCode}/device/kdragon/m9_xinhaufei_r9_hd/ProjectConfig.mk
-                local filePathDeviceMtk2=${dirPathCode}/device/keytak/keytak6580_weg_l/ProjectConfig.mk
+                local filePathDeviceMtk=${dirPathCode}/${AutoEnv_deviceDirPath}/ProjectConfig.mk
                 if [ -f "$filePathDeviceMtk" ]; then
-                    LanguageList=$(grep ^$key $filePathDeviceMtk)
-                elif [ -f "$filePathDeviceMtk2" ]; then
                     local key="MTK_PRODUCT_LOCALES"
-                    LanguageList=$(grep ^$key $filePathDeviceMtk2)
+                    LanguageList=$(grep ^$key $filePathDeviceMtk)
                     LanguageList=${LanguageList//$key/};
                     LanguageList=${LanguageList//=/};
                 else
@@ -2377,7 +2365,7 @@ EOF
     if [ $AutoEnv_mnufacturers = "sprd" ];then
 
     #摄像头配置相关
-    local filePathCameraConfig=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk
+    local filePathCameraConfig=${dirPathCode}/${AutoEnv_deviceDirPath}/BoardConfig.mk
     if [ -f $filePathCameraConfig ];then
             local keyType="LZ_CONFIG_CAMERA_TYPE := "
             local keySizeBack="CAMERA_SUPPORT_SIZE := "
@@ -2460,7 +2448,7 @@ ftAutoLanguageUtil()
 {
     local ftEffect=语言缩写转化为中文
     local dirPathCode=$ANDROID_BUILD_TOP
-    local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
+    local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -2887,12 +2875,14 @@ ftAutoInitEnv()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
+    local editType=$1
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftAutoInitEnv 无参
+#    ftAutoInitEnv -bp #build.prop高级信息读取
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi
@@ -2985,7 +2975,7 @@ EOF
             export AutoEnv_AndroidVersion=$AndroidVersion
     fi
 
-     if [ "$1" = "-bp" ];then
+     if [ "$editType" = "-bp" ];then
         return
     fi
     # build.prop高级信息读取 end 
@@ -3007,6 +2997,13 @@ EOF
             done
     else
               ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败"
+    fi
+
+    #device路径
+    export AutoEnv_deviceDirPath=
+    local dirPathDevice=$(find device/ -name "$(basename $ANDROID_PRODUCT_OUT)")
+    if [[ -d "$dirPathDevice" ]]; then
+        export AutoEnv_deviceDirPath=$dirPathDevice
     fi
 
     #分支名
