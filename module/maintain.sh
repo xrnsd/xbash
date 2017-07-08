@@ -58,10 +58,8 @@ ftRestoreOperate()
                 ftEcho -e 未找到版本包:${pathsource}
             fi;break;;
         n | N | q |Q)  exit;;
-        * )
-            ftEcho -e 错误的选择：$sel
-            echo "输入n，q，离开";
-            ;;
+        * ) ftEcho -e 错误的选择：$sel
+            echo "输入n，q，离开";;
     esac
     done
 }
@@ -171,15 +169,16 @@ ftEchoInfo()
     local infoType=$1
 
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftEchoInfo [editType]
 #    ftEchoInfo backup/restore
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=1
@@ -231,14 +230,15 @@ ftSetBackupDevDir()
     ftInitDevicesList 4096
 
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftSetBackupDevDir 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=0
@@ -484,7 +484,8 @@ ftAddNote()
     local fileNameDefault=.note.list
 
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例===================
 #
 #    ftAddNote [dirPathBackupRoot] [versionName]
@@ -492,8 +493,8 @@ ftAddNote()
 #    ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase “常规”
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=2
@@ -560,15 +561,16 @@ ftMD5()
     isExit=${isExit:-'true'}
 
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例===================
 #
 #    ftMD5 [type] [path] [fileNameBase/VersionName]
 #    ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=3
@@ -662,15 +664,16 @@ ftAddOrCheckSystemHwSwInfo()
     isExit=${isExit:-'true'}
 
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例===================
 #
 #    ftAddOrCheckSystemHwSwInfo [type] [path] [path]
 #    ftAddOrCheckSystemHwSwInfo -check
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=3
@@ -788,10 +791,8 @@ ftSel()
     case "$sel" in
         y | Y )    echo 已忽略$1;break;;
         n | N | q |Q)    exit;;
-        * )
-            ftEcho -e 错误的选择：$sel
-            echo "输入n，q，离开";
-            ;;
+        * ) ftEcho -e 错误的选择：$sel
+            echo "输入n，q，离开";;
     esac
     done
 }
@@ -805,15 +806,16 @@ ftBackUpDevScanning()
     local devList=$3
 
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftBackUpDevScanning [version] [note] [backup_dev_list]
 #    ftBackUpDevScanning backup_cg_wgx_20161202 常规 "${mCmdsModuleDataDevicesList[*]}"
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=3
@@ -879,10 +881,8 @@ EOF
                         chmod 777 -R $mDirPathStoreTarget
                         exit;;
                     n | N | q |Q)break;;
-                    * )
-                    ftEcho -e 错误的选择：$sel
-                    echo "输入n，q，离开";
-                    ;;
+                    * ) ftEcho -e 错误的选择：$sel
+                         echo "输入n，q，离开";;
             esac
             done
         fi
@@ -894,14 +894,15 @@ ftVersionPackageIsCreated()
     local ftEffect=检查版本包是否已经存在
 
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftVersionPackageIsCreated 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=0
@@ -921,9 +922,8 @@ EOF
         case "$sel" in
             y | Y )        break;;
             n | N| q |Q)    exit;;
-            * )        ftEcho -e 错误的选择：$sel
-                    echo "输入n，q，离开";
-                    ;;
+            * ) ftEcho -e 错误的选择：$sel
+                 echo "输入n，q，离开";;
         esac
         done
     fi
@@ -936,7 +936,8 @@ ftSynchronous()
     local fileTypeList=$2
 
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftSynchronous [dirPathArray] [fileTypeList]
@@ -953,8 +954,8 @@ ftSynchronous()
 #     1 根据时间阀同步备份
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=2
@@ -987,10 +988,8 @@ EOF
             ftEcho -s 同步结束！
             break;;
         n | N| q |Q)  exit;;
-        * )
-            ftEcho -e 错误的选择：$sel
-            echo "输入n，q，离开";
-            ;;
+        * ) ftEcho -e 错误的选择：$sel
+            echo "输入n，q，离开";;
     esac
     done
 }
@@ -1052,10 +1051,8 @@ elif [ $mTypeEdit = "backup" ];then
             chmod 777 -R $mDirPathStoreTarget
             break;;
             n | N | q |Q)  exit;;
-            * )
-            ftEcho -e 错误的选择：$sel
-            echo "输入n，q，离开";
-            ;;
+            * ) ftEcho -e 错误的选择：$sel
+            echo "输入n，q，离开";;
         esac
         done
 else
