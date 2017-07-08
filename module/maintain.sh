@@ -171,7 +171,7 @@ ftEchoInfo()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftEchoInfo [editType]
 #    ftEchoInfo backup/restore
@@ -232,7 +232,7 @@ ftSetBackupDevDir()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftSetBackupDevDir 无参
 #=========================================================
@@ -486,7 +486,7 @@ ftAddNote()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例===================
+#=================== ${ftEffect}  的使用示例===================
 #
 #    ftAddNote [dirPathBackupRoot] [versionName]
 #    ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
@@ -563,7 +563,7 @@ ftMD5()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例===================
+#=================== ${ftEffect}  的使用示例===================
 #
 #    ftMD5 [type] [path] [fileNameBase/VersionName]
 #    ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
@@ -666,7 +666,7 @@ ftAddOrCheckSystemHwSwInfo()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例===================
+#=================== ${ftEffect}  的使用示例===================
 #
 #    ftAddOrCheckSystemHwSwInfo [type] [path] [path]
 #    ftAddOrCheckSystemHwSwInfo -check
@@ -808,7 +808,7 @@ ftBackUpDevScanning()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftBackUpDevScanning [version] [note] [backup_dev_list]
 #    ftBackUpDevScanning backup_cg_wgx_20161202 常规 "${mCmdsModuleDataDevicesList[*]}"
@@ -896,7 +896,7 @@ ftVersionPackageIsCreated()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftVersionPackageIsCreated 无参
 #=========================================================
@@ -938,7 +938,7 @@ ftSynchronous()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftSynchronous [dirPathArray] [fileTypeList]
 #

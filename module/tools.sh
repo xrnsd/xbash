@@ -11,7 +11,7 @@ ftExample()
     while true; do case "$1" in
     #使用环境说明
     e | -e |--env) cat<<EOF
-#=================== ${ftEffect}使用环境说明=============
+#=================== ${ftEffect}  使用环境说明=============
 #
 #    工具依赖包 example
 #=========================================================
@@ -19,7 +19,7 @@ EOF
       return;;
     #使用示例
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftExample 无参
 #    ftExample [example]
@@ -169,7 +169,7 @@ ftKillPhoneAppByPackageName()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftKillPhoneAppByPackageName [packageName]
 #    ftKillPhoneAppByPackageName com.android.settings
@@ -225,7 +225,7 @@ ftRestartAdb()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftRestartAdb [无参]
 #=========================================================
@@ -265,7 +265,7 @@ ftInitDevicesList()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例===================
+#=================== ${ftEffect}  的使用示例===================
 #
 #    ftInitDevicesList [devMinAvailableSpace 单位默认为MB]
 #    ftInitDevicesList 4096M
@@ -350,7 +350,7 @@ EOF
       return;;
     #使用示例
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例===================
+#=================== ${ftEffect}  的使用示例===================
 #
 #    ftCleanDataGarbage [无参]
 #=========================================================
@@ -404,7 +404,7 @@ ftMtkFlashTool()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftMtkFlashTool 无参
 #=========================================================
@@ -439,7 +439,7 @@ ftFileDirEdit()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例===================
+#=================== ${ftEffect}  的使用示例===================
 #
 #    ftFileDirEdit [type] [isCreate] [path]
 #
@@ -517,7 +517,7 @@ ftEcho()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftEcho        内容    # 直接显示内容
 #    ftEcho    -b    内容    # 标题，不换行，对字符串的缩进敏感
@@ -561,7 +561,7 @@ EOF
                 sleep 3
                 if [ "$XMODULE" = "env" ];then    return ; fi
                 exit;;
-    s | S | -s | -S)        echo;echo -e "\033[42;37m$content\033[0m"; break;;
+    s | S | -s | -S)        echo -e "\033[1;33m$content\033[0m"; break;;
     b | B| -b | -B)        echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
     bh | BH | -bh | -BH)    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
     y | Y | -y | -Y)        echo;echo -en "${content}[y/n]"; break;;
@@ -859,7 +859,7 @@ ftGjh()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftGjh 无参数
 #=========================================================
@@ -893,7 +893,7 @@ ftTest()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftTest 任意参数
 #=========================================================
@@ -930,7 +930,7 @@ ftPowerManagement()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #    ftPowerManagement 关机/重启 时间/秒
 #    ftPowerManagement shutdown/reboot 100
 #    xs 时间/秒 #制定时间后关机,不带时间则默认十秒
@@ -985,7 +985,7 @@ ftReduceFileList()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftReduceFileList 保留的百分比 目录
 #    ftReduceFileList 60 /home/xxxx/temp
@@ -1089,7 +1089,7 @@ ftReNameFile()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    不指定文件名长度默认为4
 #    ftReNameFile 目录
@@ -1153,7 +1153,7 @@ ftDevAvailableSpace()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftDevAvailableSpace [devDirPath] [[isReturn]]
 #    ftDevAvailableSpace /media/test
@@ -1263,7 +1263,7 @@ ftGetKeyValueByBlockAndKey()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftGetKeyValueByBlockAndKey [文件] [目标块TAG] [键名]
 #    value=$(ftGetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup)
@@ -1334,7 +1334,7 @@ ftSetKeyValueByBlockAndKey()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftSetKeyValueByBlockAndKey [文件] [目标块TAG] [键名] [键对应的值]
 #    ftSetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup 1232
@@ -1386,7 +1386,7 @@ ftCheckIniConfigSyntax()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftCheckIniConfigSyntax [file path]
 #    ftCheckIniConfigSyntax 123/config.ini
@@ -1457,7 +1457,7 @@ ftUpdateHosts()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #使用默认hosts源
 #    ftUpdateHosts 无参
 #
@@ -1535,7 +1535,7 @@ ftBackupOrRestoreOuts()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #    备份out
 #    ftBackupOrRestoreOuts 无参
 #    移动匹配out到单前项目
@@ -1598,6 +1598,10 @@ EOF
         fi
         local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
         local dirPathOutList=($(ls $dirPathCodeRootOuts|grep $branchName))
+        if [[ -z "$dirPathOutList" ]]; then
+            ftEcho -e "未找到\n分支[$branchName]对应的out"
+            return
+        fi
         local itemCount=${#dirPathOutList[@]}
         local dirNameOutTraget=$dirPathOutList
         if (( $itemCount>1 ));then
@@ -1623,14 +1627,23 @@ EOF
             fi
             dirNameOutTraget=${dirPathOutList[$tIndex]}
         fi
-        mv ${dirPathCodeRootOuts}/${dirNameOutTraget} ${ANDROID_BUILD_TOP}/out&&
-        ftEcho -s "移动 ${dirPathCodeRootOuts}/${dirNameOutTraget}\n 到  ${ANDROID_BUILD_TOP}/out"
+        mv ${dirPathCodeRootOuts}/${dirNameOutTraget} ${dirPathCode}/out&&
+        ftEcho -s "移动 ${dirPathCodeRootOuts}/${dirNameOutTraget}\n 到  ${dirPathCode}/out"
         return
     fi
 
+    local dirPathOutTop=${dirPathCode}/out
     if [ ! -d "$dirPathOutBranchVersion" ];then
-        mv ${ANDROID_BUILD_TOP}/out/ $dirPathOutBranchVersion&&
-        ftEcho -s "移动 ${ANDROID_BUILD_TOP}/out \n到  ${dirPathCodeRootOuts}/${dirNameBranchVersion}"
+        if [[ ! -d "$dirPathOutTop" ]]; then
+             ftEcho -e "out 不存在"
+             return
+        fi
+        if [[ ! -d "$dirPathOut" ]]; then
+             ftEcho -e "out 不完整"
+             dirNameBranchVersion=${dirNameBranchVersion}____section
+        fi
+        mv ${dirPathOutTop}/ $dirPathOutBranchVersion&&
+        ftEcho -s "移动 $dirPathOutTop \n到  ${dirPathCodeRootOuts}/${dirNameBranchVersion}"
     else
         ftEcho -ex 存在相同out
     fi
@@ -1646,7 +1659,7 @@ ftYKSwitch()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftYKSwitch yhx/kl
 #=========================================================
@@ -1772,7 +1785,7 @@ ftAutoUploadHighSpeed()
 EOF
       return;;
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftAutoUploadHighSpeed 源存放目录 [源文件名或目录名，不要是路径] 服务器路径
 #
@@ -1829,7 +1842,7 @@ ftAutoUpload()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftAutoUpload [源文件路径]
 #    ftAutoUpload xxxx
@@ -2132,7 +2145,7 @@ ftLanguageUtils()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftLanguageUtils 缩写列表
 #    ftLanguageUtils “ar_IL bn_BD my_MM zh_CN”
@@ -2252,7 +2265,7 @@ ftCreateReadMeBySoftwareVersion()
     while true; do case "$1" in
     #使用示例
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
 #    ftCreateReadMeBySoftwareVersion out/pac
@@ -2458,7 +2471,7 @@ ftAutoLanguageUtil()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftAutoLanguageUtil 无参
 #=========================================================
@@ -2507,7 +2520,7 @@ ftLnUtil()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftLnUtil 软连接路径
 #    ftLnUtil /home/xian-hp-u16/log/xb_backup
@@ -2563,7 +2576,7 @@ ftAutoUpdateSoftwareVersion()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftAutoUpdateSoftwareVersion 无参
 #=========================================================
@@ -2672,7 +2685,7 @@ ftAutoBuildMultiBranch()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftAutoBuildMultiBranch 无参
 #    ftAutoBuildMultiBranch -y 上传版本软件
@@ -2875,7 +2888,7 @@ ftAutoInitEnv()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftAutoInitEnv 无参
 #    ftAutoInitEnv -bp #build.prop高级信息读取
@@ -3152,7 +3165,7 @@ ftMonkeyTestByDevicesName()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftMonkeyTestByDevicesName #无参数 默认错误不退出,1000000次
 #    ftMonkeyTestByDevicesName [eventCount]
@@ -3320,7 +3333,7 @@ ftGetAndroidVersionBySDKVersion()
     #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftGetAndroidVersionBySDKVersion 1.0~25
 #    ftGetAndroidVersionBySDKVersion 22
@@ -3400,7 +3413,7 @@ ftMaintainSystem()
 EOF
       return;;
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== ${ftEffect}  的使用示例=============
 #
 #    ftMaintainSystem 操作类型
 #    ftMaintainSystem backup #备份系统
