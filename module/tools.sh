@@ -9,17 +9,15 @@ ftExample()
     local ftEffect=函数模板_nodisplay
 
     while true; do case "$1" in
-    #使用环境说明
     e | -e |--env) cat<<EOF
-#=================== ${ftEffect}  使用环境说明=============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    工具依赖包 example
 #=========================================================
 EOF
       return;;
-    #使用示例
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftExample 无参
 #    ftExample [example]
@@ -166,10 +164,9 @@ ftKillPhoneAppByPackageName()
     local ftEffect=kill掉包名为packageName的应用
     local packageName=$1
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftKillPhoneAppByPackageName [packageName]
 #    ftKillPhoneAppByPackageName com.android.settings
@@ -222,10 +219,9 @@ ftRestartAdb()
 {
     local ftEffect=重启adb sever
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftRestartAdb [无参]
 #=========================================================
@@ -262,10 +258,9 @@ ftInitDevicesList()
     # 设备最小可用空间，小于则视为无效.单位M
     local devMinAvailableSpace=${1:-'0'}
     devMinAvailableSpace=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例===================
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftInitDevicesList [devMinAvailableSpace 单位默认为MB]
 #    ftInitDevicesList 4096M
@@ -340,17 +335,15 @@ ftCleanDataGarbage()
     ftInitDevicesList
 
     while true; do case "$1" in
-    #使用环境说明
     e | -e |--env) cat<<EOF
-#=================== ${ftEffect}使用环境说明=============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    禁止在高权限下运行,转化普通用户后，再次尝试
 #=========================================================
 EOF
       return;;
-    #使用示例
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例===================
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftCleanDataGarbage [无参]
 #=========================================================
@@ -359,7 +352,7 @@ EOF
     * ) break;;esac;done
 
     #环境校验
-    if [ `whoami` != $rNameUser ]; then
+    if [ `whoami` != $rNameUser ]||[ "$(whoami)" = "root" ]; then
         ftCleanDataGarbage -e
         return
     fi
@@ -401,10 +394,9 @@ ftMtkFlashTool()
     local ftEffect=mtk下载工具
     local tempDirPath=`pwd`
     local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1612.00.100
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftMtkFlashTool 无参
 #=========================================================
@@ -436,10 +428,9 @@ ftFileDirEdit()
     isCreate=$2
     path=$3
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例===================
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftFileDirEdit [type] [isCreate] [path]
 #
@@ -514,10 +505,9 @@ EOF
 ftEcho()
 {
     local ftEffect=工具信息提示
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftEcho        内容    # 直接显示内容
 #    ftEcho    -b    内容    # 标题，不换行，对字符串的缩进敏感
@@ -639,10 +629,9 @@ ftBootAnimation()
     local dirPathAnimation=$2
     local dirPathBase=$(pwd)
 
-    #使用示例
     while true; do case "$1" in    h | H |-h | -H)
         cat<<EOF
-#=================== 函数[ ${ftEffect} ]的使用示例============
+#===================[   ${ftEffect}   ]的使用示例==============
 #    请进入动画资源目录后执行xc bootanim xxx
 #    ftBootAnimation [edittype] [path]
 #
@@ -653,21 +642,8 @@ ftBootAnimation()
 #    ftBootAnimation new /home/xxxx/test/bootanimation2
 #============================================================
 EOF
-
-    if [ $XMODULE = "script" ];then
-        cat<<EOF
-#=================== 命令[xc bootanim]的使用示例============
-#     重命名文件，生成配置文件，生成动画包
-#     xc bootanim new /home/xxxx/test/bootanimation2
-#
-#     直接生成动画包
-#     xc bootanim create /home/xxxx/test/bootanimation2
-#============================================================
-EOF
-    else
-        return
-    fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;; esac;done
 
     #耦合校验
     local valCount=2
@@ -856,10 +832,9 @@ ftGjh()
 {
     local ftEffect=生成国际化所需的xml文件
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftGjh 无参数
 #=========================================================
@@ -890,10 +865,9 @@ ftTest()
 {
     local ftEffect=函数demo调试
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftTest 任意参数
 #=========================================================
@@ -927,10 +901,9 @@ ftPowerManagement()
     timeLong=${timeLong:-$2}
     timeLong=${timeLong:-'10'}
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #    ftPowerManagement 关机/重启 时间/秒
 #    ftPowerManagement shutdown/reboot 100
 #    xs 时间/秒 #制定时间后关机,不带时间则默认十秒
@@ -982,10 +955,9 @@ ftReduceFileList()
 {
     local ftEffect=精简动画帧文件
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftReduceFileList 保留的百分比 目录
 #    ftReduceFileList 60 /home/xxxx/temp
@@ -1086,10 +1058,9 @@ ftReNameFile()
     local lengthFileName=$2
     lengthFileName=${lengthFileName:-'4'}
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    不指定文件名长度默认为4
 #    ftReNameFile 目录
@@ -1150,10 +1121,9 @@ ftDevAvailableSpace()
     local devDirPath=$1
     local isReturn=$2
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftDevAvailableSpace [devDirPath] [[isReturn]]
 #    ftDevAvailableSpace /media/test
@@ -1260,10 +1230,9 @@ ftGetKeyValueByBlockAndKey()
     local blockName=$2
     local keyName=$3
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftGetKeyValueByBlockAndKey [文件] [目标块TAG] [键名]
 #    value=$(ftGetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup)
@@ -1331,10 +1300,9 @@ ftSetKeyValueByBlockAndKey()
     local keyName=$3
     local keyValue=$4
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftSetKeyValueByBlockAndKey [文件] [目标块TAG] [键名] [键对应的值]
 #    ftSetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup 1232
@@ -1383,10 +1351,9 @@ ftCheckIniConfigSyntax()
     #===========================================
 
     local filePath=$1
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftCheckIniConfigSyntax [file path]
 #    ftCheckIniConfigSyntax 123/config.ini
@@ -1454,10 +1421,9 @@ ftUpdateHosts()
     local filePathHosts=/etc/hosts
     local urlCustomHosts=$1
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #使用默认hosts源
 #    ftUpdateHosts 无参
 #
@@ -1532,10 +1498,9 @@ ftBackupOrRestoreOuts()
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local editType=$1
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #    备份out
 #    ftBackupOrRestoreOuts 无参
 #    移动匹配out到单前项目
@@ -1543,9 +1508,8 @@ ftBackupOrRestoreOuts()
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    #使用环境说明
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -1656,25 +1620,23 @@ ftYKSwitch()
     local type=$1
     local dirPathCode=$ANDROID_BUILD_TOP
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftYKSwitch yhx/kl
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    #使用环境说明
     e | E |-e | -E) cat<<EOF
-#=================== [ ${ftEffect} ]的使用环境说明=============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    ftYKSwitch 仅可用于 SPRD > 7731C > N9 的项目
 #=======================================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #   环境未初始化
 #   使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -1773,11 +1735,9 @@ ftAutoUploadHighSpeed()
     fi
     local dirPathLocal=$(pwd)
 
-    #使用示例
     while true; do case "$1" in
-    #使用环境说明
     e | -e |--env) cat<<EOF
-#=================== ${ftEffect}使用环境说明=============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    依赖 sshpass pigz,请使用下面命令安装
 #    sudo apt-get install sshpass pigz
@@ -1785,7 +1745,7 @@ ftAutoUploadHighSpeed()
 EOF
       return;;
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoUploadHighSpeed 源存放目录 [源文件名或目录名，不要是路径] 服务器路径
 #
@@ -1839,10 +1799,9 @@ ftAutoUpload()
     local ftEffect=上传文件到制定smb服务器路径
     local contentUploadSource=$1
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoUpload [源文件路径]
 #    ftAutoUpload xxxx
@@ -1896,19 +1855,17 @@ ftAutoPacket()
     local buildType=$TARGET_BUILD_VARIANT
     local isUpload=$1
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [   ${ftEffect}   ]的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoPacket 无参
 #    ftAutoPacket -y #自动打包，上传到188服务器
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    #使用环境说明
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -2142,19 +2099,17 @@ ftLanguageUtils()
     local ftLanguageContent=$@
     local dirPathCode=$ANDROID_BUILD_TOP
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftLanguageUtils 缩写列表
 #    ftLanguageUtils “ar_IL bn_BD my_MM zh_CN”
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    #使用环境说明
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -2263,25 +2218,23 @@ ftCreateReadMeBySoftwareVersion()
     local dirPathVersionSoftware=$1
 
     while true; do case "$1" in
-    #使用示例
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
 #    ftCreateReadMeBySoftwareVersion out/pac
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    #使用环境说明
     e | -e) cat<<EOF
-#=================== ${ftEffect}使用环境说明=============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    工具依赖包 unix2dos #sudo apt-get install tofrodos
 #=========================================================
 EOF
       return;;
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -2468,18 +2421,16 @@ ftAutoLanguageUtil()
     local dirPathCode=$ANDROID_BUILD_TOP
     local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoLanguageUtil 无参
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    #使用环境说明
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -2517,10 +2468,9 @@ ftLnUtil()
     local ftEffect=获取软连接的真实路径
     local lnPath=$1
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftLnUtil 软连接路径
 #    ftLnUtil /home/xian-hp-u16/log/xb_backup
@@ -2573,18 +2523,16 @@ ftAutoUpdateSoftwareVersion()
     local ftEffect=更新软件版本
     local dirPathCode=$ANDROID_BUILD_TOP
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoUpdateSoftwareVersion 无参
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    #使用环境说明
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -2682,10 +2630,9 @@ ftAutoBuildMultiBranch()
     local dirPathCode=$ANDROID_BUILD_TOP
     local editType=$1
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoBuildMultiBranch 无参
 #    ftAutoBuildMultiBranch -y 上传版本软件
@@ -2693,9 +2640,8 @@ ftAutoBuildMultiBranch()
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    #使用环境说明
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -2837,8 +2783,13 @@ ftSetBashPs1ByGitBranch()
     local editType=$1
 
     local defaultPrefix=xrnsd
+    local defaultColorConfig=44
     if [ ! -z "$rNameUser" ]&&[ "$rNameUser" != "wgx" ];then
         defaultPrefix=$rNameUser
+    fi
+    if [ "$(whoami)" = "root" ];then
+        defaultPrefix="root"
+        defaultColorConfig=42
     fi
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     if [ ! -z "$branchName" ]&&[ "$editType" != "-b" ];then
@@ -2847,9 +2798,11 @@ ftSetBashPs1ByGitBranch()
         else
             branchName="branchName→ ${branchName}"
         fi
-        export PS1="$defaultPrefix[\[\033[44m\]\w\[\033[0m\]]\[\033[33m\]$branchName:\[\033[0m\]"
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]$branchName:\[\033[0m\]"
     else
-        export PS1="$defaultPrefix[\[\033[44m\]\w\[\033[0m\]]:"
+
+                #export PS1='$(whoami)\[\033[42m\][\w]\[\033[0m\]:'
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]:"
     fi
 }
 
@@ -2885,19 +2838,17 @@ ftAutoInitEnv()
     local buildType=$TARGET_BUILD_VARIANT
     local editType=$1
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoInitEnv 无参
 #    ftAutoInitEnv -bp #build.prop高级信息读取
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    #使用环境说明
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -3162,10 +3113,9 @@ ftMonkeyTestByDevicesName()
         configList=" --throttle $throttleTimeLong"
     fi
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftMonkeyTestByDevicesName #无参数 默认错误不退出,1000000次
 #    ftMonkeyTestByDevicesName [eventCount]
@@ -3330,10 +3280,9 @@ ftGetAndroidVersionBySDKVersion()
     local ftEffect=根据SDK版本获取Android版本
     local sdkVersion=$1
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftGetAndroidVersionBySDKVersion 1.0~25
 #    ftGetAndroidVersionBySDKVersion 22
@@ -3402,18 +3351,16 @@ ftMaintainSystem()
     local editType=$1
     editType=${editType:-'backup'}
 
-    #使用示例
     while true; do case "$1" in
-    #使用环境说明
     e | -e |--env) cat<<EOF
-#=================== ${ftEffect}使用环境说明=============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    当前用户权限过低，请转换为root 用户后重新运行
 #=========================================================
 EOF
       return;;
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftMaintainSystem 操作类型
 #    ftMaintainSystem backup #备份系统

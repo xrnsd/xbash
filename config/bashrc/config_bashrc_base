@@ -7,28 +7,29 @@ export HISTSIZE=500
 # 以追加的方式保存命令历史
 shopt -s histappend
 #自动去重备份bash历史记录
-filePathBashHistory=${dirPathHome}/.bash_history
-filePathBashHistoryTemp=${filePathBashHistory}_temp
-filePathBashHistoryArchive=${filePathBashHistory}_archive
-filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
-#去重
-sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
-mv $filePathBashHistoryTemp $filePathBashHistory
-#备份历史
-let lineCountMax=HISTSIZE-1
-lineCount=$(wc -l < $filePathBashHistory)
-if (($lineCount > $lineCountMax)); then
-    prune_lines=$(($lineCount - $lineCountMax))
-    cat $filePathBashHistory >> $filePathBashHistoryArchive \
-    && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
-    && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive \
-    && > $filePathBashHistory
+if [ "$(whoami)" != "root" ];then
+    filePathBashHistory=${dirPathHome}/.bash_history
+    filePathBashHistoryTemp=${filePathBashHistory}_temp
+    filePathBashHistoryArchive=${filePathBashHistory}_archive
+    filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
+    #去重
+    sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
+    mv $filePathBashHistoryTemp $filePathBashHistory
+    #备份历史
+    let lineCountMax=HISTSIZE-1
+    lineCount=$(wc -l < $filePathBashHistory)
+    if (($lineCount > $lineCountMax)); then
+        prune_lines=$(($lineCount - $lineCountMax))
+        cat $filePathBashHistory >> $filePathBashHistoryArchive \
+        && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
+        && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive \
+        && > $filePathBashHistory
+    fi
 fi
 alias ..="cd .."
 alias ...="cd ../.."
 alias xcc='cd $OLDPWD'
 alias xr="source ~/.bashrc"
-
 
 #----------------    xbash config  ---------------------------
 fileNameXbashTragetConfigBase=config_base

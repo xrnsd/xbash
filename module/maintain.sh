@@ -168,10 +168,9 @@ ftEchoInfo()
     local ftEffect=脚本操作信息显示，用于关键操作前的确认
     local infoType=$1
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftEchoInfo [editType]
 #    ftEchoInfo backup/restore
@@ -229,10 +228,9 @@ ftSetBackupDevDir()
     # 初始化设备列表[mCmdsModuleDataDevicesList]
     ftInitDevicesList 4096
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftSetBackupDevDir 无参
 #=========================================================
@@ -483,10 +481,9 @@ ftAddNote()
     local noteBase=$3
     local fileNameDefault=.note.list
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例===================
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAddNote [dirPathBackupRoot] [versionName]
 #    ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
@@ -560,10 +557,9 @@ ftMD5()
     local isExit=$4
     isExit=${isExit:-'true'}
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例===================
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftMD5 [type] [path] [fileNameBase/VersionName]
 #    ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
@@ -663,10 +659,9 @@ ftAddOrCheckSystemHwSwInfo()
     local isExit=$4
     isExit=${isExit:-'true'}
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例===================
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAddOrCheckSystemHwSwInfo [type] [path] [path]
 #    ftAddOrCheckSystemHwSwInfo -check
@@ -805,10 +800,9 @@ ftBackUpDevScanning()
     local note=$2
     local devList=$3
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftBackUpDevScanning [version] [note] [backup_dev_list]
 #    ftBackUpDevScanning backup_cg_wgx_20161202 常规 "${mCmdsModuleDataDevicesList[*]}"
@@ -893,10 +887,9 @@ ftVersionPackageIsCreated()
 {
     local ftEffect=检查版本包是否已经存在
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftVersionPackageIsCreated 无参
 #=========================================================
@@ -935,10 +928,9 @@ ftSynchronous()
     local dirPathArray=$1
     local fileTypeList=$2
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== ${ftEffect}  的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftSynchronous [dirPathArray] [fileTypeList]
 #

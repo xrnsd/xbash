@@ -145,4 +145,3 @@ if [ -z "$rUserPwdBase" ];then
     rUserPwdBase=rUserPwd
     readonly rUserPwd
 fi
-
