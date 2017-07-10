@@ -58,7 +58,6 @@ android mmi开发环境的简单扩展[shell]
         │        ├───── jdk  ---------------    java jdk
         │        ├───── sdk  ---------------    android sdk
         │        └───── sp_flash_tool_v5.1548   全局参数
-        ├── cmds      -------------------  xbash目录
         └── .bashrc   -------------------  xbash中bashrc_work_lz的软连接
 
 4.初始化环境
