@@ -70,8 +70,20 @@ else
 fi
 
 if [ ! -z `which git` ];then
-    alias xgl='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
-    alias xgll='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
+    gitVersionMin="2.6.0"
+    gitVersionNow=$(git --version)
+    gitVersionNow=${gitVersionNow//git version/}
+    gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
+
+    if version_lt $gitVersionMin $gitVersionNow; then
+        alias xgl='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
+        alias xgll='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
+    else
+        #git log --pretty=format:'%Cblue%h%Creset %<(40,trunc)%s [%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%an%Creset%C(yellow)%d%Creset]'
+        alias xgl='git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
+        alias xgll='git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
+    fi
+
     export PROMPT_COMMAND='\
     ftSetBashPs1ByGitBranch
     if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
