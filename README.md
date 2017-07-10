@@ -4,7 +4,7 @@ android mmi开发环境的简单扩展[shell]
 1.工程结构
 ----------
     Xrnsd-extensions-to-bash在下面简写为xbash
-    cmds
+    │
     ├── config    -------------------------  工具相关配置
     │        ├── bashrc                           bashrc通用配置
     │        │     ├── config_bashrc_base         bashrc配置
