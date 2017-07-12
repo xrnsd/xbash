@@ -1780,7 +1780,7 @@ EOF
     local pasword=123456
     local dirPathServer=/media/新卷
 
-    ftEcho -s "开始上传到  ${serverIp}/${pathContentUploadTraget}..."
+    ftEcho -s "开始上传到  ${serverIp}/${pathContentUploadTraget}"
     cd $dirPathContentUploadSource
     mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 
@@ -2019,8 +2019,12 @@ EOF
             else
                 local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${fileChangeTime}____buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$fileChangeTime
             fi
+
+            local dirPathUploadTraget=智能机软件/MTK6580/autoUpload
             if [ "$AutoEnv_clientName" = "XHF" ];then
-                local dirPathUploadTraget=智能机软件/MTK6580/新华菲
+                 dirPathUploadTraget=智能机软件/MTK6580/新华菲
+            elif [ "$AutoEnv_clientName" = "DHX" ];then
+                 dirPathUploadTraget=智能机软件/MTK6580/东华新
             fi
             local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
             local dirPathOtaPackage=${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
