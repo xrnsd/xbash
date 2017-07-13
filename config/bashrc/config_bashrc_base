@@ -7,28 +7,29 @@ export HISTSIZE=500
 # 以追加的方式保存命令历史
 shopt -s histappend
 #自动去重备份bash历史记录
-filePathBashHistory=${dirPathHome}/.bash_history
-filePathBashHistoryTemp=${filePathBashHistory}_temp
-filePathBashHistoryArchive=${filePathBashHistory}_archive
-filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
-#去重
-sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
-mv $filePathBashHistoryTemp $filePathBashHistory
-#备份历史
-let lineCountMax=HISTSIZE-1
-lineCount=$(wc -l < $filePathBashHistory)
-if (($lineCount > $lineCountMax)); then
-    prune_lines=$(($lineCount - $lineCountMax))
-    cat $filePathBashHistory >> $filePathBashHistoryArchive \
-    && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
-    && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive \
-    && > $filePathBashHistory
+if [ "$(whoami)" != "root" ];then
+    filePathBashHistory=${dirPathHome}/.bash_history
+    filePathBashHistoryTemp=${filePathBashHistory}_temp
+    filePathBashHistoryArchive=${filePathBashHistory}_archive
+    filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
+    #去重
+    sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
+    mv $filePathBashHistoryTemp $filePathBashHistory
+    #备份历史
+    let lineCountMax=HISTSIZE-1
+    lineCount=$(wc -l < $filePathBashHistory)
+    if (($lineCount > $lineCountMax)); then
+        prune_lines=$(($lineCount - $lineCountMax))
+        cat $filePathBashHistory >> $filePathBashHistoryArchive \
+        && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
+        && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive \
+        && > $filePathBashHistory
+    fi
 fi
 alias ..="cd .."
 alias ...="cd ../.."
 alias xcc='cd $OLDPWD'
 alias xr="source ~/.bashrc"
-
 
 #----------------    xbash config  ---------------------------
 fileNameXbashTragetConfigBase=config_base
@@ -69,8 +70,20 @@ else
 fi
 
 if [ ! -z `which git` ];then
-    alias xgl='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
-    alias xgll='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
+    gitVersionMin="2.6.0"
+    gitVersionNow=$(git --version)
+    gitVersionNow=${gitVersionNow//git version/}
+    gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
+
+    if version_lt $gitVersionMin $gitVersionNow; then
+        alias xgl='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
+        alias xgll='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
+    else
+        #git log --pretty=format:'%Cblue%h%Creset %<(40,trunc)%s [%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%an%Creset%C(yellow)%d%Creset]'
+        alias xgl='git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
+        alias xgll='git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
+    fi
+
     export PROMPT_COMMAND='\
     ftSetBashPs1ByGitBranch
     if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then

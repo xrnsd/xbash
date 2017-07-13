@@ -104,10 +104,6 @@ fi
 #=========================================================================
 # 标记为环境模式，此模式说明直接调用脚本实现
 export  XMODULE="env"
-#--------------------------终端自身设定---------------------------
-#终端提示
-export PS1='root\[\033[42m\][\w]\[\033[0m\]:'
-
 
 #--------------------------基础变量----------------------------------
 userName=$(who am i | awk '{print $1}'|sort -u)
@@ -115,27 +111,25 @@ userName=${userName:-`whoami | awk '{print $1}'|sort -u`}
 if [ "${S/ /}" != "$S" ];then
     userName=$(whoami)
 fi
-
 dirPathHome=/home/${userName}
 dirPathHomeCmd=${dirPathHome}/cmds
+dirPathHomeTools=${dirPathHome}/tools
 
-
-#--------------------------命令封装---------------------------
+#---------------- xbash部分  ----------------------------------
 if [ ! -d "$dirPathHomeCmd" ];then
     echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
 else
-    #命令封装
-    alias xr="export XCMD=xr;source ~/.bashrc"
-    alias xu='export XCMD=xu;gedit /root/.bashrc'
-    alias xbh='export XCMD=xbh;cat ~/.bash_history |grep $2'
-    alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
-    alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
-    alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
+    dirPathHomeCmdConfig=${dirPathHomeCmd}/config
+    dirPathHomeCmdConfigBashrc=${dirPathHomeCmd}/config/bashrc
+    fileNameXbashTragetBashrcConfigBase=config_bashrc_base
+    fileNameXbashTragetBashrcConfigBaseGone=config_bashrc_base.gone
+    filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBase}
+    filePathXbashTragetBashrcConfigBaseGone=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGone}
 
-    #命令选项快速适配
-    complete -W "backup restore" xb
-    complete -W "test clean_data_garbage" xc
+    if [ ! -f "$filePathXbashTragetBashrcConfigBaseGone" ];then
+        echo -e "\033[1;31mXbash下实现的自定义命令需要的隐藏配置\n[filePathXbashTragetBashrcConfigBaseGone=$filePathXbashTragetBashrcConfigBaseGone]\033[0m不存在"
+    else
+        source $filePathXbashTragetBashrcConfigBaseGone
+        source $filePathXbashTragetBashrcConfigBase
+    fi
 fi
-
-alias ..="cd .."
-alias ...="cd ../.."

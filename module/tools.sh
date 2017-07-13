@@ -8,26 +8,22 @@ ftExample()
 {
     local ftEffect=函数模板_nodisplay
 
-    #使用示例
     while true; do case "$1" in
-    #使用环境说明
     e | -e |--env) cat<<EOF
-#=================== ${ftEffect}使用环境说明=============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    工具依赖包 example
 #=========================================================
 EOF
       return;;
-    #方法使用说明
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftExample 无参
 #    ftExample [example]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
     #环境校验
@@ -168,16 +164,17 @@ ftKillPhoneAppByPackageName()
     local ftEffect=kill掉包名为packageName的应用
     local packageName=$1
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftKillPhoneAppByPackageName [packageName]
 #    ftKillPhoneAppByPackageName com.android.settings
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=1
@@ -222,15 +219,16 @@ ftRestartAdb()
 {
     local ftEffect=重启adb sever
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftRestartAdb [无参]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+       
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=0
@@ -260,9 +258,9 @@ ftInitDevicesList()
     # 设备最小可用空间，小于则视为无效.单位M
     local devMinAvailableSpace=${1:-'0'}
     devMinAvailableSpace=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例===================
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftInitDevicesList [devMinAvailableSpace 单位默认为MB]
 #    ftInitDevicesList 4096M
@@ -270,8 +268,8 @@ ftInitDevicesList()
 #    ftInitDevicesList 409600K
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local devMinAvailableSpaceTemp=$devMinAvailableSpace
@@ -335,28 +333,26 @@ ftCleanDataGarbage()
 {
     local ftEffect=清空回收站
     ftInitDevicesList
-    #使用示例
+
     while true; do case "$1" in
-    #使用环境说明
     e | -e |--env) cat<<EOF
-#=================== ${ftEffect}使用环境说明=============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    禁止在高权限下运行,转化普通用户后，再次尝试
 #=========================================================
 EOF
       return;;
-    #方法使用说明
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例===================
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftCleanDataGarbage [无参]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #环境校验
-    if [ `whoami` != $rNameUser ]; then
+    if [ `whoami` != $rNameUser ]||[ "$(whoami)" = "root" ]; then
         ftCleanDataGarbage -e
         return
     fi
@@ -371,16 +367,16 @@ EOF
             return
     fi
 
+    local dirPathLocal=$(pwd)
     for dirDev in ${mCmdsModuleDataDevicesList[*]}
     do
-        dir=null
+         local dir=null
         if [ -d ${dirDev}/.Trash-1000 ];then
             dir=${dirDev}/.Trash-1000
         elif [ -d ${dirDev}/.local/share/Trash ];then
             dir=${dirDev}/.local/share/Trash
         fi
         if [ -d $dir ];then
-            local dirPathLocal=$(pwd)
             cd $dir
 
             mkdir empty
@@ -388,9 +384,9 @@ EOF
             rm -rf files/*
             rm -r empty
 
-            cd $dirPathLocal
         fi
     done
+    cd $dirPathLocal
 }
 
 ftMtkFlashTool()
@@ -398,15 +394,15 @@ ftMtkFlashTool()
     local ftEffect=mtk下载工具
     local tempDirPath=`pwd`
     local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1612.00.100
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftMtkFlashTool 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=0
@@ -432,9 +428,9 @@ ftFileDirEdit()
     isCreate=$2
     path=$3
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例===================
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftFileDirEdit [type] [isCreate] [path]
 #
@@ -449,8 +445,8 @@ ftFileDirEdit()
 #    echo $?
 #===============================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=3
@@ -509,9 +505,9 @@ EOF
 ftEcho()
 {
     local ftEffect=工具信息提示
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftEcho        内容    # 直接显示内容
 #    ftEcho    -b    内容    # 标题，不换行，对字符串的缩进敏感
@@ -524,8 +520,8 @@ ftEcho()
 #    ftEcho    -s    内容    # 执行信息，对字符串的缩进敏感
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=1
@@ -555,7 +551,7 @@ EOF
                 sleep 3
                 if [ "$XMODULE" = "env" ];then    return ; fi
                 exit;;
-    s | S | -s | -S)        echo;echo -e "\033[42;37m$content\033[0m"; break;;
+    s | S | -s | -S)        echo -e "\033[1;33m$content\033[0m"; break;;
     b | B| -b | -B)        echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
     bh | BH | -bh | -BH)    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
     y | Y | -y | -Y)        echo;echo -en "${content}[y/n]"; break;;
@@ -633,10 +629,9 @@ ftBootAnimation()
     local dirPathAnimation=$2
     local dirPathBase=$(pwd)
 
-    #使用示例
     while true; do case "$1" in    h | H |-h | -H)
         cat<<EOF
-#=================== 函数[ ${ftEffect} ]的使用示例============
+#===================[   ${ftEffect}   ]的使用示例==============
 #    请进入动画资源目录后执行xc bootanim xxx
 #    ftBootAnimation [edittype] [path]
 #
@@ -647,21 +642,8 @@ ftBootAnimation()
 #    ftBootAnimation new /home/xxxx/test/bootanimation2
 #============================================================
 EOF
-
-    if [ $XMODULE = "script" ];then
-        cat<<EOF
-#=================== 命令[xc bootanim]的使用示例============
-#     重命名文件，生成配置文件，生成动画包
-#     xc bootanim new /home/xxxx/test/bootanimation2
-#
-#     直接生成动画包
-#     xc bootanim create /home/xxxx/test/bootanimation2
-#============================================================
-EOF
-    else
-        return
-    fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;; esac;done
 
     #耦合校验
     local valCount=2
@@ -713,10 +695,8 @@ EOF
                         y | Y )    break;;
                         n | N)    mv $filePath /home/${rNameUser}/${dirNamePackageName/.zip/_old.zip};break;;
                         q |Q)    exit;;
-                        * )
-                            ftEcho -e 错误的选择：$sel
-                            echo "输入q，离开"
-                            ;;
+                        * ) ftEcho -e 错误的选择：$sel
+                            echo "输入q，离开" ;;
                     esac
                     done
                 fi
@@ -725,8 +705,7 @@ EOF
                 break;;
             n | N| q |Q)  exit;;
             * )    ftEcho -e 错误的选择：$sel
-                echo "输入n，q，离开"
-                ;;
+                echo "输入n，q，离开";;
         esac
         done
         break;;
@@ -764,14 +743,11 @@ EOF
             ftEcho -y ${ftEffect}的目标文件[${dirPathAnimationTraget}]夹非空，是否删除重建
             read -n 1 sel
             case "$sel" in
-                y|Y)
-                    rm -rf $dirPathAnimationTraget
-                    break;;
+                y|Y) rm -rf $dirPathAnimationTraget
+                        break;;
                 n|N|q|Q)  exit;;
-                *)
-                    ftEcho -e 错误的选择：$sel
-                    echo "输入n，q，离开"
-                    ;;
+                *) ftEcho -e 错误的选择：$sel
+                    echo "输入n，q，离开";;
             esac
             done
         fi
@@ -856,15 +832,15 @@ ftGjh()
 {
     local ftEffect=生成国际化所需的xml文件
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftGjh 无参数
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=0
@@ -889,15 +865,15 @@ ftTest()
 {
     local ftEffect=函数demo调试
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftTest 任意参数
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     local dirNameCmdModuleTest=test
     local filePathCmdModuleTest=${rDirPathCmdsModule}/${dirNameCmdModuleTest}/${rFileNameCmdModuleTestBase}
@@ -925,17 +901,17 @@ ftPowerManagement()
     timeLong=${timeLong:-$2}
     timeLong=${timeLong:-'10'}
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #    ftPowerManagement 关机/重启 时间/秒
 #    ftPowerManagement shutdown/reboot 100
 #    xs 时间/秒 #制定时间后关机,不带时间则默认十秒
 #    xss 时间/秒 #制定时间后重启,不带时间则默认十秒
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local errorContent=
@@ -968,8 +944,7 @@ EOF
         echo -e "\b\b"
         echo $rUserPwd | sudo -S reboot
         break;;
-        * )
-            ftEcho -e 错误的选择：$sel
+        * ) ftEcho -e 错误的选择：$sel
             echo "输入q，离开"
             break;;
     esac
@@ -980,9 +955,9 @@ ftReduceFileList()
 {
     local ftEffect=精简动画帧文件
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftReduceFileList 保留的百分比 目录
 #    ftReduceFileList 60 /home/xxxx/temp
@@ -992,8 +967,8 @@ ftReduceFileList()
 # 由于水平有限，实现对60%和50%之类的比例不敏感
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     if (( $#==2 ));then
         local percentage=$1
@@ -1083,9 +1058,9 @@ ftReNameFile()
     local lengthFileName=$2
     lengthFileName=${lengthFileName:-'4'}
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    不指定文件名长度默认为4
 #    ftReNameFile 目录
@@ -1094,8 +1069,8 @@ ftReNameFile()
 #    ftReNameFile /home/xxxx/temp 5
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=2
@@ -1146,17 +1121,17 @@ ftDevAvailableSpace()
     local devDirPath=$1
     local isReturn=$2
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftDevAvailableSpace [devDirPath] [[isReturn]]
 #    ftDevAvailableSpace /media/test
 #    ftDevAvailableSpace /media/test true
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=2
@@ -1255,9 +1230,9 @@ ftGetKeyValueByBlockAndKey()
     local blockName=$2
     local keyName=$3
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftGetKeyValueByBlockAndKey [文件] [目标块TAG] [键名]
 #    value=$(ftGetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup)
@@ -1325,9 +1300,9 @@ ftSetKeyValueByBlockAndKey()
     local keyName=$3
     local keyValue=$4
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftSetKeyValueByBlockAndKey [文件] [目标块TAG] [键名] [键对应的值]
 #    ftSetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup 1232
@@ -1376,9 +1351,9 @@ ftCheckIniConfigSyntax()
     #===========================================
 
     local filePath=$1
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftCheckIniConfigSyntax [file path]
 #    ftCheckIniConfigSyntax 123/config.ini
@@ -1446,9 +1421,9 @@ ftUpdateHosts()
     local filePathHosts=/etc/hosts
     local urlCustomHosts=$1
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #使用默认hosts源
 #    ftUpdateHosts 无参
 #
@@ -1457,8 +1432,8 @@ ftUpdateHosts()
 #    ftUpdateHosts https://raw.githubusercontent.com/racaljk/hosts/master/hosts
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=1
@@ -1523,27 +1498,25 @@ ftBackupOrRestoreOuts()
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local editType=$1
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #    备份out
 #    ftBackupOrRestoreOuts 无参
 #    移动匹配out到单前项目
 #    ftBackupOrRestoreOuts -m
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
@@ -1589,6 +1562,10 @@ EOF
         fi
         local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
         local dirPathOutList=($(ls $dirPathCodeRootOuts|grep $branchName))
+        if [[ -z "$dirPathOutList" ]]; then
+            ftEcho -e "未找到\n分支[$branchName]对应的out"
+            return
+        fi
         local itemCount=${#dirPathOutList[@]}
         local dirNameOutTraget=$dirPathOutList
         if (( $itemCount>1 ));then
@@ -1614,14 +1591,23 @@ EOF
             fi
             dirNameOutTraget=${dirPathOutList[$tIndex]}
         fi
-        mv ${dirPathCodeRootOuts}/${dirNameOutTraget} ${ANDROID_BUILD_TOP}/out&&
-        ftEcho -s "移动 ${dirPathCodeRootOuts}/${dirNameOutTraget}\n 到  ${ANDROID_BUILD_TOP}/out"
+        mv ${dirPathCodeRootOuts}/${dirNameOutTraget} ${dirPathCode}/out&&
+        ftEcho -s "移动 ${dirPathCodeRootOuts}/${dirNameOutTraget}\n 到  ${dirPathCode}/out"
         return
     fi
 
+    local dirPathOutTop=${dirPathCode}/out
     if [ ! -d "$dirPathOutBranchVersion" ];then
-        mv ${ANDROID_BUILD_TOP}/out/ $dirPathOutBranchVersion&&
-        ftEcho -s "移动 ${ANDROID_BUILD_TOP}/out \n到  ${dirPathCodeRootOuts}/${dirNameBranchVersion}"
+        if [[ ! -d "$dirPathOutTop" ]]; then
+             ftEcho -e "out 不存在"
+             return
+        fi
+        if [[ ! -d "$dirPathOut" ]]; then
+             ftEcho -e "out 不完整"
+             dirNameBranchVersion=${dirNameBranchVersion}____section
+        fi
+        mv ${dirPathOutTop}/ $dirPathOutBranchVersion&&
+        ftEcho -s "移动 $dirPathOutTop \n到  ${dirPathCodeRootOuts}/${dirNameBranchVersion}"
     else
         ftEcho -ex 存在相同out
     fi
@@ -1634,33 +1620,29 @@ ftYKSwitch()
     local type=$1
     local dirPathCode=$ANDROID_BUILD_TOP
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftYKSwitch yhx/kl
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
- e | E |-e | -E) cat<<EOF
-#=================== [ ${ftEffect} ]的使用环境说明=============
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    e | E |-e | -E) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    ftYKSwitch 仅可用于 SPRD > 7731C > N9 的项目
 #=======================================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
-# 环境未初始化
-# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#
+#   环境未初始化
+#   使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
      * ) break;; esac;done
 
     #耦合校验
@@ -1687,7 +1669,7 @@ EOF
             return
     fi
 
-    local filePathConfig=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk
+    local filePathConfig=${dirPathCode}/${AutoEnv_deviceDirPath}/BoardConfig.mk
     local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
     local key="LZ_CONFIG_CAMERA_TYPE :="
     local configType=$(cat $filePathConfig|grep "$key")
@@ -1753,11 +1735,9 @@ ftAutoUploadHighSpeed()
     fi
     local dirPathLocal=$(pwd)
 
-    #使用示例
     while true; do case "$1" in
-    #使用环境说明
     e | -e |--env) cat<<EOF
-#=================== ${ftEffect}使用环境说明=============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    依赖 sshpass pigz,请使用下面命令安装
 #    sudo apt-get install sshpass pigz
@@ -1765,7 +1745,7 @@ ftAutoUploadHighSpeed()
 EOF
       return;;
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoUploadHighSpeed 源存放目录 [源文件名或目录名，不要是路径] 服务器路径
 #
@@ -1776,8 +1756,8 @@ EOF
 #    ftAutoUploadHighSpeed acb/def/123 kkk 智能机软件/MTK6580 #上传目录kkk包含子目录
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #环境校验
     if [ -z `which sshpass` ]||[ -z `which pigz` ];then
@@ -1819,16 +1799,16 @@ ftAutoUpload()
     local ftEffect=上传文件到制定smb服务器路径
     local contentUploadSource=$1
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoUpload [源文件路径]
 #    ftAutoUpload xxxx
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=1
@@ -1875,26 +1855,23 @@ ftAutoPacket()
     local buildType=$TARGET_BUILD_VARIANT
     local isUpload=$1
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [   ${ftEffect}   ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoPacket 无参
 #    ftAutoPacket -y #自动打包，上传到188服务器
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;; esac;done
 
     #耦合校验
@@ -1930,8 +1907,7 @@ EOF
                                        break;;
                             n | N | q |Q)    break ;;
                             * ) ftEcho -e 错误的选择：$sel
-                                echo "输入n，q，离开";
-                                ;;
+                                echo "输入n，q，离开";;
                             esac
         done
     fi
@@ -2122,28 +2098,25 @@ ftLanguageUtils()
     local ftEffect=语言缩写转换
     local ftLanguageContent=$@
     local dirPathCode=$ANDROID_BUILD_TOP
-    local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftLanguageUtils 缩写列表
 #    ftLanguageUtils “ar_IL bn_BD my_MM zh_CN”
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ];then
@@ -2152,15 +2125,9 @@ EOF
     fi
     ftAutoInitEnv
     if [ $AutoEnv_mnufacturers = "sprd" ];then
-            local filePathDeviceSprd=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
-            filePathDevice=$filePathDeviceSprd
+            local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-            local filePathDeviceMtk=${dirPathCode}/device/kdragon/m9_xinhaufei_r9_hd/ProjectConfig.mk
-            if [ -f "$filePathDeviceMtk" ]; then
-                filePathDevice=$filePathDeviceMtk
-            else
-                filePathDevice=${dirPathCode}/device/keytak/keytak6580_weg_l/ProjectConfig.mk
-            fi
+            local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/ProjectConfig.mk
     fi
     local errorContent=
     if [ -z "$ftLanguageContent" ];then    errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
@@ -2251,34 +2218,31 @@ ftCreateReadMeBySoftwareVersion()
     local dirPathVersionSoftware=$1
 
     while true; do case "$1" in
-    #使用环境说明
-    e | -e) cat<<EOF
-#=================== ${ftEffect}使用环境说明=============
-#
-#    工具依赖包 unix2dos #sudo apt-get install tofrodos
-#=========================================================
-EOF
-      return;;
-    #使用示例
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
 #    ftCreateReadMeBySoftwareVersion out/pac
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    e | -e) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    工具依赖包 unix2dos #sudo apt-get install tofrodos
+#=========================================================
+EOF
+      return;;
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #环境校验
     if [ -z `which todos` ]||[ -z `which fromdos` ];then
@@ -2311,11 +2275,9 @@ EOF
     local filePathChangeListTemplate=${dirPathVersionSoftware}/${fileNameChangeListTemplate}
     local versionName=$AutoEnv_versionName
 
-    # 语言列表
-    #
     #获取缩写列表
     if [ $AutoEnv_mnufacturers = "sprd" ];then
-                local filePathDeviceSprd=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
+                local filePathDeviceSprd=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
                 if [[ -f "$filePathDeviceSprd" ]]; then
                     local key="PRODUCT_LOCALES :="
                     LanguageList=$(cat $filePathDeviceSprd|grep "$key")
@@ -2324,13 +2286,10 @@ EOF
                     ftEcho -e "[工程文件不存在:${filePathDeviceSprd}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
                 fi
    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                local filePathDeviceMtk=${dirPathCode}/device/kdragon/m9_xinhaufei_r9_hd/ProjectConfig.mk
-                local filePathDeviceMtk2=${dirPathCode}/device/keytak/keytak6580_weg_l/ProjectConfig.mk
+                local filePathDeviceMtk=${dirPathCode}/${AutoEnv_deviceDirPath}/ProjectConfig.mk
                 if [ -f "$filePathDeviceMtk" ]; then
-                    LanguageList=$(grep ^$key $filePathDeviceMtk)
-                elif [ -f "$filePathDeviceMtk2" ]; then
                     local key="MTK_PRODUCT_LOCALES"
-                    LanguageList=$(grep ^$key $filePathDeviceMtk2)
+                    LanguageList=$(grep ^$key $filePathDeviceMtk)
                     LanguageList=${LanguageList//$key/};
                     LanguageList=${LanguageList//=/};
                 else
@@ -2377,7 +2336,7 @@ EOF
     if [ $AutoEnv_mnufacturers = "sprd" ];then
 
     #摄像头配置相关
-    local filePathCameraConfig=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk
+    local filePathCameraConfig=${dirPathCode}/${AutoEnv_deviceDirPath}/BoardConfig.mk
     if [ -f $filePathCameraConfig ];then
             local keyType="LZ_CONFIG_CAMERA_TYPE := "
             local keySizeBack="CAMERA_SUPPORT_SIZE := "
@@ -2460,27 +2419,25 @@ ftAutoLanguageUtil()
 {
     local ftEffect=语言缩写转化为中文
     local dirPathCode=$ANDROID_BUILD_TOP
-    local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
+    local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoLanguageUtil 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ];then
@@ -2511,18 +2468,15 @@ ftLnUtil()
     local ftEffect=获取软连接的真实路径
     local lnPath=$1
 
-    #使用示例
     while true; do case "$1" in
-    #方法使用说明
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftLnUtil 软连接路径
 #    ftLnUtil /home/xian-hp-u16/log/xb_backup
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
     #耦合校验
@@ -2569,25 +2523,23 @@ ftAutoUpdateSoftwareVersion()
     local ftEffect=更新软件版本
     local dirPathCode=$ANDROID_BUILD_TOP
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoUpdateSoftwareVersion 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ];then
@@ -2659,18 +2611,14 @@ EOF
                                 git add $filePathDeviceInfoSettingsBase $filePathSystemVersionTestBase&&git commit -m "版本 ${versionNameTestNew}"
                                 break;;
                             n | N | q |Q)    return;;
-                            * )
-                                ftEcho -e 错误的选择：$sel
-                                echo "输入n，q，离开";
-                                ;;
+                            * ) ftEcho -e 错误的选择：$sel
+                                echo "输入n，q，离开";;
                             esac
                             done
                 break;;
             n | N | q |Q)    exit;;
-            * )
-                ftEcho -e 错误的选择：$sel
-                echo "输入n，q，离开";
-                ;;
+            * ) ftEcho -e 错误的选择：$sel
+                 echo "输入n，q，离开";;
         esac
         done
 }
@@ -2682,29 +2630,24 @@ ftAutoBuildMultiBranch()
     local dirPathCode=$ANDROID_BUILD_TOP
     local editType=$1
 
-    #使用示例
     while true; do case "$1" in
-    #方法使用说明
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoBuildMultiBranch 无参
 #    ftAutoBuildMultiBranch -y 上传版本软件
 #    ftAutoBuildMultiBranch -yb 上传版本软件,备份out
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
     #耦合校验
@@ -2785,7 +2728,8 @@ EOF
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
 
-                                           git cherry-pick fe4a08e&&
+                                           git pull
+                                           git cherry-pick 63440f9&&
                                            git push origin "$branshName"
 
                                             # ftAutoInitEnv
@@ -2825,10 +2769,8 @@ EOF
                                        break;;
                         n | N)    break;;
                         q |Q)    exit;;
-                        * )
-                            ftEcho -e 错误的选择：$sel
-                            echo "输入q，离开"
-                            ;;
+                        * ) ftEcho -e 错误的选择：$sel
+                             echo "输入q，离开" ;;
                     esac
             done
     fi
@@ -2841,8 +2783,13 @@ ftSetBashPs1ByGitBranch()
     local editType=$1
 
     local defaultPrefix=xrnsd
+    local defaultColorConfig=44
     if [ ! -z "$rNameUser" ]&&[ "$rNameUser" != "wgx" ];then
         defaultPrefix=$rNameUser
+    fi
+    if [ "$(whoami)" = "root" ];then
+        defaultPrefix="root"
+        defaultColorConfig=42
     fi
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     if [ ! -z "$branchName" ]&&[ "$editType" != "-b" ];then
@@ -2851,9 +2798,11 @@ ftSetBashPs1ByGitBranch()
         else
             branchName="branchName→ ${branchName}"
         fi
-        export PS1="$defaultPrefix[\[\033[44m\]\w\[\033[0m\]]\[\033[33m\]$branchName:\[\033[0m\]"
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]$branchName:\[\033[0m\]"
     else
-        export PS1="$defaultPrefix[\[\033[44m\]\w\[\033[0m\]]:"
+
+                #export PS1='$(whoami)\[\033[42m\][\w]\[\033[0m\]:'
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]:"
     fi
 }
 
@@ -2887,26 +2836,26 @@ ftAutoInitEnv()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
+    local editType=$1
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoInitEnv 无参
+#    ftAutoInitEnv -bp #build.prop高级信息读取
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     env | -env |-ENV ) cat<<EOF
-#============== [   ${ftEffect}   ]的使用环境说明============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ]\
@@ -2985,7 +2934,7 @@ EOF
             export AutoEnv_AndroidVersion=$AndroidVersion
     fi
 
-     if [ "$1" = "-bp" ];then
+     if [ "$editType" = "-bp" ];then
         return
     fi
     # build.prop高级信息读取 end 
@@ -3007,6 +2956,13 @@ EOF
             done
     else
               ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败"
+    fi
+
+    #device路径
+    export AutoEnv_deviceDirPath=
+    local dirPathDevice=$(find device/ -name "$(basename $ANDROID_PRODUCT_OUT)")
+    if [[ -d "$dirPathDevice" ]]; then
+        export AutoEnv_deviceDirPath=$dirPathDevice
     fi
 
     #分支名
@@ -3157,9 +3113,9 @@ ftMonkeyTestByDevicesName()
         configList=" --throttle $throttleTimeLong"
     fi
 
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftMonkeyTestByDevicesName #无参数 默认错误不退出,1000000次
 #    ftMonkeyTestByDevicesName [eventCount]
@@ -3172,8 +3128,8 @@ ftMonkeyTestByDevicesName()
 #=========================================================
 EOF
     rm -rf $dirPathMoneyLog
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;; * ) break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=2
@@ -3324,17 +3280,15 @@ ftGetAndroidVersionBySDKVersion()
     local ftEffect=根据SDK版本获取Android版本
     local sdkVersion=$1
 
-    #使用示例
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftGetAndroidVersionBySDKVersion 1.0~25
 #    ftGetAndroidVersionBySDKVersion 22
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
     #耦合校验
@@ -3397,27 +3351,23 @@ ftMaintainSystem()
     local editType=$1
     editType=${editType:-'backup'}
 
-    #使用示例
     while true; do case "$1" in
-    #使用环境说明
     e | -e |--env) cat<<EOF
-#=================== ${ftEffect}使用环境说明=============
+#===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    当前用户权限过低，请转换为root 用户后重新运行
 #=========================================================
 EOF
       return;;
-    #方法使用说明
     h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftMaintainSystem 操作类型
 #    ftMaintainSystem backup #备份系统
 #    ftMaintainSystem restore #还原备份
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit;;
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
     #环境校验
