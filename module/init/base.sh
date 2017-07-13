@@ -1,23 +1,15 @@
 #!/bin/bash
 #####-----------------------变量------------------------------#########
-readonly rModuleName=init/base.sh
-shellParameter1=${1:-'base'}
 
-while true; do
-    if [ -z $shellParameter1 ];then
-        echo -en 请重新输入参数:
-        read shellParameter1
-    fi
-    case $shellParameter1 in
-        base | -base )        ./init_xbash.sh; break;;
-        system | -system )    ./init_system.sh; break;;
-        all | -all )        ./init_system.sh;./init_xbash.sh; break;;
-        n | N | q |Q)        exit;;
-        * )            echo -e "错误参数：$shellParameter1\n\
-无参    初始化xbash\n\
--system    初始化system\n\
--all    初始化xbash,初始化system"
-                    shellParameter1=
-                ;;
-    esac
-done
+# 获取xbash所在目录 获取用户名,根据 config/example.config 新建 config/用户名.config，在.gitignore中插入记录
+# 根据 module/bashrc/example.bashrc 新建 module/bashrc用户名.bashrc ，在.gitignore中插入记录
+
+key="Xrnsd-extensions-to-bash"
+dirPathLocal=$(cd "$(dirname "$0")";pwd)
+dirPathLocal=${dirPathLocal//$key/}
+echo dirPathLocal=$dirPathLocal
+# local userName=$(who am i | awk '{print $1}'|sort -u)
+# userName=${userName:-`whoami | awk '{print $1}'|sort -u`}
+# if [ "${S/ /}" != "$S" ];then
+#     userName=$(whoami)
+# fi

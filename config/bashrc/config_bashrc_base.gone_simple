@@ -25,7 +25,7 @@ unset CCACHE_HARDLINK
 #export DISTCC_HOSTS="192.168.3.114"
 
 #------------------------------------  环境检测  ----------------------------------
-filePathGitBash=${dirPathHomeCmdConfig}/bashrc/git-completion.bash
+filePathGitBash=${dirPathHomeCmdConfig}/git/git-completion.bash
 
 if [ ! -d "$JAVA_HOME" ];then
     echo -e "\033[1;31mJava_环境配置错误\n$JAVA_HOME不存在\n\033[0m"

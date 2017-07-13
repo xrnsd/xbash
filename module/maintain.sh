@@ -42,7 +42,7 @@ ftRestoreOperate()
     local ftEffect=使用tar还原系统
     while true; do
     ftEcho -y 是否开始还原
-    read -n1 sel
+    read -n 1 sel
     case "$sel" in
         y | Y )
             pathsource=$1
@@ -109,7 +109,7 @@ ftRestoreChoiceSource()
         if [ ${#fileList[@]} -gt 9 ];then
             read tIndex
         else
-            read -n1 tIndex
+            read -n 1 tIndex
         fi
         #设定默认值
         if [ ${#tIndex} == 0 ]; then
@@ -143,7 +143,7 @@ ftRestoreChoiceTarget()
 
     while true; do
     echo -en "请输入目录对应的序号(回车默认系统[/]):"
-    read -n1 option
+    read -n 1 option
     echo
     #设定默认值
     if [ ${#option} == 0 ]; then
@@ -271,7 +271,7 @@ EOF
         if [ ${#mCmdsModuleDataDevicesList[@]} -gt 9 ];then
             read dir
         else
-            read -n1 dir
+            read -n 1 dir
         fi
         #设定默认值
          if [ ${#dir} == 0 ]; then
@@ -314,7 +314,7 @@ ftSetBackupType()
 
         while true; do
         echo -en "请选择备份类型(默认基础):"
-        read -n1 typeIndex
+        read -n 1 typeIndex
         #设定默认值
         if [ ${#typeIndex} == 0 ]; then
             typeIndex=1
@@ -357,7 +357,7 @@ ftSetRestoreType()
 
         while true; do
             echo -en "请选择还原设置(回车默认忽略home):"
-            read -n1 typeIndex
+            read -n 1 typeIndex
 
             #设定默认值
             if [ ${#typeIndex} == 0 ]; then
@@ -385,8 +385,8 @@ ftBackupOs()
     #/home/wgx/cmds/data/excludeDirsBase.list
     fileNameExcludeBase=excludeDirsBase.list
     fileNameExcludeAll=excludeDirsAll.list
-    mFilePathExcludeBase=${rDirPathUserHome}/${rDirNameCmd}/${rDirNameCmdData}/${fileNameExcludeBase}
-    mFilePathExcludeAll=${rDirPathUserHome}/${rDirNameCmd}/${rDirNameCmdData}/${fileNameExcludeAll}
+    mFilePathExcludeBase=${rDirPathCmdsData}/${fileNameExcludeBase}
+    mFilePathExcludeAll=${rDirPathCmdsData}/${fileNameExcludeAll}
 
     mDirPathsExcludeBase=(/proc \
                 /android \
@@ -784,7 +784,7 @@ ftSel()
     fi
     while true; do
     ftEcho -y "$1有变动,是否忽悠"
-    read -n1 sel
+    read -n 1 sel
     case "$sel" in
         y | Y )    echo 已忽略$1;break;;
         n | N | q |Q)    exit;;
@@ -840,7 +840,7 @@ EOF
         if [ -f "$filePathVersionTarget" ];then
             while true; do
                 ftEcho -y 在设备[${devDirPath}]上存在版本包[${version}],是否同步
-                read -n1 sel
+                read -n 1 sel
                 case "$sel" in
                     y | Y )
                         ftEcho -bh 开始版本包[${version}]的可用性校验
@@ -917,7 +917,7 @@ EOF
     if [ -f $mFilePathVersion ];then
         ftEcho -y 版本[${mFileNameBackupTargetBase}]已存在，是否覆盖
         while true; do
-        read -n1 sel
+        read -n 1 sel
         case "$sel" in
             y | Y )        break;;
             n | N| q |Q)    exit;;
@@ -970,7 +970,7 @@ EOF
 
     while true; do
     ftEcho -y 是否开始同步
-    read -n1 sel
+    read -n 1 sel
     case "$sel" in
         y | Y )
             ftEcho -bh 开始同步!
@@ -1030,7 +1030,7 @@ elif [ $mTypeEdit = "backup" ];then
         ftEchoInfo backup&&
         while true; do
         ftEcho -y 是否开始备份
-        read -n1 sel
+        read -n 1 sel
         echo
         case "$sel" in
             y | Y )
