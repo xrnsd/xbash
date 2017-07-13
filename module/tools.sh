@@ -52,13 +52,13 @@ ftMain()
     case $1 in
     "clean_data_garbage")    ftCleanDataGarbage
                 break;;
-    test)            ftTest "$@"
+    test)     ftTest "$@"
                 break;;
     -v | --version )        echo \"Xrnsd extensions to bash\" $rXbashVersion
                 break;;
     -h)    ftReadMe -a
                 break;;
-    -ft)    ftReadMe -ft
+    ft | -ft ) ftReadAllFt | column -t
                 break;;
     vvv | -vvv)            ftEcho -b xbash;        echo \"Xrnsd extensions to bash\" $rXbashVersion
                 ftEcho -b java;        java -version
@@ -96,12 +96,10 @@ ftReadMe()
     local ftEffect=工具命令使用说明_nodisplay
     while true; do
         case "$1" in
-    ft | -ft )
-               ftReadAllFt | column -t
-                if [ "$XMODULE" = "env" ];then    return ; fi
-                exit;;
     a | A | -a |-A)
     cat<<EOF
+=========================================================
+简写命令说明 [只封装了部分实现]
 =========================================================
 命令 ---- 参数/命令说明
     |// 使用格式
@@ -117,7 +115,6 @@ xc ----- 常规自定义命令和扩展
     |// xc ×××××
     |
     |  v  -------------------------------------  自定义命令版本
-    |  gjh                                       生成国际化所需的xml文件
     |  vvv  -----------------------------------  系统环境关键参数查看
     |  help                                      查看自定义命令说明
     |  test  ----------------------------------  shell测试
@@ -144,8 +141,8 @@ xbh ---- 根据标签过滤命令历史
 =======                     无参部分                 =========
 ==============================================================
 
-xgl ----- 简单查看最近10次git log
-xr ------ 使.bashrc修改生效
+xgl ----- 简单查看最近15次git log
+xr ------ 重新加载xbash配置文件
 xd ------ mtk下载工具
 xu ------ 打开xbash配置
 .9 ------ 打开.9工具
@@ -1783,7 +1780,7 @@ EOF
     local pasword=123456
     local dirPathServer=/media/新卷
 
-    ftEcho -s "开始上传到  ${serverIp}/${pathContentUploadTraget}..."
+    ftEcho -s "开始上传到  ${serverIp}/${pathContentUploadTraget}"
     cd $dirPathContentUploadSource
     mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 
@@ -2022,8 +2019,12 @@ EOF
             else
                 local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${fileChangeTime}____buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$fileChangeTime
             fi
+
+            local dirPathUploadTraget=智能机软件/MTK6580/autoUpload
             if [ "$AutoEnv_clientName" = "XHF" ];then
-                local dirPathUploadTraget=智能机软件/MTK6580/新华菲
+                 dirPathUploadTraget=智能机软件/MTK6580/新华菲
+            elif [ "$AutoEnv_clientName" = "DHX" ];then
+                 dirPathUploadTraget=智能机软件/MTK6580/东华新
             fi
             local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
             local dirPathOtaPackage=${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}

@@ -79,3 +79,9 @@ mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
+cd /home/wgx/code/mtk6580L/alps/bootable/bootloader/lk/dev/logo/r9a_hd720
+ filelist=$(ls $dirPathAnimationSourceRes)
+        for file in $filelist
+        do
+            mv $file ${file//r9a_hd720/qhd}
+        done
