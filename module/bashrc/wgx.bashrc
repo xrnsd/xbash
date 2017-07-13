@@ -192,29 +192,32 @@ fi
 dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
 dirPathHomeTools=${dirPathHome}/tools
 
-#---------------- xbash部分  ----------------------------------
+#---------------- xbash配置  ----------------------------------
 if [ ! -d "$dirPathHomeCmd" ];then
-    echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
+        echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
 else
-    dirPathHomeCmdConfig=${dirPathHomeCmd}/config
-    dirPathHomeCmdConfigBashrc=${dirPathHomeCmd}/config/bashrc
-    fileNameXbashTragetBashrcConfigBase=config_bashrc_base
-    fileNameXbashTragetBashrcConfigBaseGone=config_bashrc_base.gone
-    filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBase}
-    filePathXbashTragetBashrcConfigBaseGone=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGone}
+        dirPathHomeCmdConfig=${dirPathHomeCmd}/config
+        dirPathHomeCmdConfigBashrc=${dirPathHomeCmd}/config/bashrc
+        fileNameXbashTragetBashrcConfigBase=config_bashrc_base
+        fileNameXbashTragetBashrcConfigBaseGone=config_bashrc_base.gone
+        filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBase}
+        filePathXbashTragetBashrcConfigBaseGone=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGone}
 
-    #----------------   加载xbash的bashrc基础配置  ------------------
-    if [ ! -f "$filePathXbashTragetBashrcConfigBaseGone" ];then
-        echo -e "\033[1;31mXbash下实现的自定义命令需要的隐藏配置\n[filePathXbashTragetBashrcConfigBaseGone=$filePathXbashTragetBashrcConfigBaseGone]\033[0m不存在"
-    else
-        source $filePathXbashTragetBashrcConfigBaseGone
-        source $filePathXbashTragetBashrcConfigBase
-    fi
-fi
-
-#---------------------------------用户密码---------------------------------
-if [ -z "$rUserPwdBase" ];then
-    export rUserPwd=${rUserPwdBase:-'123'}
-    rUserPwdBase=rUserPwd
-    readonly rUserPwd
+        #----------------   加载xbash的bashrc基础配置  ------------------
+        if [ -f "$filePathXbashTragetBashrcConfigBaseGone" ];then
+            source $filePathXbashTragetBashrcConfigBaseGone
+        else
+            echo -e "\033[1;31mXbash下实现的自定义命令需要的隐藏配置\n[filePathXbashTragetBashrcConfigBaseGone=$filePathXbashTragetBashrcConfigBaseGone]\033[0m不存在"
+        fi
+        if [ -f "$filePathXbashTragetBashrcConfigBase" ];then
+            source $filePathXbashTragetBashrcConfigBase
+        else
+            echo -e "\033[1;31mXbash下实现的自定义命令需要的配置\n[filePathXbashTragetBashrcConfigBase=$filePathXbashTragetBashrcConfigBase]\033[0m不存在"
+        fi
+        #---------------------------------用户密码---------------------------------
+        if [ -z "$rUserPwdBase" ];then
+            export rUserPwd=${rUserPwdBase:-'123'}
+            rUserPwdBase=rUserPwd
+            readonly rUserPwd
+        fi
 fi

@@ -1797,6 +1797,13 @@ ftAutoUpload()
     local contentUploadSource=$1
 
     while true; do case "$1" in
+    e | E |-e | -E) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    ftAutoUpload 设定仅可用于 SPRD > 7731C > N9 的项目
+#=======================================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
@@ -1807,6 +1814,12 @@ EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
+# 环境检测
+    ftAutoInitEnv
+    if [[ $AutoEnv_mnufacturers != "sprd" ]]; then
+        ftAutoUpload -e
+        return
+    fi
     #耦合校验
     local valCount=1
     local errorContent=
@@ -2521,7 +2534,7 @@ EOF
 
 ftAutoUpdateSoftwareVersion()
 {
-    local ftEffect=更新软件版本
+    local ftEffect=更新sprd7731c_N9的软件版本
     local dirPathCode=$ANDROID_BUILD_TOP
 
     while true; do case "$1" in
@@ -2530,6 +2543,13 @@ ftAutoUpdateSoftwareVersion()
 #
 #    ftAutoUpdateSoftwareVersion 无参
 #=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    e | E |-e | -E) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    ftYKSwitch 仅可用于 SPRD > 7731C > N9 的项目
+#=======================================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     env | -env |-ENV ) cat<<EOF
@@ -2542,6 +2562,12 @@ EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
+# 环境检测
+    ftAutoInitEnv
+    if [[ $AutoEnv_mnufacturers != "sprd" ]]; then
+        ftAutoUpdateSoftwareVersion -e
+        return
+    fi
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ];then
         ftAutoUpdateSoftwareVersion -env
