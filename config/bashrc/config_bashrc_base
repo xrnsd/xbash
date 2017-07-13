@@ -44,46 +44,45 @@ fi
 #全局变量
 if [ -f $filePathXbashTragetConfigBase ];then
     #不重复添加config_base的只读设定
-    if [ -z "$rNameUser" ];then
-        source  $filePathXbashTragetConfigBase
-    fi
+    if [ -z "$rNameUser" ];then     source  $filePathXbashTragetConfigBase;   fi
     #标记为环境模式，此模式说明直接调用脚本实现
     export XMODULE="env"
 
     if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
         source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
+        #bash PS1 配置
+        export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
 
-        alias xle='export XCMD=xle;adb logcat "*:E"'
-        #%Cblue%h%Creset %<(40,trunc)%s [%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%an%Creset%C(yellow)%d%Creset]
-        alias xgl='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
-        alias xgll='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
-        alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
+        alias xd='ftMtkFlashTool'
         alias xk='ftKillPhoneAppByPackageName'
         alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
-        alias xu='export XCMD=xu;gedit  ${dirPathHomeCmdConfigBashrc}/config_bashrc_base.gone\
-                        ${dirPathHomeCmdConfigBashrc}/config_bashrc_base'
+        alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
         alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
         alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
-        alias xd='export XCMD=xd;${dirPathHomeCmd}/main.sh mtk_flashtool'
         alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
+        alias xu='export XCMD=xu;gedit  ${dirPathHomeCmdConfigBashrc}/config_bashrc_base.gone\
+                        ${dirPathHomeCmdConfigBashrc}/config_bashrc_base'
 
         #命令选项快速适配
         complete -W "compile" xi
         complete -W "backup restore" xb
         complete -W "systemui monkey launcher" xk
         complete -W "restartadb test clean_data_garbage  -v -vvv -ft -ftall" xc
-
-        # bash shell PS1 配置
-         export PROMPT_COMMAND='\
-         ftSetBashPs1ByGitBranch
-         if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
-             ftSetBashPs1ByGitBranch
-         fi'
     else
         echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
     fi
 else
     echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
+fi
+if [ ! -z `which git` ];then
+    #%Cblue%h%Creset %<(40,trunc)%s [%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%an%Creset%C(yellow)%d%Creset]
+    alias xgl='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -15'
+    alias xgll='git log --date=short --pretty=format:"[%C(green)%<(21,trunc)%ai%x08%x08%Creset] %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s" -100'
+    export PROMPT_COMMAND='\
+    ftSetBashPs1ByGitBranch
+    if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
+     ftSetBashPs1ByGitBranch
+    fi'
 fi
 if [ -d "vendor/sprd" ];then
         alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\

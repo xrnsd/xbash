@@ -52,11 +52,8 @@ export rFilePathCmdModuleTestBase=${rDirPathCmdsModuleTest}/${rFileNameCmdModule
 export rDirPathLog=${rDirPathUserHome}/${rDirNameLog}
 export mFilePathLog #=${rDirPathUserHome}/${rDirNameLog}/${rBaseShellParameter2}.log
 
-export rIsDebug=false
-export rTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
-
 export rCmdsPermissionRoot=(xb backup restore)
-export rCmdsPermissionBase=(restartadb help monkey systemui launcher mtk_flashtool gjh bootanim pac)
+export rCmdsPermissionBase=(restartadb help  clean_data_garbage)
 
 export mCmdsModuleDataDevicesList=()
 export mTimingStart
@@ -105,7 +102,5 @@ readonly rFilePathCmdModuleTestBase
 
 readonly rCmdsPermissionRoot
 readonly rCmdsPermissionBase
-readonly rTimeBackup
-readonly rIsDebug
 # 非基本配置
 readonly rDirPathTools

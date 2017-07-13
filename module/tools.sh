@@ -291,7 +291,7 @@ EOF
     fi
 
     cd $toolDirPath&&
-    echo "$rUserPwd" | sudo -S ./flash_tool&&
+    echo "$rUserPwd" | sudo -S ${rDirPathTools}/sp_flash_tool_v5.1612.00.100/flash_tool
     cd $tempDirPath
 }
 
@@ -1506,11 +1506,11 @@ EOF
 
     cd $ANDROID_BUILD_TOP
     #分支名
-    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
     ftAutoInitEnv
     local buildType=$AutoEnv_buildType
     local versionName=$AutoEnv_versionName
+    local branchName=$AutoEnv_branchName
 
     local dirPathCodeRootOuts=${dirPathCode%/*}/outs
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----$(date -d "today" +"%y%m%d[%H:%M]")
@@ -1853,7 +1853,7 @@ EOF
             local deviceName=`basename $ANDROID_PRODUCT_OUT`
 
             local key="最近更改："
-            lcoal fileChangeTime=$(stat system.img|grep $key|awk '{print $1}'|sed s/-//g)
+            local fileChangeTime=$(stat ${dirPathOut}/system.img|grep $key|awk '{print $1}'|sed s/-//g)
             fileChangeTime=${fileChangeTime//$key/}
             fileChangeTime=${fileChangeTime:-$(date -d "today" +"%Y%m%d")}
 
@@ -2620,18 +2620,20 @@ EOF
                     esac
             done
     fi
+    rm -f $filePathBranchList
 }
 
 ftSetBashPs1ByGitBranch()
 {
     local ftEffect=根据git分支名,设定bash的PS1
+    local editType=$1
 
     local defaultPrefix=xrnsd
     if [ ! -z "$rNameUser" ]&&[ "$rNameUser" != "wgx" ];then
         defaultPrefix=$rNameUser
     fi
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    if [ ! -z "$branchName" ];then
+    if [ ! -z "$branchName" ]&&[ "$editType" != "-b" ];then
         if [ ${#branchName} -gt "10" ];then
             branchName="\nbranchName→ ${branchName}"
         else
@@ -2669,7 +2671,7 @@ function version_ge() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)"
 
 ftAutoInitEnv()
 {
-    local ftEffect=
+    local ftEffect=初始化xbash所需的部分环境变量
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
@@ -2711,6 +2713,56 @@ EOF
             return
     fi
 
+    # build.prop高级信息读取
+    if [ "$1" = "-bp" ];then
+
+        adb wait-for-device
+        local adbStatus=$(adb get-state)
+        if [ "$adbStatus" = "device" ];then
+
+                export AutoEnv_deviceModelName=
+                export AutoEnv_deviceSoftType=
+                export AutoEnv_deviceSoftVersion=
+                export AutoEnv_deviceSdkVersion=
+                export AutoEnv_AndroidVersion=
+
+                local keySoftType="ro.build.type="
+                local keyModel="ro.product.model="
+                local keySoftVersion="ro.build.display.id="
+                local keySDKVersion="ro.build.version.sdk="
+
+                local logDate="$(date -d "today" +"%y%m%d")"
+                local logDateTime="$(date -d "today" +"%y%m%d%H%M%S")"
+
+                local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
+                deviceModelName=${deviceModelName//$keyModel/}
+                deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
+                deviceModelName=${deviceModelName:-'null'}
+                export AutoEnv_deviceModelName=deviceModelName
+
+                local deviceSoftType=$(adb shell cat /system/build.prop|grep "$keySoftType")
+                deviceSoftType=${deviceSoftType//$keySoftType/}
+                deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
+                deviceSoftType=${deviceSoftType:-'null'}
+                export AutoEnv_deviceSoftType=deviceSoftType
+
+                local deviceSoftVersion=$(adb shell cat /system/build.prop|grep "$keySoftVersion")
+                deviceSoftVersion=${deviceSoftVersion//$keySoftVersion/}
+                deviceSoftVersion=$(echo $deviceSoftVersion |sed s/[[:space:]]//g)
+                deviceSoftVersion=${deviceSoftVersion:-'null'}
+                export AutoEnv_deviceSoftVersion=deviceSoftVersion
+
+                local deviceSdkVersion=$(adb shell cat /system/build.prop|grep "$keySDKVersion")
+                deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
+                deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
+                deviceSdkVersion=${deviceSdkVersion:-'null'}
+                export AutoEnv_deviceSdkVersion=deviceSdkVersion
+                local AndroidVersion=$(ftGetAndroidVersionBySDKVersion $deviceSdkVersion)
+                export AutoEnv_AndroidVersion=AndroidVersion
+            fi
+        return
+    fi
+
     local dirPathLocal=$PWD
     cd $dirPathCode
 
@@ -2748,7 +2800,7 @@ EOF
         local filePathOutBuildProp=${dirPathOut}/system/build.prop
         if [ ! -z "$LZ_BUILD_VERSION" ];then
                 local versionName=$LZ_BUILD_VERSION
-        elif [ -f $filePathDeviceInfoSettings ];then
+        elif [ -f $filePathOutBuildProp ];then
                 local versionName=$(cat $filePathOutBuildProp|grep $keyVersion)
                 versionName=${versionName//$keyVersion/}
                 versionName=${versionName// /_}
@@ -2793,7 +2845,7 @@ EOF
                 else
                     echo "${key}${branchName}" >>$filePathGitConfigInfoLocal
                 fi
-            else
+            elif [ -d "$dirPathOut" ];then
                 echo "${key}${branchName}" >$filePathGitConfigInfoLocal
             fi
 
@@ -2901,39 +2953,20 @@ EOF
 
     #adb连接状态检测
     adb wait-for-device
-    local adbStatus=`adb get-state`
+    local adbStatus=$(adb get-state)
     if [ "$adbStatus" = "device" ];then
             #======================================================
             #==============  手机设备信息 ===========================
             #========================== ===========================
-            local keySoftType="ro.build.type="
-            local keyModel="ro.product.model="
-            local keySoftVersion="ro.build.display.id="
-            local keySDKVersion="ro.build.version.sdk="
+            ftAutoInitEnv -bp
+            local deviceModelName=$AutoEnv_deviceModelName
+            local deviceSoftType=$AutoEnv_deviceSoftType
+            local SoftVersion=$AutoEnv_deviceSoftVersion
+            local SDKVersion=$AutoEnv_deviceSdkVersion
+            local AndroidVersion=$AutoEnv_AndroidVersion
 
             local logDate="$(date -d "today" +"%y%m%d")"
             local logDateTime="$(date -d "today" +"%y%m%d%H%M%S")"
-
-            local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
-            deviceModelName=${deviceModelName//$keyModel/}
-            deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
-            deviceModelName=${deviceModelName:-'null'}
-
-            local deviceSoftType=$(adb shell cat /system/build.prop|grep "$keySoftType")
-            deviceSoftType=${deviceSoftType//$keySoftType/}
-            deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
-            deviceSoftType=${deviceSoftType:-'null'}
-
-            local SoftVersion=$(adb shell cat /system/build.prop|grep "$keySoftVersion")
-            SoftVersion=${SoftVersion//$keySoftVersion/}
-            SoftVersion=$(echo $SoftVersion |sed s/[[:space:]]//g)
-            SoftVersion=${SoftVersion:-'null'}
-
-            local SDKVersion=$(adb shell cat /system/build.prop|grep "$keySDKVersion")
-            SDKVersion=${SDKVersion//$keySDKVersion/}
-            SDKVersion=$(echo $SDKVersion |sed s/[[:space:]]//g)
-            SDKVersion=${SDKVersion:-'null'}
-            local AndroidVersion=$(ftGetAndroidVersionBySDKVersion $SDKVersion)
 
             #======================================================
             #==============  monkey命令配置 =========================
@@ -2941,17 +2974,16 @@ EOF
             local dirPathLocal=$(pwd)
             local dirPathDevice=/data/local/tmp
             local dirPathDeviceSDCard=/storage/sdcard0
-            local dirPathDeviceBuiltinSDCard=/storage/sdcard1
 
             local deviceSDCardState=$(adb shell ls $dirPathDeviceSDCard|grep "No such file or directory")
             if [ -z "$deviceSDCardState" ]&&[ -z "$(adb shell ls $dirPathDeviceSDCard)" ];then #空目录
                 deviceSDCardState=null
             fi
             if [ -z "$deviceSDCardState" ];then
-                local dirPathMoneyLog=${dirPathDeviceSDCard}/monkey/softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]_____${logDate}
+                local dirPathMoneyLog=${dirPathDeviceSDCard}/monkey/EditDevice[oneself]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]_____${logDate}
                 adb shell mkdir -p $dirPathMoneyLog
             else
-                local dirPathMoneyLog=${dirPathLocal}/monkey/PcName[${rNameUser}]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]____${logDate}
+                local dirPathMoneyLog=${dirPathLocal}/monkey/EditDevice[${rNameUser}]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]____${logDate}
                 mkdir -p $dirPathMoneyLog
             fi
             local dirPathMoneyLogLocal=${dirPathLocal}/monkey/PcName[${rNameUser}]____softInfo[${deviceSoftType}_${AndroidVersion}___${SoftVersion}]____${logDate}
@@ -2989,7 +3021,7 @@ EOF
                                     read -n1 sel
                                     case "$sel" in
                                         y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
-                                                       break;;
+                                                    break;;
                                         n | N |q |Q)    return;;
                                         * ) ftEcho -e 错误的选择：$sel
                                             echo "输入n,q，离开"
@@ -3028,19 +3060,17 @@ EOF
                          break;;
             esac;done
 
-            adb root;adb remount
+            local upgradeAdbPermissionsStae=$(adb root;adb remount)
             local changDeviceSerialNumber=$(adb shell "echo $logDateTime>/sys/class/android_usb/android0/iSerial")
             if [ -z "$changDeviceSerialNumber" ];then
                 configList="-s $logDateTime ${configList}"
             fi
 
             if [ -z "$deviceSDCardState" ];then
-                adb shell "echo 'logcat starting, log save in $filePathLogLogcat...' > $filePathLogLogcat"
                 adb shell "echo 'monkey starting, log save in $filePathLogMonkey...' > $filePathLogMonkey"
-                adb shell "logcat 1>> $filePathLogLogcat 2>> $filePathLogLogcat"&
                 adb shell "monkey ${configList} $eventCount 1>> $filePathLogMonkey 2>> $filePathLogMonkey"
             else
-                adb logcat 2>&1|tee $filePathLogLogcat&
+                adb logcat "*:E" 2>&1|tee $filePathLogLogcat&
                 adb shell "monkey ${configList} $eventCount" 2>&1 |tee $filePathLogMonkey
                 exit
             fi
@@ -3097,4 +3127,24 @@ EOF
         10) echo Android2.3.3-2.3.7   ;break;;
         9) echo Android2.3-2.3.2        ;break;;
         * ) echo "unkonwSdkVersion=${sdkVersion}"; break;;esac;done
+
+    # while true; do case "$sdkVersion" in
+    #  # 26) echo "Android 8.0 Oreo"                                ;break;;
+    #     25) echo "Android 7.1 Nougat"                                ;break;;
+    #     24) echo "Android 7.0 Nougat"                                ;break;;
+    #     23) echo "Android 6.0 Marshmallow"             ;break;;
+    #     22) echo "Android 5.1 Lollipop"                       ;break;;
+    #     21) echo "Android 5.0 Lollipop"                       ;break;;
+    #     19) echo "Android 4.4 KitKat"                           ;break;;
+    #     18) echo "Android 4.3 Jelly Bean"                     ;break;;
+    #     17) echo "Android 4.2 Jelly Bean"                    ;break;;
+    #     16) echo "Android 4.1 Jelly Bean"                    ;break;;
+    #     15) echo "Android 4.0.3-4.0.4 Jelly Bean"        ;break;;
+    #     14) echo "Android 4.0.1-4.0.2 Jelly Bean"        ;break;;
+    #     13) echo "Android 3.2x Honeycomb"               ;break;;
+    #     12) echo "Android 3.1 Honeycomb"                ;break;;
+    #     11) echo "Android 3.0 Honeycomb"                ;break;;
+    #     10) echo "Android 2.3.3-2.3.7 Gingerbread"  ;break;;
+    #       9) echo "Android 2.3-2.3.2 Gingerbread"       ;break;;
+    #     * ) echo "unkonwSdkVersion=${sdkVersion}"; break;;esac;done
 }

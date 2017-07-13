@@ -37,6 +37,7 @@ else
                     adb logcat -c;\
                     adb logcat | grep '
         alias xlc='adb logcat | grep androidrun -i'
+        alias xle='export XCMD=xle;adb logcat "*:E"'
         alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
         alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
         alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
@@ -44,6 +45,7 @@ else
         alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
         alias xqchanglogo='adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
         alias xqcamera_test_sub='adb shell am start -n com.mediatek.factorymode/com.mediatek.factorymode.camera.SubCamera'
+        # adb logcat |grep Displayed #获取activity 显示时间
 fi
 if [ ! -d "$ANDROID_NDK" ];then
     echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
