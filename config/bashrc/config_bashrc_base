@@ -75,11 +75,10 @@ if [ -f $filePathXbashTragetConfigBase ];then
 
         # bash shell PS1 配置
          export PROMPT_COMMAND='\
-         msg=$(history 1 | { read x y; echo $y; });\
-         if [[ $msg =~ "git" ]];then
+         ftSetBashPs1ByGitBranch
+         if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
              ftSetBashPs1ByGitBranch
          fi'
-        export PROMPT_COMMAND="ftSetBashPs1ByGitBranch;$PROMPT_COMMAND"
     else
         echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
     fi

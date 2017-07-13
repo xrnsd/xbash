@@ -1852,10 +1852,15 @@ EOF
             local dirNamePackageDataBase="dataBase"
             local deviceName=`basename $ANDROID_PRODUCT_OUT`
 
+            local key="最近更改："
+            lcoal fileChangeTime=$(stat system.img|grep $key|awk '{print $1}'|sed s/-//g)
+            fileChangeTime=${fileChangeTime//$key/}
+            fileChangeTime=${fileChangeTime:-$(date -d "today" +"%Y%m%d")}
+
             if [ ! -z "$AutoEnv_clientName" ];then
-                local dirPathPacResVersion=${dirPathPacRes}/buildType[${buildType}]__motherboardName[${AutoEnv_motherboardName}]__clientName[${AutoEnv_clientName}]__projrctName[${AutoEnv_projrctName}]__demandSignName[${AutoEnv_demandSignName}]__versionName[${AutoEnv_versionName}]_____$(date -d "today" +"%Y%m%d")
+                local dirPathPacResVersion=${dirPathPacRes}/buildType[${buildType}]__motherboardName[${AutoEnv_motherboardName}]__clientName[${AutoEnv_clientName}]__projrctName[${AutoEnv_projrctName}]__demandSignName[${AutoEnv_demandSignName}]__versionName[${AutoEnv_versionName}]_____$fileChangeTime
             else
-                local dirPathPacResVersion=${dirPathPacRes}/buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$(date -d "today" +"%Y%m%d")
+                local dirPathPacResVersion=${dirPathPacRes}/buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$fileChangeTime
             fi
             local dirPathPackage=${dirPathPacResVersion}/${dirNamePackage}
             local dirPathPackageDataBase=${dirPathPacResVersion}/${dirNamePackageDataBase}
@@ -2776,9 +2781,23 @@ EOF
             fi
     fi
 
-    #git分知名解析
+    #git分支信息解析
     if [[ $mnufacturers = "mtk" ]]; then
             local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+            local key="branchName="
+            local filePathGitConfigInfoLocal=${dirPathOut}/git.info
+            if [ -f "$filePathGitConfigInfoLocal" ];then
+                local bn=$(cat $filePathGitConfigInfoLocal|grep "$key")
+                if [ ! -z "$bn" ];then
+                    branchName=${bn//$key/}
+                else
+                    echo "${key}${branchName}" >>$filePathGitConfigInfoLocal
+                fi
+            else
+                echo "${key}${branchName}" >$filePathGitConfigInfoLocal
+            fi
+
+
             if [ ! -z "$branchName" ];then
                 local OLD_IFS="$IFS"
                 IFS=")"
