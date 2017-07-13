@@ -405,7 +405,7 @@ ftBackupOs()
                 ${rDirPathUserHome}/media  \
                 ${rDirPathUserHome}/temp \
                 ${rDirPathUserHome}/tools \
-                ${rDirPathUserHome}/cmds \
+                ${rDirPathUserHome}/${dirNameXbash} \
                 ${rDirPathUserHome}/code \
                 ${rDirPathUserHome}/log  \
                 ${rDirPathUserHome}/doc  \

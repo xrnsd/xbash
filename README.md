@@ -4,7 +4,7 @@ android mmi开发环境的简单扩展[shell]
 1.工程结构
 ----------
     Xrnsd-extensions-to-bash在下面简写为xbash
-    cmds
+    │
     ├── config    -------------------------  工具相关配置
     │        ├── bashrc                           bashrc通用配置
     │        │     ├── config_bashrc_base         bashrc配置
@@ -58,7 +58,6 @@ android mmi开发环境的简单扩展[shell]
         │        ├───── jdk  ---------------    java jdk
         │        ├───── sdk  ---------------    android sdk
         │        └───── sp_flash_tool_v5.1548   全局参数
-        ├── cmds      -------------------  xbash目录
         └── .bashrc   -------------------  xbash中bashrc_work_lz的软连接
 
 4.初始化环境

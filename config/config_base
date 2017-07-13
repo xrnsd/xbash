@@ -16,7 +16,7 @@ export rNameUser
 export rDirPathUserHome=/home/${rNameUser}
 # home/xxxx
 export rDirNameTools=tools
-export rDirNameCmd=cmds
+export rDirNameCmd=$dirNameXbash
 # home/$rNameUser/xxxx
 export rDirNameCmdConfig=config
 export rDirNameCmdConfigData=base

@@ -76,9 +76,9 @@ ftReadAllFt()
         local ftEffect=显示tools下所有实现说明_nodisplay
 
         local key="local ftEffect="
-        for effectName in $(cat ~/cmds/module/tools.sh |grep '^ft')
+        for effectName in $(cat ~/${dirNameXbash}/module/tools.sh |grep '^ft')
         do
-            effectDescription=$(cat ~/cmds/module/tools.sh |grep  -C 3 $effectName|grep "$key")
+            effectDescription=$(cat ~/${dirNameXbash}/module/tools.sh |grep  -C 3 $effectName|grep "$key")
             effectDescription=${effectDescription//$key/}
             effectDescription=$(echo $effectDescription |sed s/[[:space:]]//g)
             if [[ ${effectDescription: -9} = "nodisplay" ]];then
