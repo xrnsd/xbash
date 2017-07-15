@@ -3054,26 +3054,24 @@ EOF
     fi
 
     #git分支信息解析
-    if [[ $mnufacturers = "mtk" ]]; then
-            local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-            local key="branchName="
-            local filePathGitConfigInfoLocal=${dirPathOut}/git.info
-            if [ -f "$filePathGitConfigInfoLocal" ];then
-                local bn=$(cat $filePathGitConfigInfoLocal|grep "$key")
-                if [ ! -z "$bn" ];then
-                    local branchNameFile=${bn//$key/}
-                    if [[ "$branchNameFile" != "$branchName" ]]; then
-                            ftEcho -e "环境与本地，分支不一致:\n本地:$branchNameFile\n环境:$branchName"
-                    fi
-                    branchName=$branchNameFile
-                else
-                    echo "${key}${branchName}" >>$filePathGitConfigInfoLocal
-                fi
-            elif [ -d "$dirPathOut" ];then
-                echo "${key}${branchName}" >$filePathGitConfigInfoLocal
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local key="branchName="
+    local filePathGitConfigInfoLocal=${dirPathOut}/git.info
+    if [ -f "$filePathGitConfigInfoLocal" ];then
+        local bn=$(cat $filePathGitConfigInfoLocal|grep "$key")
+        if [ ! -z "$bn" ];then
+            local branchNameFile=${bn//$key/}
+            if [[ "$branchNameFile" != "$branchName" ]]; then
+                    ftEcho -e "环境与本地，分支不一致:\n本地:$branchNameFile\n环境:$branchName"
             fi
-
-
+            branchName=$branchNameFile
+        else
+            echo "${key}${branchName}" >>$filePathGitConfigInfoLocal
+        fi
+    elif [ -d "$dirPathOut" ];then
+        echo "${key}${branchName}" >$filePathGitConfigInfoLocal
+    fi
+    if [[ $mnufacturers = "mtk" ]]; then
             if [ ! -z "$branchName" ];then
                 local OLD_IFS="$IFS"
                 IFS=")"
