@@ -49,7 +49,7 @@ ftRestoreOperate()
             mDirPathRestoreTarget=$2
             if [ -f $pathsource ];then
                 if [ -d $mDirPathRestoreTarget ];then
-                sudo tar -xvpzf $pathsource --exclude=$mDirPathRestoreExcludeTarget -C $mDirPathRestoreTarget \
+                sudo tar --use-compress-program=pigz -xvpf $pathsource --exclude=$mDirPathRestoreExcludeTarget -C $mDirPathRestoreTarget \
                 2>&1 |tee $mFilePathLog
                 else
                     ftEcho -e 未找到目录:${mDirPathRestoreTarget}
@@ -464,7 +464,7 @@ ftBackupOs()
     done
 
     ftEcho -bh 开始${ftEffect}
-    sudo tar -cvPzf  $mFilePathVersion --exclude-from=$fileNameExclude / \
+    sudo tar --use-compress-program=pigz -cvPf $mFilePathVersion --exclude-from=$fileNameExclude / \
      2>&1 |tee $mFilePathLog
 
     # tar -cvPzf  --exclude-from=$fileNameExclude / | pigz -1 >$mFilePathVersion \

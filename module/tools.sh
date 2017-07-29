@@ -2757,8 +2757,7 @@ EOF
                                             git checkout   "$branshName"&&
 
                                            # git pull
-                                           # git cherry-pick 7db014d
-                                           # git cherry-pick 7155329&&
+                                           # git cherry-pick 50ca775&&
                                            # git push origin "$branshName"
 
                                             ftAutoInitEnv
