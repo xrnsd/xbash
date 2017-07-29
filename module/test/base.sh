@@ -73,6 +73,9 @@ fi
 
 # 根据包名 过滤log
 # adb logcat -v process | grep $(adb shell ps | grep com.android.systemui | awk '{print $2}')
+
+# 把.git 以2048M为界压缩成 MTK6580L.tar. aa MTK6580L.tar. ab ......
+# pigz 分包压缩 tar --use-compress-program=pigz -cvpf .git |split -b 2048m - MTK6580L.tar. 
 mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 # ===================================================================================================================================
 #####-------------------------------------------------------------------------#########
