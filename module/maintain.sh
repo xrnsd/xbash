@@ -985,11 +985,53 @@ EOF
     esac
     done
 }
+ftMaintain()
+{
+    local ftEffect=系统维护工具
 
-#####-------------------执行------------------------------#########
-if [ `whoami` != "root" ];then
-    ftEcho -ex 请转换为root用户后重新运行
-fi
+    while true; do case "$1" in
+    -e) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    请转换为root用户后重新运行
+#=========================================================
+EOF
+      return;;
+    -env) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    依赖 sshpass pigz,请使用下面命令安装
+#    sudo apt-get install pigz
+#=========================================================
+EOF
+      return;;
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftMaintain backup/restore
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ `whoami` != "root" ];then
+        ftMaintain -e
+        return
+    fi
+    if [ -z `which pigz` ];then
+        ftMaintain -env
+        return
+    fi
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftMaintain -h
+            return
+    fi
 
 if [ $mTypeEdit = "restore" ];then
         #选择存放版本包的设备
@@ -1050,3 +1092,7 @@ elif [ $mTypeEdit = "backup" ];then
 else
     ftEcho -e 不知道你想干嘛！
 fi
+}
+
+#####-------------------执行------------------------------#########
+ftMaintain $@
