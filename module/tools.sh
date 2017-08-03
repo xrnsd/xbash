@@ -224,7 +224,7 @@ ftRestartAdb()
 #    ftRestartAdb [无参]
 #=========================================================
 EOF
-       
+
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
@@ -2334,8 +2334,8 @@ EOF
         gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
         gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
     else
-        gitCommitListOneDay=$(git log --date=short  --since=1.day.ago  --pretty=format:"%h %ad %<(8,trunc)%an %s")
-        gitCommitListBefore=$(git log --date=short  --before=1.day.ago  --pretty=format:"%h %ad %<(8,trunc)%an %s")
+        gitCommitListOneDay=$(git log --date=short  --since=1.day.ago  --pretty=format:"%h %ad %an %s")
+        gitCommitListBefore=$(git log --date=short  --before=1.day.ago  --pretty=format:"%h %ad %an %s")
     fi
 
     # 暗码清单
@@ -2970,7 +2970,7 @@ EOF
      if [ "$editType" = "-bp" ];then
         return
     fi
-    # build.prop高级信息读取 end 
+    # build.prop高级信息读取 end
 
     local dirPathLocal=$PWD
     cd $dirPathCode
