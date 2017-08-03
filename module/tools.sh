@@ -2059,7 +2059,6 @@ EOF
 
             mkdir -p $dirPathVersionSoftwareVersion
             mkdir -p $dirPathPackage
-            mkdir -p $dirPathOtaPackage
             mkdir -p $dirPathPackageDataBase
             cd $dirPathVersionSoftwareVersion
 
@@ -2076,15 +2075,18 @@ EOF
                  cp -r -f  $filePath ${dirPathVersionSoftwareVersion}/${dirNamePackage}
             done
             #otaPackages
-            for file in ${otaFileList[@]}
-            do
-                 if [[ ! -f "$file" ]]; then
-                     ftEcho -e "${file}\n不存在"
-                     return;
-                 fi
-                 printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
-                 cp -r -f  $file ${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
-            done
+            if [[ ! -z "$otaFileList" ]]; then
+                mkdir -p $dirPathOtaPackage
+                for file in ${otaFileList[@]}
+                do
+                     if [[ ! -f "$file" ]]; then
+                         ftEcho -e "${file}\n不存在"
+                         return;
+                     fi
+                     printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
+                     cp -r -f  $file ${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
+                done
+            fi
             # database
             if [ ! -z "$dataBaseFileList" ];then
                 for file in ${dataBaseFileList[@]}
