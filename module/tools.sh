@@ -3072,46 +3072,51 @@ EOF
     elif [ -d "$dirPathOut" ];then
         echo "${key}${branchName}" >$filePathGitConfigInfoLocal
     fi
-    if [[ $mnufacturers = "mtk" ]]; then
-            if [ ! -z "$branchName" ];then
-                local OLD_IFS="$IFS"
-                IFS=")"
-                local arrayItems=($branchName)
-                IFS="$OLD_IFS"
-                if [ "$branchName" = "$arrayItems" ];then
-                        ftEcho -e "分支名:${branchName} 不合法,分支信息解析失败"
-                else
-                        for item in ${arrayItems[@]}
-                        do
-                                local valShort=${item:0:4}
-                                local valLong=${item:0:5}
+    if [ ! -z "$branchName" ];then
+        local OLD_IFS="$IFS"
+        IFS=")"
+        local arrayItems=($branchName)
+        IFS="$OLD_IFS"
+        if [ "$branchName" = "$arrayItems" ];then
+                ftEcho -e "分支名:${branchName} 不合法\n分支信息解析失败"
+        else
+                export AutoEnv_clientName=
+                export AutoEnv_projrctName=
+                export AutoEnv_modelAllName=
+                export AutoEnv_demandSignName=
+                export AutoEnv_motherboardName=
+                export AutoEnv_screenScanDirection=
 
-                                 if [[ $valShort = "_CT(" ]];then
-                                    gitBranchInfoClientName=${item//$valShort/}
-                                 elif [[ $valShort = "_PJ(" ]];then
-                                    gitBranchInfoProjrctName=${item//$valShort/}
-                                elif [[ $valShort = "_DM(" ]];then
-                                    gitBranchInfoDemandSignName=${item//$valShort/}
-                                elif [[ $valLong = "MBML(" ]];then
-                                    gitBranchInfoMotherboardName=${item//$valLong/}
-                                elif [[ $valLong = "_PMA(" ]];then
-                                    gitBranchInfoModelAllName=${item//$valLong/}
-                                fi
+                for item in ${arrayItems[@]}
+                do
+                        local valShort=${item:0:4}
+                        local valLong=${item:0:5}
 
-                                export AutoEnv_clientName=
-                                export AutoEnv_projrctName=
-                                export AutoEnv_modelAllName=
-                                export AutoEnv_demandSignName=
-                                export AutoEnv_motherboardName=
-
-                                export AutoEnv_clientName=$gitBranchInfoClientName
-                                export AutoEnv_projrctName=$gitBranchInfoProjrctName
-                                export AutoEnv_modelAllName=$gitBranchInfoModelAllName
-                                export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
-                                export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
-                        done
-                fi
-            fi
+                         if [[ ${item:0:3} = "CT(" ]];then
+                            valShort=${item:0:3}
+                            local gitBranchInfoClientName=${item//$valShort/}
+                            export AutoEnv_clientName=$gitBranchInfoClientName
+                         elif [[ $valShort = "_CT(" ]];then
+                            local gitBranchInfoClientName=${item//$valShort/}
+                            export AutoEnv_clientName=$gitBranchInfoClientName
+                         elif [[ $valShort = "_PJ(" ]];then
+                            local gitBranchInfoProjrctName=${item//$valShort/}
+                            export AutoEnv_projrctName=$gitBranchInfoProjrctName
+                         elif [[ $valShort = "_SS(" ]];then
+                            local gitBranchInfoScreenScanDirection=${item//$valShort/}
+                            export AutoEnv_screenScanDirection=$gitBranchInfoScreenScanDirection
+                        elif [[ $valShort = "_DM(" ]];then
+                            local gitBranchInfoDemandSignName=${item//$valShort/}
+                            export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
+                        elif [[ $valLong = "MBML(" ]];then
+                            local gitBranchInfoMotherboardName=${item//$valLong/}
+                        export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
+                        elif [[ $valLong = "_PMA(" ]];then
+                            local gitBranchInfoModelAllName=${item//$valLong/}
+                            export AutoEnv_modelAllName=$gitBranchInfoModelAllName
+                        fi
+                done
+        fi
     fi
 
     export AutoEnv_buildType=
