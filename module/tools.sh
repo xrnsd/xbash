@@ -3079,37 +3079,38 @@ EOF
                 local arrayItems=($branchName)
                 IFS="$OLD_IFS"
                 if [ "$branchName" = "$arrayItems" ];then
-                    echo 不合法
+                        ftEcho -e "分支名:${branchName} 不合法,分支信息解析失败"
+                else
+                        for item in ${arrayItems[@]}
+                        do
+                                local valShort=${item:0:4}
+                                local valLong=${item:0:5}
+
+                                 if [[ $valShort = "_CT(" ]];then
+                                    gitBranchInfoClientName=${item//$valShort/}
+                                 elif [[ $valShort = "_PJ(" ]];then
+                                    gitBranchInfoProjrctName=${item//$valShort/}
+                                elif [[ $valShort = "_DM(" ]];then
+                                    gitBranchInfoDemandSignName=${item//$valShort/}
+                                elif [[ $valLong = "MBML(" ]];then
+                                    gitBranchInfoMotherboardName=${item//$valLong/}
+                                elif [[ $valLong = "_PMA(" ]];then
+                                    gitBranchInfoModelAllName=${item//$valLong/}
+                                fi
+
+                                export AutoEnv_clientName=
+                                export AutoEnv_projrctName=
+                                export AutoEnv_modelAllName=
+                                export AutoEnv_demandSignName=
+                                export AutoEnv_motherboardName=
+
+                                export AutoEnv_clientName=$gitBranchInfoClientName
+                                export AutoEnv_projrctName=$gitBranchInfoProjrctName
+                                export AutoEnv_modelAllName=$gitBranchInfoModelAllName
+                                export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
+                                export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
+                        done
                 fi
-                for item in ${arrayItems[@]}
-                do
-                        local valShort=${item:0:4}
-                        local valLong=${item:0:5}
-
-                         if [[ $valShort = "_CT(" ]];then
-                            gitBranchInfoClientName=${item//$valShort/}
-                         elif [[ $valShort = "_PJ(" ]];then
-                            gitBranchInfoProjrctName=${item//$valShort/}
-                        elif [[ $valShort = "_DM(" ]];then
-                            gitBranchInfoDemandSignName=${item//$valShort/}
-                        elif [[ $valLong = "MBML(" ]];then
-                            gitBranchInfoMotherboardName=${item//$valLong/}
-                        elif [[ $valLong = "_PMA(" ]];then
-                            gitBranchInfoModelAllName=${item//$valLong/}
-                        fi
-
-                        export AutoEnv_clientName=
-                        export AutoEnv_projrctName=
-                        export AutoEnv_modelAllName=
-                        export AutoEnv_demandSignName=
-                        export AutoEnv_motherboardName=
-
-                        export AutoEnv_clientName=$gitBranchInfoClientName
-                        export AutoEnv_projrctName=$gitBranchInfoProjrctName
-                        export AutoEnv_modelAllName=$gitBranchInfoModelAllName
-                        export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
-                        export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
-                done
             fi
     fi
 
