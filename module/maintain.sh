@@ -486,8 +486,8 @@ ftAddNote()
 #===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAddNote [dirPathBackupRoot] [versionName]
-#    ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase
-#    ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase “常规”
+#    ftAddNote \$mDirPathStoreTarget \$mFileNameBackupTargetBase
+#    ftAddNote \$mDirPathStoreTarget \$mFileNameBackupTargetBase “常规”
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -504,19 +504,19 @@ EOF
             ftAddNote -h
             return
     fi
-    local dirPathBackupNote=${dirPathBackupRoot}/.notes
-    local fileNameNote=${versionName}.note
+    local dirPathBackupNote=${dirPathBackupRoot}/${versionName}
+    local fileNameNote=${versionName}.info
 
     if [ -d ${dirPathBackupRoot} ]&&[ ! -d ${dirPathBackupNote} ];then
             mkdir ${dirPathBackupNote}
             ftEcho -s 新建备注存储目录:${dirPathBackupNote}
     fi
 
-    local filePathDefault=${dirPathBackupNote}/${fileNameDefault}
+    local filePathDefault=${dirPathBackupRoot}/${fileNameDefault}
     local filePathNote=${dirPathBackupNote}/${fileNameNote}
 
     if [ ! -f $filePathDefault ]; then
-        touch $filePathDefault;echo "【 create by wgx 】">$filePathDefault
+        touch $filePathDefault;echo "【 create by $rNameUser 】">$filePathDefault
     fi
 
     #note文件行数
@@ -543,7 +543,9 @@ EOF
     sed -i "1i ==========================================" $filePathDefault
     sed -i "1i $strVersion           $note" $filePathDefault
     #写入版本独立备注
-    sudo echo $note>$filePathNote
+    local content="[版本备注]"
+    content="${content}\\n    swNote=${note}"
+    sudo echo -e "$content">>$filePathNote
 
     mNoteBackupTarget=$note
 }
@@ -683,8 +685,8 @@ EOF
             return
     fi
 
-    local dirPathBackupInfo=${dirPathBackupRoot}/.info
-    local dirPathBackupInfoVersion=${dirPathBackupInfo}/${dirNameBackupInfoVersion}
+    local dirPathBackupInfoVersion=${dirPathBackupRoot}/${dirNameBackupInfoVersion}
+    local filePathBackupInfoVersion=${dirPathBackupInfoVersion}/${dirNameBackupInfoVersion}.info
 
     local filePathVersionCpu=${dirPathBackupInfoVersion}/cpu
     local filePathVersionMainboard=${dirPathBackupInfoVersion}/mainboard
@@ -695,46 +697,71 @@ EOF
     local infoHwMainboard=$(dmidecode |grep Name |sed s/[[:space:]]//g)
     local infoHwMainboard=$(echo $infoHwMainboard |sed s/[[:space:]]//g)
     local infoHwSystem=$(head -n 1 /etc/issue|sed s/[[:space:]]//g)
-        infoHwSystem=${infoHwSystem//"\n\l"/}
-        infoHwSystem=${infoHwSystem//"."/}
-        infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
+            infoHwSystem=${infoHwSystem//"\n\l"/}
+            infoHwSystem=${infoHwSystem//"."/}
+            infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
     local infoHw32x64=$(uname -m|sed s/[[:space:]]//g)
 
+    #  local devNameDirPathList=(`df -lh | awk '{print $1}'`)
+    #  local devMountDirPathList=(`df -lh | awk '{print $6}'`)
+    #  local indexDevName=0
+    #  for dir in ${devMountDirPathList[*]}
+    # do
+    #         if [[ $dir = "/" ]];then
+    #             local dirPathDevRoot=${devNameDirPathList[indexDevName]}
+    #             local keyModelName="Model Number:"
+    #             local devModelName=$(echo "$rUserPwd" | sudo -S  hdparm -I $dirPathDevRoot|grep "$keyModelName");
+    #             devModelName=${devModelName//$keyModelName/}
+    #             local infoHwMainHardDisk=$(echo $devModelName |sed s/[[:space:]]//g)
+    #             break;
+    #         fi
+    #         indexDevName=`expr $indexDevName + 1`
+    # done
+
+    local keyCpu=hwCpu
+    local keyMainboard=hwMainboard
+    local keySystemVersion=swSystemVersion
+    local keySystemType=swSystemType
+
     local returns=兼容
+
     if [ ! -d $dirPathBackupRoot ]; then
-        echo 系统信息相关操作失败
+        echo "系统信息相关操作失败\n${dirPathBackupRoot}不存在"
           exit
     else
-        if [ ! -d $dirPathBackupInfo ]; then
-            mkdir $dirPathBackupInfo
-            echo 根系统信息记录位置不存在，已建立
-        fi
         if [ ! -d $dirPathBackupInfoVersion ]; then
             mkdir $dirPathBackupInfoVersion
             echo 版本信息记录位置不存在，已建立
         fi
         if [ ${typeEdit} == "-add" ]; then
-            echo $infoHwCpu         >$filePathVersionCpu
-            echo $infoHwMainboard     >$filePathVersionMainboard
-            echo $infoHwSystem         >$filePathVersionSystem
-            echo $infoHw32x64         >$filePathVersion32x64
 
+            local content="[版本相关系统软硬件环境]"
+            content="${content}\\n    ${keyCpu}=${infoHwCpu}"
+            content="${content}\\n    ${keyMainboard}=${infoHwMainboard}"
+            content="${content}\\n    ${keySystemVersion}=${infoHwSystem}"
+            content="${content}\\n    ${keySystemType}=${infoHw32x64}"
+            sudo echo -e "$content">>$filePathBackupInfoVersion
             ftEcho -s 版本${dirNameBackupInfoVersion}相关系统信息记录完成
+
         elif [ ${typeEdit} == "-check" ]; then
+
             ftEcho -b 检查版本包和当前系统兼容程度
 
-            if [ ! -f $filePathVersionCpu ]||[ ! -f $filePathVersionMainboard ]||[ ! -f $filePathVersionSystem ]||[ ! -f $filePathVersion32x64 ]; then
-                ftEcho -e   版本${dirNameBackupInfoVersion}相关系统信息损坏
+            local infoHwCpuVersion=$(ftGetKeyValueByBlockAndKey  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keyCpu)
+            local infoHwMainboardVersion=$(ftGetKeyValueByBlockAndKey  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keyMainboard)
+            local infoHwSystemVersion=$(ftGetKeyValueByBlockAndKey  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keySystemVersion)
+            local infoHw32x64Version=$(ftGetKeyValueByBlockAndKey  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keySystemType)
+
+            if [ -z "$infoHwCpuVersion" ]||[ -z "$infoHwMainboardVersion" ]\
+                                                            ||[ -z "$infoHwSystemVersion" ]\
+                                                            ||[ -z "$infoHw32x64Version" ]; then
+                ftEcho -e   "版本相关系统信息损坏:\n${filePathBackupInfoVersion}"
                 #显示相关信息存储路径
-                echo filePathVersionCpu=$filePathVersionCpu
-                echo filePathVersionMainboard=$filePathVersionMainboard
-                echo filePathVersionSystem=$filePathVersionSystem
-                echo filePathVersion32x64=$filePathVersion32x64
+                echo infoHwCpuVersion=$infoHwCpuVersion
+                echo infoHwMainboardVersion=$infoHwMainboardVersion
+                echo infoHwSystemVersion=$infoHwSystemVersion
+                echo infoHw32x64Version=$infoHw32x64Version
             fi
-            local infoHwCpuVersion=$(sed s/[[:space:]]//g $filePathVersionCpu)
-            local infoHwMainboardVersion=$(sed s/[[:space:]]//g $filePathVersionMainboard)
-            local infoHwSystemVersion=$(sed s/[[:space:]]//g $filePathVersionSystem)
-            local infoHw32x64Version=$(sed s/[[:space:]]//g $filePathVersion32x64)
 
             if [[ $infoHwCpuVersion != $infoHwCpu ]];then
             echo versionpackageInfo=$infoHwCpuVersion
@@ -767,7 +794,6 @@ EOF
                 fi
                 exit
             fi
-
         fi
     fi
 }
@@ -805,7 +831,7 @@ ftBackUpDevScanning()
 #===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftBackUpDevScanning [version] [note] [backup_dev_list]
-#    ftBackUpDevScanning backup_cg_wgx_20161202 常规 "${mCmdsModuleDataDevicesList[*]}"
+#    ftBackUpDevScanning backup_cg_wgx_20161202 常规 "\${mCmdsModuleDataDevicesList[*]}"
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -935,7 +961,7 @@ ftSynchronous()
 #    ftSynchronous [dirPathArray] [fileTypeList]
 #
 #     所有存储设备之间同步
-#    ftSynchronous "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
+#    ftSynchronous "\${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
 #
 #     本次备份存储设备和指定存储设备之间同步
 #    ftSynchronous "/media/data_xx $mDirPathStoreTarget" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
@@ -1070,13 +1096,13 @@ elif [ $mTypeEdit = "backup" ];then
             #写版本备注
             ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
             #扫描设备,同步相同备份
-            ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mCmdsModuleDataDevicesList[*]}"
+            # ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mCmdsModuleDataDevicesList[*]}"
             #清理临时文件
-            ftAutoCleanTemp
+            # ftAutoCleanTemp
             #生成版本包
-            ftBackupOs&&
+            # ftBackupOs&&
             #记录版本包校验信息
-            ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+            # ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
             #记录版本包相关系统信息
             ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
             #同步

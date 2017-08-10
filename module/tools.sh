@@ -1232,13 +1232,13 @@ ftGetKeyValueByBlockAndKey()
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftGetKeyValueByBlockAndKey [文件] [目标块TAG] [键名]
-#    value=$(ftGetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup)
-#     value表示对应字段的值
+#    ftGetKeyValueByBlockAndKey [文件路径] [目标块TAG] [键名]
+#    value=\$(ftGetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup)
+#    value表示key对应的值
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit 1;; * )break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
 
     #耦合校验
     local valCount=3
@@ -1259,8 +1259,8 @@ EOF
             return
     fi
 
-    begin_block=0
-    end_block=0
+    local begin_block=0
+    local end_block=0
 
     cat $filePath | while read line
     do
@@ -1287,7 +1287,6 @@ EOF
             fi
         fi
     done
-    return 0
 }
 
 ftSetKeyValueByBlockAndKey()
@@ -1302,7 +1301,7 @@ ftSetKeyValueByBlockAndKey()
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftSetKeyValueByBlockAndKey [文件] [目标块TAG] [键名] [键对应的值]
+#    ftSetKeyValueByBlockAndKey [文件路径] [目标块TAG] [键名] [键对应的值]
 #    ftSetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup 1232
 #=========================================================
 EOF
@@ -3110,7 +3109,7 @@ EOF
                             export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
                         elif [[ $valLong = "MBML(" ]];then
                             local gitBranchInfoMotherboardName=${item//$valLong/}
-                        export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
+                            export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
                         elif [[ $valLong = "_PMA(" ]];then
                             local gitBranchInfoModelAllName=${item//$valLong/}
                             export AutoEnv_modelAllName=$gitBranchInfoModelAllName
