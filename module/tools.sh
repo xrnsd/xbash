@@ -1500,7 +1500,7 @@ ftBackupOrRestoreOuts()
 #===================[   ${ftEffect}   ]的使用示例==============
 #    备份out
 #    ftBackupOrRestoreOuts 无参
-#    移动匹配out到单前项目
+#    移动匹配out到当前项目
 #    ftBackupOrRestoreOuts -m
 #=========================================================
 EOF
