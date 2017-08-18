@@ -314,7 +314,7 @@ EOF
     for dir in ${devNameDirPathList[*]}
     do
             devMountDirPath=${devMountDirPathList[indexDevName]}
-            if [[ $dir =~ "/dev/s" ]]&&[[ $devMountDirPath != "/" ]];then
+            if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
                     sizeTemp=$(ftDevAvailableSpace $devMountDirPath true)
                     # 确定目录已挂载,设备可用空间大小符合限制
                     if mountpoint -q $devMountDirPath&&(($sizeTemp>=$devMinAvailableSpace));then
@@ -1085,7 +1085,6 @@ EOF
     if [ $? -eq "2" ];then
         ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
     fi
-    fileList=`ls $dirPathFileList`
 
     local dirNameFileListRename=RenameFiles
     local dirPathFileListRename=${dirPathFileList}/${dirNameFileListRename}
@@ -1102,13 +1101,17 @@ EOF
             lengthFileNameBase=$(( $lengthFileNameBase * 10 ))
         done
     fi
-    for file in $fileList
+    cd $dirPathFileList
+    for file in `ls $dirPathFileList|tr " " "?"`
     do
+        file=${file//'?'/' '}
+        echo "file=$file"
+        mv "$file" "${file//' '/'_'}"
         if [ $file == $dirNameFileListRename ];then
             continue
         fi
         fileNameBase=$((lengthFileNameBase+$index))
-        cp -f ${dirPathFileList}/${file} ${dirPathFileListRename}/${fileNameBase:1}.${file##*.}
+        cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileNameBase:1}.${file##*.}
         index=`expr $index + 1`
     done
 }
