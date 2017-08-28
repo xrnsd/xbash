@@ -2028,6 +2028,9 @@ EOF
                 length=${#arr[@]}
                 length=`expr $length - 1`
                 local versionNameDate=${arr[$length]}
+                if [[ $versionNameDate =~ "." ]];then
+                    versionNameDate=${versionNameDate%.*}
+                fi
                 if [ "$versionNameDate" != "${fileChangeTime}" ];then
                     local dirNameVeriosionBase=${dirNameVeriosionBase}____buildtime____${fileChangeTime}
                 fi
