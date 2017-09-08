@@ -7,3 +7,5 @@ config/base/excludeDirsAll.list
 config/base/excludeDirsBase.list
 config/base/hosts.base
 config/base/hosts.new
+
+config/sublime_text/sublime-snippet
