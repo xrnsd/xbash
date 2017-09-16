@@ -198,21 +198,26 @@ if [ ! -d "$dirPathHomeCmd" ];then
 else
         dirPathHomeCmdConfig=${dirPathHomeCmd}/config
         dirPathHomeCmdConfigBashrc=${dirPathHomeCmd}/config/bashrc
+
         fileNameXbashTragetBashrcConfigBase=config_bashrc_base
-        fileNameXbashTragetBashrcConfigBaseGone=config_bashrc_base.gone
         filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBase}
+
+        fileNameXbashTragetBashrcConfigBaseGone=config_bashrc_base.gone
         filePathXbashTragetBashrcConfigBaseGone=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGone}
 
+        fileNameXbashTragetBashrcConfigBaseGoneExample=config_bashrc_base.gone_simple
+        filePathXbashTragetBashrcConfigBaseGoneExample=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGoneExample}
         #----------------   加载xbash的bashrc基础配置  ------------------
         if [ -f "$filePathXbashTragetBashrcConfigBaseGone" ];then
             source $filePathXbashTragetBashrcConfigBaseGone
         else
-            echo -e "\033[1;31mXbash下实现的自定义命令需要的隐藏配置\n[filePathXbashTragetBashrcConfigBaseGone=$filePathXbashTragetBashrcConfigBaseGone]\033[0m不存在"
+            echo -e "\033[1;31m未找到Xbash下实现的自定义命令需要的隐藏配置\n$filePathXbashTragetBashrcConfigBaseGone\033[0m"
+            echo -e "\033[1;33m解决此问题可以参考模版\n$filePathXbashTragetBashrcConfigBaseGoneExample\033[0m"
         fi
         if [ -f "$filePathXbashTragetBashrcConfigBase" ];then
             source $filePathXbashTragetBashrcConfigBase
         else
-            echo -e "\033[1;31mXbash下实现的自定义命令需要的配置\n[filePathXbashTragetBashrcConfigBase=$filePathXbashTragetBashrcConfigBase]\033[0m不存在"
+            echo -e "\033[1;31mXbash下实现的自定义命令需要的配置\n$filePathXbashTragetBashrcConfigBase\033[0m不存在"
         fi
         #---------------------------------用户密码---------------------------------
         if [ -z "$rUserPwdBase" ];then
