@@ -6,7 +6,7 @@
 #####---------------------示例函数---------------------------#########
 ftExample()
 {
-    local ftEffect=函数模板_nodisplay
+    local ftEffect=函数模板
 
     while true; do case "$1" in
     e | -e |--env) cat<<EOF
