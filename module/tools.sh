@@ -873,12 +873,11 @@ EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
-    local dirNameCmdModuleTest=test
-    local filePathCmdModuleTest=${rDirPathCmdsModule}/${dirNameCmdModuleTest}/${rFileNameCmdModuleTestBase}
+    local filePathCmdModuleTest=${rDirPathCmdsTest}/${rFileNameCmdModuleTestBase}
     #耦合校验
     local valCount=1
     local errorContent=
-    if [ ! -d "$rDirPathCmdsModule" ];then    errorContent="${errorContent}\\n[xbash模块路径不存在]rDirPathCmdsModule=$rDirPathCmdsModule" ; fi
+    if [ ! -d "$rDirPathCmdsTest" ];then    errorContent="${errorContent}\\n[xbash模块路径不存在]rDirPathCmdsTest=$rDirPathCmdsTest" ; fi
     if [ ! -f "$filePathCmdModuleTest" ];then    errorContent="${errorContent}\\n[测试模块不存在]filePathCmdModuleTest=$filePathCmdModuleTest" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
