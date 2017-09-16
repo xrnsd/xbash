@@ -85,5 +85,3 @@ mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
-cd ~/.config/sublime-text-3/Packages/User
-ls /home/wgx/cmds/config/other/sublime_text/sublime-snippet | while read line;do ln -s /home/wgx/cmds/config/other/sublime_text/sublime-snippet/${line} ;done
