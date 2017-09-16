@@ -1,9 +1,8 @@
-android mmi开发环境的简单扩展[shell]
-![Logo](config/base/logo.png)
+bash的简单扩展与其他工具配置[部分]
 =====
 1.工程结构
 ----------
-    Xrnsd-extensions-to-bash在下面简写为xbash
+Xrnsd-extensions-to-bash在下面简写为xbash
     │
     ├── config    -----------------------工具相关配置
     │        ├── base                             工具相关数据
@@ -11,9 +10,10 @@ android mmi开发环境的简单扩展[shell]
     │        │
     │        ├── bashrc                           bashrc通用配置
     │        │     ├── config_bashrc_base               bashrc配置
-    │        │     └── config_bashrc_base.gone          bashrc部分可忽略配置
+    │        │     └── config_bashrc_base.gone          bashrc的用户独有配置[git忽略其修改]
+    │        │     └── config_bashrc_base.gone_simple   bashrc的用户独有配置的模版
     │        │
-    │        ├── config_base                      全局参数
+    │        ├── base.config                      全局参数
     │        └── config_system_init               android build环境初始化工具的配置文件
     │
     ├── module    ---------------------  脚本实现文件[具体功能]
@@ -24,9 +24,6 @@ android mmi开发环境的简单扩展[shell]
     │        │      ├── wgx.bashrc                      为普通用户相关bash配置文件
     │        │      ├── root.bashrc                     为root相关bash配置文件
     │        │      └── .inputrc                        xbash命令历史补全
-    │        │
-    │        ├── packet   -------------------   packet工具
-    │        │      └── 7731C_AndroidL.pl               sprd的7731c的packet生成工具
     │        │
     │        ├── test    --------------------   脚本测试工具
     │        │      ├── base.sh                         demo测试,请忽略此文件的修改

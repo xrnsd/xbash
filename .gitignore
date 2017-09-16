@@ -3,9 +3,9 @@ log
 
 config/bashrc/config_bashrc_base.gone
 
-config/base/excludeDirsAll.list
-config/base/excludeDirsBase.list
-config/base/hosts.base
-config/base/hosts.new
+config/data/excludeDirsAll.list
+config/data/excludeDirsBase.list
+config/data/hosts.base
+config/data/hosts.new
 
-config/sublime_text/sublime-snippet
+config/other/sublime_text/sublime-snippet
