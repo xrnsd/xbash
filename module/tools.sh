@@ -926,26 +926,28 @@ EOF
     while true; do
     case "$edittype" in
         shutdown )
-        for i in `seq -w $timeLong -1 1`
-        do
-            echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后关机，ctrl+c 取消\033[0m"
-            sleep 1
-        done
-        echo -e "\b\b"
-        echo $rUserPwd | sudo -S shutdown -h now
-        break;;
-        reboot)
-        for i in `seq -w $timeLong -1 1`
-        do
-            echo -ne "\033[1;31m\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b将在${i}秒后重启，ctrl+c 取消\033[0m";
-            sleep 1
-        done
-        echo -e "\b\b"
-        echo $rUserPwd | sudo -S reboot
-        break;;
-        * ) ftEcho -e 错误的选择：$sel
-            echo "输入q，离开"
+            tput sc
+            for i in `seq -w $timeLong -1 1`
+            do
+                echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
+                tput sc;tput ed
+                sleep 1
+            done
+            echo $rUserPwd | sudo -S shutdown -h now
             break;;
+        reboot)
+            tput sc
+            for i in `seq -w $timeLong -1 1`
+            do
+                echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
+                tput sc;tput ed
+                sleep 1
+            done
+            echo $rUserPwd | sudo -S reboot
+            break;;
+            * ) ftEcho -e 错误的选择：$sel
+                echo "输入q，离开"
+                break;;
     esac
     done
 }
@@ -2694,6 +2696,12 @@ ftAutoBuildMultiBranch()
     local filePathBranchList=branch.list
     local dirPathCode=$ANDROID_BUILD_TOP
     local editType=$1
+    local timeLong=$2
+
+    editType=${editType:-'-b'}
+    if (  echo -n $editType | grep -q -e "^[0-9][0-9]*$")&&[[ -z "$timeLong" ]];then
+        timeLong=$editType
+    fi
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -2701,7 +2709,9 @@ ftAutoBuildMultiBranch()
 #
 #    ftAutoBuildMultiBranch 无参
 #    ftAutoBuildMultiBranch -y 上传版本软件
+#    ftAutoBuildMultiBranch -b 备份out
 #    ftAutoBuildMultiBranch -yb 上传版本软件,备份out
+#    ftAutoBuildMultiBranch -yb 时间[秒] /ftAutoBuildMultiBranch 时间[秒]   延时编译
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -2720,7 +2730,7 @@ EOF
         ftAutoBuildMultiBranch -env
         return
     fi
-    local valCount=1
+    local valCount=2
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
@@ -2747,7 +2757,10 @@ EOF
                 -b | -B )
                    isBackupOut=true
                     break;;
-                * )break;;
+                * )
+                    ftEcho -ea "函数[${ftEffect}]的参数错误 editType=$editType\\n请查看下面说明:"
+                    ftAutoBuildMultiBranch -h
+                 break;;
         esac
     done
 
@@ -2788,6 +2801,16 @@ EOF
                     read -n 1 select
                     case "$select" in
                         y | Y )
+                                        if [[ ! -z "$timeLong" ]]; then
+                                            tput sc
+                                            for i in `seq -w $timeLong -1 1`
+                                            do
+                                                echo -ne "\033[1;31m将在${i}秒开始编译，ctrl+c 取消\033[0m"
+                                                tput rc
+                                                tput ed
+                                                sleep 1
+                                            done
+                                        fi
                                         cat $filePathBranchList | while read line
                                         do
                                             local branshName=$line
@@ -2797,7 +2820,7 @@ EOF
                                             git checkout   "$branshName"&&
 
                                            # git pull
-                                           # git cherry-pick d4721c9805522b29fbe1f6fd922972e1211c146b||git reset --hard
+                                           # git cherry-pick 68450a3||git reset --hard
                                            # git push origin "$branshName"
 
                                             ftAutoInitEnv
