@@ -2006,8 +2006,9 @@ EOF
                 dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
                                                  obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
             elif [ $deviceName = "keytak6580_weg_l" ];then
-                dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15 \
-                                            obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V6_P7_1_wg_n.n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V6_P7_1_wg_n.n)
+                  local dirNameModem=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*)_intermediates
+                  local dirPathM=${dirPathOut}/obj/ETC/${dirNameModem}
+                    dataBaseFileList=(obj/ETC/${dirNameModem}/$(ls $dirPathM) obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15)
             else
                 ftEcho -ea "工具没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的配置\
                 \n请查看下面说明:"
