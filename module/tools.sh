@@ -2737,11 +2737,14 @@ EOF
     fi
     while true; do
       case "$editType" in
+                -yb | -by| -YB )
+                   isUpload=true
+                   isBackupOut=true
+                    break;;
                 -y | -Y )
                    isUpload=true
                     break;;
-                -yb | -by| -YB )
-                   isUpload=true
+                -b | -B )
                    isBackupOut=true
                     break;;
                 * )break;;
@@ -2793,45 +2796,49 @@ EOF
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
 
-                                           git pull
-                                           git cherry-pick d4721c9805522b29fbe1f6fd922972e1211c146b||git reset --hard
-                                           git push origin "$branshName"
+                                           # git pull
+                                           # git cherry-pick d4721c9805522b29fbe1f6fd922972e1211c146b||git reset --hard
+                                           # git push origin "$branshName"
 
-                                        #     ftAutoInitEnv
-                                        #     local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
-                                        #     cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
-                                        #     cpuCount=${cpuCount//cpucores\:/}
-                                        #     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
-                                        #                 #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
-                                        #                 source build/envsetup.sh&&
-                                        #                 lunch sp7731c_1h10_32v4_oversea-user&&
-                                        #                 kheader&&
-                                        #                 make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                        #                 if [ $isUpload = "true" ];then
-                                        #                     ftAutoPacket -y
-                                        #                 else
-                                        #                     ftAutoPacket
-                                        #                 fi
-                                        #                 if [ $isBackupOut = "true" ];then
-                                        #                     ftBackupOrRestoreOuts
-                                        #                 fi
-                                        #     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                                        #             local deviceName=`basename $ANDROID_PRODUCT_OUT`
-                                        #             if [ $deviceName = "keytak6580_weg_l" ];then
-                                        #                 source build/envsetup.sh&&
-                                        #                 lunch full_keytak6580_weg_l-user&&
-                                        #                 mkdir out
-                                        #                 make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                        #                 make otapackage&&
-                                        #                 ftAutoPacket -y&&
-                                        #                 if [ $isBackupOut = "true" ];then
-                                        #                     ftBackupOrRestoreOuts
-                                        #                 fi
-                                        #             else
-                                        #                 ftAutoBuildMultiBranch -e
-                                        #                 return;
-                                        #             fi
-                                        #     fi
+                                            ftAutoInitEnv
+                                            local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
+                                            cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
+                                            cpuCount=${cpuCount//cpucores\:/}
+                                            if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+                                                        #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
+                                                        source build/envsetup.sh&&
+                                                        lunch sp7731c_1h10_32v4_oversea-user&&
+                                                        kheader&&
+                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                                        if [ $isUpload = "true" ];then
+                                                            ftAutoPacket -y
+                                                        else
+                                                            ftAutoPacket
+                                                        fi
+                                                        if [ $isBackupOut = "true" ];then
+                                                            ftBackupOrRestoreOuts
+                                                        fi
+                                            elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+                                                    local deviceName=`basename $ANDROID_PRODUCT_OUT`
+                                                    if [ $deviceName = "keytak6580_weg_l" ];then
+                                                        source build/envsetup.sh&&
+                                                        lunch full_keytak6580_weg_l-user&&
+                                                        mkdir out
+                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                                        make otapackage&&
+                                                        if [ $isUpload = "true" ];then
+                                                            ftAutoPacket -y
+                                                        else
+                                                            ftAutoPacket
+                                                        fi
+                                                        if [ $isBackupOut = "true" ];then
+                                                            ftBackupOrRestoreOuts
+                                                        fi
+                                                    else
+                                                        ftAutoBuildMultiBranch -e
+                                                        return;
+                                                    fi
+                                            fi
 
                                         done
                                         git reset --hard
