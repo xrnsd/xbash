@@ -8,4 +8,5 @@ config/data/excludeDirsBase.list
 config/data/hosts.base
 config/data/hosts.new
 
-config/other/sublime_text/sublime-snippet
+config/other/sublime_text/sublime-snippetconfig/wgx_f.cofig
+module/bashrc/wgx_f.bashrc
