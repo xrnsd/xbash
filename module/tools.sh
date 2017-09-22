@@ -1983,7 +1983,7 @@ EOF
                 ${dirPathNormalBin}/persist.img&&
             ftEcho -s 生成7731c使用的pac[${dirPathVersionSoftwareVersion}/${versionName}.pac]
 
-            生成说明文件
+            # 生成说明文件
             ftCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
             #上传服务器
             while true; do case "$isUpload" in    y | Y |-y | -Y)
@@ -2018,7 +2018,7 @@ EOF
             if [ ! -z "$AutoEnv_clientName" ];then #git解析成功获取到客户等相关信息
                 ftAutoInitEnv -bp
                 local dirNameersionSoftwareVersionBase=${AutoEnv_AndroidVersion}
-                local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirNameersionSoftwareVersionBase}/${AutoEnv_motherboardName}-${AutoEnv_projrctName}/${AutoEnv_motherboardName}_${AutoEnv_projrctName}__${AutoEnv_demandSignName}/${AutoEnv_deviceModelName}
+                local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirNameersionSoftwareVersionBase}/${AutoEnv_motherboardName}-${AutoEnv_projrctName}/${AutoEnv_motherboardName}__${AutoEnv_projrctName}__${AutoEnv_demandSignName}/${AutoEnv_deviceModelName}
                 local dirNameVeriosionBase=${AutoEnv_versionName}
                 #非user版本标记编译类型
                 if [ "$AutoEnv_buildType" != "user" ];then
@@ -2109,7 +2109,7 @@ EOF
                      fi
                 done
             fi
-            生成说明文件
+            # 生成说明文件
             ftCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
             #上传服务器
             while true; do case "$isUpload" in    y | Y |-y | -Y)
@@ -2346,11 +2346,11 @@ EOF
         # gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
         # gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
 
-        gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:'%s')
-        gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:'%s')
+        gitCommitListOneDay=$(git log --date=format-local:'%y%m%d' --pretty=format:'%s' -30)
+        gitCommitListBefore=$(git log --date=format-local:'%y%m%d' --pretty=format:'%s' -30)
     else
-        gitCommitListOneDay=$(git log --date=short  --since=1.day.ago  --pretty=format:"%s")
-        gitCommitListBefore=$(git log --date=short  --before=1.day.ago  --pretty=format:"%s")
+        gitCommitListOneDay=$(git log --date=short --pretty=format:"%s" -30)
+        gitCommitListBefore=$(git log --date=short --pretty=format:"%s" -30)
     fi
 
     # 暗码清单
@@ -2423,18 +2423,16 @@ EOF
     if [ $AutoEnv_mnufacturers = "sprd" ];then
 
     echo -e "﻿当前版本：$versionName
-暗码清单：$pawNumInfo
 摄像头类型：$cameraTypeInfo
 默认 前/后摄大小：$cameraSizeFront/$cameraSizeBack
 默认 RAM/ROM：$sizeRam/$sizeRom
-RAM 列表：$ramSizeListSel
-ROM 列表：$romSizeListSel
 
+暗码清单：$pawNumInfof
 隐藏：*#312#*
 imei显示：*#06#
 imei编辑:  *#*#3646633#*#*
 单项测试[列表]:*#7353#
-单项测试[宫格]:*#0
+单项测试[宫格]:*#0*#
 三星测试:*#1234#
 开关机动画暗码*#868312459#*
 
@@ -2445,10 +2443,11 @@ imei编辑:  *#*#3646633#*#*
     echo -e "﻿
 当前版本：$versionName
 
-隐藏指令：*#314#*
-imei指令：*#315#*    *#316#*
+隐藏指令：*#*#94127*208#*#*
+imei编辑: *#315#*
+imei显示：*#316#*
+imei单双切换: 
 切换动画指令：*#868312513#*
-切换动画指令2：*#868312513#*
 切换默认动画：*#979312#*
 工厂模式[测试模式]：*#*#180#*#*  *#0*#
 
