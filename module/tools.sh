@@ -929,8 +929,8 @@ EOF
             tput sc
             for i in `seq -w $timeLong -1 1`
             do
+                tput rc;tput ed
                 echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
-                tput sc;tput ed
                 sleep 1
             done
             echo $rUserPwd | sudo -S shutdown -h now
@@ -939,8 +939,8 @@ EOF
             tput sc
             for i in `seq -w $timeLong -1 1`
             do
+                tput rc;tput ed
                 echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
-                tput sc;tput ed
                 sleep 1
             done
             echo $rUserPwd | sudo -S reboot
@@ -1869,14 +1869,44 @@ ftAutoPacket()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
-    local isUpload=$1
+    local editType=$1
+    local isClean=
+    local isReadMe=
+    local isUpload=
+
+    while true; do case "$editType" in
+    r | R |-r | -R)
+        isReadMe=true
+        break;;
+    y | Y |-y | -Y)
+        isClean=true
+        break;;
+    u | U |-u | -U)
+        isUpload=true
+        break;;
+    yr | YR |-yr | -YR |ry | RY |-ry | -RY)
+        isReadMe=true
+        isClean=true
+        break;;
+    yu | YU |-yu | -YU| uy | UY |-uy | -UY)
+        isClean=true
+        isUpload=true
+        break;;
+    uyr | UYR |-uyr | -UYR |ryu | RYU |-ryu | -RYU)
+        isUpload=true
+        isReadMe=true
+        isClean=true
+        break;;
+     * ) break;; esac;done
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftAutoPacket 无参
-#    ftAutoPacket -y #自动打包，上传到188服务器
+#    ftAutoPacket #自动打包
+#    ftAutoPacket -y #免确认自动清理,打包
+#    ftAutoPacket -yu #免确认自动清理,打包，上传到188服务器
+#    ftAutoPacket -ryu #免确认自动清理,打包 , 添加说明，上传到188服务器
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1898,7 +1928,7 @@ EOF
         ftAutoPacket -env
         return
     fi
-    local valCount=1
+    local valCount=2
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
@@ -1915,17 +1945,22 @@ EOF
     local dirPathVersionSoftware=${dirPathCode}/out/${dirNameVersionSoftware}
 
     if [[ -d "$dirPathVersionSoftware" ]]; then
-          while true; do
-                        ftEcho -y "${dirPathVersionSoftware}\n已存在,是否是否删除"
-                        read -n 1 sel
-                        case "$sel" in
-                            y | Y ) rm  -rf $dirPathVersionSoftware
-                                       break;;
-                            n | N | q |Q)    break ;;
-                            * ) ftEcho -e 错误的选择：$sel
-                                echo "输入n，q，离开";;
-                            esac
-        done
+            if [[ ! -z "$isClean" ]]; then
+                rm  -rf $dirPathVersionSoftware
+            else
+                  while true; do
+                                ftEcho -y "${dirPathVersionSoftware}\n已存在,是否是否删除"
+                                read -n 1 sel
+                                case "$sel" in
+                                    y | Y ) rm  -rf $dirPathVersionSoftware
+                                               break;;
+                                    n | N | q |Q)    break ;;
+                                    * ) ftEcho -e 错误的选择：$sel
+                                        echo "输入n，q，离开";;
+                                    esac
+                done
+                echo
+            fi
     fi
 
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
@@ -1986,11 +2021,13 @@ EOF
             ftEcho -s 生成7731c使用的pac[${dirPathVersionSoftwareVersion}/${versionName}.pac]
 
             # 生成说明文件
-            ftCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
+            if [[ ! -z "$isReadMe" ]]; then
+                    ftCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
+            fi
             #上传服务器
-            while true; do case "$isUpload" in    y | Y |-y | -Y)
-                ftAutoUploadHighSpeed $dirPathVersionSoftware $(basename $dirPathVersionSoftwareVersion) $dirPathUploadTraget
-            break;; * ) break;; esac;done
+            if [[ ! -z "$isUpload" ]]; then
+                    ftAutoUploadHighSpeed $dirPathVersionSoftware $(basename $dirPathVersionSoftwareVersion) $dirPathUploadTraget
+            fi
 
     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
             local dirNamePackage="packages"
@@ -2113,11 +2150,13 @@ EOF
                 done
             fi
             # 生成说明文件
-            ftCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
+            if [[ ! -z "$isReadMe" ]]; then
+                    ftCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
+            fi
             #上传服务器
-            while true; do case "$isUpload" in    y | Y |-y | -Y)
-                ftAutoUploadHighSpeed $dirPathVersionSoftware $dirNameersionSoftwareVersionBase $dirPathUploadTraget
-            break;; * ) break;; esac;done
+            if [[ ! -z "$isUpload" ]]; then
+                    ftAutoUploadHighSpeed $dirPathVersionSoftware $dirNameersionSoftwareVersionBase $dirPathUploadTraget
+            fi
     fi
     cd $dirPathLocal
 }
@@ -2448,11 +2487,12 @@ imei编辑:  *#*#3646633#*#*
 
 隐藏指令：*#*#94127*208#*#*
 imei编辑: *#315#*
-imei显示：*#316#*
-imei单双切换: 
+imei显示：*#06#
+imei单双切换: *#316#*
 切换动画指令：*#868312513#*
 切换默认动画：*#979312#*
-工厂模式[测试模式]：*#*#180#*#*  *#0*#
+测试模式：*#*#180#*#*
+三星测试：*#0*#
 
 修改记录：\
 "| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
