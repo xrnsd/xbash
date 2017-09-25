@@ -65,7 +65,7 @@ filePathXbashGitgnore=${dirPathLocal}/.gitignore
 
 #####-----------------------配置生效------------------------------#########
 dirPathHomeLocal=/home/${userNameLocal}
-filePathHomeLocalConfig=/${dirPathHomeLocal}/.bashrc
+filePathHomeLocalConfig=${dirPathHomeLocal}/.bashrc
 
 mv ${filePathHomeLocalConfig} ${filePathHomeLocalConfig}_backup
 ln -s $filePathXbashModuleBashrcNew $filePathHomeLocalConfig
