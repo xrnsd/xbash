@@ -1500,6 +1500,7 @@ ftBackupOrRestoreOuts()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local editType=$1
+    local filterString=$2
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -1508,6 +1509,7 @@ ftBackupOrRestoreOuts()
 #    ftBackupOrRestoreOuts 无参
 #    移动匹配out到当前项目
 #    ftBackupOrRestoreOuts -m
+#    ftBackupOrRestoreOuts -m xxx   #分支名包含xxx的out列表
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1527,7 +1529,7 @@ EOF
         return
     fi
 
-    local valCount=1
+    local valCount=2
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
@@ -1563,7 +1565,10 @@ EOF
             ftEcho -e "out已存在 ,请先备份"
             return
         fi
-        local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+        local branchName=$filterString
+        if [[ -z "$filterString" ]]; then
+            branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+        fi
         local dirPathOutList=($(ls $dirPathCodeRootOuts|grep $branchName))
         if [[ -z "$dirPathOutList" ]]; then
             ftEcho -e "未找到\n分支[$branchName]对应的out"
