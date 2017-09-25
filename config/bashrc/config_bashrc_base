@@ -47,6 +47,7 @@ if [ -f $filePathXbashTragetConfigBase ];then
         source  $filePathCmdModuleTools
         #bash PS1 配置
         export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
+        export ENV_XBASH_INIT_STATED=1
 
         alias xd='ftMtkFlashTool'
         alias xb='ftMaintainSystem'
@@ -66,9 +67,11 @@ if [ -f $filePathXbashTragetConfigBase ];then
         complete -W "restartadb test clean_data_garbage  -v -vvv -ft" xc
     else
         echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$filePathCmdModuleTools]\033[0m"
+        export ENV_XBASH_INIT_STATED=-1
     fi
 else
     echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
+    export ENV_XBASH_INIT_STATED=-2
 fi
 
 if [ ! -z `which git` ];then

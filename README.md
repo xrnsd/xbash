@@ -45,20 +45,17 @@ Xrnsd-extensions-to-bash在下面简写为xbash
 
 4.初始化环境
 ----------
-    1 cd Xrnsd-extensions-to-bash
-    2 sudo chmod -R a+x module/ config/
-    3 ./init.sh #初始化
+    1 sudo chmod -R a+x module/ config/ init.sh
+    2 ./init.sh #初始化
 
 5.其他
 ----------
     1 xc ,xb 为简化命令，搭配参数时和其余命令一样指向具体功能实现
     2 建议,不要以root权限运行xc clean_data_garbage
     3 建议,不要开启xx[休眠]，这玩意脾气不好
-    4 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
-    5 环境目录[参考]
+    4 环境目录[参考]
         /home/xxx/
         ├── tools     -------------------  环境相关
         │        ├───── jdk  ---------------    java jdk
-        │        ├───── sdk  ---------------    android sdk
-        │        └───── sp_flash_tool_v5.1548   全局参数
-        └── .bashrc   -------------------  xbash中bashrc_work_lz的软连接
+        │        └───── sdk  ---------------    android sdk
+        └── .bashrc   -------------------  xbash中module/bashrc/用户.bashrc文件的软连接
