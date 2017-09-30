@@ -1867,7 +1867,7 @@ EOF
 }
 
 
-complete -W "-y" ftAutoPacket
+complete -W "-ur -yur" ftAutoPacket
 ftAutoPacket()
 {
     local ftEffect=基于android的out生成版本软件
@@ -1878,6 +1878,7 @@ ftAutoPacket()
     local isClean=
     local isReadMe=
     local isUpload=
+    local isPacket=true
 
     while true; do case "$editType" in
     r | R |-r | -R)
@@ -1887,6 +1888,12 @@ ftAutoPacket()
         isClean=true
         break;;
     u | U |-u | -U)
+        isUpload=true
+        isPacket=
+        break;;
+    ur | UR |-ur | -UR)
+        isPacket=
+        isReadMe=true
         isUpload=true
         break;;
     yr | YR |-yr | -YR |ry | RY |-ry | -RY)
@@ -1998,32 +2005,33 @@ EOF
 
             mkdir -p $dirPathVersionSoftwareVersion
             cd $dirPathVersionSoftwareVersion
-
-            ftEcho -s "开始生成 ${versionName}.pac\n"
-            /usr/bin/perl $filePathPacketScript \
-                $versionName.pac \
-                SC77xx \
-                ${versionName}\
-                ${dirPathNormalBin}/SC7720_UMS.xml \
-                ${dirPathNormalBin}/fdl1.bin \
-                ${dirPathNormalBin}/fdl2.bin \
-                ${dirPathModemBin}/nvitem.bin \
-                ${dirPathModemBin}/nvitem_wcn.bin \
-                ${dirPathNormalBin}/prodnv.img \
-                ${dirPathNormalBin}/u-boot-spl-16k.bin \
-                ${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
-                ${dirPathModemBin}/DSP_DM_G2.bin \
-                ${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
-                ${dirPathNormalBin}/boot.img \
-                ${dirPathNormalBin}/recovery.img \
-                ${dirPathNormalBin}/system.img \
-                ${dirPathNormalBin}/userdata.img \
-                ${dirPathLogo}/logo.bmp \
-                ${dirPathNormalBin}/cache.img \
-                ${dirPathNormalBin}/sysinfo.img \
-                ${dirPathNormalBin}/u-boot.bin \
-                ${dirPathNormalBin}/persist.img&&
-            ftEcho -s 生成7731c使用的pac[${dirPathVersionSoftwareVersion}/${versionName}.pac]
+            if [[ ! -z "$isPacket" ]]; then
+                   ftEcho -s "开始生成 ${versionName}.pac\n"
+                    /usr/bin/perl $filePathPacketScript \
+                        $versionName.pac \
+                        SC77xx \
+                        ${versionName}\
+                        ${dirPathNormalBin}/SC7720_UMS.xml \
+                        ${dirPathNormalBin}/fdl1.bin \
+                        ${dirPathNormalBin}/fdl2.bin \
+                        ${dirPathModemBin}/nvitem.bin \
+                        ${dirPathModemBin}/nvitem_wcn.bin \
+                        ${dirPathNormalBin}/prodnv.img \
+                        ${dirPathNormalBin}/u-boot-spl-16k.bin \
+                        ${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
+                        ${dirPathModemBin}/DSP_DM_G2.bin \
+                        ${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
+                        ${dirPathNormalBin}/boot.img \
+                        ${dirPathNormalBin}/recovery.img \
+                        ${dirPathNormalBin}/system.img \
+                        ${dirPathNormalBin}/userdata.img \
+                        ${dirPathLogo}/logo.bmp \
+                        ${dirPathNormalBin}/cache.img \
+                        ${dirPathNormalBin}/sysinfo.img \
+                        ${dirPathNormalBin}/u-boot.bin \
+                        ${dirPathNormalBin}/persist.img&&
+                    ftEcho -s 生成7731c使用的pac[${dirPathVersionSoftwareVersion}/${versionName}.pac]
+            fi
 
             # 生成说明文件
             if [[ ! -z "$isReadMe" ]]; then
@@ -2116,43 +2124,45 @@ EOF
             mkdir -p $dirPathPackageDataBase
             cd $dirPathVersionSoftwareVersion
 
-            ftEcho -s "开始生成版本软件包: \n${dirNameVeriosionBase}\n路径: \n${dirPathVersionSoftwareVersion}"
-            #packages
-            for file in ${fileList[@]}
-            do
-                local filePath=${dirPathOut}/${file}
-                 if [[ ! -f "$filePath" ]]; then
-                     ftEcho -e "${filePath}\n不存在"
-                     return;
-                 fi
-                 printf "%-2s %-30s\n" 复制 $file
-                 cp -r -f  $filePath ${dirPathVersionSoftwareVersion}/${dirNamePackage}
-            done
-            #otaPackages
-            if [[ ! -z "$otaFileList" ]]; then
-                mkdir -p $dirPathOtaPackage
-                for file in ${otaFileList[@]}
-                do
-                     if [[ ! -f "$file" ]]; then
-                         ftEcho -e "${file}\n不存在"
-                         return;
-                     fi
-                     printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
-                     cp -r -f  $file ${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
-                done
-            fi
-            # database
-            if [ ! -z "$dataBaseFileList" ];then
-                for file in ${dataBaseFileList[@]}
-                do
-                    local filePath=${dirPathOut}/${file}
-                     if [[ ! -f "$filePath" ]]; then
-                         ftEcho -e "${filePath}\n不存在"
-                     else
-                        printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}  ")
-                         cp -r -f  $filePath ${dirPathPackageDataBase}
-                     fi
-                done
+            if [[ ! -z "$isPacket" ]]; then
+                    ftEcho -s "开始生成版本软件包: \n${dirNameVeriosionBase}\n路径: \n${dirPathVersionSoftwareVersion}"
+                    #packages
+                    for file in ${fileList[@]}
+                    do
+                        local filePath=${dirPathOut}/${file}
+                         if [[ ! -f "$filePath" ]]; then
+                             ftEcho -e "${filePath}\n不存在"
+                             return;
+                         fi
+                         printf "%-2s %-30s\n" 复制 $file
+                         cp -r -f  $filePath ${dirPathVersionSoftwareVersion}/${dirNamePackage}
+                    done
+                    #otaPackages
+                    if [[ ! -z "$otaFileList" ]]; then
+                        mkdir -p $dirPathOtaPackage
+                        for file in ${otaFileList[@]}
+                        do
+                             if [[ ! -f "$file" ]]; then
+                                 ftEcho -e "${file}\n不存在"
+                                 return;
+                             fi
+                             printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
+                             cp -r -f  $file ${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
+                        done
+                    fi
+                    # database
+                    if [ ! -z "$dataBaseFileList" ];then
+                        for file in ${dataBaseFileList[@]}
+                        do
+                            local filePath=${dirPathOut}/${file}
+                             if [[ ! -f "$filePath" ]]; then
+                                 ftEcho -e "${filePath}\n不存在"
+                             else
+                                printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}  ")
+                                 cp -r -f  $filePath ${dirPathPackageDataBase}
+                             fi
+                        done
+                    fi
             fi
             # 生成说明文件
             if [[ ! -z "$isReadMe" ]]; then
@@ -2864,10 +2874,12 @@ EOF
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
 
-                                           git pull
-                                           git cherry-pick 1717bd3||git reset --hard
-                                           git cherry-pick 72cc0c6||git reset --hard
-                                           git push origin "$branshName"
+                                           # cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";
+                                           #  cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";
+                                           #  cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"
+                                           # cat build/tools/buildinfo.sh|grep "ro.product."
+                                           source build/envsetup.sh&&
+                                           lunch sp7731c_1h10_32v4_oversea-user
 
                                             # ftAutoInitEnv
                                             # local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
