@@ -1874,24 +1874,7 @@ ftAutoPacket()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
-
     local editType=$1
-    local isClean=
-    local isReadMe=
-    local isUpload=
-    local isPacket=
-    editType=$(echo $editType | tr '[A-Z]' '[a-z]')
-    if (( $(expr index $editType "a") != "0" ));then
-         isClean=true
-         isReadMe=true
-         isUpload=true
-         isPacket=true
-    else
-        if (( $(expr index $editType "y") != "0" ));then   isClean=true ; fi
-        if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
-        if (( $(expr index $editType "r") != "0" ));then   isReadMe=true ; fi
-        if (( $(expr index $editType "p") != "0" ));then   isPacket=true ; fi
-    fi
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -1930,11 +1913,29 @@ EOF
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
     if [ ! -d "$dirPathOut" ];then    errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut" ; fi
-    if [ ! -z "$errorContent" ];then
+    if [ ! -z "$errorContent" ]||[[ -z "$editType" ]];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoPacket -h
             return
     fi
+
+    local isClean=
+    local isReadMe=
+    local isUpload=
+    local isPacket=
+    editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+    if (( $(expr index $editType "a") != "0" ));then
+         isClean=true
+         isReadMe=true
+         isUpload=true
+         isPacket=true
+    else
+        if (( $(expr index $editType "y") != "0" ));then   isClean=true ; fi
+        if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
+        if (( $(expr index $editType "r") != "0" ));then   isReadMe=true ; fi
+        if (( $(expr index $editType "p") != "0" ));then   isPacket=true ; fi
+    fi
+
     ftAutoInitEnv
     local dirPathLocal=$PWD
     local dirNameVersionSoftware=packet
