@@ -2381,19 +2381,19 @@ EOF
     gitVersionNow=${gitVersionNow//git version/}
     gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
-    if version_lt $gitVersionMin $gitVersionNow; then
-        # gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:" %an %ad %s")
-         #gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:" %an %ad %s" -1)
+    # if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]]; then
+    #     # gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:" %an %ad %s")
+    #      #gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:" %an %ad %s" -1)
 
-        # gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
-        # gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
+    #     # gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
+    #     # gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
 
-        gitCommitListOneDay=$(git log --date=format-local:'%y%m%d' --pretty=format:'%s' -30)
-        gitCommitListBefore=$(git log --date=format-local:'%y%m%d' --pretty=format:'%s' -30)
-    else
+    #     gitCommitListOneDay=$(git log --date=format-local:'%y%m%d' --pretty=format:'%s' -30)
+    #     gitCommitListBefore=$(git log --date=format-local:'%y%m%d' --pretty=format:'%s' -30)
+    # else
         gitCommitListOneDay=$(git log --date=short --pretty=format:"%s" -30)
         gitCommitListBefore=$(git log --date=short --pretty=format:"%s" -30)
-    fi
+    # fi
 
     if [ $AutoEnv_mnufacturers = "sprd" ];then
 
