@@ -1867,58 +1867,43 @@ EOF
 }
 
 
-complete -W "-ur -yur" ftAutoPacket
+complete -W "-a" ftAutoPacket
 ftAutoPacket()
 {
     local ftEffect=基于android的out生成版本软件
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
+
     local editType=$1
     local isClean=
     local isReadMe=
     local isUpload=
-    local isPacket=true
-
-    while true; do case "$editType" in
-    r | R |-r | -R)
-        isReadMe=true
-        break;;
-    y | Y |-y | -Y)
-        isClean=true
-        break;;
-    u | U |-u | -U)
-        isUpload=true
-        isPacket=
-        break;;
-    ur | UR |-ur | -UR)
-        isPacket=
-        isReadMe=true
-        isUpload=true
-        break;;
-    yr | YR |-yr | -YR |ry | RY |-ry | -RY)
-        isReadMe=true
-        isClean=true
-        break;;
-    yu | YU |-yu | -YU| uy | UY |-uy | -UY)
-        isClean=true
-        isUpload=true
-        break;;
-    uyr | UYR |-uyr | -UYR |ryu | RYU |-ryu | -RYU)
-        isUpload=true
-        isReadMe=true
-        isClean=true
-        break;;
-     * ) break;; esac;done
+    local isPacket=
+    editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+    if (( $(expr index $editType "a") != "0" ));then
+         isClean=true
+         isReadMe=true
+         isUpload=true
+         isPacket=true
+    else
+        if (( $(expr index $editType "y") != "0" ));then   isClean=true ; fi
+        if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
+        if (( $(expr index $editType "r") != "0" ));then   isReadMe=true ; fi
+        if (( $(expr index $editType "p") != "0" ));then   isPacket=true ; fi
+    fi
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoPacket #自动打包
-#    ftAutoPacket -y #免确认自动清理,打包
-#    ftAutoPacket -yu #免确认自动清理,打包，上传到188服务器
-#    ftAutoPacket -ryu #免确认自动清理,打包 , 添加说明，上传到188服务器
+#    ftAutoPacket -y #免确认自动清理out/packet
+#    ftAutoPacket -u #上传到188服务器
+#    ftAutoPacket -r  #添加说明
+#    ftAutoPacket -p #打包
+#    ftAutoPacket -ryup # 根据需要,自由组合,顺序,大小写随意
+#    ftAutoPacket -a #默认启动全部流程
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -2970,13 +2955,18 @@ ftSetBashPs1ByGitBranch()
 }
 
 #版本号大小对比
-VERSION="  1.9.1"
-VERSION2="   2.2"
+
+# -eq =     -ne !=
+# -gt  >      ge >=
+# -lt   <      le <=
 
 function version_gt() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"; }
-function version_le() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" == "$1"; }
 function version_lt() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1"; }
+function version_le() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" == "$1"; }
 function version_ge() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"; }
+
+# VERSION="  1.9.1"
+# VERSION2="   2.2"
 # if version_gt $VERSION $VERSION2; then
 #    echo "$VERSION is greater than $VERSION2"
 # fi
