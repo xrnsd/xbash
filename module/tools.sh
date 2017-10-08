@@ -2410,56 +2410,64 @@ EOF
         gitCommitListBefore=$(git log --date=short --pretty=format:"%s" -30)
     fi
 
-    # 暗码清单
-    local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
-    if [ -f $filePathPawInfo ];then
-            local pawNumInfo=$(cat $filePathPawInfo|grep "private static final String PAW_NUM_INFO")  #获取暗码清单信息
-            pawNumInfo=${pawNumInfo//private static final String PAW_NUM_INFO =/};
-            pawNumInfo=${pawNumInfo//\";/};
-            pawNumInfo=${pawNumInfo//\"/};
-            pawNumInfo=$(echo $pawNumInfo |sed s/[[:space:]]//g)
-    else
-            ftEcho -e "[工程暗码清单文件不存在，获取失败]\n$filePathPawInfo"
-    fi
-
     if [ $AutoEnv_mnufacturers = "sprd" ];then
 
-    #摄像头配置相关
-    local filePathCameraConfig=${dirPathCode}/${AutoEnv_deviceDirPath}/BoardConfig.mk
-    if [ -f $filePathCameraConfig ];then
-            local keyType="LZ_CONFIG_CAMERA_TYPE := "
-            local keySizeBack="CAMERA_SUPPORT_SIZE := "
-            local keySizeFront="FRONT_CAMERA_SUPPORT_SIZE := "
+        # 暗码清单,动画切换暗码
+        local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
+        if [ -f $filePathPawInfo ];then
+                local key="    private static final String PAW_NUM_INFO ="
+                local pawNumInfo=$(cat $filePathPawInfo|grep "$key")  #获取暗码清单信息
+                pawNumInfo=${pawNumInfo//$key/};
+                pawNumInfo=${pawNumInfo//\";/};
+                pawNumInfo=${pawNumInfo//\"/};
+                pawNumInfo=$(echo $pawNumInfo |sed s/[[:space:]]//g)
 
-            local cameraTypeInfo=$(cat $filePathCameraConfig|grep "$keyType")
-            local cameraSizeBack=$(cat $filePathCameraConfig|grep "$keySizeBack")
-            local cameraSizeFront=$(cat $filePathCameraConfig|grep "$keySizeFront")
+                key="    private static final String LOGO_CHANGE ="
+                local changLogoNumInfo=$(cat $filePathPawInfo|grep "$key")  #动画切换暗码信息
+                changLogoNumInfo=${changLogoNumInfo//$key/};
+                changLogoNumInfo=${changLogoNumInfo//\";/};
+                changLogoNumInfo=${changLogoNumInfo//\"/};
+                changLogoNumInfo=$(echo $changLogoNumInfo |sed s/[[:space:]]//g)
+        else
+                ftEcho -e "[工程暗码配置文件不存在:]\n$filePathPawInfo"
+        fi
 
-            cameraTypeInfo=${cameraTypeInfo//$keyType/};
-            cameraSizeFront=${cameraSizeFront//$keySizeFront/};
+        #摄像头配置相关
+        local filePathCameraConfig=${dirPathCode}/${AutoEnv_deviceDirPath}/BoardConfig.mk
+        if [ -f $filePathCameraConfig ];then
+                local keyType="LZ_CONFIG_CAMERA_TYPE := "
+                local keySizeBack="CAMERA_SUPPORT_SIZE := "
+                local keySizeFront="FRONT_CAMERA_SUPPORT_SIZE := "
 
-            cameraSizeBack=${cameraSizeBack//${keySizeFront}$cameraSizeFront/};
-            cameraSizeBack=${cameraSizeBack//$keySizeBack/};
+                local cameraTypeInfo=$(cat $filePathCameraConfig|grep "$keyType")
+                local cameraSizeBack=$(cat $filePathCameraConfig|grep "$keySizeBack")
+                local cameraSizeFront=$(cat $filePathCameraConfig|grep "$keySizeFront")
 
-            cameraTypeInfo=$(echo $cameraTypeInfo |sed s/[[:space:]]//g)
-            cameraSizeFront=$(echo $cameraSizeFront |sed s/[[:space:]]//g)
-            cameraSizeBack=$(echo $cameraSizeBack |sed s/[[:space:]]//g)
-    else
-            ftEcho -e "[相机配置文件不存在，获取失败]\n$filePathCameraConfig"
-    fi
+                cameraTypeInfo=${cameraTypeInfo//$keyType/};
+                cameraSizeFront=${cameraSizeFront//$keySizeFront/};
 
-    #RAM/ROM
-    local filePathEnvsetup=${dirPathCode}/build/envsetup.sh
-    if [ -f $filePathEnvsetup ];then
-            local keyRom="export sizeRom="
-            local keyRam="export sizeRam="
-            local sizeRom=$(cat $filePathEnvsetup|grep "$keyRom")
-            local sizeRam=$(cat $filePathEnvsetup|grep "$keyRam")
-            sizeRom=${sizeRom//$keyRom/};
-            sizeRam=${sizeRam//$keyRam/};
-    else
-            ftEcho -e "[envsetup.sh不存在，获取失败]\n$filePathEnvsetup"
-    fi
+                cameraSizeBack=${cameraSizeBack//${keySizeFront}$cameraSizeFront/};
+                cameraSizeBack=${cameraSizeBack//$keySizeBack/};
+
+                cameraTypeInfo=$(echo $cameraTypeInfo |sed s/[[:space:]]//g)
+                cameraSizeFront=$(echo $cameraSizeFront |sed s/[[:space:]]//g)
+                cameraSizeBack=$(echo $cameraSizeBack |sed s/[[:space:]]//g)
+        else
+                ftEcho -e "[相机配置文件不存在，获取失败]\n$filePathCameraConfig"
+        fi
+
+        #RAM/ROM
+        local filePathEnvsetup=${dirPathCode}/build/envsetup.sh
+        if [ -f $filePathEnvsetup ];then
+                local keyRom="export sizeRom="
+                local keyRam="export sizeRam="
+                local sizeRom=$(cat $filePathEnvsetup|grep "$keyRom")
+                local sizeRam=$(cat $filePathEnvsetup|grep "$keyRam")
+                sizeRom=${sizeRom//$keyRom/};
+                sizeRam=${sizeRam//$keyRam/};
+        else
+                ftEcho -e "[envsetup.sh不存在，获取失败]\n$filePathEnvsetup"
+        fi
     fi
 
     #============           客户说明          ====================
@@ -2484,14 +2492,14 @@ EOF
 默认 前/后摄大小：$cameraSizeFront/$cameraSizeBack
 默认 RAM/ROM：$sizeRam/$sizeRom
 
-暗码清单：$pawNumInfof
+暗码清单：$pawNumInfo
 隐藏：*#312#*
 imei显示：*#06#
-imei编辑:  *#*#3646633#*#*
-单项测试[列表]:*#7353#
-单项测试[宫格]:*#0*#
-三星测试:*#1234#
-开关机动画暗码*#868312459#*
+imei编辑：*#*#3646633#*#*
+单项测试[列表]：*#7353#
+单项测试[宫格]：*#0*#
+三星测试：*#1234#
+开关机动画暗码：$changLogoNumInfo
 
 修改记录：\
 "| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
@@ -2501,9 +2509,9 @@ imei编辑:  *#*#3646633#*#*
 当前版本：$versionName
 
 隐藏指令：*#*#94127*208#*#*
-imei编辑: *#315#*
+imei编辑：*#315#*
 imei显示：*#06#
-imei单双切换: *#316#*
+imei单双切换：*#316#*
 切换动画指令：*#868312513#*
 切换默认动画：*#979312#*
 测试模式：*#*#180#*#*
@@ -2878,48 +2886,46 @@ EOF
                                            #  cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";
                                            #  cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"
                                            # cat build/tools/buildinfo.sh|grep "ro.product."
-                                           source build/envsetup.sh&&
-                                           lunch sp7731c_1h10_32v4_oversea-user
 
-                                            # ftAutoInitEnv
-                                            # local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
-                                            # cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
-                                            # cpuCount=${cpuCount//cpucores\:/}
-                                            # if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
-                                            #             #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
-                                            #             source build/envsetup.sh&&
-                                            #             lunch sp7731c_1h10_32v4_oversea-user&&
-                                            #             kheader&&
-                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                            #             if [ $isUpload = "true" ];then
-                                            #                 ftAutoPacket -y
-                                            #             else
-                                            #                 ftAutoPacket
-                                            #             fi
-                                            #             if [ $isBackupOut = "true" ];then
-                                            #                 ftBackupOrRestoreOuts
-                                            #             fi
-                                            # elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                                            #         local deviceName=`basename $ANDROID_PRODUCT_OUT`
-                                            #         if [ $deviceName = "keytak6580_weg_l" ];then
-                                            #             source build/envsetup.sh&&
-                                            #             lunch full_keytak6580_weg_l-user&&
-                                            #             mkdir out
-                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                            #             make otapackage&&
-                                            #             if [ $isUpload = "true" ];then
-                                            #                 ftAutoPacket -y
-                                            #             else
-                                            #                 ftAutoPacket
-                                            #             fi
-                                            #             if [ $isBackupOut = "true" ];then
-                                            #                 ftBackupOrRestoreOuts
-                                            #             fi
-                                            #         else
-                                            #             ftAutoBuildMultiBranch -e
-                                            #             return;
-                                            #         fi
-                                            # fi
+                                            ftAutoInitEnv
+                                            local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
+                                            cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
+                                            cpuCount=${cpuCount//cpucores\:/}
+                                            if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+                                                        #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
+                                                        source build/envsetup.sh&&
+                                                        lunch sp7731c_1h10_32v4_oversea-user&&
+                                                        kheader&&
+                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                                        if [ $isUpload = "true" ];then
+                                                            ftAutoPacket -y
+                                                        else
+                                                            ftAutoPacket
+                                                        fi
+                                                        if [ $isBackupOut = "true" ];then
+                                                            ftBackupOrRestoreOuts
+                                                        fi
+                                            elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+                                                    local deviceName=`basename $ANDROID_PRODUCT_OUT`
+                                                    if [ $deviceName = "keytak6580_weg_l" ];then
+                                                        source build/envsetup.sh&&
+                                                        lunch full_keytak6580_weg_l-user&&
+                                                        mkdir out
+                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                                        make otapackage&&
+                                                        if [ $isUpload = "true" ];then
+                                                            ftAutoPacket -y
+                                                        else
+                                                            ftAutoPacket
+                                                        fi
+                                                        if [ $isBackupOut = "true" ];then
+                                                            ftBackupOrRestoreOuts
+                                                        fi
+                                                    else
+                                                        ftAutoBuildMultiBranch -e
+                                                        return;
+                                                    fi
+                                            fi
 
                                         done
                                         git reset --hard
