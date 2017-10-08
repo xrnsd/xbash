@@ -80,7 +80,7 @@ if [ ! -z `which git` ];then
     gitVersionNow=${gitVersionNow//git version/}
     gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
-    if version_lt $gitVersionMin $gitVersionNow; then
+    if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]];then
         alias xgl='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -15'
         alias xgll='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -100'
     else
