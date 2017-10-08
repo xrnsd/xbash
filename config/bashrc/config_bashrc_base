@@ -61,6 +61,30 @@ if [ -f $filePathXbashTragetConfigBase ];then
                         ${dirPathHomeCmdConfigBashrc}/config_bashrc_base'
         alias xh='ftMain -ft|grep'
 
+        if [ ! -z `which git` ];then
+            gitVersionMin="2.6.0"
+            gitVersionNow=$(git --version)
+            gitVersionNow=${gitVersionNow//git version/}
+            gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
+
+            if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]];then
+                alias xgl='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -15'
+                alias xgll='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -100'
+            else
+                #git log --pretty=format:'%Cblue%h%Creset %<(40,trunc)%s [%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%an%Creset%C(yellow)%d%Creset]'
+                alias xgl='git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -15'
+                alias xgll='git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -100'
+            fi
+
+            export PROMPT_COMMAND='\
+            ftSetBashPs1ByGitBranch
+            if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
+             ftSetBashPs1ByGitBranch
+            fi'
+            alias xcheckout='git checkout vendor/mediatek/proprietary/scripts'
+            alias xbranch="git branch|grep"
+        fi
+
         #命令选项快速适配
         complete -W "backup restore" xb
         complete -W "systemui monkey launcher" xk
@@ -74,32 +98,11 @@ else
     export ENV_XBASH_INIT_STATED=-2
 fi
 
-if [ ! -z `which git` ];then
-    gitVersionMin="2.6.0"
-    gitVersionNow=$(git --version)
-    gitVersionNow=${gitVersionNow//git version/}
-    gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
-
-    if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]];then
-        alias xgl='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -15'
-        alias xgll='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -100'
-    else
-        #git log --pretty=format:'%Cblue%h%Creset %<(40,trunc)%s [%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%an%Creset%C(yellow)%d%Creset]'
-        alias xgl='git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -15'
-        alias xgll='git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -100'
-    fi
-
-    export PROMPT_COMMAND='\
-    ftSetBashPs1ByGitBranch
-    if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
-     ftSetBashPs1ByGitBranch
-    fi'
-    alias xcheckout='git checkout vendor/mediatek/proprietary/scripts'
-fi
 if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then
     alias unix2dos=todos
     alias dos2unix=fromdos
 fi
+
 if [ -d "vendor/sprd" ];then
         alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
                                 cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";\
