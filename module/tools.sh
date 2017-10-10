@@ -1947,7 +1947,7 @@ EOF
                 rm  -rf $dirPathVersionSoftware
             else
                   while true; do
-                                ftEcho -y "${dirPathVersionSoftware}\n已存在,是否是否删除"
+                                ftEcho -y "已存在  ${dirPathVersionSoftware}\n是否删除"
                                 read -n 1 sel
                                 case "$sel" in
                                     y | Y ) rm  -rf $dirPathVersionSoftware
@@ -2034,11 +2034,6 @@ EOF
             local dirNamePackageDataBase="dataBase"
             local deviceName=`basename $ANDROID_PRODUCT_OUT`
 
-            local key="最近更改："
-            local fileChangeTime=$(stat ${dirPathOut}/system.img|grep $key|awk '{print $1}'|sed s/-//g)
-            fileChangeTime=${fileChangeTime//$key/}
-            fileChangeTime=${fileChangeTime:-$(date -d "today" +"%y%m%d")}
-
             local dataBaseFileList=
             if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
                 dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
@@ -2054,10 +2049,35 @@ EOF
                 return
             fi
 
-            if [ ! -z "$AutoEnv_clientName" ];then #git解析成功获取到客户等相关信息
+            # system.img文件最新修改时间
+            if [[ -f "${dirPathOut}/system.img" ]]; then
+                    local key="最近更改："
+                    local fileChangeTime=$(stat ${dirPathOut}/system.img|grep $key|awk '{print $1}'|sed s/-//g)
+                    fileChangeTime=${fileChangeTime//$key/}
+                    fileChangeTime=${fileChangeTime:-$(date -d "today" +"%y%m%d")}
+            fi
+
+            local dirPathUploadTraget=智能机软件/MTK6580/autoUpload
+            if [ ! -z "$AutoEnv_clientName" ];then #解析git分支,初始化客户等相关信息
                 ftAutoInitEnv -bp
                 local dirNameersionSoftwareVersionBase=${AutoEnv_AndroidVersion}
-                local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirNameersionSoftwareVersionBase}/${AutoEnv_motherboardName}-${AutoEnv_projrctName}/${AutoEnv_motherboardName}__${AutoEnv_projrctName}__${AutoEnv_demandSignName}/${AutoEnv_deviceModelName}
+                local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}
+
+                if [[ ! -z "$dirNameersionSoftwareVersionBase" ]]; then
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameersionSoftwareVersionBase}
+                fi
+                if [[ ! -z "$AutoEnv_motherboardName" ]]&&[[ ! -z "$AutoEnv_projrctName" ]]; then
+                    local val1=${AutoEnv_motherboardName}-${AutoEnv_projrctName}
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${val1}
+                fi
+                if [[ ! -z "$val1" ]]&&[[ ! -z "$AutoEnv_demandSignName" ]]; then
+                    local val2=${val1}__${AutoEnv_demandSignName};
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${val2}
+                fi
+                if [[ ! -z "$AutoEnv_deviceModelName" ]]; then
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${AutoEnv_deviceModelName}
+                fi
+
                 local dirNameVeriosionBase=${AutoEnv_versionName}
                 #非user版本标记编译类型
                 if [ "$AutoEnv_buildType" != "user" ];then
@@ -2071,28 +2091,39 @@ EOF
                 if [[ $versionNameDate =~ "." ]];then
                     versionNameDate=${versionNameDate%.*}
                 fi
-                if [ "$versionNameDate" != "${fileChangeTime}" ];then
+                if [ ! -z "$fileChangeTime" ]&&[ "$versionNameDate" != "${fileChangeTime}" ];then
                     local dirNameVeriosionBase=${dirNameVeriosionBase}____buildtime____${fileChangeTime}
                 fi
                 dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
+
+                # 服务器上传路径
+                if [ "$AutoEnv_clientName" = "XHF" ];then
+                     dirPathUploadTraget=智能机软件/MTK6580/新华菲
+                elif [ "$AutoEnv_clientName" = "DHX" ];then
+                     dirPathUploadTraget=智能机软件/MTK6580/东华新
+                elif [ "$AutoEnv_clientName" = "PMZ" ];then
+                     dirPathUploadTraget=智能机软件/MTK6580/鹏明珠
+                fi
             else
-                local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${fileChangeTime}____buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$fileChangeTime
+                if [ ! -z "$fileChangeTime" ];then
+                    local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${fileChangeTime}____buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$fileChangeTime
+                else
+                    local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/buildType[${buildType}]__versionName[${AutoEnv_versionName}]
+                fi
             fi
 
-            local dirPathUploadTraget=智能机软件/MTK6580/autoUpload
-            if [ "$AutoEnv_clientName" = "XHF" ];then
-                 dirPathUploadTraget=智能机软件/MTK6580/新华菲
-            elif [ "$AutoEnv_clientName" = "DHX" ];then
-                 dirPathUploadTraget=智能机软件/MTK6580/东华新
-            elif [ "$AutoEnv_clientName" = "PMZ" ];then
-                 dirPathUploadTraget=智能机软件/MTK6580/鹏明珠
+            if [[ ! -z "AutoEnv_motherboardName" ]]; then
+                dirPathUploadTraget=${dirPathUploadTraget}/${AutoEnv_motherboardName}
             fi
-            dirPathUploadTraget=${dirPathUploadTraget}/${AutoEnv_motherboardName}
             local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
             local dirPathOtaPackage=${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
             local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
-
-            local otaFileList=$(ls ${dirPathOut}/obj/PACKAGING/target_files_intermediates/${TARGET_PRODUCT}-target_files-* |grep .zip)
+            local dirPathOta=${dirPathOut}/obj/PACKAGING/target_files_intermediates
+            if [[ -d "$dirPathOta" ]]; then
+                local otaFileList=$(ls ${dirPathOta}/${TARGET_PRODUCT}-target_files-* |grep .zip)
+            else
+                ftEcho -e "OTA相关包未找到"
+            fi
             local fileList=(boot.img \
                             cache.img \
                             lk.bin \
@@ -2105,24 +2136,30 @@ EOF
                             system.img \
                             userdata.img)
 
-            mkdir -p $dirPathVersionSoftwareVersion
-            mkdir -p $dirPathPackage
-            mkdir -p $dirPathPackageDataBase
-            cd $dirPathVersionSoftwareVersion
-
+            # 生成本地软件包
             if [[ ! -z "$isPacket" ]]; then
-                    ftEcho -s "开始生成版本软件包: \n${dirNameVeriosionBase}\n路径: \n${dirPathVersionSoftwareVersion}"
+                    mkdir -p $dirPathVersionSoftwareVersion
+                    cd $dirPathVersionSoftwareVersion
+
+                    ftEcho -s "\n========================\n开始生成版本软件包: \n${dirNameVeriosionBase}\n路径: \n${dirPathVersionSoftwareVersion}\n========================\n"
                     #packages
-                    for file in ${fileList[@]}
-                    do
-                        local filePath=${dirPathOut}/${file}
-                         if [[ ! -f "$filePath" ]]; then
-                             ftEcho -e "${filePath}\n不存在"
-                             return;
-                         fi
-                         printf "%-2s %-30s\n" 复制 $file
-                         cp -r -f  $filePath ${dirPathVersionSoftwareVersion}/${dirNamePackage}
-                    done
+                    filePathSystemImage=${dirPathOut}/system.img
+                    if [[ -f "$filePathSystemImage" ]]; then
+                        mkdir -p $dirPathPackage
+                        for file in ${fileList[@]}
+                        do
+                            local filePath=${dirPathOut}/${file}
+                             if [[ ! -f "$filePath" ]]; then
+                                 ftEcho -e "${filePath}\n不存在"
+                                 return;
+                             fi
+                             printf "%-2s %-30s\n" 复制 $file
+                             cp -r -f  $filePath $dirPathPackage
+                        done
+                    else
+                        ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage"
+                        return;
+                    fi
                     #otaPackages
                     if [[ ! -z "$otaFileList" ]]; then
                         mkdir -p $dirPathOtaPackage
@@ -2133,11 +2170,12 @@ EOF
                                  return;
                              fi
                              printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
-                             cp -r -f  $file ${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
+                             cp -r -f  $file $dirPathOtaPackage
                         done
                     fi
                     # database
                     if [ ! -z "$dataBaseFileList" ];then
+                        mkdir -p $dirPathPackageDataBase
                         for file in ${dataBaseFileList[@]}
                         do
                             local filePath=${dirPathOut}/${file}
@@ -2145,7 +2183,7 @@ EOF
                                  ftEcho -e "${filePath}\n不存在"
                              else
                                 printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}  ")
-                                 cp -r -f  $filePath ${dirPathPackageDataBase}
+                                 cp -r -f  $filePath $dirPathPackageDataBase
                              fi
                         done
                     fi
@@ -2868,50 +2906,56 @@ EOF
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
 
-                                           # cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";
-                                           #  cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";
-                                           #  cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"
-                                           # cat build/tools/buildinfo.sh|grep "ro.product."
+                                            git pull
+                                            val2=$(ls vendor/sprd/partner/launcher/apps|grep "_B")
 
-                                            ftAutoInitEnv
-                                            local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
-                                            cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
-                                            cpuCount=${cpuCount//cpucores\:/}
-                                            if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
-                                                        #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
-                                                        source build/envsetup.sh&&
-                                                        lunch sp7731c_1h10_32v4_oversea-user&&
-                                                        kheader&&
-                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                                        if [ $isUpload = "true" ];then
-                                                            ftAutoPacket -y
-                                                        else
-                                                            ftAutoPacket
-                                                        fi
-                                                        if [ $isBackupOut = "true" ];then
-                                                            ftBackupOrRestoreOuts
-                                                        fi
-                                            elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                                                    local deviceName=`basename $ANDROID_PRODUCT_OUT`
-                                                    if [ $deviceName = "keytak6580_weg_l" ];then
-                                                        source build/envsetup.sh&&
-                                                        lunch full_keytak6580_weg_l-user&&
-                                                        mkdir out
-                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                                        make otapackage&&
-                                                        if [ $isUpload = "true" ];then
-                                                            ftAutoPacket -y
-                                                        else
-                                                            ftAutoPacket
-                                                        fi
-                                                        if [ $isBackupOut = "true" ];then
-                                                            ftBackupOrRestoreOuts
-                                                        fi
-                                                    else
-                                                        ftAutoBuildMultiBranch -e
-                                                        return;
-                                                    fi
+                                            val=$(ls vendor/sprd/partner/launcher/apps|grep OPT)
+                                            if [[ -z "$val2" ]]; then
+                                                ftEcho -e "============xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx$branshName=========================="
+                                            elif [[ ! -z "$val" ]]; then
+                                                git cherry-pick 7c65cc7&&
+                                                git push
                                             fi
+
+                                            # ftAutoInitEnv
+                                            # local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
+                                            # cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
+                                            # cpuCount=${cpuCount//cpucores\:/}
+                                            # if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+                                            #             #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
+                                            #             source build/envsetup.sh&&
+                                            #             lunch sp7731c_1h10_32v4_oversea-user&&
+                                            #             kheader&&
+                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                            #             if [ $isUpload = "true" ];then
+                                            #                 ftAutoPacket -y
+                                            #             else
+                                            #                 ftAutoPacket
+                                            #             fi
+                                            #             if [ $isBackupOut = "true" ];then
+                                            #                 ftBackupOrRestoreOuts
+                                            #             fi
+                                            # elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+                                            #         local deviceName=`basename $ANDROID_PRODUCT_OUT`
+                                            #         if [ $deviceName = "keytak6580_weg_l" ];then
+                                            #             source build/envsetup.sh&&
+                                            #             lunch full_keytak6580_weg_l-user&&
+                                            #             mkdir out
+                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                            #             make otapackage&&
+                                            #             if [ $isUpload = "true" ];then
+                                            #                 ftAutoPacket -y
+                                            #             else
+                                            #                 ftAutoPacket
+                                            #             fi
+                                            #             if [ $isBackupOut = "true" ];then
+                                            #                 ftBackupOrRestoreOuts
+                                            #             fi
+                                            #         else
+                                            #             ftAutoBuildMultiBranch -e
+                                            #             return;
+                                            #         fi
+                                            # fi
 
                                         done
                                         git reset --hard
