@@ -50,10 +50,11 @@ Xrnsd-extensions-to-bash在下面简写为xbash
 
 5.其他
 ----------
-    1 xc ,xb 为简化命令，搭配参数时和其余命令一样指向具体功能实现
-    2 建议,不要以root权限运行xc clean_data_garbage
-    3 建议,不要开启xx[休眠]，这玩意脾气不好
-    4 环境目录[参考]
+    1 xc/xc -h 等为简化命令，搭配参数时和其余命令一样指向原生命令
+    2 xc -ft 查看原生命令说明
+    3 建议,不要以root权限运行xc clean_data_garbage
+    4 建议,不要开启xx[休眠]，这玩意脾气不好
+    5 环境目录[参考]
         /home/xxx/
         ├── tools     -------------------  环境相关
         │        ├───── jdk  ---------------    java jdk

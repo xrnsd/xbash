@@ -12,7 +12,8 @@ ftExample()
     e | -e |--env) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
-#    工具依赖包 example
+#    ${ftEffect}依赖包 example
+#    请尝试使用 sudo apt-get install example 补全依赖
 #=========================================================
 EOF
       return;;
@@ -68,7 +69,7 @@ ftMain()
     #             break;;
     restartadb)    ftRestartAdb
                 break;;
-    *)    ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftReadMe $XCMD; break;;
+    *)    ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftReadMe -a; break;;
     esac
     done
 }
@@ -1947,7 +1948,7 @@ EOF
                 rm  -rf $dirPathVersionSoftware
             else
                   while true; do
-                                ftEcho -y "已存在  ${dirPathVersionSoftware}\n是否删除"
+                                ftEcho -y "有旧的软件包  ${dirPathVersionSoftware}\n是否删除"
                                 read -n 1 sel
                                 case "$sel" in
                                     y | Y ) rm  -rf $dirPathVersionSoftware
