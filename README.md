@@ -2,7 +2,7 @@ bash的简单扩展与其他工具配置[部分]
 =====
 1.工程结构
 ----------
-Xrnsd-extensions-to-bash在下面简写为xbash
+    Xrnsd-extensions-to-bash在下面简写为xbash
     │
     ├── config    -----------------------工具相关配置
     │        ├── base                             工具相关数据
@@ -10,7 +10,7 @@ Xrnsd-extensions-to-bash在下面简写为xbash
     │        │
     │        ├── bashrc                           bashrc通用配置
     │        │     ├── config_bashrc_base               bashrc配置
-    │        │     └── config_bashrc_base.gone          bashrc的用户独有配置[git忽略其修改]
+    │        │     ├── config_bashrc_base.gone          bashrc的用户独有配置[git忽略其修改]
     │        │     └── config_bashrc_base.gone_simple   bashrc的用户独有配置的模版
     │        │
     │        ├── base.config                      全局参数
@@ -56,6 +56,7 @@ Xrnsd-extensions-to-bash在下面简写为xbash
     4 建议,不要开启xx[休眠]，这玩意脾气不好
     5 环境目录[参考]
         /home/xxx/
+        ├── Xrnsd-extensions-to-bash   --  xbash目录
         ├── tools     -------------------  环境相关
         │        ├───── jdk  ---------------    java jdk
         │        └───── sdk  ---------------    android sdk
