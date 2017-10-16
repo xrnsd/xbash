@@ -1984,7 +1984,7 @@ EOF
 
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
-                ftEcho -ea "平台${AutoEnv_mnufacturers}的项目${TARGET_PRODUCT}无效\
+                ftEcho -ea " ${ftEffect} 缺少平台${AutoEnv_mnufacturers}的项目${TARGET_PRODUCT}的配置\
                 \n请查看下面说明:"
                 ftAutoPacket -h
                 return
@@ -2064,7 +2064,7 @@ EOF
                   local dirPathM=${dirPathOut}/obj/ETC/${dirNameModem}
                     dataBaseFileList=(obj/ETC/${dirNameModem}/$(ls $dirPathM) obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15)
             else
-                ftEcho -ea "工具没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的配置\
+                ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的配置\
                 \n请查看下面说明:"
                 ftAutoPacket -h
                 return
@@ -2088,8 +2088,8 @@ EOF
                     dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameersionSoftwareVersionBase}
                 fi
                 if [[ ! -z "$AutoEnv_motherboardName" ]]&&[[ ! -z "$AutoEnv_projrctName" ]]; then
-                    local val1=${AutoEnv_motherboardName}-${AutoEnv_projrctName}
-                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${val1}
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${AutoEnv_motherboardName}-${AutoEnv_projrctName}
+                    local val1=${AutoEnv_motherboardName}__${AutoEnv_projrctName}
                 fi
                 if [[ ! -z "$val1" ]]&&[[ ! -z "$AutoEnv_demandSignName" ]]; then
                     local val2=${val1}__${AutoEnv_demandSignName};
@@ -2217,6 +2217,10 @@ EOF
             if [[ ! -z "$isUpload" ]]; then
                     ftAutoUploadHighSpeed $dirPathVersionSoftware $dirNameersionSoftwareVersionBase $dirPathUploadTraget
             fi
+    else
+            ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的配置\n请查看下面说明:"
+            ftAutoPacket -h
+            return
     fi
     cd $dirPathLocal
 }
@@ -3103,7 +3107,6 @@ EOF
     local keySoftVersion="ro.build.display.id="
     local keySDKVersion="ro.build.version.sdk="
     local filePathSystemBuildprop=${dirPathOut}/system/build.prop
-    local filePathPreviousBuildConfig=${dirPathOut}/previous_build_config.mk
 
     if [ "$2" = "-mobile" ];then
                 adb wait-for-device
@@ -3123,28 +3126,6 @@ EOF
                 local deviceSoftVersion=$(cat $filePathSystemBuildprop|grep "$keySoftVersion")
                 local deviceSdkVersion=$(cat $filePathSystemBuildprop|grep "$keySDKVersion")
     elif [ "$1" = "-bp" ];then
-                if [ -f "$filePathPreviousBuildConfig" ];then
-                        info=$(cat $filePathPreviousBuildConfig|grep $TARGET_PRODUCT)
-                        if [ ! -z "$info" ];then
-                            local OLD_IFS="$IFS"
-                            IFS="-"
-                            local arrayItems=($info)
-                            IFS="$OLD_IFS"
-                            if [ "$info" = "$arrayItems" ];then
-                                    ftEcho -e "${filePathPreviousBuildConfig} 信息解析失败"
-                            else
-                                    local buildinfo=null
-                                    for item in ${arrayItems[@]}
-                                    do
-                                        if [[ "$item" = "$TARGET_PRODUCT" ]]; then
-                                            buildinfo=
-                                        elif [[ -z "$buildinfo" ]]; then
-                                            local deviceSoftType=$item
-                                        fi
-                                    done
-                            fi
-                        fi
-                fi
                ftEcho -s "未找到 $filePathSystemBuildprop\n版本软件信息未获取"
                return
     fi
@@ -3240,7 +3221,8 @@ EOF
 
     #软件编译类型
     if [ -d $dirPathOut ];then
-           local filePathBuildInfo=${dirPathOut}/system/build.prop
+            local filePathBuildInfo=${dirPathOut}/system/build.prop
+            local filePathPreviousBuildConfig=${dirPathOut}/previous_build_config.mk
             if [ -f $filePathBuildInfo ];then
                         local keybuildType="ro.build.type="
                         local buildTypeFile=
@@ -3258,6 +3240,31 @@ EOF
                         fi
             else
                         ftEcho -e "未找到 $filePathBuildInfo\n build Type[本地] 获取失败"
+
+                        if [ -f "$filePathPreviousBuildConfig" ];then
+                                info=$(cat $filePathPreviousBuildConfig|grep $TARGET_PRODUCT)
+                                if [ ! -z "$info" ];then
+
+                                    local OLD_IFS="$IFS"
+                                    IFS="-"
+                                    local arrayItems=($info)
+                                    IFS="$OLD_IFS"
+                                    if [ "$info" = "$arrayItems" ];then
+                                            ftEcho -e "${filePathPreviousBuildConfig} 信息解析失败"
+                                    else
+                                            local buildinfo=null
+                                            for item in ${arrayItems[@]}
+                                            do
+                                                if [[ "$item" = "$TARGET_PRODUCT" ]]; then
+                                                    buildinfo=
+                                                elif [[ -z "$buildinfo" ]]; then
+                                                    buildType=$item
+                                                    buildinfo=$buildType
+                                                fi
+                                            done
+                                    fi
+                                fi
+                        fi
             fi
     fi
 
