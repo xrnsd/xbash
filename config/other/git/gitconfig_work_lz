@@ -11,3 +11,5 @@
 	spellingdictionary = none
 [core]
 	editor = nano
+[color]
+	ui = auto

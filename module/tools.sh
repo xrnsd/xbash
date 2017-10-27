@@ -410,6 +410,7 @@ ftMtkFlashTool()
 {
     local ftEffect=mtk下载工具
     local tempDirPath=`pwd`
+    export OLDPWD=$tempDirPath
     local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1612.00.100
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -1754,6 +1755,7 @@ ftAutoUploadHighSpeed()
     local dirPathContentUploadSource=$1
     #目录下存放的目录或文件
     local pathContentUploadSource=$2
+    #服务器具体路径[相对]
     local pathContentUploadTraget=$3
     if [ -z "$pathContentUploadTraget" ];then
         if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
@@ -1810,13 +1812,14 @@ EOF
     local serverIp=192.168.1.188
     local userName=server
     local pasword=123456
-    local dirPathServer=/media/新卷
+    #服务器路径[根][真实]
+    local dirPathServer=/media/新卷/${pathContentUploadTraget}
 
     ftEcho -s "开始上传到  ${serverIp}/${pathContentUploadTraget}"
     cd $dirPathContentUploadSource
     mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 
-    tar -cv  $pathContentUploadSource| pigz -1 |sshpass -p $pasword ssh $userName@$serverIp "gzip -d|tar -xPC ${dirPathServer}/${pathContentUploadTraget}"
+    tar -cv  $pathContentUploadSource| pigz -1 |sshpass -p $pasword ssh $userName@$serverIp "gzip -d|tar -xPC $dirPathServer"
 
     cd $dirPathLocal
     ftEcho -s "上传结束"
@@ -2212,10 +2215,12 @@ EOF
                         done
                     fi
             fi
+
             # 生成说明文件
             if [[ ! -z "$isReadMe" ]]; then
                     ftCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
             fi
+
             #上传服务器
             if [[ ! -z "$isUpload" ]]; then
                     ftAutoUploadHighSpeed $dirPathVersionSoftware $dirNameersionSoftwareVersionBase $dirPathUploadTraget
@@ -2484,18 +2489,23 @@ EOF
                 local keySizeFront="FRONT_CAMERA_SUPPORT_SIZE := "
 
                 local cameraTypeInfo=$(cat $filePathCameraConfig|grep "$keyType")
-                local cameraSizeBack=$(cat $filePathCameraConfig|grep "$keySizeBack")
-                local cameraSizeFront=$(cat $filePathCameraConfig|grep "$keySizeFront")
+                local cameraSizeBackMax=$(cat $filePathCameraConfig|grep "$keySizeBack")
+                local cameraSizeFrontMax=$(cat $filePathCameraConfig|grep "$keySizeFront")
 
                 cameraTypeInfo=${cameraTypeInfo//$keyType/};
-                cameraSizeFront=${cameraSizeFront//$keySizeFront/};
+                cameraSizeFrontMax=${cameraSizeFrontMax//$keySizeFront/};
 
-                cameraSizeBack=${cameraSizeBack//${keySizeFront}$cameraSizeFront/};
-                cameraSizeBack=${cameraSizeBack//$keySizeBack/};
+                cameraSizeBackMax=${cameraSizeBackMax//${keySizeFront}$cameraSizeFrontMax/};
+                cameraSizeBackMax=${cameraSizeBackMax//$keySizeBack/};
 
                 cameraTypeInfo=$(echo $cameraTypeInfo |sed s/[[:space:]]//g)
-                cameraSizeFront=$(echo $cameraSizeFront |sed s/[[:space:]]//g)
-                cameraSizeBack=$(echo $cameraSizeBack |sed s/[[:space:]]//g)
+                cameraSizeFrontMax=$(echo $cameraSizeFrontMax |sed s/[[:space:]]//g)
+                cameraSizeBackMax=$(echo $cameraSizeBackMax |sed s/[[:space:]]//g)
+
+                sizeFcameraList=(real 2M 5M 8M)
+                sizeBcameraList=(real 2M 5M 8M 12M)
+                local cameraSizeFrontDefault=${sizeFcameraList[LZ_FCAM]}
+                local cameraSizeBackDefault=${sizeBcameraList[LZ_BCAM]}
         else
                 ftEcho -e "[相机配置文件不存在，获取失败]\n$filePathCameraConfig"
         fi
@@ -2508,7 +2518,8 @@ EOF
             enterLine="\n"
             content="当前版本：$versionName"${enterLine}
             content=${content}${enterLine}"摄像头类型：$cameraTypeInfo"
-            content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFront/$cameraSizeBack"
+            content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFrontDefault/$cameraSizeBackDefault"
+            # content=${content}${enterLine}"真实插值 前/后摄大小：$cameraSizeFrontMax/$cameraSizeBackMax"
             content=${content}${enterLine}"默认 RAM/ROM：$sizeRam/$sizeRom"
             content=${content}${enterLine}
             content=${content}${enterLine}"暗码清单：$pawNumInfo"
@@ -2919,50 +2930,55 @@ EOF
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
 
-                                            # git log --pretty=oneline -10&&
-                                            # git cherry-pick b5ba6c6&&
-                                            # ftAutoUpdateSoftwareVersion y y&&
-                                            # git push
+                                           git pull
+                                           if [[ -z $(cat /home/wgx/code/mtk6580L/alps/build/target/product/core.mk |grep DownloadProviderUi) ]]; then
+                                               git cherry-pick 6eab07d || git reset --hard
+                                            elif [[ ! -z $(cat /home/wgx/code/mtk6580L/alps/build/target/product/core.mk |grep DownloadProviderUi|grep "#") ]]; then
+                                               git cherry-pick ce0cef51961fb51ad4d3df333dccb4ef89dd248c || git reset --hard && git cherry-pick 1faa6bb
 
-                                            ftAutoInitEnv
-                                            local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
-                                            cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
-                                            cpuCount=${cpuCount//cpucores\:/}
-                                            if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
-                                                        #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
-                                                        source build/envsetup.sh&&
-                                                        lunch sp7731c_1h10_32v4_oversea-user&&
-                                                        kheader&&
-                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                                        if [ $isUpload = "true" ];then
-                                                            ftAutoPacket -y
-                                                        else
-                                                            ftAutoPacket
-                                                        fi
-                                                        if [ $isBackupOut = "true" ];then
-                                                            ftBackupOrRestoreOuts
-                                                        fi
-                                            elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                                                    local deviceName=`basename $ANDROID_PRODUCT_OUT`
-                                                    if [ $deviceName = "keytak6580_weg_l" ];then
-                                                        source build/envsetup.sh&&
-                                                        lunch full_keytak6580_weg_l-user&&
-                                                        mkdir out
-                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                                        make otapackage&&
-                                                        if [ $isUpload = "true" ];then
-                                                            ftAutoPacket -y
-                                                        else
-                                                            ftAutoPacket
-                                                        fi
-                                                        if [ $isBackupOut = "true" ];then
-                                                            ftBackupOrRestoreOuts
-                                                        fi
-                                                    else
-                                                        ftAutoBuildMultiBranch -e
-                                                        return;
-                                                    fi
-                                            fi
+                                           fi
+                                           git cherry-pick f33d612
+                                           git push 
+
+                                            # ftAutoInitEnv
+                                            # local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
+                                            # cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
+                                            # cpuCount=${cpuCount//cpucores\:/}
+                                            # if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+                                            #             #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
+                                            #             source build/envsetup.sh&&
+                                            #             lunch sp7731c_1h10_32v4_oversea-user&&
+                                            #             kheader&&
+                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                            #             if [ $isUpload = "true" ];then
+                                            #                 ftAutoPacket -y
+                                            #             else
+                                            #                 ftAutoPacket
+                                            #             fi
+                                            #             if [ $isBackupOut = "true" ];then
+                                            #                 ftBackupOrRestoreOuts
+                                            #             fi
+                                            # elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+                                            #         local deviceName=`basename $ANDROID_PRODUCT_OUT`
+                                            #         if [ $deviceName = "keytak6580_weg_l" ];then
+                                            #             source build/envsetup.sh&&
+                                            #             lunch full_keytak6580_weg_l-user&&
+                                            #             mkdir out
+                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                            #             make otapackage&&
+                                            #             if [ $isUpload = "true" ];then
+                                            #                 ftAutoPacket -y
+                                            #             else
+                                            #                 ftAutoPacket
+                                            #             fi
+                                            #             if [ $isBackupOut = "true" ];then
+                                            #                 ftBackupOrRestoreOuts
+                                            #             fi
+                                            #         else
+                                            #             ftAutoBuildMultiBranch -e
+                                            #             return;
+                                            #         fi
+                                            # fi
 
                                         done
                                         git reset --hard
