@@ -1,9 +1,31 @@
 #! /bin/bash
 #----------------    Android Dev Env Config    ---------------------------
-#export JAVA_HOME=/home/wgx/tools/jdk/1.6.038
-export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
-export JRE_HOME=${JAVA_HOME}/jre 
+jdkPathOracle6=/home/wgx/tools/jdk/1.6.038
+jdkPathOpen7=/usr/lib/jvm/java-7-openjdk-amd64
+jdkPathOpen8=/usr/lib/jvm/java-8-openjdk-amd64
+jdkPath=$jdkPathOpen7
+
+filePath=build/core/version_defaults.mk
+if [[ -f "$filePath" ]]; then
+        key="PLATFORM_SDK_VERSION := "
+        sdkVersion=$(cat $filePath | grep "$key")
+        sdkVersion=${sdkVersion//$key/}
+        sdkVersion=$(echo $sdkVersion |sed s/[[:space:]]//g)
+
+        while true; do case "$sdkVersion" in
+        24|25|26)      jdkPath=$jdkPathOpen8              ;break;;   # open jdk 8
+        21|22|23)      jdkPath=$jdkPathOpen7              ;break;; # open jdk 7
+        19|18|17|16|15|14|13|12|11|10|9)      jdkPath=$jdkPathOracle6              ;break;; #oracle jdk 1.6
+        * ) break;;esac;done
+fi
+
+export JAVA_HOME=$jdkPath
+export JRE_HOME=${JAVA_HOME}/jre
 export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+
+export ANDROID_SET_JAVA_HOME=true
+export ANDROID_PRE_BUILD_PATHS=$JAVA_HOME
+export ANDROID_JAVA_TOOLCHAIN=$JAVA_HOME
 
 export ANDROID_SDK=${dirPathHomeTools}/sdk_adt/4.4
 export ANDROID_SDK_HOME=$ANDROID_SDK
