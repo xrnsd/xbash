@@ -177,13 +177,14 @@ fi
 dirNameXbash=cmds
 dirPathHome=/home/${userName}
 # 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认cmds]
-if [[ -f .bashrc ]]; then
-    filePathBashrc=$(ftLnUtil .bashrc)
-    if [[ "$filePathBashrc" != "${dirPathHome}/.bashrc " ]]; then
-                filePathBashrc=$(echo $filePathBashrc | sed "s ${dirPathHome}/   ")
+filePathBashrc=~/.bashrc
+if [[ -f  $filePathBashrc ]]; then
+    filePathBashrcReal=$(ftLnUtil $filePathBashrc)
+    if [[ "$filePathBashrcReal" != "${dirPathHome}/.bashrc " ]]; then
+                filePathBashrcReal=$(echo $filePathBashrcReal | sed "s ${dirPathHome}/   ")
                 OLD_IFS="$IFS"
                 IFS="/"
-                arrayItems=($filePathBashrc)
+                arrayItems=($filePathBashrcReal)
                 IFS="$OLD_IFS"
                 dirNameXbash=${arrayItems}
     fi
@@ -225,10 +226,4 @@ else
                 export rUserPwd=${rUserPwdBase:-'123'}
                 readonly rUserPwd
         fi
-        #----------------    临时命令    ---------------------------------
-        alias xg6572='git clone git@192.168.1.188:mtk6572.git -b'
-
-        #-------------------------android优化加速部分------------------
-        #缓存目录[android优化加速部分]
-        export CCACHE_DIR=/media/data/.ccache
 fi

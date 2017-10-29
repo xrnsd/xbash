@@ -25,13 +25,12 @@ mNoteBackupTarget=null
 mNoteRestoreSource=null
 
 #####----------------------初始化--------------------------#########
-filePathCmdModuleTools=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
-if [ -f $filePathCmdModuleTools ];then
-    source  $filePathCmdModuleTools
+if [ -f $rFilePathCmdModuleToolsSpecific ];then
+    source  $rFilePathCmdModuleToolsSpecific
 else
     echo -e "\033[1;31m    初始化失败，基础库无法加载\n\
     模块=$rModuleName\n\
-    filePathCmdModuleTools=$filePathCmdModuleTools\n\
+    rFilePathCmdModuleToolsSpecific=$rFilePathCmdModuleToolsSpecific\n\
     \033[0m"
 fi
 
