@@ -257,18 +257,18 @@ EOF
     local valCount=0
     local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$rUserPwd" ];then    errorContent="${errorContent}\\n[默认用户密码]rUserPwd=$rUserPwd" ; fi
+    if [ -z "$userPassword" ];then    errorContent="${errorContent}\\n[默认用户密码]userPassword=$userPassword" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -eax "$errorContent \\n请查看下面说明:"
             ftRestartAdb -h
             return
     fi
-    echo $rUserPwd | sudo -S echo test >/dev/null
-    echo $rUserPwd | sudo -S adb kill-server >/dev/null
+    echo $userPassword | sudo -S echo test >/dev/null
+    echo $userPassword | sudo -S adb kill-server >/dev/null
     echo
     echo "server kill ......"
     sleep 2
-    echo $rUserPwd | sudo -S adb start-server >/dev/null
+    echo $userPassword | sudo -S adb start-server >/dev/null
     echo "server start ......"
     adb devices
 }
@@ -362,7 +362,7 @@ EOF
     fi
 
     cd $toolDirPath&&
-    echo "$rUserPwd" | sudo -S ${rDirPathTools}/sp_flash_tool_v5.1612.00.100/flash_tool
+    echo "$userPassword" | sudo -S ${rDirPathTools}/sp_flash_tool_v5.1612.00.100/flash_tool
     cd $tempDirPath
 }
 
@@ -661,7 +661,7 @@ EOF
 
     #耦合校验
     local errorContent=
-    if [ -z "$rUserPwd" ];then    errorContent="${errorContent}\\n[用户密码为空]rUserPwd=$rUserPwd" ; fi
+    if [ -z "$userPassword" ];then    errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword" ; fi
     if [ -z "$edittype" ];then    errorContent="${errorContent}\\n[操作参数为空]edittype=$edittype" ; fi
     if ( ! echo -n $timeLong | grep -q -e "^[0-9][0-9]*$" );then    errorContent="${errorContent}\\n[倒计时时长无效]timeLong=$timeLong" ; fi
     if [ ! -z "$errorContent" ];then
@@ -680,7 +680,7 @@ EOF
                 echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
                 sleep 1
             done
-            echo $rUserPwd | sudo -S shutdown -h now
+            echo $userPassword | sudo -S shutdown -h now
             break;;
         reboot)
             tput sc
@@ -690,7 +690,7 @@ EOF
                 echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
                 sleep 1
             done
-            echo $rUserPwd | sudo -S reboot
+            echo $userPassword | sudo -S reboot
             break;;
             * ) ftEcho -e 错误的选择：$sel
                 echo "输入q，离开"
@@ -938,8 +938,8 @@ ff02::2 ip6-allrouters
         local filePathHostsAllNew=${rDirPathCmdsData}/${fileNameHostsAllNew}
         cat $filePathHostsBase $filePathHostsNew>$filePathHostsAllNew
         # 覆盖文件
-        echo $rUserPwd | sudo -S mv $filePathHosts ${filePathHosts}_${hostsVersionOld}
-        echo $rUserPwd | sudo -S mv $filePathHostsAllNew $filePathHosts
+        echo $userPassword | sudo -S mv $filePathHosts ${filePathHosts}_${hostsVersionOld}
+        echo $userPassword | sudo -S mv $filePathHostsAllNew $filePathHosts
     fi
 }
 

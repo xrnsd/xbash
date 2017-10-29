@@ -709,7 +709,7 @@ EOF
     #         if [[ $dir = "/" ]];then
     #             local dirPathDevRoot=${devNameDirPathList[indexDevName]}
     #             local keyModelName="Model Number:"
-    #             local devModelName=$(echo "$rUserPwd" | sudo -S  hdparm -I $dirPathDevRoot|grep "$keyModelName");
+    #             local devModelName=$(echo "$userPassword" | sudo -S  hdparm -I $dirPathDevRoot|grep "$keyModelName");
     #             devModelName=${devModelName//$keyModelName/}
     #             local infoHwMainHardDisk=$(echo $devModelName |sed s/[[:space:]]//g)
     #             break;

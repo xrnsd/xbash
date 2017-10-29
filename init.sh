@@ -37,17 +37,17 @@ fi||isFail=gitConfig
 
 filePathXbashGitgnore=${dirPathLocal}/.gitignore
 # config
-            fileNameXbashConfigNew=${userNameLocal}.cofig
+            fileNameXbashConfigNew=${userNameLocal}.config
             dirPathXbashConfig=${dirPathLocal}/config
-            filePathXbashConfigExample=${dirPathXbashConfig}/example.cofig
+            filePathXbashConfigExample=${dirPathXbashConfig}/example.config
             filePathXbashConfigNew=${dirPathXbashConfig}/${fileNameXbashConfigNew}
 
-            tagUserNameBase="userName="
-            tagUserNameNew="userName=$userNameLocal"
-            tagdirPathXbashBase="dirPathXbash="
-            tagdirPathXbashNew="dirPathXbash=$dirPathLocal"
-            taguserPasswordBase="userPassword="
-            taguserPasswordNew="userPassword=$userPasswdLocal"
+            tagUserNameBase="export\ userName="
+            tagUserNameNew="export\ userName=$userNameLocal"
+            tagdirPathXbashBase="export\ dirPathXbash="
+            tagdirPathXbashNew="export\ dirPathXbash=$dirPathLocal"
+            taguserPasswordBase="export\ userPassword="
+            taguserPasswordNew="export\ userPassword=$userPasswdLocal"
 
             cp $filePathXbashConfigExample $filePathXbashConfigNew
 

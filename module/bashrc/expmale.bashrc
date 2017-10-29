@@ -174,8 +174,9 @@ userName=${userName:-$userName2}
 if [ "${S/ /}" != "$S" ];then
     userName=$(whoami) 
 fi
-dirNameXbash=cmds
+
 dirPathHome=/home/${userName}
+export dirPathHome=$dirPathHome
 # 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认cmds]
 filePathBashrc=~/.bashrc
 if [[ -f  $filePathBashrc ]]; then
@@ -190,8 +191,11 @@ if [[ -f  $filePathBashrc ]]; then
     fi
 fi
 
+dirNameXbash=${dirNameXbash:-'cmds'}
 dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
 dirPathHomeTools=${dirPathHome}/tools
+export dirPathHomeTools=$dirPathHomeTools
+export dirNameXbash=$dirNameXbash
 
 #---------------- xbash配置  ----------------------------------
 if [ ! -d "$dirPathHomeCmd" ];then
@@ -217,13 +221,12 @@ else
         fi
         if [ -f "$filePathXbashTragetBashrcConfigBase" ];then
             source $filePathXbashTragetBashrcConfigBase
+            #---------------------------------用户部分信息---------------------------------
+            filePathUserConfig=${rDirPathCmdsConfig}/${userName}.config
+            if [[ -f $filePathUserConfig ]]; then
+                source $filePathUserConfig
+            fi
         else
             echo -e "\033[1;31找不到mXbash下实现的自定义命令需要的配置\n$filePathXbashTragetBashrcConfigBase\033[0m"
-        fi
-        #---------------------------------用户密码---------------------------------
-        if [ -z "$rUserPwdBase" ];then
-                rUserPwdBase=123
-                export rUserPwd=${rUserPwdBase:-'123'}
-                readonly rUserPwd
         fi
 fi

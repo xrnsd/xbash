@@ -169,6 +169,7 @@ if [ "${S/ /}" != "$S" ];then
 fi
 dirNameXbash=cmds
 dirPathHome=/home/${userName}
+export dirPathHome=$dirPathHome
 # 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认cmds]
 filePathBashrc=~/.bashrc
 if [[ -f  $filePathBashrc ]]; then
@@ -182,6 +183,7 @@ if [[ -f  $filePathBashrc ]]; then
                 dirNameXbash=${arrayItems}
     fi
 fi
+export dirPathHomeTools=$dirPathHomeTools
 export dirNameXbash=$dirNameXbash
 dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
 dirPathHomeTools=${dirPathHome}/tools
@@ -205,6 +207,11 @@ else
         fi
         if [ -f "$filePathXbashTragetBashrcConfigBase" ];then
             source $filePathXbashTragetBashrcConfigBase
+            #---------------------------------用户部分信息---------------------------------
+            filePathUserConfig=${rDirPathCmdsConfig}/${userName}.config
+            if [[ -f $filePathUserConfig ]]; then
+                source $filePathUserConfig
+            fi
         else
             echo -e "\033[1;31mXbash下实现的自定义命令需要的配置\n[filePathXbashTragetBashrcConfigBase=$filePathXbashTragetBashrcConfigBase]\033[0m不存在"
         fi
