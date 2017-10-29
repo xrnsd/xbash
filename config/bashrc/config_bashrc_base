@@ -42,9 +42,8 @@ if [ -f $filePathXbashTragetConfigBase ];then
     export XMODULE="env"
 
     dirPathHomeCmdConfigBashrc=${dirPathHomeCmdConfig}/bashrc
-    filePathCmdModuleTools=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
-    if [ -f $filePathCmdModuleTools ];then
-        source  $filePathCmdModuleTools
+    if [ -f $rFilePathCmdModuleToolsSpecific ];then
+        source  $rFilePathCmdModuleToolsSpecific
         #bash PS1 配置
         export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
         export ENV_XBASH_INIT_STATED=1
@@ -90,7 +89,7 @@ if [ -f $filePathXbashTragetConfigBase ];then
         complete -W "systemui monkey launcher" xk
         complete -W "restartadb test clean_data_garbage  -v -vvv -ft" xc
     else
-        echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$filePathCmdModuleTools]\033[0m"
+        echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$rFilePathCmdModuleToolsSpecific]\033[0m"
         export ENV_XBASH_INIT_STATED=-1
     fi
 else

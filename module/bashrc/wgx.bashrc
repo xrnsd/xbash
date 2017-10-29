@@ -174,23 +174,26 @@ userName=${userName:-$userName2}
 if [ "${S/ /}" != "$S" ];then
     userName=$(whoami) 
 fi
-dirNameXbash=cmds
+
 dirPathHome=/home/${userName}
 # 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认cmds]
-if [[ -f .bashrc ]]; then
-    filePathBashrc=$(ftLnUtil .bashrc)
-    if [[ "$filePathBashrc" != "${dirPathHome}/.bashrc " ]]; then
-                filePathBashrc=$(echo $filePathBashrc | sed "s ${dirPathHome}/   ")
+filePathBashrc=~/.bashrc
+if [[ -f  $filePathBashrc ]]; then
+    filePathBashrcReal=$(ftLnUtil $filePathBashrc)
+    if [[ "$filePathBashrcReal" != "${dirPathHome}/.bashrc " ]]; then
+                filePathBashrcReal=$(echo $filePathBashrcReal | sed "s ${dirPathHome}/   ")
                 OLD_IFS="$IFS"
                 IFS="/"
-                arrayItems=($filePathBashrc)
+                arrayItems=($filePathBashrcReal)
                 IFS="$OLD_IFS"
                 dirNameXbash=${arrayItems}
     fi
 fi
 
+dirNameXbash=${dirNameXbash:-'cmds'}
 dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
 dirPathHomeTools=${dirPathHome}/tools
+export dirNameXbash=$dirNameXbash
 
 #---------------- xbash配置  ----------------------------------
 if [ ! -d "$dirPathHomeCmd" ];then
