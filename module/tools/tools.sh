@@ -85,6 +85,8 @@ ftAutoBuildMultiBranch()
     local ftEffect=多版本[分支]串行编译
     local filePathBranchList=branch.list
     local dirPathCode=$ANDROID_BUILD_TOP
+    local dirPathCodeOut=$ANDROID_PRODUCT_OUT
+    
     local editType=$1
     local timeLong=$2
 
@@ -149,7 +151,23 @@ EOF
             if (( $(expr index $editType "b") != "0" ));then   isBackupOut=true ; fi
         fi
     fi
-
+    if [ -d "$dirPathCodeOut" ];then
+         while true; do
+                    echo
+                    ftEcho -y gedit out已存在,选择
+                    read -n 1 sel
+                    case "$sel" in
+                        b | b )    ftBackupOrRestoreOuts
+                                      break;;
+                        d | D )    rm -rf $dirPathCodeOut
+                                      break;;
+                        n | N |q | Q |e |E)    break;;
+                        * ) ftEcho -e 错误的选择：$sel
+                            echo "输入n/q/e 按键跳过"
+                            ;;
+                    esac
+            done
+    fi
 
     cd $dirPathCode
     echo $PWD
@@ -219,7 +237,7 @@ EOF
                                                         source build/envsetup.sh&&
                                                         lunch sp7731c_1h10_32v4_oversea-user&&
                                                         kheader&&
-                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log||break
                                                         if [ $isUpload = "true" ];then
                                                             ftAutoPacket -a
                                                         else
@@ -234,7 +252,7 @@ EOF
                                                         source build/envsetup.sh&&
                                                         lunch full_keytak6580_weg_l-user&&
                                                         mkdir out
-                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log||break
 
                                                         branchName=$(echo $AutoEnv_branchName | tr '[A-Z]' '[a-z]') #转小写
                                                         if [[ "$branchName" != *fm* ]];then
@@ -1081,7 +1099,7 @@ EOF
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -f "$filePathHosts" ];then    errorContent="${errorContent}\\n[ubuntu默认hosts配置文件不存在]filePathHosts=$filePathHosts" ; fi
-    if [ ! -d "$rDirPathCmdsData" ];then    errorContent="${errorContent}\\n[xbash的data目录不存在]rDirPathCmdsData=$rDirPathCmdsData" ; fi
+    if [ ! -d "$rDirPathCmdsConfigData" ];then    errorContent="${errorContent}\\n[xbash的data目录不存在]rDirPathCmdsConfigData=$rDirPathCmdsConfigData" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftUpdateHosts -h
@@ -1092,7 +1110,7 @@ EOF
     local url="https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
     local netTool=wget
     local fileNameHostsNew="hosts.new"
-    local filePathHostsNew=${rDirPathCmdsData}/${fileNameHostsNew}
+    local filePathHostsNew=${rDirPathCmdsConfigData}/${fileNameHostsNew}
     if [ ! -z "$urlCustomHosts" ];then
         url=$urlCustomHosts
     fi
@@ -1107,7 +1125,7 @@ EOF
         ftEcho -ex hosts没有更新,将退出
     else
         local fileNameHostsBase=hosts.base
-        local filePathHostsBase=${rDirPathCmdsData}/${fileNameHostsBase}
+        local filePathHostsBase=${rDirPathCmdsConfigData}/${fileNameHostsBase}
         if [ ! -f "$filePathHostsBase" ];then
             echo "127.0.0.1    localhost
 127.0.1.1    $rNameUser
@@ -1123,7 +1141,7 @@ ff02::2 ip6-allrouters
         fi
         # 文件拼接
         local fileNameHostsAllNew=hosts
-        local filePathHostsAllNew=${rDirPathCmdsData}/${fileNameHostsAllNew}
+        local filePathHostsAllNew=${rDirPathCmdsConfigData}/${fileNameHostsAllNew}
         cat $filePathHostsBase $filePathHostsNew>$filePathHostsAllNew
         # 覆盖文件
         echo $userPassword | sudo -S mv $filePathHosts ${filePathHosts}_${hostsVersionOld}

@@ -519,9 +519,9 @@ EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
-    if [[ ! -d "$rDirPathCmdsData" ]]; then
-        mkdir -p $rDirPathCmdsData
-        ftEcho -s "xbash的data目录:$rDirPathCmdsData"
+    if [[ ! -d "$rDirPathCmdsConfigData" ]]; then
+        mkdir -p $rDirPathCmdsConfigData
+        ftEcho -s "xbash的data目录:$rDirPathCmdsConfigData"
     fi
 
     #耦合校验
@@ -535,7 +535,7 @@ EOF
             return
     fi
 
-    local filePathDevStatus=${rDirPathCmdsData}/devs_status
+    local filePathDevStatus=${rDirPathCmdsConfigData}/devs_status
     local filePathTmpRootAvail=/tmp/tmp_root_avail
 
     if [ "${devDirPath:0:1}" = "/" ];then

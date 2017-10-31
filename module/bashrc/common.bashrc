@@ -22,7 +22,7 @@ if [[ -z "$Env_Val_Inited" ]]; then
     export rDirPathCmds=${rDirPathUserHome}/${rDirNameCmd}
     # $rDirPathUserHome/cmds/xxxx
     export rDirPathCmdsConfig=$dirPathHomeCmdConfig
-    export rDirPathCmdsData=${rDirPathCmds}/${rDirNameCmdData}
+    export rDirPathCmdsConfigData=${rDirPathCmdsConfig}/${rDirNameCmdData}
     export rDirPathCmdsModule=${rDirPathCmds}/${rDirNameCmdModule}
     export rDirPathCmdsTest=${rDirPathCmds}/${rDirNameCmdModuleTest}
 
@@ -52,7 +52,7 @@ if [[ -z "$Env_Val_Inited" ]]; then
     readonly rDirNameCmdModule
     readonly rDirNameCmdModuleTest
     readonly rDirPathCmds
-    readonly rDirPathCmdsData
+    readonly rDirPathCmdsConfigData
     readonly rDirPathCmdsConfig
     readonly rDirPathCmdsModule
     readonly rDirPathCmdsTest
