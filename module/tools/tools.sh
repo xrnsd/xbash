@@ -221,7 +221,7 @@ EOF
                                                         kheader&&
                                                         make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
                                                         if [ $isUpload = "true" ];then
-                                                            ftAutoPacket -y
+                                                            ftAutoPacket -a
                                                         else
                                                             ftAutoPacket
                                                         fi
@@ -242,7 +242,7 @@ EOF
                                                         fi
 
                                                         if [ $isUpload = "true" ];then
-                                                            ftAutoPacket -y
+                                                            ftAutoPacket -a
                                                         else
                                                             ftAutoPacket
                                                         fi
@@ -1614,7 +1614,7 @@ EOF
             local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${versionName}
             local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
             local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
-            local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
+            local filePathPacketScript=${rDirPathCmdsModule}/tools/pac_7731c.pl
 
             if [ ! -f "$filePathPacketScript" ];then
                     ftEcho -ea "[${ftEffect}]的参数错误 \
@@ -2588,7 +2588,7 @@ ftMaintainSystem()
 {
     local ftEffect=ubuntu系统维护
     local fileNameMaintain=maintain.sh
-    local filePathMaintain=${rDirPathCmdsModule}/${fileNameMaintain}
+    local filePathMaintain=${rDirPathCmdsModule}/tools/${fileNameMaintain}
     local editType=$1
     editType=${editType:-'backup'}
 

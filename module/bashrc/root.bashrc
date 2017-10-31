@@ -100,7 +100,7 @@ fi
 
 #added by wgx
 #=========================================================================
-#======================  自定义配置 =======================================
+#====================== 自定义配置 =======================================
 #=========================================================================
 
 #----------------    函数实现   ----------------------------------
@@ -158,18 +158,15 @@ EOF
         let i--
     done
 }
-
 #----------------    基础变量    ----------------------------------
 userName=$(who am i | awk '{print $1}'|sort -u)
 userName2=$(whoami | awk '{print $1}'|sort -u)
 userName=${userName:-$userName2}
-
 if [ "${S/ /}" != "$S" ];then
     userName=$(whoami) 
 fi
-dirNameXbash=cmds
-dirPathHome=/home/${userName}
-export dirPathHome=$dirPathHome
+export dirPathHome=/home/${userName}
+
 # 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认cmds]
 filePathBashrc=~/.bashrc
 if [[ -f  $filePathBashrc ]]; then
@@ -183,36 +180,37 @@ if [[ -f  $filePathBashrc ]]; then
                 dirNameXbash=${arrayItems}
     fi
 fi
-export dirPathHomeTools=$dirPathHomeTools
-export dirNameXbash=$dirNameXbash
-dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
-dirPathHomeTools=${dirPathHome}/tools
+export dirNameXbash=${dirNameXbash:-'cmds'}
 
-#---------------- xbash部分  ----------------------------------
+export dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
+
+#---------------- xbash配置  ----------------------------------
 if [ ! -d "$dirPathHomeCmd" ];then
         echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
 else
-        dirPathHomeCmdConfig=${dirPathHomeCmd}/config
-        dirPathHomeCmdConfigBashrc=${dirPathHomeCmd}/config/bashrc
-        fileNameXbashTragetBashrcConfigBase=config_bashrc_base
-        fileNameXbashTragetBashrcConfigBaseGone=config_bashrc_base.gone
-        filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBase}
-        filePathXbashTragetBashrcConfigBaseGone=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGone}
+        export dirPathHomeTools=${dirPathHome}/tools
+        export dirPathHomeCmdConfig=${dirPathHomeCmd}/config
+        export dirPathHomeCmdModule=${dirPathHomeCmd}/module
+        export dirPathHomeCmdModuleBashrc=${dirPathHomeCmdModule}/bashrc
 
         #----------------   加载xbash的bashrc基础配置  ------------------
-        if [ -f "$filePathXbashTragetBashrcConfigBaseGone" ];then
-            source $filePathXbashTragetBashrcConfigBaseGone
-        else
-            echo -e "\033[1;31mXbash下实现的自定义命令需要的隐藏配置\n[filePathXbashTragetBashrcConfigBaseGone=$filePathXbashTragetBashrcConfigBaseGone]\033[0m不存在"
-        fi
+        fileNameXbashTragetBashrcConfigBase=common.bashrc
+        filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdModuleBashrc}/${fileNameXbashTragetBashrcConfigBase}
         if [ -f "$filePathXbashTragetBashrcConfigBase" ];then
             source $filePathXbashTragetBashrcConfigBase
-            #---------------------------------用户部分信息---------------------------------
-            filePathUserConfig=${rDirPathCmdsConfig}/${userName}.config
-            if [[ -f $filePathUserConfig ]]; then
+
+            #----------------   加载xbash的用户独立配置  ------------------
+            filePathUserConfig=${dirPathHomeCmdConfigBashrc}/${userName}.config
+            if [ -f "$filePathUserConfig" ];then
                 source $filePathUserConfig
+            else
+                echo -e "\033[1;31m未找到Xbash下实现的自定义命令需要的用户独立配置\n$filePathUserConfig\033[0m"
+                filePathXbashTragetBashrcConfigExample=${dirPathHomeCmdConfigBashrc}/example.config
+                if [[ -f "$filePathXbashTragetBashrcConfigExample" ]]; then
+                    echo -e "\033[1;33m解决此问题可以参考模版\n$filePathXbashTragetBashrcConfigExample\033[0m"
+                fi
             fi
         else
-            echo -e "\033[1;31mXbash下实现的自定义命令需要的配置\n[filePathXbashTragetBashrcConfigBase=$filePathXbashTragetBashrcConfigBase]\033[0m不存在"
+            echo -e "\033[1;31mXbash下实现的自定义命令需要的配置\n$filePathXbashTragetBashrcConfigBase\033[0m不存在"
         fi
 fi

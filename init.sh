@@ -38,9 +38,9 @@ fi||isFail=gitConfig
 filePathXbashGitgnore=${dirPathLocal}/.gitignore
 # config
             fileNameXbashConfigNew=${userNameLocal}.config
-            dirPathXbashConfig=${dirPathLocal}/config
-            filePathXbashConfigExample=${dirPathXbashConfig}/example.config
-            filePathXbashConfigNew=${dirPathXbashConfig}/${fileNameXbashConfigNew}
+            dirPathXbashConfigBashrc=${dirPathLocal}/config/bashrc
+            filePathXbashConfigExample=${dirPathXbashConfigBashrc}/example.config
+            filePathXbashConfigNew=${dirPathXbashConfigBashrc}/${fileNameXbashConfigNew}
 
             tagUserNameBase="export\ userName="
             tagUserNameNew="export\ userName=$userNameLocal"
@@ -72,11 +72,9 @@ filePathXbashGitgnore=${dirPathLocal}/.gitignore
 
             echo "module/bashrc/${fileNameXbashModuleBashrcNew}" >> $filePathXbashGitgnore||isFail=xbashConfigGone
 
-# config.bashrc.gone
-            dirPathXbashConfigGone=${dirPathXbashConfig}/bashrc
-            fileNameXbashConfigGone=config_bashrc_base.gone
-            fileNameXbashConfigGoneExample=config_bashrc_base.gone_simple
-            cp ${dirPathXbashConfigGone}/${fileNameXbashConfigGoneExample} ${dirPathXbashConfigGone}/${fileNameXbashConfigGone}||isFail=xbashConfigGone
+#.inputrc 
+            fileNameXbashModuleBashrcInputrc=.inputrc
+            filePathXbashModuleBashrcInputrc=${dirPathXbashModuleBashrc}/${fileNameXbashModuleBashrcInputrc}
 
 #####-----------------------配置生效------------------------------#########
 dirPathHomeLocal=/home/${userNameLocal}
@@ -84,6 +82,10 @@ filePathHomeLocalConfig=${dirPathHomeLocal}/.bashrc
 
 mv ${filePathHomeLocalConfig} ${filePathHomeLocalConfig}_backup
 ln -s $filePathXbashModuleBashrcNew $filePathHomeLocalConfig
+
+filePathHomeLocalConfigInputrc=${dirPathHomeLocal}/${fileNameXbashModuleBashrcInputrc}
+mv ${filePathHomeLocalConfigInputrc} ${filePathHomeLocalConfigInputrc}_backup
+ln -s $filePathXbashModuleBashrcInputrc $filePathHomeLocalConfigInputrc
 
 if [ ! -z `which git` ];then
     cd $dirPathLocal
