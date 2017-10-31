@@ -37,7 +37,7 @@ filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfi
 #全局变量
 if [ -f $filePathXbashTragetConfigBase ];then
     #不重复添加config_base的只读设定
-    if [ -z "$rNameUser" ];then     source  $filePathXbashTragetConfigBase;   fi
+    if [ -z "$rDirPathCmds" ];then     source  $filePathXbashTragetConfigBase;   fi
     #标记为环境模式，此模式说明直接调用脚本实现
     export XMODULE="env"
 
@@ -51,6 +51,7 @@ if [ -f $filePathXbashTragetConfigBase ];then
         alias xd='ftMtkFlashTool'
         alias xb='ftMaintainSystem'
         alias xss='ftPowerManagement reboot'
+        alias xtt='subl ${rDirPathCmds}/test/base.sh'
         alias xs='ftPowerManagement shutdown'
         alias xk='ftKillPhoneAppByPackageName'
         alias xc='export XCMD=xc;ftMain'

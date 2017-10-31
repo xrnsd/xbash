@@ -171,12 +171,11 @@ EOF
 userName=$(who am i | awk '{print $1}'|sort -u)
 userName2=$(whoami | awk '{print $1}'|sort -u)
 userName=${userName:-$userName2}
-
 if [ "${S/ /}" != "$S" ];then
     userName=$(whoami) 
 fi
-dirPathHome=/home/${userName}
-export dirPathHome=$dirPathHome
+export dirPathHome=/home/${userName}
+
 # 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认cmds]
 filePathBashrc=~/.bashrc
 if [[ -f  $filePathBashrc ]]; then
@@ -190,12 +189,10 @@ if [[ -f  $filePathBashrc ]]; then
                 dirNameXbash=${arrayItems}
     fi
 fi
+export dirNameXbash=${dirNameXbash:-'cmds'}
 
-dirNameXbash=${dirNameXbash:-'cmds'}
-dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
-dirPathHomeTools=${dirPathHome}/tools
-export dirPathHomeTools=$dirPathHomeTools
-export dirNameXbash=$dirNameXbash
+export dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
+export dirPathHomeTools=${dirPathHome}/tools
 
 #---------------- xbash配置  ----------------------------------
 if [ ! -d "$dirPathHomeCmd" ];then

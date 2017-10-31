@@ -13,9 +13,8 @@ else
 fi
 
 dirNameDebug=temp
-dirPathHome=/home/${rNameUser}
-dirPathHomeDebug=${dirPathHome}/${dirNameDebug}
-if [ -d $dirPathHome ];then
+dirPathHomeDebug=${rDirPathUserHome}/${dirNameDebug}
+if [ -d $rDirPathUserHome ];then
     if [ ! -d $dirPathHomeDebug ];then
         mkdir  $dirPathHomeDebug
         ftEcho -s 测试用目录[$dirPathHomeDebug]不存在，已新建
@@ -24,7 +23,7 @@ if [ -d $dirPathHome ];then
 else
     echo -e "\033[1;31m    初始化demo环境失败\n\
     模块=$rModuleName\n\
-    dirPathHome=$dirPathHome\n\
+    rDirPathUserHome=$rDirPathUserHome\n\
     \033[0m"
 fi
 

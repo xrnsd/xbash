@@ -1,6 +1,6 @@
 #! /bin/bash
 #----------------    Android Dev Env Config    ---------------------------
-jdkPathOracle6=/home/wgx/tools/jdk/1.6.038
+jdkPathOracle6=${rDirPathTools}/jdk/1.6.038
 jdkPathOpen7=/usr/lib/jvm/java-7-openjdk-amd64
 jdkPathOpen8=/usr/lib/jvm/java-8-openjdk-amd64
 jdkPath=$jdkPathOpen7
@@ -61,7 +61,7 @@ else
                 adb logcat | grep '
     alias xlc='adb logcat | grep androidrun -i'
     alias xle='export XCMD=xle;adb logcat "*:E"'
-    alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
+    alias .9='export XCMD=.9;${rDirPathTools}/sdk/5.1/tools/draw9patch'
     alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
     alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
     alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'

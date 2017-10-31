@@ -988,7 +988,7 @@ EOF
     local valCount=1
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$rNameUser" ];then    errorContent="${errorContent}\\n[默认用户名]rNameUser=$rNameUser" ; fi
+    if [ -z "$rDirPathCmds" ];then    errorContent="${errorContent}\\n[默认用户名]rNameUser=$rNameUser" ; fi
     if [ -z "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome" ; fi
     if ( ! echo -n $devMinAvailableSpaceTemp | grep -q -e "^[0-9][0-9]*$" );then    errorContent="${errorContent}\\n[可用空间限制]devMinAvailableSpace=$devMinAvailableSpace" ; fi
     if [ ! -z "$errorContent" ];then
@@ -999,7 +999,7 @@ EOF
 
     local indexDevMount=0
     local indexDevName=0
-    local dirPathHome=(${rDirPathUserHome/$rNameUser\//$rNameUser})
+    local dirPathHome=$rDirPathUserHome #(${rDirPathUserHome/$rNameUser\//$rNameUser})
     local sizeHome=$(ftDevAvailableSpace $dirPathHome true)
 
     if [[ $devMinAvailableSpace =~ "g" ]]||[[ $devMinAvailableSpace =~ "gb" ]];then
