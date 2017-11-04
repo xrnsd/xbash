@@ -76,6 +76,11 @@ filePathXbashGitgnore=${dirPathLocal}/.gitignore
             fileNameXbashModuleBashrcInputrc=.inputrc
             filePathXbashModuleBashrcInputrc=${dirPathXbashModuleBashrc}/${fileNameXbashModuleBashrcInputrc}
 
+#自定义配置
+#1 bashrc PS1 显示git branch 名字
+#2 bashrc 历史 自动备份去重复
+#3 
+
 #####-----------------------配置生效------------------------------#########
 dirPathHomeLocal=/home/${userNameLocal}
 filePathHomeLocalConfig=${dirPathHomeLocal}/.bashrc

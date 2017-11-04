@@ -224,7 +224,6 @@ EOF
                                             git checkout   "$branshName"&&
 
                                            # git pull
-                                           # git cherry-pick ee52b881226919ad985c3049d09042ebda4a74f6
                                            # git cherry-pick 3277b18
                                            # git push
 
@@ -1245,7 +1244,7 @@ EOF
                 read tIndex
             else
                 read -n 1 tIndex
-            fi
+            fi&&echo
             #设定默认值
             if [ ${#tIndex} == 0 ]; then
                 tIndex=0
@@ -2039,8 +2038,8 @@ EOF
             content="当前版本：$versionName"${enterLine}
             content=${content}${enterLine}"摄像头类型：$cameraTypeInfo"
             content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFrontDefault/$cameraSizeBackDefault"
-            # content=${content}${enterLine}"真实插值 前/后摄大小：$cameraSizeFrontMax/$cameraSizeBackMax"
-            content=${content}${enterLine}"默认 RAM/ROM：$sizeRam/$sizeRom"
+            content=${content}${enterLine}"真实插值 前/后摄大小：$cameraSizeFrontMax/$cameraSizeBackMax"
+            # content=${content}${enterLine}"默认 RAM/ROM：$sizeRam/$sizeRom"
             content=${content}${enterLine}
             content=${content}${enterLine}"暗码清单：$pawNumInfo"
             content=${content}${enterLine}"隐藏：*#312#*"
@@ -2125,8 +2124,11 @@ EOF
     if [ $AutoEnv_mnufacturers = "sprd" ];then
                 local filePathDeviceSprd=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
                 if [[ -f "$filePathDeviceSprd" ]]; then
-                    local key="PRODUCT_LOCALES :="
+                    local key="#PRODUCT_LOCALES := "
+                    LanguageListInvalid=$(cat $filePathDeviceSprd|grep "$key")
+                    key="PRODUCT_LOCALES :="
                     LanguageList=$(cat $filePathDeviceSprd|grep "$key")
+                    LanguageList=${LanguageList//$LanguageListInvalid/};
                     LanguageList=${LanguageList//$key/};
                 else
                     ftEcho -e "[工程文件不存在:${filePathDeviceSprd}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
@@ -2137,11 +2139,14 @@ EOF
                 # local filePathDeviceMtk=${dirPathCode}/${AutoEnv_deviceDirPath}/full_keytak6580_weg_l.mk
                 local filePathDeviceMtk=${dirPathCode}/device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
                 if [ -f "$filePathDeviceMtk" ]; then
-                    local key="PRODUCT_LOCALES := "
+                     local key="#PRODUCT_LOCALES := "
+                    # LanguageList=$(grep ^$key $filePathDeviceMtk)
+                    LanguageListInvalid=$(cat $filePathDeviceMtk|grep "$key")
+                    key="PRODUCT_LOCALES := "
                     # LanguageList=$(grep ^$key $filePathDeviceMtk)
                     LanguageList=$(cat $filePathDeviceMtk|grep "$key")
+                    LanguageList=${LanguageList//$LanguageListInvalid/};
                     LanguageList=${LanguageList//$key/};
-                    LanguageList=${LanguageList//=/};
                 else
                     ftEcho -e "[工程文件不存在:${filePathDeviceMtk}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
                     ftAutoLanguageUtil -h

@@ -94,3 +94,40 @@ mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
+# cd /media/data/ptkfier/code/mtk6580L/alps
+# git tag -a "$2" -m "Release version $2"
+# git push origin --tags
+
+
+# dirPathProcessEnableId=/tmp/ProcessEnableIds
+# rm -rf $dirPathProcessEnableId
+# mkdir $dirPathProcessEnableId
+
+# for (( i = 0; i <2; i++ )); do
+#     if [[ -z "$size" ]]; then
+#         size=1000
+#         stae=true
+#     else
+#         stae=false
+#     fi
+#     echo $stae>${dirPathProcessEnableId}/${size}
+#     gnome-terminal -x bash -c "${rDirPathCmdModuleTools}/build.sh $size"
+#     gnome-terminal -e 'bash -c "read dd"'  --window --tab -e 'bash -c "echo 11;read ff"'
+#     size=`expr $size - 1`
+# done
+
+                # local filePathDeviceMtk=${dirPathCode}/${AutoEnv_deviceDirPath}/full_keytak6580_weg_l.mk
+                 filePathDeviceMtk=/media/data/ptkfier/code/mtk6580L/alps/device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
+
+
+                     key="#PRODUCT_LOCALES := "
+                    # LanguageList=$(grep ^$key $filePathDeviceMtk)
+                    LanguageListInvalid=$(cat $filePathDeviceMtk|grep "$key")
+
+                     key="PRODUCT_LOCALES := "
+                    # LanguageList=$(grep ^$key $filePathDeviceMtk)
+                    LanguageList=$(cat $filePathDeviceMtk|grep "$key")
+                    LanguageList=${LanguageList//$LanguageListInvalid/};
+                    LanguageList=${LanguageList//$key/};
+                    # LanguageList=${LanguageList//=/};
+                    echo $LanguageList
