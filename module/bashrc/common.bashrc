@@ -118,8 +118,7 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
     alias xc='export XCMD=xc;ftMain'
     alias xch='ftGitCheckoutBranchByName'
     alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
-    alias xu='export XCMD=xu;gedit  ${dirPathHomeCmdConfigBashrc}/config_bashrc_base.gone\
-                    ${dirPathHomeCmdConfigBashrc}/config_bashrc_base'
+    alias xu='export XCMD=xu;gedit  $filePathUserConfig $filePathXbashTragetBashrcConfigBase'
     alias xh='ftMain -ft|grep'
 
     if [ ! -z `which git` ];then
