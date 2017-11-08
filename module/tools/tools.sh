@@ -2351,11 +2351,11 @@ ftSetBashPs1ByGitBranch()
         else
             branchName="branchName→ ${branchName}"
         fi
-        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]$branchName:\[\033[0m\]"
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]$branchName: \[\033[0m\]"
     else
 
                 #export PS1='$(whoami)\[\033[42m\][\w]\[\033[0m\]:'
-        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]:"
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
     fi
 }
 
