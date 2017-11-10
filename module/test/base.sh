@@ -76,9 +76,14 @@ fi
 
 # 把.git 以2048M为界压缩成 MTK6580L.tar. aa MTK6580L.tar. ab ......
 # pigz 分包压缩 tar --use-compress-program=pigz -cvpf .git |split -b 2048m - MTK6580L.tar. 
+
+# 遍历 ls 输出内容
+# ls xxxxx | while read line;do echo $line ;done
 mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 # ===================================================================================================================================
 #####-------------------------------------------------------------------------#########
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
+cd ~/.config/sublime-text-3/Packages/User
+ls /home/wgx/cmds/config/other/sublime_text/sublime-snippet | while read line;do ln -s /home/wgx/cmds/config/other/sublime_text/sublime-snippet/${line} ;done

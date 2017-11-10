@@ -32,7 +32,7 @@ alias xcc='cd $OLDPWD'
 alias xr="source ~/.bashrc"
 
 #----------------    xbash config  ---------------------------
-fileNameXbashTragetConfigBase=config_base
+fileNameXbashTragetConfigBase=base.config
 filePathXbashTragetConfigBase=${dirPathHomeCmdConfig}/${fileNameXbashTragetConfigBase}
 #全局变量
 if [ -f $filePathXbashTragetConfigBase ];then
