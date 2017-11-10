@@ -134,6 +134,14 @@ xk ----- 关闭手机指定进程
 xl ----- 过滤 android 含有tag的所有等级的log
     |// xl tag
     |
+xs ----- 免密码, 关机
+    |// xs #无参就默认10s
+    |// xs 时间[秒]
+    |
+xss ---- 免密码, 重启
+    |// xss #无参就默认10s
+    |// xss 时间[秒]
+    |
 xle ---- 过滤 android 含有tag的E级log
     |// xle tag
     |
@@ -145,12 +153,20 @@ xbh ---- 根据标签过滤命令历史
 ==============================================================
 
 xgl ----- 简单查看最近15次git log
+xgll ---- 简单查看最近100次git log
 xr ------ 重新加载xbash配置文件
-xd ------ mtk下载工具
 xu ------ 打开xbash配置
+xd ------ mtk下载工具
 .9 ------ 打开.9工具
-xs ------ 关机
-xss ----- 重启
+
+=====  使用adb启动应用,出现错误请查看实现  ======
+xqselect
+xqsetting
+xqlauncher
+xqcamera
+xqchanglogo
+xqfactorytest
+xqchooseBootAnimation
 
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi
@@ -1968,7 +1984,7 @@ EOF
 
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
-                ftEcho -ea "平台${AutoEnv_mnufacturers}的项目${TARGET_PRODUCT}无效\
+                ftEcho -ea " ${ftEffect} 缺少平台${AutoEnv_mnufacturers}的项目${TARGET_PRODUCT}的配置\
                 \n请查看下面说明:"
                 ftAutoPacket -h
                 return
@@ -2048,7 +2064,7 @@ EOF
                   local dirPathM=${dirPathOut}/obj/ETC/${dirNameModem}
                     dataBaseFileList=(obj/ETC/${dirNameModem}/$(ls $dirPathM) obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15)
             else
-                ftEcho -ea "工具没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的配置\
+                ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的配置\
                 \n请查看下面说明:"
                 ftAutoPacket -h
                 return
@@ -2072,8 +2088,8 @@ EOF
                     dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameersionSoftwareVersionBase}
                 fi
                 if [[ ! -z "$AutoEnv_motherboardName" ]]&&[[ ! -z "$AutoEnv_projrctName" ]]; then
-                    local val1=${AutoEnv_motherboardName}-${AutoEnv_projrctName}
-                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${val1}
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${AutoEnv_motherboardName}-${AutoEnv_projrctName}
+                    local val1=${AutoEnv_motherboardName}__${AutoEnv_projrctName}
                 fi
                 if [[ ! -z "$val1" ]]&&[[ ! -z "$AutoEnv_demandSignName" ]]; then
                     local val2=${val1}__${AutoEnv_demandSignName};
@@ -2201,6 +2217,10 @@ EOF
             if [[ ! -z "$isUpload" ]]; then
                     ftAutoUploadHighSpeed $dirPathVersionSoftware $dirNameersionSoftwareVersionBase $dirPathUploadTraget
             fi
+    else
+            ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的配置\n请查看下面说明:"
+            ftAutoPacket -h
+            return
     fi
     cd $dirPathLocal
 }
@@ -2680,7 +2700,7 @@ EOF
     e | E |-e | -E) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
-#    ftYKSwitch 仅可用于 SPRD > 7731C > N9 的项目
+#    ftAutoUpdateSoftwareVersion 仅可用于 SPRD > 7731C > N9 的项目
 #=======================================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -2790,20 +2810,25 @@ ftAutoBuildMultiBranch()
     local editType=$1
     local timeLong=$2
 
-    editType=${editType:-'-b'}
     if (  echo -n $editType | grep -q -e "^[0-9][0-9]*$")&&[[ -z "$timeLong" ]];then
         timeLong=$editType
+        edittype=
     fi
+    editType=${editType:-'-b'}
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftAutoBuildMultiBranch 无参
-#    ftAutoBuildMultiBranch -y 上传版本软件
+#
+#    ftAutoBuildMultiBranch -u 上传版本软件
 #    ftAutoBuildMultiBranch -b 备份out
-#    ftAutoBuildMultiBranch -yb 上传版本软件,备份out
-#    ftAutoBuildMultiBranch -yb 时间[秒] /ftAutoBuildMultiBranch 时间[秒]   延时编译
+#    ftAutoBuildMultiBranch -ub或-bu 上传,备份out
+#    ftAutoBuildMultiBranch -a 上传,备份out
+#
+#    ftAutoBuildMultiBranch 时间[秒]   延时操作
+#    ftAutoBuildMultiBranch -xx 时间[秒]   延时操作
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -2835,26 +2860,17 @@ EOF
     local isUpload=
     local isBackupOut=
     if [ -z "$1" ];then
-        echo 将不会上传软件包，备份out
+        ftEcho -s "将不会上传软件包，备份out"
+    else
+        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+        if (( $(expr index $editType "a") != "0" ));then
+             isUpload=true
+             isBackupOut=true
+        else
+            if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
+            if (( $(expr index $editType "b") != "0" ));then   isBackupOut=true ; fi
+        fi
     fi
-    while true; do
-      case "$editType" in
-                -yb | -by| -YB )
-                   isUpload=true
-                   isBackupOut=true
-                    break;;
-                -y | -Y )
-                   isUpload=true
-                    break;;
-                -b | -B )
-                   isBackupOut=true
-                    break;;
-                * )
-                    ftEcho -ea "函数[${ftEffect}]的参数错误 editType=$editType\\n请查看下面说明:"
-                    ftAutoBuildMultiBranch -h
-                 break;;
-        esac
-    done
 
 
     cd $dirPathCode
@@ -2912,15 +2928,6 @@ EOF
                                             git checkout   "$branshName"&&
 
                                             git pull
-                                            val2=$(ls vendor/sprd/partner/launcher/apps|grep "_B")
-
-                                            val=$(ls vendor/sprd/partner/launcher/apps|grep OPT)
-                                            if [[ -z "$val2" ]]; then
-                                                ftEcho -e "============xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx$branshName=========================="
-                                            elif [[ ! -z "$val" ]]; then
-                                                git cherry-pick 7c65cc7&&
-                                                git push
-                                            fi
 
                                             # ftAutoInitEnv
                                             # local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
@@ -3073,6 +3080,7 @@ EOF
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ]\
         ||[ -z "$ANDROID_PRODUCT_OUT" ]\
+        ||[ -z "$TARGET_PRODUCT" ]\
         ||[ -z "$TARGET_BUILD_VARIANT" ];then
         ftAutoInitEnv -env
         return
@@ -3213,7 +3221,8 @@ EOF
 
     #软件编译类型
     if [ -d $dirPathOut ];then
-           local filePathBuildInfo=${dirPathOut}/system/build.prop
+            local filePathBuildInfo=${dirPathOut}/system/build.prop
+            local filePathPreviousBuildConfig=${dirPathOut}/previous_build_config.mk
             if [ -f $filePathBuildInfo ];then
                         local keybuildType="ro.build.type="
                         local buildTypeFile=
@@ -3231,6 +3240,31 @@ EOF
                         fi
             else
                         ftEcho -e "未找到 $filePathBuildInfo\n build Type[本地] 获取失败"
+
+                        if [ -f "$filePathPreviousBuildConfig" ];then
+                                info=$(cat $filePathPreviousBuildConfig|grep $TARGET_PRODUCT)
+                                if [ ! -z "$info" ];then
+
+                                    local OLD_IFS="$IFS"
+                                    IFS="-"
+                                    local arrayItems=($info)
+                                    IFS="$OLD_IFS"
+                                    if [ "$info" = "$arrayItems" ];then
+                                            ftEcho -e "${filePathPreviousBuildConfig} 信息解析失败"
+                                    else
+                                            local buildinfo=null
+                                            for item in ${arrayItems[@]}
+                                            do
+                                                if [[ "$item" = "$TARGET_PRODUCT" ]]; then
+                                                    buildinfo=
+                                                elif [[ -z "$buildinfo" ]]; then
+                                                    buildType=$item
+                                                    buildinfo=$buildType
+                                                fi
+                                            done
+                                    fi
+                                fi
+                        fi
             fi
     fi
 

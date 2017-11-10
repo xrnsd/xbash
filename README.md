@@ -50,14 +50,14 @@ bash的简单扩展与其他工具配置[部分]
 
 5.其他
 ----------
-    1 xc/xc -h 等为简化命令，搭配参数时和其余命令一样指向原生命令
-    2 xc -ft 查看原生命令说明
+    1 xc/xc -h 查看简化命令说明，简化命令为脚本函数实现的封装
+    2 xc -ft 查看全部脚本函数的简要说明，脚本函数 -h 查看对应函数的具体使用说明
     3 建议,不要以root权限运行xc clean_data_garbage
     4 建议,不要开启xx[休眠]，这玩意脾气不好
     5 环境目录[参考]
         /home/xxx/
-        ├── Xrnsd-extensions-to-bash   --  xbash目录
-        ├── tools     -------------------  环境相关
+        ├── Xrnsd-extensions-to-bash  --  xbash目录
+        ├── tools    -------------------  环境相关
         │        ├───── jdk  ---------------    java jdk
-        │        └───── sdk  ---------------    android sdk
-        └── .bashrc   -------------------  xbash中module/bashrc/用户.bashrc文件的软连接
+        │        └───── sdk  --------------    android sdk
+        └── .bashrc   -------------------  Xrnsd-extensions-to-bash/module/bashrc/用户名.bashrc 的软连接
