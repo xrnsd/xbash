@@ -2,7 +2,7 @@
 #----------------    全局变量 init  ---------------------------
 if [[ -z "$Env_Val_Inited" ]]; then
     # 基本配置
-    export rXbashVersion="V0.7.8.0 beta"
+    export rXbashVersion="V0.1.3.0"
     # 标记为脚本模式，此模式说明使用实现对应的封装命令
     export XMODULE="script"
 
