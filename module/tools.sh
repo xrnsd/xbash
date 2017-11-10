@@ -6,7 +6,7 @@
 #####---------------------示例函数---------------------------#########
 ftExample()
 {
-    local ftEffect=函数模板_nodisplay
+    local ftEffect=函数模板
 
     while true; do case "$1" in
     e | -e |--env) cat<<EOF
@@ -64,6 +64,8 @@ ftMain()
                 ftEcho -b java;        java -version
                 ftEcho -b gcc;        gcc -v
                 break;;
+    # check )            env|grep MissingToolLibrary
+    #             break;;
     restartadb)    ftRestartAdb
                 break;;
     *)    ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftReadMe $XCMD; break;;
@@ -2004,8 +2006,9 @@ EOF
                 dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
                                                  obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
             elif [ $deviceName = "keytak6580_weg_l" ];then
-                dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15 \
-                                            obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V6_P7_1_wg_n.n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V6_P7_1_wg_n.n)
+                  local dirNameModem=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*)_intermediates
+                  local dirPathM=${dirPathOut}/obj/ETC/${dirNameModem}
+                    dataBaseFileList=(obj/ETC/${dirNameModem}/$(ls $dirPathM) obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15)
             else
                 ftEcho -ea "工具没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的配置\
                 \n请查看下面说明:"
@@ -2016,7 +2019,7 @@ EOF
             if [ ! -z "$AutoEnv_clientName" ];then #git解析成功获取到客户等相关信息
                 ftAutoInitEnv -bp
                 local dirNameersionSoftwareVersionBase=${AutoEnv_AndroidVersion}
-                local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirNameersionSoftwareVersionBase}/${AutoEnv_motherboardName}__${AutoEnv_projrctName}__${AutoEnv_demandSignName}/${AutoEnv_deviceModelName}
+                local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirNameersionSoftwareVersionBase}/${AutoEnv_motherboardName}-${AutoEnv_projrctName}/${AutoEnv_motherboardName}__${AutoEnv_projrctName}__${AutoEnv_demandSignName}/${AutoEnv_deviceModelName}
                 local dirNameVeriosionBase=${AutoEnv_versionName}
                 #非user版本标记编译类型
                 if [ "$AutoEnv_buildType" != "user" ];then
@@ -2101,10 +2104,10 @@ EOF
                     local filePath=${dirPathOut}/${file}
                      if [[ ! -f "$filePath" ]]; then
                          ftEcho -e "${filePath}\n不存在"
-                         return;
+                     else
+                        printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}  ")
+                         cp -r -f  $filePath ${dirPathPackageDataBase}
                      fi
-                    printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}  ")
-                     cp -r -f  $filePath ${dirPathPackageDataBase}
                 done
             fi
             # 生成说明文件
@@ -2151,7 +2154,7 @@ EOF
     if [ $AutoEnv_mnufacturers = "sprd" ];then
             local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-            local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/ProjectConfig.mk
+            local filePathDevice=${dirPathCode}/device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
     fi
     local errorContent=
     if [ -z "$ftLanguageContent" ];then    errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
@@ -2310,10 +2313,12 @@ EOF
                     ftEcho -e "[工程文件不存在:${filePathDeviceSprd}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
                 fi
    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                local filePathDeviceMtk=${dirPathCode}/${AutoEnv_deviceDirPath}/ProjectConfig.mk
+                # local filePathDeviceMtk=${dirPathCode}/${AutoEnv_deviceDirPath}/full_keytak6580_weg_l.mk
+                local filePathDeviceMtk=${dirPathCode}/device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
                 if [ -f "$filePathDeviceMtk" ]; then
-                    local key="MTK_PRODUCT_LOCALES"
-                    LanguageList=$(grep ^$key $filePathDeviceMtk)
+                    local key="PRODUCT_LOCALES := "
+                    # LanguageList=$(grep ^$key $filePathDeviceMtk)
+                    LanguageList=$(cat $filePathDeviceMtk|grep "$key")
                     LanguageList=${LanguageList//$key/};
                     LanguageList=${LanguageList//=/};
                 else
@@ -2322,7 +2327,7 @@ EOF
     fi
 
     LanguageList=${LanguageList//$key/};
-    LanguageList=`ftLanguageUtils "$LanguageList"`  #缩写转化为中文
+    LanguageList=$(ftLanguageUtils "$LanguageList")  #缩写转化为中文
     LanguageList=${LanguageList//
 / };  # 删除回车
     LanguageList=(默认)${LanguageList}
@@ -2338,11 +2343,15 @@ EOF
     if version_lt $gitVersionMin $gitVersionNow; then
         # gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:" %an %ad %s")
          #gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:" %an %ad %s" -1)
-        gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
-        gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
+
+        # gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
+        # gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
+
+        gitCommitListOneDay=$(git log --date=format-local:'%y%m%d' --pretty=format:'%s' -30)
+        gitCommitListBefore=$(git log --date=format-local:'%y%m%d' --pretty=format:'%s' -30)
     else
-        gitCommitListOneDay=$(git log --date=short  --since=1.day.ago  --pretty=format:"%h %ad %an %s")
-        gitCommitListBefore=$(git log --date=short  --before=1.day.ago  --pretty=format:"%h %ad %an %s")
+        gitCommitListOneDay=$(git log --date=short --pretty=format:"%s" -30)
+        gitCommitListBefore=$(git log --date=short --pretty=format:"%s" -30)
     fi
 
     # 暗码清单
@@ -2411,25 +2420,44 @@ EOF
     echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
     local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
     seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
-    echo -e "﻿/////////////////////////////////////////////////////////////////////////////
-///     修改记录有误要及时更正哦
-///     修改记录横线以上为新修改
-/////////////////////////////////////////////////////////////////////////////
-当前版本：$versionName
-暗码清单：$pawNumInfo
-设备信息暗码：
-屏幕正扫/反扫：
+
+    if [ $AutoEnv_mnufacturers = "sprd" ];then
+
+    echo -e "﻿当前版本：$versionName
 摄像头类型：$cameraTypeInfo
 默认 前/后摄大小：$cameraSizeFront/$cameraSizeBack
 默认 RAM/ROM：$sizeRam/$sizeRom
-RAM 列表：$ramSizeListSel
-ROM 列表：$romSizeListSel
+
+暗码清单：$pawNumInfof
+隐藏：*#312#*
+imei显示：*#06#
+imei编辑:  *#*#3646633#*#*
+单项测试[列表]:*#7353#
+单项测试[宫格]:*#0*#
+三星测试:*#1234#
+开关机动画暗码*#868312459#*
 
 修改记录：\
 "| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
 
-    echo -e "﻿==============================================================================\
-"| cat - ${filePathChangeListTemplate}.temp>>$filePathChangeListTemplate
+   elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+    echo -e "﻿
+当前版本：$versionName
+
+隐藏指令：*#*#94127*208#*#*
+imei编辑: *#315#*
+imei显示：*#316#*
+imei单双切换: 
+切换动画指令：*#868312513#*
+切换默认动画：*#979312#*
+工厂模式[测试模式]：*#*#180#*#*  *#0*#
+
+修改记录：\
+"| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
+    fi
+
+#     echo -e "﻿==============================================================================\
+# "| cat - ${filePathChangeListTemplate}.temp>>$filePathChangeListTemplate
 
     # 转化为windows下格式
     unix2dos $filePathReadMeTemplate
@@ -2765,46 +2793,46 @@ EOF
                                             ftEcho -bh 将开始编译$branshName
                                             git checkout   "$branshName"&&
 
-                                            mmm vendor/lz/apps/Lz_Launcher3
-                                           # git pull&&
-                                           # git cherry-pick 61f659a&&
-                                           # git push origin "$branshName"
+                                           git pull
+                                           git cherry-pick d4721c9805522b29fbe1f6fd922972e1211c146b||git reset --hard
+                                           git push origin "$branshName"
 
-                                            # ftAutoInitEnv
-                                            # local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
-                                            # cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
-                                            # cpuCount=${cpuCount//cpucores\:/}
-                                            # if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
-                                            #             #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
-                                            #             source build/envsetup.sh&&
-                                            #             lunch sp7731c_1h10_32v4_oversea-user&&
-                                            #             kheader&&
-                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                            #             if [ $isUpload = "true" ];then
-                                            #                 ftAutoPacket -y
-                                            #             else
-                                            #                 ftAutoPacket
-                                            #             fi
-                                            #             if [ $isBackupOut = "true" ];then
-                                            #                 ftBackupOrRestoreOuts
-                                            #             fi
-                                            # elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                                            #         local deviceName=`basename $ANDROID_PRODUCT_OUT`
-                                            #         if [ $deviceName = "keytak6580_weg_l" ];then
-                                            #             source build/envsetup.sh&&
-                                            #             lunch full_keytak6580_weg_l-user&&
-                                            #             mkdir out
-                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                            #             make otapackage&&
-                                            #             ftAutoPacket -y&&
-                                            #             if [ $isBackupOut = "true" ];then
-                                            #                 ftBackupOrRestoreOuts
-                                            #             fi
-                                            #         else
-                                            #             ftAutoBuildMultiBranch -e
-                                            #             return;
-                                            #         fi
-                                            # fi
+                                        #     ftAutoInitEnv
+                                        #     local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
+                                        #     cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
+                                        #     cpuCount=${cpuCount//cpucores\:/}
+                                        #     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+                                        #                 #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
+                                        #                 source build/envsetup.sh&&
+                                        #                 lunch sp7731c_1h10_32v4_oversea-user&&
+                                        #                 kheader&&
+                                        #                 make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                        #                 if [ $isUpload = "true" ];then
+                                        #                     ftAutoPacket -y
+                                        #                 else
+                                        #                     ftAutoPacket
+                                        #                 fi
+                                        #                 if [ $isBackupOut = "true" ];then
+                                        #                     ftBackupOrRestoreOuts
+                                        #                 fi
+                                        #     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+                                        #             local deviceName=`basename $ANDROID_PRODUCT_OUT`
+                                        #             if [ $deviceName = "keytak6580_weg_l" ];then
+                                        #                 source build/envsetup.sh&&
+                                        #                 lunch full_keytak6580_weg_l-user&&
+                                        #                 mkdir out
+                                        #                 make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
+                                        #                 make otapackage&&
+                                        #                 ftAutoPacket -y&&
+                                        #                 if [ $isBackupOut = "true" ];then
+                                        #                     ftBackupOrRestoreOuts
+                                        #                 fi
+                                        #             else
+                                        #                 ftAutoBuildMultiBranch -e
+                                        #                 return;
+                                        #             fi
+                                        #     fi
+
                                         done
                                         git reset --hard
                                        break;;
