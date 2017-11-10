@@ -197,7 +197,7 @@ EOF
             ftEcho -b 将编译下面所有分支
             cat $filePathBranchList | while read line
             do
-                echo branshName=$line
+                echo branchName=$line
             done
             while true; do
                     echo
@@ -217,15 +217,32 @@ EOF
                                         fi
                                         cat $filePathBranchList | while read line
                                         do
-                                            local branshName=$line
-                                            #rm -rf out
+                                            local branchName=$line
+                                            if [[ $branchName == *_local ]];then
+                                                    continue;
+                                            fi
                                             git reset --hard&&
-                                            ftEcho -bh 将开始编译$branshName
-                                            git checkout   "$branshName"&&
+                                            ftEcho -bh 将开始编译$branchName
+                                            git checkout   "$branchName"&&
 
-                                           # git pull
-                                           # git cherry-pick 3277b18
-                                           # git push
+                                           # git pull&&
+                                           # # git cherry-pick 2ad768636b1481be1b24fa12f216c60dda1f6789||(continue)
+                                           # git cherry-pick 2ad7686||(git reset --hard)
+                                           # git cherry-pick 09c3525||(git reset --hard)
+                                           # if [[ -z "$(git branch -a|grep $branchName)" ]]; then
+                                           #          # local  isQuit=true
+                                           #          # local isKeePon=true
+                                           #          local isContinue=true
+                                           #          if [[ -z "$isKeePon" ]]; then
+                                           #              if [[ ! -z "$isContinue" ]]; then
+                                           #                  continue;
+                                           #              elif [[ ! -z "$isQuit" ]]; then
+                                           #                  return;
+                                           #              fi
+                                           #          fi
+                                           # else
+                                           #      git push
+                                           # fi
 
                                             ftAutoInitEnv
                                             local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
@@ -2311,7 +2328,8 @@ EOF
                     sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest
                      while true; do
                         ftEcho -y "是否提交修改"
-                        read -n 1 sel
+                        read -n 1 sel&&
+                        echo
                         case "$sel" in
                             y | Y )
                                 ftEcho -s 提交开始，请稍等

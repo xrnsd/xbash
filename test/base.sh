@@ -88,6 +88,9 @@ fi
 
 # 对比文件不同
 #diff 文件1 文件2
+
+#算术运算
+#$[ $dff+1 ]
 mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 # ===================================================================================================================================
 #####-------------------------------------------------------------------------#########
@@ -116,18 +119,8 @@ mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 #     size=`expr $size - 1`
 # done
 
-                # local filePathDeviceMtk=${dirPathCode}/${AutoEnv_deviceDirPath}/full_keytak6580_weg_l.mk
-                 filePathDeviceMtk=/media/data/ptkfier/code/mtk6580L/alps/device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
-
-
-                     key="#PRODUCT_LOCALES := "
-                    # LanguageList=$(grep ^$key $filePathDeviceMtk)
-                    LanguageListInvalid=$(cat $filePathDeviceMtk|grep "$key")
-
-                     key="PRODUCT_LOCALES := "
-                    # LanguageList=$(grep ^$key $filePathDeviceMtk)
-                    LanguageList=$(cat $filePathDeviceMtk|grep "$key")
-                    LanguageList=${LanguageList//$LanguageListInvalid/};
-                    LanguageList=${LanguageList//$key/};
-                    # LanguageList=${LanguageList//=/};
-                    echo $LanguageList
+ while true; do
+            sleep 1200
+            ftKillPhoneAppByPackageName com.android.launcher3
+            echo "$(date -d "today" +"%y%m%d_%H:%M:%S") reboot launcher3" >> ~/temp/Launcher3_1711091914.log
+    done
