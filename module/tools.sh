@@ -2059,7 +2059,6 @@ EOF
 
             mkdir -p $dirPathVersionSoftwareVersion
             mkdir -p $dirPathPackage
-            mkdir -p $dirPathOtaPackage
             mkdir -p $dirPathPackageDataBase
             cd $dirPathVersionSoftwareVersion
 
@@ -2076,15 +2075,18 @@ EOF
                  cp -r -f  $filePath ${dirPathVersionSoftwareVersion}/${dirNamePackage}
             done
             #otaPackages
-            for file in ${otaFileList[@]}
-            do
-                 if [[ ! -f "$file" ]]; then
-                     ftEcho -e "${file}\n不存在"
-                     return;
-                 fi
-                 printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
-                 cp -r -f  $file ${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
-            done
+            if [[ ! -z "$otaFileList" ]]; then
+                mkdir -p $dirPathOtaPackage
+                for file in ${otaFileList[@]}
+                do
+                     if [[ ! -f "$file" ]]; then
+                         ftEcho -e "${file}\n不存在"
+                         return;
+                     fi
+                     printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
+                     cp -r -f  $file ${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
+                done
+            fi
             # database
             if [ ! -z "$dataBaseFileList" ];then
                 for file in ${dataBaseFileList[@]}
@@ -3070,45 +3072,51 @@ EOF
     elif [ -d "$dirPathOut" ];then
         echo "${key}${branchName}" >$filePathGitConfigInfoLocal
     fi
-    if [[ $mnufacturers = "mtk" ]]; then
-            if [ ! -z "$branchName" ];then
-                local OLD_IFS="$IFS"
-                IFS=")"
-                local arrayItems=($branchName)
-                IFS="$OLD_IFS"
-                if [ "$branchName" = "$arrayItems" ];then
-                    echo 不合法
-                fi
+    if [ ! -z "$branchName" ];then
+        local OLD_IFS="$IFS"
+        IFS=")"
+        local arrayItems=($branchName)
+        IFS="$OLD_IFS"
+        if [ "$branchName" = "$arrayItems" ];then
+                ftEcho -e "分支名:${branchName} 不合法\n分支信息解析失败"
+        else
+                export AutoEnv_clientName=
+                export AutoEnv_projrctName=
+                export AutoEnv_modelAllName=
+                export AutoEnv_demandSignName=
+                export AutoEnv_motherboardName=
+                export AutoEnv_screenScanDirection=
+
                 for item in ${arrayItems[@]}
                 do
                         local valShort=${item:0:4}
                         local valLong=${item:0:5}
 
-                         if [[ $valShort = "_CT(" ]];then
-                            gitBranchInfoClientName=${item//$valShort/}
+                         if [[ ${item:0:3} = "CT(" ]];then
+                            valShort=${item:0:3}
+                            local gitBranchInfoClientName=${item//$valShort/}
+                            export AutoEnv_clientName=$gitBranchInfoClientName
+                         elif [[ $valShort = "_CT(" ]];then
+                            local gitBranchInfoClientName=${item//$valShort/}
+                            export AutoEnv_clientName=$gitBranchInfoClientName
                          elif [[ $valShort = "_PJ(" ]];then
-                            gitBranchInfoProjrctName=${item//$valShort/}
+                            local gitBranchInfoProjrctName=${item//$valShort/}
+                            export AutoEnv_projrctName=$gitBranchInfoProjrctName
+                         elif [[ $valShort = "_SS(" ]];then
+                            local gitBranchInfoScreenScanDirection=${item//$valShort/}
+                            export AutoEnv_screenScanDirection=$gitBranchInfoScreenScanDirection
                         elif [[ $valShort = "_DM(" ]];then
-                            gitBranchInfoDemandSignName=${item//$valShort/}
+                            local gitBranchInfoDemandSignName=${item//$valShort/}
+                            export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
                         elif [[ $valLong = "MBML(" ]];then
-                            gitBranchInfoMotherboardName=${item//$valLong/}
-                        elif [[ $valLong = "_PMA(" ]];then
-                            gitBranchInfoModelAllName=${item//$valLong/}
-                        fi
-
-                        export AutoEnv_clientName=
-                        export AutoEnv_projrctName=
-                        export AutoEnv_modelAllName=
-                        export AutoEnv_demandSignName=
-                        export AutoEnv_motherboardName=
-
-                        export AutoEnv_clientName=$gitBranchInfoClientName
-                        export AutoEnv_projrctName=$gitBranchInfoProjrctName
-                        export AutoEnv_modelAllName=$gitBranchInfoModelAllName
-                        export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
+                            local gitBranchInfoMotherboardName=${item//$valLong/}
                         export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
+                        elif [[ $valLong = "_PMA(" ]];then
+                            local gitBranchInfoModelAllName=${item//$valLong/}
+                            export AutoEnv_modelAllName=$gitBranchInfoModelAllName
+                        fi
                 done
-            fi
+        fi
     fi
 
     export AutoEnv_buildType=
