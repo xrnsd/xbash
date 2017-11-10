@@ -2028,6 +2028,9 @@ EOF
                 length=${#arr[@]}
                 length=`expr $length - 1`
                 local versionNameDate=${arr[$length]}
+                if [[ $versionNameDate =~ "." ]];then
+                    versionNameDate=${versionNameDate%.*}
+                fi
                 if [ "$versionNameDate" != "${fileChangeTime}" ];then
                     local dirNameVeriosionBase=${dirNameVeriosionBase}____buildtime____${fileChangeTime}
                 fi
@@ -2041,7 +2044,10 @@ EOF
                  dirPathUploadTraget=智能机软件/MTK6580/新华菲
             elif [ "$AutoEnv_clientName" = "DHX" ];then
                  dirPathUploadTraget=智能机软件/MTK6580/东华新
+            elif [ "$AutoEnv_clientName" = "PMZ" ];then
+                 dirPathUploadTraget=智能机软件/MTK6580/鹏明珠
             fi
+            dirPathUploadTraget=${dirPathUploadTraget}/${AutoEnv_motherboardName}
             local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
             local dirPathOtaPackage=${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
             local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
