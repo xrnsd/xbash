@@ -44,12 +44,12 @@ esac
 
 if [ -n "$force_color_prompt" ]; then
     if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-	# We have color support; assume it's compliant with Ecma-48
-	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-	# a case would tend to support setf rather than setaf.)
-	color_prompt=yes
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    color_prompt=yes
     else
-	color_prompt=
+    color_prompt=
     fi
 fi
 
@@ -166,16 +166,15 @@ EOF
         let i--
     done
 }
-
 #----------------    基础变量    ----------------------------------
 userName=$(who am i | awk '{print $1}'|sort -u)
 userName2=$(whoami | awk '{print $1}'|sort -u)
 userName=${userName:-$userName2}
-
 if [ "${S/ /}" != "$S" ];then
     userName=$(whoami) 
 fi
-dirPathHome=/home/${userName}
+export dirPathHome=/home/${userName}
+
 # 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认cmds]
 filePathBashrc=~/.bashrc
 if [[ -f  $filePathBashrc ]]; then
@@ -189,43 +188,36 @@ if [[ -f  $filePathBashrc ]]; then
                 dirNameXbash=${arrayItems}
     fi
 fi
-
-dirNameXbash=${dirNameXbash:-'cmds'}
-dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
-dirPathHomeTools=${dirPathHome}/tools
-export dirNameXbash=$dirNameXbash
+export dirNameXbash=${dirNameXbash:-'cmds'}
+export dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
 
 #---------------- xbash配置  ----------------------------------
 if [ ! -d "$dirPathHomeCmd" ];then
         echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
 else
-        dirPathHomeCmdConfig=${dirPathHomeCmd}/config
-        dirPathHomeCmdConfigBashrc=${dirPathHomeCmd}/config/bashrc
+        export dirPathHomeTools=${dirPathHome}/tools
+        export dirPathHomeCmdConfig=${dirPathHomeCmd}/config
+        export dirPathHomeCmdModule=${dirPathHomeCmd}/module
+        export dirPathHomeCmdModuleBashrc=${dirPathHomeCmdModule}/bashrc
 
-        fileNameXbashTragetBashrcConfigBase=config_bashrc_base
-        filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBase}
-
-        fileNameXbashTragetBashrcConfigBaseGone=config_bashrc_base.gone
-        filePathXbashTragetBashrcConfigBaseGone=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGone}
-
-        fileNameXbashTragetBashrcConfigBaseGoneExample=config_bashrc_base.gone_simple
-        filePathXbashTragetBashrcConfigBaseGoneExample=${dirPathHomeCmdConfigBashrc}/${fileNameXbashTragetBashrcConfigBaseGoneExample}
         #----------------   加载xbash的bashrc基础配置  ------------------
-        if [ -f "$filePathXbashTragetBashrcConfigBaseGone" ];then
-            source $filePathXbashTragetBashrcConfigBaseGone
-        else
-            echo -e "\033[1;31m未找到Xbash下实现的自定义命令需要的隐藏配置\n$filePathXbashTragetBashrcConfigBaseGone\033[0m"
-            echo -e "\033[1;33m解决此问题可以参考模版\n$filePathXbashTragetBashrcConfigBaseGoneExample\033[0m"
-        fi
+        filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdModuleBashrc}/common.bashrc
         if [ -f "$filePathXbashTragetBashrcConfigBase" ];then
-            source $filePathXbashTragetBashrcConfigBase
+            source $filePathXbashTragetBashrcConfigBase&& export filePathXbashTragetBashrcConfigBase=$filePathXbashTragetBashrcConfigBase
+            #----------------   加载xbash的用户独立配置  ------------------
+            filePathUserConfig=${dirPathHomeCmdConfigBashrc}/${userName}.config
+            if [ -f "$filePathUserConfig" ];then
+                source $filePathUserConfig&& export filePathUserConfig=$filePathUserConfig
+            else
+                echo -e "\033[1;31m未找到Xbash下实现的自定义命令需要的用户独立配置\n$filePathUserConfig\033[0m"
+                filePathXbashTragetBashrcConfigExample=${dirPathHomeCmdConfigBashrc}/example.config
+                if [[ -f "$filePathXbashTragetBashrcConfigExample" ]]; then
+                    echo -e "\033[1;33m解决此问题可以参考模版\n$filePathXbashTragetBashrcConfigExample\033[0m"
+                fi
+                export filePathUserConfig=
+            fi
         else
             echo -e "\033[1;31mXbash下实现的自定义命令需要的配置\n$filePathXbashTragetBashrcConfigBase\033[0m不存在"
-        fi
-        #---------------------------------用户密码---------------------------------
-        if [ -z "$rUserPwdBase" ];then
-                rUserPwdBase=123
-                export rUserPwd=${rUserPwdBase:-'123'}
-                readonly rUserPwd
+            export filePathXbashTragetBashrcConfigBase=
         fi
 fi

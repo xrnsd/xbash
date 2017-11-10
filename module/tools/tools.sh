@@ -80,6 +80,228 @@ ftMain()
     done
 }
 
+ftAutoBuildMultiBranch()
+{
+    local ftEffect=多版本[分支]串行编译
+    local filePathBranchList=branch.list
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local dirPathCodeOut=$ANDROID_PRODUCT_OUT
+    
+    local editType=$1
+    local timeLong=$2
+
+    if (  echo -n $editType | grep -q -e "^[0-9][0-9]*$")&&[[ -z "$timeLong" ]];then
+        timeLong=$editType
+        edittype=
+    fi
+    editType=${editType:-'-b'}
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoBuildMultiBranch 无参
+#
+#    ftAutoBuildMultiBranch -u 上传版本软件
+#    ftAutoBuildMultiBranch -b 备份out
+#    ftAutoBuildMultiBranch -ub或-bu 上传,备份out
+#    ftAutoBuildMultiBranch -a 上传,备份out
+#
+#    ftAutoBuildMultiBranch 时间[秒]   延时操作
+#    ftAutoBuildMultiBranch -xx 时间[秒]   延时操作
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    env | -env |-ENV ) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftAutoBuildMultiBranch -env
+        return
+    fi
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoBuildMultiBranch -h
+            return
+    fi
+
+    local isUpload=
+    local isBackupOut=
+    if [ -z "$1" ];then
+        ftEcho -s "将不会上传软件包，备份out"
+    else
+        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+        if (( $(expr index $editType "a") != "0" ));then
+             isUpload=true
+             isBackupOut=true
+        else
+            if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
+            if (( $(expr index $editType "b") != "0" ));then   isBackupOut=true ; fi
+        fi
+    fi
+    if [ -d "$dirPathCodeOut" ];then
+         while true; do
+                    echo
+                    ftEcho -y gedit out已存在,选择
+                    read -n 1 sel
+                    case "$sel" in
+                        b | b )    ftBackupOrRestoreOuts
+                                      break;;
+                        d | D )    rm -rf $dirPathCodeOut
+                                      break;;
+                        n | N |q | Q |e |E)    break;;
+                        * ) ftEcho -e 错误的选择：$sel
+                            echo "输入n/q/e 按键跳过"
+                            ;;
+                    esac
+            done
+    fi
+
+    cd $dirPathCode
+    echo $PWD
+    if [ ! -z "$(pgrep -f gedit)" ];then
+         while true; do
+                    echo
+                    ftEcho -y gedit 已打开是否关闭
+                    read -n 1 sel
+                    case "$sel" in
+                        y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
+                                      break;;
+                        n | N |q | Q)    return;;
+                        * ) ftEcho -e 错误的选择：$sel
+                            echo "输入n,q，离开"
+                            ;;
+                    esac
+            done
+    fi
+    git branch > $filePathBranchList&&
+    gedit $filePathBranchList&&
+    while [ ! -z "$(pgrep -f gedit)" ]
+    do
+        echo 等待中
+    done
+    content=`cat $filePathBranchList`
+    if [ ! -z "$content" ];then
+            ftEcho -b 将编译下面所有分支
+            cat $filePathBranchList | while read line
+            do
+                echo branchName=$line
+            done
+            while true; do
+                    echo
+                    ftEcho -y 是否开始编译
+                    read -n 1 select
+                    case "$select" in
+                        y | Y )
+                                        if [[ ! -z "$timeLong" ]]; then
+                                            tput sc
+                                            for i in `seq -w $timeLong -1 1`
+                                            do
+                                                echo -ne "\033[1;31m将在${i}秒开始编译，ctrl+c 取消\033[0m"
+                                                tput rc
+                                                tput ed
+                                                sleep 1
+                                            done
+                                        fi
+                                        cat $filePathBranchList | while read line
+                                        do
+                                            local branchName=$line
+                                            if [[ $branchName == *_local ]];then
+                                                    continue;
+                                            fi
+                                            git reset --hard&&
+                                            ftEcho -bh 将开始编译$branchName
+                                            git checkout   "$branchName"&&
+
+                                           # git pull&&
+                                           # # git cherry-pick 2ad768636b1481be1b24fa12f216c60dda1f6789||(continue)
+                                           # git cherry-pick 2ad7686||(git reset --hard)
+                                           # git cherry-pick 09c3525||(git reset --hard)
+                                           # if [[ -z "$(git branch -a|grep $branchName)" ]]; then
+                                           #          # local  isQuit=true
+                                           #          # local isKeePon=true
+                                           #          local isContinue=true
+                                           #          if [[ -z "$isKeePon" ]]; then
+                                           #              if [[ ! -z "$isContinue" ]]; then
+                                           #                  continue;
+                                           #              elif [[ ! -z "$isQuit" ]]; then
+                                           #                  return;
+                                           #              fi
+                                           #          fi
+                                           # else
+                                           #      git push
+                                           # fi
+
+                                            ftAutoInitEnv
+                                            local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
+                                            cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
+                                            cpuCount=${cpuCount//cpucores\:/}
+                                            if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+                                                        #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
+                                                        source build/envsetup.sh&&
+                                                        lunch sp7731c_1h10_32v4_oversea-user&&
+                                                        kheader&&
+                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log||break
+                                                        if [ $isUpload = "true" ];then
+                                                            ftAutoPacket -a
+                                                        else
+                                                            ftAutoPacket
+                                                        fi
+                                                        if [ $isBackupOut = "true" ];then
+                                                            ftBackupOrRestoreOuts
+                                                        fi
+                                            elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+                                                    local deviceName=`basename $ANDROID_PRODUCT_OUT`
+                                                    if [ $deviceName = "keytak6580_weg_l" ];then
+                                                        source build/envsetup.sh&&
+                                                        lunch full_keytak6580_weg_l-user&&
+                                                        mkdir out
+                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log||break
+
+                                                        branchName=$(echo $AutoEnv_branchName | tr '[A-Z]' '[a-z]') #转小写
+                                                        if [[ "$branchName" != *fm* ]];then
+                                                            make otapackage
+                                                        fi
+
+                                                        if [ $isUpload = "true" ];then
+                                                            ftAutoPacket -a
+                                                        else
+                                                            ftAutoPacket
+                                                        fi
+                                                        if [ $isBackupOut = "true" ];then
+                                                            ftBackupOrRestoreOuts
+                                                        fi
+                                                    else
+                                                        ftAutoBuildMultiBranch -e
+                                                        return;
+                                                    fi
+                                            fi
+
+                                        done
+                                        git reset --hard
+                                       break;;
+                        n | N)    break;;
+                        q |Q)    exit;;
+                        * ) ftEcho -e 错误的选择：$sel
+                             echo "输入q，离开" ;;
+                    esac
+            done
+    fi
+    rm -f $filePathBranchList
+}
+
 ftReadAllFt()
 {
         local ftEffect=显示tools下所有实现说明_nodisplay
@@ -257,18 +479,18 @@ EOF
     local valCount=0
     local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$rUserPwd" ];then    errorContent="${errorContent}\\n[默认用户密码]rUserPwd=$rUserPwd" ; fi
+    if [ -z "$userPassword" ];then    errorContent="${errorContent}\\n[默认用户密码]userPassword=$userPassword" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -eax "$errorContent \\n请查看下面说明:"
             ftRestartAdb -h
             return
     fi
-    echo $rUserPwd | sudo -S echo test >/dev/null
-    echo $rUserPwd | sudo -S adb kill-server >/dev/null
+    echo $userPassword | sudo -S echo test >/dev/null
+    echo $userPassword | sudo -S adb kill-server >/dev/null
     echo
     echo "server kill ......"
     sleep 2
-    echo $rUserPwd | sudo -S adb start-server >/dev/null
+    echo $userPassword | sudo -S adb start-server >/dev/null
     echo "server start ......"
     adb devices
 }
@@ -362,7 +584,7 @@ EOF
     fi
 
     cd $toolDirPath&&
-    echo "$rUserPwd" | sudo -S ${rDirPathTools}/sp_flash_tool_v5.1612.00.100/flash_tool
+    echo "$userPassword" | sudo -S ${rDirPathTools}/sp_flash_tool_v5.1612.00.100/flash_tool
     cd $tempDirPath
 }
 
@@ -432,7 +654,7 @@ EOF
         read -n 1 sel
         case "$sel" in
             y | Y )
-                local filePath=/home/${rNameUser}/${dirNamePackageName}
+                local filePath=/${rDirPathUserHome}/${dirNamePackageName}
                 if [ -f $filePath ];then
                     while true; do
                     echo
@@ -440,7 +662,7 @@ EOF
                     read -n 1 sel
                     case "$sel" in
                         y | Y )    break;;
-                        n | N)    mv $filePath /home/${rNameUser}/${dirNamePackageName/.zip/_old.zip};break;;
+                        n | N)    mv $filePath /${rDirPathUserHome}/${dirNamePackageName/.zip/_old.zip};break;;
                         q |Q)    exit;;
                         * ) ftEcho -e 错误的选择：$sel
                             echo "输入q，离开" ;;
@@ -482,7 +704,7 @@ EOF
             cd $dirPathLocal
         fi
 
-        dirPathAnimationTraget=/home/${rNameUser}/${dirNameAnimation}
+        dirPathAnimationTraget=/${rDirPathUserHome}/${dirNameAnimation}
 
         ftFileDirEdit -e false $dirPathAnimationTraget
         if [ -d $dirPathAnimationTraget ]||[ $? -eq   "3" ];then
@@ -661,7 +883,7 @@ EOF
 
     #耦合校验
     local errorContent=
-    if [ -z "$rUserPwd" ];then    errorContent="${errorContent}\\n[用户密码为空]rUserPwd=$rUserPwd" ; fi
+    if [ -z "$userPassword" ];then    errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword" ; fi
     if [ -z "$edittype" ];then    errorContent="${errorContent}\\n[操作参数为空]edittype=$edittype" ; fi
     if ( ! echo -n $timeLong | grep -q -e "^[0-9][0-9]*$" );then    errorContent="${errorContent}\\n[倒计时时长无效]timeLong=$timeLong" ; fi
     if [ ! -z "$errorContent" ];then
@@ -680,7 +902,7 @@ EOF
                 echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
                 sleep 1
             done
-            echo $rUserPwd | sudo -S shutdown -h now
+            echo $userPassword | sudo -S shutdown -h now
             break;;
         reboot)
             tput sc
@@ -690,7 +912,7 @@ EOF
                 echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
                 sleep 1
             done
-            echo $rUserPwd | sudo -S reboot
+            echo $userPassword | sudo -S reboot
             break;;
             * ) ftEcho -e 错误的选择：$sel
                 echo "输入q，离开"
@@ -893,7 +1115,7 @@ EOF
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -f "$filePathHosts" ];then    errorContent="${errorContent}\\n[ubuntu默认hosts配置文件不存在]filePathHosts=$filePathHosts" ; fi
-    if [ ! -d "$rDirPathCmdsData" ];then    errorContent="${errorContent}\\n[xbash的data目录不存在]rDirPathCmdsData=$rDirPathCmdsData" ; fi
+    if [ ! -d "$rDirPathCmdsConfigData" ];then    errorContent="${errorContent}\\n[xbash的data目录不存在]rDirPathCmdsConfigData=$rDirPathCmdsConfigData" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftUpdateHosts -h
@@ -904,7 +1126,7 @@ EOF
     local url="https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
     local netTool=wget
     local fileNameHostsNew="hosts.new"
-    local filePathHostsNew=${rDirPathCmdsData}/${fileNameHostsNew}
+    local filePathHostsNew=${rDirPathCmdsConfigData}/${fileNameHostsNew}
     if [ ! -z "$urlCustomHosts" ];then
         url=$urlCustomHosts
     fi
@@ -919,7 +1141,7 @@ EOF
         ftEcho -ex hosts没有更新,将退出
     else
         local fileNameHostsBase=hosts.base
-        local filePathHostsBase=${rDirPathCmdsData}/${fileNameHostsBase}
+        local filePathHostsBase=${rDirPathCmdsConfigData}/${fileNameHostsBase}
         if [ ! -f "$filePathHostsBase" ];then
             echo "127.0.0.1    localhost
 127.0.1.1    $rNameUser
@@ -935,11 +1157,11 @@ ff02::2 ip6-allrouters
         fi
         # 文件拼接
         local fileNameHostsAllNew=hosts
-        local filePathHostsAllNew=${rDirPathCmdsData}/${fileNameHostsAllNew}
+        local filePathHostsAllNew=${rDirPathCmdsConfigData}/${fileNameHostsAllNew}
         cat $filePathHostsBase $filePathHostsNew>$filePathHostsAllNew
         # 覆盖文件
-        echo $rUserPwd | sudo -S mv $filePathHosts ${filePathHosts}_${hostsVersionOld}
-        echo $rUserPwd | sudo -S mv $filePathHostsAllNew $filePathHosts
+        echo $userPassword | sudo -S mv $filePathHosts ${filePathHosts}_${hostsVersionOld}
+        echo $userPassword | sudo -S mv $filePathHostsAllNew $filePathHosts
     fi
 }
 
@@ -1039,7 +1261,7 @@ EOF
                 read tIndex
             else
                 read -n 1 tIndex
-            fi
+            fi&&echo
             #设定默认值
             if [ ${#tIndex} == 0 ]; then
                 tIndex=0
@@ -1426,7 +1648,7 @@ EOF
             local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${versionName}
             local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
             local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
-            local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
+            local filePathPacketScript=${rDirPathCmdsModule}/tools/pac_7731c.pl
 
             if [ ! -f "$filePathPacketScript" ];then
                     ftEcho -ea "[${ftEffect}]的参数错误 \
@@ -1547,7 +1769,8 @@ EOF
                     versionNameDate=${versionNameDate%.*}
                 fi
                 if [ ! -z "$fileChangeTime" ]&&[ "$versionNameDate" != "${fileChangeTime}" ];then
-                    local dirNameVeriosionBase=${dirNameVeriosionBase}____buildtime____${fileChangeTime}
+                    export AutoEnv_SoftwareVersion_BuildTime=buildtime____${fileChangeTime}
+                    local dirNameVeriosionBase=${dirNameVeriosionBase}____${AutoEnv_SoftwareVersion_BuildTime}
                 fi
                 dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
 
@@ -1832,8 +2055,8 @@ EOF
             content="当前版本：$versionName"${enterLine}
             content=${content}${enterLine}"摄像头类型：$cameraTypeInfo"
             content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFrontDefault/$cameraSizeBackDefault"
-            # content=${content}${enterLine}"真实插值 前/后摄大小：$cameraSizeFrontMax/$cameraSizeBackMax"
-            content=${content}${enterLine}"默认 RAM/ROM：$sizeRam/$sizeRom"
+            content=${content}${enterLine}"真实插值 前/后摄大小：$cameraSizeFrontMax/$cameraSizeBackMax"
+            # content=${content}${enterLine}"默认 RAM/ROM：$sizeRam/$sizeRom"
             content=${content}${enterLine}
             content=${content}${enterLine}"暗码清单：$pawNumInfo"
             content=${content}${enterLine}"隐藏：*#312#*"
@@ -1918,8 +2141,11 @@ EOF
     if [ $AutoEnv_mnufacturers = "sprd" ];then
                 local filePathDeviceSprd=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
                 if [[ -f "$filePathDeviceSprd" ]]; then
-                    local key="PRODUCT_LOCALES :="
+                    local key="#PRODUCT_LOCALES := "
+                    LanguageListInvalid=$(cat $filePathDeviceSprd|grep "$key")
+                    key="PRODUCT_LOCALES :="
                     LanguageList=$(cat $filePathDeviceSprd|grep "$key")
+                    LanguageList=${LanguageList//$LanguageListInvalid/};
                     LanguageList=${LanguageList//$key/};
                 else
                     ftEcho -e "[工程文件不存在:${filePathDeviceSprd}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
@@ -1930,11 +2156,14 @@ EOF
                 # local filePathDeviceMtk=${dirPathCode}/${AutoEnv_deviceDirPath}/full_keytak6580_weg_l.mk
                 local filePathDeviceMtk=${dirPathCode}/device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
                 if [ -f "$filePathDeviceMtk" ]; then
-                    local key="PRODUCT_LOCALES := "
+                     local key="#PRODUCT_LOCALES := "
+                    # LanguageList=$(grep ^$key $filePathDeviceMtk)
+                    LanguageListInvalid=$(cat $filePathDeviceMtk|grep "$key")
+                    key="PRODUCT_LOCALES := "
                     # LanguageList=$(grep ^$key $filePathDeviceMtk)
                     LanguageList=$(cat $filePathDeviceMtk|grep "$key")
+                    LanguageList=${LanguageList//$LanguageListInvalid/};
                     LanguageList=${LanguageList//$key/};
-                    LanguageList=${LanguageList//=/};
                 else
                     ftEcho -e "[工程文件不存在:${filePathDeviceMtk}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
                     ftAutoLanguageUtil -h
@@ -2099,7 +2328,8 @@ EOF
                     sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest
                      while true; do
                         ftEcho -y "是否提交修改"
-                        read -n 1 sel
+                        read -n 1 sel&&
+                        echo
                         case "$sel" in
                             y | Y )
                                 ftEcho -s 提交开始，请稍等
@@ -2116,194 +2346,6 @@ EOF
                  echo "输入n，q，离开";;
         esac
         done
-}
-
-ftAutoBuildMultiBranch()
-{
-    local ftEffect=多版本[分支]串行编译
-    local filePathBranchList=branch.list
-    local dirPathCode=$ANDROID_BUILD_TOP
-    local editType=$1
-    local timeLong=$2
-
-    if (  echo -n $editType | grep -q -e "^[0-9][0-9]*$")&&[[ -z "$timeLong" ]];then
-        timeLong=$editType
-        edittype=
-    fi
-    editType=${editType:-'-b'}
-
-    while true; do case "$1" in
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftAutoBuildMultiBranch 无参
-#
-#    ftAutoBuildMultiBranch -u 上传版本软件
-#    ftAutoBuildMultiBranch -b 备份out
-#    ftAutoBuildMultiBranch -ub或-bu 上传,备份out
-#    ftAutoBuildMultiBranch -a 上传,备份out
-#
-#    ftAutoBuildMultiBranch 时间[秒]   延时操作
-#    ftAutoBuildMultiBranch -xx 时间[秒]   延时操作
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    env | -env |-ENV ) cat<<EOF
-#===================[   ${ftEffect}   ]的使用环境说明=============
-#
-# 环境未初始化
-# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    #耦合校验
-    if [ -z "$ANDROID_BUILD_TOP" ];then
-        ftAutoBuildMultiBranch -env
-        return
-    fi
-    local valCount=2
-    local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftAutoBuildMultiBranch -h
-            return
-    fi
-
-    local isUpload=
-    local isBackupOut=
-    if [ -z "$1" ];then
-        ftEcho -s "将不会上传软件包，备份out"
-    else
-        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
-        if (( $(expr index $editType "a") != "0" ));then
-             isUpload=true
-             isBackupOut=true
-        else
-            if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
-            if (( $(expr index $editType "b") != "0" ));then   isBackupOut=true ; fi
-        fi
-    fi
-
-
-    cd $dirPathCode
-    echo $PWD
-    if [ ! -z "$(pgrep -f gedit)" ];then
-         while true; do
-                    echo
-                    ftEcho -y gedit 已打开是否关闭
-                    read -n 1 sel
-                    case "$sel" in
-                        y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
-                                      break;;
-                        n | N |q | Q)    return;;
-                        * ) ftEcho -e 错误的选择：$sel
-                            echo "输入n,q，离开"
-                            ;;
-                    esac
-            done
-    fi
-    git branch > $filePathBranchList&&
-    gedit $filePathBranchList&&
-    while [ ! -z "$(pgrep -f gedit)" ]
-    do
-        echo 等待中
-    done
-    content=`cat $filePathBranchList`
-    if [ ! -z "$content" ];then
-            ftEcho -b 将编译下面所有分支
-            cat $filePathBranchList | while read line
-            do
-                echo branshName=$line
-            done
-            while true; do
-                    echo
-                    ftEcho -y 是否开始编译
-                    read -n 1 select
-                    case "$select" in
-                        y | Y )
-                                        if [[ ! -z "$timeLong" ]]; then
-                                            tput sc
-                                            for i in `seq -w $timeLong -1 1`
-                                            do
-                                                echo -ne "\033[1;31m将在${i}秒开始编译，ctrl+c 取消\033[0m"
-                                                tput rc
-                                                tput ed
-                                                sleep 1
-                                            done
-                                        fi
-                                        cat $filePathBranchList | while read line
-                                        do
-                                            local branshName=$line
-                                            #rm -rf out
-                                            git reset --hard&&
-                                            ftEcho -bh 将开始编译$branshName
-                                            git checkout   "$branshName"&&
-
-                                           git pull
-                                           if [[ -z $(cat /home/wgx/code/mtk6580L/alps/build/target/product/core.mk |grep DownloadProviderUi) ]]; then
-                                               git cherry-pick 6eab07d || git reset --hard
-                                            elif [[ ! -z $(cat /home/wgx/code/mtk6580L/alps/build/target/product/core.mk |grep DownloadProviderUi|grep "#") ]]; then
-                                               git cherry-pick ce0cef51961fb51ad4d3df333dccb4ef89dd248c || git reset --hard && git cherry-pick 1faa6bb
-
-                                           fi
-                                           git cherry-pick f33d612
-                                           git push 
-
-                                            # ftAutoInitEnv
-                                            # local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
-                                            # cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
-                                            # cpuCount=${cpuCount//cpucores\:/}
-                                            # if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
-                                            #             #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
-                                            #             source build/envsetup.sh&&
-                                            #             lunch sp7731c_1h10_32v4_oversea-user&&
-                                            #             kheader&&
-                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                            #             if [ $isUpload = "true" ];then
-                                            #                 ftAutoPacket -y
-                                            #             else
-                                            #                 ftAutoPacket
-                                            #             fi
-                                            #             if [ $isBackupOut = "true" ];then
-                                            #                 ftBackupOrRestoreOuts
-                                            #             fi
-                                            # elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                                            #         local deviceName=`basename $ANDROID_PRODUCT_OUT`
-                                            #         if [ $deviceName = "keytak6580_weg_l" ];then
-                                            #             source build/envsetup.sh&&
-                                            #             lunch full_keytak6580_weg_l-user&&
-                                            #             mkdir out
-                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log&&
-                                            #             make otapackage&&
-                                            #             if [ $isUpload = "true" ];then
-                                            #                 ftAutoPacket -y
-                                            #             else
-                                            #                 ftAutoPacket
-                                            #             fi
-                                            #             if [ $isBackupOut = "true" ];then
-                                            #                 ftBackupOrRestoreOuts
-                                            #             fi
-                                            #         else
-                                            #             ftAutoBuildMultiBranch -e
-                                            #             return;
-                                            #         fi
-                                            # fi
-
-                                        done
-                                        git reset --hard
-                                       break;;
-                        n | N)    break;;
-                        q |Q)    exit;;
-                        * ) ftEcho -e 错误的选择：$sel
-                             echo "输入q，离开" ;;
-                    esac
-            done
-    fi
-    rm -f $filePathBranchList
 }
 
 ftSetBashPs1ByGitBranch()
@@ -2327,11 +2369,11 @@ ftSetBashPs1ByGitBranch()
         else
             branchName="branchName→ ${branchName}"
         fi
-        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]$branchName:\[\033[0m\]"
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]$branchName: \[\033[0m\]"
     else
 
                 #export PS1='$(whoami)\[\033[42m\][\w]\[\033[0m\]:'
-        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]:"
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
     fi
 }
 
@@ -2375,7 +2417,7 @@ EOF
     local valCount=2
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$rNameUser" ];then    errorContent="${errorContent}\\n[用户名为空]rNameUser=$rNameUser" ; fi
+    if [ -z "$rDirPathCmds" ];then    errorContent="${errorContent}\\n[用户名为空]rNameUser=$rNameUser" ; fi
     if ( ! echo -n $editType | grep -q -e "^[0-9][0-9]*$")\
         &&( ! echo -n $eventCount | grep -q -e "^[0-9][0-9]*$");then    errorContent="${errorContent}\\n[事件数不是整数]eventCount=$eventCount" ; fi
     if [ ! -z "$errorContent" ];then
@@ -2587,7 +2629,7 @@ ftMaintainSystem()
 {
     local ftEffect=ubuntu系统维护
     local fileNameMaintain=maintain.sh
-    local filePathMaintain=${rDirPathCmdsModule}/${fileNameMaintain}
+    local filePathMaintain=${rDirPathCmdsModule}/tools/${fileNameMaintain}
     local editType=$1
     editType=${editType:-'backup'}
 

@@ -241,7 +241,7 @@ EOF
     local valCount=0
     local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$rNameUser" ];then    errorContent="${rNameUser}\\n[默认用户名为空]rNameUser=$rNameUser" ; fi
+    if [ -z "$rDirPathCmds" ];then    errorContent="${rNameUser}\\n[默认用户名为空]rNameUser=$rNameUser" ; fi
     if [ -z "$mCmdsModuleDataDevicesList" ];then    errorContent="${errorContent}\\n[可用的版本包备份存储设备列表为空]mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
@@ -382,8 +382,8 @@ ftBackupOs()
     #/home/wgx/cmds/data/excludeDirsBase.list
     fileNameExcludeBase=excludeDirsBase.list
     fileNameExcludeAll=excludeDirsAll.list
-    mFilePathExcludeBase=${rDirPathCmdsData}/${fileNameExcludeBase}
-    mFilePathExcludeAll=${rDirPathCmdsData}/${fileNameExcludeAll}
+    mFilePathExcludeBase=${rDirPathCmdsConfigData}/${fileNameExcludeBase}
+    mFilePathExcludeAll=${rDirPathCmdsConfigData}/${fileNameExcludeAll}
 
     mDirPathsExcludeBase=(/proc \
                 /android \
@@ -709,7 +709,7 @@ EOF
     #         if [[ $dir = "/" ]];then
     #             local dirPathDevRoot=${devNameDirPathList[indexDevName]}
     #             local keyModelName="Model Number:"
-    #             local devModelName=$(echo "$rUserPwd" | sudo -S  hdparm -I $dirPathDevRoot|grep "$keyModelName");
+    #             local devModelName=$(echo "$userPassword" | sudo -S  hdparm -I $dirPathDevRoot|grep "$keyModelName");
     #             devModelName=${devModelName//$keyModelName/}
     #             local infoHwMainHardDisk=$(echo $devModelName |sed s/[[:space:]]//g)
     #             break;

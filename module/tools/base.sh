@@ -519,9 +519,9 @@ EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
-    if [[ ! -d "$rDirPathCmdsData" ]]; then
-        mkdir -p $rDirPathCmdsData
-        ftEcho -s "xbash的data目录:$rDirPathCmdsData"
+    if [[ ! -d "$rDirPathCmdsConfigData" ]]; then
+        mkdir -p $rDirPathCmdsConfigData
+        ftEcho -s "xbash的data目录:$rDirPathCmdsConfigData"
     fi
 
     #耦合校验
@@ -535,7 +535,7 @@ EOF
             return
     fi
 
-    local filePathDevStatus=${rDirPathCmdsData}/devs_status
+    local filePathDevStatus=${rDirPathCmdsConfigData}/devs_status
     local filePathTmpRootAvail=/tmp/tmp_root_avail
 
     if [ "${devDirPath:0:1}" = "/" ];then
@@ -988,7 +988,7 @@ EOF
     local valCount=1
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$rNameUser" ];then    errorContent="${errorContent}\\n[默认用户名]rNameUser=$rNameUser" ; fi
+    if [ -z "$rDirPathCmds" ];then    errorContent="${errorContent}\\n[默认用户名]rNameUser=$rNameUser" ; fi
     if [ -z "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome" ; fi
     if ( ! echo -n $devMinAvailableSpaceTemp | grep -q -e "^[0-9][0-9]*$" );then    errorContent="${errorContent}\\n[可用空间限制]devMinAvailableSpace=$devMinAvailableSpace" ; fi
     if [ ! -z "$errorContent" ];then
@@ -999,7 +999,7 @@ EOF
 
     local indexDevMount=0
     local indexDevName=0
-    local dirPathHome=(${rDirPathUserHome/$rNameUser\//$rNameUser})
+    local dirPathHome=$rDirPathUserHome #(${rDirPathUserHome/$rNameUser\//$rNameUser})
     local sizeHome=$(ftDevAvailableSpace $dirPathHome true)
 
     if [[ $devMinAvailableSpace =~ "g" ]]||[[ $devMinAvailableSpace =~ "gb" ]];then

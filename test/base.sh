@@ -13,9 +13,8 @@ else
 fi
 
 dirNameDebug=temp
-dirPathHome=/home/${rNameUser}
-dirPathHomeDebug=${dirPathHome}/${dirNameDebug}
-if [ -d $dirPathHome ];then
+dirPathHomeDebug=${rDirPathUserHome}/${dirNameDebug}
+if [ -d $rDirPathUserHome ];then
     if [ ! -d $dirPathHomeDebug ];then
         mkdir  $dirPathHomeDebug
         ftEcho -s 测试用目录[$dirPathHomeDebug]不存在，已新建
@@ -24,7 +23,7 @@ if [ -d $dirPathHome ];then
 else
     echo -e "\033[1;31m    初始化demo环境失败\n\
     模块=$rModuleName\n\
-    dirPathHome=$dirPathHome\n\
+    rDirPathUserHome=$rDirPathUserHome\n\
     \033[0m"
 fi
 
@@ -89,9 +88,39 @@ fi
 
 # 对比文件不同
 #diff 文件1 文件2
+
+#算术运算
+#$[ $dff+1 ]
 mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 # ===================================================================================================================================
 #####-------------------------------------------------------------------------#########
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
+# cd /media/data/ptkfier/code/mtk6580L/alps
+# git tag -a "$2" -m "Release version $2"
+# git push origin --tags
+
+
+# dirPathProcessEnableId=/tmp/ProcessEnableIds
+# rm -rf $dirPathProcessEnableId
+# mkdir $dirPathProcessEnableId
+
+# for (( i = 0; i <2; i++ )); do
+#     if [[ -z "$size" ]]; then
+#         size=1000
+#         stae=true
+#     else
+#         stae=false
+#     fi
+#     echo $stae>${dirPathProcessEnableId}/${size}
+#     gnome-terminal -x bash -c "${rDirPathCmdModuleTools}/build.sh $size"
+#     gnome-terminal -e 'bash -c "read dd"'  --window --tab -e 'bash -c "echo 11;read ff"'
+#     size=`expr $size - 1`
+# done
+
+ while true; do
+            sleep 1200
+            ftKillPhoneAppByPackageName com.android.launcher3
+            echo "$(date -d "today" +"%y%m%d_%H:%M:%S") reboot launcher3" >> ~/temp/Launcher3_1711091914.log
+    done

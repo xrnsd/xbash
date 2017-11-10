@@ -28,55 +28,63 @@ done||isFail=userPassword
 
 #####-----------------------配置文件生成------------------------------#########
 # git config
+if [ -z `which git` ];then
+        echo $userPasswdLocal | sudo -S apt-get install  git ||(echo git安装失败，请重新安装;return)
+fi
 filePathGitConfig=/home/${userNameLocal}/.gitconfig
 if [ ! -f "$filePathGitConfig" ];then
-    git config --global user.email "${userNameLocal}@example.com"
-    git config --global user.name "$userNameLocal"
+    echo -en "请输入git用户名:"
+    read -s gitName&&git config --global user.name "$gitName"
+    echo -en "请输入git邮箱或联系方式:"
+    read -s gitemailUrl&&git config --global user.email "$gitemailUrl"
     echo "已自动初始化gitconfig,需要修改的请查看$filePathGitConfig"
 fi||isFail=gitConfig
 
 filePathXbashGitgnore=${dirPathLocal}/.gitignore
 # config
-            fileNameXbashConfigNew=${userNameLocal}.cofig
-            dirPathXbashConfig=${dirPathLocal}/config
-            filePathXbashConfigExample=${dirPathXbashConfig}/example.cofig
-            filePathXbashConfigNew=${dirPathXbashConfig}/${fileNameXbashConfigNew}
+        fileNameXbashConfigNew=${userNameLocal}.config
+        dirPathXbashConfigBashrc=${dirPathLocal}/config/bashrc
+        filePathXbashConfigExample=${dirPathXbashConfigBashrc}/expmale.config
+        filePathXbashConfigNew=${dirPathXbashConfigBashrc}/${fileNameXbashConfigNew}
 
-            tagUserNameBase="userName="
-            tagUserNameNew="userName=$userNameLocal"
-            tagdirPathXbashBase="dirPathXbash="
-            tagdirPathXbashNew="dirPathXbash=$dirPathLocal"
-            taguserPasswordBase="userPassword="
-            taguserPasswordNew="userPassword=$userPasswdLocal"
+        tagUserNameBase="export\ userName="
+        tagUserNameNew="export\ userName=$userNameLocal"
+        tagdirPathXbashBase="export\ dirPathXbash="
+        tagdirPathXbashNew="export\ dirPathXbash=$dirPathLocal"
+        taguserPasswordBase="export\ userPassword="
+        taguserPasswordNew="export\ userPassword=$userPasswdLocal"
 
-            cp $filePathXbashConfigExample $filePathXbashConfigNew
+        cp $filePathXbashConfigExample $filePathXbashConfigNew
 
-            sed -i "s:$tagUserNameBase:$tagUserNameNew:g" $filePathXbashConfigNew
-            sed -i "s:$tagdirPathXbashBase:$tagdirPathXbashNew:g" $filePathXbashConfigNew
-            sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew
+        sed -i "s:$tagUserNameBase:$tagUserNameNew:g" $filePathXbashConfigNew
+        sed -i "s:$tagdirPathXbashBase:$tagdirPathXbashNew:g" $filePathXbashConfigNew
+        sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew
 
-            echo "config/${fileNameXbashConfigNew}" >> $filePathXbashGitgnore||isFail=xbashConfig
+        echo "config/${fileNameXbashConfigNew}" >> $filePathXbashGitgnore||isFail=xbashConfig
 
 # bash
-            fileNameXbashModuleBashrcNew=${userNameLocal}.bashrc
-            dirPathXbashModuleBashrc=${dirPathLocal}/module/bashrc
-            filePathXbashModuleBashrcExample=${dirPathXbashModuleBashrc}/expmale.bashrc
-            filePathXbashModuleBashrcNew=${dirPathXbashModuleBashrc}/${fileNameXbashModuleBashrcNew}
+        fileNameXbashModuleBashrcNew=${userNameLocal}.bashrc
+        dirPathXbashModuleBashrc=${dirPathLocal}/module/bashrc
+        filePathXbashModuleBashrcExample=${dirPathXbashModuleBashrc}/expmale.bashrc
+        filePathXbashModuleBashrcNew=${dirPathXbashModuleBashrc}/${fileNameXbashModuleBashrcNew}
 
-            cp $filePathXbashModuleBashrcExample $filePathXbashModuleBashrcNew
+        cp $filePathXbashModuleBashrcExample $filePathXbashModuleBashrcNew
 
-            tagDirPathHomeCmdBase="dirPathHomeCmd=\${dirPathHome}/\${dirNameXbash}"
-            tagDirPathHomeCmdNew="dirPathHomeCmd=$dirPathLocal"
+        tagDirPathHomeCmdBase="dirPathHomeCmd=\${dirPathHome}/\${dirNameXbash}"
+        tagDirPathHomeCmdNew="dirPathHomeCmd=$dirPathLocal"
 
-            sed -i "s:$tagDirPathHomeCmdBase:$tagDirPathHomeCmdNew:g" $filePathXbashModuleBashrcNew
+        sed -i "s:$tagDirPathHomeCmdBase:$tagDirPathHomeCmdNew:g" $filePathXbashModuleBashrcNew
 
-            echo "module/bashrc/${fileNameXbashModuleBashrcNew}" >> $filePathXbashGitgnore||isFail=xbashConfigGone
+        echo "module/bashrc/${fileNameXbashModuleBashrcNew}" >> $filePathXbashGitgnore||isFail=xbashConfigGone
 
-# config.bashrc.gone
-            dirPathXbashConfigGone=${dirPathXbashConfig}/bashrc
-            fileNameXbashConfigGone=config_bashrc_base.gone
-            fileNameXbashConfigGoneExample=config_bashrc_base.gone_simple
-            cp ${dirPathXbashConfigGone}/${fileNameXbashConfigGoneExample} ${dirPathXbashConfigGone}/${fileNameXbashConfigGone}||isFail=xbashConfigGone
+#.inputrc 
+        fileNameXbashModuleBashrcInputrc=.inputrc
+        filePathXbashModuleBashrcInputrc=${dirPathXbashModuleBashrc}/${fileNameXbashModuleBashrcInputrc}
+
+#自定义配置
+#1 bashrc PS1 显示git branch 名字
+#2 bashrc 历史 自动备份去重复
+#3 
 
 #####-----------------------配置生效------------------------------#########
 dirPathHomeLocal=/home/${userNameLocal}
@@ -84,6 +92,10 @@ filePathHomeLocalConfig=${dirPathHomeLocal}/.bashrc
 
 mv ${filePathHomeLocalConfig} ${filePathHomeLocalConfig}_backup
 ln -s $filePathXbashModuleBashrcNew $filePathHomeLocalConfig
+
+filePathHomeLocalConfigInputrc=${dirPathHomeLocal}/${fileNameXbashModuleBashrcInputrc}
+mv ${filePathHomeLocalConfigInputrc} ${filePathHomeLocalConfigInputrc}_backup
+ln -s $filePathXbashModuleBashrcInputrc $filePathHomeLocalConfigInputrc
 
 if [ ! -z `which git` ];then
     cd $dirPathLocal
