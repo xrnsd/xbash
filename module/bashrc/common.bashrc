@@ -70,7 +70,7 @@ fi
 # 忽略特定命令
 export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
 # 保存历史命令条数
-export HISTSIZE=1000
+export HISTSIZE=5000
 # 以追加的方式保存命令历史
 shopt -s histappend
 #自动去重备份bash历史记录

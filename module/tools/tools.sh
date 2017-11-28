@@ -225,69 +225,55 @@ EOF
                                             ftEcho -bh 将开始编译$branchName
                                             git checkout   "$branchName"&&
 
-                                           # git pull&&
-                                           # # git cherry-pick 2ad768636b1481be1b24fa12f216c60dda1f6789||(continue)
-                                           # git cherry-pick 2ad7686||(git reset --hard)
-                                           # git cherry-pick 09c3525||(git reset --hard)
-                                           # if [[ -z "$(git branch -a|grep $branchName)" ]]; then
-                                           #          # local  isQuit=true
-                                           #          # local isKeePon=true
-                                           #          local isContinue=true
-                                           #          if [[ -z "$isKeePon" ]]; then
-                                           #              if [[ ! -z "$isContinue" ]]; then
-                                           #                  continue;
-                                           #              elif [[ ! -z "$isQuit" ]]; then
-                                           #                  return;
-                                           #              fi
-                                           #          fi
-                                           # else
-                                           #      git push
-                                           # fi
+                                           git pull&&
+                                           git cherry-pick bc515a1||(git reset --hard)
+                                           git cherry-pick 8003b91||(git reset --hard)
+                                           git push
 
-                                            ftAutoInitEnv
-                                            local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
-                                            cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
-                                            cpuCount=${cpuCount//cpucores\:/}
-                                            if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
-                                                        #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
-                                                        source build/envsetup.sh&&
-                                                        lunch sp7731c_1h10_32v4_oversea-user&&
-                                                        kheader&&
-                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log||break
-                                                        if [ $isUpload = "true" ];then
-                                                            ftAutoPacket -a
-                                                        else
-                                                            ftAutoPacket
-                                                        fi
-                                                        if [ $isBackupOut = "true" ];then
-                                                            ftBackupOrRestoreOuts
-                                                        fi
-                                            elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                                                    local deviceName=`basename $ANDROID_PRODUCT_OUT`
-                                                    if [ $deviceName = "keytak6580_weg_l" ];then
-                                                        source build/envsetup.sh&&
-                                                        lunch full_keytak6580_weg_l-user&&
-                                                        mkdir out
-                                                        make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log||break
+                                            # ftAutoInitEnv
+                                            # local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
+                                            # cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
+                                            # cpuCount=${cpuCount//cpucores\:/}
+                                            # if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+                                            #             #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
+                                            #             source build/envsetup.sh&&
+                                            #             lunch sp7731c_1h10_32v4_oversea-user&&
+                                            #             kheader&&
+                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log||break
+                                            #             if [ $isUpload = "true" ];then
+                                            #                 ftAutoPacket -a
+                                            #             else
+                                            #                 ftAutoPacket
+                                            #             fi
+                                            #             if [ $isBackupOut = "true" ];then
+                                            #                 ftBackupOrRestoreOuts
+                                            #             fi
+                                            # elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+                                            #         local deviceName=`basename $ANDROID_PRODUCT_OUT`
+                                            #         if [ $deviceName = "keytak6580_weg_l" ];then
+                                            #             source build/envsetup.sh&&
+                                            #             lunch full_keytak6580_weg_l-user&&
+                                            #             mkdir out
+                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log||break
 
-                                                        branchName=$(echo $AutoEnv_branchName | tr '[A-Z]' '[a-z]') #转小写
-                                                        if [[ "$branchName" != *fm* ]];then
-                                                            make otapackage
-                                                        fi
+                                            #             branchName=$(echo $AutoEnv_branchName | tr '[A-Z]' '[a-z]') #转小写
+                                            #             if [[ "$branchName" != *fm* ]];then
+                                            #                 make otapackage
+                                            #             fi
 
-                                                        if [ $isUpload = "true" ];then
-                                                            ftAutoPacket -a
-                                                        else
-                                                            ftAutoPacket
-                                                        fi
-                                                        if [ $isBackupOut = "true" ];then
-                                                            ftBackupOrRestoreOuts
-                                                        fi
-                                                    else
-                                                        ftAutoBuildMultiBranch -e
-                                                        return;
-                                                    fi
-                                            fi
+                                            #             if [ $isUpload = "true" ];then
+                                            #                 ftAutoPacket -a
+                                            #             else
+                                            #                 ftAutoPacket
+                                            #             fi
+                                            #             if [ $isBackupOut = "true" ];then
+                                            #                 ftBackupOrRestoreOuts
+                                            #             fi
+                                            #         else
+                                            #             ftAutoBuildMultiBranch -e
+                                            #             return;
+                                            #         fi
+                                            # fi
 
                                         done
                                         git reset --hard
@@ -1597,6 +1583,7 @@ EOF
     local isReadMe=
     local isUpload=
     local isPacket=
+    local isCopy=
     editType=$(echo $editType | tr '[A-Z]' '[a-z]')
     if (( $(expr index $editType "a") != "0" ));then
          isClean=true
@@ -1608,10 +1595,11 @@ EOF
         if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
         if (( $(expr index $editType "r") != "0" ));then   isReadMe=true ; fi
         if (( $(expr index $editType "p") != "0" ));then   isPacket=true ; fi
+        if (( $(expr index $editType "c") != "0" ));then   isCopy=true ; fi
     fi
 
     ftAutoInitEnv
-    local dirPathLocal=$PWD
+    local dirPathLocal=$dirPathCode
     local dirNameVersionSoftware=packet
     local buildType=$AutoEnv_buildType
     local dirPathVersionSoftware=${dirPathCode}/out/${dirNameVersionSoftware}
@@ -1672,6 +1660,11 @@ EOF
 
             # 生成软件包
             cd $dirPathVersionSoftwareVersion
+            if [[ ! -z "$isCopy" ]]; then
+                # cp 
+                cd $dirPathLocal
+                return;
+            fi
             if [[ ! -z "$isPacket" ]]; then
                    ftEcho -s "开始生成 ${versionName}.pac\n"
                     /usr/bin/perl $filePathPacketScript \

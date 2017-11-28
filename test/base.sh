@@ -28,7 +28,7 @@ else
 fi
 
 # -eq =     -ne !=
-# -gt  >      ge >=
+# -gt  >      -ge >=
 # -lt   <      le <=
 
 # if [ $test1 = "1" -o $test2 = "1" ]&&[ $test3 = "3" -a $test4 = "4" ]
@@ -119,8 +119,81 @@ mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 #     size=`expr $size - 1`
 # done
 
- while true; do
-            sleep 1200
-            ftKillPhoneAppByPackageName com.android.launcher3
-            echo "$(date -d "today" +"%y%m%d_%H:%M:%S") reboot launcher3" >> ~/temp/Launcher3_1711091914.log
-    done
+# package com.edl.memory;
+
+# import android.R.bool;
+# import android.app.Activity;
+# import android.content.Context;
+# import android.os.Bundle;
+# import android.view.LayoutInflater;
+# import android.view.MotionEvent;
+# import android.view.View;
+# import android.view.View.OnTouchListener;
+# import android.view.WindowManager;
+
+# public class MainActivity extends Activity implements OnTouchListener
+# {
+#     private static final String TAG = "123456";
+#     public final static boolean DEBUG = true;
+#     Bundle mBundle;
+#     @Override
+#     public void onCreate(Bundle savedInstanceState)
+#     {
+#         super.onCreate(savedInstanceState);
+#         View mianView=LayoutInflater.from(MainActivity.this).inflate(R.layout.activity_main, null);
+#         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+#         setContentView(mianView);
+#         findViewById(R.id.main).setOnTouchListener(this);
+#     }
+
+#     private void updateTitle(boolean is_enable) {
+#         setTitle(is_enable?"OK":"NO");
+#     }
+
+#     @Override
+#     public boolean onTouch(View arg0, MotionEvent arg1) {
+#         determineTouchEvent(arg0.getContext() ,arg1);
+#         return true;
+#     }
+
+#     public final static boolean IS_DEBUG_TOUCH_GESTUER=true;
+#     public final static int THRESHOLDVALUE_TIME=200;
+#     public static float THRESHOLDVALUE_DOWN = 15;
+#     public static float THRESHOLDVALUE_MOVE = 20;
+#     float mTriggerCoordinatesY =0,downX =0, downY = 0,moveY=0;
+#     boolean isEnableDown =false;
+#     boolean isTouchGesture=false;
+
+#     public void determineTouchEvent(Context context,MotionEvent arg1) {
+#         if(mTriggerCoordinatesY==0){
+#             //dp 2 px
+#             final float scale = context.getResources().getDisplayMetrics().density;
+#             THRESHOLDVALUE_DOWN=(THRESHOLDVALUE_DOWN * scale + 0.5f);
+#             THRESHOLDVALUE_MOVE=(THRESHOLDVALUE_MOVE * scale + 0.5f);
+
+#             mTriggerCoordinatesY=context.getResources().getDisplayMetrics().heightPixels-THRESHOLDVALUE_DOWN;
+#         }
+
+#         switch (arg1.getAction()) {
+#         case MotionEvent.ACTION_DOWN:
+
+# //            downX = arg1.getRawX();
+#             downY = arg1.getRawY();
+#             isEnableDown = downY>=mTriggerCoordinatesY;
+#             updateTitle(false);
+#             break;
+
+#         case MotionEvent.ACTION_MOVE:
+#             if(isEnableDown){
+#                 moveY = downY-arg1.getRawY();
+#                 if(moveY>THRESHOLDVALUE_MOVE){
+#                     float time=arg1.getEventTime()-arg1.getDownTime();
+#                     if(IS_DEBUG_TOUCH_GESTUER) android.util.Log.d("123456", "MainActivity___onTouch time="+time);
+#                     updateTitle(time<THRESHOLDVALUE_TIME);
+#                     isEnableDown=false;
+#                 }
+#             }
+#             break;
+#         }
+#     }
+# }
