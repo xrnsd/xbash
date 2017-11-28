@@ -181,7 +181,6 @@ if [[ -f  $filePathBashrc ]]; then
     fi
 fi
 export dirNameXbash=${dirNameXbash:-'cmds'}
-
 export dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
 
 #---------------- xbash配置  ----------------------------------
@@ -194,23 +193,23 @@ else
         export dirPathHomeCmdModuleBashrc=${dirPathHomeCmdModule}/bashrc
 
         #----------------   加载xbash的bashrc基础配置  ------------------
-        fileNameXbashTragetBashrcConfigBase=common.bashrc
-        filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdModuleBashrc}/${fileNameXbashTragetBashrcConfigBase}
+        filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdModuleBashrc}/common.bashrc
         if [ -f "$filePathXbashTragetBashrcConfigBase" ];then
-            source $filePathXbashTragetBashrcConfigBase
-
+            source $filePathXbashTragetBashrcConfigBase&& export filePathXbashTragetBashrcConfigBase=$filePathXbashTragetBashrcConfigBase
             #----------------   加载xbash的用户独立配置  ------------------
             filePathUserConfig=${dirPathHomeCmdConfigBashrc}/${userName}.config
             if [ -f "$filePathUserConfig" ];then
-                source $filePathUserConfig
+                source $filePathUserConfig&& export filePathUserConfig=$filePathUserConfig
             else
                 echo -e "\033[1;31m未找到Xbash下实现的自定义命令需要的用户独立配置\n$filePathUserConfig\033[0m"
                 filePathXbashTragetBashrcConfigExample=${dirPathHomeCmdConfigBashrc}/example.config
                 if [[ -f "$filePathXbashTragetBashrcConfigExample" ]]; then
                     echo -e "\033[1;33m解决此问题可以参考模版\n$filePathXbashTragetBashrcConfigExample\033[0m"
                 fi
+                export filePathUserConfig=
             fi
         else
             echo -e "\033[1;31mXbash下实现的自定义命令需要的配置\n$filePathXbashTragetBashrcConfigBase\033[0m不存在"
+            export filePathXbashTragetBashrcConfigBase=
         fi
 fi

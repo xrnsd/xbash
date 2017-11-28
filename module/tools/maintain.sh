@@ -503,7 +503,7 @@ EOF
             ftAddNote -h
             return
     fi
-    local dirPathBackupNote=${dirPathBackupRoot}/${versionName}
+    local dirPathBackupNote=${dirPathBackupRoot}${versionName}
     local fileNameNote=${versionName}.info
 
     if [ -d ${dirPathBackupRoot} ]&&[ ! -d ${dirPathBackupNote} ];then
@@ -1095,15 +1095,15 @@ elif [ $mTypeEdit = "backup" ];then
             #写版本备注
             ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
             #扫描设备,同步相同备份
-            # ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mCmdsModuleDataDevicesList[*]}"
+            #ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mCmdsModuleDataDevicesList[*]}"
             #清理临时文件
-            # ftAutoCleanTemp
+            #ftAutoCleanTemp
             #生成版本包
-            # ftBackupOs&&
+            #ftBackupOs&&
             #记录版本包校验信息
-            # ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+            #ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
             #记录版本包相关系统信息
-            ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+            #ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
             #同步
             # ftSynchronous "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"&&
             # 清除权限限制

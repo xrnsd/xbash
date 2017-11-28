@@ -7,6 +7,7 @@ if [[ -z "$Env_Val_Inited" ]]; then
     export XMODULE="script"
 
     # home/xxxx
+   export rNameUser=$userName
     export rDirNameTools=tools
     export rDirNameCmd=$dirNameXbash
     export rDirPathTools=$dirPathHomeTools

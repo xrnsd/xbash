@@ -1034,5 +1034,5 @@ EOF
             fi
             indexDevName=`expr $indexDevName + 1`
     done
-    export mCmdsModuleDataDevicesList
+    export mCmdsModuleDataDevicesList #=${mCmdsModuleDataDevicesList[*]}
 }
