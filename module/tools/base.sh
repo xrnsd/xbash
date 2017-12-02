@@ -1036,3 +1036,39 @@ EOF
     done
     export mCmdsModuleDataDevicesList #=${mCmdsModuleDataDevicesList[*]}
 }
+
+adb()
+{
+    local ftEffect=adb修正工具
+
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local  filePathAdbNow=$(which adb)
+    local  filePathAdbLocal=/usr/bin/adb
+
+    if [[ -f "$filePathAdbNow" ]]; then
+        local dirPathLocal=$(pwd)
+        local  filePathAdb=${dirPathCode}/out/host/linux-x86/bin/adb
+        if [[ "$dirPathLocal" = "$dirPathCode" ]]; then
+            if [[ -f "$filePathAdb" ]]&&[[ "$filePathAdbNow" != "$filePathAdb" ]]&&[[ -f "$filePathAdbLocal" ]]; then
+                echo $userPassword | sudo -S mv $filePathAdbLocal ${filePathAdbLocal}2
+                ftRestartAdb
+            fi
+        fi
+    else
+        if [[ -f "${filePathAdbLocal}2" ]]; then
+            echo $userPassword | sudo -S mv ${filePathAdbLocal}2 $filePathAdbLocal
+        else
+            local filePath=${ANDROID_SDK}/platform-tools/adb
+            if [[ ! -f "$filePath" ]]; then
+                ftEcho -e "Android SDK 配置 失败，文件不存在：$filePath"
+                return;
+            else
+                echo $userPassword | sudo -S ln -s  ${ANDROID_SDK}/platform-tools/adb $filePathAdbLocal
+            fi
+        fi
+        filePathAdbNow=$filePathAdbLocal
+        ftRestartAdb
+    fi
+
+    $filePathAdbNow "$@"
+}
