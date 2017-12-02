@@ -1048,26 +1048,31 @@ adb()
     if [[ -f "$filePathAdbNow" ]]; then
         local dirPathLocal=$(pwd)
         local  filePathAdb=${dirPathCode}/out/host/linux-x86/bin/adb
-        if [[ "$dirPathLocal" = "$dirPathCode" ]]; then
-            if [[ -f "$filePathAdb" ]]&&[[ "$filePathAdbNow" != "$filePathAdb" ]]&&[[ -f "$filePathAdbLocal" ]]; then
-                echo $userPassword | sudo -S mv $filePathAdbLocal ${filePathAdbLocal}2
+        if [[ "$dirPathLocal" = "$dirPathCode" ]]&&[[ -f "$filePathAdb" ]]; then
+            if [[ "$filePathAdbNow" != "$filePathAdb" ]]; then
+                local pid=$(lsof -i:5037  |grep adb |awk '{print $2}')
+                if [[ -f "$filePathAdbLocal" ]]; then
+                    echo $userPassword | sudo -S mv $filePathAdbLocal ${filePathAdbLocal}2
+                fi
                 ftRestartAdb
             fi
         fi
     else
-        if [[ -f "${filePathAdbLocal}2" ]]; then
-            echo $userPassword | sudo -S mv ${filePathAdbLocal}2 $filePathAdbLocal
-        else
-            local filePath=${ANDROID_SDK}/platform-tools/adb
-            if [[ ! -f "$filePath" ]]; then
-                ftEcho -e "Android SDK 配置 失败，文件不存在：$filePath"
-                return;
+        if [[ ! -f "${filePathAdbLocal}" ]]; then
+            if [[ -f "${filePathAdbLocal}2" ]]; then
+                echo $userPassword | sudo -S mv ${filePathAdbLocal}2 $filePathAdbLocal
             else
-                echo $userPassword | sudo -S ln -s  ${ANDROID_SDK}/platform-tools/adb $filePathAdbLocal
+                local filePath=${ANDROID_SDK}/platform-tools/adb
+                if [[ ! -f "$filePath" ]]; then
+                    ftEcho -e "Android SDK 配置 失败，文件不存在：$filePath"
+                    return;
+                else
+                    echo $userPassword | sudo -S ln -s  ${ANDROID_SDK}/platform-tools/adb $filePathAdbLocal
+                fi
             fi
+            ftRestartAdb
         fi
         filePathAdbNow=$filePathAdbLocal
-        ftRestartAdb
     fi
 
     $filePathAdbNow "$@"
