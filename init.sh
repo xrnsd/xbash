@@ -108,5 +108,21 @@ fi
 if [[ -z "$isFail" ]]; then
     echo "$diaNameLocal 初始化成功"
 else
-    echo "初始化失败,错误信息：$isFail"
+    local exceptionContent="未知错误"
+    while true; do
+    case $isFail in
+    userPassword)  exceptionContent="用户信息配置初始化失败"
+                break;;
+    xbashConfig)  exceptionContent="xbash 基础配置初始化失败"
+                break;;
+    xbashConfigGone) exceptionContent="xbash 无版本控制的配置初始化失败"
+                break;;
+    gitConfig)  exceptionContent="git 配置初始化失败"
+                break;;
+    gitCommit) exceptionContent="相关配置的修改记入版本失败"
+                break;;
+    *)  break;;
+    esac
+    done
+    echo -e "\033[1;31m${exceptionContent}\033[0m"
 fi

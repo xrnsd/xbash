@@ -1,4 +1,4 @@
-#!/bin/bash
+ #!/bin/bash
 #####---------------------  说明  ---------------------------#########
 # 不可在此文件中出现不被函数包裹的调用或定义
 # 人话，这里只放函数
@@ -218,18 +218,19 @@ EOF
                                         cat $filePathBranchList | while read line
                                         do
                                             local branchName=$line
-                                            if [[ $branchName == *_local ]];then
-                                                    continue;
-                                            fi
                                             git reset --hard&&
                                             ftEcho -bh 将开始编译$branchName
                                             git checkout   "$branchName"&&
 
-                                           git pull&&
-                                           git cherry-pick bc515a1||(git reset --hard)
-                                           git cherry-pick 8003b91||(git reset --hard)
-                                           git push
+                                            git pull&&
+                                            git cherry-pick a706140||(ftEcho -e "xxxxxxxxxxxxxxxx ${branchName}";continue)
+                                            if [[ $branchName == *_local ]];then
+                                                    continue;
+                                            fi
+                                            git push
 
+                                            git pull
+                                            ftAutoUpdateSoftwareVersion -y&&git push
                                             # ftAutoInitEnv
                                             # local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
                                             # cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
