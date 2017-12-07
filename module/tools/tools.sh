@@ -620,7 +620,7 @@ EOF
         local dirNamePackageName=${dirPathAnimation##*/}.zip
         local fileConfig=`ls $dirPathAnimation|grep '.txt'`
 
-        echo -en "请输入动画包的包名(回车默认animation):"
+        ftEcho -r  "请输入动画包的包名(回车默认animation):"
         read customPackageName
         if [ ${#customPackageName} != 0 ];then
             dirNamePackageName=${customPackageName}.zip
@@ -754,16 +754,16 @@ EOF
             [ -z "$frameRate" ]||\
             [ -z "$cycleCount" ]; do
                 if [ -z "$resolutionWidth" ];then
-                    echo -en 请输入动画的宽:
+                    ftEcho -r  请输入动画的宽:
                     read resolutionWidth
                   elif [ -z "$resolutionHeight" ]; then
-                    echo -en 请输入动画的高:
+                    ftEcho -r  请输入动画的高:
                     read resolutionHeight
                   elif [ -z "$frameRate" ]; then
-                    echo -en 请输入动画的帧率:
+                    ftEcho -r  请输入动画的帧率:
                     read frameRate
                   elif [ -z "$cycleCount" ]; then
-                    echo -en 请输入动画的循环次数:
+                    ftEcho -r  请输入动画的循环次数:
                     read cycleCount
                 fi
         done
@@ -933,7 +933,7 @@ EOF
     elif (( $#==1 ));then
         local dirPathFileList=$1
         local percentage=100
-        echo -en "请输入保留的百分比:"
+        ftEcho -r  "请输入保留的百分比:"
         read percentage
     fi
     local editType=del #surplus
@@ -1243,7 +1243,7 @@ EOF
                 printf "%-4s %-4s\n" [$index] $item
                 index=`expr $index + 1`
             done
-            echo -en "请输入对应的序号(回车默认0):"
+            ftEcho -r  "请输入对应的序号(回车默认0):"
             if (( $itemCount>9 ));then
                 read tIndex
             else
@@ -1585,6 +1585,7 @@ EOF
     local isUpload=
     local isPacket=
     local isCopy=
+    local isSpecial=
     editType=$(echo $editType | tr '[A-Z]' '[a-z]')
     if (( $(expr index $editType "a") != "0" ));then
          isClean=true
@@ -1597,6 +1598,10 @@ EOF
         if (( $(expr index $editType "r") != "0" ));then   isReadMe=true ; fi
         if (( $(expr index $editType "p") != "0" ));then   isPacket=true ; fi
         if (( $(expr index $editType "c") != "0" ));then   isCopy=true ; fi
+        if (( $(expr index $editType "t") != "0" ));then
+               isSpecial=true
+               isPacket=true
+        fi
     fi
 
     ftAutoInitEnv
@@ -1710,9 +1715,21 @@ EOF
                 dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
                                                  obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
             elif [ $deviceName = "keytak6580_weg_l" ];then
-                  local dirNameModem=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*)_intermediates
-                  local dirPathM=${dirPathOut}/obj/ETC/${dirNameModem}
-                    dataBaseFileList=(obj/ETC/${dirNameModem}/$(ls $dirPathM) obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15)
+                local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
+                for dirPath in ${dirNameModems[@]}
+                do
+                    dirPath=${dirPath//:/}
+                    for fileName in $(ls $dirPath)
+                    do
+                        local filePath=${dirPath}/${fileName}
+                        if [[ ! -f "$filePath" ]]; then
+                            ftEcho -e "文件${filePath}不存在"
+                        else
+                        dataBaseFileList=(${dataBaseFileList[@]} $filePath)
+                        fi
+                    done
+                done
+                dataBaseFileList=(${dataBaseFileList[@]} ${dirPathOut}/obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15)
             else
                 ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的配置\
                 \n请查看下面说明:"
@@ -1752,7 +1769,7 @@ EOF
                 local dirNameVeriosionBase=${AutoEnv_versionName}
                 #非user版本标记编译类型
                 if [ "$AutoEnv_buildType" != "user" ];then
-                    local dirNameVeriosionBase=${buildType}____${dirNameVeriosionBase}
+                     dirNameVeriosionBase=${buildType}____${dirNameVeriosionBase}
                 fi
                 #软件版本的日期与当前时间不一致就设定编译时间
                 arr=(${AutoEnv_versionName//_/ })
@@ -1764,7 +1781,14 @@ EOF
                 fi
                 if [ ! -z "$fileChangeTime" ]&&[ "$versionNameDate" != "${fileChangeTime}" ];then
                     export AutoEnv_SoftwareVersion_BuildTime=buildtime____${fileChangeTime}
-                    local dirNameVeriosionBase=${dirNameVeriosionBase}____${AutoEnv_SoftwareVersion_BuildTime}
+                     dirNameVeriosionBase=${dirNameVeriosionBase}____${AutoEnv_SoftwareVersion_BuildTime}
+                fi
+
+                if [[ ! -z "$isSpecial" ]]; then
+                    ftEcho -r $"请输入版本: "${dirNameVeriosionBase}"\n相应的说明[回车默认为常规]:"
+                    read tag
+                    tag=${tag:-'常规'}
+                    dirNameVeriosionBase=${tag}____${dirNameVeriosionBase}
                 fi
                 dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
 
@@ -1848,13 +1872,13 @@ EOF
                     # database
                     if [ ! -z "$dataBaseFileList" ];then
                         mkdir -p $dirPathPackageDataBase
-                        for file in ${dataBaseFileList[@]}
+                        for filePath in ${dataBaseFileList[@]}
                         do
-                            local filePath=${dirPathOut}/${file}
                              if [[ ! -f "$filePath" ]]; then
                                  ftEcho -e "${filePath}\n不存在"
                              else
-                                printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}  ")
+                                fileName=`basename $filePath`
+                                printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
                                  cp -r -f  $filePath $dirPathPackageDataBase
                              fi
                         done
@@ -2717,7 +2741,7 @@ EOF
             printf "%-4s %-4s\n" [$index] $item
             index=`expr $index + 1`
         done
-        echo -en "请输入对应的序号(回车默认0):"
+        ftEcho -r  "请输入对应的序号(回车默认0):"
         if (( $itemCount>9 ));then
             read tIndex
         else

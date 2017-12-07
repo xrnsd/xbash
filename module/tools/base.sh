@@ -435,6 +435,7 @@ EOF
     b | B| -b | -B)        echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
     bh | BH | -bh | -BH)    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
     y | Y | -y | -Y)        echo;echo -en "${content}[y/n]"; break;;
+    r | R | -r | -R)        echo;echo -en "${content}"; break;;
     ea| EA | -ea | -EA)    for val in ${content[@]}
                 do
                     echo -e "\033[1;31m$val\033[0m";

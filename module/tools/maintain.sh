@@ -101,8 +101,7 @@ ftRestoreChoiceSource()
             index=`expr $index + 1`
         done
         while true; do
-        echo
-        echo -en "请输入版本包对应的序号(回车默认0):"
+        ftEcho -r  "请输入版本包对应的序号(回车默认0):"
         if [ ${#fileList[@]} -gt 9 ];then
             read tIndex
         else
@@ -139,7 +138,7 @@ ftRestoreChoiceTarget()
     echo
 
     while true; do
-    echo -en "请输入目录对应的序号(回车默认系统[/]):"
+    ftEcho -r  "请输入目录对应的序号(回车默认系统[/]):"
     read -n 1 option
     echo
     #设定默认值
@@ -148,7 +147,7 @@ ftRestoreChoiceTarget()
     fi
     case $option in
         1)  mDirPathRestoreTarget=/; break;;
-        2)  echo -en "请输入目标路径："
+        2)  ftEcho -r  "请输入目标路径："
             read customdir
             if [ -d $customdir ];then
             mDirPathRestoreTarget=$customdir
@@ -264,7 +263,7 @@ EOF
     echo
 
     while true; do
-        echo -en "请选择存放备份文件的设备[0~`expr $index - 1`,q](回车默认当前用户目录):"
+        ftEcho -r  "请选择存放备份文件的设备[0~`expr $index - 1`,q](回车默认当前用户目录):"
         if [ ${#mCmdsModuleDataDevicesList[@]} -gt 9 ];then
             read dir
         else
@@ -310,7 +309,7 @@ ftSetBackupType()
         echo
 
         while true; do
-        echo -en "请选择备份类型(默认基础):"
+        ftEcho -r  "请选择备份类型(默认基础):"
         read -n 1 typeIndex
         #设定默认值
         if [ ${#typeIndex} == 0 ]; then
@@ -353,7 +352,7 @@ ftSetRestoreType()
         echo
 
         while true; do
-            echo -en "请选择还原设置(回车默认忽略home):"
+            ftEcho -r  "请选择还原设置(回车默认忽略home):"
             read -n 1 typeIndex
 
             #设定默认值
@@ -525,9 +524,7 @@ EOF
 
     local strVersion="[ "${lines}" ] "${versionName}
     if [ -z "$noteBase" ];then
-        local tt="请输入版本   ["${versionName}"]  相应的说明[回车默认为常规]:"
-        echo
-        echo -en $tt
+        ftEcho -r  "请输入版本   ["${versionName}"]  相应的说明[回车默认为常规]:"
         read note
         #未输入写入默认值
         if [ $mTypeBackupEdit = "cg" ];then
