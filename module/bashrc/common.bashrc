@@ -42,26 +42,23 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
 
     alias xd='ftMtkFlashTool'
     alias xb='ftMaintainSystem'
-    alias xss='ftPowerManagement reboot'
-    alias xtt='subl ${rDirPathCmds}/test/base.sh'
-    alias xs='ftPowerManagement shutdown'
     alias xc='export XCMD=xc;ftMain'
-    alias xch='ftGitCheckoutBranchByName'
+    alias xss='ftPowerManagement reboot'
+    alias xs='ftPowerManagement shutdown'
     alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
     alias xu='export XCMD=xu;gedit  $filePathUserConfig $filePathXbashTragetBashrcBase $filePathXbashTragetBashrcConfigBase'
-    alias xh='ftMain -ft|grep'
 
     if [ ! -z `which git` ];then
         alias xgla='ftGitLogShell -a'
-        alias xgl='ftGitLogShell 15'
+        alias xgl='ftGitLogShell 20'
         alias xgll='ftGitLogShell 100'
+        alias xch='ftGitCheckoutBranchByName'
 
         export PROMPT_COMMAND='\
         ftSetBashPs1ByGitBranch
         if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
          ftSetBashPs1ByGitBranch
         fi'
-        alias xcheckout='git checkout vendor/mediatek/proprietary/scripts'
         alias xbranch="git branch|grep"
     fi
 
@@ -88,8 +85,6 @@ if [ -d "$ANDROID_SDK" ];then
     alias xle='export XCMD=xle;adb logcat "*:E"'
     alias .9='export XCMD=.9;${rDirPathTools}/sdk/5.1/tools/draw9patch'
 
-    alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
-
     alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
     alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
     alias xqlauncher='adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
@@ -101,7 +96,8 @@ if [ -d "$ANDROID_SDK" ];then
 
     # adb logcat -v process | grep $(adb shell ps | grep com.android.systemui | awk '{print $2}')
     # adb logcat |grep Displayed #获取activity 显示时间
-    complete -W "grep com.android.systemui com.android.launcher3 com.android.commands.monkey" xk
+    complete -W "123456" xl
+    complete -W "systemui monkey launcher com.android.systemui com.android.launcher3 com.android.commands.monkey" xk
     complete -W "push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot" adb
 fi
 

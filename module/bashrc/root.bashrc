@@ -193,35 +193,26 @@ else
         export dirPathHomeCmdConfigBashrc=${dirPathHomeCmdConfig}/bashrc
         export dirPathHomeCmdModuleBashrc=${dirPathHomeCmdModule}/bashrc
 
-        #----------------   加载xbash的基础配置  ------------------
-        filePathXbashTragetBashrcConfigBase=${dirPathHomeCmdConfig}/bashrc/common.config
-        if [[ -f $filePathXbashTragetBashrcConfigBase ]]; then
+        #----------------   加载xbash的用户独立配置  ------------------
+        filePathUserConfig=${dirPathHomeCmdConfigBashrc}/${userName}.config
+        if [ -f "$filePathUserConfig" ];then
 
-            source $filePathXbashTragetBashrcConfigBase&& export filePathXbashTragetBashrcConfigBase=$filePathXbashTragetBashrcConfigBase
-            #----------------   加载xbash的用户独立配置  ------------------
-            filePathUserConfig=${dirPathHomeCmdConfigBashrc}/${userName}.config
-            if [ -f "$filePathUserConfig" ];then
+                source $filePathUserConfig&& export filePathUserConfig=$filePathUserConfig
+                #----------------   加载xbash的通用扩展  ------------------
+                filePathXbashTragetBashrcBase=${dirPathHomeCmdModuleBashrc}/common.bashrc
+                if [ -f "$filePathXbashTragetBashrcBase" ];then
 
-                    source $filePathUserConfig&& export filePathUserConfig=$filePathUserConfig
-                    #----------------   加载xbash的通用扩展  ------------------
-                    filePathXbashTragetBashrcBase=${dirPathHomeCmdModuleBashrc}/common.bashrc
-                    if [ -f "$filePathXbashTragetBashrcBase" ];then
-
-                                source $filePathXbashTragetBashrcBase&& export filePathXbashTragetBashrcBase=$filePathXbashTragetBashrcBase
-                    else
-                                echo -e "\033[1;31mXbash下实现的的通用扩展\n$filePathXbashTragetBashrcBase\033[0m不存在"
-                                export filePathXbashTragetBashrcBase=
-                    fi
-            else
-                    echo -e "\033[1;31m未找到Xbash下实现的自定义命令需要的用户独立配置\n$filePathUserConfig\033[0m"
-                    filePathXbashTragetBashrcConfigExample=${dirPathHomeCmdConfigBashrc}/example.config
-                    if [[ -f "$filePathXbashTragetBashrcConfigExample" ]]; then
-                        echo -e "\033[1;33m解决此问题可以参考模版\n$filePathXbashTragetBashrcConfigExample\033[0m"
-                    fi
-                    export filePathUserConfig=
-            fi
+                            source $filePathXbashTragetBashrcBase&& export filePathXbashTragetBashrcBase=$filePathXbashTragetBashrcBase
+                else
+                            echo -e "\033[1;31mXbash下实现的的通用扩展\n$filePathXbashTragetBashrcBase\033[0m不存在"
+                            export filePathXbashTragetBashrcBase=
+                fi
         else
-                    echo -e "\033[1;31mXbash需要的基础配置\n$filePathXbashTragetBashrcConfigBase\033[0m不存在"
-                    export filePathXbashTragetBashrcConfigBase=
+                echo -e "\033[1;31m未找到Xbash下实现的自定义命令需要的用户独立配置\n$filePathUserConfig\033[0m"
+                filePathXbashTragetBashrcConfigExample=${dirPathHomeCmdConfigBashrc}/example.config
+                if [[ -f "$filePathXbashTragetBashrcConfigExample" ]]; then
+                    echo -e "\033[1;33m解决此问题可以参考模版\n$filePathXbashTragetBashrcConfigExample\033[0m"
+                fi
+                export filePathUserConfig=
         fi
 fi
