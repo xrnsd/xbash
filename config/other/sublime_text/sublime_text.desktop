@@ -6,7 +6,7 @@ Name=Sublime Text
 GenericName=Text Editor
 Comment=Sophisticated text editor for code, markup and prose
 #Exec=/opt/sublime_text/sublime_text %F
-Exec=bash -c 'LD_PRELOAD=/opt/sublime_text/libsublime-imfix.so /opt/sublime_text/sublime_text' %F
+Exec=bash -c 'LD_PRELOAD=/home/wgx/cmds/config/other/sublime_text/libsublime-imfix.so /opt/sublime_text/sublime_text %F'
 Terminal=false
 MimeType=text/plain;
 Icon=sublime-text
@@ -17,7 +17,7 @@ Actions=Window;Document;
 [Desktop Action Window]
 Name=New Window
 #Exec=/opt/sublime_text/sublime_text -n
-Exec=bash -c 'LD_PRELOAD=/opt/sublime_text/libsublime-imfix.so /opt/sublime_text/sublime_text' -n
+Exec=bash -c 'LD_PRELOAD=/home/wgx/cmds/config/other/sublime_text/libsublime-imfix.so /opt/sublime_text/sublime_text -n'
 OnlyShowIn=Unity;
 
 [Desktop Action Document]

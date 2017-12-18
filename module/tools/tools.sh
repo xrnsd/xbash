@@ -305,7 +305,7 @@ ftReadAllFt()
             effectName=${effectName//()/}
             #echo "$effectName $effectDescription"
 
-            printf "%40s    " $effectName;echo $effectDescription
+            printf "%40s  " $effectName;echo $effectDescription
         done
 }
 
@@ -425,14 +425,21 @@ EOF
         ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
         return
     fi
-    #确定包存在
-    if [ ! -z "$(adb shell pm list packages|grep $packageName)" ];then
-        adb root
-        adb remount
-        pid=`adb shell ps | grep $packageName | awk '{print $2}'`
+
+    local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
+    if ( echo -n $pid | grep -q -e "^[0-9][0-9]*$"); then
+
+        local rootInfo=$(adb root|grep cannot)
+        local remountInfo=$(adb remount|grep failed)
+        if [[ ! -z "$rootInfo" ]]; then
+            ftEcho -e "adb提权失败:$rootInfo"
+        elif [[ ! -z "$remountInfo" ]]; then
+            ftEcho -e "adb提权失败:$remountInfo"
+        fi
+
         adb shell kill $pid
-    else
-        ftEcho -e 包名[${packageName}]不存在，请确认
+    elif [[ -z "$(adb shell pm list packages|grep $packageName)" ]]; then
+         ftEcho -e 包名[${packageName}]不存在，请确认
         while [ ! -n "$(adb shell pm list packages|grep $packageName)" ]; do
             ftEcho -y 是否重新开始
             read -n 1 sel
@@ -1013,6 +1020,7 @@ ftReNameFile()
     # local extensionName=$1
     local dirPathFileList=$1
     local lengthFileName=$2
+    local prefixContent=$3
     lengthFileName=${lengthFileName:-'4'}
 
     while true; do case "$1" in
@@ -1024,13 +1032,15 @@ ftReNameFile()
 #    ftReNameFile /home/xxxx/temp
 #    ftReNameFile 目录 修改后的文件长度
 #    ftReNameFile /home/xxxx/temp 5
+#    ftReNameFile 目录 修改后的文件长度 前缀
+#    ftReNameFile /home/xxxx/temp 5 test
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
     #耦合校验
-    local valCount=2
+    local valCount=3
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathFileList" ];then    errorContent="${errorContent}\\n[目标目录不存在]dirPathFileList=$dirPathFileList" ; fi
@@ -1070,7 +1080,7 @@ EOF
             continue
         fi
         fileNameBase=$((lengthFileNameBase+$index))
-        cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileNameBase:1}.${file##*.}
+        cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileNameBase:1}_small.${file##*.}
         index=`expr $index + 1`
     done
 }
@@ -1799,6 +1809,8 @@ EOF
                      dirPathUploadTraget=智能机软件/MTK6580/东华新
                 elif [ "$AutoEnv_clientName" = "PMZ" ];then
                      dirPathUploadTraget=智能机软件/MTK6580/鹏明珠
+                elif [ "$AutoEnv_clientName" = "CDHT" ];then
+                     dirPathUploadTraget=智能机软件/MTK6580/诚达恒泰
                 fi
             else
                 if [ ! -z "$fileChangeTime" ];then
@@ -2757,4 +2769,76 @@ EOF
         brachName=${branchList[$tIndex]}
     fi
     git checkout "$brachName"
+}
+
+ftGitLogShell()
+{
+    local ftEffect=git的log特定格式显示
+    local editType=$1
+
+    local isAllBranchLog=
+    local BranchLogItemCount=
+    if (  echo -n $editType | grep -q -e "^[0-9][0-9]*$");then
+        BranchLogItemCount=$editType
+    else
+        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+        if (( $(expr index $editType "a") != "0" ));then   isAllBranchLog=true ; fi
+    fi
+
+    while true; do case "$1" in
+    e | -e |--env) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    ${ftEffect}依赖包
+#    请尝试使用 sudo apt-get install git git-core git-gui git-doc 补全依赖
+#=========================================================
+EOF
+      return;;
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftGitLogShell -a
+#    ftGitLogShell 数量
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ -z `which git` ];then
+        ftGitLogShell -e
+        return
+    fi
+    if [[ ! -z "$isAllBranchLog" ]]&&[ -z `which gitk` ]; then
+        ftGitLogShell -e
+        return
+    fi
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftGitLogShell -h
+            return
+    fi
+
+    local gitVersionMin="2.6.0"
+    local gitVersionNow=$(git --version)
+    gitVersionNow=${gitVersionNow//git version/}
+    gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
+    local count=$BranchLogItemCount
+    count=${count:-'15'}
+
+    if [[ ! -z "$isAllBranchLog" ]]; then
+       gitk --all
+       return
+    fi
+
+    if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]];then
+        git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -$count
+    else
+        git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -$count
+    fi
 }

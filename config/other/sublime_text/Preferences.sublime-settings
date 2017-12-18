@@ -5,8 +5,10 @@
 	"fade_fold_buttons": false,
 	"font_size": 14,
 	"highlight_line": true,
+	"highlight_modified_tabs": true,
 	"ignored_packages":
 	[
+		"Markdown",
 		"Vintage"
 	],
 	"rulers":
@@ -16,5 +18,7 @@
 	"show_encoding": true,
 	"show_full_path": true,
 	"tab_size": 4,
+	"theme": "Default.sublime-theme",
+	"update_check": false,
 	"word_wrap": true
 }

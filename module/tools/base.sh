@@ -1046,6 +1046,17 @@ adb()
     local  filePathAdbNow=$(which adb)
     local  filePathAdbLocal=/usr/bin/adb
 
+    #环境校验
+    if [ -z "$filePathAdbNow" ]||[ ! -d "$ANDROID_SDK" ];then
+        cat<<EOF
+#===============[ ${ftEffect} ]的使用环境说明=============
+#
+#    Android SDK 环境异常，请查看配置
+#=========================================================
+EOF
+        return
+    fi
+
     if [[ -f "$filePathAdbNow" ]]; then
         local dirPathLocal=$(pwd)
         local  filePathAdb=${dirPathCode}/out/host/linux-x86/bin/adb

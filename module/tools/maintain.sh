@@ -256,7 +256,8 @@ EOF
 
     for dev in ${mCmdsModuleDataDevicesList[*]}
     do
-        echo [ ${index} ] $dev 可用$(ftDevAvailableSpace $dev)
+        echo -n "[${index}] ";printf "%-20s  " $dev;echo "可用：$(ftDevAvailableSpace $dev)"
+        #echo [ ${index} ] $dev 可用$(ftDevAvailableSpace $dev)
         # echo [ ${index} ] ${mCmdsModuleDataDevicesList[$index]}
         index=`expr $index + 1`
     done

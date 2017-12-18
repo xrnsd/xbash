@@ -1,72 +1,4 @@
 #! /bin/bash
-#----------------    全局变量 init  ---------------------------
-if [[ -z "$Env_Val_Inited" ]]; then
-    # 基本配置
-    export rXbashVersion="V0.7.8.0 beta"
-    # 标记为脚本模式，此模式说明使用实现对应的封装命令
-    export XMODULE="script"
-
-    # home/xxxx
-   export rNameUser=$userName
-    export rDirNameTools=tools
-    export rDirNameCmd=$dirNameXbash
-    export rDirPathTools=$dirPathHomeTools
-    export rDirPathUserHome=$dirPathHome
-    # $rDirPathUserHome/xxxx
-    export rDirNameCmdConfig=config
-    export rDirNameCmdData=data
-    export rDirNameCmdModule=module
-    # $rDirPathUserHome/cmds/modiule/test
-    export rDirNameCmdModuleTest=test
-
-    # $rDirPathUserHome/xxxx
-    export rDirPathCmds=${rDirPathUserHome}/${rDirNameCmd}
-    # $rDirPathUserHome/cmds/xxxx
-    export rDirPathCmdsConfig=$dirPathHomeCmdConfig
-    export rDirPathCmdsConfigData=${rDirPathCmdsConfig}/${rDirNameCmdData}
-    export rDirPathCmdsModule=${rDirPathCmds}/${rDirNameCmdModule}
-    export rDirPathCmdsTest=${rDirPathCmds}/${rDirNameCmdModuleTest}
-
-    # $rDirPathUserHome/cmds/modiule/test/xxxx
-    export rFileNameCmdModuleTestBase=base.sh
-    # $rDirPathUserHome/cmds/modiule/xxxx
-    export rFileNameCmdModuleTools=tools.sh
-    export rFileNameCmdModuleMS=maintain.sh
-
-    # $rDirPathUserHome/cmds/modiule/tools/xxx
-    export rDirNameCmdModuleTools=tools
-    export rFileNameCmdModuleToolsBase=base.sh
-    export rFileNameCmdModuleToolsSpecific=tools.sh
-
-    export rDirPathCmdModuleTools=${rDirPathCmdsModule}/${rDirNameCmdModuleTools}
-    export rFilePathCmdModuleToolsBase=${rDirPathCmdModuleTools}/${rFileNameCmdModuleToolsBase}
-    export rFilePathCmdModuleToolsSpecific=${rDirPathCmdModuleTools}/${rFileNameCmdModuleToolsSpecific}
-
-    # ========设定只读=========
-    readonly rXbashVersion
-    readonly rNameUser
-    readonly rDirPathUserHome
-    readonly rDirNameTools
-    readonly rDirNameCmd
-    readonly rDirNameCmdConfig
-    readonly rDirNameCmdData
-    readonly rDirNameCmdModule
-    readonly rDirNameCmdModuleTest
-    readonly rDirPathCmds
-    readonly rDirPathCmdsConfigData
-    readonly rDirPathCmdsConfig
-    readonly rDirPathCmdsModule
-    readonly rDirPathCmdsTest
-    readonly rFileNameCmdModuleTestBase
-    readonly rFileNameCmdModuleTools
-    readonly rFileNameCmdModuleMS
-    readonly rFilePathCmdModuleToolsSpecific
-    readonly rCmdsPermissionRoot
-    readonly rCmdsPermissionBase
-    readonly rDirPathTools
-
-    export Env_Val_Inited=true
-fi
 #----------------    bash config    ---------------------------
 # 忽略特定命令
 export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
@@ -102,8 +34,6 @@ alias xr="source ~/.bashrc"
 #----------------    xbash config  ---------------------------
 #标记为环境模式，此模式说明直接调用脚本实现
 export XMODULE="env"
-
-dirPathHomeCmdConfigBashrc=${dirPathHomeCmdConfig}/bashrc
 if [ -f $rFilePathCmdModuleToolsSpecific ];then
     source  $rFilePathCmdModuleToolsSpecific
     #bash PS1 配置
@@ -115,27 +45,16 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
     alias xss='ftPowerManagement reboot'
     alias xtt='subl ${rDirPathCmds}/test/base.sh'
     alias xs='ftPowerManagement shutdown'
-    alias xk='ftKillPhoneAppByPackageName'
     alias xc='export XCMD=xc;ftMain'
     alias xch='ftGitCheckoutBranchByName'
     alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
-    alias xu='export XCMD=xu;gedit  $filePathUserConfig $filePathXbashTragetBashrcConfigBase'
+    alias xu='export XCMD=xu;gedit  $filePathUserConfig $filePathXbashTragetBashrcBase $filePathXbashTragetBashrcConfigBase'
     alias xh='ftMain -ft|grep'
 
     if [ ! -z `which git` ];then
-        gitVersionMin="2.6.0"
-        gitVersionNow=$(git --version)
-        gitVersionNow=${gitVersionNow//git version/}
-        gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
-
-        if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]];then
-            alias xgl='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -15'
-            alias xgll='git log --date=format-local:'%y%m%d-%H\:%M\:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -100'
-        else
-            #git log --pretty=format:'%Cblue%h%Creset %<(40,trunc)%s [%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%an%Creset%C(yellow)%d%Creset]'
-            alias xgl='git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -15'
-            alias xgll='git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -100'
-        fi
+        alias xgla='ftGitLogShell -a'
+        alias xgl='ftGitLogShell 15'
+        alias xgll='ftGitLogShell 100'
 
         export PROMPT_COMMAND='\
         ftSetBashPs1ByGitBranch
@@ -148,7 +67,6 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
 
     #命令选项快速适配
     complete -W "backup restore" xb
-    complete -W "systemui monkey launcher" xk
     complete -W "restartadb test clean_data_garbage  -v -vvv -ft" xc
 else
     echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$rFilePathCmdModuleToolsSpecific]\033[0m"
@@ -158,6 +76,33 @@ fi
 if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then
     alias unix2dos=todos
     alias dos2unix=fromdos
+fi
+
+if [ -d "$ANDROID_SDK" ];then
+    alias xl='export XCMD=xl;\
+                adb logcat -c;\
+                adb logcat | grep '
+    alias xtext='adb shell input text'
+    alias xlc='adb logcat | grep androidrun -i'
+    alias xk='ftKillPhoneAppByPackageName'
+    alias xle='export XCMD=xle;adb logcat "*:E"'
+    alias .9='export XCMD=.9;${rDirPathTools}/sdk/5.1/tools/draw9patch'
+
+    alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
+
+    alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
+    alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
+    alias xqlauncher='adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
+    alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
+    alias xqchanglogo='adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
+    alias xqfactorytest='adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
+    alias xqchooseBootAnimation='adb shell am start -n com.android.settings/com.android.settings.ChooseBootAnimationActivity'
+    alias xqcamera_test_sub='adb shell am start -n com.mediatek.factorymode/com.mediatek.factorymode.camera.SubCamera'
+
+    # adb logcat -v process | grep $(adb shell ps | grep com.android.systemui | awk '{print $2}')
+    # adb logcat |grep Displayed #获取activity 显示时间
+    complete -W "grep com.android.systemui com.android.launcher3 com.android.commands.monkey" xk
+    complete -W "push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot" adb
 fi
 
 if [ -d "vendor/sprd" ];then
