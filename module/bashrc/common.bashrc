@@ -80,6 +80,8 @@ if [ -d "$ANDROID_SDK" ];then
                 adb logcat -c;\
                 adb logcat | grep '
     alias xtext='adb shell input text'
+    #输入制定暗码
+    alias xam='adb shell am start -a android.intent.action.CALL tel:'
     alias xlc='adb logcat | grep androidrun -i'
     alias xk='ftKillPhoneAppByPackageName'
     alias xle='export XCMD=xle;adb logcat "*:E"'

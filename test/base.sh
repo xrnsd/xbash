@@ -38,7 +38,7 @@ fi
 # adb logcat -v process | grep $(adb shell ps | grep com.android.systemui | awk '{print $2}')
 
 # 把.git 以2048M为界压缩成 MTK6580L.tar. aa MTK6580L.tar. ab ......
-# pigz 分包压缩 tar --use-compress-program=pigz -cvpf .git |split -b 2048m - MTK6580L.tar. 
+# pigz 分包压缩 tar --use-compress-program=pigz -cvpf - .git |split -b 2048m - MTK6580L.tar. 
 
 # adb 模拟输入
 # adb shell input text "526541651651"
@@ -72,3 +72,12 @@ mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 #     gnome-terminal -e 'bash -c "read dd"'  --window --tab -e 'bash -c "echo 11;read ff"'
 #     size=`expr $size - 1`
 # done
+
+# 要将目录logs打包压缩并分割成多个1M的文件，可以用下面的命令：
+# tar cjf - logs/ |split -b 1m - logs.tar.bz2.
+# 完成后会产生下列文件：
+# logs.tar.bz2.aa, logs.tar.bz2.ab, logs.tar.bz2.ac
+# 要解压的时候只要执行下面的命令就可以了：
+# cat logs.tar.bz2.a* | tar xj
+cd /home/wgx/code/mtk6580/code
+tar --use-compress-program=pigz -cvpf - .git |split -b 2048m - MTK6580M_$(date -d "today" +"%y%m%d%H%M%S").tgz

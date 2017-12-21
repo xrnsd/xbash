@@ -223,14 +223,17 @@ EOF
                                             git checkout   "$branchName"&&
 
                                             git pull&&
-                                            git cherry-pick a706140||(ftEcho -e "xxxxxxxxxxxxxxxx ${branchName}";continue)
+                                            git cherry-pick 31bb557||(ftEcho -e "xxxxxxxxxxxxxxxx ${branchName}";continue)
                                             if [[ $branchName == *_local ]];then
                                                     continue;
                                             fi
                                             git push
 
-                                            git pull
-                                            ftAutoUpdateSoftwareVersion -y&&git push
+                                            # git pull
+                                            # ftAutoUpdateSoftwareVersion -y&&git push
+
+
+
                                             # ftAutoInitEnv
                                             # local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
                                             # cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
