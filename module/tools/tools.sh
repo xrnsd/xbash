@@ -1089,7 +1089,7 @@ EOF
             continue
         fi
         fileNameBase=$((lengthFileNameBase+$index))
-        cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileNameBase:1}_small.${file##*.}
+        cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileNameBase:1}.${file##*.}
         index=`expr $index + 1`
     done
 }
@@ -1662,6 +1662,10 @@ EOF
             local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
             local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
             local filePathPacketScript=${rDirPathCmdsModule}/tools/pac_7731c.pl
+
+            if [[ ! -z "$(cat $versionName|grep 451)" ]]; then
+                dirPathModemBin=${dirPathModemBin}2
+            fi
 
             if [ ! -f "$filePathPacketScript" ];then
                     ftEcho -ea "[${ftEffect}]的参数错误 \

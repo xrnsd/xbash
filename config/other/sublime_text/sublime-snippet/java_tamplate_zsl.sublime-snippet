@@ -1,0 +1,11 @@
+<snippet>
+   <content><![CDATA[
+android.util.Log.d("123456","line:$TM_LINE_NUMBER "+"  ");
+//android.util.Log.d(TAG,"" );
+]]></content>
+    <!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+    <tabTrigger>zsl</tabTrigger>
+    <!-- Optional: Set a scope to limit where the snippet will trigger -->
+    <scope>source.java</scope>
+    <description>添加log</description>
+</snippet>

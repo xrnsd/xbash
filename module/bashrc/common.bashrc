@@ -85,7 +85,7 @@ if [ -d "$ANDROID_SDK" ];then
     alias xlc='adb logcat | grep androidrun -i'
     alias xk='ftKillPhoneAppByPackageName'
     alias xle='export XCMD=xle;adb logcat "*:E"'
-    alias .9='export XCMD=.9;${rDirPathTools}/sdk/5.1/tools/draw9patch'
+    alias .9='export XCMD=.9;${ANDROID_SDK}/tools/draw9patch'
 
     alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
     alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'

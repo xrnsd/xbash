@@ -1,0 +1,10 @@
+<snippet>
+   <content><![CDATA[
+//@{ added by wgx Usefulness: 
+]]></content>
+    <!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+    <tabTrigger>zs</tabTrigger>
+    <!-- Optional: Set a scope to limit where the snippet will trigger -->
+    <scope>source.java</scope>
+    <description>添加代码行</description>
+</snippet>

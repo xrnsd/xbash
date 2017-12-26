@@ -1,0 +1,35 @@
+<snippet>
+	<content><![CDATA[
+# =========== 名称处理
+    # 文件名 \${file%.*}
+    # 后缀名 \${file##*.}
+
+# =========== 路径处理
+    #返回路径最后的文件或目录名
+    # `basename $dirPath`
+    #返回去掉路径最后一级的路径
+    # `dirname $dirPath` /home
+    # 路径替换
+    # echo b=\$(echo $dirPath | sed "s 123/  222/ ") # 123替换为  222
+
+# ===========  目录遍历
+    #ls /home/test/ | while read line
+    #do
+    #    echo $line
+    #done
+
+# ===========  文件数量获取
+    #filenumbers= ls -l /media/data_self/backup/os |grep '.tgz'|grep "^-"|wc -l
+
+# ===========  文件对比
+    #diff 文件1 文件2
+
+# ===========  文件内容替换
+    #sed -i 's/被替换的内容/要替换成的内容/' file #内容包含空格需要转义
+    #sed -i "s:被替换的内容:要替换成的内容:g" file #被替换的内容为路径，内容包含空格需要转义
+
+]]></content>
+	<tabTrigger>xdir</tabTrigger>
+	<scope>source.shell</scope>
+	<description>目录操作demo</description>
+</snippet>

@@ -1,0 +1,10 @@
+<snippet>
+   <content><![CDATA[
+//deleted by wgx Usefulness: 
+]]></content>
+    <!-- Optional: Set a tabTrigger to define how to trigger the snippet -->
+    <tabTrigger>zsd</tabTrigger>
+    <!-- Optional: Set a scope to limit where the snippet will trigger -->
+    <scope>source.java</scope>
+    <description>删除或注释代码段</description>
+</snippet>
