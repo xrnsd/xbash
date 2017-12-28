@@ -2121,8 +2121,9 @@ EOF
 
    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
             echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
-            local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
-            seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+            # local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathChangeListTemplate})
+            # seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+            seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
 
             local enterLine="\n"
             local content="当前版本：$versionName"${enterLine}
@@ -2134,7 +2135,7 @@ EOF
             content=${content}${enterLine}"切换默认动画：*#979312#*"
             content=${content}${enterLine}"测试模式：*#*#180#*#*"
             content=${content}${enterLine}"三星测试：*#0*#"
-            echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
+            echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
 
         #     echo -e "﻿==============================================================================\
         # "| cat - ${filePathChangeListTemplate}.temp>>$filePathChangeListTemplate
