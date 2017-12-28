@@ -467,7 +467,7 @@ ftTiming()
 {
     local ftEffect=脚本操作耗时记录
 
-    if [ -z "$mTimingStart" ];then
+    if [ -z "$mTimingStart" ]||[ "$1" = "-i" ];then
         mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
         return 0;
     fi
@@ -1088,4 +1088,59 @@ EOF
     fi
 
     $filePathAdbNow "$@"
+}
+
+ftLnUtil()
+{
+    local ftEffect=获取软连接的真实路径
+    local lnPath=$1
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftLnUtil 软连接路径
+#    ftLnUtil /home/xian-hp-u16/log/xb_backup
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$lnPath" ];then    errorContent="${errorContent}\\n[软连接为空]lnPath=$lnPath" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftLnUtil -h
+            return
+    fi
+
+    OLD_IFS="$IFS"
+    IFS="/"
+    arr=($lnPath)
+    IFS="$OLD_IFS"
+
+    i=${#arr[@]}
+    let i--
+    delDir=
+    while [ $i -ge 0 ]
+    do
+        [[ $lnPath =~ ^/  ]] && lnRealPath=$lnPath || lnRealPath=`pwd`/$lnPath
+        while [ -h $lnRealPath ]
+        do
+           b=`ls -ld $lnRealPath|awk '{print $NF}'`
+           c=`ls -ld $lnRealPath|awk '{print $(NF-2)}'`
+           [[ $b =~ ^/ ]] && lnRealPath=$b  || lnRealPath=`dirname $c`/$b
+        done
+        if [ "$lnRealPath" = "$lnPath" ];then
+            lnPath=${lnPath%/*}
+            delDir=${arr[$i]}/$delDir
+        else
+            echo ${lnRealPath}${delDir}
+            break
+        fi
+        let i--
+    done
 }

@@ -12,21 +12,6 @@ else
     \033[0m"
 fi
 
-dirNameDebug=temp
-dirPathHomeDebug=${rDirPathUserHome}/${dirNameDebug}
-if [ -d $rDirPathUserHome ];then
-    if [ ! -d $dirPathHomeDebug ];then
-        mkdir  $dirPathHomeDebug
-        ftEcho -s 测试用目录[$dirPathHomeDebug]不存在，已新建
-    fi
-    cd $dirPathHomeDebug
-else
-    echo -e "\033[1;31m    初始化demo环境失败\n\
-    模块=$rModuleName\n\
-    rDirPathUserHome=$rDirPathUserHome\n\
-    \033[0m"
-fi
-
 # -eq =     -ne !=
 # -gt  >      -ge >=
 # -lt   <      le <=
@@ -45,17 +30,11 @@ fi
 
 #算术运算
 #$[ $dff+1 ]
-mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 # ===================================================================================================================================
 #####-------------------------------------------------------------------------#########
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
-# cd /media/data/ptkfier/code/mtk6580L/alps
-# git tag -a "$2" -m "Release version $2"
-# git push origin --tags
-
-
 # dirPathProcessEnableId=/tmp/ProcessEnableIds
 # rm -rf $dirPathProcessEnableId
 # mkdir $dirPathProcessEnableId
@@ -83,78 +62,17 @@ mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 # cd /home/wgx/code/mtk6580/code
 # tar --use-compress-program=pigz -cvpf - .git |split -b 2048m - MTK6580M_$(date -d "today" +"%y%m%d%H%M%S").tgz
 
-# 压缩
-ftTar()
-{
-    local ftEffect=tar优化加速和分包参数封装
-    local source=$1
-    local traget=$2
-    local splitSize=$3
+# cd /media/data/ptkfier/code/mtk6580/code
+# dirPath=/media/${rNameUser}/disk/patch
+# if [[ -d "$dirPath" ]]; then
+#     # ls $dirPath | while read line
+#     # do
+#     #    git am ${dirPath}/${line}||(git am --abort;break)
+#     # done
 
-    while true; do case "$1" in
-    e | -e |--env) cat<<EOF
-#===================[   ${ftEffect}   ]的使用环境说明=============
-#
-#    依赖 sshpass pigz,请使用下面命令安装
-#    sudo apt-get install sshpass pigz
-#=========================================================
-EOF
-      return;;
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftTar 无参
-#    ftTar [example]
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
+#     git format-patch -s 172d743 -o $dirPath
+# else
+#     echo 设备不存在dirPath=$dirPath
+# fi
 
-    #环境校验
-    if [ -z `which sshpass` ]||[ -z `which pigz` ];then
-        ftTar -e
-        return
-    fi
-
-    #耦合校验
-    local valCount=3
-    local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$source" ];then    errorContent="${errorContent}\\n[压缩源为空]"
-    elif [ ! -d "$source" ]&&[ ! -f "$source" ];then errorContent="${errorContent}\\n[压缩源找不到]source=$source" ;fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftTar -h
-            return
-    fi
-
-    local lastName=".tgz"
-    local fileNameTarPackage=traget${lastName}
-
-    local pathLastItemName=$(basename $source)
-    pathLastItemName=${pathLastItemName%.*}
-    if [[ -z "traget" ]]&&[[ ! -z  "$pathLastItemName" ]]; then
-        fileNameTarPackage=$pathLastItemName
-        # fileNameTarPackage=${fileNameTarPackage}_$(date -d "today" +"%y%m%d%H%M%S")
-        fileNameTarPackage=${fileNameTarPackage}${lastName}
-    elif [[ -d "$traget" ]]; then
-        fileNameTarPackage=${traget}${fileNameTarPackage}
-    else
-        if [[ -z "${traget##*.}" ]]; then
-            fileNameTarPackage=${traget}${lastName}
-        else
-            fileNameTarPackage=$traget
-        fi
-    fi
-
-    echo source=$source
-    echo fileNameTarPackage=$fileNameTarPackage
-
-    # if [[ -z "$splitSize" ]]; then
-    #     tar --use-compress-program=pigz -cvpf $fileNameTarPackage $source
-    # else
-    #     tar --use-compress-program=pigz -cvpf - $source |split -b $splitSize - $fileNameTarPackage
-    # fi
-}
-
-# ftTar $2 $3 $4
+sleep 2

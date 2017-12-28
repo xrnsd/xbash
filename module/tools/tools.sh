@@ -851,6 +851,7 @@ EOF
     #耦合校验
     local valCount=1
     local errorContent=
+    if [ ! -d "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome" ; fi
     if [ ! -d "$rDirPathCmdsTest" ];then    errorContent="${errorContent}\\n[xbash模块路径不存在]rDirPathCmdsTest=$rDirPathCmdsTest" ; fi
     if [ ! -f "$filePathCmdModuleTest" ];then    errorContent="${errorContent}\\n[测试模块不存在]filePathCmdModuleTest=$filePathCmdModuleTest" ; fi
     if [ ! -z "$errorContent" ];then
@@ -860,7 +861,16 @@ EOF
     fi
 
     local dirPathLocal=$PWD
+    local dirPathTemp=${rDirPathUserHome}/temp
+    if [[ ! -d "$dirPathTemp" ]]; then
+        mkdir $dirPathTemp||(ftEcho -e "${ftEffect} 创建demo环境目录失败:$dirPathTemp";return)
+    fi
+    if [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]]; then
+        cd $dirPathTemp
+    fi
+    ftTiming -i
     $filePathCmdModuleTest "$@"
+    ftTiming
     cd $dirPathLocal
 }
 
@@ -1098,7 +1108,7 @@ EOF
 
 ftUpdateHosts()
 {
-    local ftEffect=更新hosts
+    local ftEffect=更新hosts[xxx 废弃  xxx]
     local filePathHosts=/etc/hosts
     local urlCustomHosts=$1
 
@@ -1473,7 +1483,7 @@ EOF
 
     ftEcho -s "开始上传到  ${serverIp}/${pathContentUploadTraget}"
     cd $dirPathContentUploadSource
-    mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
+    ftTiming -i
 
     tar -cv  $pathContentUploadSource| pigz -1 |sshpass -p $pasword ssh $userName@$serverIp "gzip -d|tar -xPC $dirPathServer"
 
@@ -1996,29 +2006,13 @@ EOF
 
 
     #使用git 记录的修改记录
-    gitVersionMin="2.6.0"
-    gitVersionNow=$(git --version)
-    gitVersionNow=${gitVersionNow//git version/}
-    gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
-
-    # if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]]; then
-    #     # gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:" %an %ad %s")
-    #      #gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:" %an %ad %s" -1)
-
-    #     # gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
-    #     # gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:'%h %ad %<(8,trunc)%an %s')
-
-    #     gitCommitListOneDay=$(git log --date=format-local:'%y%m%d' --pretty=format:'%s' -30)
-    #     gitCommitListBefore=$(git log --date=format-local:'%y%m%d' --pretty=format:'%s' -30)
-    # else
-        gitCommitListOneDay=$(git log --date=short --pretty=format:"%s" -30)
-        gitCommitListBefore=$(git log --date=short --pretty=format:"%s" -30)
-    # fi
+    local gitCommitListOneDay=$(git log --date=short --pretty=format:"%s" -30)
+    local gitCommitListBefore=$(git log --date=short --pretty=format:"%s" -30)
 
 # ===============================================
-# =================     客户说明           ===============
+# =================     客户说明          ================
 # ===============================================
-    #
+
     if [[ "$AutoEnv_clientName" = "PMZ" ]]||[[ $AutoEnv_mnufacturers = "sprd" ]]; then
             #获取语言缩写列表
             ftAutoLanguageUtil
@@ -2040,62 +2034,62 @@ EOF
 # =================     修改记录    ==================
 # ===============================================
     if [ $AutoEnv_mnufacturers = "sprd" ];then
-        # 暗码清单,动画切换暗码
-        local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
-        if [ -f $filePathPawInfo ];then
-                local key="    private static final String PAW_NUM_INFO ="
-                local pawNumInfo=$(cat $filePathPawInfo|grep "$key")  #获取暗码清单信息
-                pawNumInfo=${pawNumInfo//$key/};
-                pawNumInfo=${pawNumInfo//\";/};
-                pawNumInfo=${pawNumInfo//\"/};
-                pawNumInfo=$(echo $pawNumInfo |sed s/[[:space:]]//g)
+            # 暗码清单,动画切换暗码
+            local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
+            if [ -f $filePathPawInfo ];then
+                    local key="    private static final String PAW_NUM_INFO ="
+                    local pawNumInfo=$(cat $filePathPawInfo|grep "$key")  #获取暗码清单信息
+                    pawNumInfo=${pawNumInfo//$key/};
+                    pawNumInfo=${pawNumInfo//\";/};
+                    pawNumInfo=${pawNumInfo//\"/};
+                    pawNumInfo=$(echo $pawNumInfo |sed s/[[:space:]]//g)
 
-                key="    private static final String LOGO_CHANGE ="
-                local changLogoNumInfo=$(cat $filePathPawInfo|grep "$key")  #动画切换暗码信息
-                changLogoNumInfo=${changLogoNumInfo//$key/};
-                changLogoNumInfo=${changLogoNumInfo//\";/};
-                changLogoNumInfo=${changLogoNumInfo//\"/};
-                changLogoNumInfo=$(echo $changLogoNumInfo |sed s/[[:space:]]//g)
-        else
-                ftEcho -e "[工程暗码配置文件不存在:]\n$filePathPawInfo"
-        fi
+                    key="    private static final String LOGO_CHANGE ="
+                    local changLogoNumInfo=$(cat $filePathPawInfo|grep "$key")  #动画切换暗码信息
+                    changLogoNumInfo=${changLogoNumInfo//$key/};
+                    changLogoNumInfo=${changLogoNumInfo//\";/};
+                    changLogoNumInfo=${changLogoNumInfo//\"/};
+                    changLogoNumInfo=$(echo $changLogoNumInfo |sed s/[[:space:]]//g)
+            else
+                    ftEcho -e "[工程暗码配置文件不存在:]\n$filePathPawInfo"
+            fi
 
-        #摄像头配置相关
-        local filePathCameraConfig=${dirPathCode}/${AutoEnv_deviceDirPath}/BoardConfig.mk
-        if [ -f $filePathCameraConfig ];then
-                local keyType="LZ_CONFIG_CAMERA_TYPE := "
-                local keySizeBack="CAMERA_SUPPORT_SIZE := "
-                local keySizeFront="FRONT_CAMERA_SUPPORT_SIZE := "
+            #摄像头配置相关
+            local filePathCameraConfig=${dirPathCode}/${AutoEnv_deviceDirPath}/BoardConfig.mk
+            if [ -f $filePathCameraConfig ];then
+                    local keyType="LZ_CONFIG_CAMERA_TYPE := "
+                    local keySizeBack="CAMERA_SUPPORT_SIZE := "
+                    local keySizeFront="FRONT_CAMERA_SUPPORT_SIZE := "
 
-                local cameraTypeInfo=$(cat $filePathCameraConfig|grep "$keyType")
-                local cameraSizeBackMax=$(cat $filePathCameraConfig|grep "$keySizeBack")
-                local cameraSizeFrontMax=$(cat $filePathCameraConfig|grep "$keySizeFront")
+                    local cameraTypeInfo=$(cat $filePathCameraConfig|grep "$keyType")
+                    local cameraSizeBackMax=$(cat $filePathCameraConfig|grep "$keySizeBack")
+                    local cameraSizeFrontMax=$(cat $filePathCameraConfig|grep "$keySizeFront")
 
-                cameraTypeInfo=${cameraTypeInfo//$keyType/};
-                cameraSizeFrontMax=${cameraSizeFrontMax//$keySizeFront/};
+                    cameraTypeInfo=${cameraTypeInfo//$keyType/};
+                    cameraSizeFrontMax=${cameraSizeFrontMax//$keySizeFront/};
 
-                cameraSizeBackMax=${cameraSizeBackMax//${keySizeFront}$cameraSizeFrontMax/};
-                cameraSizeBackMax=${cameraSizeBackMax//$keySizeBack/};
+                    cameraSizeBackMax=${cameraSizeBackMax//${keySizeFront}$cameraSizeFrontMax/};
+                    cameraSizeBackMax=${cameraSizeBackMax//$keySizeBack/};
 
-                cameraTypeInfo=$(echo $cameraTypeInfo |sed s/[[:space:]]//g)
-                cameraSizeFrontMax=$(echo $cameraSizeFrontMax |sed s/[[:space:]]//g)
-                cameraSizeBackMax=$(echo $cameraSizeBackMax |sed s/[[:space:]]//g)
+                    cameraTypeInfo=$(echo $cameraTypeInfo |sed s/[[:space:]]//g)
+                    cameraSizeFrontMax=$(echo $cameraSizeFrontMax |sed s/[[:space:]]//g)
+                    cameraSizeBackMax=$(echo $cameraSizeBackMax |sed s/[[:space:]]//g)
 
-                sizeFcameraList=(real 2M 5M 8M)
-                sizeBcameraList=(real 2M 5M 8M 12M)
-                local cameraSizeFrontDefault=${sizeFcameraList[LZ_FCAM]}
-                local cameraSizeBackDefault=${sizeBcameraList[LZ_BCAM]}
-        else
-                ftEcho -e "[相机配置文件不存在，获取失败]\n$filePathCameraConfig"
-        fi
+                    sizeFcameraList=(real 2M 5M 8M)
+                    sizeBcameraList=(real 2M 5M 8M 12M)
+                    local cameraSizeFrontDefault=${sizeFcameraList[LZ_FCAM]}
+                    local cameraSizeBackDefault=${sizeBcameraList[LZ_BCAM]}
+            else
+                    ftEcho -e "[相机配置文件不存在，获取失败]\n$filePathCameraConfig"
+            fi
 
             #修改记录
             echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
             local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
             seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
 
-            enterLine="\n"
-            content="当前版本：$versionName"${enterLine}
+            local enterLine="\n"
+            local content="当前版本：$versionName"${enterLine}
             content=${content}${enterLine}"摄像头类型：$cameraTypeInfo"
             content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFrontDefault/$cameraSizeBackDefault"
             content=${content}${enterLine}"真实插值 前/后摄大小：$cameraSizeFrontMax/$cameraSizeBackMax"
@@ -2118,8 +2112,8 @@ EOF
             local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
             seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
 
-            enterLine="\n"
-            content="当前版本：$versionName"${enterLine}
+            local enterLine="\n"
+            local content="当前版本：$versionName"${enterLine}
             content=${content}${enterLine}"隐藏指令：*#*#94127*208#*#*"
             content=${content}${enterLine}"imei编辑：*#315#*"
             content=${content}${enterLine}"imei显示：*#06#"
@@ -2215,61 +2209,6 @@ EOF
     fi
 
     ftLanguageUtil "${LanguageList//$key/}"
-}
-
-ftLnUtil()
-{
-    local ftEffect=获取软连接的真实路径
-    local lnPath=$1
-
-    while true; do case "$1" in
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftLnUtil 软连接路径
-#    ftLnUtil /home/xian-hp-u16/log/xb_backup
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$lnPath" ];then    errorContent="${errorContent}\\n[软连接为空]lnPath=$lnPath" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftLnUtil -h
-            return
-    fi
-
-    OLD_IFS="$IFS"
-    IFS="/"
-    arr=($lnPath)
-    IFS="$OLD_IFS"
-
-    i=${#arr[@]}
-    let i--
-    delDir=
-    while [ $i -ge 0 ]
-    do
-        [[ $lnPath =~ ^/  ]] && lnRealPath=$lnPath || lnRealPath=`pwd`/$lnPath
-        while [ -h $lnRealPath ]
-        do
-           b=`ls -ld $lnRealPath|awk '{print $NF}'`
-           c=`ls -ld $lnRealPath|awk '{print $(NF-2)}'`
-           [[ $b =~ ^/ ]] && lnRealPath=$b  || lnRealPath=`dirname $c`/$b
-        done
-        if [ "$lnRealPath" = "$lnPath" ];then
-            lnPath=${lnPath%/*}
-            delDir=${arr[$i]}/$delDir
-        else
-            echo ${lnRealPath}${delDir}
-            break
-        fi
-        let i--
-    done
 }
 
 ftAutoUpdateSoftwareVersion()
@@ -2422,7 +2361,7 @@ ftSetBashPs1ByGitBranch()
 
 ftMonkeyTestByDevicesName()
 {
-    local ftEffect=自动化monkey测试
+    local ftEffect=自动化monkey测试 [xxx 残废 xxx]
     local editType=$1
     local eventCount=$2
     local throttleTimeLong=300
