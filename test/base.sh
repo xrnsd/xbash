@@ -74,5 +74,3 @@ fi
 # else
 #     echo 设备不存在dirPath=$dirPath
 # fi
-
-sleep 2

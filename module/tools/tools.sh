@@ -1237,7 +1237,8 @@ EOF
 
     local dirNameCodeRootOuts=outs
     local dirPathCodeRootOuts=${dirPathCode%/*}/${dirNameCodeRootOuts}
-    local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----$(date -d "today" +"%y%m%d[%H:%M]")
+    local versionInfoDateTime=$(date -d "today" +"%y%m%d[%H:%M]")
+    local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----${versionInfoDateTime}
     local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
 
     if [ ! -d "$dirPathCodeRootOuts" ];then
@@ -1302,6 +1303,17 @@ EOF
              ftEcho -e "out 不完整"
              dirNameBranchVersion=${dirNameBranchVersion}____section
         fi
+
+        local fileNameGitLogInfo=git.log
+        local filePathGitLogInfo=${dirPathOutTop}/${fileNameGitLogInfo}
+        if [[ ! -f $filePathGitLogInfo ]]; then
+            touch $filePathGitLogInfo
+        fi
+        echo -e "
+======================================================================================================
+$dirNameBranchVersion
+======================================================================================================
+$(git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"%ad %an %h %s %d" -20)" >> $filePathGitLogInfo
         mv ${dirPathOutTop}/ $dirPathOutBranchVersion&&
         ftEcho -s "移动 $dirPathOutTop \n到  ${dirPathCodeRootOuts}/${dirNameBranchVersion}"
     else
