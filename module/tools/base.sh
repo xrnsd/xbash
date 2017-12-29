@@ -505,107 +505,50 @@ ftTiming()
 ftDevAvailableSpace()
 {
     local ftEffect=设备可用空间
-    local devDirPath=$1
+    local dirPathTraget=$1
     local isReturn=$2
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftDevAvailableSpace [devDirPath] [[isReturn]]
+#    ftDevAvailableSpace [dirPathTraget] [[isReturn]]
 #    ftDevAvailableSpace /media/test
-#    ftDevAvailableSpace /media/test true
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
-    if [[ ! -d "$rDirPathCmdsConfigData" ]]; then
-        mkdir -p $rDirPathCmdsConfigData
-        ftEcho -s "xbash的data目录:$rDirPathCmdsConfigData"
-    fi
-
     #耦合校验
-    local valCount=2
+    local valCount=1
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$devDirPath" ];then    errorContent="${errorContent}\\n[设备路径不存在]devDirPath=$devDirPath" ; fi
+    if [ ! -d "$dirPathTraget" ];then    errorContent="${errorContent}\\n[设备路径不存在]dirPathTraget=$dirPathTraget" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftDevAvailableSpace -h
             return
     fi
+     local devAvailableSIzeList=`df -lh | awk '{print $4}'`
+     local devMountDirPathList=(`df -lh | awk '{print $6}'`)
 
-    local filePathDevStatus=${rDirPathCmdsConfigData}/devs_status
-    local filePathTmpRootAvail=/tmp/tmp_root_avail
-
-    if [ "${devDirPath:0:1}" = "/" ];then
-        if [ ! -d ${devDirPath} ];then
-            mkdir -p ${devDirPath}
-        fi
-    else
-        pwd=`pwd`
-        if [ ! -d "${pwd}/${devDirPath}" ];then
-            mkdir -p ${pwd}/${devDirPath}
-        fi
-        devDirPath=${pwd}/${devDirPath}
-    fi
-
-    if [ -z $isReturn ]||[ $isReturn != "true" ];then
-        df -h >$filePathDevStatus
-    elif  $isReturn = "true" ];then
-        df >$filePathDevStatus
-    fi
-    cat $filePathDevStatus | while read line
+     local indexDevName=0
+     local devMountDirPath
+    for size in ${devAvailableSIzeList[*]}
     do
-        line_path=`echo ${line} | awk -F' ' '{print $6}'`
-        line_avail=`echo ${line} | awk -F' ' '{print $4}'`
-         if [ "${line_path:0:1}" != "/" ]; then
-             continue
-         fi
-
-         if [ "${line_path}" = "/" ]; then
-                root_avail=${line_avail}
-             #echo "root_avail:${root_avail}"
-             if [ -f $filePathTmpRootAvail ];then
-                 rm $filePathTmpRootAvail
-             fi
-             echo ${root_avail} > $filePathTmpRootAvail
-             continue
-         fi
-
-        path_length=${#line_path}
-        if [ "${devDirPath:0:${path_length}}" = "${line_path}" ];then
-            path_avail=${line_avail}
-            if [ -f /tmp/tmp_path_avail ];then
-                rm /tmp/tmp_path_avail
+            devMountDirPath=${devMountDirPathList[indexDevName]}
+             length=${#dirPathTraget}
+            if [[ "${devMountDirPath:0:$length}" = "$dirPathTraget" ]]; then
+                    if [[ $size =~ "G" ]];then
+                            size=${size//G/}
+                            size=$(echo "$size * 1024" | bc)
+                    else
+                            size=${size//M/}
+                    fi
+                    echo $size
             fi
-            echo ${path_avail} > /tmp/tmp_path_avail
-            break
-        fi
+            indexDevName=`expr $indexDevName + 1`
     done
-    rm -f $filePathDevStatus
-
-    if [ -f /tmp/tmp_path_avail ];then
-        path_avail=`cat /tmp/tmp_path_avail`
-        rm /tmp/tmp_path_avail
-    fi
-    if [ -f $filePathTmpRootAvail ];then
-        root_avail=`cat $filePathTmpRootAvail`
-        rm $filePathTmpRootAvail
-    fi
-
-    if [ -z ${path_avail} ];then
-         path_avail=${root_avail}
-    fi
-
-    local size
-    if [ -z $isReturn ]||[ $isReturn != "true" ];then
-        size=$path_avail
-    elif  $isReturn = "true" ];then
-        size=`expr $path_avail / 1024 `
-    fi
-    echo $size
 }
 
 #########################
@@ -1001,7 +944,7 @@ EOF
     local indexDevMount=0
     local indexDevName=0
     local dirPathHome=$rDirPathUserHome #(${rDirPathUserHome/$rNameUser\//$rNameUser})
-    local sizeHome=$(ftDevAvailableSpace $dirPathHome true)
+    local sizeHome=$(ftDevAvailableSpace $dirPathHome)
 
     if [[ $devMinAvailableSpace =~ "g" ]]||[[ $devMinAvailableSpace =~ "gb" ]];then
             devMinAvailableSpace=${devMinAvailableSpace//g/}
@@ -1026,11 +969,13 @@ EOF
     do
             devMountDirPath=${devMountDirPathList[indexDevName]}
             if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
-                    sizeTemp=$(ftDevAvailableSpace $devMountDirPath true)
+                    sizeTemp=$(ftDevAvailableSpace $devMountDirPath)
                     # 确定目录已挂载,设备可用空间大小符合限制
-                    if mountpoint -q $devMountDirPath&&(($sizeTemp>=$devMinAvailableSpace));then
-                        mCmdsModuleDataDevicesList[$indexDevMount]=$devMountDirPath
-                        indexDevMount=`expr $indexDevMount + 1`
+                    if [[ "$devMinAvailableSpace" = "0" ]]||(($sizeTemp>=$devMinAvailableSpace)); then
+                        if mountpoint -q $devMountDirPath;then
+                            mCmdsModuleDataDevicesList[$indexDevMount]=$devMountDirPath
+                            indexDevMount=`expr $indexDevMount + 1`
+                        fi
                     fi
             fi
             indexDevName=`expr $indexDevName + 1`
