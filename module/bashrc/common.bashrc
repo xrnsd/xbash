@@ -3,7 +3,7 @@
 # 忽略特定命令
 export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
 # 保存历史命令条数
-export HISTSIZE=5000
+export HISTSIZE=$bashHistorySize
 ## history 命令显示的格式
 # export HISTTIMEFORMAT='%F %T '
 ## history存放的文件
@@ -16,7 +16,7 @@ if [ "$(whoami)" != "root" ];then
     filePathBashHistoryArchive=${filePathBashHistory}_archive
     filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
     #备份历史
-    let lineCountMax=HISTSIZE-1
+    let lineCountMax=$HISTSIZE-1
     lineCount=$(wc -l < $filePathBashHistory)
     if (($lineCount > $lineCountMax)); then
         cat $filePathBashHistory >> $filePathBashHistoryArchive \
@@ -26,6 +26,14 @@ if [ "$(whoami)" != "root" ];then
         cat $filePathBashHistoryArchive|grep -E "adb|git|cd|source|make|lunch" >$filePathBashHistory
         sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
         mv $filePathBashHistoryTemp $filePathBashHistory
+        #history size 自动扩容
+        lineCount=$(wc -l < $filePathBashHistory)
+        let lineCount=$lineCount+1000
+        if (( $lineCount>5000 ));then
+            tagdirPathXbashBase="export\ bashHistorySize=5000"
+            tagdirPathXbashNew="export\ bashHistorySize=$lineCount"
+            sed -i "s:$tagdirPathXbashBase:$tagdirPathXbashNew:g" $filePathUserConfig
+        fi
     fi
 fi
 #----------------    xbash config  ---------------------------
