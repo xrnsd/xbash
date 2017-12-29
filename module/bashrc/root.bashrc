@@ -152,7 +152,11 @@ EOF
             lnPath=${lnPath%/*}
             delDir=${arr[$i]}/$delDir
         else
-            echo ${lnRealPath}${delDir}
+            local dirPath=${lnRealPath}/${delDir}
+            if [[ "$lnRealPath" = "/${delDir}" ]]; then
+                dirPath=$1
+            fi
+            echo $dirPath
             break
         fi
         let i--
