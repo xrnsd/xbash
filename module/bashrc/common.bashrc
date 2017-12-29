@@ -40,6 +40,7 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
     export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
     export ENV_XBASH_INIT_STATED=1
 
+    alias rm='ftRmExpand'
     alias xd='ftMtkFlashTool'
     alias xb='ftMaintainSystem'
     alias xc='export XCMD=xc;ftMain'
