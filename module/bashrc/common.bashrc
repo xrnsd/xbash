@@ -4,37 +4,37 @@
 export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
 # 保存历史命令条数
 export HISTSIZE=5000
-# 以追加的方式保存命令历史
-shopt -s histappend
+## history 命令显示的格式
+# export HISTTIMEFORMAT='%F %T '
+## history存放的文件
+# export HISTFILE=$filePathBashHistoryArchive
+
 #自动去重备份bash历史记录
 if [ "$(whoami)" != "root" ];then
     filePathBashHistory=${dirPathHome}/.bash_history
     filePathBashHistoryTemp=${filePathBashHistory}_temp
     filePathBashHistoryArchive=${filePathBashHistory}_archive
     filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
-    #去重
-    sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
-    mv $filePathBashHistoryTemp $filePathBashHistory
     #备份历史
     let lineCountMax=HISTSIZE-1
     lineCount=$(wc -l < $filePathBashHistory)
     if (($lineCount > $lineCountMax)); then
-        prune_lines=$(($lineCount - $lineCountMax))
         cat $filePathBashHistory >> $filePathBashHistoryArchive \
         && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
-        && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive \
-        && > $filePathBashHistory
+        && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
+        #过滤需要的History
+        cat $filePathBashHistoryArchive|grep -E "adb|git|cd|source|make|lunch" >$filePathBashHistory
+        sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
+        mv $filePathBashHistoryTemp $filePathBashHistory
     fi
 fi
+#----------------    xbash config  ---------------------------
 alias ..="cd .."
 alias ...="cd ../.."
 alias xcc='cd $OLDPWD'
 alias xr="source ~/.bashrc"
-
-#----------------    xbash config  ---------------------------
-#标记为环境模式，此模式说明直接调用脚本实现
-export XMODULE="env"
 if [ -f $rFilePathCmdModuleToolsSpecific ];then
+    export XMODULE="env" #标记为环境模式，此模式说明直接调用脚本实现
     source  $rFilePathCmdModuleToolsSpecific
     #bash PS1 配置
     export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
