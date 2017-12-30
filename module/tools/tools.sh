@@ -2819,14 +2819,14 @@ ftRmExpand()
 
         editType=$1
         editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+        if (( $(expr index $editType "f") != "0" ));then   local isRmSilence=true ; fi
         if (( $(expr index $editType "r") != "0" ));then   local isRmDirectory=true ; fi
     fi
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#     请参照rm 使用习惯 
-#     rm -rf 目标
+#========[ ${ftEffect} ]的使用示例=============
+#
 #     ftRmExpand xx xxx
 #=========================================================
 EOF
@@ -2838,11 +2838,14 @@ EOF
     local valCount=2
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$dirPathLocal" ];then    errorContent="${errorContent}\\n[示例1]dirPathLocal=$dirPathLocal" ; fi
-    if [ ! -d "$traget" ]&&[ ! -f "$traget" ];then    errorContent="${errorContent}\\n[这是什么鬼]traget=$traget" ; fi
+    # if [ ! -d "$dirPathLocal" ];then    errorContent="${errorContent}\\n[示例1]dirPathLocal=$dirPathLocal" ; fi
+    if [ -z "$traget" ];then    errorContent="${errorContent}\\n不知道你想干嘛" ;
+    elif [ -z "$isRmSilence" ]&&[ ! -d "$traget" ]&&[ ! -f "$traget" ];then    errorContent="${errorContent}\\n这是什么鬼:$traget" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftRmExpand -h
+            ftEcho -s "请参照rm 使用习惯 "
+            $(which rm) --help
             return
     fi
 
@@ -2859,24 +2862,26 @@ EOF
             fi
             dirNameList=$dirNameList #假如存在多个就直接选第一个
             local dirPathDevTrash=${dirPath}/${dirNameList}/files
+            break;
         fi
     done
 
-    if [[ ! -d "dirPathDevTrash" ]]; then
+    if [[ -d "$dirPathDevTrash" ]]; then
         if [[ -z "$isRmDirectory" ]]&&[[ -d "$traget" ]]; then
                 while true; do
                         ftEcho -y 这是目录,还删么
                         read -n 1 sel
                         case "$sel" in
                             y | Y )  echo;break;;
-                            n | N |q | Q)    return;;
+                            n | N |q | Q)    echo;return;;
                             * ) ftEcho -e 错误的选择：$sel
                                 echo "输入n,q，离开"
                                 ;;
                         esac
                 done
         fi
-        mv $traget $dirPathDevTrash
+        local status=$(mv $traget $dirPathDevTrash 1>/dev/null 2>&1)
+        # ftEcho -e $status
     else
         ftEcho -s "未移动 $traget 到回收站"
         $(which rm) "$@"
