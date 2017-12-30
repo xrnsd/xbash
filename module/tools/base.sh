@@ -564,6 +564,17 @@ ftGetKeyValueByBlockAndKey()
     local blockName=$2
     local keyName=$3
 
+    if [[ "${filePath:0:1}" = "-" ]]; then
+        local count=4
+        filePath=$2
+        blockName=$3
+        keyName=$4
+
+        editType=$1
+        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+        if (( $(expr index $editType "f") != "0" ));then   local isReadSilence=true ; fi
+    fi
+
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
@@ -577,17 +588,27 @@ EOF
     * ) break;;esac;done
 
     #耦合校验
-    local valCount=3
+    local valCount=${count:-'3'}
     local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[文件不存在]filePath=$filePath"
     else
         testBockName=$(cat $filePath|grep $blockName)
         testKeyName=$(cat $filePath|grep $keyName)
-        if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
-        elif [ -z "$testBockName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
-        if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]keyName=$keyName"
-        elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName" ; fi
+        if [[ -z "$isReadSilence" ]]; then
+            if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
+            elif [ -z "$testBockName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
+            if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]keyName=$keyName"
+            elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName" ; fi
+        else
+            if [ -z "$blockName" ]\
+                ||[ -z "$testBockName" ]\
+                ||[ -z "$keyName" ]\
+                ||[ -z "$testKeyName" ];then
+                # echo -e "error\c"
+                return;
+            fi
+        fi
     fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"

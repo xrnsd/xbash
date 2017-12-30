@@ -1104,83 +1104,6 @@ EOF
     done
 }
 
-
-
-ftUpdateHosts()
-{
-    local ftEffect=更新hosts[xxx 废弃  xxx]
-    local filePathHosts=/etc/hosts
-    local urlCustomHosts=$1
-
-    while true; do case "$1" in
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#使用默认hosts源
-#    ftUpdateHosts 无参
-#
-#使用自定义hosts源
-#    ftUpdateHosts [URL]
-#    ftUpdateHosts https://raw.githubusercontent.com/racaljk/hosts/master/hosts
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -f "$filePathHosts" ];then    errorContent="${errorContent}\\n[ubuntu默认hosts配置文件不存在]filePathHosts=$filePathHosts" ; fi
-    if [ ! -d "$rDirPathCmdsConfigData" ];then    errorContent="${errorContent}\\n[xbash的data目录不存在]rDirPathCmdsConfigData=$rDirPathCmdsConfigData" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftUpdateHosts -h
-            return
-    fi
-
-    # 下载hosts文件
-    local url="https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
-    local netTool=wget
-    local fileNameHostsNew="hosts.new"
-    local filePathHostsNew=${rDirPathCmdsConfigData}/${fileNameHostsNew}
-    if [ ! -z "$urlCustomHosts" ];then
-        url=$urlCustomHosts
-    fi
-    "$netTool" -q "$url" -O "$filePathHostsNew"
-
-    # 对比hosts文件，确定有无更新
-    local hostsVersionBase="Last updated:"
-    local hostsVersionOld=$(cat $filePathHosts|grep "$hostsVersionBase"|sed s/[[:space:]]//g)
-    local hostsVersionNew=$(cat $filePathHostsNew|grep "$hostsVersionBase"|sed s/[[:space:]]//g)
-    if [ ! -f $filePathHostsNew ]||[ "$hostsVersionOld" = "$hostsVersionNew" ];then
-        rm -f $filePathHostsNew
-        ftEcho -ex hosts没有更新,将退出
-    else
-        local fileNameHostsBase=hosts.base
-        local filePathHostsBase=${rDirPathCmdsConfigData}/${fileNameHostsBase}
-        if [ ! -f "$filePathHostsBase" ];then
-            echo "127.0.0.1    localhost
-127.0.1.1    $rNameUser
-
-# The following lines are desirable for IPv6 capable hosts
-::1     ip6-localhost ip6-loopback
-fe00::0 ip6-localnet
-ff00::0 ip6-mcastprefix
-ff02::1 ip6-allnodes
-ff02::2 ip6-allrouters
-
-#added by $rNameUser" >$filePathHostsBase
-        fi
-        # 文件拼接
-        local fileNameHostsAllNew=hosts
-        local filePathHostsAllNew=${rDirPathCmdsConfigData}/${fileNameHostsAllNew}
-        cat $filePathHostsBase $filePathHostsNew>$filePathHostsAllNew
-        # 覆盖文件
-        echo $userPassword | sudo -S mv $filePathHosts ${filePathHosts}_${hostsVersionOld}
-        echo $userPassword | sudo -S mv $filePathHostsAllNew $filePathHosts
-    fi
-}
-
 #===================    非通用实现[高度耦合]    ==========================
 ftBackupOrRestoreOuts()
 {
@@ -1577,6 +1500,7 @@ ftAutoPacket()
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
     local editType=$1
+    local filePathDataBase=${rDirPathCmdsConfigData}/tools.db
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -1615,6 +1539,7 @@ EOF
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
     if [ ! -d "$dirPathOut" ];then    errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut" ; fi
+    if [ ! -f "$filePathDataBase" ];then    errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase" ; fi
     if [ ! -z "$errorContent" ]||[[ -z "$editType" ]];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoPacket -h
@@ -1790,7 +1715,6 @@ EOF
                     fileChangeTime=${fileChangeTime:-$(date -d "today" +"%y%m%d")}
             fi
 
-            local dirPathUploadTraget=智能机软件/MTK6580/autoUpload
             if [ ! -z "$AutoEnv_clientName" ];then #解析git分支,初始化客户等相关信息
                 ftAutoInitEnv -bp
                 local dirNameersionSoftwareVersionBase=${AutoEnv_AndroidVersion}
@@ -1838,15 +1762,20 @@ EOF
                 dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
 
                 # 服务器上传路径
-                if [ "$AutoEnv_clientName" = "XHF" ];then
-                     dirPathUploadTraget=智能机软件/MTK6580/新华菲
-                elif [ "$AutoEnv_clientName" = "DHX" ];then
-                     dirPathUploadTraget=智能机软件/MTK6580/东华新
-                elif [ "$AutoEnv_clientName" = "PMZ" ];then
-                     dirPathUploadTraget=智能机软件/MTK6580/鹏明珠
-                elif [ "$AutoEnv_clientName" = "CDHT" ];then
-                     dirPathUploadTraget=智能机软件/MTK6580/诚达恒泰
+               local dirPathUploadTraget=
+
+               local tagName="lzProjrctConfigBranch2CtName"
+               local clientNameAll=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName $AutoEnv_clientName)
+                tagName="lzProjrctConfigBranch2PlatformName"
+                local platformName=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName $TARGET_PRODUCT)
+                if [ -z "$PlatformName" ];then
+                     dirPathUploadTraget=智能机软件/autoUpload
+                elif [ -z "$clientNameAll" ];then
+                     dirPathUploadTraget=智能机软件/MTK6580/autoUpload
+                else
+                     dirPathUploadTraget=智能机软件/${PlatformName}/${clientNameAll}
                 fi
+
             else
                 if [ ! -z "$fileChangeTime" ];then
                     local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${fileChangeTime}____buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$fileChangeTime
@@ -1867,17 +1796,8 @@ EOF
             else
                 ftEcho -e "OTA相关包未找到"
             fi
-            local fileList=(boot.img \
-                            cache.img \
-                            lk.bin \
-                            logo.bin \
-                            MT6580_Android_scatter.txt \
-                            preloader_${deviceName}.bin \
-                            ramdisk.img \
-                            recovery.img \
-                            secro.img \
-                            system.img \
-                            userdata.img)
+            tagName="lzProjrctConfigSoftwarePackageFileLIst"
+            local fileList=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList)
 
             # 生成本地软件包
             if [[ ! -z "$isPacket" ]]; then
@@ -2556,6 +2476,7 @@ ftGetAndroidVersionBySDKVersion()
 {
     local ftEffect=根据SDK版本获取Android版本
     local sdkVersion=$1
+    local filePathDataBase=${rDirPathCmdsConfigData}/tools.db
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -2573,50 +2494,17 @@ EOF
     local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$sdkVersion" ];then    errorContent="${errorContent}\\n[SDK版本]sdkVersion=$sdkVersion" ; fi
+    if [ ! -f "$filePathDataBase" ];then    errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftGetAndroidVersionBySDKVersion -h
             return
     fi
 
-        while true; do case "$sdkVersion" in
-        25) echo Android7.1              ;break;;
-        24) echo Android7.0              ;break;;
-        23) echo Android6.0              ;break;;
-        22) echo Android5.1              ;break;;
-        21) echo Android5.0              ;break;;
-        19) echo Android4.4              ;break;;
-        18) echo Android4.3              ;break;;
-        17) echo Android4.2              ;break;;
-        16) echo Android4.1              ;break;;
-        15) echo Android4.0.3-4.0.4  ;break;;
-        14) echo Android4.0.1-4.0.2  ;break;;
-        13) echo Android3.2x             ;break;;
-        12) echo Android3.1               ;break;;
-        11) echo Android3.0               ;break;;
-        10) echo Android2.3.3-2.3.7   ;break;;
-        9) echo Android2.3-2.3.2        ;break;;
-        * ) echo "unkonwSdkVersion=${sdkVersion}"; break;;esac;done
-
-    # while true; do case "$sdkVersion" in
-    #  # 26) echo "Android 8.0 Oreo"                                ;break;;
-    #     25) echo "Android 7.1 Nougat"                                ;break;;
-    #     24) echo "Android 7.0 Nougat"                                ;break;;
-    #     23) echo "Android 6.0 Marshmallow"             ;break;;
-    #     22) echo "Android 5.1 Lollipop"                       ;break;;
-    #     21) echo "Android 5.0 Lollipop"                       ;break;;
-    #     19) echo "Android 4.4 KitKat"                           ;break;;
-    #     18) echo "Android 4.3 Jelly Bean"                     ;break;;
-    #     17) echo "Android 4.2 Jelly Bean"                    ;break;;
-    #     16) echo "Android 4.1 Jelly Bean"                    ;break;;
-    #     15) echo "Android 4.0.3-4.0.4 Jelly Bean"        ;break;;
-    #     14) echo "Android 4.0.1-4.0.2 Jelly Bean"        ;break;;
-    #     13) echo "Android 3.2x Honeycomb"               ;break;;
-    #     12) echo "Android 3.1 Honeycomb"                ;break;;
-    #     11) echo "Android 3.0 Honeycomb"                ;break;;
-    #     10) echo "Android 2.3.3-2.3.7 Gingerbread"  ;break;;
-    #       9) echo "Android 2.3-2.3.2 Gingerbread"       ;break;;
-    #     * ) echo "unkonwSdkVersion=${sdkVersion}"; break;;esac;done
+   local tagName="androidSDK2Verison"
+   local androidVersionName=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName $sdkVersion)
+   # echo ${androidVersionName:-'unkonwSdkVersion'}
+   echo $androidVersionName
 }
 
 complete -W "backup restore" ftMaintainSystem

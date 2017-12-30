@@ -1,0 +1,42 @@
+
+[androidSDK2Verison]
+25=Android7.1
+24=Android7.0
+23=Android6.0
+22=Android5.1
+21=Android5.0
+19=Android4.4
+18=Android4.3
+17=Android4.2
+16=Android4.1
+15=Android4.0.3-4.0.4
+14=Android4.0.1-4.0.2
+13=Android3.2x
+12=Android3.1
+11=Android3.0
+10=Android2.3.3-2.3.7
+9=Android2.3-2.3.2
+
+
+[lzProjrctConfigBranch2CtName]
+XHF=新华菲
+DHX=东华新
+PMZ=鹏明珠
+CDHT=诚达恒泰
+
+[lzProjrctConfigBranch2PlatformName]
+keytak6580_weg_l=MTK6580
+full_keytak6580_weg_l=MTK6580
+
+[lzProjrctConfigSoftwarePackageFileLIst]
+full_keytak6580_weg_l_fileList=boot.img \
+                                                        cache.img \
+                                                        lk.bin \
+                                                        logo.bin \
+                                                        MT6580_Android_scatter.txt \
+                                                        preloader_${deviceName}.bin \
+                                                        ramdisk.img \
+                                                        recovery.img \
+                                                        secro.img \
+                                                        system.img \
+                                                        userdata.img
