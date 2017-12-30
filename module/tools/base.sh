@@ -1114,3 +1114,172 @@ EOF
         let i--
     done
 }
+
+ftSetBashPs1ByGitBranch()
+{
+    local ftEffect=根据git分支名,设定bash的PS1
+    local editType=$1
+
+    local defaultPrefix=xrnsd
+    local defaultColorConfig=44
+    if [ ! -z "$rNameUser" ]&&[ "$rNameUser" != "wgx" ];then
+        defaultPrefix=$rNameUser
+    fi
+    if [ "$(whoami)" = "root" ];then
+        defaultPrefix="root"
+        defaultColorConfig=42
+    fi
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    if [ ! -z "$branchName" ]&&[ "$editType" != "-b" ];then
+        if [ ${#branchName} -gt "10" ];then
+            branchName="\nbranchName→ ${branchName}"
+        else
+            branchName="branchName→ ${branchName}"
+        fi
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]$branchName: \[\033[0m\]"
+    else
+
+                #export PS1='$(whoami)\[\033[42m\][\w]\[\033[0m\]:'
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
+    fi
+}
+
+ftRmExpand()
+{
+    local ftEffect=rm扩展[添加回收站功能]
+    local traget=$1
+    local dirPathLocal=$(ftLnUtil $PWD) #解决软链接问题
+
+    if [[ "${traget:0:1}" = "-" ]]; then
+        traget=$2
+
+        editType=$1
+        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+        if (( $(expr index $editType "f") != "0" ));then   local isRmSilence=true ; fi
+        if (( $(expr index $editType "r") != "0" ));then   local isRmDirectory=true ; fi
+    fi
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#========[ ${ftEffect} ]的使用示例=============
+#
+#     ftRmExpand xx xxx
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+
+    # 耦合校验
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    # if [ ! -d "$dirPathLocal" ];then    errorContent="${errorContent}\\n[示例1]dirPathLocal=$dirPathLocal" ; fi
+    if [ -z "$traget" ];then    errorContent="${errorContent}\\n不知道你想干嘛" ;
+    elif [ -z "$isRmSilence" ]&&[ ! -d "$traget" ]&&[ ! -f "$traget" ];then    errorContent="${errorContent}\\n这是什么鬼:$traget" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftRmExpand -h
+            ftEcho -s "请参照rm 使用习惯 "
+            $(which rm) --help
+            return
+    fi
+
+    ftInitDevicesList
+    local dirPathDevTrash=
+    for dirPath in ${mCmdsModuleDataDevicesList[*]}
+    do
+        local length=${#dirPath}
+        if [[ "${dirPathLocal:0:$length}" = "$dirPath" ]]; then
+            local dirNameList=$(ls -a $dirPath|grep ".Trash-")
+            if [[ -z "$dirNameList" ]]&&[ ! -z "$(echo $dirPath|grep /home)" ]; then
+                echo dirNameList为空
+                dirNameList=".local/share/Trash"
+            fi
+            dirNameList=$dirNameList #假如存在多个就直接选第一个
+            local dirPathDevTrash=${dirPath}/${dirNameList}/files
+            break;
+        fi
+    done
+
+    if [[ -d "$dirPathDevTrash" ]]; then
+        if [[ -z "$isRmDirectory" ]]&&[[ -d "$traget" ]]; then
+                while true; do
+                        ftEcho -y 这是目录,还删么
+                        read -n 1 sel
+                        case "$sel" in
+                            y | Y )  echo;break;;
+                            n | N |q | Q)    echo;return;;
+                            * ) ftEcho -e 错误的选择：$sel
+                                echo "输入n,q，离开"
+                                ;;
+                        esac
+                done
+        fi
+        local status=$(mv $traget $dirPathDevTrash 1>/dev/null 2>&1)
+        # ftEcho -e $status
+    else
+        ftEcho -s "未移动 $traget 到回收站"
+        $(which rm) "$@"
+    fi
+}
+
+ftCleanDataGarbage()
+{
+    local ftEffect=清空回收站
+    ftInitDevicesList
+
+    while true; do case "$1" in
+    e | -e |--env) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    禁止在高权限下运行,转化普通用户后，再次尝试
+#=========================================================
+EOF
+      return;;
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftCleanDataGarbage [无参]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ `whoami` != $rNameUser ]||[ "$(whoami)" = "root" ]; then
+        ftCleanDataGarbage -e
+        return
+    fi
+    #耦合校验
+    local valCount=0
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$mCmdsModuleDataDevicesList" ];then    errorContent="${errorContent}\\n[被清空回收站的设备的目录列表]mCmdsModuleDataDevicesList=${mCmdsModuleDataDevicesList[@]}" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftCleanDataGarbage -h
+            return
+    fi
+
+    local dirPathLocal=$(pwd)
+    for dirDev in ${mCmdsModuleDataDevicesList[*]}
+    do
+         local dir=null
+        if [ -d ${dirDev}/.Trash-1000 ];then
+            dir=${dirDev}/.Trash-1000
+        elif [ -d ${dirDev}/.local/share/Trash ];then
+            dir=${dirDev}/.local/share/Trash
+        fi
+        if [ -d $dir ];then
+            cd $dir
+
+            mkdir empty
+            rsync --delete-before -d -a -H -v --progress --stats empty/ files/
+            rm -rf files/*
+            rm -r empty
+
+        fi
+    done
+    cd $dirPathLocal
+}
