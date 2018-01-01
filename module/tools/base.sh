@@ -981,7 +981,7 @@ EOF
     fi
 
     unset mCmdsModuleDataDevicesList
-    if (($sizeHome>=$devMinAvailableSpace));then
+    if [[ $sizeHome -ge $devMinAvailableSpace ]]; then
         mCmdsModuleDataDevicesList=$dirPathHome
         indexDevMount=1;
     fi
@@ -992,7 +992,7 @@ EOF
             if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
                     sizeTemp=$(ftDevAvailableSpace $devMountDirPath)
                     # 确定目录已挂载,设备可用空间大小符合限制
-                    if [[ "$devMinAvailableSpace" = "0" ]]||(($sizeTemp>=$devMinAvailableSpace)); then
+                    if [[ $devMinAvailableSpace -eq 0 ]]||(($sizeTemp>=$devMinAvailableSpace)); then
                         if mountpoint -q $devMountDirPath;then
                             mCmdsModuleDataDevicesList[$indexDevMount]=$devMountDirPath
                             indexDevMount=`expr $indexDevMount + 1`
