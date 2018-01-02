@@ -9,48 +9,6 @@ if [ -f $rFilePathCmdModuleToolsBase ];then
 else
     echo -e "\033[1;31mXbash函数加载失败[未找到$rFilePathCmdModuleToolsBase]\033[0m"
 fi
-#####---------------------示例函数---------------------------#########
-ftExample()
-{
-    local ftEffect=函数模板
-
-    while true; do case "$1" in
-    e | -e |--env) cat<<EOF
-#===================[   ${ftEffect}   ]的使用环境说明=============
-#
-#    ${ftEffect}依赖包 example
-#    请尝试使用 sudo apt-get install example 补全依赖
-#=========================================================
-EOF
-      return;;
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftExample 无参
-#    ftExample [example]
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    #环境校验
-    if [ -z `which example` ]||[ -z `which example` ];then
-        ftExample -e
-        return
-    fi
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$example1" ];then    errorContent="${errorContent}\\n[示例1]example1=$example1" ; fi
-    if [ -z "$example2" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftExample -h
-            return
-    fi
-}
-
 #####---------------------工具函数---------------------------#########
 ftMain()
 {

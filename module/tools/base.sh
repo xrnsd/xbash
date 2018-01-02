@@ -3,6 +3,48 @@
 # 不可在此文件中出现不被函数包裹的调用或定义
 # 人话，这里只放函数
 # complete -W "example example" ftExample
+#####---------------------示例函数---------------------------#########
+ftExample()
+{
+    local ftEffect=函数模板
+
+    while true; do case "$1" in
+    e | -e |--env) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    ${ftEffect}依赖包 example
+#    请尝试使用 sudo apt-get install example 补全依赖
+#=========================================================
+EOF
+      return;;
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftExample 无参
+#    ftExample [example]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ -z `which example` ]||[ -z `which example` ];then
+        ftExample -e
+        return
+    fi
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$example1" ];then    errorContent="${errorContent}\\n[示例1]example1=$example1" ; fi
+    if [ -z "$example2" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftExample -h
+            return
+    fi
+}
+
 ftAutoInitEnv()
 {
     local ftEffect=初始化xbash所需的部分环境变量
@@ -1054,65 +1096,6 @@ EOF
     fi
 
     $filePathAdbNow "$@"
-}
-
-ftLnUtil()
-{
-    local ftEffect=获取软连接的真实路径
-    local lnPath=$1
-
-    while true; do case "$1" in
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftLnUtil 软连接路径
-#    ftLnUtil /home/xian-hp-u16/log/xb_backup
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$lnPath" ];then    errorContent="${errorContent}\\n[软连接为空]lnPath=$lnPath" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftLnUtil -h
-            return
-    fi
-
-    OLD_IFS="$IFS"
-    IFS="/"
-    arr=($lnPath)
-    IFS="$OLD_IFS"
-
-    i=${#arr[@]}
-    let i--
-    delDir=
-    while [ $i -ge 0 ]
-    do
-        [[ $lnPath =~ ^/  ]] && lnRealPath=$lnPath || lnRealPath=`pwd`/$lnPath
-        while [ -h $lnRealPath ]
-        do
-           b=`ls -ld $lnRealPath|awk '{print $NF}'`
-           c=`ls -ld $lnRealPath|awk '{print $(NF-2)}'`
-           [[ $b =~ ^/ ]] && lnRealPath=$b  || lnRealPath=`dirname $c`/$b
-        done
-        if [ "$lnRealPath" = "$lnPath" ];then
-            lnPath=${lnPath%/*}
-            delDir=${arr[$i]}/$delDir
-        else
-            local dirPath=${lnRealPath}/${delDir}
-            if [[ "$lnRealPath" = "/${delDir}" ]]; then
-                dirPath=$1
-            fi
-            echo $dirPath
-            break
-        fi
-        let i--
-    done
 }
 
 ftSetBashPs1ByGitBranch()

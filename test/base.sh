@@ -74,3 +74,7 @@ fi
 # else
 #     echo 设备不存在dirPath=$dirPath
 # fi
+filePath=~/log
+if [[ -L "$filePath" ]]; then
+    echo 111
+fi

@@ -138,6 +138,14 @@ EOF
             ftLnUtil -h
             return
     fi
+    if [[ ! -L "$lnPath" ]]; then
+        echo $lnPath
+        return
+    fi
+    if [ ! -z `which readlink` ];then
+        echo $(readlink $lnPath)
+        return
+    fi
 
     OLD_IFS="$IFS"
     IFS="/"
