@@ -1055,7 +1055,8 @@ adb()
     local  filePathAdbLocal=/usr/bin/adb
 
     #环境校验
-    if [ -z "$filePathAdbNow" ]||[ ! -d "$ANDROID_SDK" ];then
+    # if [ -z "$filePathAdbNow" ]||[ ! -d "$ANDROID_SDK" ];then
+    if [ ! -d "$ANDROID_SDK" ];then
         cat<<EOF
 #===============[ ${ftEffect} ]的使用环境说明=============
 #
