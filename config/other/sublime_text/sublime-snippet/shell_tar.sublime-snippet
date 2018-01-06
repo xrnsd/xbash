@@ -1,0 +1,27 @@
+<snippet>
+	<content><![CDATA[
+# =========== 基础
+    #压缩
+        tar -cvPf xxxxx.tgz 源路径
+    #解压
+        tar-xvpf xxx.tgz -C 目标路径
+
+# =========== 多线程
+    #压缩
+        tar --use-compress-program=pigz -cvPf xxx.tgz 源路径
+        tar --use-compress-program=pigz -cvPf xxx.tgz --exclude-from=忽略目录列表 源路径
+    #分包压缩
+        tar --use-compress-program=pigz -cvpf - 源路径 |split -b 2048m - xxxx.tgz
+    #分包合并
+        cat xxx.tgza* >xxx.tgz
+    #解压
+        tar --use-compress-program=pigz -xvpf xxx.tgz --exclude= -C 目标路径
+
+# =========== 局域网
+    tar-cv 源路径| pigz -1 |sshpass -p 服务器用户密码 ssh 服务器用户名@服务器Ip "gzip -d|tar -xPC 服务器路径"
+
+]]></content>
+	<tabTrigger>xtar</tabTrigger>
+	<scope>source.shell</scope>
+	<description>tar 常用命令</description>
+</snippet>

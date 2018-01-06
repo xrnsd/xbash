@@ -1,0 +1,71 @@
+<snippet>
+	<content><![CDATA[
+# =========== 读取系统信息
+    #屏幕截图
+        adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png xxxxx
+    #录制视频
+        adb shell screenrecord /sdcard/filename.mp4&&adb pull /sdcard/filename.mp4 xxxxx
+    #查看bug报告
+        adb bugreport
+    #读取系统的配置信息
+        adb shell getprop
+    #获取通知信息
+        adb shell dumpsys notification
+    #services 列表
+        adb shell service list
+
+# =========== 查看系统负载
+        adb shell top
+    #查看CPU信息
+        adb shell dumpsys cpuinfo
+    #刷新一次内存信息
+        adb shell top -n 1
+    #查看占用前2的app
+        adb shell top -m 2
+
+# =========== 查看内存信息
+        adb shell dumpsys meminfo
+    #查看当前内存占用
+        adb shell cat /proc/meminfo
+    #具体应用的内存信息
+        adb shell dumpsys meminfo packageName
+
+# =========== 查看任务栈
+    #显示当前所有在运行的任务栈
+        adb shell dumpsys activity activities
+    #查看正在运行的 Services
+        adb shell dumpsys activity services packageName
+    #查看栈顶Activity
+        adb shell dumpsys activity top
+
+# =========== ActivityManager相关
+    #启动组件
+        adb shell start -n com.google.android.gm/.ConversationListActivityGmail
+    #停止相关的进程
+        adb shell am force-stop packageName
+    #杀死指定包名的进程
+        adb shell am kill packageName
+    #杀死后台所有进程
+        adb shell am kill-all
+    改变显示的分辨率
+        adb shell am display-size 宽x高
+    改变显示的PPI
+        adb shell am display-density 宽x高
+
+# =========== 输入
+    #代替键盘操作
+    adb shell input keyevent keycode
+    #输入文本
+    adb shell input text
+
+# =========== 卸载APK但保留数据和缓存文件
+    adb uninstall -k packageName
+
+# =========== 清除APK数据与缓存
+    adb shell pm clear packageName
+
+]]></content>
+	<tabTrigger>xadb</tabTrigger>
+	<scope>source.shell</scope>
+	<description>adb 常用命令</description>
+</snippet>

@@ -4,11 +4,11 @@
     # ls xxxxx | while read line;do echo $line ;done
 
 # ===========  倒序遍历数组
-    # i=${#hashLIst[@]}
-    # while [ $i -gt "0" ]
+    # i=\${#hashLIst[@]}
+    # while [ \$i -gt "0" ]
     # do
     #   let i--
-    #   #${hashLIst[$i]}
+    #   #\${hashLIst[\$i]}
     # done
 
 # ===========  字符串分割成数组

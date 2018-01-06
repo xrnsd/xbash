@@ -1,0 +1,13 @@
+<snippet>
+	<content><![CDATA[
+# =========== 读取ini
+    ftGetKeyValueByBlockAndKey [文件路径] [目标块TAG] [键名]
+
+# =========== 写ini
+    ftSetKeyValueByBlockAndKey [文件路径] [目标块TAG] [键名] [键对应的值]
+
+]]></content>
+	<tabTrigger>xini</tabTrigger>
+	<scope>source.shell</scope>
+	<description>xbash ini实现示例</description>
+</snippet>
