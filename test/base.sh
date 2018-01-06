@@ -16,9 +16,6 @@ fi
 # -gt  >      -ge >=
 # -lt   <      le <=
 
-# if [ $test1 = "1" -o $test2 = "1" ]&&[ $test3 = "3" -a $test4 = "4" ]
-# -o 或    # -a 与
-
 # 根据包名 过滤log
 # adb logcat -v process | grep $(adb shell ps | grep com.android.systemui | awk '{print $2}')
 
