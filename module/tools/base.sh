@@ -1046,6 +1046,21 @@ EOF
     export mCmdsModuleDataDevicesList #=${mCmdsModuleDataDevicesList[*]}
 }
 
+
+_adb()
+{
+    local ftEffect=adb修正工具对应的参数补全实现
+     local curr_arg=${COMP_WORDS[COMP_CWORD]}
+    case "${COMP_WORDS[1]}" in
+                    -k)         COMPREPLY=( $(compgen -W 'home back menu down up lift right down  power' -- $curr_arg ) ); ;;
+                    install)  COMPREPLY=( $(compgen -W "-l -r -s" -- $curr_arg ) );
+                                case "${COMP_WORDS[2]}" in
+                                                -l|-r|-s)  COMPREPLY=( $(compgen -o filenames -W "`ls *.apk`" -- ${cur}) ); ;;
+                                  esac
+                            ;;
+                    *)  COMPREPLY=( $(compgen -W 'push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot ' -- $curr_arg ) ); ;;
+      esac
+}
 adb()
 {
     local ftEffect=adb修正工具
@@ -1053,6 +1068,7 @@ adb()
     local dirPathCode=$ANDROID_BUILD_TOP
     local  filePathAdbNow=$(which adb)
     local  filePathAdbLocal=/usr/bin/adb
+    local filePathDataBase=${rDirPathCmdsConfigData}/tools.db
 
     #环境校验
     # if [ -z "$filePathAdbNow" ]||[ ! -d "$ANDROID_SDK" ];then
@@ -1096,7 +1112,22 @@ EOF
         filePathAdbNow=$filePathAdbLocal
     fi
 
-    $filePathAdbNow "$@"
+    if [[ "$1" = "-k" ]]; then
+        if [ ! -f "$filePathDataBase" ];then
+            ftEcho -e "数据库文件不存在]filePathDataBase=$filePathDataBase"
+        else
+            local TagName=androidKeyCode
+            local keyCode=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase androidKeyCode $2)
+            if [[ ! -z "$keyCode" ]]; then
+                $filePathAdbNow shell input keyevent $keyCode
+            else
+                ftEcho -e "未知配置,请查看:$filePathDataBase"
+            fi
+        fi
+        return
+    fi
+
+     $filePathAdbNow "$@"
 }
 
 ftSetBashPs1ByGitBranch()
@@ -1201,7 +1232,7 @@ EOF
                 done
         fi
         local status=$(mv $traget $dirPathDevTrash 1>/dev/null 2>&1)
-        # ftEcho -e $status
+        ftEcho -e $status
     else
         ftEcho -s "未移动 $traget 到回收站"
         $(which rm) "$@"

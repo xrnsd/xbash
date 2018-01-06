@@ -95,6 +95,7 @@ if [ -d "$ANDROID_SDK" ];then
     alias xk='ftKillPhoneAppByPackageName'
     alias xle='export XCMD=xle;adb logcat "*:E"'
     alias .9='export XCMD=.9;${ANDROID_SDK}/tools/draw9patch'
+    alias xds='adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
 
     alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
     alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
@@ -109,7 +110,7 @@ if [ -d "$ANDROID_SDK" ];then
     # adb logcat |grep Displayed #获取activity 显示时间
     complete -W "123456" xl
     complete -W "systemui monkey launcher com.android.systemui com.android.launcher3 com.android.commands.monkey" xk
-    complete -W "push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot" adb
+    complete -F _adb adb
 fi
 
 if [ -d "vendor/sprd" ];then
