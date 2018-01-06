@@ -1047,7 +1047,7 @@ EOF
 }
 
 
-_adb()
+_adb() 
 {
     local ftEffect=adb修正工具对应的参数补全实现
      local curr_arg=${COMP_WORDS[COMP_CWORD]}
@@ -1066,6 +1066,7 @@ _adb()
                     *)  COMPREPLY=( $(compgen -W 'push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot ' -- $curr_arg ) ); ;;
       esac
 }
+complete -F _adb adb
 adb()
 {
     local ftEffect=adb修正工具

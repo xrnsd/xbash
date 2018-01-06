@@ -21,16 +21,28 @@ ftMain()
                 break;;
     -v | --version )        echo \"Xrnsd extensions to bash\" $rXbashVersion
                 break;;
-    -h)    ftReadMe -a
+    -h|-help|help|--help|HELP|-HELP|--HELP)
+            case $2 in
+                -b |-B)    ftReadMe -a
+                            return;;
+                -c |-C)     ftMain -ft
+                            return;;
+                esac
+                ftReadMe -b
                 break;;
-    ft | -ft ) ftReadAllFt | column -t
+    ft | -ft ) cat<<EOF
+
+xbash对bash扩展实现说明
+=========================================================
+命令                             说明
+=========================================================
+EOF
+                ftReadAllFt | column -t
                 break;;
     vvv | -vvv)            ftEcho -b xbash;        echo \"Xrnsd extensions to bash\" $rXbashVersion
                 ftEcho -b java;        java -version
                 ftEcho -b gcc;        gcc -v
                 break;;
-    # check )            env|grep MissingToolLibrary
-    #             break;;
     restartadb)    ftRestartAdb
                 break;;
     *)    ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftReadMe -a; break;;
@@ -275,10 +287,17 @@ ftReadMe()
     local ftEffect=工具命令使用说明_nodisplay
     while true; do
         case "$1" in
+    b | B | -b |-B)
+    cat<<EOF
+
+xc -h -b    查看bash内建等命令封装说明
+xc -h -c    查看xbash对bash扩展实现说明
+EOF
+break;;
     a | A | -a |-A)
     cat<<EOF
-=========================================================
-简写命令说明 [只封装了部分实现]
+
+bash内建等命令封装说明
 =========================================================
 命令 ---- 参数/命令说明
     |// 使用格式

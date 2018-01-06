@@ -110,7 +110,6 @@ if [ -d "$ANDROID_SDK" ];then
     # adb logcat |grep Displayed #获取activity 显示时间
     complete -W "123456" xl
     complete -W "systemui monkey launcher com.android.systemui com.android.launcher3 com.android.commands.monkey" xk
-    complete -F _adb adb
 fi
 
 if [ -d "vendor/sprd" ];then
