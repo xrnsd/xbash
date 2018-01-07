@@ -60,8 +60,7 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
     if [ ! -z `which git` ];then
         alias xgla='ftGitLogShell -a'
         alias xgl='ftGitLogShell 20'
-        alias xgll='ftGitLogShell 100'
-        alias xch='ftGitCheckoutBranchByName'
+        alias xgll='ftGitLogShell 100' 
 
         export PROMPT_COMMAND='\
         ftSetBashPs1ByGitBranch
