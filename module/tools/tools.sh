@@ -764,12 +764,11 @@ EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
-    local filePathCmdModuleTest=${rDirPathCmdsTest}/${rFileNameCmdModuleTestBase}
+    local filePathCmdModuleTest=${rDirPathCmds}/${rFileNameCmdModuleTestBase}
     #耦合校验
     local valCount=1
     local errorContent=
     if [ ! -d "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome" ; fi
-    if [ ! -d "$rDirPathCmdsTest" ];then    errorContent="${errorContent}\\n[xbash模块路径不存在]rDirPathCmdsTest=$rDirPathCmdsTest" ; fi
     if [ ! -f "$filePathCmdModuleTest" ];then    errorContent="${errorContent}\\n[测试模块不存在]filePathCmdModuleTest=$filePathCmdModuleTest" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
@@ -1599,8 +1598,8 @@ EOF
 
             local dataBaseFileList=
             if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
-                dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
-                                                 obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
+                tagName="lzProjrctConfigSoftwareDataBaseFileLIst"
+                dataBaseFileList=($(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList))
             elif [ $deviceName = "keytak6580_weg_l" ];then
                 local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
                 for dirPath in ${dirNameModems[@]}
@@ -1713,8 +1712,6 @@ EOF
             else
                 ftEcho -e "OTA相关包未找到"
             fi
-            tagName="lzProjrctConfigSoftwarePackageFileLIst"
-            local fileList=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList)
 
             # 生成本地软件包
             if [[ ! -z "$isPacket" ]]; then
@@ -1726,6 +1723,9 @@ EOF
                     filePathSystemImage=${dirPathOut}/system.img
                     if [[ -f "$filePathSystemImage" ]]; then
                         mkdir -p $dirPathPackage
+                        # packages需要的文件列表
+                        tagName="lzProjrctConfigSoftwarePackageFileLIst"
+                        local fileList=($(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList) preloader_${deviceName}.bin)
                         for file in ${fileList[@]}
                         do
                             local filePath=${dirPathOut}/${file}
@@ -2401,6 +2401,7 @@ ftMaintainSystem()
     local ftEffect=ubuntu系统维护
     local fileNameMaintain=maintain.sh
     local filePathMaintain=${rDirPathCmdsModule}/tools/${fileNameMaintain}
+    local filePathDb=${rDirPathCmdsConfigData}/tools.db
     local editType=$1
     editType=${editType:-'backup'}
 
@@ -2433,6 +2434,7 @@ EOF
     local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -f "$filePathMaintain" ];then    errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain" ; fi
+    if [ "$editType" = "backup" ]&&[ ! -f "$filePathDb" ];then    errorContent="${errorContent}\\n[数据库文件不存在]filePathDb=$filePathDb" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftMaintainSystem -h

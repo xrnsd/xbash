@@ -1,4 +1,54 @@
+#维护用
+[ubuntuMaintainConfigInfo]
+DirPathsExcludeListSys= \
+    /proc \
+    /android \
+    /lost+found \
+    /mnt \
+    /sys \
+    /.Trash-0 \
+    /media \
+    /var/tmp \
+    /var/log
+DirPathsExcludeListHomeBase= \
+    workspaces \
+    workspace \
+    download \
+    packages \
+    Pictures \
+    projects \
+    backup \
+    media  \
+    temp \
+    tools \
+    code \
+    log  \
+    doc  \
+    .AndroidStudio2.1 \
+    .thumbnails \
+    .software \
+    .cache \
+    .local \
+    .wine \
+    .other \
+    .gvfs
+DirPathsExcludeListHomeAll= \
+    backup \
+    download \
+    log  \
+    temp \
+    Pictures \
+    projects \
+    workspaces \
+    .AndroidStudio2.1 \
+    .software \
+    .cache \
+    .thumbnails \
+    .local \
+    .other \
+    .gvfs
 
+#开发用
 [androidSDK2Verison]
 25=Android7.1
 24=Android7.0
@@ -30,17 +80,22 @@ keytak6580_weg_l=MTK6580
 full_keytak6580_weg_l=MTK6580
 
 [lzProjrctConfigSoftwarePackageFileLIst]
-full_keytak6580_weg_l_fileList=boot.img \
-                            cache.img \
-                            lk.bin \
-                            logo.bin \
-                            MT6580_Android_scatter.txt \
-                            preloader_${deviceName}.bin \
-                            ramdisk.img \
-                            recovery.img \
-                            secro.img \
-                            system.img \
-                            userdata.img
+full_keytak6580_weg_l_fileList= \
+    boot.img \
+    cache.img \
+    lk.bin \
+    logo.bin \
+    MT6580_Android_scatter.txt \
+    ramdisk.img \
+    recovery.img \
+    secro.img \
+    system.img \
+    userdata.img
+
+[lzProjrctConfigSoftwareDataBaseFileLIst]
+m9_xinhaufei_r9_hd_fileList= \
+    obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
+    obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n
 
 
 [androidKeyCode]

@@ -385,60 +385,28 @@ ftBackupOs()
     mFilePathExcludeBase=${rDirPathCmdsConfigData}/${fileNameExcludeBase}
     mFilePathExcludeAll=${rDirPathCmdsConfigData}/${fileNameExcludeAll}
 
-    mDirPathsExcludeBase=(/proc \
-                /android \
-                /lost+found \
-                /mnt \
-                /sys \
-                /.Trash-0 \
-                /media \
-                /var/tmp \
-                /var/log \
-                ${rDirPathUserHome}/workspaces \
-                ${rDirPathUserHome}/workspace \
-                ${rDirPathUserHome}/download \
-                ${rDirPathUserHome}/packages \
-                ${rDirPathUserHome}/Pictures \
-                ${rDirPathUserHome}/projects \
-                ${rDirPathUserHome}/backup \
-                ${rDirPathUserHome}/media  \
-                ${rDirPathUserHome}/temp \
-                ${rDirPathUserHome}/tools \
-                ${rDirPathUserHome}/${dirNameXbash} \
-                ${rDirPathUserHome}/code \
-                ${rDirPathUserHome}/log  \
-                ${rDirPathUserHome}/doc  \
-                ${rDirPathUserHome}/.AndroidStudio2.1 \
-                ${rDirPathUserHome}/.thumbnails \
-                ${rDirPathUserHome}/.software \
-                ${rDirPathUserHome}/.cache \
-                ${rDirPathUserHome}/.local \
-                ${rDirPathUserHome}/.wine \
-                ${rDirPathUserHome}/.other \
-                ${rDirPathUserHome}/.gvfs)
+    local filePathDb=/home/wgx/cmds/config/data/tools.db
+    local tagName=ubuntuMaintainConfigInfo
+    local keyName=DirPathsExcludeListSys
+    local excludeListSys=($(ftGetKeyValueByBlockAndKey -f $filePathDb $tagName $keyName))
 
-    mDirPathsExcludeAll=(/proc \
-                /android \
-                /lost+found  \
-                /mnt  \
-                /sys  \
-                /media \
-                /var/tmp \
-                /var/log \
-                ${rDirPathUserHome}/.AndroidStudio2.1 \
-                ${rDirPathUserHome}/backup \
-                ${rDirPathUserHome}/.software \
-                ${rDirPathUserHome}/download \
-                ${rDirPathUserHome}/log  \
-                ${rDirPathUserHome}/temp \
-                ${rDirPathUserHome}/Pictures \
-                ${rDirPathUserHome}/projects \
-                ${rDirPathUserHome}/workspaces \
-                ${rDirPathUserHome}/.cache \
-                ${rDirPathUserHome}/.thumbnails \
-                ${rDirPathUserHome}/.local \
-                ${rDirPathUserHome}/.other \
-                ${rDirPathUserHome}/.gvfs)
+    keyName=DirPathsExcludeListHomeBase
+    local excludeListHomeBase=($(ftGetKeyValueByBlockAndKey -f $filePathDb $tagName $keyName))
+    local index=0
+    for item in ${excludeListHomeBase[@]}; do
+        excludeListHomeBase[$index]=${dirPathHome}/${item}
+        index=`expr $index + 1`
+    done
+    keyName=DirPathsExcludeListHomeAll
+    local excludeListHomeAll=($(ftGetKeyValueByBlockAndKey -f $filePathDb $tagName $keyName))
+    index=0
+    for item in ${excludeListHomeAll[@]}; do
+        excludeListHomeAll[$index]=${dirPathHome}/${item}
+        index=`expr $index + 1`
+    done
+
+    mDirPathsExcludeBase=(${excludeListSys[@]} ${excludeListHomeBase[@]})
+    mDirPathsExcludeAll=(${excludeListSys[@]} ${excludeListHomeAll[@]})
 
     local dirsExclude
     local fileNameExclude
@@ -465,9 +433,7 @@ ftBackupOs()
     ftEcho -bh 开始${ftEffect}
     sudo tar --use-compress-program=pigz -cvPf $mFilePathVersion --exclude-from=$fileNameExclude / \
      2>&1 |tee $mFilePathLog
-
-    # tar -cvPzf  --exclude-from=$fileNameExclude / | pigz -1 >$mFilePathVersion \
-    # 2>&1 |tee $mFilePathLog
+     rm $fileNameExclude>/dev/null
 }
 
 ftAddNote()

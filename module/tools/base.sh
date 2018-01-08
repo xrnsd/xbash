@@ -678,7 +678,7 @@ EOF
                 continue
             fi
             key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
-            value=$(echo $line | awk -F= '{gsub(" |\t","",$2); print $2}')
+            value=$(echo $line | awk -F= '{gsub("\t","",$2); print $2}')
 
             if [ "X$keyName" = "X$key" ];then
                 echo $value
@@ -1055,7 +1055,7 @@ _adb()
                     -k)         COMPREPLY=( $(compgen -W 'home back menu down up lift right down  power' -- $curr_arg ) ); ;;
                     install)  COMPREPLY=( $(compgen -W "-l -r -s" -- $curr_arg ) );
                                 case "${COMP_WORDS[2]}" in
-                                                -l|-r|-s)  COMPREPLY=( $(compgen -o filenames -W "`ls *.apk *.jar`" -- ${cur}) ); ;;
+                                                -l|-r|-s)  COMPREPLY=( $(compgen -o filenames -W "`ls *.apk`" -- ${cur}) ); ;;
                                 esac
                                 ;;
                     shell)  COMPREPLY=( $(compgen -W 'am pm input screencap screenrecord getprop dumpsys start text' -- $curr_arg ) );
