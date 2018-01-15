@@ -37,10 +37,10 @@ if [ "$(whoami)" != "root" ];then
     fi
 fi
 #----------------    xbash config  ---------------------------
-alias ..="cd .."
-alias ...="cd ../.."
-alias xcc='cd $OLDPWD'
-alias xr="source ~/.bashrc"
+alias ..="effect=进入父目录;cd .."
+alias ...="effect=进入爷目录;cd ../.."
+alias xcc='effect=进入原目录;cd $OLDPWD'
+alias xr="effect=更新xbash配置;source ~/.bashrc"
 if [ -f $rFilePathCmdModuleToolsSpecific ];then
     export XMODULE="env" #标记为环境模式，此模式说明直接调用脚本实现
     source  $rFilePathCmdModuleToolsSpecific
@@ -48,26 +48,26 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
     export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
     export ENV_XBASH_INIT_STATED=1
 
-    alias rm='ftRmExpand'
-    alias xd='ftMtkFlashTool'
-    alias xb='ftMaintainSystem'
-    alias xc='export XCMD=xc;ftMain'
-    alias xss='ftPowerManagement reboot'
-    alias xs='ftPowerManagement shutdown'
-    alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
-    alias xu='export XCMD=xu;gedit  $filePathUserConfig $filePathXbashTragetBashrcBase $filePathXbashTragetBashrcConfigBase'
+    alias rm='effect=回收型rm;ftRmExpand'
+    alias xd='effect=MTK下载工具;ftMtkFlashTool'
+    alias xb='effect=系统维护;ftMaintainSystem'
+    alias xc='effect=xbash主入口[旧];ftMain'
+    alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
+    alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
+    alias xbh='effect=bash命令历史插值;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
+    alias xu='effect=打开xbash配置文件;gedit  $filePathUserConfig $filePathXbashTragetBashrcBase $filePathXbashTragetBashrcConfigBase'
 
     if [ ! -z `which git` ];then
-        alias xgla='ftGitLogShell -a'
-        alias xgl='ftGitLogShell 20'
-        alias xgll='ftGitLogShell 100' 
+        alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a'
+        alias xgl='effect=格式化显示20条git_log;ftGitLogShell 20'
+        alias xgll='effect=格式化显示100条git_log;ftGitLogShell 100' 
 
         export PROMPT_COMMAND='\
         ftSetBashPs1ByGitBranch
         if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
          ftSetBashPs1ByGitBranch
         fi'
-        alias xbranch="git branch|grep"
+        alias xbranch="effect=过滤git分支;git branch|grep"
     fi
 
     #命令选项快速适配
@@ -84,29 +84,20 @@ if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then
 fi
 
 if [ -d "$ANDROID_SDK" ];then
-    alias xl='export XCMD=xl;\
-                adb logcat -c;\
-                adb logcat | grep '
-    alias xtext='adb shell input text'
-    #输入制定暗码
-    alias xam='adb shell am start -a android.intent.action.CALL tel:'
-    alias xlc='adb logcat | grep androidrun -i'
-    alias xk='ftKillPhoneAppByPackageName'
-    alias xle='export XCMD=xle;adb logcat "*:E"'
-    alias .9='export XCMD=.9;${ANDROID_SDK}/tools/draw9patch'
-    alias xds='adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
+    alias xl='effect=过滤adb_logcat;adb logcat -c;adb logcat | grep '
+    alias xtext='effect=对设备输入字符串;adb shell input text'
+    alias xk='effect=干掉设备对应包名的进程;ftKillPhoneAppByPackageName'
+    alias xle='effect=过滤错误的进程;adb logcat "*:E"'
+    alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
+    alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
 
-    alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
-    alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
-    alias xqlauncher='adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
-    alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
-    alias xqchanglogo='adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
-    alias xqfactorytest='adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
-    alias xqchooseBootAnimation='adb shell am start -n com.android.settings/com.android.settings.ChooseBootAnimationActivity'
-    alias xqcamera_test_sub='adb shell am start -n com.mediatek.factorymode/com.mediatek.factorymode.camera.SubCamera'
+    alias xqselect='effect=启动移动隐藏;adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
+    alias xqsetting='effect=启动设置;adb shell am start -n com.android.settings/com.android.settings.Settings'
+    alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
+    alias xqcamera='effect=启动相机2;adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
+    alias xqchanglogo='effect=启动隐藏动画;adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
+    alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
 
-    # adb logcat -v process | grep $(adb shell ps | grep com.android.systemui | awk '{print $2}')
-    # adb logcat |grep Displayed #获取activity 显示时间
     complete -W "123456" xl
     complete -W "systemui monkey launcher com.android.systemui com.android.launcher3 com.android.commands.monkey" xk
 fi

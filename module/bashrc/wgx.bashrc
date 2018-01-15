@@ -138,11 +138,7 @@ EOF
             ftLnUtil -h
             return
     fi
-    if [[ ! -L "$lnPath" ]]; then
-        echo $lnPath
-        return
-    fi
-    if [ ! -z `which readlink` ];then
+    if [[ -L "$lnPath" ]]&&[ ! -z `which readlink` ]; then
         echo $(readlink $lnPath)
         return
     fi

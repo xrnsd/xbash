@@ -22,13 +22,23 @@ ftMain()
     -v | --version )        echo \"Xrnsd extensions to bash\" $rXbashVersion
                 break;;
     -h|-help|help|--help|HELP|-HELP|--HELP)
-            case $2 in
-                -b |-B)    ftReadMe -a
-                            return;;
-                -c |-C)     ftMain -ft
-                            return;;
+                case $2 in
+                    -b |-B)
+ cat<<EOF
+
+显示bash内建等命令封装说明
+====================================
+命令           说明
+====================================
+EOF
+                                ftReadAllAlias| column -t
+                                return;;
+                    -c |-C) ftMain -ft;return;;
                 esac
-                ftReadMe -b
+                cat<<EOF
+xc -h -b    查看bash内建等命令封装说明
+xc -h -c    查看xbash对bash扩展实现说明
+EOF
                 break;;
     ft | -ft ) cat<<EOF
 
@@ -39,13 +49,14 @@ xbash对bash扩展实现说明
 EOF
                 ftReadAllFt | column -t
                 break;;
-    vvv | -vvv)            ftEcho -b xbash;        echo \"Xrnsd extensions to bash\" $rXbashVersion
+    vvv | -vvv)
+                ftEcho -b xbash;        echo \"Xrnsd extensions to bash\" $rXbashVersion
                 ftEcho -b java;        java -version
                 ftEcho -b gcc;        gcc -v
                 break;;
     restartadb)    ftRestartAdb
                 break;;
-    *)    ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftReadMe -a; break;;
+    *)    ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftMain -h; break;;
     esac
     done
 }
@@ -262,9 +273,28 @@ EOF
     rm -f $filePathBranchList
 }
 
+ftReadAllAlias()
+{
+        local ftEffect=显示bash内建等命令封装说明_nodisplay
+
+        if [[ -f $filePathXbashTragetBashrcBase ]]; then
+            local cmdName=
+            local cmdContent=
+            cat $filePathXbashTragetBashrcBase|grep alias  | while read line; do
+                    cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
+                    cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
+                    if [[ ! -z "$cmdContent" ]]; then
+                        printf "%14s  " $cmdName;echo $cmdContent
+                    fi
+            done
+        else
+            ftEcho -e "xbash配置不存在:$filePathXbashTragetBashrcBase"
+        fi
+}
+
 ftReadAllFt()
 {
-        local ftEffect=显示tools下所有实现说明_nodisplay
+        local ftEffect=查看xbash对bash扩展实现说明_nodisplay
 
         local key="local ftEffect="
         for effectName in $(cat $rFilePathCmdModuleToolsSpecific |grep '^ft')
@@ -280,94 +310,6 @@ ftReadAllFt()
 
             printf "%40s  " $effectName;echo $effectDescription
         done
-}
-
-ftReadMe()
-{
-    local ftEffect=工具命令使用说明_nodisplay
-    while true; do
-        case "$1" in
-    b | B | -b |-B)
-    cat<<EOF
-
-xc -h -b    查看bash内建等命令封装说明
-xc -h -c    查看xbash对bash扩展实现说明
-EOF
-break;;
-    a | A | -a |-A)
-    cat<<EOF
-
-bash内建等命令封装说明
-=========================================================
-命令 ---- 参数/命令说明
-    |// 使用格式
-    |  参数  ----------------- [参数权限] ----  参数说明
-=========================================================
-xb ----- 系统维护
-    |// xb ×××××
-    |
-    |  backup  ---------------- [root] --------  备份系统
-    |  restore  --------------- [root] --------  还原系统
-    |
-xc ----- 常规自定义命令和扩展
-    |// xc ×××××
-    |
-    |  v  -------------------------------------  自定义命令版本
-    |  vvv  -----------------------------------  系统环境关键参数查看
-    |  help                                      查看自定义命令说明
-    |  test  ----------------------------------  shell测试
-    |  restartadb                                重启adb服务
-    |  clean_data_garbage  --------------------  快速清空回收站
-    |
-xk ----- 关闭手机指定进程
-    |// xk ×××××
-    |
-    |  monkey  --------------------------------  关闭monkey
-    |  systemui                                  关闭systemui
-    |  应用包名  ------------------------------  关闭指定app
-    |
-xl ----- 过滤 android 含有tag的所有等级的log
-    |// xl tag
-    |
-xs ----- 免密码, 关机
-    |// xs #无参就默认10s
-    |// xs 时间[秒]
-    |
-xss ---- 免密码, 重启
-    |// xss #无参就默认10s
-    |// xss 时间[秒]
-    |
-xle ---- 过滤 android 含有tag的E级log
-    |// xle tag
-    |
-xbh ---- 根据标签过滤命令历史
-    |// xbh 标签
-    |
-==============================================================
-=======                     无参部分                 =========
-==============================================================
-
-xgl ----- 简单查看最近15次git log
-xgll ---- 简单查看最近100次git log
-xr ------ 重新加载xbash配置文件
-xu ------ 打开xbash配置
-xd ------ mtk下载工具
-.9 ------ 打开.9工具
-
-=====  使用adb启动应用,出现错误请查看实现  ======
-xqselect
-xqsetting
-xqlauncher
-xqcamera
-xqchanglogo
-xqfactorytest
-xqchooseBootAnimation
-
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-exit;;
-    esac
-done
 }
 
 ftKillPhoneAppByPackageName()
@@ -1331,6 +1273,10 @@ EOF
     local pasword=123456
     #服务器路径[根][真实]
     local dirPathServer=/media/新卷/${pathContentUploadTraget}
+    local dirPathServerLocal=/media/server/1.188/${pathContentUploadTraget}
+    if [[ ! -d "$dirPathServerLocal" ]]; then
+        mkdir -p $dirPathServerLocal
+    fi
 
     ftEcho -s "开始上传到  ${serverIp}/${pathContentUploadTraget}"
     cd $dirPathContentUploadSource
@@ -1684,12 +1630,12 @@ EOF
                local clientNameAll=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName $AutoEnv_clientName)
                 tagName="lzProjrctConfigBranch2PlatformName"
                 local platformName=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName $TARGET_PRODUCT)
-                if [ -z "$PlatformName" ];then
+                if [ -z "$platformName" ];then
                      dirPathUploadTraget=智能机软件/autoUpload
                 elif [ -z "$clientNameAll" ];then
                      dirPathUploadTraget=智能机软件/MTK6580/autoUpload
                 else
-                     dirPathUploadTraget=智能机软件/${PlatformName}/${clientNameAll}
+                     dirPathUploadTraget=智能机软件/${platformName}/${clientNameAll}
                 fi
 
             else

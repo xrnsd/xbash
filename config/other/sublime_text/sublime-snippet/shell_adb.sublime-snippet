@@ -1,12 +1,20 @@
 <snippet>
 	<content><![CDATA[
+# =========== logcat
+    #log等级
+        adb logcat "*:E"
+    #根据包名过滤
+        adb logcat -v process | grep \$(adb shell ps | grep packageName | awk '{print \$2}')
+    #查看bug报告
+        adb bugreport
+
 # =========== 读取系统信息
+    #获取activity 显示时间
+        adb logcat |grep Displayed #获取activity 显示时间
     #屏幕截图
         adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png xxxxx
     #录制视频
         adb shell screenrecord /sdcard/filename.mp4&&adb pull /sdcard/filename.mp4 xxxxx
-    #查看bug报告
-        adb bugreport
     #读取系统的配置信息
         adb shell getprop
     #获取通知信息

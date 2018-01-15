@@ -855,7 +855,7 @@ ftLanguageUtil()
     local ftEffect=语言缩写转换
     local ftLanguageContent=$@
     local dirPathCode=$ANDROID_BUILD_TOP
-    # ftEcho -s "$ftLanguageContent"
+    local filePathDataBase=${rDirPathCmdsConfigData}/tools.db
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -890,6 +890,7 @@ EOF
     local errorContent=
     if [ -z "$ftLanguageContent" ];then    errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
     elif [ ! -f "$filePathDevice" ];then    errorContent="${errorContent}\\n[工程Device的语言配置文件不存在]filePathDevice=$filePathDevice" ; fi
+    if [ ! -f "$filePathDataBase" ];then    errorContent="${errorContent}\\n[语言转化配置文件不存在]filePathDataBase=$filePathDataBase" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftLanguageUtil -h
@@ -897,32 +898,8 @@ EOF
     fi
     return=
 
-    allList=(阿拉伯语 孟加拉语 缅甸语 简体中文 繁体中文 捷克语 荷兰语 \
-英语 法语 德语 希腊语 希伯来语 印地语 匈牙利语 印度尼西亚语 \
-意大利语 高棉语 韩语 马来语 波斯语 葡萄牙语 葡萄牙语 \
-罗马尼亚语/摩尔多瓦语  俄语 西班牙语 他加禄语/菲律宾语 \
-泰语 土耳其语 乌尔都语 越南语 阿拉伯语 保加利亚语 \
-加泰罗尼亚语 克罗地亚语 丹麦语 荷兰语 英语 英语 英语 \
-英语 英语 英语 英语 英语 芬兰语 法语 法语 法语 德语 德语 \
-德语 印地语/印度 意大利语 日语 坎纳达语/印度 拉脱维亚语 \
-立陶宛语 马拉雅拉姆语/印度 挪威语 波兰语 塞尔维亚语 斯洛伐克语 \
-斯洛文尼亚语 西班牙语 瑞典语 泰卢固语/印度 乌克兰语 繁体中文/香港 \
-印尼语 斯瓦希里语/坦桑尼亚 阿姆哈拉语/埃塞俄比亚 孟加拉语/印度 \
-希伯来语/以色列 希伯来语/以色列 南非语 罗曼什语/瑞士 缅甸语/民间 \
-白俄罗斯语 爱沙尼亚语 祖鲁语/南非 阿塞拜疆语 亚美尼亚语/亚美尼亚 \
-格鲁吉亚语/格鲁吉亚 老挝语/老挝 蒙古语 尼泊尔语 哈萨克语 僧加罗语/斯里兰卡 )
-
-    shortList=(ar_IL bn_BD my_MM zh_CN zh_TW cs_CZ nl_NL \
-en_US fr_FR de_DE el_GR he_IL/iw_IL hi_IN hu_HU id_ID \
-it_IT km_KH ko_KR ms_MY fa_IR pt_BR pt_PT ro_RO \
-ru_RU es_ES tl_PH th_TH tr_TR ur_PK vi_VN ar_EG bg_BG \
-ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
- en_NZ en_SG en_ZA fi_FI fr_BE fr_CA fr_CH de_AT de_LI \
- de_CH hi_IN it_CH ja_JP hi_IN lv_LV lt_LT hi_IN nb_NO \
- pl_PL sr_RS sk_SK sl_SI es_US sv_SE hi_IN uk_UA zh_HK \
- in_ID sw_TZ am_ET bn_IN he_IL iw_IL af_ZA rm_CH \
- my_ZG be_BY et_EE zu_ZA az_AZ hy_AM ka_GE lo_LA \
- mn_MN ne_NP kk_KZ si_LK)
+    local allList=($(ftGetKeyValueByBlockAndKey $filePathDataBase languageList allList))
+    local shortList=($(ftGetKeyValueByBlockAndKey $filePathDataBase languageList shortList))
 
     if [ -z "$ftLanguageContent" ];then
         LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
@@ -1055,13 +1032,17 @@ _adb()
                     -k)         COMPREPLY=( $(compgen -W 'home back menu down up lift right down  power' -- $curr_arg ) ); ;;
                     install)  COMPREPLY=( $(compgen -W "-l -r -s" -- $curr_arg ) );
                                 case "${COMP_WORDS[2]}" in
-                                                -l|-r|-s)  COMPREPLY=( $(compgen -o filenames -W "`ls *.apk`" -- ${cur}) ); ;;
+                                                -l|-r|-s)  if [[ ! -z "$(ls -l |grep ".apk")" ]]; then
+                                                                    COMPREPLY=( $(compgen -o filenames -W "`ls *.apk`" -- ${cur}) );
+                                                                fi ;;
                                 esac
                                 ;;
-                    shell)  COMPREPLY=( $(compgen -W 'am pm input screencap screenrecord getprop dumpsys start text' -- $curr_arg ) );
+                    shell)  COMPREPLY=( $(compgen -W 'am pm input screencap screenrecord getprop dumpsys start text setprop start stop' -- $curr_arg ) );
                                 case "${COMP_WORDS[2]}" in
                                                 dumpsys)  COMPREPLY=( $(compgen -W 'notification cpuinfo meminfo activity' -- $curr_arg ) ); ;;
                                 esac
+                                ;;
+                    logcat)  COMPREPLY=( $(compgen -W ' \"*:E\"  ' -- $curr_arg ) );
                                 ;;
                     *)  COMPREPLY=( $(compgen -W 'push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot ' -- $curr_arg ) ); ;;
       esac
@@ -1194,7 +1175,7 @@ EOF
     # 耦合校验
     local valCount=2
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    # if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     # if [ ! -d "$dirPathLocal" ];then    errorContent="${errorContent}\\n[示例1]dirPathLocal=$dirPathLocal" ; fi
     if [ -z "$traget" ];then    errorContent="${errorContent}\\n不知道你想干嘛" ;
     elif [ -z "$isRmSilence" ]&&[ ! -d "$traget" ]&&[ ! -f "$traget" ];then    errorContent="${errorContent}\\n这是什么鬼:$traget" ; fi
@@ -1205,7 +1186,7 @@ EOF
             $(which rm) --help
             return
     fi
-
+    cd $PWD
     ftInitDevicesList
     local dirPathDevTrash=
     for dirPath in ${mCmdsModuleDataDevicesList[*]}

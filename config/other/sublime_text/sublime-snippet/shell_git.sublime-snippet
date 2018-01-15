@@ -3,6 +3,8 @@
 # =========== 将修改生成为文件并打包
     git diff-tree -r --no-commit-id --name-only xxxxxxxx | xargs tar -rf xxxxxxxx.tar
 
+    #备注：608e120和4abe32e为前后两个提交的hash
+    git diff 608e120 4abe32e --name-only | xargs tar -rf xxxxxxxx.tar
 # =========== 只打印hash
     git log --pretty=format:"%h"
 

@@ -48,3 +48,17 @@ fi
 #     gnome-terminal -e 'bash -c "read dd"'  --window --tab -e 'bash -c "echo 11;read ff"'
 #     size=`expr $size - 1`
 # done
+cd /media/data/ptkfier/code/mtk6580L/alps
+ftLanguageUtil "ru_RU es_ES tl_PH th_TH tr_TR ur_PK vi_VN ar_EG"
+
+echo ${return[@]}
+
+for((i=0;i<${#return[*]};i++));
+do
+    export arr1_m$i="${return[$i]}"
+done
+awk 'BEGIN{
+    for(i in ENVIRON)
+    if(i~/arr1_m/)
+        print i "=" ENVIRON[i]
+}'
