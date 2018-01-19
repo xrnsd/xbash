@@ -1040,11 +1040,12 @@ _adb()
                     shell)  COMPREPLY=( $(compgen -W 'am pm input screencap screenrecord getprop dumpsys start text setprop start stop' -- $curr_arg ) );
                                 case "${COMP_WORDS[2]}" in
                                                 dumpsys)  COMPREPLY=( $(compgen -W 'notification cpuinfo meminfo activity' -- $curr_arg ) ); ;;
+                                                input)  COMPREPLY=( $(compgen -W 'keyevent text' -- $curr_arg ) ); ;;
                                 esac
                                 ;;
                     logcat)  COMPREPLY=( $(compgen -W ' \"*:E\"  ' -- $curr_arg ) );
                                 ;;
-                    *)  COMPREPLY=( $(compgen -W 'push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot ' -- $curr_arg ) ); ;;
+                    *)  COMPREPLY=( $(compgen -W 'push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot disable-verity' -- $curr_arg ) ); ;;
       esac
 }
 complete -F _adb adb
@@ -1177,8 +1178,7 @@ EOF
     local errorContent=
     # if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     # if [ ! -d "$dirPathLocal" ];then    errorContent="${errorContent}\\n[示例1]dirPathLocal=$dirPathLocal" ; fi
-    if [ -z "$traget" ];then    errorContent="${errorContent}\\n不知道你想干嘛" ;
-    elif [ -z "$isRmSilence" ]&&[ ! -d "$traget" ]&&[ ! -f "$traget" ];then    errorContent="${errorContent}\\n这是什么鬼:$traget" ; fi
+    if [ -z "$traget" ];then    errorContent="${errorContent}\\n不知道你想干嘛" ;fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftRmExpand -h

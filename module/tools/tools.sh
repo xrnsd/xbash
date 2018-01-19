@@ -1216,12 +1216,10 @@ ftAutoUploadHighSpeed()
     local pathContentUploadSource=$2
     #服务器具体路径[相对]
     local pathContentUploadTraget=$3
+    #存放上传源的目录[绝对],为服务器挂载在本地的绝对路径
+    local dirPathContentUploadSourceRoot=$4
     if [ -z "$pathContentUploadTraget" ];then
-        if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
-             pathContentUploadTraget=智能机软件/SPRD7731C/鹏明珠/autoUpload
-        elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-             pathContentUploadTraget=智能机软件/MTK6580/autoUpload
-        fi
+            pathContentUploadTraget=智能机软件/autoUpload
     fi
     local dirPathLocal=$(pwd)
 
@@ -1255,7 +1253,7 @@ EOF
         return
     fi
     #耦合校验
-    local valCount=3
+    local valCount=4
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathContentUploadSource" ];then    errorContent="${errorContent}\\n上传源存放目录不存在:dirPathContentUploadSource=dirPathContentUploadSource" ;
@@ -1273,9 +1271,29 @@ EOF
     local pasword=123456
     #服务器路径[根][真实]
     local dirPathServer=/media/新卷/${pathContentUploadTraget}
-    local dirPathServerLocal=/media/server/1.188/${pathContentUploadTraget}
+    local dirPathServerLocalBase=/media/server/1.188
+    local dirPathServerLocal=${dirPathServerLocalBase}/${pathContentUploadTraget}
     if [[ ! -d "$dirPathServerLocal" ]]; then
         mkdir -p $dirPathServerLocal
+    fi
+    # 自动添加旧软件的TAG
+    if [[ ! -z "$dirPathContentUploadSourceRoot" ]]; then
+        local dirPathServerLocalRoot=${dirPathServerLocal}/$(echo $dirPathContentUploadSourceRoot|sed -e "s:$dirPathContentUploadSource::g")
+        if [[ -d $dirPathServerLocalRoot ]]; then
+                local versionPath=$(dirname $dirPathServerLocalRoot)
+                local versionName=$(basename $dirPathServerLocalRoot)
+
+                 ls $versionPath | while read line;do
+                    if [[  ${line//$versionName} != $line ]]; then
+                        local dirPath=${versionPath}/${line}
+                        local dirPath_old=${dirPath}_old
+                        if [[ -d "$dirPath_old" ]]; then
+                            dirPath_old=${dirPath_old}_old
+                        fi
+                        mv $dirPath $dirPath_old
+                    fi
+                done
+        fi
     fi
 
     ftEcho -s "开始上传到  ${serverIp}/${pathContentUploadTraget}"
@@ -1722,7 +1740,7 @@ EOF
 
             #上传服务器
             if [[ ! -z "$isUpload" ]]; then
-                    ftAutoUploadHighSpeed $dirPathVersionSoftware $dirNameersionSoftwareVersionBase $dirPathUploadTraget
+                    ftAutoUploadHighSpeed $dirPathVersionSoftware $dirNameersionSoftwareVersionBase $dirPathUploadTraget $dirPathVersionSoftwareVersion
             fi
     else
             ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的配置\n请查看下面说明:"
