@@ -1181,9 +1181,9 @@ EOF
     if [ -z "$traget" ];then    errorContent="${errorContent}\\n不知道你想干嘛" ;fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftRmExpand -h
+            # ftRmExpand -h
             ftEcho -s "请参照rm 使用习惯 "
-            $(which rm) --help
+            # $(which rm) --help
             return
     fi
     cd $PWD
