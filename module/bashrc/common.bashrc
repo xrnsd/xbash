@@ -67,7 +67,7 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
         if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
          ftSetBashPs1ByGitBranch
         fi'
-        alias xbranch="effect=过滤git分支;git branch|grep"
+        alias xbranch="effect=过滤git分支;git branch|grep -i "
     fi
 
     #命令选项快速适配
@@ -87,19 +87,24 @@ if [ -d "$ANDROID_SDK" ];then
     alias xl='effect=过滤adb_logcat;adb logcat -c;adb logcat | grep '
     alias xtext='effect=对设备输入字符串;adb shell input text'
     alias xk='effect=干掉设备对应包名的进程;ftKillPhoneAppByPackageName'
+    alias xlc='effect=清除指定包名的数据; adb shell pm clear'
     alias xle='effect=过滤错误的进程;adb logcat "*:E"'
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
     alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
 
     alias xqselect='effect=启动移动隐藏;adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
     alias xqsetting='effect=启动设置;adb shell am start -n com.android.settings/com.android.settings.Settings'
-    alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
     alias xqcamera='effect=启动相机2;adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
+    alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
     alias xqchanglogo='effect=启动隐藏动画;adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
     alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
 
+    if [[ -f $rFilePathCmdModuleConfigDataBase ]]; then
+        packageNameList="$(ftGetKeyValueByBlockAndKey -f $rFilePathCmdModuleConfigDataBase androidDevicePackages packageNameList)"
+    fi
+    complete -W "${packageNameList[@]}" xk
+    complete -W "${packageNameList[@]}" xlc
     complete -W "123456" xl
-    complete -W "systemui monkey launcher com.android.systemui com.android.launcher3 com.android.commands.monkey" xk
 fi
 
 if [ -d "vendor/sprd" ];then

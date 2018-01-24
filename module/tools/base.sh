@@ -1048,7 +1048,7 @@ _adb()
                     *)  COMPREPLY=( $(compgen -W 'push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot disable-verity' -- $curr_arg ) ); ;;
       esac
 }
-complete -F _adb adb
+complete -F _adb -A file adb
 adb()
 {
     local ftEffect=adb修正工具
@@ -1209,8 +1209,9 @@ EOF
                 while true; do
                         ftEcho -y 这是目录,还删么
                         read -n 1 sel
+                        sel=${sel:-'Y'}
                         case "$sel" in
-                            y | Y )  echo;break;;
+                            y | Y )  $(which rm) -rf "$@";break;;
                             n | N |q | Q)    echo;return;;
                             * ) ftEcho -e 错误的选择：$sel
                                 echo "输入n,q，离开"

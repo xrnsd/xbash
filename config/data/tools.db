@@ -49,6 +49,14 @@ DirPathsExcludeListHomeAll= \
     .gvfs
 
 #开发用
+[androidDevicePackages]
+packageNameList=com.android.systemui \
+                com.android.launcher3 \
+                com.android.settings \
+                com.android.commands.monkey \
+                com.android.mms
+
+
 [androidSDK2Verison]
 25=Android7.1
 24=Android7.0
