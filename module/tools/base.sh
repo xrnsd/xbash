@@ -1031,11 +1031,11 @@ _adb()
     case "${COMP_WORDS[1]}" in
                     -k)         COMPREPLY=( $(compgen -W 'home back menu down up lift right down  power' -- $curr_arg ) ); ;;
                     install)  COMPREPLY=( $(compgen -W "-l -r -s" -- $curr_arg ) );
-                                case "${COMP_WORDS[2]}" in
-                                                -l|-r|-s)  if [[ ! -z "$(ls -l |grep ".apk")" ]]; then
-                                                                    COMPREPLY=( $(compgen -o filenames -W "`ls *.apk`" -- ${cur}) );
-                                                                fi ;;
-                                esac
+                                # case "${COMP_WORDS[2]}" in
+                                #                 -l|-r|-s)  if [[ ! -z "$(ls -l |grep ".apk")" ]]; then
+                                #                                     COMPREPLY=( $(compgen -o filenames -W "`ls *.apk`" -- ${cur}) );
+                                #                                 fi ;;
+                                # esac
                                 ;;
                     shell)  COMPREPLY=( $(compgen -W 'am pm input screencap screenrecord getprop dumpsys start text setprop start stop' -- $curr_arg ) );
                                 case "${COMP_WORDS[2]}" in
