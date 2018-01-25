@@ -22,33 +22,25 @@ ftMain()
     -v | --version )        echo \"Xrnsd extensions to bash\" $rXbashVersion
                 break;;
     -h|-help|help|--help|HELP|-HELP|--HELP)
-                case $2 in
-                    -b |-B)
+                ftMain -ft ; echo
+                ftMain -hb
+                return;;
+    -hb |-HB)   ftEcho -s "bash内建命令和xbash扩展封装说明"
  cat<<EOF
-
-显示bash内建等命令封装说明
 ====================================
 命令           说明
 ====================================
 EOF
-                                ftReadAllAlias| column -t
-                                return;;
-                    -c |-C) ftMain -ft;return;;
-                esac
-                cat<<EOF
-xc -h -b    查看bash内建等命令封装说明
-xc -h -c    查看xbash对bash扩展实现说明
-EOF
-                break;;
-    ft | -ft ) cat<<EOF
-
-xbash对bash扩展实现说明
+                ftReadAllAlias| column -t
+                return;;
+    ft | -ft )   ftEcho -s "xbash对bash扩展实现说明"
+cat<<EOF
 =========================================================
 命令                             说明
 =========================================================
 EOF
                 ftReadAllFt | column -t
-                break;;
+                return;;
     vvv | -vvv)
                 ftEcho -b xbash;        echo \"Xrnsd extensions to bash\" $rXbashVersion
                 ftEcho -b java;        java -version
@@ -56,7 +48,7 @@ EOF
                 break;;
     restartadb)    ftRestartAdb
                 break;;
-    *)    ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftMain -h; break;;
+    *)    ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftMain -h;return;;
     esac
     done
 }

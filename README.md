@@ -4,6 +4,7 @@ bash的简单扩展与其他工具配置[部分]
 ----------
     1 sudo chmod -R a+x module/ config/ init.sh
     2 ./init.sh #初始化
+    3 重开终端,xc -h 常看实现说明
 
 2.其他
 ----------

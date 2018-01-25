@@ -52,6 +52,7 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
     alias xd='effect=MTK下载工具;ftMtkFlashTool'
     alias xb='effect=系统维护;ftMaintainSystem'
     alias xc='effect=xbash主入口[旧];ftMain'
+    alias xbash='ftMain'
     alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
     alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
     alias xbh='effect=bash命令历史插值;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
