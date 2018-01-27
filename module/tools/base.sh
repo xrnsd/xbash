@@ -477,6 +477,7 @@ EOF
     b | B| -b | -B)        echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
     bh | BH | -bh | -BH)    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
     y | Y | -y | -Y)        echo;echo -en "${content}[y/n]"; break;;
+    ye | YE | -ye | -YE) echo -en "${content}[y/n]"; break;;
     r | R | -r | -R)        echo;echo -en "${content}"; break;;
     ea| EA | -ea | -EA)    for val in ${content[@]}
                 do
@@ -1141,8 +1142,6 @@ ftSetBashPs1ByGitBranch()
         fi
         export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]$branchName: \[\033[0m\]"
     else
-
-                #export PS1='$(whoami)\[\033[42m\][\w]\[\033[0m\]:'
         export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
     fi
 }
@@ -1152,7 +1151,7 @@ ftRmExpand()
     local ftEffect=rm扩展[添加回收站功能]
     local traget=$1
     local dirPathLocal=$(ftLnUtil $PWD) #解决软链接问题
-
+    cd $PWD
     if [[ "${traget:0:1}" = "-" ]]; then
         traget=$2
 
@@ -1174,19 +1173,15 @@ EOF
 
 
     # 耦合校验
-    local valCount=2
     local errorContent=
-    # if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    # if [ ! -d "$dirPathLocal" ];then    errorContent="${errorContent}\\n[示例1]dirPathLocal=$dirPathLocal" ; fi
     if [ -z "$traget" ];then    errorContent="${errorContent}\\n不知道你想干嘛" ;fi
+    if [[ ! -d "$traget" ]]&&[[ ! -f "$traget" ]];then  echo "rm: 无法删除\"$traget\": 没有那个文件或目录" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            # ftRmExpand -h
             ftEcho -s "请参照rm 使用习惯 "
-            # $(which rm) --help
             return
     fi
-    cd $PWD
+
     ftInitDevicesList
     local dirPathDevTrash=
     for dirPath in ${mCmdsModuleDataDevicesList[*]}
@@ -1195,7 +1190,6 @@ EOF
         if [[ "${dirPathLocal:0:$length}" = "$dirPath" ]]; then
             local dirNameList=$(ls -a $dirPath|grep ".Trash-")
             if [[ -z "$dirNameList" ]]&&[ ! -z "$(echo $dirPath|grep /home)" ]; then
-                echo dirNameList为空
                 dirNameList=".local/share/Trash"
             fi
             dirNameList=$dirNameList #假如存在多个就直接选第一个
@@ -1207,11 +1201,11 @@ EOF
     if [[ -d "$dirPathDevTrash" ]]; then
         if [[ -z "$isRmDirectory" ]]&&[[ -d "$traget" ]]; then
                 while true; do
-                        ftEcho -y 这是目录,还删么
+                        ftEcho -ye 这是目录,还删么
                         read -n 1 sel
                         sel=${sel:-'Y'}
                         case "$sel" in
-                            y | Y )  $(which rm) -rf "$@";break;;
+                            y | Y )  break;;
                             n | N |q | Q)    echo;return;;
                             * ) ftEcho -e 错误的选择：$sel
                                 echo "输入n,q，离开"
@@ -1220,7 +1214,9 @@ EOF
                 done
         fi
         local status=$(mv $traget $dirPathDevTrash 1>/dev/null 2>&1)
-        ftEcho -e $status
+        if [[ ! -z "$status" ]]&&[[ -z "$isRmSilence" ]]; then
+            ftEcho -s $status
+        fi
     else
         ftEcho -s "未移动 $traget 到回收站"
         $(which rm) "$@"

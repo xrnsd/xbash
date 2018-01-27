@@ -357,7 +357,7 @@ EOF
             ftEcho -e "adb提权失败:$remountInfo"
         fi
 
-        adb shell kill $pid
+        adb shell kill $pid&&ftEcho -s "kill $pid"
     elif [[ -z "$(adb shell pm list packages|grep $packageName)" ]]; then
          ftEcho -e 包名[${packageName}]不存在，请确认
         while [ ! -n "$(adb shell pm list packages|grep $packageName)" ]; do

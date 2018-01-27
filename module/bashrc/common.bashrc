@@ -103,7 +103,7 @@ if [ -d "$ANDROID_SDK" ];then
     if [[ -f $rFilePathCmdModuleConfigDataBase ]]; then
         packageNameList="$(ftGetKeyValueByBlockAndKey -f $rFilePathCmdModuleConfigDataBase androidDevicePackages packageNameList)"
     fi
-    complete -W "${packageNameList[@]}" xk
+    complete -W "${packageNameList[@]} launcher systemui" xk
     complete -W "${packageNameList[@]}" xlc
     complete -W "123456" xl
 fi
