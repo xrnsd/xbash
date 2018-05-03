@@ -33,7 +33,7 @@ ftMain()
 EOF
                 ftReadAllAlias| column -t
                 return;;
-    ft | -ft )   ftEcho -s "xbash对bash扩展实现说明"
+    ft | -ft |-hc |HC )   ftEcho -s "xbash对bash扩展实现说明"
 cat<<EOF
 =========================================================
 命令                             说明
@@ -48,7 +48,8 @@ EOF
                 break;;
     restartadb)    ftRestartAdb
                 break;;
-    *)    ftEcho -e "命令[${XCMD}]参数=[$1]错误，请查看命令使用示例";ftMain -h;return;;
+    *)    ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -hc   #xbash对bash扩展实现说明"
+            return;;
     esac
     done
 }
@@ -127,10 +128,10 @@ EOF
     if [ -d "$dirPathCodeOut" ];then
          while true; do
                     echo
-                    ftEcho -y gedit out已存在,选择
+                    ftEcho -y out已存在,选择
                     read -n 1 sel
                     case "$sel" in
-                        b | b )    ftBackupOrRestoreOuts
+                        y | Y | -y  |  b  | B | b )    ftBackupOrRestoreOuts
                                       break;;
                         d | D )    rm -rf $dirPathCodeOut
                                       break;;
@@ -145,7 +146,7 @@ EOF
     cd $dirPathCode
     echo $PWD
     if [ ! -z "$(pgrep -f gedit)" ];then
-         while true; do
+            while true; do
                     echo
                     ftEcho -y gedit 已打开是否关闭
                     read -n 1 sel
@@ -193,18 +194,13 @@ EOF
                                             local branchName=$line
                                             git reset --hard&&
                                             ftEcho -bh 将开始编译$branchName
-                                            git checkout   "$branchName"&&
-
-                                            git pull&&
-                                            git cherry-pick 31bb557||(ftEcho -e "xxxxxxxxxxxxxxxx ${branchName}";continue)
-                                            if [[ $branchName == *_local ]];then
-                                                    continue;
-                                            fi
-                                            git push
-
+                                            git checkout   "$branchName"||git reset --hard
                                             # git pull
-                                            # ftAutoUpdateSoftwareVersion -y&&git push
 
+                                            filePath=device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
+                                            if [[ ! -z $(cat $filePath|grep "product.default.sfingerprint") ]];then
+                                                git cherry-pick b8f9544&&git pull&&git push
+                                            fi
 
 
                                             # ftAutoInitEnv
@@ -263,6 +259,100 @@ EOF
             done
     fi
     rm -f $filePathBranchList
+}
+
+complete -W "-b -h" ftAutoBuildMultiBranchEnvSeparation
+ftAutoBuildMultiBranchEnvSeparation()
+{
+    local ftEffect=在多个终端间执行串行命令[环境独立]
+    local editType=$1
+    editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+
+    local filePathserialBuildTool=${rDirPathCmdModuleTools}/build/serialBuildByBranchName.sh
+    local dirPathProcessEnableId=/tmp/ProcessEnableIds
+
+    while true; do case "$editType" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#    查看帮助
+#    ftAutoBuildMultiBranchEnvSeparation -h
+#
+#    根据分支列表进行串行编译
+#    ftAutoBuildMultiBranchEnvSeparation -b
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    env | -env |-ENV ) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) ftAutoBuildMultiBranchEnvSeparation -h
+     break;;esac;done
+
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftAutoBuildMultiBranch -env
+        return
+    fi
+
+    local requestEnvState=$(/bin/rm -rf $dirPathProcessEnableId&&mkdir $dirPathProcessEnableId)
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$editType" ];then    errorContent="${errorContent}\\n[请指定操作]" ; fi
+    if [ ! -z "$requestEnvState" ];then    errorContent="${errorContent}\\n[环境初始化异常,文件夹无法重置]requestEnvState=$requestEnvState" ; fi
+    if [ ! -f "$filePathserialBuildTool" ];then    errorContent="${errorContent}\\n[串行编译工具不存在]filePathserialBuildTool=$filePathserialBuildTool" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoBuildMultiBranchEnvSeparation -h
+            return
+    fi
+
+    if [[ "$editType" = "-b" ]]; then
+        local dirPathCode=$ANDROID_BUILD_TOP
+        local filePathBranchList=${dirPathProcessEnableId}/branch.list
+        cd $dirPathCode
+
+         if [ ! -z "$(pgrep -f gedit)" ];then
+                while true; do
+                        echo
+                        ftEcho -y gedit 已打开是否关闭
+                        read -n 1 sel
+                        case "$sel" in
+                            y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
+                                          break;;
+                            n | N |q | Q)    return;;
+                            * ) ftEcho -e 错误的选择：$sel
+                                echo "输入n,q，离开"
+                                ;;
+                        esac
+                done
+        fi
+        git branch > $filePathBranchList&&
+        gedit $filePathBranchList&&
+        while [ ! -z "$(pgrep -f gedit)" ]
+        do
+            echo 等待中
+        done
+        local branchArray=($(cat $filePathBranchList))
+        if [ ! -z "$branchArray" ];then
+                    export branchArray
+                    echo enable>${dirPathProcessEnableId}/0
+                    for (( index = 0; index <${#branchArray[@]}; index++ )); do
+                        filePathState="${dirPathProcessEnableId}/${index}"
+                        while [ ! -f "$filePathState" ]||[ "enable" != $(cat $filePathState) ]; do
+                                sleep 2
+                        done
+                        gnome-terminal  --title="任务:${index} : 编译${branchArray[$fileNamePID]}" -x bash -c "$filePathserialBuildTool $filePathBranchList $index"
+                    done
+        fi
+    fi
 }
 
 ftReadAllAlias()
@@ -341,9 +431,9 @@ EOF
     fi
 
     while true; do case "$packageName" in
-    systemui)   packageName="com.android.systemui"  ;break;;
-    launcher3) packageName="com.android.launcher3"  ;break;;
-    monkey)     packageName="com.android.commands.monkey"  ;break;;
+        systemui)   packageName="com.android.systemui"  ;break;;
+        launcher3) packageName="com.android.launcher3"  ;break;;
+        monkey)     packageName="com.android.commands.monkey"  ;break;;
     * ) break;;esac;done
 
     local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
@@ -369,7 +459,7 @@ EOF
                     break;;
                 * )if [ "$XMODULE" = "env" ];then    return ; fi
                     exit;;
-        esac
+            esac
         done
     fi
 }
@@ -684,46 +774,6 @@ EOF
     fi
 }
 
-ftTest()
-{
-    local ftEffect=函数demo调试
-
-    while true; do case "$1" in
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftTest 任意参数
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    local filePathCmdModuleTest=${rDirPathCmds}/${rFileNameCmdModuleTestBase}
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    if [ ! -d "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome" ; fi
-    if [ ! -f "$filePathCmdModuleTest" ];then    errorContent="${errorContent}\\n[测试模块不存在]filePathCmdModuleTest=$filePathCmdModuleTest" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftTest -h
-            return
-    fi
-
-    local dirPathLocal=$PWD
-    local dirPathTemp=${rDirPathUserHome}/temp
-    if [[ ! -d "$dirPathTemp" ]]; then
-        mkdir $dirPathTemp||(ftEcho -e "${ftEffect} 创建demo环境目录失败:$dirPathTemp";return)
-    fi
-    if [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]]; then
-        cd $dirPathTemp
-    fi
-    ftTiming -i
-    $filePathCmdModuleTest "$@"
-    ftTiming
-    cd $dirPathLocal
-}
-
 ftPowerManagement()
 {
     local ftEffect=延时免密码关机重启
@@ -890,6 +940,7 @@ ftReNameFile()
     local dirPathFileList=$1
     local lengthFileName=$2
     local prefixContent=$3
+    local suffixContent=$4
     lengthFileName=${lengthFileName:-'4'}
 
     while true; do case "$1" in
@@ -903,13 +954,15 @@ ftReNameFile()
 #    ftReNameFile /home/xxxx/temp 5
 #    ftReNameFile 目录 修改后的文件长度 前缀
 #    ftReNameFile /home/xxxx/temp 5 test
+#    ftReNameFile 目录 修改后的文件长度 前缀 文件名后缀
+#    ftReNameFile /home/xxxx/temp 5 test test2
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
     #耦合校验
-    local valCount=3
+    local valCount=4
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathFileList" ];then    errorContent="${errorContent}\\n[目标目录不存在]dirPathFileList=$dirPathFileList" ; fi
@@ -949,7 +1002,11 @@ EOF
             continue
         fi
         fileNameBase=$((lengthFileNameBase+$index))
-        cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileNameBase:1}.${file##*.}
+        local fileName=${file%.*}
+        # cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileName}${suffixContent}.${file##*.}
+        cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileName}.${file##*.}
+
+        # cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileNameBase:1}${suffixContent}.${file##*.}
         index=`expr $index + 1`
     done
 }
@@ -1134,7 +1191,7 @@ EOF
 
 # 环境检测
     ftAutoInitEnv
-    if [[ $AutoEnv_mnufacturers != "sprd" ]]; then
+    if [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ]; then
         ftYKSwitch -e
         return
     fi
@@ -1324,7 +1381,7 @@ EOF
 
 # 环境检测
     ftAutoInitEnv
-    if [[ $AutoEnv_mnufacturers != "sprd" ]]; then
+    if [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ]; then
         ftAutoUpload -e
         return
     fi
@@ -1567,7 +1624,7 @@ EOF
                         if [[ ! -f "$filePath" ]]; then
                             ftEcho -e "文件${filePath}不存在"
                         else
-                        dataBaseFileList=(${dataBaseFileList[@]} $filePath)
+                            dataBaseFileList=(${dataBaseFileList[@]} $filePath)
                         fi
                     done
                 done
@@ -1818,22 +1875,22 @@ EOF
 # =================     客户说明          ================
 # ===============================================
 
-    if [[ "$AutoEnv_clientName" = "PMZ" ]]||[[ $AutoEnv_mnufacturers = "sprd" ]]; then
-            #获取语言缩写列表
-            ftAutoLanguageUtil
-            LanguageList=(默认)${return}
+    # if [[ "$AutoEnv_clientName" = "PMZ" ]]||[[ $AutoEnv_mnufacturers = "sprd" ]]; then
+    #         #获取语言缩写列表
+    #         ftAutoLanguageUtil
+    #         LanguageList=(默认)${return}
 
-            echo -e "$gitCommitListOneDay">$filePathReadMeTemplate
-            seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathReadMeTemplate >${filePathReadMeTemplate}.temp
+    #         echo -e "$gitCommitListOneDay">$filePathReadMeTemplate
+    #         seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathReadMeTemplate >${filePathReadMeTemplate}.temp
 
-            enterLine="\n"
-            content="版本号 : $versionName"${enterLine}
-            content=${content}${enterLine}"2. 语言:"
-            content=${content}${enterLine}"$LanguageList"
-            echo -e ${content}${enterLine}${enterLine}"3. 修改点:"| cat - ${filePathReadMeTemplate}.temp >$filePathReadMeTemplate
+    #         enterLine="\n"
+    #         content="版本号 : $versionName"${enterLine}
+    #         content=${content}${enterLine}"2. 语言:"
+    #         content=${content}${enterLine}"$LanguageList"
+    #         echo -e ${content}${enterLine}${enterLine}"3. 修改点:"| cat - ${filePathReadMeTemplate}.temp >$filePathReadMeTemplate
 
-            unix2dos $filePathReadMeTemplate # 转化为windows下格式
-    fi
+    #         unix2dos $filePathReadMeTemplate # 转化为windows下格式
+    # fi
 
 # ===============================================
 # =================     修改记录    ==================
@@ -1901,12 +1958,12 @@ EOF
             # content=${content}${enterLine}"默认 RAM/ROM：$sizeRam/$sizeRom"
             content=${content}${enterLine}
             content=${content}${enterLine}"暗码清单：$pawNumInfo"
-            content=${content}${enterLine}"隐藏：*#312#*"
-            content=${content}${enterLine}"imei显示：*#06#"
-            content=${content}${enterLine}"imei编辑：*#*#3646633#*#*"
-            content=${content}${enterLine}"单项测试[列表]：*#7353#"
-            content=${content}${enterLine}"单项测试[宫格]：*#0*#"
-            content=${content}${enterLine}"三星测试：*#1234#"
+            # content=${content}${enterLine}"隐藏：*#312#*"
+            # content=${content}${enterLine}"imei显示：*#06#"
+            # content=${content}${enterLine}"imei编辑：*#*#3646633#*#*"
+            # content=${content}${enterLine}"单项测试[列表]：*#7353#"
+            # content=${content}${enterLine}"单项测试[宫格]：*#0*#"
+            # content=${content}${enterLine}"三星测试：*#1234#"
             content=${content}${enterLine}"开关机动画暗码：$changLogoNumInfo"
             echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
 
@@ -2049,7 +2106,7 @@ EOF
 
 # 环境检测
     ftAutoInitEnv
-    if [[ $AutoEnv_mnufacturers != "sprd" ]]; then
+    if [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ]; then
         ftAutoUpdateSoftwareVersion -e
         return
     fi

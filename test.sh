@@ -29,19 +29,3 @@ fi
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
-# dirPathProcessEnableId=/tmp/ProcessEnableIds
-# rm -rf $dirPathProcessEnableId
-# mkdir $dirPathProcessEnableId
-
-# for (( i = 0; i <2; i++ )); do
-#     if [[ -z "$size" ]]; then
-#         size=1000
-#         stae=true
-#     else
-#         stae=false
-#     fi
-#     echo $stae>${dirPathProcessEnableId}/${size}
-#     gnome-terminal -x bash -c "${rDirPathCmdModuleTools}/build.sh $size"
-#     gnome-terminal -e 'bash -c "read dd"'  --window --tab -e 'bash -c "echo 11;read ff"'
-#     size=`expr $size - 1`
-# done

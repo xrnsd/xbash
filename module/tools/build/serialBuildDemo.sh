@@ -1,6 +1,7 @@
 #!/bin/bash
 #####-----------------------变量------------------------------#########
-readonly rModuleName=module/tools/build.sh
+readonly rModuleName=module/tools/build/serialBuildDemo.sh
+readonly rRirPathProcessEnableId=/tmp/ProcessEnableIds
 #####----------------------初始化build环境--------------------------#######
 # 函数
 if [ -f $rFilePathCmdModuleToolsSpecific ];then
@@ -11,14 +12,14 @@ else
     toolsPath=$rFilePathCmdModuleToolsSpecific\n\
     \033[0m"
 fi
-dirPathProcessEnableId=/tmp/ProcessEnableIds
 fileNamePID=$1
-while [[ "true" != $(cat ${dirPathProcessEnableId}/${fileNamePID}) ]]; do
-    sleep 1
+echo $fileNamePID
+while [[ "enable" != $(cat ${rRirPathProcessEnableId}/${fileNamePID}) ]]; do
+    sleep 5
 done
 # =============================================================
-echo $(pwd)
-read ddd
+ftEcho -s "${fileNamePID} start"
+read -n1 ddd
 
 
 
@@ -41,4 +42,5 @@ read ddd
 
 
 # =============================================================
-echo true > ${dirPathProcessEnableId}/$(expr $fileNamePID - 1)
+fileNamePID=$(expr $fileNamePID + 1)
+echo enable > ${rRirPathProcessEnableId}/${fileNamePID}

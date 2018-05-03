@@ -45,9 +45,49 @@ EOF
     fi
 }
 
+ftTest()
+{
+    local ftEffect=函数demo调试
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftTest 任意参数
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    local filePathCmdModuleTest=${rDirPathCmds}/${rFileNameCmdModuleTestBase}
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if [ ! -d "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome" ; fi
+    if [ ! -f "$filePathCmdModuleTest" ];then    errorContent="${errorContent}\\n[测试模块不存在]filePathCmdModuleTest=$filePathCmdModuleTest" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftTest -h
+            return
+    fi
+
+    local dirPathLocal=$PWD
+    local dirPathTemp=${rDirPathUserHome}/temp
+    if [[ ! -d "$dirPathTemp" ]]; then
+        mkdir $dirPathTemp||(ftEcho -e "${ftEffect} 创建demo环境目录失败:$dirPathTemp";return)
+    fi
+    if [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]]; then
+        cd $dirPathTemp
+    fi
+    ftTiming -i
+    $filePathCmdModuleTest "$@"
+    ftTiming
+    cd $dirPathLocal
+}
+
 ftAutoInitEnv()
 {
-    local ftEffect=初始化xbash所需的部分环境变量
+    local ftEffect="初始化xbash Android build相关所需的部分环境变量"
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT

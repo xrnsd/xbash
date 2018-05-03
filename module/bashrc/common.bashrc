@@ -48,7 +48,7 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
     export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
     export ENV_XBASH_INIT_STATED=1
 
-    alias rm='effect=回收型rm;ftRmExpand'
+    # alias rm='effect=回收型rm;ftRmExpand'
     alias xd='effect=MTK下载工具;ftMtkFlashTool'
     alias xb='effect=系统维护;ftMaintainSystem'
     alias xc='effect=xbash主入口[旧];ftMain'
@@ -73,7 +73,20 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
 
     #命令选项快速适配
     complete -W "backup restore" xb
-    complete -W "restartadb test clean_data_garbage  -v -vvv -ft" xc
+    # complete -W "-h -hb -hc --help restartadb test clean_data_garbage  -v -vvv -ft" xc
+    autotab_list=("aa" "bb" "cc" "dd" "123")
+    _xc()
+    {
+        local ftEffect=adb修正工具对应的参数补全实现
+        local curr_arg=${COMP_WORDS[COMP_CWORD]}
+        case "${COMP_WORDS[1]}" in
+                        -)      
+                                COMP_WORDS[1]="-h"
+                                export COMP_WORDS=${COMP_WORDS[@]}; ;;
+                        *)  COMPREPLY=( $(compgen -W '-h -hb -hc --help restartadb test clean_data_garbage  -v -vvv -ft' -- $curr_arg ) ); ;;
+          esac
+    }
+    complete -F _xc xc
 else
     echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$rFilePathCmdModuleToolsSpecific]\033[0m"
     export ENV_XBASH_INIT_STATED=-1
@@ -85,13 +98,14 @@ if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then
 fi
 
 if [ -d "$ANDROID_SDK" ];then
-    alias xl='effect=过滤adb_logcat;adb logcat -c;adb logcat | grep '
+    alias xl='effect=过滤adb_logcat;adb logcat -c;adb logcat | grep -i'
     alias xtext='effect=对设备输入字符串;adb shell input text'
     alias xk='effect=干掉设备对应包名的进程;ftKillPhoneAppByPackageName'
     alias xlc='effect=清除指定包名的数据; adb shell pm clear'
     alias xle='effect=过滤错误的进程;adb logcat "*:E"'
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
     alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
+    alias xdv='effect=手机录屏;adb shell screenrecord /sdcard/sv.mp4&&adb pull /sdcard/sv.mp4 ~/download/'
 
     alias xqselect='effect=启动移动隐藏;adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
     alias xqsetting='effect=启动设置;adb shell am start -n com.android.settings/com.android.settings.Settings'
