@@ -56,7 +56,7 @@ EOF
 
 ftAutoBuildMultiBranch()
 {
-    local ftEffect=多版本[分支]串行编译
+    local ftEffect=多分支串行编译
     local filePathBranchList=branch.list
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathCodeOut=$ANDROID_PRODUCT_OUT
@@ -264,7 +264,7 @@ EOF
 complete -W "-b -h" ftAutoBuildMultiBranchEnvSeparation
 ftAutoBuildMultiBranchEnvSeparation()
 {
-    local ftEffect=在多个终端间执行串行命令[环境独立]
+    local ftEffect=多分支串行编译[环境独立]/在多个终端间串行执行命令
     local editType=$1
     editType=$(echo $editType | tr '[A-Z]' '[a-z]')
 
@@ -394,7 +394,7 @@ ftReadAllFt()
         done
 }
 
-ftKillPhoneAppByPackageName()
+ftKillApplicationByPackageName()
 {
     local ftEffect=kill掉包名为packageName的应用
     local packageName=$1
@@ -403,8 +403,8 @@ ftKillPhoneAppByPackageName()
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftKillPhoneAppByPackageName [packageName]
-#    ftKillPhoneAppByPackageName com.android.settings
+#    ftKillApplicationByPackageName [packageName]
+#    ftKillApplicationByPackageName com.android.settings
 #=========================================================
 EOF
 
@@ -418,7 +418,7 @@ EOF
     if [ -z "$packageName" ];then    errorContent="${errorContent}\\n[应用包名]packageName=$packageName" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftKillPhoneAppByPackageName -h
+            ftKillApplicationByPackageName -h
             return
     fi
 
@@ -455,12 +455,91 @@ EOF
             read -n 1 sel
             case "$sel" in
                 y | Y )
-                    ftKillPhoneAppByPackageName $packageName
+                    ftKillApplicationByPackageName $packageName
                     break;;
                 * )if [ "$XMODULE" = "env" ];then    return ; fi
                     exit;;
             esac
         done
+    fi
+}
+
+ftLogcatApplicationByPackageName()
+{
+    local ftEffect=打印指定log
+    local packageName=$1
+    local vContent=$2
+    if [[ -z "$packageName" ]]; then
+        adb logcat 
+        return;
+    fi
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#     打印所有log
+#    ftLogcatApplicationByPackageName
+#
+#     打印包名为 com.android.settings的应用输出的log
+#    ftLogcatApplicationByPackageName com.android.settings
+#
+#     打印包含123456的log
+#    ftLogcatApplicationByPackageName 123456
+#
+#     打印包含123456 不包含777  的log
+#    ftLogcatApplicationByPackageName 123456 7777
+#
+#=========================================================
+EOF
+
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$packageName" ];then    errorContent="${errorContent}\\n[应用包名]packageName=$packageName" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftLogcatApplicationByPackageName -h
+            return
+    fi
+
+    #adb连接状态检测
+    adb wait-for-device
+    local adbStatus=$(adb get-state)
+    if [ "$adbStatus" != "device" ];then
+        ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
+        return
+    fi
+
+    while true; do case "$packageName" in
+        systemui)   packageName="com.android.systemui"  ;break;;
+        launcher3) packageName="com.android.launcher3"  ;break;;
+    * ) break;;esac;done
+
+    local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
+    if ( echo -n $pid | grep -q -e "^[0-9][0-9]*$"); then
+
+        # local rootInfo=$(adb root|grep cannot)
+        # local remountInfo=$(adb remount|grep failed)
+        # if [[ ! -z "$rootInfo" ]]; then
+        #     ftEcho -e "adb提权失败:$rootInfo"
+        # elif [[ ! -z "$remountInfo" ]]; then
+        #     ftEcho -e "adb提权失败:$remountInfo"
+        # fi
+        if [[ ! -z "$vContent" ]]; then
+            adb logcat |grep $pid |grep -v $vContent
+            return;
+        fi
+        adb logcat |grep $pid
+    else
+        if [[ ! -z "$vContent" ]]; then
+            adb logcat |grep -i $packageName |grep -v $vContent
+            return;
+        fi
+        adb logcat |grep -i $packageName
     fi
 }
 

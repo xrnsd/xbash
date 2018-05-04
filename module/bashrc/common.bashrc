@@ -98,9 +98,9 @@ if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then
 fi
 
 if [ -d "$ANDROID_SDK" ];then
-    alias xl='effect=过滤adb_logcat;adb logcat -c;adb logcat | grep -i'
+    alias xl='effect=过滤adb_logcat;adb logcat -c;ftLogcatApplicationByPackageName'
     alias xtext='effect=对设备输入字符串;adb shell input text'
-    alias xk='effect=干掉设备对应包名的进程;ftKillPhoneAppByPackageName'
+    alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
     alias xlc='effect=清除指定包名的数据; adb shell pm clear'
     alias xle='effect=过滤错误的进程;adb logcat "*:E"'
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
@@ -118,8 +118,8 @@ if [ -d "$ANDROID_SDK" ];then
         packageNameList="$(ftGetKeyValueByBlockAndKey -f $rFilePathCmdModuleConfigDataBase androidDevicePackages packageNameList)"
     fi
     complete -W "${packageNameList[@]} launcher systemui" xk
-    complete -W "${packageNameList[@]}" xlc
-    complete -W "123456" xl
+    complete -W "${packageNameList[@]} launcher" xlc
+    complete -W "${packageNameList[@]} launcher systemui 123456" xl
 fi
 
 if [ -d "vendor/sprd" ];then
