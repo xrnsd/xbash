@@ -138,11 +138,7 @@ EOF
             ftLnUtil -h
             return
     fi
-    if [[ ! -L "$lnPath" ]]; then
-        echo $lnPath
-        return
-    fi
-    if [ ! -z `which readlink` ];then
+    if [[ -L "$lnPath" ]]&&[ ! -z `which readlink` ]; then
         echo $(readlink $lnPath)
         return
     fi
@@ -168,7 +164,11 @@ EOF
             lnPath=${lnPath%/*}
             delDir=${arr[$i]}/$delDir
         else
-            echo ${lnRealPath}${delDir}
+            local dirPath=${lnRealPath}/${delDir}
+            if [[ "$lnRealPath" = "/${delDir}" ]]; then
+                dirPath=$1
+            fi
+            echo $dirPath
             break
         fi
         let i--
@@ -181,6 +181,7 @@ userName=${userName:-$userName2}
 if [ "${S/ /}" != "$S" ];then
     userName=$(whoami) 
 fi
+export userNameNow=$userName
 export dirPathHome=/home/${userName}
 
 # 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认cmds]
@@ -197,7 +198,6 @@ if [[ -f  $filePathBashrc ]]; then
     fi
 fi
 export dirNameXbash=${dirNameXbash:-'cmds'}
-
 export dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
 
 #---------------- xbash配置  ----------------------------------

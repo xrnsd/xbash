@@ -28,26 +28,27 @@ bash的简单扩展与其他工具配置[部分]
         │        │      ├── expmale.config               为普通用户相关bash配置模版文件
         │        │      └── wgx.config                   为作者使用的普通用户相关bash配置文件
         │        │
-        │        ├── data                           全局参数
-        │        └── config_system_init             android build环境初始化工具的配置文件
+        │        ├── data                           xbash工具数据文件
+        │        └── other                          其他工具的配置
         │
         ├── module    ---------------------  脚本实现文件[具体功能]
         │        │
         │        ├── bashrc   --------------------  bashrc独立配置
         │        │      │
-        │        │      ├── expmale.bashrc             为普通用户相关bash配置模版文件
-        │        │      ├── common.bashrc              为普通用户相关bash公共配置文件
-        │        │      └── wgx.bashrc                 为作者使用的普通用户相关bash配置文件
-        │        │
-        │        ├── base.sh    --------------------   脚本测试工具
+        │        │      ├── expmale.bashrc             为普通用户相关xbash配置模版文件
+        │        │      ├── common.bashrc              为普通用户相关xbash公共配置文件
+        │        │      └── username.bashrc            为用户username使用的xbash配置文件
         │        │
         │        └── tools    -------------------   工具函数实现
-        │               ├── maintain.sh                系统维护
-        │               ├── base.sh                    demo测试,请忽略此文件的修改
-        │               └── tools.sh                   脚本语法逻辑校验高亮工具
+        │             ├── maintain.sh                  系统备份和还原
+        │             ├── base.sh                      xbash基础框架实现
+        │             ├── tools.sh                     xbash的高耦合实现[写的很烂]
+        │             └── build                        串行执行
+        │                  ├── serialBuildByBranchName.sh      多分支串行编译[环境独立]/在多个终端间串行执行命令的执行主体
+        │                  └── serialBuildDemo.sh              串行执行命令的执行主体demo
         │
         ├── init.sh   ---------------------- xbash初始化
-        │
+        ├── test.sh   --------------------- 脚本测试工具,demo测试,请忽略此文件的修改
         └── README.md
     6 已验证环境
         ubuntu12.04 x64

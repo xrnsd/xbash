@@ -74,10 +74,9 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
     #命令选项快速适配
     complete -W "backup restore" xb
     # complete -W "-h -hb -hc --help restartadb test clean_data_garbage  -v -vvv -ft" xc
-    autotab_list=("aa" "bb" "cc" "dd" "123")
     _xc()
     {
-        local ftEffect=adb修正工具对应的参数补全实现
+        local ftEffect=bash内建命令和xbash扩展封装对应的参数补全实现
         local curr_arg=${COMP_WORDS[COMP_CWORD]}
         case "${COMP_WORDS[1]}" in
                         -)      
@@ -109,7 +108,7 @@ if [ -d "$ANDROID_SDK" ];then
 
     alias xqselect='effect=启动移动隐藏;adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
     alias xqsetting='effect=启动设置;adb shell am start -n com.android.settings/com.android.settings.Settings'
-    alias xqcamera='effect=启动相机2;adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
+    alias xqcamera='effect=启动Camera2;adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
     alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
     alias xqchanglogo='effect=启动隐藏动画;adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
     alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
@@ -120,6 +119,8 @@ if [ -d "$ANDROID_SDK" ];then
     complete -W "${packageNameList[@]} launcher systemui" xk
     complete -W "${packageNameList[@]} launcher" xlc
     complete -W "${packageNameList[@]} launcher systemui 123456" xl
+else
+    echo -e "\033[1;31m Android SDK 扩展加载失败[ANDROID_SDK=$ANDROID_SDK]\033[0m"
 fi
 
 if [ -d "vendor/sprd" ];then

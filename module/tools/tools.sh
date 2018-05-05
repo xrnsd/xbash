@@ -438,29 +438,30 @@ EOF
 
     local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
     if ( echo -n $pid | grep -q -e "^[0-9][0-9]*$"); then
+        adb shell am force-stop $packageName && ftEcho -s "kill $pid"
+    #     local rootInfo=$(adb root|grep cannot)
+    #     local remountInfo=$(adb remount|grep failed)
+    #     if [[ ! -z "$rootInfo" ]]; then
+    #         ftEcho -e "adb提权失败:$rootInfo"
+    #     elif [[ ! -z "$remountInfo" ]]; then
+    #         ftEcho -e "adb提权失败:$remountInfo"
+    #     fi
 
-        local rootInfo=$(adb root|grep cannot)
-        local remountInfo=$(adb remount|grep failed)
-        if [[ ! -z "$rootInfo" ]]; then
-            ftEcho -e "adb提权失败:$rootInfo"
-        elif [[ ! -z "$remountInfo" ]]; then
-            ftEcho -e "adb提权失败:$remountInfo"
-        fi
-
-        adb shell kill $pid&&ftEcho -s "kill $pid"
-    elif [[ -z "$(adb shell pm list packages|grep $packageName)" ]]; then
-         ftEcho -e 包名[${packageName}]不存在，请确认
-        while [ ! -n "$(adb shell pm list packages|grep $packageName)" ]; do
-            ftEcho -y 是否重新开始
-            read -n 1 sel
-            case "$sel" in
-                y | Y )
-                    ftKillApplicationByPackageName $packageName
-                    break;;
-                * )if [ "$XMODULE" = "env" ];then    return ; fi
-                    exit;;
-            esac
-        done
+    #     adb shell kill $pid&&ftEcho -s "kill $pid"
+    # elif [[ -z "$(adb shell pm list packages|grep $packageName)" ]]; then
+    #      ftEcho -e 包名[${packageName}]不存在，请确认
+    #     while [ ! -n "$(adb shell pm list packages|grep $packageName)" ]; do
+    #         ftEcho -y 是否重新开始
+    #         read -n 1 sel
+    #         case "$sel" in
+    #             y | Y )
+    #                 # adb shell am force-stop $packageName
+    #                 ftKillApplicationByPackageName $packageName
+    #                 break;;
+    #             * )if [ "$XMODULE" = "env" ];then    return ; fi
+    #                 exit;;
+    #         esac
+    #     done
     fi
 }
 
@@ -521,25 +522,17 @@ EOF
 
     local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
     if ( echo -n $pid | grep -q -e "^[0-9][0-9]*$"); then
-
-        # local rootInfo=$(adb root|grep cannot)
-        # local remountInfo=$(adb remount|grep failed)
-        # if [[ ! -z "$rootInfo" ]]; then
-        #     ftEcho -e "adb提权失败:$rootInfo"
-        # elif [[ ! -z "$remountInfo" ]]; then
-        #     ftEcho -e "adb提权失败:$remountInfo"
-        # fi
-        if [[ ! -z "$vContent" ]]; then
-            adb logcat |grep $pid |grep -v $vContent
-            return;
-        fi
-        adb logcat |grep $pid
+            if [[ ! -z "$vContent" ]]; then
+                adb logcat |grep $pid |grep -v $vContent
+                return;
+            fi
+            adb logcat |grep $pid
     else
-        if [[ ! -z "$vContent" ]]; then
-            adb logcat |grep -i $packageName |grep -v $vContent
-            return;
-        fi
-        adb logcat |grep -i $packageName
+            if [[ ! -z "$vContent" ]]; then
+                adb logcat |grep -i $packageName |grep -v $vContent
+                return;
+            fi
+            adb logcat |grep -i $packageName
     fi
 }
 
