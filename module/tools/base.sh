@@ -995,10 +995,8 @@ ftInitDevicesList()
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftInitDevicesList [devMinAvailableSpace 单位默认为MB]
+#    ftInitDevicesList [可用空间/单位默认为MB]
 #    ftInitDevicesList 4096M
-#    ftInitDevicesList 4096G
-#    ftInitDevicesList 409600K
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;

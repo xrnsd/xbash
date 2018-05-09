@@ -47,7 +47,7 @@ bash的简单扩展与其他工具配置[部分]
         │                  ├── serialBuildByBranchName.sh      多分支串行编译[环境独立]/在多个终端间串行执行命令的执行主体
         │                  └── serialBuildDemo.sh              串行执行命令的执行主体demo
         │
-        ├── init.sh   ---------------------- xbash初始化
+        ├── init.sh   ----------------------xbash初始化
         ├── test.sh   --------------------- 脚本测试工具,demo测试,请忽略此文件的修改
         └── README.md
     6 已验证环境

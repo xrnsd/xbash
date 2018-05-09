@@ -224,7 +224,7 @@ ftSetBackupDevDir()
 {
     local ftEffect=选择备份包存放的设备
     # 初始化设备列表[mCmdsModuleDataDevicesList]
-    ftInitDevicesList 4096
+    ftInitDevicesList 4096M
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -258,7 +258,7 @@ EOF
     do
         echo -n "[${index}] ";printf "%-20s  " $dev;echo "可用：$(ftDevAvailableSpace $dev)"
         #echo [ ${index} ] $dev 可用$(ftDevAvailableSpace $dev)
-        # echo [ ${index} ] ${mCmdsModuleDataDevicesList[$index]}
+        #echo [ ${index} ] ${mCmdsModuleDataDevicesList[$index]}
         index=`expr $index + 1`
     done
     echo

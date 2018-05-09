@@ -438,30 +438,30 @@ EOF
 
     local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
     if ( echo -n $pid | grep -q -e "^[0-9][0-9]*$"); then
-        adb shell am force-stop $packageName && ftEcho -s "kill $pid"
-    #     local rootInfo=$(adb root|grep cannot)
-    #     local remountInfo=$(adb remount|grep failed)
-    #     if [[ ! -z "$rootInfo" ]]; then
-    #         ftEcho -e "adb提权失败:$rootInfo"
-    #     elif [[ ! -z "$remountInfo" ]]; then
-    #         ftEcho -e "adb提权失败:$remountInfo"
-    #     fi
+        # adb shell am force-stop $packageName && ftEcho -s "kill $pid"
+        local rootInfo=$(adb root|grep cannot)
+        local remountInfo=$(adb remount|grep failed)
+        if [[ ! -z "$rootInfo" ]]; then
+            ftEcho -e "adb提权失败:$rootInfo"
+        elif [[ ! -z "$remountInfo" ]]; then
+            ftEcho -e "adb提权失败:$remountInfo"
+        fi
 
-    #     adb shell kill $pid&&ftEcho -s "kill $pid"
-    # elif [[ -z "$(adb shell pm list packages|grep $packageName)" ]]; then
-    #      ftEcho -e 包名[${packageName}]不存在，请确认
-    #     while [ ! -n "$(adb shell pm list packages|grep $packageName)" ]; do
-    #         ftEcho -y 是否重新开始
-    #         read -n 1 sel
-    #         case "$sel" in
-    #             y | Y )
-    #                 # adb shell am force-stop $packageName
-    #                 ftKillApplicationByPackageName $packageName
-    #                 break;;
-    #             * )if [ "$XMODULE" = "env" ];then    return ; fi
-    #                 exit;;
-    #         esac
-    #     done
+        adb shell kill $pid&&ftEcho -s "kill $pid"
+    elif [[ -z "$(adb shell pm list packages|grep $packageName)" ]]; then
+         ftEcho -e 包名[${packageName}]不存在，请确认
+        while [ ! -n "$(adb shell pm list packages|grep $packageName)" ]; do
+            ftEcho -y 是否重新开始
+            read -n 1 sel
+            case "$sel" in
+                y | Y )
+                    # adb shell am force-stop $packageName
+                    ftKillApplicationByPackageName $packageName
+                    break;;
+                * )if [ "$XMODULE" = "env" ];then    return ; fi
+                    exit;;
+            esac
+        done
     fi
 }
 
@@ -603,8 +603,6 @@ EOF
     echo "$userPassword" | sudo -S ${rDirPathTools}/sp_flash_tool_v5.1612.00.100/flash_tool
     cd $tempDirPath
 }
-
-
 
 complete -W "create new" ftBootAnimation
 ftBootAnimation()
@@ -1005,15 +1003,20 @@ EOF
     done
 }
 
+complete -W "-z" ftReNameFile
 ftReNameFile()
 {
     local ftEffect=批量重命名文件
-    # local extensionName=$1
-    local dirPathFileList=$1
-    local lengthFileName=$2
-    local prefixContent=$3
-    local suffixContent=$4
-    lengthFileName=${lengthFileName:-'4'}
+
+    if [[ "$1" == "-z" ]]; then
+         local editTypePrefixes=$1
+         local dirPathFileList=$2
+         local prefixContent=$3
+         local suffixContent=$4
+    else
+        local dirPathFileList=$1
+        local lengthFileName=$2
+    fi
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -1024,10 +1027,11 @@ ftReNameFile()
 #    ftReNameFile /home/xxxx/temp
 #    ftReNameFile 目录 修改后的文件长度
 #    ftReNameFile /home/xxxx/temp 5
+#
 #    ftReNameFile 目录 修改后的文件长度 前缀
-#    ftReNameFile /home/xxxx/temp 5 test
+#    ftReNameFile -z /home/xxxx/temp test
 #    ftReNameFile 目录 修改后的文件长度 前缀 文件名后缀
-#    ftReNameFile /home/xxxx/temp 5 test test2
+#    ftReNameFile -z /home/xxxx/temp test test2
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1051,34 +1055,41 @@ EOF
 
     local dirNameFileListRename=RenameFiles
     local dirPathFileListRename=${dirPathFileList}/${dirNameFileListRename}
+    local index=0
+    local lengthFileNameBase=
+
     if [ -d $dirPathFileListRename ];then
         rm -rf $dirPathFileListRename
     fi
     mkdir $dirPathFileListRename
-    index=0
-    if [ ! -z $lengthFileName ];then
-        lengthFileNameBase=1
-        while (( $lengthFileName > 0  ))
-        do
-            lengthFileName=`expr $lengthFileName - 1`
-            lengthFileNameBase=$(( $lengthFileNameBase * 10 ))
-        done
-    fi
     cd $dirPathFileList
     for file in `ls $dirPathFileList|tr " " "?"`
     do
-        file=${file//'?'/' '}
-        echo "file=$file"
-        mv "$file" "${file//' '/'_'}"
         if [ $file == $dirNameFileListRename ];then
             continue
         fi
-        fileNameBase=$((lengthFileNameBase+$index))
-        local fileName=${file%.*}
-        # cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileName}${suffixContent}.${file##*.}
-        cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileName}.${file##*.}
 
-        # cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileNameBase:1}${suffixContent}.${file##*.}
+        file=${file//'?'/' '}
+        file=$(echo $file |sed s/[[:space:]]//g)
+        local fileName=${file%.*}
+        local fileFormatName=${file##*.}
+
+        if [[ -z  "lengthFileNameBase" ]]||[ ${#lengthFileNameBase} = "0" ]; then
+                if [[ -z "$lengthFileName" ]]; then
+                    lengthFileName=${#fileName}
+                fi
+                lengthFileNameBase=1
+                while (( $lengthFileName > 0  ))
+                do
+                    lengthFileName=`expr $lengthFileName - 1`
+                    lengthFileNameBase=$(( $lengthFileNameBase * 10 ))
+                done
+        fi
+        fileNameBase=$((lengthFileNameBase+$index))
+        if [[ -z "$editTypePrefixes" ]]; then
+            fileName=${fileNameBase:1}
+        fi
+        cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileName}${suffixContent}.${file##*.}
         index=`expr $index + 1`
     done
 }
