@@ -612,6 +612,8 @@ ftAutoCleanTemp()
     sudo apt-get clean
     sudo apt-get autoremove
     sudo apt-get install -f
+    sudo apt-get install deborphan -y
+    dpkg -l |grep ^rc|awk '{print $2}' |sudo xargs dpkg -P
     sudo rm -rf /var/cache/apt/archives
 }
 

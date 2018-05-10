@@ -50,6 +50,8 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
 
     # alias rm='effect=回收型rm;ftRmExpand'
     alias xd='effect=MTK下载工具;ftMtkFlashTool'
+    alias xX='effect=字符串转大写;_xX(){  echo $1 | tr '[a-z]' '[A-Z]' ;};_xX $1'
+    alias Xx='effect=字符串转小写;_Xx(){  echo $1 | tr '[A-Z]' '[a-z]' ;};_Xx $1'
     alias xb='effect=系统维护;ftMaintainSystem'
     alias xc='effect=xbash主入口[旧];ftMain'
     alias xbash='ftMain'
@@ -106,7 +108,7 @@ if [ -d "$ANDROID_SDK" ];then
     alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
     alias xdv='effect=手机录屏;adb shell screenrecord /sdcard/sv.mp4&&adb pull /sdcard/sv.mp4 ~/download/'
 
-    alias xqselect='effect=启动移动隐藏;adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
+    alias xqselect='effect=启动隐藏;adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
     alias xqsetting='effect=启动设置;adb shell am start -n com.android.settings/com.android.settings.Settings'
     alias xqcamera='effect=启动Camera2;adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
     alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
