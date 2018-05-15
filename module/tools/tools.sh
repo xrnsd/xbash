@@ -1007,16 +1007,8 @@ complete -W "-z" ftReNameFile
 ftReNameFile()
 {
     local ftEffect=批量重命名文件
-
-    if [[ "$1" == "-z" ]]; then
-         local editTypePrefixes=$1
-         local dirPathFileList=$2
-         local prefixContent=$3
-         local suffixContent=$4
-    else
-        local dirPathFileList=$1
-        local lengthFileName=$2
-    fi
+    local valCount=4
+    local errorContent=
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -1035,11 +1027,28 @@ ftReNameFile()
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
+    -z |-t )
+         local editTypePrefixes=$1
+         local dirPathFileList=$2
+         local prefixContent=$3
+         local suffixContent=$4
+         valCount=4
+         break;;
+    * )
+            local dirPathFileList=$1
+            local lengthFileName=$2
+            local prefixContent=
+            local suffixContent=
+            valCount=2
+            if [[ "$1" =~ ^-.* ]]; then
+                errorContent="${errorContent}\\n[错误的参数指定]val=$1"
+                dirPathFileList=$2
+                lengthFileName=$3
+            fi
+            break
+    ;;esac;done
 
     #耦合校验
-    local valCount=4
-    local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathFileList" ];then    errorContent="${errorContent}\\n[目标目录不存在]dirPathFileList=$dirPathFileList" ; fi
     if [ ! -z "$errorContent" ];then
@@ -1065,14 +1074,24 @@ EOF
     cd $dirPathFileList
     for file in `ls $dirPathFileList|tr " " "?"`
     do
-        if [ $file == $dirNameFileListRename ];then
+        if [ "$file" == "$dirNameFileListRename" ];then
             continue
         fi
 
         file=${file//'?'/' '}
-        file=$(echo $file |sed s/[[:space:]]//g)
         local fileName=${file%.*}
         local fileFormatName=${file##*.}
+
+        if [[ "$editTypePrefixes" == "-t" ]]; then
+            prefixContent=${prefixContent// /"[[:space:]]"}
+            fileName="$(echo $file |sed s/$prefixContent/$suffixContent/g)"
+            mv "${dirPathFileList}/${file}" "${dirPathFileList}/${fileName}"
+            continue;
+        fi
+
+        file=$(echo $file |sed s/[[:space:]]//g)
+        fileName=${file%.*}
+        fileFormatName=${file##*.}
 
         if [[ -z  "lengthFileNameBase" ]]||[ ${#lengthFileNameBase} = "0" ]; then
                 if [[ -z "$lengthFileName" ]]; then
@@ -1086,6 +1105,7 @@ EOF
                 done
         fi
         fileNameBase=$((lengthFileNameBase+$index))
+
         if [[ -z "$editTypePrefixes" ]]; then
             fileName=${fileNameBase:1}
         fi
@@ -1697,10 +1717,13 @@ EOF
                 tagName="lzProjrctConfigSoftwareDataBaseFileLIst"
                 dataBaseFileList=($(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList))
             elif [ $deviceName = "keytak6580_weg_l" ];then
-                local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
-                for dirPath in ${dirNameModems[@]}
+                # local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
+                local dirPathDatabaseBpBase=${dirPathOut}/obj/ETC
+                local dirNameModems=$(ls ${dirPathDatabaseBpBase}/|grep "BPLGUInfoCustomAppSrcP_")
+                for dirName in ${dirNameModems[@]}
                 do
-                    dirPath=${dirPath//:/}
+                    dirName=${dirName//:/}
+                    local dirPath=${dirPathDatabaseBpBase}/${dirName}
                     for fileName in $(ls $dirPath)
                     do
                         local filePath=${dirPath}/${fileName}
@@ -1888,6 +1911,7 @@ ftCreateReadMeBySoftwareVersion()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local dirPathVersionSoftware=$1
+    dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -1935,7 +1959,6 @@ EOF
             ftCreateReadMeBySoftwareVersion -h
             return
     fi
-
     local fileNameReadMeTemplate=客户说明.txt
     local fileNameChangeListTemplate=修改记录.txt
     local filePathReadMeTemplate=${dirPathVersionSoftware}/${fileNameReadMeTemplate}
@@ -1973,6 +1996,7 @@ EOF
     #         echo -e ${content}${enterLine}${enterLine}"3. 修改点:"| cat - ${filePathReadMeTemplate}.temp >$filePathReadMeTemplate
 
     #         unix2dos $filePathReadMeTemplate # 转化为windows下格式
+    #         rm ${filePathReadMeTemplate}.temp
     # fi
 
 # ===============================================
@@ -2028,13 +2052,11 @@ EOF
                     ftEcho -e "[相机配置文件不存在，获取失败]\n$filePathCameraConfig"
             fi
 
-            #修改记录
-            echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
-            local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
-            seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
-
+            #修改记录头部
             local enterLine="\n"
             local content="当前版本：$versionName"${enterLine}
+            content=${content}${enterLine}"记录创建人：吴国献 [17178686576 / lz_wuguoxian@163.com]"
+            content=${content}${enterLine}
             content=${content}${enterLine}"摄像头类型：$cameraTypeInfo"
             content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFrontDefault/$cameraSizeBackDefault"
             content=${content}${enterLine}"真实插值 前/后摄大小：$cameraSizeFrontMax/$cameraSizeBackMax"
@@ -2048,19 +2070,28 @@ EOF
             # content=${content}${enterLine}"单项测试[宫格]：*#0*#"
             # content=${content}${enterLine}"三星测试：*#1234#"
             content=${content}${enterLine}"开关机动画暗码：$changLogoNumInfo"
-            echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
 
-            unix2dos $filePathChangeListTemplate # 转化为windows下格式
-
-   elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+            #git log 列表
             echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
-            # local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathChangeListTemplate})
+            # local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
             # seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
             seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
 
+            # 合并头部和git log 列表
+            echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+
+            # 转化为windows下面文件格式
+            unix2dos $filePathChangeListTemplate
+
+   elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+
+            #修改记录头部
             local enterLine="\n"
             local content="当前版本：$versionName"${enterLine}
-            content=${content}${enterLine}"隐藏指令：*#*#94127*208#*#*"
+            content=${content}${enterLine}"请在给客户发送软件时,通知下面这位添加软件版本修改的版本TAG,方便后期追溯"
+            content=${content}${enterLine}"记录创建人：吴国献 [17178686576 / lz_wuguoxian@163.com]"
+            content=${content}${enterLine}
+            content=${content}${enterLine}"隐藏指令："
             content=${content}${enterLine}"imei编辑：*#315#*"
             content=${content}${enterLine}"imei显示：*#06#"
             content=${content}${enterLine}"imei单双切换：*#316#*"
@@ -2068,15 +2099,20 @@ EOF
             content=${content}${enterLine}"切换默认动画：*#979312#*"
             content=${content}${enterLine}"测试模式：*#*#180#*#*"
             content=${content}${enterLine}"三星测试：*#0*#"
+
+            #git log 列表
+            echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
+            # local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathChangeListTemplate})
+            # seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+            seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+
+            # 合并头部和git log 列表
             echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
 
-        #     echo -e "﻿==============================================================================\
-        # "| cat - ${filePathChangeListTemplate}.temp>>$filePathChangeListTemplate
-
-            unix2dos $filePathChangeListTemplate # 转化为windows下格式
+            # 转化为windows下面文件格式
+            unix2dos $filePathChangeListTemplate
     fi
 
-    rm ${filePathReadMeTemplate}.temp
     rm ${filePathChangeListTemplate}.temp
 }
 
