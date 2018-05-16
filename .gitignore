@@ -11,3 +11,5 @@ config/data/hosts.new
 config/other/sublime_text/sublime-snippetconfig/wgx_f.cofig
 #config/other/sublime_text/sublime-snippet/
 module/bashrc/wgx_f.bashrc
+config/wb1.config
+module/bashrc/wb1.bashrc
