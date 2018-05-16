@@ -72,10 +72,6 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
         fi'
         alias xbranch="effect=过滤git分支;git branch|grep -i "
     fi
-    if [ -d "$JAVA_HOME" ]&&[ -d "out" ];then
-        #java -jar signapk.jar platform.x509.pem platform.pk8  待签名名字.apk  签名后名字.apk "命令进行签名
-        alias xAppSignature='effect=apk文件签名;java -jar out/host/linux-x86/framework/signapk.jar  build/target/product/security/platform.x509.pem build/target/product/security/platform.pk8'
-    fi
 
     #命令选项快速适配
     complete -W "backup restore" xb
