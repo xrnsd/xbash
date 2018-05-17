@@ -7,6 +7,9 @@
 ftExample()
 {
     local ftEffect=函数模板
+    # debug用
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' DEBUG
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' ERR
 
     while true; do case "$1" in
     e | -e |--env) cat<<EOF
@@ -335,34 +338,33 @@ EOF
                 export AutoEnv_demandSignName=
                 export AutoEnv_motherboardName=
                 export AutoEnv_screenScanDirection=
+                export AutoEnv_BandInfo=
+                export AutoEnv_FlashConfig=
+
 
                 for item in ${arrayItems[@]}
                 do
-                        local valShort=${item:0:4}
-                        local valLong=${item:0:5}
+                        local key=${item%\(*}
+                        local val=${item//$key/}
+                        val=${val//\(/}
+                        key=${key//_/}
 
-                         if [[ ${item:0:3} = "CT(" ]];then
-                            valShort=${item:0:3}
-                            local gitBranchInfoClientName=${item//$valShort/}
-                            export AutoEnv_clientName=$gitBranchInfoClientName
-                         elif [[ $valShort = "_CT(" ]];then
-                            local gitBranchInfoClientName=${item//$valShort/}
-                            export AutoEnv_clientName=$gitBranchInfoClientName
-                         elif [[ $valShort = "_PJ(" ]];then
-                            local gitBranchInfoProjrctName=${item//$valShort/}
-                            export AutoEnv_projrctName=$gitBranchInfoProjrctName
-                         elif [[ $valShort = "_SS(" ]];then
-                            local gitBranchInfoScreenScanDirection=${item//$valShort/}
-                            export AutoEnv_screenScanDirection=$gitBranchInfoScreenScanDirection
-                        elif [[ $valShort = "_DM(" ]];then
-                            local gitBranchInfoDemandSignName=${item//$valShort/}
-                            export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
-                        elif [[ $valLong = "MBML(" ]];then
-                            local gitBranchInfoMotherboardName=${item//$valLong/}
-                            export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
-                        elif [[ $valLong = "_PMA(" ]];then
-                            local gitBranchInfoModelAllName=${item//$valLong/}
-                            export AutoEnv_modelAllName=$gitBranchInfoModelAllName
+                         if [[ $key = "CT" ]];then
+                            export AutoEnv_clientName=$val
+                         elif [[ $key = "PJ" ]];then
+                            export AutoEnv_projrctName=$val
+                         elif [[ $key = "SS" ]];then
+                            export AutoEnv_screenScanDirection=$val
+                        elif [[ $key = "DM" ]];then
+                            export AutoEnv_demandSignName=$val
+                        elif [[ $key = "PMA" ]];then
+                            export AutoEnv_modelAllName=$val
+                        elif [[ $key = "MBML" ]];then
+                            export AutoEnv_motherboardName=$val
+                        elif [[ $key = "BAND" ]];then
+                            export AutoEnv_BandInfo=$val
+                        elif [[ $key = "FLASH" ]];then
+                            export AutoEnv_FlashConfig=$val
                         fi
                 done
         fi
@@ -541,6 +543,13 @@ EOF
 =========================================================================
 EOF
 break;;
+     -d | -D | --DEBUG)
+                local cmds=($@)
+                unset cmds[0]
+                 if [ "$DEBUG" = "true" ]; then
+                      ${cmds}
+                fi
+                break;;
     * )    echo $option ;break;;
     esac
     done

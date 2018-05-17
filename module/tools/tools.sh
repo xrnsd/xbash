@@ -708,7 +708,7 @@ EOF
         else
             filelist=$(ls $dirPathAnimationSourceRes)
             local dirPathLocal=$PWD
-            cd $dirPathAnimationSourceRes
+            cd $dirPathAnimationSourceRes && trap 'cd $dirPathLocal;exit' SIGINT
             for file in $filelist
             do
                 if [ ! -f "$file" ];then
@@ -1429,7 +1429,7 @@ EOF
     fi
 
     ftEcho -s "开始上传到  ${serverIp}/${pathContentUploadTraget}"
-    cd $dirPathContentUploadSource
+    cd $dirPathContentUploadSource && trap 'cd $dirPathLocal;exit' SIGINT
     ftTiming -i
 
     tar -cv  $pathContentUploadSource| pigz -1 |sshpass -p $pasword ssh $userName@$serverIp "gzip -d|tar -xPC $dirPathServer"
@@ -1507,6 +1507,9 @@ EOF
 complete -W "-a" ftAutoPacket
 ftAutoPacket()
 {
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' DEBUG
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' ERR
+    
     local ftEffect=基于android的out生成版本软件包
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
@@ -1591,7 +1594,7 @@ EOF
     if [[ -d "$dirPathVersionSoftware" ]]; then
             if [[ ! -z "$isClean" ]]; then
                 rm  -rf $dirPathVersionSoftware
-            else
+            elif [[ -z "isUpload" ]]; then
                   while true; do
                                 ftEcho -y "有旧的软件包  ${dirPathVersionSoftware}\n是否删除"
                                 read -n 1 sel
@@ -1647,7 +1650,7 @@ EOF
             fi
 
             # 生成软件包
-            cd $dirPathVersionSoftwareVersion
+            cd $dirPathVersionSoftwareVersion && trap 'cd $dirPathLocal;exit' SIGINT
             if [[ ! -z "$isCopy" ]]; then
                 # cp 
                 cd $dirPathLocal
@@ -1746,6 +1749,12 @@ EOF
                 if [[ ! -z "$AutoEnv_deviceModelName" ]]; then
                     dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${AutoEnv_deviceModelName}
                 fi
+                if [[ ! -z "$AutoEnv_BandInfo" ]]; then #添加 modem 配置信息
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}_B${AutoEnv_BandInfo}
+                fi
+                if [[ ! -z "$AutoEnv_FlashConfig" ]]; then #添加 flash信息
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}_${AutoEnv_FlashConfig}
+                fi
 
                 local dirNameVeriosionBase=${AutoEnv_versionName}
                 #非user版本标记编译类型
@@ -1812,7 +1821,7 @@ EOF
             # 生成本地软件包
             if [[ ! -z "$isPacket" ]]; then
                     mkdir -p $dirPathVersionSoftwareVersion
-                    cd $dirPathVersionSoftwareVersion
+                    cd $dirPathVersionSoftwareVersion && trap 'cd $dirPathLocal;exit' SIGINT
 
                     ftEcho -s "\n========================\n开始生成版本软件包: \n${dirNameVeriosionBase}\n路径: \n${dirPathVersionSoftwareVersion}\n========================\n"
                     #packages
