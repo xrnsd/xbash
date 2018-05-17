@@ -48,10 +48,10 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
     export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
     export ENV_XBASH_INIT_STATED=1
 
-    # alias rm='effect=回收型rm;ftRmExpand'
     alias xd='effect=MTK下载工具;ftMtkFlashTool'
     alias xX='effect=字符串转大写;_xX(){  echo $1 | tr '[a-z]' '[A-Z]' ;};_xX $1'
     alias Xx='effect=字符串转小写;_Xx(){  echo $1 | tr '[A-Z]' '[a-z]' ;};_Xx $1'
+    alias xkf='effect=解除文件或目录占用;fuser -m -k -i '
     alias xb='effect=系统维护;ftMaintainSystem'
     alias xc='effect=xbash主入口[旧];ftMain'
     alias xbash='ftMain'
@@ -78,7 +78,7 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
     fi
 
     #命令选项快速适配
-    complete -W "backup restore" xb
+    complete -W "--backup --restore --sd_finish -b -r -s" xb
     # complete -W "-h -hb -hc --help restartadb test clean_data_garbage  -v -vvv -ft" xc
     _xc()
     {

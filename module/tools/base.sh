@@ -7,6 +7,9 @@
 ftExample()
 {
     local ftEffect=函数模板
+    # debug用
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' DEBUG
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' ERR
 
     while true; do case "$1" in
     e | -e |--env) cat<<EOF
@@ -335,34 +338,33 @@ EOF
                 export AutoEnv_demandSignName=
                 export AutoEnv_motherboardName=
                 export AutoEnv_screenScanDirection=
+                export AutoEnv_BandInfo=
+                export AutoEnv_FlashConfig=
+
 
                 for item in ${arrayItems[@]}
                 do
-                        local valShort=${item:0:4}
-                        local valLong=${item:0:5}
+                        local key=${item%\(*}
+                        local val=${item//$key/}
+                        val=${val//\(/}
+                        key=${key//_/}
 
-                         if [[ ${item:0:3} = "CT(" ]];then
-                            valShort=${item:0:3}
-                            local gitBranchInfoClientName=${item//$valShort/}
-                            export AutoEnv_clientName=$gitBranchInfoClientName
-                         elif [[ $valShort = "_CT(" ]];then
-                            local gitBranchInfoClientName=${item//$valShort/}
-                            export AutoEnv_clientName=$gitBranchInfoClientName
-                         elif [[ $valShort = "_PJ(" ]];then
-                            local gitBranchInfoProjrctName=${item//$valShort/}
-                            export AutoEnv_projrctName=$gitBranchInfoProjrctName
-                         elif [[ $valShort = "_SS(" ]];then
-                            local gitBranchInfoScreenScanDirection=${item//$valShort/}
-                            export AutoEnv_screenScanDirection=$gitBranchInfoScreenScanDirection
-                        elif [[ $valShort = "_DM(" ]];then
-                            local gitBranchInfoDemandSignName=${item//$valShort/}
-                            export AutoEnv_demandSignName=$gitBranchInfoDemandSignName
-                        elif [[ $valLong = "MBML(" ]];then
-                            local gitBranchInfoMotherboardName=${item//$valLong/}
-                            export AutoEnv_motherboardName=$gitBranchInfoMotherboardName
-                        elif [[ $valLong = "_PMA(" ]];then
-                            local gitBranchInfoModelAllName=${item//$valLong/}
-                            export AutoEnv_modelAllName=$gitBranchInfoModelAllName
+                         if [[ $key = "CT" ]];then
+                            export AutoEnv_clientName=$val
+                         elif [[ $key = "PJ" ]];then
+                            export AutoEnv_projrctName=$val
+                         elif [[ $key = "SS" ]];then
+                            export AutoEnv_screenScanDirection=$val
+                        elif [[ $key = "DM" ]];then
+                            export AutoEnv_demandSignName=$val
+                        elif [[ $key = "PMA" ]];then
+                            export AutoEnv_modelAllName=$val
+                        elif [[ $key = "MBML" ]];then
+                            export AutoEnv_motherboardName=$val
+                        elif [[ $key = "BAND" ]];then
+                            export AutoEnv_BandInfo=$val
+                        elif [[ $key = "FLASH" ]];then
+                            export AutoEnv_FlashConfig=$val
                         fi
                 done
         fi
@@ -541,6 +543,13 @@ EOF
 =========================================================================
 EOF
 break;;
+     -d | -D | --DEBUG)
+                local cmds=($@)
+                unset cmds[0]
+                 if [ "$DEBUG" = "true" ]; then
+                      ${cmds}
+                fi
+                break;;
     * )    echo $option ;break;;
     esac
     done
@@ -1181,83 +1190,6 @@ ftSetBashPs1ByGitBranch()
         export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]$branchName: \[\033[0m\]"
     else
         export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
-    fi
-}
-
-ftRmExpand()
-{
-    local ftEffect=rm扩展[添加回收站功能]
-    local traget=$1
-    local dirPathLocal=$(ftLnUtil $PWD) #解决软链接问题
-    cd $PWD
-    if [[ "${traget:0:1}" = "-" ]]; then
-        traget=$2
-
-        editType=$1
-        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
-        if (( $(expr index $editType "f") != "0" ));then   local isRmSilence=true ; fi
-        if (( $(expr index $editType "r") != "0" ));then   local isRmDirectory=true ; fi
-    fi
-
-    while true; do case "$1" in
-    h | H |-h | -H) cat<<EOF
-#========[ ${ftEffect} ]的使用示例=============
-#
-#     ftRmExpand xx xxx
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-
-    # 耦合校验
-    local errorContent=
-    if [ -z "$traget" ];then    errorContent="${errorContent}\\n不知道你想干嘛" ;fi
-    if [[ ! -d "$traget" ]]&&[[ ! -f "$traget" ]];then  echo "rm: 无法删除\"$traget\": 没有那个文件或目录" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftEcho -s "请参照rm 使用习惯 "
-            return
-    fi
-
-    ftInitDevicesList
-    local dirPathDevTrash=
-    for dirPath in ${mCmdsModuleDataDevicesList[*]}
-    do
-        local length=${#dirPath}
-        if [[ "${dirPathLocal:0:$length}" = "$dirPath" ]]; then
-            local dirNameList=$(ls -a $dirPath|grep ".Trash-")
-            if [[ -z "$dirNameList" ]]&&[ ! -z "$(echo $dirPath|grep /home)" ]; then
-                dirNameList=".local/share/Trash"
-            fi
-            dirNameList=$dirNameList #假如存在多个就直接选第一个
-            local dirPathDevTrash=${dirPath}/${dirNameList}/files
-            break;
-        fi
-    done
-
-    if [[ -d "$dirPathDevTrash" ]]; then
-        if [[ -z "$isRmDirectory" ]]&&[[ -d "$traget" ]]; then
-                while true; do
-                        ftEcho -ye 这是目录,还删么
-                        read -n 1 sel
-                        sel=${sel:-'Y'}
-                        case "$sel" in
-                            y | Y )  break;;
-                            n | N |q | Q)    echo;return;;
-                            * ) ftEcho -e 错误的选择：$sel
-                                echo "输入n,q，离开"
-                                ;;
-                        esac
-                done
-        fi
-        local status=$(mv $traget $dirPathDevTrash 1>/dev/null 2>&1)
-        if [[ ! -z "$status" ]]&&[[ -z "$isRmSilence" ]]; then
-            ftEcho -s $status
-        fi
-    else
-        ftEcho -s "未移动 $traget 到回收站"
-        $(which rm) "$@"
     fi
 }
 

@@ -1,5 +1,23 @@
 <snippet>
 	<content><![CDATA[
+# =========== 读取系统信息
+    #读取系统的配置信息 prop
+        adb shell getprop
+    #读取系统的配置信息 系统属性
+        adb shell settings get system model_name_change
+        #写系统属性
+        adb shell settings put system model_name_change ddd
+    #获取通知信息
+        adb shell dumpsys notification
+    #获取activity 显示时间
+        adb logcat |grep Displayed #获取activity 显示时间
+    #屏幕截图
+        adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png xxxxx
+    #录制视频
+        adb shell screenrecord /sdcard/filename.mp4&&adb pull /sdcard/filename.mp4 xxxxx
+    #services 列表
+        adb shell service list
+
 # =========== logcat
     #log等级
         adb logcat "*:E"
@@ -8,22 +26,8 @@
     #查看bug报告
         adb bugreport
     #开启关闭MTKLog
-    adb shell am broadcast -a com.mediatek.mtklogger.ADB_CMD -e cmd_name start/stop --ei cmd_target 7
-    #(start表示开启，stop表示关闭；7可改为1/2/4，分别代表MobileLog/ModemLog/NetworkLog)
-
-# =========== 读取系统信息
-    #获取activity 显示时间
-        adb logcat |grep Displayed #获取activity 显示时间
-    #屏幕截图
-        adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png xxxxx
-    #录制视频
-        adb shell screenrecord /sdcard/filename.mp4&&adb pull /sdcard/filename.mp4 xxxxx
-    #读取系统的配置信息
-        adb shell getprop
-    #获取通知信息
-        adb shell dumpsys notification
-    #services 列表
-        adb shell service list
+        adb shell am broadcast -a com.mediatek.mtklogger.ADB_CMD -e cmd_name start/stop --ei cmd_target 7
+        #(start表示开启，stop表示关闭；7可改为1/2/4，分别代表MobileLog/ModemLog/NetworkLog)
 
 # =========== 开关系统设备
     #开/关蓝牙
@@ -38,7 +42,7 @@
         adb shell reboot -p
 
 # =========== 查看系统负载
-        adb shell top
+    adb shell top
     #查看CPU信息
         adb shell dumpsys cpuinfo
     #刷新一次内存信息

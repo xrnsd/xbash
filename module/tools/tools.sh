@@ -708,7 +708,7 @@ EOF
         else
             filelist=$(ls $dirPathAnimationSourceRes)
             local dirPathLocal=$PWD
-            cd $dirPathAnimationSourceRes
+            cd $dirPathAnimationSourceRes && trap 'cd $dirPathLocal;exit' SIGINT
             for file in $filelist
             do
                 if [ ! -f "$file" ];then
@@ -1449,7 +1449,7 @@ EOF
     fi
 
     ftEcho -s "开始上传到  ${serverIp}/${pathContentUploadTraget}"
-    cd $dirPathContentUploadSource
+    cd $dirPathContentUploadSource && trap 'cd $dirPathLocal;exit' SIGINT
     ftTiming -i
 
     tar -cv  $pathContentUploadSource| pigz -1 |sshpass -p $pasword ssh $userName@$serverIp "gzip -d|tar -xPC $dirPathServer"
@@ -1527,6 +1527,9 @@ EOF
 complete -W "-a" ftAutoPacket
 ftAutoPacket()
 {
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' DEBUG
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' ERR
+    
     local ftEffect=基于android的out生成版本软件包
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
@@ -1594,7 +1597,7 @@ EOF
         if (( $(expr index $editType "y") != "0" ));then   isClean=true ; fi
         if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
         if (( $(expr index $editType "r") != "0" ));then   isReadMe=true ; fi
-        if (( $(expr index $editType "p") != "0" ));then   isPacket=true ; fi
+        if (( $(expr index $editType "p") != "0" ));then   isPacket=true;isReadMe=true ; fi
         if (( $(expr index $editType "c") != "0" ));then   isCopy=true ; fi
         if (( $(expr index $editType "t") != "0" ));then
                isSpecial=true
@@ -1611,7 +1614,7 @@ EOF
     if [[ -d "$dirPathVersionSoftware" ]]; then
             if [[ ! -z "$isClean" ]]; then
                 rm  -rf $dirPathVersionSoftware
-            else
+            elif [[ -z "isUpload" ]]; then
                   while true; do
                                 ftEcho -y "有旧的软件包  ${dirPathVersionSoftware}\n是否删除"
                                 read -n 1 sel
@@ -1667,7 +1670,7 @@ EOF
             fi
 
             # 生成软件包
-            cd $dirPathVersionSoftwareVersion
+            cd $dirPathVersionSoftwareVersion && trap 'cd $dirPathLocal;exit' SIGINT
             if [[ ! -z "$isCopy" ]]; then
                 # cp 
                 cd $dirPathLocal
@@ -1769,6 +1772,12 @@ EOF
                 if [[ ! -z "$AutoEnv_deviceModelName" ]]; then
                     dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${AutoEnv_deviceModelName}
                 fi
+                if [[ ! -z "$AutoEnv_BandInfo" ]]; then #添加 modem 配置信息
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}_B${AutoEnv_BandInfo}
+                fi
+                if [[ ! -z "$AutoEnv_FlashConfig" ]]; then #添加 flash信息
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}_${AutoEnv_FlashConfig}
+                fi
 
                 local dirNameVeriosionBase=${AutoEnv_versionName}
                 #非user版本标记编译类型
@@ -1835,7 +1844,7 @@ EOF
             # 生成本地软件包
             if [[ ! -z "$isPacket" ]]; then
                     mkdir -p $dirPathVersionSoftwareVersion
-                    cd $dirPathVersionSoftwareVersion
+                    cd $dirPathVersionSoftwareVersion && trap 'cd $dirPathLocal;exit' SIGINT
 
                     ftEcho -s "\n========================\n开始生成版本软件包: \n${dirNameVeriosionBase}\n路径: \n${dirPathVersionSoftwareVersion}\n========================\n"
                     #packages
@@ -2527,7 +2536,7 @@ EOF
    echo $androidVersionName
 }
 
-complete -W "backup restore" ftMaintainSystem
+complete -W "--backup --restore --sd_finish -b -r -s" ftMaintainSystem
 ftMaintainSystem()
 {
     local ftEffect=ubuntu系统维护
@@ -2549,18 +2558,14 @@ EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftMaintainSystem 操作类型
-#    ftMaintainSystem backup #备份系统
-#    ftMaintainSystem restore #还原备份
+#    ftMaintainSystem -s / --sd_finish #整理磁盘
+#    ftMaintainSystem -b / --backup #备份系统
+#    ftMaintainSystem -r / --restore #还原备份
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
-    #环境校验
-    if [ "$(whoami)" != "root" ];then
-        ftMaintainSystem -e
-        return
-    fi
     #耦合校验
     local valCount=1
     local errorContent=
@@ -2571,6 +2576,50 @@ EOF
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftMaintainSystem -h
             return
+    fi
+
+    case "$editType" in
+        --sd_finish|-s)
+                    devNameDirPathList=`df -lh | awk '{print $1}'`
+                    devMountDirPathList=(`df -lh | awk '{print $6}'`)
+                    indexDevName=0
+                    indexDev=0
+                    devPathList=
+                    for dir in ${devNameDirPathList[*]}
+                    do
+                            devMountDirPath=${devMountDirPathList[indexDevName]}
+                            if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
+                                   printf " \e[33m %-2s \e[0m %-15s \n" [$indexDev] $dir
+                                   devPathList[$indexDev]=$dir
+                                    indexDev=`expr $indexDev + 1`
+                            fi
+                            indexDevName=`expr $indexDevName + 1`
+                    done
+
+                            itemCount=${#devPathList[@]}
+                            ftEcho -r  "请输入对应的序号(回车默认0):"
+                            if (( $itemCount>9 ));then
+                                read tIndex
+                            else
+                                read -n 1 tIndex
+                            fi&&echo
+                            #设定默认值
+                            if [ ${#tIndex} == 0 ]; then
+                                tIndex=0
+                            elif (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$");then
+                                ftEcho -e "\n无效的序号:${tIndex}"
+                                 return
+                            fi
+                            e4defrag -v -c $${devPathList[$tIndex]}
+                            return ;;
+        --backup | -b )    editType=backup;;
+        --restore | -b )    editType=restore;;
+        * ) ftMaintainSystem -e ; return ;; esac
+ 
+     #环境校验
+    if [ "$(whoami)" != "root" ];then
+        ftMaintainSystem -e
+        return
     fi
 
     $filePathMaintain $editType
