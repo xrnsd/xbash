@@ -2536,7 +2536,7 @@ EOF
    echo $androidVersionName
 }
 
-complete -W "backup restore" ftMaintainSystem
+complete -W "--backup --restore --sd_finish -b -r -s" ftMaintainSystem
 ftMaintainSystem()
 {
     local ftEffect=ubuntu系统维护
@@ -2558,18 +2558,14 @@ EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftMaintainSystem 操作类型
-#    ftMaintainSystem backup #备份系统
-#    ftMaintainSystem restore #还原备份
+#    ftMaintainSystem -s / --sd_finish #整理磁盘
+#    ftMaintainSystem -b / --backup #备份系统
+#    ftMaintainSystem -r / --restore #还原备份
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
-    #环境校验
-    if [ "$(whoami)" != "root" ];then
-        ftMaintainSystem -e
-        return
-    fi
     #耦合校验
     local valCount=1
     local errorContent=
@@ -2580,6 +2576,50 @@ EOF
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftMaintainSystem -h
             return
+    fi
+
+    case "$editType" in
+        --sd_finish|-s)
+                    devNameDirPathList=`df -lh | awk '{print $1}'`
+                    devMountDirPathList=(`df -lh | awk '{print $6}'`)
+                    indexDevName=0
+                    indexDev=0
+                    devPathList=
+                    for dir in ${devNameDirPathList[*]}
+                    do
+                            devMountDirPath=${devMountDirPathList[indexDevName]}
+                            if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
+                                   printf " \e[33m %-2s \e[0m %-15s \n" [$indexDev] $dir
+                                   devPathList[$indexDev]=$dir
+                                    indexDev=`expr $indexDev + 1`
+                            fi
+                            indexDevName=`expr $indexDevName + 1`
+                    done
+
+                            itemCount=${#devPathList[@]}
+                            ftEcho -r  "请输入对应的序号(回车默认0):"
+                            if (( $itemCount>9 ));then
+                                read tIndex
+                            else
+                                read -n 1 tIndex
+                            fi&&echo
+                            #设定默认值
+                            if [ ${#tIndex} == 0 ]; then
+                                tIndex=0
+                            elif (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$");then
+                                ftEcho -e "\n无效的序号:${tIndex}"
+                                 return
+                            fi
+                            e4defrag -v -c $${devPathList[$tIndex]}
+                            return ;;
+        --backup | -b )    editType=backup;;
+        --restore | -b )    editType=restore;;
+        * ) ftMaintainSystem -e ; return ;; esac
+ 
+     #环境校验
+    if [ "$(whoami)" != "root" ];then
+        ftMaintainSystem -e
+        return
     fi
 
     $filePathMaintain $editType

@@ -16,4 +16,6 @@
 [diff]
     tool = bc3
     external = /home/wgx/cmds/config/other/git/git_bcompare.sh
+[credential]
+helper = store
 
