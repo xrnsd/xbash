@@ -1193,83 +1193,6 @@ ftSetBashPs1ByGitBranch()
     fi
 }
 
-ftRmExpand()
-{
-    local ftEffect=rm扩展[添加回收站功能]
-    local traget=$1
-    local dirPathLocal=$(ftLnUtil $PWD) #解决软链接问题
-    cd $PWD
-    if [[ "${traget:0:1}" = "-" ]]; then
-        traget=$2
-
-        editType=$1
-        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
-        if (( $(expr index $editType "f") != "0" ));then   local isRmSilence=true ; fi
-        if (( $(expr index $editType "r") != "0" ));then   local isRmDirectory=true ; fi
-    fi
-
-    while true; do case "$1" in
-    h | H |-h | -H) cat<<EOF
-#========[ ${ftEffect} ]的使用示例=============
-#
-#     ftRmExpand xx xxx
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-
-    # 耦合校验
-    local errorContent=
-    if [ -z "$traget" ];then    errorContent="${errorContent}\\n不知道你想干嘛" ;fi
-    if [[ ! -d "$traget" ]]&&[[ ! -f "$traget" ]];then  echo "rm: 无法删除\"$traget\": 没有那个文件或目录" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftEcho -s "请参照rm 使用习惯 "
-            return
-    fi
-
-    ftInitDevicesList
-    local dirPathDevTrash=
-    for dirPath in ${mCmdsModuleDataDevicesList[*]}
-    do
-        local length=${#dirPath}
-        if [[ "${dirPathLocal:0:$length}" = "$dirPath" ]]; then
-            local dirNameList=$(ls -a $dirPath|grep ".Trash-")
-            if [[ -z "$dirNameList" ]]&&[ ! -z "$(echo $dirPath|grep /home)" ]; then
-                dirNameList=".local/share/Trash"
-            fi
-            dirNameList=$dirNameList #假如存在多个就直接选第一个
-            local dirPathDevTrash=${dirPath}/${dirNameList}/files
-            break;
-        fi
-    done
-
-    if [[ -d "$dirPathDevTrash" ]]; then
-        if [[ -z "$isRmDirectory" ]]&&[[ -d "$traget" ]]; then
-                while true; do
-                        ftEcho -ye 这是目录,还删么
-                        read -n 1 sel
-                        sel=${sel:-'Y'}
-                        case "$sel" in
-                            y | Y )  break;;
-                            n | N |q | Q)    echo;return;;
-                            * ) ftEcho -e 错误的选择：$sel
-                                echo "输入n,q，离开"
-                                ;;
-                        esac
-                done
-        fi
-        local status=$(mv $traget $dirPathDevTrash 1>/dev/null 2>&1)
-        if [[ ! -z "$status" ]]&&[[ -z "$isRmSilence" ]]; then
-            ftEcho -s $status
-        fi
-    else
-        ftEcho -s "未移动 $traget 到回收站"
-        $(which rm) "$@"
-    fi
-}
-
 ftCleanDataGarbage()
 {
     local ftEffect=清空回收站
@@ -1328,4 +1251,41 @@ EOF
         fi
     done
     cd $dirPathLocal
+}
+
+ftPath()
+{
+    local ftEffect=路径处理
+    local dirPath=$1
+    local fileName=$2
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftPath 路径       #去掉最后的斜杠
+#    ftPath 路径 文件  #正确拼接
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$dirPath" ];then    errorContent="${errorContent}\\n[路径字串不能为空]dirPath=$dirPath" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftPath -h
+            return
+    fi
+        if [[ "${dirPath: -1}" = "/" ]]; then
+            dirPath=${dirPath%/*}
+        fi
+        if [[ -z "$fileName" ]]; then
+            echo $dirPath
+        else
+            echo ${dirPath}/${fileName}
+        fi
 }

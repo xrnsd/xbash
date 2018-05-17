@@ -48,7 +48,6 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
     export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
     export ENV_XBASH_INIT_STATED=1
 
-    # alias rm='effect=回收型rm;ftRmExpand'
     alias xd='effect=MTK下载工具;ftMtkFlashTool'
     alias xX='effect=字符串转大写;_xX(){  echo $1 | tr '[a-z]' '[A-Z]' ;};_xX $1'
     alias Xx='effect=字符串转小写;_Xx(){  echo $1 | tr '[A-Z]' '[a-z]' ;};_Xx $1'
@@ -71,6 +70,10 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
          ftSetBashPs1ByGitBranch
         fi'
         alias xbranch="effect=过滤git分支;git branch|grep -i "
+    fi
+    if [ -d "$JAVA_HOME" ]&&[ -d "out" ];then
+        #java -jar signapk.jar platform.x509.pem platform.pk8  待签名名字.apk  签名后名字.apk "命令进行签名
+        alias xAppSignature='effect=apk文件签名;java -jar out/host/linux-x86/framework/signapk.jar  build/target/product/security/platform.x509.pem build/target/product/security/platform.pk8'
     fi
 
     #命令选项快速适配

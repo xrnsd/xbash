@@ -20,7 +20,7 @@ while [[ status -ne "0" ]]; do
     if [[ $userPasswdLocal != "def_null" ]]; then
         echo -e "\033[1;31m密码错误,请重新输入\033[0m";
     fi
-    echo -en "请输入用户密码:"
+    echo -en "请输入用户[$userNameLocal]对应的密码:"
     read -s userPasswdLocal
     echo $userPasswdLocal | sudo -S echo 2> /dev/null
     status=$?
@@ -34,9 +34,9 @@ fi
 filePathGitConfig=/home/${userNameLocal}/.gitconfig
 if [ ! -f "$filePathGitConfig" ];then
     echo -en "请输入git用户名:"
-    read -s gitName&&git config --global user.name "$gitName"
+    read gitName&&git config --global user.name "$gitName"
     echo -en "请输入git邮箱或联系方式:"
-    read -s gitemailUrl&&git config --global user.email "$gitemailUrl"
+    read gitemailUrl&&git config --global user.email "$gitemailUrl"
     echo "已自动初始化gitconfig,需要修改的请查看$filePathGitConfig"
 fi||isFail=gitConfig
 
@@ -97,12 +97,12 @@ filePathHomeLocalConfigInputrc=${dirPathHomeLocal}/${fileNameXbashModuleBashrcIn
 mv ${filePathHomeLocalConfigInputrc} ${filePathHomeLocalConfigInputrc}_backup
 ln -s $filePathXbashModuleBashrcInputrc $filePathHomeLocalConfigInputrc
 
-if [ ! -z `which git` ];then
+#if [ ! -z `which git` ];then
     cd $dirPathLocal
     git add -A
     git commit -m "added config by $userNameLocal" >/dev/null||isFail=gitCommit
     echo "commit config by $userNameLocal"
-fi
+#fi
 
 #####------------------初始化结果信息显示-----------------------#########
 if [[ -z "$isFail" ]]; then
