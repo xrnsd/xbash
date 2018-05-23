@@ -129,6 +129,16 @@ else
     echo -e "\033[1;31m Android SDK 扩展加载失败[ANDROID_SDK=$ANDROID_SDK]\033[0m"
 fi
 
+if [ -d "vendor/mediatek" ];then
+        alias xnum='echo "隐藏[Select]：";     cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SELECT"|grep "final";\
+                                echo "IMEI码显示：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_DISPLAY"|grep "final";\
+                                echo "IMEI码编辑：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_EDIT"|grep "final";\
+                                echo -n "    ";     cat vendor/lz/op_cust.sh|grep "LZ_IMEI_EDIT_NUM";\
+                                echo "工厂模式：";   cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_FACTORY_TEST"|grep "final";\
+                                echo -n "    "; cat vendor/lz/op_cust.sh|grep "LZ_FACTORY_TEST_NUM";\
+                                echo "开关机动画修改：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_MULTI_BOOT_ANIMATION"|grep "final"'
+fi
+
 if [ -d "vendor/sprd" ];then
         alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
                                 cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";\
@@ -142,9 +152,9 @@ if [ -d "vendor/sprd" ];then
         alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :=";\
                                 cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "LZ_CONFIG_CAMERA_TYPE :="'
 
-        alias xnum='echo "隐藏[Select]：";cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SELECT";\
-                                echo "IMEI码显示：";cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_DISPLAY";\
-                                echo "IMEI码编辑：";cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "WRITE_IMEI";\
-                                echo "工厂模式：";cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_FACTORYMODE";\
-                                echo "开关机动画修改：";cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "LOGO_CHANGE"'
+        alias xnum='echo "隐藏[Select]：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SELECT"|grep "final";\
+                                echo "IMEI码显示：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_DISPLAY"|grep "final";\
+                                echo "IMEI码编辑：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "WRITE_IMEI"|grep "final";\
+                                echo "工厂模式：";   cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_FACTORYMODE"|grep "final";\
+                                echo "开关机动画修改：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "LOGO_CHANGE"|grep "final"'
 fi
