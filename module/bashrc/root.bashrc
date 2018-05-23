@@ -179,7 +179,7 @@ if [ "${S/ /}" != "$S" ];then
 fi
 export dirPathHome=/home/${userName}
 
-# 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认cmds]
+# 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认xbash]
 filePathBashrc=~/.bashrc
 if [[ -f  $filePathBashrc ]]; then
     filePathBashrcReal=$(ftLnUtil $filePathBashrc)
@@ -192,7 +192,7 @@ if [[ -f  $filePathBashrc ]]; then
                 dirNameXbash=${arrayItems}
     fi
 fi
-export dirNameXbash=${dirNameXbash:-'cmds'}
+export dirNameXbash=${dirNameXbash:-'xbash'}
 export dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
 
 #---------------- xbash配置  ----------------------------------

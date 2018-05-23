@@ -13,13 +13,12 @@ bash的简单扩展与其他工具配置[部分]
     3 建议,不要以root权限运行xc clean_data_garbage, 不要开启xx[休眠]，这玩意脾气不好
     4 环境目录[参考]
         /home/xxx/
-        ├── Xrnsd-extensions-to-bash  --  xbash目录
+        ├── xbash
         ├── tools    -------------------  环境相关
         │        ├───── jdk  ---------------   java jdk
         │        └───── sdk  --------------    android sdk
-        └── .bashrc   ------------------- Xrnsd-extensions-to-bash/module/bashrc/用户名.bashrc 的软连接
+        └── .bashrc   ------------------- ~/xbash/module/bashrc/用户名.bashrc 的软连接
     5 工程结构
-        Xrnsd-extensions-to-bash在下面简写为xbash
         │
         ├── config    -----------------------工具相关配置
         │        │

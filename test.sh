@@ -29,3 +29,23 @@ fi
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ====================================================================================================================
+cd /home/wgx-h/.config/sublime-text-3/Packages/User 
+
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/java_tamplate_zsd.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/shell_adb.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/xbash_ini.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/java_tamplate_zsl.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/shell_array.sublime-snippet         
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/xml_tamplate_zsd.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/java_tamplate_zsm.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/shell_directory_file.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/xml_tamplate_zsm.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/java_tamplate_zs.sublime-snippet 
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/shell_git.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/xml_tamplate_zs.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/java_tamplate_zst.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/shell_tar.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/xml_tamplate_zsv.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/java_tamplate_zsv.sublime-snippet
+ln -s /home/wgx-h/xbash/config/other/sublime_text/sublime-snippet/shell_value.sublime-snippet
+

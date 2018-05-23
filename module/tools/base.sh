@@ -397,13 +397,13 @@ ftFileDirEdit()
 #    ftFileDirEdit [type] [isCreate] [path]
 #
 #    文件存在，创建，返回1
-#    ftFileDirEdit -f true /home/xian-hp-u16/cmds/${rFileNameCmdModuleTestBase}
+#    ftFileDirEdit -f true /home/xian-hp-u16/xbash/${rFileNameCmdModuleTestBase}
 #
 #    文件夹存在，创建，返回1
-#    ftFileDirEdit -d true /home/xian-hp-u16/cmds/${rFileNameCmdModuleTestBase}
+#    ftFileDirEdit -d true /home/xian-hp-u16/xbash/${rFileNameCmdModuleTestBase}
 #
 #    判断文件夹是否为空，空，返回2 非空，返回3,非文件夹，返回4
-#    ftFileDirEdit -e false /home/xian-hp-u16/cmds
+#    ftFileDirEdit -e false /home/xian-hp-u16/xbash
 #    echo $?
 #===============================================================
 EOF

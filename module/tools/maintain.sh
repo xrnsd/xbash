@@ -379,13 +379,13 @@ ftBackupOs()
 {
     local ftEffect=生成版本包
     ftEcho -bh 开始更新排除列表
-    #/home/wgx/cmds/data/excludeDirsBase.list
+
     fileNameExcludeBase=excludeDirsBase.list
     fileNameExcludeAll=excludeDirsAll.list
     mFilePathExcludeBase=${rDirPathCmdsConfigData}/${fileNameExcludeBase}
     mFilePathExcludeAll=${rDirPathCmdsConfigData}/${fileNameExcludeAll}
 
-    local filePathDb=/home/wgx/cmds/config/data/tools.db
+    local filePathDb=$rFilePathCmdModuleConfigDataBase
     local tagName=ubuntuMaintainConfigInfo
     local keyName=DirPathsExcludeListSys
     local excludeListSys=($(ftGetKeyValueByBlockAndKey -f $filePathDb $tagName $keyName))
