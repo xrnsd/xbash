@@ -1246,7 +1246,7 @@ EOF
 ======================================================================================================
 $dirNameBranchVersion
 ======================================================================================================
-$(git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"%ad %an %h %s %d" -20)" >> $filePathGitLogInfo
+    $(ftGitLogShell -tc 20 "%h  %s")" >> $filePathGitLogInfo
         mv ${dirPathOutTop}/ $dirPathOutBranchVersion&&
         ftEcho -s "移动 $dirPathOutTop \n到  ${dirPathCodeRootOuts}/${dirNameBranchVersion}"
     else
@@ -1983,8 +1983,8 @@ EOF
 
 
     #使用git 记录的修改记录
-    local gitCommitListOneDay=$(git log --date=short --pretty=format:"%s" -30)
-    local gitCommitListBefore=$(git log --date=short --pretty=format:"%s" -30)
+    local gitCommitListOneDay=$(ftGitLogShell -t 30)
+    local gitCommitListBefore=$(ftGitLogShell -t 30)
 
 # ===============================================
 # =================     客户说明          ================
@@ -2629,14 +2629,28 @@ ftGitLogShell()
 {
     local ftEffect=git的log特定格式显示
     local editType=$1
+    editType=${editType:-'20'}
 
     local isAllBranchLog=
-    local BranchLogItemCount=
+    local isTagBranchLog=
+    local branchLogFormat=
+    local isCustomBranchLog=
+    local branchLogItemCount=
     if (  echo -n $editType | grep -q -e "^[0-9][0-9]*$");then
-        BranchLogItemCount=$editType
+        branchLogItemCount=$editType
     else
         editType=$(echo $editType | tr '[A-Z]' '[a-z]')
         if (( $(expr index $editType "a") != "0" ));then   isAllBranchLog=true ; fi
+        if (( $(expr index $editType "t") != "0" ));then
+            isTagBranchLog=true
+            branchLogItemCount=$2
+            branchLogItemCount=${branchLogItemCount:-'20'}
+        fi
+        if (( $(expr index $editType "c") != "0" ));then
+            isCustomBranchLog=true
+            branchLogFormat=$3
+            branchLogFormat=${branchLogFormat:-'%s'}
+        fi
     fi
 
     while true; do case "$1" in
@@ -2651,8 +2665,17 @@ EOF
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
+#    全部分支log
 #    ftGitLogShell -a
+#
+#    默认自定义格式20条
 #    ftGitLogShell 数量
+#
+#    只有tag的git log输出
+#    ftGitLogShell -t 数量
+#
+#    自定义格式输出
+#    ftGitLogShell -c 数量 格式字串
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -2669,7 +2692,7 @@ EOF
     fi
 
     #耦合校验
-    local valCount=1
+    local valCount=3
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -z "$errorContent" ];then
@@ -2682,17 +2705,23 @@ EOF
     local gitVersionNow=$(git --version)
     gitVersionNow=${gitVersionNow//git version/}
     gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
-    local count=$BranchLogItemCount
-    count=${count:-'15'}
 
     if [[ ! -z "$isAllBranchLog" ]]; then
        gitk --all
        return
     fi
 
+    if [[ ! -z "$isTagBranchLog" ]]; then
+       branchLogFormat=${branchLogFormat:-'%s'}
+       git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount
+       return
+    fi
+
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]];then
-        git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -$count
+        branchLogFormat="%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d"
+        git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"$branchLogFormat" -$branchLogItemCount
     else
-        git log --pretty=format:"%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d" -$count
+        branchLogFormat="%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d"
+        git log --pretty=format:"$branchLogFormat" -$branchLogItemCount
     fi
 }

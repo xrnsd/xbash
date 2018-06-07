@@ -71,6 +71,7 @@ if [ -f $rFilePathCmdModuleToolsSpecific ];then
          ftSetBashPs1ByGitBranch
         fi'
         alias xbranch="effect=过滤git分支;git branch|grep -i "
+        alias xbrancha="effect=过滤git分支;git branch -a|grep -i "
     fi
     if [ -d "$JAVA_HOME" ]&&[ -d "out" ];then
         #java -jar signapk.jar platform.x509.pem platform.pk8  待签名名字.apk  签名后名字.apk "命令进行签名
