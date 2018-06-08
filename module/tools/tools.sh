@@ -10,6 +10,18 @@ else
     echo -e "\033[1;31mXbash函数加载失败[未找到$rFilePathCmdModuleToolsBase]\033[0m"
 fi
 #####---------------------工具函数---------------------------#########
+_ftMain()
+{
+        local ftEffect=bash内建命令和xbash扩展封装对应的参数补全实现
+        local curr_arg=${COMP_WORDS[COMP_CWORD]}
+        case "${COMP_WORDS[1]}" in
+                        -)
+                                COMP_WORDS[1]="-h"
+                                export COMP_WORDS=${COMP_WORDS[@]}; ;;
+                        *)  COMPREPLY=( $(compgen -W '-h -hb -hc --help restartadb test clean_data_garbage  -v -vvv -ft' -- $curr_arg ) ); ;;
+          esac
+}
+
 ftMain()
 {
     local ftEffect=早期工具主入口
@@ -2566,6 +2578,12 @@ EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
+     #环境校验
+    if [ "$(whoami)" != "root" ];then
+        echo $(whoami)
+        ftMaintainSystem -e
+        return
+    fi
     #耦合校验
     local valCount=1
     local errorContent=
@@ -2614,13 +2632,7 @@ EOF
                             return ;;
         --backup | -b )    editType=backup;;
         --restore | -b )    editType=restore;;
-        * ) ftMaintainSystem -e ; return ;; esac
- 
-     #环境校验
-    if [ "$(whoami)" != "root" ];then
-        ftMaintainSystem -e
-        return
-    fi
+        * ) ftMaintainSystem -h ; return ;; esac
 
     $filePathMaintain $editType
 }

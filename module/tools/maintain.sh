@@ -253,10 +253,13 @@ EOF
     local devTarget
     local devTargetDir
     local index=0;
+    local devEffectiveSpace
 
     for dev in ${mCmdsModuleDataDevicesList[*]}
     do
-        echo -n "[${index}] ";printf "%-20s  " $dev;echo "可用：$(ftDevAvailableSpace $dev)"
+        devEffectiveSpace=$(ftDevAvailableSpace $dev)
+        let devEffectiveSpace=devEffectiveSpace/1024
+        echo -n "[${index}] ";printf "%-20s  " $dev;echo "可用：${devEffectiveSpace}G"
         #echo [ ${index} ] $dev 可用$(ftDevAvailableSpace $dev)
         #echo [ ${index} ] ${mCmdsModuleDataDevicesList[$index]}
         index=`expr $index + 1`
@@ -1061,15 +1064,15 @@ elif [ $mTypeEdit = "backup" ];then
             #写版本备注
             ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
             #扫描设备,同步相同备份
-            #ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mCmdsModuleDataDevicesList[*]}"
+            ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mCmdsModuleDataDevicesList[*]}"
             #清理临时文件
-            #ftAutoCleanTemp
+            ftAutoCleanTemp
             #生成版本包
-            #ftBackupOs&&
+            ftBackupOs&&
             #记录版本包校验信息
-            #ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+            ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
             #记录版本包相关系统信息
-            #ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+            ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
             #同步
             # ftSynchronous "${mCmdsModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"&&
             # 清除权限限制
