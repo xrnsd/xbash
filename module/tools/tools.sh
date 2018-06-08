@@ -432,7 +432,7 @@ EOF
 
     while true; do case "$packageName" in
         systemui)   packageName="com.android.systemui"  ;break;;
-        launcher3) packageName="com.android.launcher3"  ;break;;
+        launcher3|launcher) packageName="com.android.launcher3"  ;break;;
         monkey)     packageName="com.android.commands.monkey"  ;break;;
     * ) break;;esac;done
 
