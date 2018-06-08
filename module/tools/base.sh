@@ -637,7 +637,7 @@ EOF
                     else
                             size=${size//M/}
                     fi
-                    echo $size
+                    echo $size|awk ' {print int ($0)} '
             fi
             indexDevName=`expr $indexDevName + 1`
     done
