@@ -1,0 +1,21 @@
+[user]
+    name = wgxb1
+    email = lz_wuguoxian@163.com/15019962261/qq:1718686576
+[color "status"]
+    added = white
+    changed = yellow
+    untracked = cyan
+[push]
+    default = simple
+[gui]
+    spellingdictionary = none
+[core]
+    editor = nano
+[color]
+    ui = auto
+[diff]
+    tool = bc3
+    external = /home/wgx/cmds/config/other/git/git_bcompare.sh
+[credential]
+helper = store
+
