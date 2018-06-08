@@ -177,6 +177,7 @@ userName=${userName:-$userName2}
 if [ "${S/ /}" != "$S" ];then
     userName=$(whoami) 
 fi
+export userNameNow=$userName
 export dirPathHome=/home/${userName}
 
 # 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认xbash]
