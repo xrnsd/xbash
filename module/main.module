@@ -1,0 +1,544 @@
+#!/bin/bash
+#####---------------------  bash 配置  ---------------------------#########
+# 忽略特定命令
+export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
+# 保存历史命令条数
+export HISTSIZE=$bashHistorySize
+## history 命令显示的格式
+# export HISTTIMEFORMAT='%F %T '
+## history存放的文件
+# export HISTFILE=$filePathBashHistoryArchive
+
+#自动去重备份bash历史记录
+if [ "$(whoami)" != "root" ];then
+    filePathBashHistory=${dirPathHome}/.bash_history
+    filePathBashHistoryTemp=${filePathBashHistory}_temp
+    filePathBashHistoryArchive=${filePathBashHistory}_archive
+    filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
+    #备份历史
+    let lineCountMax=$HISTSIZE-1
+    lineCount=$(wc -l < $filePathBashHistory)
+    if (($lineCount > $lineCountMax)); then
+        cat $filePathBashHistory >> $filePathBashHistoryArchive \
+        && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
+        && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
+        #过滤需要的History
+        cat $filePathBashHistoryArchive|grep -E "adb|git|cd|source|make|lunch" >$filePathBashHistory
+        sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
+        mv $filePathBashHistoryTemp $filePathBashHistory
+        #history size 自动扩容
+        lineCount=$(wc -l < $filePathBashHistory)
+        let lineCount=$lineCount+1000
+        if (( $lineCount>5000 ));then
+            tagdirPathXbashBase="export\ bashHistorySize=5000"
+            tagdirPathXbashNew="export\ bashHistorySize=$lineCount"
+            sed -i "s:$tagdirPathXbashBase:$tagdirPathXbashNew:g" $filePathUserConfig
+        fi
+    fi
+fi
+#----------------    xbash config  ---------------------------
+alias ..="effect=进入父目录;cd .."
+alias ...="effect=进入爷目录;cd ../.."
+alias xcc='effect=进入原目录;cd $OLDPWD'
+alias xr="effect=更新xbash配置;source ~/.bashrc"
+if [ -f $rFilePathXbashModuleCommon ];then
+    export XMODULE="env" #标记为环境模式，此模式说明直接调用脚本实现
+    source  $rFilePathXbashModuleCommon
+    #bash PS1 配置
+    export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
+    export ENV_XBASH_INIT_STATED=1
+
+    alias xd='effect=MTK下载工具;ftMtkFlashTool'
+    alias xX='effect=字符串转大写;_xX(){  echo $1 | tr '[a-z]' '[A-Z]' ;};_xX $1'
+    alias Xx='effect=字符串转小写;_Xx(){  echo $1 | tr '[A-Z]' '[a-z]' ;};_Xx $1'
+    alias xkf='effect=解除文件或目录占用;fuser -m -k -i '
+    alias xb='effect=系统维护;ftMaintainSystem'
+    alias xc='effect=xbash主入口[旧];ftMain'
+    alias xbash='ftMain'
+    alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
+    alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
+    alias xbh='effect=bash命令历史插值;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
+    alias xu='effect=打开xbash配置文件;gedit  $filePathUserConfig $filePathXbashTragetBashrcBase $filePathXbashTragetBashrcConfigBase'
+
+    if [ ! -z `which git` ];then
+        alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a'
+        alias xgl='effect=格式化显示20条git_log;ftGitLogShell 20'
+        alias xgll='effect=格式化显示100条git_log;ftGitLogShell 100' 
+
+        export PROMPT_COMMAND='\
+        ftSetBashPs1ByGitBranch
+        if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
+         ftSetBashPs1ByGitBranch
+        fi'
+        alias xbranch="effect=过滤git仓库已经checkout分支;git branch|grep -i "
+        alias xbrancha="effect=过滤git仓库所有分支;git branch -a|grep -i "
+
+        alias xpusht="effect=提交分支的tag标签;git push origin --tags $AutoEnv_branchName"
+        alias xaddt="effect=添加 tag标签;git tag -a "
+    fi
+    if [ -d "$JAVA_HOME" ]&&[ -d "out" ];then
+        #java -jar signapk.jar platform.x509.pem platform.pk8  待签名名字.apk  签名后名字.apk "命令进行签名
+        alias xAppSignature='effect=apk文件签名;java -jar out/host/linux-x86/framework/signapk.jar  build/target/product/security/platform.x509.pem build/target/product/security/platform.pk8'
+    fi
+
+    #命令选项快速适配
+    complete -W "--backup --restore --sd_finish -b -r -s" xb
+    _xc()
+    {
+        local ftEffect=bash内建命令和xbash扩展封装对应的参数补全实现
+        local curr_arg=${COMP_WORDS[COMP_CWORD]}
+        case "${COMP_WORDS[1]}" in
+                        -)      
+                                COMP_WORDS[1]="-h"
+                                export COMP_WORDS=${COMP_WORDS[@]}; ;;
+                        *)  COMPREPLY=( $(compgen -W '-h -hb -hc --help restartadb test clean_data_garbage  -v -vvv -ft' -- $curr_arg ) ); ;;
+          esac
+    }
+    complete -F _xc xc
+else
+    echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$rFilePathXbashModuleCommon]\033[0m"
+    export ENV_XBASH_INIT_STATED=-1
+fi
+
+if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then
+    alias unix2dos=todos
+    alias dos2unix=fromdos
+fi
+
+if [ -d "$ANDROID_SDK" ];then
+    alias xl='effect=过滤adb_logcat;adb logcat -c;ftLogcatApplicationByPackageName'
+    alias xtext='effect=对设备输入字符串;adb shell input text'
+    alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
+    alias xlc='effect=清除指定包名的数据; adb shell pm clear'
+    alias xle='effect=过滤错误的进程;adb logcat "*:E"'
+    alias xlp="effect=根据包名过滤log;ftAutoLocat"
+    alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
+    alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
+    alias xdv='effect=手机录屏;adb shell screenrecord /sdcard/sv.mp4&&adb pull /sdcard/sv.mp4 ~/download/'
+
+    alias xqselect='effect=启动隐藏;adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
+    alias xqsetting='effect=启动设置;adb shell am start -n com.android.settings/com.android.settings.Settings'
+    alias xqcamera='effect=启动Camera2;adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
+    alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
+    alias xqchanglogo='effect=启动隐藏动画;adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
+    alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
+
+    if [[ -f $rFilePathXbashConfigDataBase ]]; then
+        packageNameList="$(ftGetKeyValueByBlockAndKey -f $rFilePathXbashConfigDataBase androidDevicePackages packageNameList)"
+    fi
+    complete -W "${packageNameList[@]} launcher" xlc
+    complete -W "${packageNameList[@]} launcher systemui" xk
+    complete -W "${packageNameList[@]} launcher systemui" xlp
+    complete -W "${packageNameList[@]} launcher systemui 123456" xl
+else
+    echo -e "\033[1;31m Android SDK 扩展加载失败[ANDROID_SDK=$ANDROID_SDK]\033[0m"
+fi
+
+if [ -d "vendor/mediatek" ];then
+        alias xnum='echo "隐藏[Select]：";     cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SELECT"|grep "final";\
+                                echo "IMEI码显示：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_DISPLAY"|grep "final";\
+                                echo "IMEI码编辑：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_EDIT"|grep "final";\
+                                echo -n "    ";     cat vendor/lz/op_cust.sh|grep "LZ_IMEI_EDIT_NUM";\
+                                echo "工厂模式：";   cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_FACTORY_TEST"|grep "final";\
+                                echo -n "    "; cat vendor/lz/op_cust.sh|grep "LZ_FACTORY_TEST_NUM";\
+                                echo "开关机动画修改：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_MULTI_BOOT_ANIMATION"|grep "final"'
+fi
+
+if [ -d "vendor/sprd" ];then
+        alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
+                                cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";\
+                                cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"'
+        alias xmodel='cat build/tools/buildinfo.sh|grep "ro.product.model=";\
+                               cat build/tools/buildinfo.sh|grep "ro.product.brand=";\
+                               cat build/tools/buildinfo.sh|grep "ro.product.name=";\
+                               cat build/tools/buildinfo.sh|grep "ro.product.device=";\
+                               cat device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk |grep "product.model.num";\
+                               cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"'
+        alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :=";\
+                                cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "LZ_CONFIG_CAMERA_TYPE :="'
+
+        alias xnum='echo "隐藏[Select]：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SELECT"|grep "final";\
+                                echo "IMEI码显示：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_DISPLAY"|grep "final";\
+                                echo "IMEI码编辑：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "WRITE_IMEI"|grep "final";\
+                                echo "工厂模式：";   cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_FACTORYMODE"|grep "final";\
+                                echo "开关机动画修改：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "LOGO_CHANGE"|grep "final"'
+fi
+
+
+
+
+#####---------------------  函数部分  ---------------------------#########
+
+ftMain()
+{
+    local ftEffect=早期工具主入口
+    while true; do
+    case $1 in
+    "clean_data_garbage")    ftCleanDataGarbage
+                break;;
+    test)     ftTest "$@"
+                break;;
+    -v | --version )        echo \"Xrnsd extensions to bash\" $rXbashVersion
+                break;;
+    -h|-help|help|--help|HELP|-HELP|--HELP)
+                ftMain -ft ; echo
+                ftMain -hb
+                return;;
+    -hb |-HB)   ftEcho -s "bash内建命令和xbash扩展封装说明"
+ cat<<EOF
+====================================
+命令           说明
+====================================
+EOF
+                ftReadAllAlias| column -t
+                return;;
+    ft | -ft |-hc |HC )   ftEcho -s "xbash对bash扩展实现说明"
+cat<<EOF
+=========================================================
+命令                             说明
+=========================================================
+EOF
+                ftReadAllFt | column -t
+                return;;
+    vvv | -vvv)
+                ftEcho -b xbash;        echo \"Xrnsd extensions to bash\" $rXbashVersion
+                ftEcho -b java;        java -version
+                ftEcho -b gcc;        gcc -v
+                break;;
+    restartadb)    ftRestartAdb
+                break;;
+    *)    ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -hc   #xbash对bash扩展实现说明"
+            return;;
+    esac
+    done
+}
+
+ftReadAllAlias()
+{
+        local ftEffect=显示bash内建等命令封装说明_nodisplay
+
+        if [[ -f $filePathXbashTragetBashrcBase ]]; then
+            local cmdName=
+            local cmdContent=
+            cat $filePathXbashTragetBashrcBase|grep alias  | while read line; do
+                    cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
+                    cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
+                    if [[ ! -z "$cmdContent" ]]; then
+                        printf "%14s  " $cmdName;echo $cmdContent
+                    fi
+            done
+        else
+            ftEcho -e "xbash配置不存在:$filePathXbashTragetBashrcBase"
+        fi
+}
+
+ftReadAllFt()
+{
+        local ftEffect=查看xbash对bash扩展实现说明_nodisplay
+
+        local key="local ftEffect="
+        for effectName in $(cat $rFilePathXbashModuleCommon |grep '^ft')
+        do
+            effectDescription=$(cat $rFilePathXbashModuleCommon |grep  -C 3 $effectName|grep "$key")
+            effectDescription=${effectDescription//$key/}
+            effectDescription=$(echo $effectDescription |sed s/[[:space:]]//g)
+            if [[ ${effectDescription: -9} = "nodisplay" ]];then
+                continue;
+            fi
+            effectName=${effectName//()/}
+            #echo "$effectName $effectDescription"
+
+            printf "%40s  " $effectName;echo $effectDescription
+        done
+}
+
+ftIsEnableByModuleName()
+{
+    local ftEffect=xbash框架,判断模块可用
+    local mModuleName=$1
+    local mModuleNameEnableList=
+
+        while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftIsEnableByModuleName 模块名  # val=$(ftIsEnableByModuleName xxxx)
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$moduleName" ];then    errorContent="${errorContent}\\n[无效模块名]moduleName=($moduleName)" ; fi
+    if [ -z "$ModuleNameEnableList" ];then    errorContent="${errorContent}\\n[可用模块列表为空]ModuleNameEnableList=($ModuleNameEnableList)" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftIsEnableByModuleName -h
+            return
+    fi
+}
+
+ftLnUtil()
+{
+    local ftEffect=xbash框架,获取软连接的真实路径
+    local lnPath=$1
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftLnUtil 软连接路径
+#    ftLnUtil /home/xian-hp-u16/log/xb_backup
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$lnPath" ];then    errorContent="${errorContent}\\n[软连接为空]lnPath=$lnPath" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftLnUtil -h
+            return
+    fi
+    if [[ -L "$lnPath" ]]&&[ ! -z `which readlink` ]; then
+        echo $(readlink $lnPath)
+        return
+    fi
+
+    OLD_IFS="$IFS"
+    IFS="/"
+    arr=($lnPath)
+    IFS="$OLD_IFS"
+
+    i=${#arr[@]}
+    let i--
+    delDir=
+    while [ $i -ge 0 ]
+    do
+        [[ $lnPath =~ ^/  ]] && lnRealPath=$lnPath || lnRealPath=`pwd`/$lnPath
+        while [ -h $lnRealPath ]
+        do
+           b=`ls -ld $lnRealPath|awk '{print $NF}'`
+           c=`ls -ld $lnRealPath|awk '{print $(NF-2)}'`
+           [[ $b =~ ^/ ]] && lnRealPath=$b  || lnRealPath=`dirname $c`/$b
+        done
+        if [ "$lnRealPath" = "$lnPath" ];then
+            lnPath=${lnPath%/*}
+            delDir=${arr[$i]}/$delDir
+        else
+            local dirPath=${lnRealPath}/${delDir}
+            if [[ "$lnRealPath" = "/${delDir}" ]]; then
+                dirPath=$1
+            fi
+            echo $dirPath
+            break
+        fi
+        let i--
+    done
+}
+
+ftUpdateBashrcLn()
+{
+    local ftEffect=xbash框架,更新指向xbash的.bashrc软连接
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftUpdateBashrcLn 无参
+#    ftUpdateBashrcLn [example]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ -z `which example` ]||[ -z `which example` ];then
+        ftUpdateBashrcLn -e
+        return
+    fi
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$example1" ];then    errorContent="${errorContent}\\n[示例1]example1=$example1" ; fi
+    if [ -z "$example2" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftUpdateBashrcLn -h
+            return
+    fi
+}
+
+ftTest()
+{
+    local ftEffect=函数demo调试
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftTest 任意参数
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if [ ! -d "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome" ; fi
+    if [ ! -f "$rFilePathXbashModuleTest" ];then    errorContent="${errorContent}\\n[测试模块不存在]filePathXbashModuleTest=$rFilePathXbashModuleTest" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftTest -h
+            return
+    fi
+
+    local dirPathLocal=$PWD
+    local dirPathTemp=${rDirPathUserHome}/temp
+    if [[ ! -d "$dirPathTemp" ]]; then
+        mkdir $dirPathTemp||(ftEcho -e "${ftEffect} 创建demo环境目录失败:$dirPathTemp";return)
+    fi
+    if [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]]; then
+        cd $dirPathTemp
+    fi
+    ftTiming -i
+    $rFilePathXbashModuleTest "$@"
+    ftTiming
+    cd $dirPathLocal
+}
+
+ftEcho()
+{
+    local ftEffect=工具信息提示
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftEcho        内容    # 直接显示内容
+#    ftEcho    -b    内容    # 标题，不换行，对字符串的缩进敏感
+#    ftEcho    -bh    内容    # 标题，换行，对字符串的缩进敏感
+#    ftEcho    -e    内容    # 错误信息显示，对字符串的缩进敏感
+#    ftEcho    -ex    内容    # 错误信息显示，显示完退出，对字符串的缩进敏感
+#    ftEcho    -ea    内容    # 错误信息多行显示，对字符串的缩进不敏感,包含内置数组会显示不正常
+#    ftEcho    -eax    内容    # 错误信息多行显示，对字符串的缩进不敏感,包含内置数组会显示不正常，显示完退出
+#    ftEcho    -y    内容    # 特定信息显示,y/n，对字符串的缩进敏感
+#    ftEcho    -s    内容    # 执行信息，对字符串的缩进敏感
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#<$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -z "$errorContent" ];then
+            echo -e "$errorContent \\n请查看下面说明:"
+            ftEcho -h
+            return
+    fi
+
+    option=$1
+    option=${option:-'未制定显示信息'}
+    valList=$@
+    if [ ${#valList[@]} -eq 2 ];then
+        content=$(content |sed s/[[:space:]]//g)
+    else
+        #除第一个参数外的所有参数列表，可正常打印数组
+        content="${valList[@]/$option/}"
+        content=${content/ /}
+    fi
+    while true; do
+    case $option in
+
+    e | E | -e | -E)        echo -e "\033[1;31m$content\033[0m"; break;;
+    ex | EX | -ex | -EX)    echo -e "\033[1;31m$content\033[0m"
+                sleep 3
+                if [ "$XMODULE" = "env" ];then    return ; fi
+                exit;;
+    s | S | -s | -S)        echo -e "\033[1;33m$content\033[0m"; break;;
+    b | B| -b | -B)        echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
+    bh | BH | -bh | -BH)    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
+    y | Y | -y | -Y)        echo;echo -en "${content}[y/n]"; break;;
+    ye | YE | -ye | -YE) echo -en "${content}[y/n]"; break;;
+    r | R | -r | -R)        echo;echo -en "${content}"; break;;
+    ea| EA | -ea | -EA)    for val in ${content[@]}
+                do
+                    echo -e "\033[1;31m$val\033[0m";
+                done
+                break;;
+
+    eax| EAX | -eax | -EAX)    for val in ${content[@]}
+                do
+                    echo -e "\033[1;31m$val\033[0m";
+                done
+                exit;;
+    # 特定信息显示,命令说明的格式
+    g | G | -g | -G)
+    ftEcho -s “命令 参数 -h 可查看参数具体说明”
+    cat<<EOF
+=========================================================================
+命令    --- 参数/命令说明
+    |// 使用格式
+    |  参数     ---------------- [参数权限] ----    参数说明
+=========================================================================
+EOF
+break;;
+     -d | -D | --DEBUG)
+                local cmds=($@)
+                unset cmds[0]
+                 if [ "$DEBUG" = "true" ]; then
+                      ${cmds}
+                fi
+                break;;
+    * )    echo $option ;break;;
+    esac
+    done
+}
+
+ftTiming()
+{
+    local ftEffect=脚本操作耗时记录
+
+    if [ -z "$mTimingStart" ]||[ "$1" = "-i" ];then
+        mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
+        return 0;
+    fi
+
+     #时间少于1秒默认不显示操作耗时
+     #时间时分秒各单位不显示为零的结果
+    time2=$(date +%s -d $(date +"%H:%M:%S"))
+    time3=$(((time2-mTimingStart)%60))
+    time5=$(((time2-mTimingStart)/3600))
+    time4=$((((time2-mTimingStart)-time5*3600)/60))
+
+    if [ "$time5" -ne "0" ];then
+        hour=$time5时
+    else
+        hour=""
+    fi
+    if [ "$time4" -ne "0" ];then
+        minute=$time4分
+    else
+        minute=""
+    fi
+    if [ "$time3" -ne "0" ];then
+        second=$time3秒
+    else
+        second=""
+    fi
+    if [ "$time3" -eq "0" ]&&[ "$time4" -eq "0" ] &&[ "$time5" -eq "0" ];then
+        ftEcho -s 1秒没到就结束了
+    else
+        ftEcho -s "本技能耗时${hour}${minute}${second}  !"
+    fi
+    mTimingStart=
+}

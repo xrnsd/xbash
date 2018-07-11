@@ -1,15 +1,1 @@
 #config/bashrc_home
-log
-
-config/bashrc/config_bashrc_base.gone
-
-config/data/excludeDirsAll.list
-config/data/excludeDirsBase.list
-config/data/hosts.base
-config/data/hosts.new
-
-config/other/sublime_text/sublime-snippetconfig/wgx_f.cofig
-#config/other/sublime_text/sublime-snippet/
-module/bashrc/wgx_f.bashrc
-config/wb1.config
-module/bashrc/wb1.bashrc
