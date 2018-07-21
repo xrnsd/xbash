@@ -80,6 +80,7 @@ packageNameList=com.android.systemui \
 XHF=新华菲
 DHX=东华新
 PMZ=鹏明珠
+DCHS=鼎城恒生
 CDHT=诚达恒泰
 TXD=腾信达
 
@@ -137,7 +138,7 @@ left=21
 KEYCODE_DPAD_RIGHT=22
 right=22
 KEYCODE_DPAD_CENTER=23
-center=23
+enter=23
 KEYCODE_VOLUME_UP=24
 KEYCODE_VOLUME_DOWN=25
 KEYCODE_POWER=26

@@ -1430,7 +1430,7 @@ EOF
 
     local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
     if ( echo -n $pid | grep -q -e "^[0-9][0-9]*$"); then
-        # adb shell am force-stop $packageName && ftEcho -s "kill $pid"
+        adb shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
         local rootInfo=$(adb root|grep cannot)
         local remountInfo=$(adb remount|grep failed)
         if [[ ! -z "$rootInfo" ]]; then
@@ -2746,28 +2746,32 @@ EOF
 
             if [ ! -z "$AutoEnv_clientName" ];then #解析git分支,初始化客户等相关信息
                 ftAutoInitEnv -bp
-                local dirNameersionSoftwareVersionBase=${AutoEnv_AndroidVersion}
-                local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}
 
-                if [[ ! -z "$dirNameersionSoftwareVersionBase" ]]; then
-                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameersionSoftwareVersionBase}
+                local dirPathGitBranchInfoGroup=
+                local dirPathVersionSoftwareVersion=
+                if [[ ! -z "$AutoEnv_motherboardName" ]]; then
+                    dirPathGitBranchInfoGroup=${AutoEnv_motherboardName}
                 fi
-                if [[ ! -z "$AutoEnv_motherboardName" ]]&&[[ ! -z "$AutoEnv_projrctName" ]]; then
-                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${AutoEnv_motherboardName}-${AutoEnv_projrctName}
-                    local val1=${AutoEnv_motherboardName}__${AutoEnv_projrctName}
+                if [[ ! -z "$AutoEnv_projrctName" ]]; then
+                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_projrctName}
                 fi
-                if [[ ! -z "$val1" ]]&&[[ ! -z "$AutoEnv_demandSignName" ]]; then
-                    local val2=${val1}__${AutoEnv_demandSignName};
-                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${val2}
+                if [[ ! -z "$AutoEnv_demandSignName" ]]; then
+                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_demandSignName}
                 fi
                 if [[ ! -z "$AutoEnv_deviceModelName" ]]; then
-                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${AutoEnv_deviceModelName}
+                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_deviceModelName}
                 fi
                 if [[ ! -z "$AutoEnv_BandInfo" ]]; then #添加 modem 配置信息
-                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}_B${AutoEnv_BandInfo}
+                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_B${AutoEnv_BandInfo}
                 fi
                 if [[ ! -z "$AutoEnv_FlashConfig" ]]; then #添加 flash信息
-                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}_${AutoEnv_FlashConfig}
+                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_${AutoEnv_FlashConfig}
+                fi
+                if [[ -z "$dirPathGitBranchInfoGroup" ]]; then
+                    ftEcho -e "分支信息解析结果为空,请查看配置"
+                    return;
+                else
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirPathGitBranchInfoGroup}
                 fi
 
                 local dirNameVeriosionBase=${AutoEnv_versionName}
