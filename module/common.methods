@@ -4,7 +4,8 @@
 # 人话，这里只放函数
 # complete -W "example example" ftExample
 #####---------------------基础函数---------------------------#########
-ftAutoLocat(){
+ftAutoLocat()
+{
     local ftEffect=根据包名过滤log
     local packageName=$1
     adb logcat -v process | grep $(adb shell ps | grep $packageName | awk '{print $2}')
@@ -3614,7 +3615,7 @@ EOF
     fi
 }
 
-complete -W " --reboot_count --reboot_wait_time --event_count -rc -rwt -ec" ftMaintainSystem
+complete -W " --reboot_count --reboot_wait_time --event_count -rc -rwt -ec" ftAutoTest
 ftAutoTest()
 {
     local ftEffect=Android自动测试
