@@ -43,6 +43,25 @@ EOF
         ftExample -e
         return
     fi
+
+    #参数解析
+    local argList=($@)
+    local indexArg=0
+    local arg2
+    for arg in ${argList[@]} ;do
+            indexArg=$(expr $indexArg + 1)
+            arg=$(echo $arg | tr '[A-Z]' '[a-z]')
+            arg2=${argList[$indexArg]}
+
+            #单参数
+            case "$arg" in 
+                -xxxx )   example1=${arg2:-'exampleDef1'}
+                    ;;
+                -xxxx )  example2=${arg2:-'exampleDef2'}
+                    ;;
+            esac
+     done
+
     #耦合校验
     local valCount=1
     local errorContent=
@@ -56,16 +75,7 @@ EOF
     fi
 }
 
-# -eq =     -ne !=
-# -gt  >      -ge >=
-# -lt   <      le <=
-
-# 把.git 以2048M为界压缩成 MTK6580L.tar. aa MTK6580L.tar. ab ......
-# pigz 分包压缩 tar --use-compress-program=pigz -cvpf - .git |split -b 2048m - MTK6580L.tar. 
-
-#算术运算
-#$[ $dff+1 ]
-# ===================================================================================================================================
+# ====================================================================================================================
 #####-------------------------------------------------------------------------#########
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########

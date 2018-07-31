@@ -3614,17 +3614,38 @@ EOF
     fi
 }
 
+complete -W " --reboot_count --reboot_wait_time --event_count -rc -rwt -ec" ftMaintainSystem
 ftAutoTest()
 {
     local ftEffect=Android自动测试
     local editType=$1
-    local timeLong=$(( 3600 * 24 *3 ))
-    local rebootCount=1
 
-    if [[ ! -z "editType" ]]&&[[ "$editType" = "-b" ]]; then
-        timeLong=$2
-        rebootCount=10000
-    fi
+    local eventCountDef=$(( 100 * 100 *100 ))
+    local timeLongDef=$(( 3600 * 24 *3 ))
+    local rebootCountDef=1
+
+    local eventCount=$eventCountDef
+    local rebootTimeLong=$rebootTimeLongDef
+    local rebootCount=$rebootCountDef
+
+    local argList=($@)
+    local index=0
+    local arg2
+    for arg in ${argList[@]} ;do
+            index=$(expr $index + 1)
+            arg=$(echo $arg | tr '[A-Z]' '[a-z]')
+            arg2=${argList[$index]}
+
+            #单参数
+            case "$arg" in
+              -rc  | --reboot_count )  rebootCount=${arg2:-'rebootCountDef'}
+                    ;;
+             -rwt | --reboot_wait_time )  rebootTimeLong=${arg2:-'rebootTimeLongDef'}
+                    ;;
+             -ec | --event_count )  eventCount=${arg2:-'eventCountDef'}
+                    ;;
+            esac
+     done
 
     while true; do case "$1" in
     e | -e |--env) cat<<EOF
@@ -3637,8 +3658,9 @@ EOF
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftAutoTestReBoot 无参      #测试,
-#    ftAutoTestReBoot -b 2000 #测试,每2000s重启一次
+#    ftAutoTestReBoot -rc 2000 #重启2000次
+#    ftAutoTestReBoot -rwt 2000 #每2000s重启一次
+#    ftAutoTestReBoot -ec 2000 #monkey事件数为2000
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -3653,14 +3675,13 @@ EOF
     local valCount=2
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if ( ! echo -n $timeLong | grep -q -e "^[0-9][0-9]*$");then    errorContent="${errorContent}\\n[时长必须为数字[单位S]]timeLong=$timeLong" ; fi
+    if ( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$");then    errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoTestReBoot -h
             return
     fi
 
-    local eventCount=20000
     local filePathLogMonkey=~/download/$(date -d "today" +"%y%m%d%H%M%S").monkey
     local filePathLogAdbLogcat=~/download/$(date -d "today" +"%y%m%d%H%M%S").logcat
     local logcatFlag="*:E"
@@ -3674,8 +3695,8 @@ EOF
         done
         sleep 5
         adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher
-        timeout $timeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
-        timeout $timeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+        timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
+        timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
 
         rebootCount=$((rebootCount - 1))
         if (( $rebootCount>0 )); then
