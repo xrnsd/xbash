@@ -660,22 +660,6 @@ EOF
             infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
     local infoHw32x64=$(uname -m|sed s/[[:space:]]//g)
 
-    #  local devNameDirPathList=(`df -lh | awk '{print $1}'`)
-    #  local devMountDirPathList=(`df -lh | awk '{print $6}'`)
-    #  local indexDevName=0
-    #  for dir in ${devMountDirPathList[*]}
-    # do
-    #         if [[ $dir = "/" ]];then
-    #             local dirPathDevRoot=${devNameDirPathList[indexDevName]}
-    #             local keyModelName="Model Number:"
-    #             local devModelName=$(echo "$userPassword" | sudo -p '' -S  hdparm -I $dirPathDevRoot|grep "$keyModelName");
-    #             devModelName=${devModelName//$keyModelName/}
-    #             local infoHwMainHardDisk=$(echo $devModelName |sed s/[[:space:]]//g)
-    #             break;
-    #         fi
-    #         indexDevName=`expr $indexDevName + 1`
-    # done
-
     local keyCpu=hwCpu
     local keyMainboard=hwMainboard
     local keySystemVersion=swSystemVersion
