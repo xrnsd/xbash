@@ -1,4 +1,5 @@
 #!/bin/bash
+#set -o nounset
 #####---------------------  bash 配置  ---------------------------#########
 # 忽略特定命令
 export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
@@ -123,6 +124,8 @@ if [ -d "$ANDROID_SDK" ];then
     alias xqchanglogo='effect=启动隐藏动画;adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
     alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
 
+# adb shell am start com.android.factorytest/.FTHomeActivity
+
     if [[ -f $rFilePathXbashConfigDataBase ]]; then
         packageNameList="$(ftGetKeyValueByBlockAndKey -f $rFilePathXbashConfigDataBase androidDevicePackages packageNameList)"
     fi
@@ -163,9 +166,6 @@ if [ -d "vendor/sprd" ];then
                                 echo "工厂模式：";   cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_FACTORYMODE"|grep "final";\
                                 echo "开关机动画修改：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "LOGO_CHANGE"|grep "final"'
 fi
-
-
-
 
 #####---------------------  函数部分  ---------------------------#########
 

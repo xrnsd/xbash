@@ -1,6 +1,5 @@
 #!/bin/bash
 #####-----------------------变量------------------------------#########
-readonly rModuleName=$rFileNameXbashModuleMaintain
 mTypeEdit=$1
 mTypeBackupEdit=null
 
@@ -23,16 +22,6 @@ mFileNameRestoreSourceBase=null
 
 mNoteBackupTarget=null
 mNoteRestoreSource=null
-
-#####----------------------初始化--------------------------#########
-if [ -f $rFilePathXbashModuleCommon ];then
-    source  $rFilePathXbashModuleCommon
-else
-    echo -e "\033[1;31m    初始化失败，基础库无法加载\n\
-    模块=$rModuleName\n\
-    rFilePathXbashModuleCommon=$rFilePathXbashModuleCommon\n\
-    \033[0m"
-fi
 
 #####----------------------自有函数--------------------------#########
 
@@ -223,6 +212,7 @@ EOF
 ftSetBackupDevDir()
 {
     local ftEffect=选择备份包存放的设备
+    local typeEdit=$1
     # 初始化设备列表[mXbashModuleDataDevicesList]
     ftInitDevicesList 4096M
 
@@ -237,9 +227,9 @@ EOF
     * ) break;;esac;done
 
     #耦合校验
-    local valCount=0
+    local valCount=1
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$rDirPathXbash" ];then    errorContent="${rNameUser}\\n[默认用户名为空]rNameUser=$rNameUser" ; fi
     if [ -z "$mXbashModuleDataDevicesList" ];then    errorContent="${errorContent}\\n[可用的版本包备份存储设备列表为空]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}" ; fi
     if [ ! -z "$errorContent" ];then
@@ -290,7 +280,7 @@ EOF
     # 还原用
     mDirPathStoreSource=$devTargetDir/backup/os/${rNameUser};
 
-    if [ $mTypeEdit = "backup" ];then
+    if [ $typeEdit = "backup" ];then
         # 备份用
         mDirPathStoreTarget=$devTargetDir/backup/os/${rNameUser};
         if [ ! -d $mDirPathStoreTarget ];then
@@ -979,114 +969,3 @@ EOF
     esac
     done
 }
-ftMaintain()
-{
-    local ftEffect=系统维护工具
-
-    while true; do case "$1" in
-    -e) cat<<EOF
-#===================[   ${ftEffect}   ]的使用环境说明=============
-#
-#    请转换为root用户后重新运行
-#=========================================================
-EOF
-      return;;
-    -env) cat<<EOF
-#===================[   ${ftEffect}   ]的使用环境说明=============
-#
-#    依赖 sshpass pigz,请使用下面命令安装
-#    sudo apt-get install pigz
-#=========================================================
-EOF
-      return;;
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftMaintain backup/restore
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    #环境校验
-    if [ `whoami` != "root" ];then
-        ftMaintain -e
-        return
-    fi
-    if [ -z `which pigz` ];then
-        ftMaintain -env
-        return
-    fi
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftMaintain -h
-            return
-    fi
-
-if [ $mTypeEdit = "restore" ];then
-        #选择存放版本包的设备
-        ftSetBackupDevDir&&
-        #选择版本包
-        ftRestoreChoiceSource&&
-        #检查版本包和当前系统兼容程度
-        ftAddOrCheckSystemHwSwInfo -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
-        #检查版本包有效性
-        ftMD5 -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
-        #选择版本包覆盖的目标路径
-        ftRestoreChoiceTarget&&
-        #选择版本包覆盖的忽略路径
-        ftSetRestoreType&&
-        #当前配置信息显示
-        ftEchoInfo restore&&
-        #执行还原操作
-        ftRestoreOperate $mFilePathRestoreSource $mDirPathRestoreTarget
-
-elif [ $mTypeEdit = "backup" ];then
-        #选择存放版本包的设备
-        ftSetBackupDevDir&&
-        cd /&&
-        #选择备份类型
-        ftSetBackupType&&
-        # 检查版本包是否已经存在
-        ftVersionPackageIsCreated&&
-        #显示当前配置信息
-        ftEchoInfo backup&&
-        while true; do
-        ftEcho -y 是否开始备份
-        read -n 1 sel
-        echo
-        case "$sel" in
-            y | Y )
-            #写版本备注
-            ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
-            #扫描设备,同步相同备份
-            ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mXbashModuleDataDevicesList[*]}"
-            #清理临时文件
-            ftAutoCleanTemp
-            #生成版本包
-            ftBackupOs&&
-            #记录版本包校验信息
-            ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
-            #记录版本包相关系统信息
-            ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
-            #同步
-            # ftSynchronous "${mXbashModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"&&
-            # 清除权限限制
-            chmod 777 -R $mDirPathStoreTarget
-            break;;
-            n | N | q |Q)  exit;;
-            * ) ftEcho -e 错误的选择：$sel
-            echo "输入n，q，离开";;
-        esac
-        done
-else
-    ftEcho -e 不知道你想干嘛！
-fi
-}
-
-#####-------------------执行------------------------------#########
-ftMaintain $@

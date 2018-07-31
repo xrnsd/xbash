@@ -87,6 +87,7 @@ TXD=腾信达
 [lzProjrctConfigBranch2PlatformName]
 keytak6580_weg_l=MTK6580
 full_keytak6580_weg_l=MTK6580
+sp7731c_1h10_32v4_oversea=SPRD7731C
 
 [lzProjrctConfigSoftwarePackageFileLIst]
 full_keytak6580_weg_l_fileList= \
@@ -237,3 +238,10 @@ pl_PL sr_RS sk_SK sl_SI es_US sv_SE hi_IN uk_UA zh_HK \
 in_ID sw_TZ am_ET bn_IN he_IL iw_IL af_ZA rm_CH \
 my_ZG be_BY et_EE zu_ZA az_AZ hy_AM ka_GE lo_LA \
 mn_MN ne_NP kk_KZ si_LK
+
+
+[serverConfig_192.168.1.188]
+userName=server
+userPassword=123456
+dirPathPackage=/media/新卷
+dirPathPackageLocal=/media/server/1.188
