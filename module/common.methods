@@ -2749,7 +2749,7 @@ EOF
                 local dirPathVersionSoftwareVersion=
 
                 #版本路径 服务器根路径部分
-                local dirPathUploadTraget=
+                local dirPathUploadTraget=智能机软件
 
                 local tagName="lzProjrctConfigBranch2CtName"
                 local clientNameAll=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName $AutoEnv_clientName)
