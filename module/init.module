@@ -40,7 +40,6 @@ if [ ! -f "$filePathGitConfig" ];then
     echo "已自动初始化gitconfig,需要修改的请查看$filePathGitConfig"
 fi||exceptionContent="${exceptionContent}\n git配置初始化失败"
 
-filePathXbashGitgnore=${dirPathLocal}/.gitignore
 # config
         fileNameXbashConfigNew=${userNameLocal}.config
         dirPathXbashConfigBashrc=${dirPathLocal}/config/user

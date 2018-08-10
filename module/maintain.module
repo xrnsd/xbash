@@ -90,30 +90,28 @@ ftRestoreChoiceSource()
             index=`expr $index + 1`
         done
         while true; do
-        ftEcho -r  "请输入版本包对应的序号(回车默认0):"
-        if [ ${#fileList[@]} -gt 9 ];then
-            read tIndex
-        else
-            read -n 1 tIndex
-        fi
-        #设定默认值
-        if [ ${#tIndex} == 0 ]; then
-            tIndex=0
-        fi
-        case $tIndex in
-            [0-9]|\
-            [0-9][0-9]|\
-            [0-9][0-9][0-9]|\
-            [0-9][0-9][0-9][0-9])
+            ftEcho -r  "请输入版本包对应的序号(回车默认0):"
+            if [ ${#fileList[@]} -gt 9 ];then
+                read tIndex
+            else
+                read -n 1 tIndex
+            fi
+            #设定默认值
+            if [ ${#tIndex} == 0 ]; then
+                tIndex=0
+            fi
+
+            if ( echo -n $tIndex | grep -q -e "^[0-9][0-9]*$");then
                 echo
                 mFileNameRestoreSource=${fileList2[$tIndex]}
                 mFileNameRestoreSourceBase=${mFileNameRestoreSource/.tgz/}
                 mFilePathRestoreSource=${mDirPathStoreSource}/${mFileNameRestoreSource}
                 mNoteRestoreSource=${fileNoteList[$tIndex]}
-                echo;break;;
-            n | N | q |Q)  exit;;
-            * )    ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2...... 选择    输入 n，q 离开";break;;
-        esac
+                echo
+                break
+            else
+                ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2...... 选择    输入 n，q 离开"
+            fi
         done
     fi
 }
