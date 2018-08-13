@@ -4084,7 +4084,5 @@ EOF
 ftFind()
 {
     local ftEffect=find简单封装
-    local dirPathTarget=$1
-
     find $1 -name "($2)" | xargs grep -e "$3"
 }

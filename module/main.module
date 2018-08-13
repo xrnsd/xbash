@@ -55,7 +55,6 @@ if [ -f $rFilePathXbashModuleCommon ];then
     alias xkf='effect=解除文件或目录占用;fuser -m -k -i '
     alias xb='effect=系统维护;ftMaintainSystem'
     alias xc='effect=xbash主入口[旧];ftMain'
-    alias xbash='ftMain'
     alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
     alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
     alias xbh='effect=bash命令历史插值;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
@@ -128,8 +127,6 @@ if [ -d "$ANDROID_SDK" ];then
     alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
     alias xqchanglogo='effect=启动隐藏动画;adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
     alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
-
-# adb shell am start com.android.factorytest/.FTHomeActivity
 
     if [[ -f $rFilePathXbashConfigDataBase ]]; then
         packageNameList="$(ftGetKeyValueByBlockAndKey -f $rFilePathXbashConfigDataBase androidDevicePackages packageNameList)"
