@@ -245,3 +245,9 @@ userName=server
 userPassword=123456
 dirPathPackage=/media/packages
 dirPathPackageLocal=/media/server/1.188
+
+[serverConfig_192.168.1.55]
+userName=wb1
+userPassword=x6b7n37g
+dirPathPackage=/media/data/nfs
+dirPathPackageLocal=/media/server/1.44

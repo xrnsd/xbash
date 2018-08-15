@@ -2734,7 +2734,7 @@ ftAutoUploadHighSpeed()
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    依赖 sshpass pigz,请使用下面命令安装
-#    sudo apt-get install sshpass pigz
+#    sudo apt-get install sshpass pigz pv
 #=========================================================
 EOF
       return;;
@@ -2751,7 +2751,7 @@ EOF
     * ) break;;esac;done
 
     #环境校验
-    if [ -z `which sshpass` ]||[ -z `which pigz` ];then
+    if [ -z `which sshpass` ]||[ -z `which pigz` ]||[ -z `which pv` ];then
         ftAutoUploadHighSpeed -e
         return
     fi
@@ -2791,78 +2791,11 @@ EOF
 
     ftEcho -s "\n========================\n开始上传文件:\n  ${dirPathContentUploadSource}\n服务器路径:\n  ${serverIp}$dirPathPackage\n========================\n"
 
-    ftTiming -i
-
-    tar -cv  ${dirPathContentUploadSource%%/*}| pigz -1 |sshpass -p $userPassword ssh $userName@$serverIp "gzip -d|tar -xPC $dirPathPackage"
+    local packageSize=$(du -sk $dirPathContentUploadSource | cut -f1)k
+    tar -cv  ${dirPathContentUploadSource%%/*}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
 
     ftEcho -s "上传结束"
-    ftTiming
 }
-
-ftAutoUpload()
-{
-    local ftEffect=上传文件到制定smb服务器路径
-    local contentUploadSource=$1
-
-    while true; do case "$1" in
-    e | E |-e | -E) cat<<EOF
-#===================[   ${ftEffect}   ]的使用环境说明=============
-#
-#    ftAutoUpload 设定仅可用于 SPRD > 7731C > N9 的项目
-#=======================================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftAutoUpload [源文件路径]
-#    ftAutoUpload xxxx
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-# 环境检测
-    ftAutoInitEnv
-    if [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ]; then
-        ftAutoUpload -e
-        return
-    fi
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -f "$contentUploadSource" ];then    errorContent="${errorContent}\\n[上传的源文件不存在]contentUploadSource=$contentUploadSource" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftAutoUpload -h
-            return
-    fi
-
-
-    local serverIp=192.168.1.188
-    local userName=server
-    local pasword=123456
-
-    local dirPathMoule=智能机软件
-    local dirPathUpload=SPRD7731C/鹏明珠/autoUpload
-
-    local fileNameUploadSource=$(basename $contentUploadSource)
-
-    ftEcho -s "开始上传${fileNameUploadSource} 到\n\
- ${serverIp}/${dirPathUpload}..."
-smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
-    mkdir $dirPathUpload
-    put $contentUploadSource ${dirPathUpload}/${fileNameUploadSource}
-EOF
-    ftEcho -s "${contentUploadSource}\n\
- 上传结束"
-
- if [ ! -z "$mCameraType" ];then
-         mv $contentUploadSource ${contentUploadSource}_${mCameraType}
-  fi
-}
-
 
 complete -W "-a" ftAutoPacket
 ftAutoPacket()
