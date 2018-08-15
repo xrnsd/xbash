@@ -42,5 +42,3 @@ read -n1 ddd
 
 
 # =============================================================
-fileNamePID=$(expr $fileNamePID + 1)
-echo enable > ${rRirPathProcessEnableId}/${fileNamePID}

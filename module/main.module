@@ -24,7 +24,7 @@ if [ "$(whoami)" != "root" ];then
         && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
         && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
         #过滤需要的History
-        cat $filePathBashHistoryArchive|grep -E "adb|git|cd|source|make|lunch" >$filePathBashHistory
+        # cat $filePathBashHistoryArchive|grep -E "adb|git|cd|source|make|lunch" >$filePathBashHistory
         sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
         mv $filePathBashHistoryTemp $filePathBashHistory
         #history size 自动扩容

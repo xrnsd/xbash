@@ -243,5 +243,5 @@ mn_MN ne_NP kk_KZ si_LK
 [serverConfig_192.168.1.188]
 userName=server
 userPassword=123456
-dirPathPackage=/media/新卷
+dirPathPackage=/media/packages
 dirPathPackageLocal=/media/server/1.188

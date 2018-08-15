@@ -804,7 +804,7 @@ EOF
                     fi
                     echo $size|awk ' {print int ($0)} '
             fi
-            indexDevName=`expr $indexDevName + 1`
+            ((indexDevName+=1))
     done
 }
 
@@ -1144,7 +1144,7 @@ EOF
         do
             if [ $lc = $base ];then
                 return="${return} ${tragetList[index]}"
-                orderIndex=`expr $orderIndex + 1`
+                ((orderIndex+=1))
                 break;
             elif [[ $base =~ "/" ]]&&[[ $base =~ $lc ]]; then
                 return="${return} [${lc}]>${tragetList[index]}>[${base}]"
@@ -1152,7 +1152,7 @@ EOF
             elif((${#sourceList[@]}==`expr $index + 1`));then
                 ftEcho -e $title
             fi
-            index=`expr $index + 1`
+            ((index+=1))
         done
     done
 }
@@ -1227,11 +1227,11 @@ EOF
                     if [[ $devMinAvailableSpace -eq 0 ]]||(($sizeTemp>=$devMinAvailableSpace)); then
                         if mountpoint -q $devMountDirPath;then
                             mXbashModuleDataDevicesList[$indexDevMount]=$devMountDirPath
-                            indexDevMount=`expr $indexDevMount + 1`
+                            ((indexDevMount+=1))
                         fi
                     fi
             fi
-            indexDevName=`expr $indexDevName + 1`
+            ((indexDevName+=1))
     done
     export mXbashModuleDataDevicesList #=${mXbashModuleDataDevicesList[*]}
 }
@@ -2123,7 +2123,7 @@ EOF
             # 重命名图片，复制到part0
             fileNameLast=${a:1}.${file##*.}
             cp  $file  ${dirPathAnimationTraget}/${dirNamePart0}/${fileNameLast}
-            index=`expr $index + 1`
+            ((index+=1))
         done
         # 复制最后一张图片到part1
         cp  ${dirPathAnimationTraget}/${dirNamePart0}/${fileNameLast} ${dirPathAnimationTraget}/${dirNamePart1}/${fileNameLast}
@@ -2341,7 +2341,7 @@ EOF
     index=0
     for file in $fileList
     do
-        index=`expr $index + 1`
+        ((index+=1))
         # if (( `expr $index % $continueThreshold`== 0 ));then
         #     if [ $editType = "del" ];then
         #         echo del_file=$file
@@ -2463,8 +2463,8 @@ EOF
                 lengthFileNameBase=1
                 while (( $lengthFileName > 0  ))
                 do
-                    lengthFileName=`expr $lengthFileName - 1`
-                    lengthFileNameBase=$(( $lengthFileNameBase * 10 ))
+                    ((lengthFileName-=1))
+                    ((lengthFileNameBase*=10))
                 done
         fi
         fileNameBase=$((lengthFileNameBase+$index))
@@ -2473,7 +2473,7 @@ EOF
             fileName=${fileNameBase:1}
         fi
         cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileName}${suffixContent}.${file##*.}
-        index=`expr $index + 1`
+        ((index+=1))
     done
 }
 
@@ -2567,7 +2567,7 @@ EOF
             for item in ${dirPathOutList[@]}
             do
                 printf "%-4s %-4s\n" [$index] $item
-                index=`expr $index + 1`
+                ((index+=1))
             done
             ftEcho -r  "请输入对应的序号(回车默认0):"
             if (( $itemCount>9 ));then
@@ -3026,7 +3026,6 @@ EOF
             dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirPathVersionSoftwareLocal}
             mkdir -p $dirPathVersionSoftwareVersion
 
-
             # 生成软件包
             if [[ ! -z "$isPacket" ]]; then
                    ftEcho -s "开始生成 ${versionName}.pac\n"
@@ -3175,7 +3174,7 @@ EOF
                 #软件版本的日期与当前时间不一致就设定编译时间
                 arr=(${AutoEnv_versionName//_/ })
                 length=${#arr[@]}
-                length=`expr $length - 1`
+                ((length-=1))
                 local versionNameDate=${arr[$length]}
                 if [[ $versionNameDate =~ "." ]];then
                     versionNameDate=${versionNameDate%.*}
@@ -3804,9 +3803,9 @@ EOF
                             if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
                                    printf " \e[33m %-2s \e[0m %-15s \n" [$indexDev] $dir
                                    devPathList[$indexDev]=$dir
-                                    indexDev=`expr $indexDev + 1`
+                                    ((indexDev+=1))
                             fi
-                            indexDevName=`expr $indexDevName + 1`
+                            ((indexDevName+=1))
                     done
 
                     itemCount=${#devPathList[@]}
@@ -4005,7 +4004,7 @@ ftAutoTest()
     local index=0
     local arg2
     for arg in ${argList[@]} ;do
-            index=$(expr $index + 1)
+            ((index+=1))
             arg=$(echo $arg | tr '[A-Z]' '[a-z]')
             arg2=${argList[$index]}
 

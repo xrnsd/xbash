@@ -77,7 +77,7 @@ fi
 
 
 # =============================================================
-fileNamePID=$(expr $fileNamePID + 1)
+(($fileNamePID+=1))
 if (( ${#branchArray[@]}==$fileNamePID ));then
     /bin/rm -f $rRirPathProcessEnableId
     exit

@@ -87,7 +87,7 @@ ftRestoreChoiceSource()
             fileNoteList[$index]=$note
             fileList2[$index]=$file
             echo [ ${index} ] ${fileBaseName}"   ----------------   "${note}
-            index=`expr $index + 1`
+            ((index+=1))
         done
         while true; do
             ftEcho -r  "请输入版本包对应的序号(回车默认0):"
@@ -247,10 +247,10 @@ EOF
     do
         devEffectiveSpace=$(ftDevAvailableSpace $dev)
         let devEffectiveSpace=devEffectiveSpace/1024
-        echo -n "[${index}] ";printf "%-20s  " $dev;echo "可用：${devEffectiveSpace}G"
+        echo -n "[${index}] ";printf "%-25s  " $dev;echo "可用：${devEffectiveSpace}G"
         #echo [ ${index} ] $dev 可用$(ftDevAvailableSpace $dev)
         #echo [ ${index} ] ${mXbashModuleDataDevicesList[$index]}
-        index=`expr $index + 1`
+        ((index+=1))
     done
     echo
 
@@ -386,14 +386,14 @@ ftBackupOs()
     local index=0
     for item in ${excludeListHomeBase[@]}; do
         excludeListHomeBase[$index]=${dirPathHome}/${item}
-        index=`expr $index + 1`
+        ((index+=1))
     done
     keyName=DirPathsExcludeListHomeAll
     local excludeListHomeAll=($(ftGetKeyValueByBlockAndKey -f $filePathDb $tagName $keyName))
     index=0
     for item in ${excludeListHomeAll[@]}; do
         excludeListHomeAll[$index]=${dirPathHome}/${item}
-        index=`expr $index + 1`
+        ((index+=1))
     done
 
     mDirPathsExcludeBase=(${excludeListSys[@]} ${excludeListHomeBase[@]})
