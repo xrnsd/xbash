@@ -2791,7 +2791,8 @@ EOF
 
     ftEcho -s "\n========================\n开始上传文件:\n  ${dirPathContentUploadSource}\n服务器路径:\n  ${serverIp}$dirPathPackage\n========================\n"
 
-    tar -cv  ${dirPathContentUploadSource%%/*}| pigz -1| pv |sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
+    local packageSize=$(du -sk $dirPathContentUploadSource | cut -f1)k
+    tar -cv  ${dirPathContentUploadSource%%/*}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
 
     ftEcho -s "上传结束"
 }
@@ -3272,7 +3273,7 @@ EOF
 
             #上传服务器
             if [[ ! -z "$isUpload" ]]; then
-                    ftAutoUploadHighSpeed $dirPathVersionSoftwareVersion 192.168.1.188
+                    ftAutoUploadHighSpeed $dirPathVersionSoftwareVersion 192.168.1.55
             fi
     else
             ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的配置\n请查看下面说明:"
