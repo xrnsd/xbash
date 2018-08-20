@@ -6,22 +6,38 @@
 
 #####---------------------基础函数---------------------------#########
 
+_ftMain()
+{
+    local ftEffect=bash内建命令和xbash扩展封装对应的参数补全实现_nodisplay
+    local curr_arg=${COMP_WORDS[COMP_CWORD]}
+    case "${COMP_WORDS[1]}" in
+                    -)
+                            COMP_WORDS[1]="-h"
+                            export COMP_WORDS=${COMP_WORDS[@]}; ;;
+                    *)  COMPREPLY=( $(compgen -W '-h -hb -hc --help restartadb test clean_data_garbage  -v -vvv -ft' -- $curr_arg ) ); ;;
+      esac
+}
+
 ftMain()
 {
-    local ftEffect=早期工具主入口
+    local ftEffect=早期工具主入口_nodisplay
     while true; do
     case $1 in
-    "clean_data_garbage")    ftCleanDataGarbage
+    clean_data_garbage)
+                ftCleanDataGarbage
                 break;;
-    test)     ftTest "$@"
+    test)
+                ftTest "$@"
                 break;;
-    -v | --version )        echo \"Xrnsd extensions to bash\" $rXbashVersion
+    -v | --version )
+                echo \"Xrnsd extensions to bash\" $rXbashVersion
                 break;;
     -h|-help|help|--help|HELP|-HELP|--HELP)
                 ftMain -ft ; echo
                 ftMain -hb
                 return;;
-    -hb |-HB)   ftEcho -s "bash内建命令和xbash扩展封装说明"
+    -hb |-HB)
+                ftEcho -s "bash内建命令和xbash扩展封装说明"
  cat<<EOF
 ====================================
 命令           说明
@@ -29,7 +45,8 @@ ftMain()
 EOF
                 ftReadAllAlias| column -t
                 return;;
-    ft | -ft |-hc |HC )   ftEcho -s "xbash对bash扩展实现说明"
+    ft | -ft |-hc |HC )
+                ftEcho -s "xbash对bash扩展实现说明"
 cat<<EOF
 =========================================================
 命令                             说明
@@ -42,9 +59,11 @@ EOF
                 ftEcho -b java;        java -version
                 ftEcho -b gcc;        gcc -v
                 break;;
-    restartadb)    ftRestartAdb
+    restartadb)
+                ftRestartAdb
                 break;;
-    *)    ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -hc   #xbash对bash扩展实现说明"
+    *)
+                ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -hc   #xbash对bash扩展实现说明"
             return;;
     esac
     done
@@ -488,7 +507,7 @@ EOF
             export AutoEnv_AndroidVersion=$AndroidVersion
     fi
 
-     if [ "$editType" = "-bp" ];then
+    if [ "$editType" = "-bp" ];then
         return
     fi
     # build.prop高级信息读取 end
