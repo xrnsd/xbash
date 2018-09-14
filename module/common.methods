@@ -3104,12 +3104,23 @@ EOF
                 fi
                 if [[ ! -z "$AutoEnv_deviceModelName" ]]; then
                     dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_deviceModelName}
+
+                    if [[ ! -z "$AutoEnv_BandInfo" ]]; then #添加 modem 配置信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_B${AutoEnv_BandInfo}
+                    fi
+                    if [[ ! -z "$AutoEnv_FlashConfig" ]]; then #添加 flash信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_${AutoEnv_FlashConfig}
+                    fi
+                else
+                    if [[ ! -z "$AutoEnv_BandInfo" ]]; then #添加 modem 配置信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/B${AutoEnv_BandInfo}
+                    fi
+                    if [[ ! -z "$AutoEnv_FlashConfig" ]]; then #添加 flash信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_FlashConfig}
+                    fi
                 fi
-                if [[ ! -z "$AutoEnv_BandInfo" ]]; then #添加 modem 配置信息
-                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_B${AutoEnv_BandInfo}
-                fi
-                if [[ ! -z "$AutoEnv_FlashConfig" ]]; then #添加 flash信息
-                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_${AutoEnv_FlashConfig}
+                if  [ ! -z "$AutoEnv_AndroidVersion" ]&&(($AutoEnv_deviceSdkVersion>22)); then
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_AndroidVersion}
                 fi
                 if [[ -z "$dirPathGitBranchInfoGroup" ]]; then
                     ftEcho -e "分支信息解析结果为空,请查看配置"
