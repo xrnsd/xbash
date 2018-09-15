@@ -88,6 +88,7 @@ TXD=腾信达
 keytak6580_weg_l=MTK6580
 full_keytak6580_weg_l=MTK6580
 sp7731c_1h10_32v4_oversea=SPRD7731C
+full_m9_qhd=MTK6580M
 
 [lzProjrctConfigSoftwarePackageFileLIst]
 full_keytak6580_weg_l_fileList= \
@@ -101,6 +102,17 @@ full_keytak6580_weg_l_fileList= \
     secro.img \
     system.img \
     userdata.img
+full_m9_qhd_fileList= \
+    boot.img \
+    cache.img \
+    lk.bin \
+    logo.bin \
+    MT6580_Android_scatter.txt \
+    recovery.img \
+    secro.img \
+    system.img \
+    userdata.img \
+    preloader_m9_qhd.bin
 
 [lzProjrctConfigSoftwareDataBaseFileLIst]
 m9_xinhaufei_r9_hd_fileList= \

@@ -6,22 +6,38 @@
 
 #####---------------------基础函数---------------------------#########
 
+_ftMain()
+{
+    local ftEffect=bash内建命令和xbash扩展封装对应的参数补全实现_nodisplay
+    local curr_arg=${COMP_WORDS[COMP_CWORD]}
+    case "${COMP_WORDS[1]}" in
+                    -)
+                            COMP_WORDS[1]="-h"
+                            export COMP_WORDS=${COMP_WORDS[@]}; ;;
+                    *)  COMPREPLY=( $(compgen -W '-h -hb -hc --help restartadb test clean_data_garbage  -v -vvv -ft' -- $curr_arg ) ); ;;
+      esac
+}
+
 ftMain()
 {
-    local ftEffect=早期工具主入口
+    local ftEffect=早期工具主入口_nodisplay
     while true; do
     case $1 in
-    "clean_data_garbage")    ftCleanDataGarbage
+    clean_data_garbage)
+                ftCleanDataGarbage
                 break;;
-    test)     ftTest "$@"
+    test)
+                ftTest "$@"
                 break;;
-    -v | --version )        echo \"Xrnsd extensions to bash\" $rXbashVersion
+    -v | --version )
+                echo \"Xrnsd extensions to bash\" $rXbashVersion
                 break;;
     -h|-help|help|--help|HELP|-HELP|--HELP)
                 ftMain -ft ; echo
                 ftMain -hb
                 return;;
-    -hb |-HB)   ftEcho -s "bash内建命令和xbash扩展封装说明"
+    -hb |-HB)
+                ftEcho -s "bash内建命令和xbash扩展封装说明"
  cat<<EOF
 ====================================
 命令           说明
@@ -29,7 +45,8 @@ ftMain()
 EOF
                 ftReadAllAlias| column -t
                 return;;
-    ft | -ft |-hc |HC )   ftEcho -s "xbash对bash扩展实现说明"
+    ft | -ft |-hc |HC )
+                ftEcho -s "xbash对bash扩展实现说明"
 cat<<EOF
 =========================================================
 命令                             说明
@@ -42,9 +59,11 @@ EOF
                 ftEcho -b java;        java -version
                 ftEcho -b gcc;        gcc -v
                 break;;
-    restartadb)    ftRestartAdb
+    restartadb)
+                ftRestartAdb
                 break;;
-    *)    ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -hc   #xbash对bash扩展实现说明"
+    *)
+                ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -hc   #xbash对bash扩展实现说明"
             return;;
     esac
     done
@@ -488,7 +507,7 @@ EOF
             export AutoEnv_AndroidVersion=$AndroidVersion
     fi
 
-     if [ "$editType" = "-bp" ];then
+    if [ "$editType" = "-bp" ];then
         return
     fi
     # build.prop高级信息读取 end
@@ -3009,7 +3028,8 @@ EOF
             local deviceName=`basename $ANDROID_PRODUCT_OUT`
 
             local dataBaseFileList=
-            if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
+            if [ $deviceName = "m9_xinhaufei_r9_hd" ]\
+                ||[ $deviceName = "m9_qhd" ];then
                 tagName="lzProjrctConfigSoftwareDataBaseFileLIst"
                 dataBaseFileList=($(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList))
             elif [ $deviceName = "keytak6580_weg_l" ];then
@@ -3032,7 +3052,7 @@ EOF
                 done
                 dataBaseFileList=(${dataBaseFileList[@]} ${dirPathOut}/obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15)
             else
-                ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的配置\
+                ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的Database配置\
                 \n请查看下面说明:"
                 ftAutoPacket -h
                 return
@@ -3085,13 +3105,24 @@ EOF
                 fi
                 if [[ ! -z "$AutoEnv_deviceModelName" ]]; then
                     dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_deviceModelName}
+
+                    if [[ ! -z "$AutoEnv_BandInfo" ]]; then #添加 modem 配置信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_B${AutoEnv_BandInfo}
+                    fi
+                    if [[ ! -z "$AutoEnv_FlashConfig" ]]; then #添加 flash信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_${AutoEnv_FlashConfig}
+                    fi
+                else
+                    if [[ ! -z "$AutoEnv_BandInfo" ]]; then #添加 modem 配置信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/B${AutoEnv_BandInfo}
+                    fi
+                    if [[ ! -z "$AutoEnv_FlashConfig" ]]; then #添加 flash信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_FlashConfig}
+                    fi
                 fi
-                if [[ ! -z "$AutoEnv_BandInfo" ]]; then #添加 modem 配置信息
-                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_B${AutoEnv_BandInfo}
-                fi
-                if [[ ! -z "$AutoEnv_FlashConfig" ]]; then #添加 flash信息
-                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_${AutoEnv_FlashConfig}
-                fi
+                # if  [ ! -z "$AutoEnv_AndroidVersion" ]&&(($AutoEnv_deviceSdkVersion>22)); then
+                #         dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_AndroidVersion}
+                # fi
                 if [[ -z "$dirPathGitBranchInfoGroup" ]]; then
                     ftEcho -e "分支信息解析结果为空,请查看配置"
                     return;
@@ -3919,19 +3950,21 @@ EOF
     fi
 }
 
-complete -W " --reboot_count --reboot_wait_time --event_count -rc -rwt -ec" ftAutoTest
+complete -W " --reboot_count --reboot_wait_time --event_count --path -rc -rwt -ec -p -h --help" ftAutoTest
 ftAutoTest()
 {
     local ftEffect=Android自动测试
     local editType=$1
 
     local eventCountDef=$(( 100 * 100 *100 ))
-    local timeLongDef=$(( 3600 * 24 *3 ))
+    local rebootTimeLongDef=-1
     local rebootCountDef=1
 
     local eventCount=$eventCountDef
     local rebootTimeLong=$rebootTimeLongDef
     local rebootCount=$rebootCountDef
+
+    local dirPathLogRoot=~/download
 
     local argList=($@)
     local index=0
@@ -3943,6 +3976,8 @@ ftAutoTest()
 
             #单参数
             case "$arg" in
+              -p  | --path )  dirPathLogRoot=${arg2:-'dirPathLogRoot'}
+                    ;;
               -rc  | --reboot_count )  rebootCount=${arg2:-'rebootCountDef'}
                     ;;
              -rwt | --reboot_wait_time )  rebootTimeLong=${arg2:-'rebootTimeLongDef'}
@@ -3963,9 +3998,13 @@ EOF
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftAutoTestReBoot -rc 2000 #重启2000次
-#    ftAutoTestReBoot -rwt 2000 #每2000s重启一次
-#    ftAutoTestReBoot -ec 2000 #monkey事件数为2000
+#    #-xx 为独立参数类型标识,不可拆分
+#    #参数之间没有先后约束
+#
+#    ftAutoTest -p /home/xxx/xxx
+#    ftAutoTest -rc 2000 #重启2000次
+#    ftAutoTest -rwt 2000 #每2000s重启一次
+#    ftAutoTest -ec 2000 #monkey事件数为2000
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -3973,35 +4012,52 @@ EOF
 
     #环境校验
     if [ -z `which adb` ];then
-        ftAutoTestReBoot -e
+        ftAutoTest -e
         return
     fi
     #耦合校验
-    local valCount=2
+    local valCount=6
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if ( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$");then    errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong" ; fi
+    if (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$");then    errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftAutoTestReBoot -h
+            ftAutoTest -h
             return
     fi
 
-    local filePathLogMonkey=~/download/$(date -d "today" +"%y%m%d%H%M%S").monkey
-    local filePathLogAdbLogcat=~/download/$(date -d "today" +"%y%m%d%H%M%S").logcat
+    local dirPathLogMonkey=${dirPathLogRoot}/monkey/$(date -d "today" +"%y%m%d%H%M%S")
+    local filePathLogMonkey=${dirPathLogMonkey}/monkey.log
+    local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
     local logcatFlag="*:E"
     local monkeyConfig="--ignore-crashes --ignore-timeouts --ignore-security-exceptions -p com.android.launcher3 -v -v -v ${eventCount}"
 
+    if [[ ! -d $dirPathLogMonkey ]]; then
+        mkdir -p $dirPathLogMonkey
+    fi
+
+    if (( $rebootCount==$rebootCountDef ));then
+            local adbStatus=$(adb get-state)
+            if [ "$adbStatus" != "device" ];then
+                ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
+                return
+            fi
+    fi
     while true; do
         adb wait-for-device && trap 'ftKillApplicationByPackageName monkey;exit' SIGINT
-        while [[ -z $(adb shell ps |grep launcher3) ]]; do
-            ftEcho -s "等待launcer3启动"
-            sleep 5
-        done
-        sleep 5
-        adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher
-        timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
-        timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+        # while [[ -z $(adb shell ps |grep launcher3) ]]; do
+        #     ftEcho -s "等待launcer3启动"
+        #     sleep 5
+        # done
+        # sleep 5
+        # adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher
+        if (($rebootTimeLong!=$rebootTimeLongDef)); then
+            timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
+            timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+        else
+            adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
+            adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+        fi
 
         rebootCount=$((rebootCount - 1))
         if (( $rebootCount>0 )); then
