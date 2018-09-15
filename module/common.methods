@@ -3028,7 +3028,8 @@ EOF
             local deviceName=`basename $ANDROID_PRODUCT_OUT`
 
             local dataBaseFileList=
-            if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
+            if [ $deviceName = "m9_xinhaufei_r9_hd" ]\
+                ||[ $deviceName = "m9_qhd" ];then
                 tagName="lzProjrctConfigSoftwareDataBaseFileLIst"
                 dataBaseFileList=($(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList))
             elif [ $deviceName = "keytak6580_weg_l" ];then
@@ -3051,7 +3052,7 @@ EOF
                 done
                 dataBaseFileList=(${dataBaseFileList[@]} ${dirPathOut}/obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15)
             else
-                ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的配置\
+                ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的Database配置\
                 \n请查看下面说明:"
                 ftAutoPacket -h
                 return
@@ -3119,9 +3120,9 @@ EOF
                         dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_FlashConfig}
                     fi
                 fi
-                if  [ ! -z "$AutoEnv_AndroidVersion" ]&&(($AutoEnv_deviceSdkVersion>22)); then
-                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_AndroidVersion}
-                fi
+                # if  [ ! -z "$AutoEnv_AndroidVersion" ]&&(($AutoEnv_deviceSdkVersion>22)); then
+                #         dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_AndroidVersion}
+                # fi
                 if [[ -z "$dirPathGitBranchInfoGroup" ]]; then
                     ftEcho -e "分支信息解析结果为空,请查看配置"
                     return;
