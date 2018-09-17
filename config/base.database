@@ -262,4 +262,4 @@ dirPathPackageLocal=/media/server/1.188
 userName=wb1
 userPassword=x6b7n37g
 dirPathPackage=/media/data/nfs
-dirPathPackageLocal=/media/server/1.44
+dirPathPackageLocal=/media/server/1.55/nfs/

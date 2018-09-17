@@ -3436,14 +3436,27 @@ EOF
             content=${content}${enterLine}"请在给客户发送软件时,通知下面这位添加软件版本修改的版本TAG,方便后期追溯"
             content=${content}${enterLine}"记录创建人：吴国献 [17178686576 / lz_wuguoxian@163.com]"
             content=${content}${enterLine}
-            content=${content}${enterLine}"隐藏指令："
-            content=${content}${enterLine}"imei编辑：*#315#*"
-            content=${content}${enterLine}"imei显示：*#06#"
-            content=${content}${enterLine}"imei单双切换：*#316#*"
-            content=${content}${enterLine}"切换动画指令：*#868312513#*"
-            content=${content}${enterLine}"切换默认动画：*#979312#*"
-            content=${content}${enterLine}"测试模式：*#*#180#*#*"
-            content=${content}${enterLine}"三星测试：*#0*#"
+            local filePathConfigHideNum=${dirPathCode}/vendor/lz/hideNum.config
+            if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
+
+                content=${content}${enterLine}"暗码清单：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum 暗码清单 info)"
+                content=${content}${enterLine}"隐藏指令：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum 隐藏 info)"
+                content=${content}${enterLine}"工厂测试：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum 工厂测试 info)"
+                content=${content}${enterLine}"imei编辑：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum imei编辑 info)"
+                content=${content}${enterLine}"imei显示：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum imei显示 info)"
+                content=${content}${enterLine}"工程模式：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum 工程模式 info)"
+                content=${content}${enterLine}"硬件信息查看：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum 硬件信息查看 info)"
+                #content=${content}${enterLine}"sn码显示：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum sn码 info)"
+            else
+                content=${content}${enterLine}"隐藏指令："
+                content=${content}${enterLine}"imei编辑："
+                content=${content}${enterLine}"imei显示：*#06#"
+                content=${content}${enterLine}"测试模式：*#*#180#*#*"
+                content=${content}${enterLine}"imei单双切换："
+                content=${content}${enterLine}"切换动画指令："
+                content=${content}${enterLine}"切换默认动画："
+                content=${content}${enterLine}"三星测试：*#0*#"
+            fi
 
             #git log 列表
             echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
