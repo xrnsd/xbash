@@ -118,6 +118,9 @@ full_m9_qhd_fileList= \
 m9_xinhaufei_r9_hd_fileList= \
     obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
     obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n
+full_m9_qhd_fileList= \
+    obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
+    obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n
 
 
 [androidKeyCode]
@@ -263,3 +266,7 @@ userName=wb1
 userPassword=x6b7n37g
 dirPathPackage=/media/data/nfs
 dirPathPackageLocal=/media/server/1.55/nfs/
+
+[projectSoftwareReadMeInfo]
+recordCreator=吴国献 [17178686576 / lz_wuguoxian@163.com]
+recordMeTag=请在给客户发送软件时,通知下面这位添加软件版本修改的版本TAG,方便后期追溯

@@ -3028,8 +3028,7 @@ EOF
             local deviceName=`basename $ANDROID_PRODUCT_OUT`
 
             local dataBaseFileList=
-            if [ $deviceName = "m9_xinhaufei_r9_hd" ]\
-                ||[ $deviceName = "m9_qhd" ];then
+            if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
                 tagName="lzProjrctConfigSoftwareDataBaseFileLIst"
                 dataBaseFileList=($(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList))
             elif [ $deviceName = "keytak6580_weg_l" ];then
@@ -3051,6 +3050,25 @@ EOF
                     done
                 done
                 dataBaseFileList=(${dataBaseFileList[@]} ${dirPathOut}/obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15)
+            elif [ $deviceName = "m9_qhd" ];then
+                # local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
+                local dirPathDatabaseBpBase=${dirPathOut}/obj/ETC
+                local dirNameModems=$(ls ${dirPathDatabaseBpBase}/|grep "BPLGUInfoCustomAppSrcP_")
+                for dirName in ${dirNameModems[@]}
+                do
+                    dirName=${dirName//:/}
+                    local dirPath=${dirPathDatabaseBpBase}/${dirName}
+                    for fileName in $(ls $dirPath)
+                    do
+                        local filePath=${dirPath}/${fileName}
+                        if [[ ! -f "$filePath" ]]; then
+                            ftEcho -e "文件${filePath}不存在"
+                        else
+                            dataBaseFileList=(${dataBaseFileList[@]} $filePath)
+                        fi
+                    done
+                done
+                dataBaseFileList=(${dataBaseFileList[@]} ${dirPathOut}/obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50)
             else
                 ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的Database配置\
                 \n请查看下面说明:"
@@ -3255,6 +3273,7 @@ ftCreateReadMeBySoftwareVersion()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local dirPathVersionSoftware=$1
+    local filePathConfig=$rFilePathXbashConfigDataBase
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
 
     while true; do case "$1" in
@@ -3298,6 +3317,7 @@ EOF
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
     if [ ! -d "$dirPathOut" ];then    errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut" ; fi
+    if [ ! -f "$filePathConfig" ];then    errorContent="${errorContent}\\n[工程out目录不存在]filePathConfig=$filePathConfig" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftCreateReadMeBySoftwareVersion -h
@@ -3400,7 +3420,8 @@ EOF
             #修改记录头部
             local enterLine="\n"
             local content="当前版本：$versionName"${enterLine}
-            content=${content}${enterLine}"记录创建人：吴国献 [17178686576 / lz_wuguoxian@163.com]"
+            content=${content}${enterLine}"说明：$(ftGetKeyValueByBlockAndKey -f $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"记录创建人：$(ftGetKeyValueByBlockAndKey -f $filePathConfig projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
             content=${content}${enterLine}"摄像头类型：$cameraTypeInfo"
             content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFrontDefault/$cameraSizeBackDefault"
@@ -3433,8 +3454,8 @@ EOF
             #修改记录头部
             local enterLine="\n"
             local content="当前版本：$versionName"${enterLine}
-            content=${content}${enterLine}"请在给客户发送软件时,通知下面这位添加软件版本修改的版本TAG,方便后期追溯"
-            content=${content}${enterLine}"记录创建人：吴国献 [17178686576 / lz_wuguoxian@163.com]"
+            content=${content}${enterLine}"$(ftGetKeyValueByBlockAndKey -f $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"记录创建人：$(ftGetKeyValueByBlockAndKey -f $filePathConfig projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
             local filePathConfigHideNum=${dirPathCode}/vendor/lz/hideNum.config
             if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
