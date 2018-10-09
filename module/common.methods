@@ -3156,7 +3156,7 @@ EOF
 
             #上传服务器
             if [[ ! -z "$isUpload" ]]; then
-                    ftAutoUploadHighSpeed $dirPathVersionSoftwareVersion 192.168.1.188
+                    ftAutoUploadHighSpeed $dirPathVersionSoftwareVersion 192.168.1.55
             fi
     else
             ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的配置\n请查看下面说明:"
