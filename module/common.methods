@@ -2402,9 +2402,9 @@ ftReNameFile()
 #    ftReNameFile 目录 修改后的文件长度
 #    ftReNameFile /home/xxxx/temp 5
 #
-#    ftReNameFile 目录 修改后的文件长度 前缀
+#    ftReNameFile -z 目录 前缀
 #    ftReNameFile -z /home/xxxx/temp test
-#    ftReNameFile 目录 修改后的文件长度 前缀 文件名后缀
+#    ftReNameFile -z 目录 前缀 文件名后缀
 #    ftReNameFile -z /home/xxxx/temp test test2
 #=========================================================
 EOF
@@ -2473,7 +2473,11 @@ EOF
 
         file=$(echo $file |sed s/[[:space:]]//g)
         fileName=${file%.*}
-        fileFormatName=${file##*.}
+        if [[ $file =~ "." ]];then
+            fileFormatName=".${file##*.}"
+        else
+            fileFormatName=
+        fi
 
         if [[ -z  "lengthFileNameBase" ]]||[ ${#lengthFileNameBase} = "0" ]; then
                 if [[ -z "$lengthFileName" ]]; then
@@ -2491,7 +2495,7 @@ EOF
         if [[ -z "$editTypePrefixes" ]]; then
             fileName=${fileNameBase:1}
         fi
-        cp -f "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileName}${suffixContent}.${file##*.}
+        cp -rf "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileName}${suffixContent}${fileFormatName}
         ((index+=1))
     done
 }
@@ -2634,111 +2638,6 @@ $dirNameBranchVersion
     else
         ftEcho -ex 存在相同out
     fi
-}
-
-complete -W "yhx kl" ftYKSwitch
-ftYKSwitch()
-{
-    local ftEffect=切换永恒星和康龙配置
-    local type=$1
-    local dirPathCode=$ANDROID_BUILD_TOP
-
-    while true; do case "$1" in
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftYKSwitch yhx/kl
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    e | E |-e | -E) cat<<EOF
-#===================[   ${ftEffect}   ]的使用环境说明=============
-#
-#    ftYKSwitch 仅可用于 SPRD > 7731C > N9 的项目
-#=======================================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    env | -env |-ENV ) cat<<EOF
-#===================[   ${ftEffect}   ]的使用环境说明=============
-#
-#   环境未初始化
-#   使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-     * ) break;; esac;done
-
-    #耦合校验
-    if [ -z "$ANDROID_BUILD_TOP" ];then
-        ftYKSwitch -env
-        return
-    fi
-
-# 环境检测
-    ftAutoInitEnv
-    if [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ]; then
-        ftYKSwitch -e
-        return
-    fi
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$type" ];then    errorContent="${errorContent}\\n[操作参数为空]type=$type" ; fi
-    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftYKSwitch -h
-            return
-    fi
-
-    local filePathConfig=${dirPathCode}/${AutoEnv_deviceDirPath}/BoardConfig.mk
-    local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
-    local key="LZ_CONFIG_CAMERA_TYPE :="
-    local configType=$(cat $filePathConfig|grep "$key")
-    if [ -f $filePathConfig ]&&[ ! -z "$configType" ];then
-        rm -rf ${ANDROID_PRODUCT_OUT}/obj/SHARED_LIBRARIES/camera.sc8830_intermediates
-
-            local tagYhx="LZ_CONFIG_CAMERA_TYPE\ \:\=\ YHX"
-            local tagKl="LZ_CONFIG_CAMERA_TYPE\ \:\=\ KL"
-            configType=${configType//$key/}
-            configType=$(echo $configType |sed s/[[:space:]]//g)
-            configType=$(echo $configType | tr '[A-Z]' '[a-z]')
-
-            if [ "$configType" != "$type" ];then
-                    while true; do case "$type" in
-                    yhx )
-                        sed -i "s:$tagKl:$tagYhx:g" $filePathConfig
-                        break;;
-                    kl )
-                        sed -i "s:$tagYhx:$tagKl:g" $filePathConfig
-                        break;;
-                    * )
-                         export mCameraType=
-                         ftEcho -ex 错误参数[type=$type]
-                        break;;
-                    esac;done
-                else
-                    ftEcho -e 参数相同configType=$configType type=$type
-                fi
-    elif [ -f $filePathTraget ];then
-            local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
-            local tagYhx=//#define\ CAMERA_USE_KANGLONG_GC2365
-            local tagKl=#define\ CAMERA_USE_KANGLONG_GC2365
-                while true; do case "$type" in
-                yhx )
-                    sed -i "s:$tagKl:$tagYhx:g" $filePathTraget
-                    break;;
-                kl )
-                     sed -i "s:$tagYhx:$tagKl:g" $filePathTraget
-                    break;;
-                * )
-                     export mCameraType=
-                    ftEcho -ex 错误参数[type=$type]
-                    break;;
-                esac;done
-    fi
-        export mCameraType=$type
 }
 
 ftAutoUploadHighSpeed()
