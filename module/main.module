@@ -106,7 +106,6 @@ if [ -d "$ANDROID_SDK" ];then
     alias xle='effect=过滤错误的进程;adb logcat "*:E"'
     alias xtp="effect=打印任务栈的栈顶信息;adb shell dumpsys activity top"
     alias xlp="effect=根据包名过滤log;adb logcat -c;ftLogcatApplicationByPackageName"
-    alias xls="effect=根据包名过滤log;ftLogcatApplicationByPackageName"
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
     alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
     alias xdv='effect=手机录屏;adb shell screenrecord /sdcard/sv.mp4&&adb pull /sdcard/sv.mp4 ~/download/'
