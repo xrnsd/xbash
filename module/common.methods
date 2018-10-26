@@ -1096,6 +1096,71 @@ EOF
     done
 }
 
+ftCreateIniFile()
+{
+    local ftEffect=创建ini文件,添加TAG
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    添加内容
+#    ftCreateIniFile  -a -p 文件路径 -t 块名 -l 块对应的键值对列表
+#    覆盖文件
+#    ftCreateIniFile  -r -p 文件路径 -t 块名 -l 块对应的键值对列表
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #参数解析
+    local filePathIni
+    local editType
+    local contentTagName
+    local contentTagKeyValList
+
+    while getopts "p:t:l:ra" opt; do case $opt in
+        a) editType=add
+          ;;
+        r) editType=replace
+          ;;
+        p) filePathIni=$OPTARG
+          ;;
+        t) contentTagName=$OPTARG
+          ;;
+        l) contentTagKeyValList="$OPTARG"
+          ;;
+    esac;done
+
+    #耦合校验
+    local errorContent=
+    if [ -z "$filePathIni" ];then   errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]" ; fi
+    if [ -z "$contentTagName" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
+    if [ -z "$contentTagKeyValList" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftCreateIniFile -h
+            return
+    fi
+    local content=
+    local enterLine="\n"
+    #added TAG
+    content=${enterLine}"[$contentTagName]"
+    #add List
+    for item in ${contentTagKeyValList[*]}
+    do
+        content=${content}${enterLine}"$item"
+    done
+    content=${content}${enterLine}
+
+    if [[ ! -f "$filePathIni" ]]||[ "$editType" = "replace" ]; then
+        localContent="#ini"
+        localContent=${localContent}${enterLine}"#文件由ftCreateIniFile自动创建，请避免手动编辑造成解析失败"
+        localContent=${localContent}${enterLine}
+        echo -e ${localContent} > $filePathIni
+    fi
+    echo -e "${content}" >> $filePathIni
+}
 #######################结束
 
 #版本号大小对比
