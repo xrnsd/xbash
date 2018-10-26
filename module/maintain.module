@@ -379,25 +379,20 @@ ftBackupOs()
     local filePathDb=$rFilePathXbashConfigDataBase
     local tagName=ubuntuMaintainConfigInfo
     local keyName=DirPathsExcludeListSys
-    local excludeListSys=($(ftGetKeyValueByBlockAndKey -f $filePathDb $tagName $keyName))
+    local excludeListSys=($(ftIniGetValue -f $filePathDb $tagName $keyName))
 
     keyName=DirPathsExcludeListHomeBase
-    local excludeListHomeBase=($(ftGetKeyValueByBlockAndKey -f $filePathDb $tagName $keyName))
+    local excludeListHomeBase=($(ftIniGetValue -f $filePathDb $tagName $keyName))
+    local excludeListHomeRoot
     local index=0
     for item in ${excludeListHomeBase[@]}; do
         excludeListHomeBase[$index]=${dirPathHome}/${item}
-        ((index+=1))
-    done
-    keyName=DirPathsExcludeListHomeAll
-    local excludeListHomeAll=($(ftGetKeyValueByBlockAndKey -f $filePathDb $tagName $keyName))
-    index=0
-    for item in ${excludeListHomeAll[@]}; do
-        excludeListHomeAll[$index]=${dirPathHome}/${item}
+        excludeListHomeRoot[$index]=/root/${item}
         ((index+=1))
     done
 
-    mDirPathsExcludeBase=(${excludeListSys[@]} ${excludeListHomeBase[@]})
-    mDirPathsExcludeAll=(${excludeListSys[@]} ${excludeListHomeAll[@]})
+    mDirPathsExcludeBase=(${excludeListSys[@]} ${excludeListHomeBase[@]} ${excludeListHomeRoot[@]})
+    mDirPathsExcludeAll=(${excludeListSys[@]})
 
     local dirsExclude
     local fileNameExclude
@@ -687,10 +682,10 @@ EOF
 
             ftEcho -b 检查版本包和当前系统兼容程度
 
-            local infoHwCpuVersion=$(ftGetKeyValueByBlockAndKey  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keyCpu)
-            local infoHwMainboardVersion=$(ftGetKeyValueByBlockAndKey  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keyMainboard)
-            local infoHwSystemVersion=$(ftGetKeyValueByBlockAndKey  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keySystemVersion)
-            local infoHw32x64Version=$(ftGetKeyValueByBlockAndKey  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keySystemType)
+            local infoHwCpuVersion=$(ftIniGetValue  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keyCpu)
+            local infoHwMainboardVersion=$(ftIniGetValue  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keyMainboard)
+            local infoHwSystemVersion=$(ftIniGetValue  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keySystemVersion)
+            local infoHw32x64Version=$(ftIniGetValue  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keySystemType)
 
             if [ -z "$infoHwCpuVersion" ]||[ -z "$infoHwMainboardVersion" ]\
                                                             ||[ -z "$infoHwSystemVersion" ]\

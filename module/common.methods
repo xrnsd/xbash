@@ -832,8 +832,7 @@ EOF
 ##              ini文件操作实现            ##
 ##                                                     ##
 #########################
-
-ftGetKeyValueByBlockAndKey()
+ftIniGetValue()
 {
     local ftEffect=读取ini文件指定字段
     local filePath=$1
@@ -855,8 +854,8 @@ ftGetKeyValueByBlockAndKey()
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftGetKeyValueByBlockAndKey [文件路径] [目标块TAG] [键名]
-#    value=\$(ftGetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup)
+#    ftIniGetValue [文件路径] [目标块TAG] [键名]
+#    value=\$(ftIniGetValue /temp/odbcinst.ini PostgreSQL Setup)
 #    value表示key对应的值
 #=========================================================
 EOF
@@ -888,7 +887,7 @@ EOF
     fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftGetKeyValueByBlockAndKey -h
+            ftIniGetValue -h
             return
     fi
 
@@ -922,7 +921,7 @@ EOF
     done
 }
 
-ftSetKeyValueByBlockAndKey()
+ftIniSetValue()
 {
     local ftEffect=修改ini文件指定字段
     local filePath=$1
@@ -934,8 +933,8 @@ ftSetKeyValueByBlockAndKey()
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftSetKeyValueByBlockAndKey [文件路径] [目标块TAG] [键名] [键对应的值]
-#    ftSetKeyValueByBlockAndKey /temp/odbcinst.ini PostgreSQL Setup 1232
+#    ftIniSetValue [文件路径] [目标块TAG] [键名] [键对应的值]
+#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup 1232
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi
@@ -959,7 +958,7 @@ EOF
     fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftSetKeyValueByBlockAndKey2 -h
+            ftIniSetValue2 -h
             return
     fi
 
@@ -967,7 +966,7 @@ EOF
 }
 
 
-ftCheckIniConfigSyntax()
+ftIniCheckConfigSyntax()
 {
     local ftEffect=校验ini文件，确认文件有效
     #============ini文件模板=====================
@@ -985,8 +984,8 @@ ftCheckIniConfigSyntax()
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftCheckIniConfigSyntax [file path]
-#    ftCheckIniConfigSyntax 123/config.ini
+#    ftIniCheckConfigSyntax [file path]
+#    ftIniCheckConfigSyntax 123/config.ini
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi
@@ -999,7 +998,7 @@ EOF
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftCheckIniConfigSyntax -h
+            ftIniCheckConfigSyntax -h
             return
     fi
 
@@ -1096,7 +1095,7 @@ EOF
     done
 }
 
-ftCreateIniFile()
+ftIniCreateFileOrTag()
 {
     local ftEffect=创建ini文件,添加TAG
 
@@ -1105,9 +1104,9 @@ ftCreateIniFile()
 #===================[   ${ftEffect}   ]的使用示例==============
 #
 #    添加内容
-#    ftCreateIniFile  -a -p 文件路径 -t 块名 -l 块对应的键值对列表
+#    ftIniCreateFileOrTag  -a -p 文件路径 -t 块名 -l 块对应的键值对列表
 #    覆盖文件
-#    ftCreateIniFile  -r -p 文件路径 -t 块名 -l 块对应的键值对列表
+#    ftIniCreateFileOrTag  -r -p 文件路径 -t 块名 -l 块对应的键值对列表
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1139,7 +1138,7 @@ EOF
     if [ -z "$contentTagKeyValList" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftCreateIniFile -h
+            ftIniCreateFileOrTag -h
             return
     fi
     local content=
@@ -1155,7 +1154,7 @@ EOF
 
     if [[ ! -f "$filePathIni" ]]||[ "$editType" = "replace" ]; then
         localContent="#ini"
-        localContent=${localContent}${enterLine}"#文件由ftCreateIniFile自动创建，请避免手动编辑造成解析失败"
+        localContent=${localContent}${enterLine}"#文件由ftIniCreateFileOrTag自动创建，请避免手动编辑造成解析失败"
         localContent=${localContent}${enterLine}
         echo -e ${localContent} > $filePathIni
     fi
@@ -1250,8 +1249,8 @@ EOF
     fi
     return=
 
-    local allList=($(ftGetKeyValueByBlockAndKey $filePathDataBase languageList allList))
-    local shortList=($(ftGetKeyValueByBlockAndKey $filePathDataBase languageList shortList))
+    local allList=($(ftIniGetValue $filePathDataBase languageList allList))
+    local shortList=($(ftIniGetValue $filePathDataBase languageList shortList))
 
     if [ -z "$ftLanguageContent" ];then
         LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
@@ -1455,7 +1454,7 @@ EOF
             ftEcho -e "数据库文件不存在]filePathDataBase=$filePathDataBase"
         else
             local TagName=androidKeyCode
-            local keyCode=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase androidKeyCode $2)
+            local keyCode=$(ftIniGetValue -f $filePathDataBase androidKeyCode $2)
             if [[ ! -z "$keyCode" ]]; then
                 $filePathAdbNow shell input keyevent $keyCode
             else
@@ -1738,56 +1737,7 @@ EOF
                                             git checkout   "$branchName"||git reset --hard
                                             # git pull
 
-                                            filePath=device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
-                                            if [[ ! -z $(cat $filePath|grep "product.default.sfingerprint") ]];then
-                                                git cherry-pick b8f9544&&git pull&&git push
-                                            fi
-
-
-                                            # ftAutoInitEnv
-                                            # local cpuCount=$(cat /proc/cpuinfo| grep "cpu cores"| uniq)
-                                            # cpuCount=$(echo $cpuCount |sed s/[[:space:]]//g)
-                                            # cpuCount=${cpuCount//cpucores\:/}
-                                            # if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
-                                            #             #if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
-                                            #             source build/envsetup.sh&&
-                                            #             lunch sp7731c_1h10_32v4_oversea-user&&
-                                            #             kheader&&
-                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log||break
-                                            #             if [ $isUpload = "true" ];then
-                                            #                 ftAutoPacket -a
-                                            #             else
-                                            #                 ftAutoPacket
-                                            #             fi
-                                            #             if [ $isBackupOut = "true" ];then
-                                            #                 ftBackupOrRestoreOuts
-                                            #             fi
-                                            # elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                                            #         local deviceName=`basename $ANDROID_PRODUCT_OUT`
-                                            #         if [ $deviceName = "keytak6580_weg_l" ];then
-                                            #             source build/envsetup.sh&&
-                                            #             lunch full_keytak6580_weg_l-user&&
-                                            #             mkdir out
-                                            #             make -j${cpuCount} 2>&1|tee -a out/build_$(date -d "today" +"%y%m%d%H%M%S").log||break
-
-                                            #             branchName=$(echo $AutoEnv_branchName | tr '[A-Z]' '[a-z]') #转小写
-                                            #             if [[ "$branchName" != *fm* ]];then
-                                            #                 make otapackage
-                                            #             fi
-
-                                            #             if [ $isUpload = "true" ];then
-                                            #                 ftAutoPacket -a
-                                            #             else
-                                            #                 ftAutoPacket
-                                            #             fi
-                                            #             if [ $isBackupOut = "true" ];then
-                                            #                 ftBackupOrRestoreOuts
-                                            #             fi
-                                            #         else
-                                            #             ftAutoBuildMultiBranch -e
-                                            #             return;
-                                            #         fi
-                                            # fi
+                                            git push
 
                                         done
                                         git reset --hard
@@ -2687,7 +2637,7 @@ EOF
     fi
 
     if [[ "$editType" = "-m" ]]; then
-        if [[ -d "$dirPathOut" ]]; then
+        if [[ -d "$dirPathOut" ]]||[[ -d "${dirPathCode}/out" ]]; then
             ftEcho -e "out已存在 ,请先备份"
             return
         fi
@@ -2802,12 +2752,12 @@ EOF
             return
     fi
     local tagName=serverConfig_${serverIp}
-    local userName=$(ftGetKeyValueByBlockAndKey -f $rFilePathXbashConfigDataBase $tagName userName)
-    local userPassword=$(ftGetKeyValueByBlockAndKey -f $rFilePathXbashConfigDataBase $tagName userPassword)
-    local dirPathPackage=$(ftGetKeyValueByBlockAndKey -f $rFilePathXbashConfigDataBase $tagName dirPathPackage)
+    local userName=$(ftIniGetValue -f $rFilePathXbashConfigDataBase $tagName userName)
+    local userPassword=$(ftIniGetValue -f $rFilePathXbashConfigDataBase $tagName userPassword)
+    local dirPathPackage=$(ftIniGetValue -f $rFilePathXbashConfigDataBase $tagName dirPathPackage)
 
     # 自动添加旧软件的TAG
-    local dirPathServerLocalBase=$(ftGetKeyValueByBlockAndKey -f $rFilePathXbashConfigDataBase $tagName dirPathPackageLocal)
+    local dirPathServerLocalBase=$(ftIniGetValue -f $rFilePathXbashConfigDataBase $tagName dirPathPackageLocal)
     local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
     if [[ -d $dirPathServerLocal ]]; then
             local versionPath=$(dirname $dirPathServerLocal)
@@ -2983,9 +2933,9 @@ EOF
 
             local dirPathVersionSoftwareLocal="智能机软件"
             local tagName="lzProjrctConfigBranch2CtName"
-            local clientNameAll=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName $AutoEnv_clientName)
+            local clientNameAll=$(ftIniGetValue -f $filePathDataBase $tagName $AutoEnv_clientName)
             tagName="lzProjrctConfigBranch2PlatformName"
-            local platformName=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName $TARGET_PRODUCT)
+            local platformName=$(ftIniGetValue -f $filePathDataBase $tagName $TARGET_PRODUCT)
             if [ ! -z "$platformName" ];then
                  dirPathVersionSoftwareLocal=${dirPathVersionSoftwareLocal}/${platformName}/${clientNameAll:-'autoUpload'}/${versionName}
             else
@@ -3047,7 +2997,7 @@ EOF
             local dataBaseFileList=
             if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
                 tagName="lzProjrctConfigSoftwareDataBaseFileLIst"
-                dataBaseFileList=($(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList))
+                dataBaseFileList=($(ftIniGetValue -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList))
             elif [ $deviceName = "keytak6580_weg_l" ];then
                 # local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
                 local dirPathDatabaseBpBase=${dirPathOut}/obj/ETC
@@ -3111,9 +3061,9 @@ EOF
                 local dirPathUploadTraget=智能机软件
 
                 local tagName="lzProjrctConfigBranch2CtName"
-                local clientNameAll=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName $AutoEnv_clientName)
+                local clientNameAll=$(ftIniGetValue -f $filePathDataBase $tagName $AutoEnv_clientName)
                 tagName="lzProjrctConfigBranch2PlatformName"
-                local platformName=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName $TARGET_PRODUCT)
+                local platformName=$(ftIniGetValue -f $filePathDataBase $tagName $TARGET_PRODUCT)
                 if [ ! -z "$platformName" ];then
                      dirPathUploadTraget=${dirPathUploadTraget}/${platformName}/${clientNameAll:-'autoUpload'}
                 else
@@ -3223,7 +3173,7 @@ EOF
                         mkdir -p $dirPathPackage
                         # packages需要的文件列表
                         tagName="lzProjrctConfigSoftwarePackageFileLIst"
-                        local fileList=($(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList) preloader_${deviceName}.bin)
+                        local fileList=($(ftIniGetValue -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList) preloader_${deviceName}.bin)
                         for file in ${fileList[@]}
                         do
                             local filePath=${dirPathOut}/${file}
@@ -3437,8 +3387,8 @@ EOF
             #修改记录头部
             local enterLine="\n"
             local content="当前版本：$versionName"${enterLine}
-            content=${content}${enterLine}"说明：$(ftGetKeyValueByBlockAndKey -f $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
-            content=${content}${enterLine}"记录创建人：$(ftGetKeyValueByBlockAndKey -f $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+            content=${content}${enterLine}"说明：$(ftIniGetValue -f $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"记录创建人：$(ftIniGetValue -f $filePathConfig projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
             content=${content}${enterLine}"摄像头类型：$cameraTypeInfo"
             content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFrontDefault/$cameraSizeBackDefault"
@@ -3471,20 +3421,20 @@ EOF
             #修改记录头部
             local enterLine="\n"
             local content="当前版本：$versionName"${enterLine}
-            content=${content}${enterLine}"$(ftGetKeyValueByBlockAndKey -f $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
-            content=${content}${enterLine}"记录创建人：$(ftGetKeyValueByBlockAndKey -f $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+            content=${content}${enterLine}"$(ftIniGetValue -f $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"记录创建人：$(ftIniGetValue -f $filePathConfig projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
             local filePathConfigHideNum=${dirPathCode}/vendor/lz/hideNum.config
             if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
 
-                content=${content}${enterLine}"暗码清单：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum 暗码清单 info)"
-                content=${content}${enterLine}"隐藏指令：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum 隐藏 info)"
-                content=${content}${enterLine}"工厂测试：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum 工厂测试 info)"
-                content=${content}${enterLine}"imei编辑：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum imei编辑 info)"
-                content=${content}${enterLine}"imei显示：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum imei显示 info)"
-                content=${content}${enterLine}"工程模式：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum 工程模式 info)"
-                content=${content}${enterLine}"硬件信息查看：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum 硬件信息查看 info)"
-                #content=${content}${enterLine}"sn码显示：$(ftGetKeyValueByBlockAndKey -f $filePathConfigHideNum sn码 info)"
+                content=${content}${enterLine}"暗码清单：$(ftIniGetValue -f $filePathConfigHideNum 暗码清单 info)"
+                content=${content}${enterLine}"隐藏指令：$(ftIniGetValue -f $filePathConfigHideNum 隐藏 info)"
+                content=${content}${enterLine}"工厂测试：$(ftIniGetValue -f $filePathConfigHideNum 工厂测试 info)"
+                content=${content}${enterLine}"imei编辑：$(ftIniGetValue -f $filePathConfigHideNum imei编辑 info)"
+                content=${content}${enterLine}"imei显示：$(ftIniGetValue -f $filePathConfigHideNum imei显示 info)"
+                content=${content}${enterLine}"工程模式：$(ftIniGetValue -f $filePathConfigHideNum 工程模式 info)"
+                content=${content}${enterLine}"硬件信息查看：$(ftIniGetValue -f $filePathConfigHideNum 硬件信息查看 info)"
+                #content=${content}${enterLine}"sn码显示：$(ftIniGetValue -f $filePathConfigHideNum sn码 info)"
             else
                 content=${content}${enterLine}"隐藏指令："
                 content=${content}${enterLine}"imei编辑："
@@ -3739,7 +3689,7 @@ EOF
     fi
 
    local tagName="androidSDK2Verison"
-   local androidVersionName=$(ftGetKeyValueByBlockAndKey -f $filePathDataBase $tagName $sdkVersion)
+   local androidVersionName=$(ftIniGetValue -f $filePathDataBase $tagName $sdkVersion)
    # echo ${androidVersionName:-'unkonwSdkVersion'}
    echo $androidVersionName
 }
@@ -3850,8 +3800,9 @@ EOF
                     #显示当前配置信息
                     ftEchoInfo backup&&
                     while true; do
-                    ftEcho -y 是否开始备份
+                    ftEcho -y 是否开始备份[回车默认为y ]
                     read -n 1 sel
+                    sel=${sel:-'y'}
                     echo
                     case "$sel" in
                         y | Y )
@@ -3878,7 +3829,7 @@ EOF
                     esac
                     done
                     ;;
-        --restore | -b )
+        --restore |-r )
                     #选择存放版本包的设备
                     ftSetBackupDevDir restore&&
                     #选择版本包

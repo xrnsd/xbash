@@ -118,7 +118,7 @@ if [ -d "$ANDROID_SDK" ];then
     alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
 
     if [[ -f $rFilePathXbashConfigDataBase ]]; then
-        packageNameList="$(ftGetKeyValueByBlockAndKey -f $rFilePathXbashConfigDataBase androidDevicePackages packageNameList)"
+        packageNameList="$(ftIniGetValue -f $rFilePathXbashConfigDataBase androidDevicePackages packageNameList)"
     fi
     complete -W "${packageNameList[@]} launcher" xlc
     complete -W "${packageNameList[@]} launcher systemui" xk

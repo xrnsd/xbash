@@ -45,29 +45,17 @@ EOF
     fi
 
     #参数解析
-    local index=1
-    local argList=($@)
-
-    for arg in $@ ;do
-            valNameBase="_argVal"
-            arg="${arg}${valNameBase}"
-            arg2="${argList[$index]}"
-
-            case "$arg" in
-                 -xxx${valNameBase} )   example1=${arg2:-'exampleDef1'}
-                    ;;
-                 -xxx${valNameBase} )   example2=${arg2:-'exampleDef2'}
-                    ;;
-                # $(echo $arg|sed 's/[^0-9]//g'))  #数字判断
-                #     ;;
-            esac
-            ((index+=1))
-     done
+    while getopts "xxx:yyy" opt; do  case $opt in #参数xxx 需要跟数据,参数yyy不需要
+       xxxx) example1=$OPTARG
+          ;;
+        yyy) example2=yyy
+          ;;
+    esac;done
 
     #耦合校验
-    local valCount=1
+    #local valCount=1
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    #if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ -z "$example1" ];then    errorContent="${errorContent}\\n[示例1]example1=$example1" ; fi
     if [ -z "$example2" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
     if [ ! -z "$errorContent" ];then
