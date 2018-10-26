@@ -1043,6 +1043,59 @@ EOF
     fi
 }
 
+ftIniDeleteTag()
+{
+    local ftEffect=删除ini文件中对应的TAG
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftIniDeleteTag -v 版本名
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #参数解析
+    local versionName
+    while getopts "v:" opt; do  case $opt in
+       v) versionName=$OPTARG
+          ;;
+    esac;done
+
+    #耦合校验
+    local errorContent=
+    if [ -z "$versionName" ];then    errorContent="${errorContent}\\n[缺少必要参数]versionName=$versionName" ; fi
+    if [ ! -f "$filePathVersionInfo" ];then  errorContent="${errorContent}\\n[没有相关版本信息文件]filePathVersionInfo=$filePathVersionInfo" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftIniDeleteTag -h
+            return
+    fi
+
+    local indexStart=
+    local indexEnd=
+    local index=0
+    cat $filePathVersionInfo | while read line ;do
+        if [[ "$line" = "[${versionName}]" ]]||[[ ! -z "$indexStart" ]]; then
+            if [[ -z "$indexStart" ]]; then
+                indexStart=$index
+                ((indexStart+=1))
+            fi
+
+            if [[ -z "$line" ]]; then
+                indexEnd=$index
+                local lineRange="${indexStart},${indexEnd}d"
+                #echo lineRange=$lineRange
+                sed -i $lineRange $filePathVersionInfo
+                break
+            fi
+        fi
+        ((index+=1))
+    done
+}
+
 #######################结束
 
 #版本号大小对比
