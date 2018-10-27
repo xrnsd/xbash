@@ -835,57 +835,54 @@ EOF
 ftIniGetValue()
 {
     local ftEffect=读取ini文件指定字段
-    local filePath=$1
-    local blockName=$2
-    local keyName=$3
-
-    if [[ "${filePath:0:1}" = "-" ]]; then
-        local count=4
-        filePath=$2
-        blockName=$3
-        keyName=$4
-
-        editType=$1
-        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
-        if (( $(expr index $editType "f") != "0" ));then   local isReadSilence=true ; fi
-    fi
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
+#    #默认不输出异常信息
 #    ftIniGetValue [文件路径] [目标块TAG] [键名]
 #    value=\$(ftIniGetValue /temp/odbcinst.ini PostgreSQL Setup)
 #    value表示key对应的值
+# 
+#    #输出异常信息
+#    ftIniGetValue -f [文件路径] [目标块TAG] [键名]
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
+    #参数解析
+    local filePath=$1
+    local blockName=$2
+    local keyName=$3
+    local isReadSilence=
+    while getopts ":f" opt; do  case $opt in
+       f) 
+            filePath=$2
+            blockName=$3
+            keyName=$4
+            isReadSilence=true
+          ;;
+    esac;done
+
     #耦合校验
-    local valCount=${count:-'3'}
+    local valCount=3
     local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[文件不存在]filePath=$filePath"
     else
         testBockName=$(cat $filePath|grep $blockName)
         testKeyName=$(cat $filePath|grep $keyName)
-        if [[ -z "$isReadSilence" ]]; then
-            if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
-            elif [ -z "$testBockName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
-            if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]keyName=$keyName"
-            elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName" ; fi
-        else
-            if [ -z "$blockName" ]\
-                ||[ -z "$testBockName" ]\
-                ||[ -z "$keyName" ]\
-                ||[ -z "$testKeyName" ];then
-                # echo -e "error\c"
-                return;
-            fi
-        fi
+        if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
+        elif [ -z "$testBockName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
+        if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]keyName=$keyName"
+        elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName" ; fi
     fi
     if [ ! -z "$errorContent" ];then
+            if [[ -z "$isReadSilence" ]]; then
+                return
+            fi
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftIniGetValue -h
             return
@@ -941,24 +938,20 @@ EOF
     exit 1;; * )break;; esac;done
 
     #耦合校验
-    local valCount=4
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
     else
         testBockName=$(cat $filePath|grep $blockName)
         testKeyName=$(cat $filePath|grep $keyName)
-        testKeyValue=$(cat $filePath|grep $keyValue)
         if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
         elif [ -z "$testBockName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
         if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
         elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName" ; fi
-        if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
-        elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标Key对应的Value不存在]keyValue=$keyValue" ; fi
+        if [ -z "$keyValue" ];then    errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue" ;fi
     fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftIniSetValue2 -h
+            ftIniSetValue -h
             return
     fi
 
@@ -1044,13 +1037,13 @@ EOF
 
 ftIniDeleteTag()
 {
-    local ftEffect=删除ini文件中对应的TAG
+    local ftEffect=删除ini文件中对应的TAG块
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftIniDeleteTag -v 版本名
+#    ftIniDeleteTag -p ini文件路径 -v TAG块名
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1058,15 +1051,18 @@ EOF
 
     #参数解析
     local versionName
-    while getopts "v:" opt; do  case $opt in
+    local filePathIni
+    while getopts "p:v:" opt; do  case $opt in
        v) versionName=$OPTARG
+          ;;
+       p) filePathIni=$OPTARG
           ;;
     esac;done
 
     #耦合校验
     local errorContent=
     if [ -z "$versionName" ];then    errorContent="${errorContent}\\n[缺少必要参数]versionName=$versionName" ; fi
-    if [ ! -f "$filePathVersionInfo" ];then  errorContent="${errorContent}\\n[没有相关版本信息文件]filePathVersionInfo=$filePathVersionInfo" ; fi
+    if [ ! -f "$filePathIni" ];then  errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftIniDeleteTag -h
@@ -1076,7 +1072,7 @@ EOF
     local indexStart=
     local indexEnd=
     local index=0
-    cat $filePathVersionInfo | while read line ;do
+    cat $filePathIni | while read line ;do
         if [[ "$line" = "[${versionName}]" ]]||[[ ! -z "$indexStart" ]]; then
             if [[ -z "$indexStart" ]]; then
                 indexStart=$index
@@ -1087,7 +1083,7 @@ EOF
                 indexEnd=$index
                 local lineRange="${indexStart},${indexEnd}d"
                 #echo lineRange=$lineRange
-                sed -i $lineRange $filePathVersionInfo
+                sed -i $lineRange $filePathIni
                 break
             fi
         fi
@@ -1454,7 +1450,7 @@ EOF
             ftEcho -e "数据库文件不存在]filePathDataBase=$filePathDataBase"
         else
             local TagName=androidKeyCode
-            local keyCode=$(ftIniGetValue -f $filePathDataBase androidKeyCode $2)
+            local keyCode=$(ftIniGetValue $filePathDataBase androidKeyCode $2)
             if [[ ! -z "$keyCode" ]]; then
                 $filePathAdbNow shell input keyevent $keyCode
             else
@@ -2752,12 +2748,12 @@ EOF
             return
     fi
     local tagName=serverConfig_${serverIp}
-    local userName=$(ftIniGetValue -f $rFilePathXbashConfigDataBase $tagName userName)
-    local userPassword=$(ftIniGetValue -f $rFilePathXbashConfigDataBase $tagName userPassword)
-    local dirPathPackage=$(ftIniGetValue -f $rFilePathXbashConfigDataBase $tagName dirPathPackage)
+    local userName=$(ftIniGetValue $rFilePathXbashConfigDataBase $tagName userName)
+    local userPassword=$(ftIniGetValue $rFilePathXbashConfigDataBase $tagName userPassword)
+    local dirPathPackage=$(ftIniGetValue $rFilePathXbashConfigDataBase $tagName dirPathPackage)
 
     # 自动添加旧软件的TAG
-    local dirPathServerLocalBase=$(ftIniGetValue -f $rFilePathXbashConfigDataBase $tagName dirPathPackageLocal)
+    local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashConfigDataBase $tagName dirPathPackageLocal)
     local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
     if [[ -d $dirPathServerLocal ]]; then
             local versionPath=$(dirname $dirPathServerLocal)
@@ -2933,9 +2929,9 @@ EOF
 
             local dirPathVersionSoftwareLocal="智能机软件"
             local tagName="lzProjrctConfigBranch2CtName"
-            local clientNameAll=$(ftIniGetValue -f $filePathDataBase $tagName $AutoEnv_clientName)
+            local clientNameAll=$(ftIniGetValue $filePathDataBase $tagName $AutoEnv_clientName)
             tagName="lzProjrctConfigBranch2PlatformName"
-            local platformName=$(ftIniGetValue -f $filePathDataBase $tagName $TARGET_PRODUCT)
+            local platformName=$(ftIniGetValue $filePathDataBase $tagName $TARGET_PRODUCT)
             if [ ! -z "$platformName" ];then
                  dirPathVersionSoftwareLocal=${dirPathVersionSoftwareLocal}/${platformName}/${clientNameAll:-'autoUpload'}/${versionName}
             else
@@ -2997,7 +2993,7 @@ EOF
             local dataBaseFileList=
             if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
                 tagName="lzProjrctConfigSoftwareDataBaseFileLIst"
-                dataBaseFileList=($(ftIniGetValue -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList))
+                dataBaseFileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList))
             elif [ $deviceName = "keytak6580_weg_l" ];then
                 # local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
                 local dirPathDatabaseBpBase=${dirPathOut}/obj/ETC
@@ -3061,9 +3057,9 @@ EOF
                 local dirPathUploadTraget=智能机软件
 
                 local tagName="lzProjrctConfigBranch2CtName"
-                local clientNameAll=$(ftIniGetValue -f $filePathDataBase $tagName $AutoEnv_clientName)
+                local clientNameAll=$(ftIniGetValue $filePathDataBase $tagName $AutoEnv_clientName)
                 tagName="lzProjrctConfigBranch2PlatformName"
-                local platformName=$(ftIniGetValue -f $filePathDataBase $tagName $TARGET_PRODUCT)
+                local platformName=$(ftIniGetValue $filePathDataBase $tagName $TARGET_PRODUCT)
                 if [ ! -z "$platformName" ];then
                      dirPathUploadTraget=${dirPathUploadTraget}/${platformName}/${clientNameAll:-'autoUpload'}
                 else
@@ -3173,7 +3169,7 @@ EOF
                         mkdir -p $dirPathPackage
                         # packages需要的文件列表
                         tagName="lzProjrctConfigSoftwarePackageFileLIst"
-                        local fileList=($(ftIniGetValue -f $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList) preloader_${deviceName}.bin)
+                        local fileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList) preloader_${deviceName}.bin)
                         for file in ${fileList[@]}
                         do
                             local filePath=${dirPathOut}/${file}
@@ -3387,8 +3383,8 @@ EOF
             #修改记录头部
             local enterLine="\n"
             local content="当前版本：$versionName"${enterLine}
-            content=${content}${enterLine}"说明：$(ftIniGetValue -f $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
-            content=${content}${enterLine}"记录创建人：$(ftIniGetValue -f $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+            content=${content}${enterLine}"说明：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
             content=${content}${enterLine}"摄像头类型：$cameraTypeInfo"
             content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFrontDefault/$cameraSizeBackDefault"
@@ -3421,20 +3417,20 @@ EOF
             #修改记录头部
             local enterLine="\n"
             local content="当前版本：$versionName"${enterLine}
-            content=${content}${enterLine}"$(ftIniGetValue -f $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
-            content=${content}${enterLine}"记录创建人：$(ftIniGetValue -f $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+            content=${content}${enterLine}"$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
             local filePathConfigHideNum=${dirPathCode}/vendor/lz/hideNum.config
             if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
 
-                content=${content}${enterLine}"暗码清单：$(ftIniGetValue -f $filePathConfigHideNum 暗码清单 info)"
-                content=${content}${enterLine}"隐藏指令：$(ftIniGetValue -f $filePathConfigHideNum 隐藏 info)"
-                content=${content}${enterLine}"工厂测试：$(ftIniGetValue -f $filePathConfigHideNum 工厂测试 info)"
-                content=${content}${enterLine}"imei编辑：$(ftIniGetValue -f $filePathConfigHideNum imei编辑 info)"
-                content=${content}${enterLine}"imei显示：$(ftIniGetValue -f $filePathConfigHideNum imei显示 info)"
-                content=${content}${enterLine}"工程模式：$(ftIniGetValue -f $filePathConfigHideNum 工程模式 info)"
-                content=${content}${enterLine}"硬件信息查看：$(ftIniGetValue -f $filePathConfigHideNum 硬件信息查看 info)"
-                #content=${content}${enterLine}"sn码显示：$(ftIniGetValue -f $filePathConfigHideNum sn码 info)"
+                content=${content}${enterLine}"暗码清单：$(ftIniGetValue $filePathConfigHideNum 暗码清单 info)"
+                content=${content}${enterLine}"隐藏指令：$(ftIniGetValue $filePathConfigHideNum 隐藏 info)"
+                content=${content}${enterLine}"工厂测试：$(ftIniGetValue $filePathConfigHideNum 工厂测试 info)"
+                content=${content}${enterLine}"imei编辑：$(ftIniGetValue $filePathConfigHideNum imei编辑 info)"
+                content=${content}${enterLine}"imei显示：$(ftIniGetValue $filePathConfigHideNum imei显示 info)"
+                content=${content}${enterLine}"工程模式：$(ftIniGetValue $filePathConfigHideNum 工程模式 info)"
+                content=${content}${enterLine}"硬件信息查看：$(ftIniGetValue $filePathConfigHideNum 硬件信息查看 info)"
+                #content=${content}${enterLine}"sn码显示：$(ftIniGetValue $filePathConfigHideNum sn码 info)"
             else
                 content=${content}${enterLine}"隐藏指令："
                 content=${content}${enterLine}"imei编辑："
@@ -3689,7 +3685,7 @@ EOF
     fi
 
    local tagName="androidSDK2Verison"
-   local androidVersionName=$(ftIniGetValue -f $filePathDataBase $tagName $sdkVersion)
+   local androidVersionName=$(ftIniGetValue $filePathDataBase $tagName $sdkVersion)
    # echo ${androidVersionName:-'unkonwSdkVersion'}
    echo $androidVersionName
 }
@@ -3754,6 +3750,7 @@ EOF
             ftMaintainSystem -h
             return
     fi
+    export filePathVersionInfo=${rDirPathXbashConfig}/versionInfo.database
 
     case "$editType" in
         --sd_finish|-s)
@@ -3815,9 +3812,9 @@ EOF
                         #生成版本包
                         ftBackupOs&&
                         #记录版本包校验信息
-                        ftMD5 -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+                        ftMD5 -s $版本包路径 -p $filePathVersionInfo&&
                         #记录版本包相关系统信息
-                        ftAddOrCheckSystemHwSwInfo -add $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+                        ftSystemEnv -a 版本包版本号 -p $filePathVersionInfo&&
                         #同步
                         # ftSynchronous "${mXbashModuleDataDevicesList[*]}" ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"&&
                         # 清除权限限制
@@ -3835,9 +3832,9 @@ EOF
                     #选择版本包
                     ftRestoreChoiceSource&&
                     #检查版本包和当前系统兼容程度
-                    ftAddOrCheckSystemHwSwInfo -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
+                    ftSystemEnv -c 版本包版本号 -p $filePathVersionInfo &&
                     #检查版本包有效性
-                    ftMD5 -check $mDirPathStoreSource $mFileNameRestoreSourceBase&&
+                    ftMD5 -c $版本包路径 -p $filePathVersionInfo&&
                     #选择版本包覆盖的目标路径
                     ftRestoreChoiceTarget&&
                     #选择版本包覆盖的忽略路径

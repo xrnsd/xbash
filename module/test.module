@@ -66,3 +66,14 @@ EOF
 }
 
 # ===================================================================================================================
+ftDDD()
+{
+
+
+    echo filePath=$filePath
+    echo blockName=$blockName
+    echo keyName=$keyName
+    echo isReadSilence=$isReadSilence
+
+}
+ftDDD -f 11 22 33

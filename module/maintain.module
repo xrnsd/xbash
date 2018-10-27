@@ -379,10 +379,10 @@ ftBackupOs()
     local filePathDb=$rFilePathXbashConfigDataBase
     local tagName=ubuntuMaintainConfigInfo
     local keyName=DirPathsExcludeListSys
-    local excludeListSys=($(ftIniGetValue -f $filePathDb $tagName $keyName))
+    local excludeListSys=($(ftIniGetValue $filePathDb $tagName $keyName))
 
     keyName=DirPathsExcludeListHomeBase
-    local excludeListHomeBase=($(ftIniGetValue -f $filePathDb $tagName $keyName))
+    local excludeListHomeBase=($(ftIniGetValue $filePathDb $tagName $keyName))
     local excludeListHomeRoot
     local index=0
     for item in ${excludeListHomeBase[@]}; do
@@ -502,91 +502,68 @@ EOF
 ftMD5()
 {
     local ftEffect=记录和校验版本包的MD5
-    local typeEdit=$1
-    local dirPathBackupRoot=$2
-    local versionName=$3
-    local isExit=$4
-    isExit=${isExit:-'true'}
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftMD5 [type] [path] [fileNameBase/VersionName]
-#    ftMD5 check mDirPathStoreSource mFileNameRestoreSourceBase
+#   根据版本包的MD5校验是否修改
+#    ftMD5 -c 版本包路径 -p MD5信息保存路径
+#
+#   保存版本包的MD5信息
+#    ftMD5 -s 版本包路径 -p MD5信息保存路径
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
+    #参数解析
+    local editType
+    local filePathVersion
+    local filePathInfo
+
+    while getopts "c:s:p:" opt; do case $opt in
+        c) editType=checkMd5
+            filePathVersion=$OPTARG
+          ;;
+        s) editType=setMd5
+            filePathVersion=$OPTARG
+          ;;
+        p) filePathInfo=$OPTARG
+          ;;
+    esac;done
+
     #耦合校验
-    local valCount=3
     local errorContent=
-    if (( $#<$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$typeEdit" ];then    errorContent="${errorContent}\\n[操作参数为空]typeEdit=$typeEdit" ; fi
-    if [ -z "$dirPathBackupRoot" ];then    errorContent="${errorContent}\\n[版本包存放的设备根目录为空]dirPathBackupRoot=$dirPathBackupRoot" ; fi
-    if [ -z "$versionName" ];then    errorContent="${errorContent}\\n[版本包名为空]versionName=$versionName" ; fi
+    if [ -z "$editType" ];then    errorContent="${errorContent}\\n[不知道要干啥]editType=$editType" ; fi
+    if [ ! -f "$filePathInfo" ];then  errorContent="${errorContent}\\n[没有相关版本信息文件]filePathInfo=$filePathInfo" ; fi
+    if [ ! -f "$filePathVersion" ];then    errorContent="${errorContent}\\n[目标文件不存在]filePathVersion=$filePathVersion" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftMD5 -h
             return
     fi
 
-    local fileNameMd5=${versionName}.md5
-    local dirBackupMd5=${dirPathBackupRoot}/.md5s
+    local fileNameVersion=$(basename $filePath)
+    fileNameVersion=${fileNameVersion%.*}
 
-    if [ ! -d ${dirPathBackupRoot} ];then
-        ftEcho -e MD5相关操作失败，找不到$dirPathBackupRoot
-        exit
+    if [ "$editType" = "setMd5" ]; then
+        local md5Code=$(md5sum $filePath | awk '{print $1}') 
+        ftIniSetValue $filePathInfo $fileNameVersion MD5 $md5Code
+        return
     fi
 
-    if [ ${typeEdit} == "-add" ]; then
-
-        if [ ! -d ${dirBackupMd5} ];then
-            mkdir ${dirBackupMd5}
-            echo 新建版本包校验信息存储目录:${dirBackupMd5}
+    if [ "$editType" = "checkMd5" ]; then
+        local Md5Code=$(ftIniGetValue $filePathInfo $fileNameVersion MD5)
+        if [[ -z "$Md5Code" ]]; then
+            ftEcho -e "未找到版本包 : ${fileNameVersion}  的原始MD5"
+            return;
         fi
-
-        local pathFile=${dirPathBackupRoot}/${versionName}.tgz
-        local pathMd5=${dirBackupMd5}/${fileNameMd5}
-
-        md5=`md5sum $pathFile | awk '{print $1}'`
-        sudo echo $md5>$pathMd5
-
-        ftEcho -s "版本${versionName}校验信息记录完成"
-
-    elif [ ${typeEdit} == "-check" ]; then
-
-        ftEcho -b 开始校验版本包，确定有效性
-
-        if [ -d ${dirBackupMd5} ];then
-            local pathFile=${dirPathBackupRoot}/${versionName}.tgz
-            local pathMd5=${dirBackupMd5}/${fileNameMd5}
-            if [ -f ${pathMd5} ];then
-                md5Base=`cat $pathMd5`
-                md5Now=`md5sum $pathFile | awk '{print $1}'`
-                if [ "$md5Base"x != "$md5Now"x ]; then
-                    if [ "$isExit" != "true" ]; then
-                        return 8
-                    fi
-                    ftEcho -ex 校验失败，版本包：${versionName}无效
-                else
-                    ftEcho -s 版本包：${versionName}校验成功
-                fi
-            else
-                if [ "$isExit" != "true" ]; then
-                    return 8
-                fi
-                ftEcho -ex 版本包：${versionName}校验信息查找失败
-            fi
-        else
-            if [ "$isExit" != "true" ]; then
-                return 8
-            fi
-            ftEcho -ex 版本包：${versionName}校验信息查找失败
+        local Md5CodeNow=$(md5sum $filePath | awk '{print $1}')
+        if [ "$Md5CodeNow"x != "$Md5Code"x ]; then
+            echo "MD5检验失败，码不一致"
         fi
     fi
-
 }
 
 ftAutoCleanTemp()
@@ -603,135 +580,131 @@ ftAutoCleanTemp()
     sudo rm -rf /var/cache/apt/archives
 }
 
-ftAddOrCheckSystemHwSwInfo()
+ftSystemEnv()
 {
     local ftEffect=记录和校验版本包软件和硬件信息
-    local typeEdit=$1
-    local dirPathBackupRoot=$2
-    local dirNameBackupInfoVersion=$3
-    local isExit=$4
-    isExit=${isExit:-'true'}
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftAddOrCheckSystemHwSwInfo [type] [path] [path]
-#    ftAddOrCheckSystemHwSwInfo -check
+#   记录版本包的系统软硬件信息
+#    ftSystemEnv -a 版本号 -p 版本号对应信息存储路径
+#
+#   校验版本包是否兼容当前系统软硬件环境
+#    ftSystemEnv -c 版本号 -p 版本号对应信息存储路径
+#
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
+    #参数解析
+    local editType
+    local versionName
+    local filePathInfo
+
+    while getopts "a:c:p:" opt; do case $opt in
+        a) editType=add
+            versionName=$OPTARG
+          ;;
+        c) editType=check
+            versionName=$OPTARG
+          ;;
+        p) filePathInfo=$OPTARG
+          ;;
+      esac;done
+
     #耦合校验
-    local valCount=3
     local errorContent=
-    if (( $#<$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$typeEdit" ];then    errorContent="${errorContent}\\n[操作参数为空]typeEdit=$typeEdit" ; fi
-    if [ -z "$dirPathBackupRoot" ];then    errorContent="${errorContent}\\n[版本包存放的设备根目录为空]dirPathBackupRoot=$dirPathBackupRoot" ; fi
-    if [ -z "$dirNameBackupInfoVersion" ];then    errorContent="${errorContent}\\n[版本包名为空]dirNameBackupInfoVersion=$dirNameBackupInfoVersion" ; fi
+    if [ -z "$editType" ];then    errorContent="${errorContent}\\n[操作参数为空]editType=$editType" ; fi
+    if [ ! -f "$filePathInfo" ];then  errorContent="${errorContent}\\n[没有相关版本信息文件]filePathInfo=$filePathInfo" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftAddOrCheckSystemHwSwInfo -h
+            ftSystemEnv -h
             return
     fi
 
-    local dirPathBackupInfoVersion=${dirPathBackupRoot}/${dirNameBackupInfoVersion}
-    local filePathBackupInfoVersion=${dirPathBackupInfoVersion}/${dirNameBackupInfoVersion}.info
-
-    local filePathVersionCpu=${dirPathBackupInfoVersion}/cpu
-    local filePathVersionMainboard=${dirPathBackupInfoVersion}/mainboard
-    local filePathVersionSystem=${dirPathBackupInfoVersion}/system
-    local filePathVersion32x64=${dirPathBackupInfoVersion}/32x64
-
-    local infoHwCpu=$(dmidecode |grep -i cpu|grep -i version|awk -F ':' '{print $2}'|sed s/[[:space:]]//g)
-    local infoHwMainboard=$(dmidecode |grep Name |sed s/[[:space:]]//g)
+    local infoHwCpu=$(echo $userPassword | sudo  -p '' -S dmidecode |grep -i cpu|grep -i version|awk -F ':' '{print $2}'|sed s/[[:space:]]//g)
+    local infoHwMainboard=$(echo $userPassword | sudo  -p '' -S dmidecode |grep Name |sed s/[[:space:]]//g)
     local infoHwMainboard=$(echo $infoHwMainboard |sed s/[[:space:]]//g)
-    local infoHwSystem=$(head -n 1 /etc/issue|sed s/[[:space:]]//g)
-            infoHwSystem=${infoHwSystem//"\n\l"/}
-            infoHwSystem=${infoHwSystem//"."/}
-            infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
-    local infoHw32x64=$(uname -m|sed s/[[:space:]]//g)
+    local infoHw32x64=$(echo $userPassword | sudo  -p '' -S uname -m|sed s/[[:space:]]//g)
+    local infoHwSystem=$(echo $userPassword | sudo  -p '' -S head -n 1 /etc/issue|sed s/[[:space:]]//g)
+    infoHwSystem=${infoHwSystem//"\n\l"/}
+    infoHwSystem=${infoHwSystem//"."/}
+    infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
 
     local keyCpu=hwCpu
     local keyMainboard=hwMainboard
     local keySystemVersion=swSystemVersion
     local keySystemType=swSystemType
 
-    local returns=兼容
+    if [ ${editType} == "add" ]; then
 
-    if [ ! -d $dirPathBackupRoot ]; then
-        echo "系统信息相关操作失败\n${dirPathBackupRoot}不存在"
-          exit
-    else
-        if [ ! -d $dirPathBackupInfoVersion ]; then
-            mkdir $dirPathBackupInfoVersion
-            echo 版本信息记录位置不存在，已建立
+        ftIniSetValue $filePathInfo $versionName $keyCpu $infoHwCpu
+        ftIniSetValue $filePathInfo $versionName $keyMainboard $infoHwMainboard
+        ftIniSetValue $filePathInfo $versionName $keySystemVersion $keySystemVersion
+        ftIniSetValue $filePathInfo $versionName $keySystemType $infoHw32x64
+
+        ftEcho -s 版本${versionName}相关系统信息记录完成
+        return
+    fi
+
+    if [ ${editType} == "check" ]; then
+
+        ftEcho -b 检查版本包和当前系统兼容程度
+
+        local infoHwCpuVersion=$(ftIniGetValue  $filePathInfo $versionName $keyCpu)
+        local infoHwMainboardVersion=$(ftIniGetValue  $filePathInfo $versionName $keyMainboard)
+        local infoHwSystemVersion=$(ftIniGetValue  $filePathInfo $versionName $keySystemVersion)
+        local infoHw32x64Version=$(ftIniGetValue  $filePathInfo $versionName $keySystemType)
+
+        if [ -z "$infoHwCpuVersion" ]\
+            ||[ -z "$infoHwMainboardVersion" ]\
+            ||[ -z "$infoHwSystemVersion" ]\
+            ||[ -z "$infoHw32x64Version" ]; then
+
+            ftEcho -e   "版本相关系统信息损坏:\n${filePathInfo}"
+            #显示相关信息存储路径
+            echo infoHwCpuVersion=$infoHwCpuVersion
+            echo infoHwMainboardVersion=$infoHwMainboardVersion
+            echo infoHwSystemVersion=$infoHwSystemVersion
+            echo infoHw32x64Version=$infoHw32x64Version
+            return 9
         fi
-        if [ ${typeEdit} == "-add" ]; then
 
-            local content="[版本相关系统软硬件环境]"
-            content="${content}\\n    ${keyCpu}=${infoHwCpu}"
-            content="${content}\\n    ${keyMainboard}=${infoHwMainboard}"
-            content="${content}\\n    ${keySystemVersion}=${infoHwSystem}"
-            content="${content}\\n    ${keySystemType}=${infoHw32x64}"
-            sudo echo -e "$content">>$filePathBackupInfoVersion
-            ftEcho -s 版本${dirNameBackupInfoVersion}相关系统信息记录完成
-
-        elif [ ${typeEdit} == "-check" ]; then
-
-            ftEcho -b 检查版本包和当前系统兼容程度
-
-            local infoHwCpuVersion=$(ftIniGetValue  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keyCpu)
-            local infoHwMainboardVersion=$(ftIniGetValue  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keyMainboard)
-            local infoHwSystemVersion=$(ftIniGetValue  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keySystemVersion)
-            local infoHw32x64Version=$(ftIniGetValue  $filePathBackupInfoVersion 版本相关系统软硬件环境 $keySystemType)
-
-            if [ -z "$infoHwCpuVersion" ]||[ -z "$infoHwMainboardVersion" ]\
-                                                            ||[ -z "$infoHwSystemVersion" ]\
-                                                            ||[ -z "$infoHw32x64Version" ]; then
-                ftEcho -e   "版本相关系统信息损坏:\n${filePathBackupInfoVersion}"
-                #显示相关信息存储路径
-                echo infoHwCpuVersion=$infoHwCpuVersion
-                echo infoHwMainboardVersion=$infoHwMainboardVersion
-                echo infoHwSystemVersion=$infoHwSystemVersion
-                echo infoHw32x64Version=$infoHw32x64Version
-            fi
-
-            if [[ $infoHwCpuVersion != $infoHwCpu ]];then
+        local returns=
+        if [[ $infoHwCpuVersion != $infoHwCpu ]];then
             echo versionpackageInfo=$infoHwCpuVersion
             echo tragetInfo=$infoHwCpu
-                ftSel CPU
-                returns=${returns}，忽略CPU变化
-            fi
-            if [[ "$infoHwMainboardVersion" != "$infoHwMainboard" ]]; then
+            ftSel CPU
+            returns=${returns}，忽略CPU变化
+        fi
+        if [[ "$infoHwMainboardVersion" != "$infoHwMainboard" ]]; then
             echo versionpackageInfo= $infoHwMainboardVersion
             echo tragetInfo=$infoHwMainboard
-                ftSel 主板
-                returns=${returns}，忽略主板变化
-            fi
-            if [[ "$infoHwSystemVersion" != "$infoHwSystem" ]]; then
+            ftSel 主板
+            returns=${returns}，忽略主板变化
+        fi
+        if [[ "$infoHwSystemVersion" != "$infoHwSystem" ]]; then
             echo versionpackageInfo= $infoHwSystemVersion
             echo tragetInfo=$infoHwSystem
-                ftEcho -e  系统版本不一致，将自动退出
-                returns=不兼容
-            fi
-            if [[ "$infoHw32x64Version" != "$infoHw32x64" ]]; then
+            ftEcho -e  系统版本不一致，将自动退出
+            returns=不兼容
+        fi
+        if [[ "$infoHw32x64Version" != "$infoHw32x64" ]]; then
             echo versionpackageInfo= $infoHw32x64Version
             echo tragetInfo=$infoHw32x64
-                ftEcho -e 系统版本的位数不一致，将自动退出
-                returns=不兼容
-            fi
-            ftEcho -s 版本包：${dirNameBackupInfoVersion}系统兼容性检测结果为${returns}
-            if [ "$returns"  = "不兼容" ]; then
-                if [ "$isExit" != "true" ]; then
-                    return 9
-                fi
-                exit
-            fi
+            ftEcho -e 系统版本的位数不一致，将自动退出
+            returns=不兼容
+        fi
+        if [ ! -z "$returns" ]; then
+                ftEcho -s 版本包：${dirNameBackupInfoVersion}系统兼容性检测结果为${returns}
+                return 9
         fi
     fi
 }
+
 
 ftSel()
 {
@@ -802,14 +775,14 @@ EOF
                     y | Y )
                         ftEcho -bh 开始版本包[${version}]的可用性校验
 
-                        ftAddOrCheckSystemHwSwInfo -check $dirPathTarget $version false
-                        if [ $? -eq "$softwareInfoCheckfail" ];then
+                        local result=$(ftSystemEnv -c $version -p $filePathVersionInfo)
+                        if [ ! -z "$result" ];then
                             ftEcho -e 设备[${devDirPath}]上的版本包[${version}]不兼容
                             break
                         fi
 
-                        ftMD5 -check $dirPathTarget $version false
-                        if [ $? -eq "$md5InfoCheckfail" ];then
+                        result=$(ftMD5 -c $dirPathTarget -p $filePathVersionInfo)
+                        if [ ! -z "$result" ];then
                             ftEcho -e 设备[${devDirPath}]上的版本包[${version}]无效
                             break
                         fi
