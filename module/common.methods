@@ -1777,16 +1777,16 @@ EOF
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) ftAutoBuildMultiBranchEnvSeparation -h
-     break;;esac;done
+    * ) break;;esac;done
 
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ];then
-        ftAutoBuildMultiBranch -env
+        ftAutoBuildMultiBranchEnvSeparation -env
         return
     fi
 
     local requestEnvState=$(/bin/rm -rf $dirPathProcessEnableId&&mkdir $dirPathProcessEnableId)
+    #trap '/bin/rm -rf $dirPathProcessEnableId;exit' SIGINT
 
     #耦合校验
     local valCount=1
@@ -1836,7 +1836,7 @@ EOF
                         while [ ! -f "$filePathState" ]||[ "enable" != $(cat $filePathState) ]; do
                                 sleep 2
                         done
-                        gnome-terminal  --title="任务:${index} : 编译${branchArray[$fileNamePID]}" -x bash -c "$filePathserialBuildTool $filePathBranchList $index"
+                        gnome-terminal  --title="任务:${index} : 编译${branchArray[$fileNamePID]}" -x bash -c "$filePathserialBuildTool $index $filePathBranchList"
                     done
         fi
     fi
@@ -2045,7 +2045,7 @@ EOF
             return
     fi
 
-    cd $toolDirPath&&
+    cd $toolDirPath&& trap 'cd $tempDirPath;exit' SIGINT
     echo "$userPassword" | sudo   -p '' -S ${rDirPathTools}/sp_flash_tool_v5.1612.00.100/flash_tool
     cd $tempDirPath
 }

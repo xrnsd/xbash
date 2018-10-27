@@ -1,25 +1,19 @@
 #!/bin/bash
-#####-----------------------变量------------------------------#########
-readonly rModuleName=module/build/serialBuildDemo.module
+#####-----------------------固定部分------------------------------#########
+readonly rModuleName=module/build/serialBuildByBranchName.module
 readonly rRirPathProcessEnableId=/tmp/ProcessEnableIds
-#####----------------------初始化build环境--------------------------#######
+fileNamePID=$1
 # 函数
 if [ -f $rFilePathXbashModuleCommon ];then
     source  $rFilePathXbashModuleCommon
 else
     echo -e "\033[1;31m    函数加载失败\n\
-    模块=$rModuleName\n\
     toolsPath=$rFilePathXbashModuleCommon\n\
     \033[0m"
 fi
-fileNamePID=$1
-echo $fileNamePID
-while [[ "enable" != $(cat ${rRirPathProcessEnableId}/${fileNamePID}) ]]; do
-    sleep 5
-done
-# =============================================================
-ftEcho -s "${fileNamePID} start"
-read -n1 ddd
+
+ftEcho -s "任务 ${fileNamePID} :开始执行"
+#####----------------------自定义部分--------------------------#######
 
 
 
@@ -30,15 +24,11 @@ read -n1 ddd
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-# =============================================================
+#####-----------------------固定部分------------------------------#########
+((fileNamePID=$fileNamePID+1))
+if (( ${#branchArray[@]}==$fileNamePID ));then
+    /bin/rm -f $rRirPathProcessEnableId
+else
+    echo enable > ${rRirPathProcessEnableId}/${fileNamePID}
+fi
+exit
