@@ -12,9 +12,12 @@ else
     \033[0m"
 fi
 
+#####----------------------xbash 示例函数--------------------------#######
+complete -W "-x -y -n" ftExample
 ftExample()
 {
     local ftEffect=函数模板
+    local isEnable=true
     # debug用
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' DEBUG
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' ERR
@@ -35,8 +38,21 @@ EOF
 #    ftExample [example]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+      return;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftExample已被禁用，请确认
+#=========================================================
+EOF
+      return;;
     * ) break;;esac;done
+
+    #可用校验
+    if [ "$isEnable" != "true" ];then
+        ftExample --df
+        return
+    fi
 
     #环境校验
     if [ -z `which example` ]||[ -z `which example` ];then
@@ -44,11 +60,13 @@ EOF
         return
     fi
 
-    #参数解析
-    while getopts "xxx:yyy" opt; do  case $opt in #参数xxx 需要跟数据,参数yyy不需要
-       xxxx) example1=$OPTARG
+    #参数解析,只支持短选项
+    while getopts "x:yn" opt; do  case $opt in #参数x 需要跟数据,参数y或n不需要
+       x) example1=$OPTARG
           ;;
-        yyy) example2=yyy
+        y) example2=yy
+          ;;
+        n) example2=nn
           ;;
     esac;done
 
@@ -66,4 +84,5 @@ EOF
 }
 
 # ==============================================================================================================
+
 
