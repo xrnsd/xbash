@@ -1,9 +1,7 @@
 #!/bin/bash
 #####-----------------------变量------------------------------#########
 mTypeEdit=$1
-mTypeBackupEdit=null
-
-mDate=$(date -d "today" +"%Y%m%d")
+infoBackupType=null
 
 mDirPathRestoreTarget=/
 mDirPathStoreTarget=null
@@ -15,12 +13,12 @@ mFilePathRestoreSource=null
 mFileNameBackupLog=null
 mFileNameBackupTarget=null
 #VersionNameBackup
-mFileNameBackupTargetBase=null
+infoVersionName=null
 mFileNameRestoreSource=null
 #VersionNameRestore
 mFileNameRestoreSourceBase=null
 
-mNoteBackupTarget=null
+infoBackupPackageNote=null
 mNoteRestoreSource=null
 
 #####----------------------自有函数--------------------------#########
@@ -191,15 +189,15 @@ EOF
     elif [ $infoType = "backup" ];then
 
         local btype
-        if [ $mTypeBackupEdit = "cg" ];then
+        if [ $infoBackupType = "cg" ];then
             btype=基础
-        elif [ $mTypeBackupEdit = "bx" ];then
+        elif [ $infoBackupType = "bx" ];then
             btype=全部
         fi
 
         echo "生成备份的文件为：    ${mFileNameBackupTarget}"
         echo "生成备份文件的目录：    ${mDirPathStoreTarget}"
-        echo "生成的备份的说明：    ${mNoteBackupTarget}"
+        echo "生成的备份的说明：    ${infoBackupPackageNote}"
         echo "生成的备份的类型：    ${btype}"
         echo -e "当前系统有效修改：    \033[44m$mVersionChangs\033[0m"
     else
@@ -293,8 +291,8 @@ EOF
 ftSetBackupType()
 {
     local ftEffect=选择备份类型
-    mTypeBackupEdit=$1
-    if [ -z "$mTypeBackupEdit" ];then
+    infoBackupType=$1
+    if [ -z "$infoBackupType" ];then
         ftEcho -b 请${ftEffect}
         echo -e "[1]\t基础"
         echo -e "[2]\t全部"
@@ -308,18 +306,18 @@ ftSetBackupType()
             typeIndex=1
         fi
         case $typeIndex in
-        1)        mTypeBackupEdit=cg; break;;
-        2)        mTypeBackupEdit=bx; break;;
+        1)        infoBackupType=cg; break;;
+        2)        infoBackupType=bx; break;;
          n | N | q |Q)    exit;;
         * )        ftEcho -e 错误的选择：$typeIndex ;echo "输入1,2 选择    输入n，q离开";break;;
         esac
         done
     fi
 
-    mFileNameBackupTargetBase=backup_${mTypeBackupEdit}_${rNameUser}_${mDate}
-    mFileNameBackupTarget=${mFileNameBackupTargetBase}.tgz
-    mFileNameBackupLog=${mFileNameBackupTargetBase}.log
-    mFilePathVersion=${mDirPathStoreTarget}/$mFileNameBackupTarget
+    mFileNameBackupTarget=${infoVersionName}.tgz
+    mFileNameBackupLog=${infoVersionName}.log
+    mFilePathVersion=${mDirPathStoreTarget}/${mFileNameBackupTarget}
+    export infoBackupType=$infoBackupType
 }
 
 ftSetRestoreType()
@@ -396,10 +394,10 @@ ftBackupOs()
 
     local dirsExclude
     local fileNameExclude
-    if [ $mTypeBackupEdit = "cg" ];then
+    if [ $infoBackupType = "cg" ];then
         dirsExclude=${mDirPathsExcludeBase[*]}
         fileNameExclude=$mFilePathExcludeBase
-    elif [ $mTypeBackupEdit = "bx" ];then
+    elif [ $infoBackupType = "bx" ];then
         dirsExclude=${mDirPathsExcludeAll[*]}
         fileNameExclude=$mFilePathExcludeAll
     else
@@ -422,7 +420,7 @@ ftBackupOs()
      rm $fileNameExclude>/dev/null
 }
 
-ftAddNote()
+ftMaintainInfoNote()
 {
     local ftEffect=记录版本包相关备注
     local dateOnly=$(date -d "today" +"%Y%m%d")
@@ -436,9 +434,9 @@ ftAddNote()
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftAddNote [dirPathBackupRoot] [versionName]
-#    ftAddNote \$mDirPathStoreTarget \$mFileNameBackupTargetBase
-#    ftAddNote \$mDirPathStoreTarget \$mFileNameBackupTargetBase “常规”
+#    ftMaintainInfoNote [dirPathBackupRoot] [versionName]
+#    ftMaintainInfoNote \$mDirPathStoreTarget \$infoVersionName
+#    ftMaintainInfoNote \$mDirPathStoreTarget \$infoVersionName “常规”
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -452,7 +450,7 @@ EOF
     if [ -z "$versionName" ];then    errorContent="${errorContent}\\n[版本包名为空]versionName=$versionName" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftAddNote -h
+            ftMaintainInfoNote -h
             return
     fi
     local dirPathBackupNote=${dirPathBackupRoot}${versionName}
@@ -480,9 +478,9 @@ EOF
         ftEcho -r  "请输入版本   ["${versionName}"]  相应的说明[回车默认为常规]:"
         read note
         #未输入写入默认值
-        if [ $mTypeBackupEdit = "cg" ];then
+        if [ $infoBackupType = "cg" ];then
             note=${note:-'常规_默认'}
-        elif [ $mTypeBackupEdit = "bx" ];then
+        elif [ $infoBackupType = "bx" ];then
             note=${note:-'全部_默认'}
         fi
     else
@@ -496,7 +494,7 @@ EOF
     content="${content}\\n    swNote=${note}"
     sudo echo -e "$content">>$filePathNote
 
-    mNoteBackupTarget=$note
+    export infoBackupPackageNote=$note
 }
 
 ftMD5()
@@ -797,7 +795,7 @@ EOF
 
                         ftEcho -s 版本包[${version}]可用，开始同步
                         # 写入备注
-                        ftAddNote $mDirPathStoreTarget $version $note
+                        ftMaintainInfoNote $mDirPathStoreTarget $version $note
                         #复制版本包
                         cp -rf -v $filePathVersionTarget ${mDirPathStoreTarget}/${version}.tgz
                         #复制软硬件信息
@@ -843,7 +841,7 @@ EOF
     fi
 
     if [ -f $mFilePathVersion ];then
-        ftEcho -y 版本[${mFileNameBackupTargetBase}]已存在，是否覆盖
+        ftEcho -y 版本[${infoVersionName}]已存在，是否覆盖
         while true; do
         read -n 1 sel
         case "$sel" in

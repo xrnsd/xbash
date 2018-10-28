@@ -1130,8 +1130,8 @@ EOF
     #耦合校验
     local errorContent=
     if [ -z "$filePathIni" ];then   errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]" ; fi
-    if [ -z "$contentTagName" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
-    if [ -z "$contentTagKeyValList" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
+    if [ -z "$contentTagName" ];then    errorContent="${errorContent}\\n[示例2]contentTagName=$contentTagName" ; fi
+    if [ -z "$contentTagKeyValList" ];then    errorContent="${errorContent}\\n[示例2]contentTagKeyValList=$contentTagKeyValList" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftIniCreateFileOrTag -h
@@ -3751,6 +3751,7 @@ EOF
             return
     fi
     export filePathVersionInfo=${rDirPathXbashConfig}/versionInfo.database
+    export infoVersionName=backup_${rNameUser}_$(date -d "today" +"%Y%m%d")
 
     case "$editType" in
         --sd_finish|-s)
@@ -3805,6 +3806,13 @@ EOF
                         y | Y )
                         #写版本备注
                         ftAddNote $mDirPathStoreTarget $mFileNameBackupTargetBase&&
+                        #写入版本信息
+                        ftIniCreateFileOrTag -a -p $filePathVersionInfo -t $mInfoVersionName -l "backupType=${infoBackupType}
+                                                                                                                                                      backupPackageNote=${infoBackupPackageNote} \
+                                                                                                                                                      hwCpu=null \
+                                                                                                                                                      hwMainboard=null \
+                                                                                                                                                      swSystemVersion=null \
+                                                                                                                                                      swSystemType=null"
                         #扫描设备,同步相同备份
                         ftBackUpDevScanning $mFileNameBackupTargetBase $mNoteBackupTarget "${mXbashModuleDataDevicesList[*]}"
                         #清理临时文件
