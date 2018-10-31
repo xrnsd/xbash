@@ -22,10 +22,13 @@ bash的简单扩展与其他工具配置[部分]
         │
         ├── config    -----------------------工具相关配置
         │        │
-        │        ├── user
-        │        │      │
-        │        │      ├── expmale.config ------------ 用户xbash配置模版文件
-        │        │      └── xxxxxxx.config ------------ 用户xxxxxxx相关xbash配置文件
+        │        └── user
+        │             ├── expmale.config ------------ 用户xbash配置模版文件
+        │             └── xxxxxxx.config ------------ 用户xxxxxxx相关xbash配置文件
+        │
+        ├── data    -----------------------xbash工具数据文件
+        │        │
+        │        ├── maintain.database  --------------  xbash 的系统维护模块配置
         │        └── base.database -------------------- xbash工具数据文件
         │
         ├── module    ---------------------  脚本实现文件[具体功能]
@@ -38,9 +41,9 @@ bash的简单扩展与其他工具配置[部分]
         │        ├── bash_input.module  --------------  配置命令历史适配逻辑
         │        ├── packet_7731c.module  ------------  7731c的packet打包工具
         │        ├── git-completion.methods  ---------  git非自定义的bash扩张
-        │        └── build    -----------------    --   独立窗口串行多进程实现
-        │             ├── serialBuildByBranchName.module
-        │             └── serialBuildDemo.module
+        │        └── build    -----------------------   独立窗口串行多进程实现
+        │                   ├── serialBuildByBranchName.module
+        │                   └── serialBuildDemo.module
         │
         ├── test   ----------------------   脚本测试工具,demo测试,请忽略此文件的修改
         ├── init   ----------------------   xbash安装初始化工具
@@ -52,5 +55,3 @@ bash的简单扩展与其他工具配置[部分]
         ubuntu16.04 x64
     7 未实现
         # 模块自动加载框架,脱离模块名修改局限
-    8 bug
-        

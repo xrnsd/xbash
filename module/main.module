@@ -117,8 +117,8 @@ if [ -d "$ANDROID_SDK" ];then
     alias xqchanglogo='effect=启动隐藏动画;adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
     alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
 
-    if [[ -f $rFilePathXbashConfigDataBase ]]; then
-        packageNameList="$(ftIniGetValue $rFilePathXbashConfigDataBase androidDevicePackages packageNameList)"
+    if [[ -f $rFilePathXbashDataBase ]]; then
+        packageNameList="$(ftIniGetValue $rFilePathXbashDataBase androidDevicePackages packageNameList)"
     fi
     complete -W "${packageNameList[@]} launcher" xlc
     complete -W "${packageNameList[@]} launcher systemui" xk

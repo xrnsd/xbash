@@ -199,39 +199,6 @@ EOF
     done
 }
 
-ftUpdateBashrcLn()
-{
-    local ftEffect=xbash框架,更新指向xbash的.bashrc软连接
-
-    while true; do case "$1" in
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftUpdateBashrcLn 无参
-#    ftUpdateBashrcLn [example]
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    #环境校验
-    if [ -z `which example` ]||[ -z `which example` ];then
-        ftUpdateBashrcLn -e
-        return
-    fi
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$example1" ];then    errorContent="${errorContent}\\n[示例1]example1=$example1" ; fi
-    if [ -z "$example2" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftUpdateBashrcLn -h
-            return
-    fi
-}
-
 ftTest()
 {
     local ftEffect=函数demo调试
@@ -401,7 +368,6 @@ ftTiming()
 }
 
 #####---------------------扩展函数---------------------------#########
-
 ftAutoInitEnv()
 {
     local ftEffect=初始化xbash_Android_build相关所需的部分环境变量
@@ -1043,17 +1009,17 @@ ftIniDeleteTag()
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftIniDeleteTag -p ini文件路径 -v TAG块名
+#    ftIniDeleteTag -p ini文件路径 -t TAG块名
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
     #参数解析
-    local versionName
+    local tagName
     local filePathIni
-    while getopts "p:v:" opt; do  case $opt in
-       v) versionName=$OPTARG
+    while getopts "p:t:" opt; do  case $opt in
+       t) tagName=$OPTARG
           ;;
        p) filePathIni=$OPTARG
           ;;
@@ -1061,7 +1027,7 @@ EOF
 
     #耦合校验
     local errorContent=
-    if [ -z "$versionName" ];then    errorContent="${errorContent}\\n[缺少必要参数]versionName=$versionName" ; fi
+    if [ -z "$tagName" ];then    errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName" ; fi
     if [ ! -f "$filePathIni" ];then  errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
@@ -1073,7 +1039,7 @@ EOF
     local indexEnd=
     local index=0
     cat $filePathIni | while read line ;do
-        if [[ "$line" = "[${versionName}]" ]]||[[ ! -z "$indexStart" ]]; then
+        if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
             if [[ -z "$indexStart" ]]; then
                 indexStart=$index
                 ((indexStart+=1))
@@ -1202,7 +1168,7 @@ ftLanguageUtil()
     local ftEffect=语言缩写转换
     local ftLanguageContent=$@
     local dirPathCode=$ANDROID_BUILD_TOP
-    local filePathDataBase=$rFilePathXbashConfigDataBase
+    local filePathDataBase=$rFilePathXbashDataBase
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -1401,7 +1367,7 @@ adb()
     local dirPathCode=$ANDROID_BUILD_TOP
     local  filePathAdbNow=$(which adb)
     local  filePathAdbLocal=/usr/bin/adb
-    local filePathDataBase=$rFilePathXbashConfigDataBase
+    local filePathDataBase=$rFilePathXbashDataBase
 
     #环境校验
     # if [ -z "$filePathAdbNow" ]||[ ! -d "$ANDROID_SDK" ];then
@@ -2748,12 +2714,12 @@ EOF
             return
     fi
     local tagName=serverConfig_${serverIp}
-    local userName=$(ftIniGetValue $rFilePathXbashConfigDataBase $tagName userName)
-    local userPassword=$(ftIniGetValue $rFilePathXbashConfigDataBase $tagName userPassword)
-    local dirPathPackage=$(ftIniGetValue $rFilePathXbashConfigDataBase $tagName dirPathPackage)
+    local userName=$(ftIniGetValue $rFilePathXbashDataBase $tagName userName)
+    local userPassword=$(ftIniGetValue $rFilePathXbashDataBase $tagName userPassword)
+    local dirPathPackage=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackage)
 
     # 自动添加旧软件的TAG
-    local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashConfigDataBase $tagName dirPathPackageLocal)
+    local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
     local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
     if [[ -d $dirPathServerLocal ]]; then
             local versionPath=$(dirname $dirPathServerLocal)
@@ -2791,7 +2757,7 @@ ftAutoPacket()
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
     local editType=$1
-    local filePathDataBase=$rFilePathXbashConfigDataBase
+    local filePathDataBase=$rFilePathXbashDataBase
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -3236,7 +3202,7 @@ ftCreateReadMeBySoftwareVersion()
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local dirPathVersionSoftware=$1
-    local filePathConfig=$rFilePathXbashConfigDataBase
+    local filePathConfig=$rFilePathXbashDataBase
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
 
     while true; do case "$1" in
@@ -3659,7 +3625,7 @@ ftGetAndroidVersionBySDKVersion()
 {
     local ftEffect=根据SDK版本获取Android版本
     local sdkVersion=$1
-    local filePathDataBase=$rFilePathXbashConfigDataBase
+    local filePathDataBase=$rFilePathXbashDataBase
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -3695,7 +3661,7 @@ ftMaintainSystem()
 {
     local ftEffect=ubuntu系统维护
     local filePathMaintain=${rDirPathXbashModule}/${rFileNameXbashModuleMaintain}
-    local filePathDb=$rFilePathXbashConfigDataBase
+    local filePathDb=$rFilePathXbashDataBase
     local editType=$1
     local dirPathLocal=${PWD}
     editType=${editType:-'backup'}
@@ -3750,7 +3716,7 @@ EOF
             ftMaintainSystem -h
             return
     fi
-    export filePathVersionInfo=${rDirPathXbashConfig}/versionInfo.database
+    export filePathVersionInfo=${rDirPathXbashData}/versionInfo.database
     export infoVersionName=backup_${rNameUser}_$(date -d "today" +"%Y%m%d")
 
     case "$editType" in
@@ -3809,6 +3775,7 @@ EOF
                         #写入版本信息
                         ftIniCreateFileOrTag -a -p $filePathVersionInfo -t $mInfoVersionName -l "backupType=${infoBackupType}
                                                                                                                                                       backupPackageNote=${infoBackupPackageNote} \
+                                                                                                                                                      MD5=null \
                                                                                                                                                       hwCpu=null \
                                                                                                                                                       hwMainboard=null \
                                                                                                                                                       swSystemVersion=null \

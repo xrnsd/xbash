@@ -374,7 +374,7 @@ ftBackupOs()
     mFilePathExcludeBase=${rDirPathXbashConfig}/${fileNameExcludeBase}
     mFilePathExcludeAll=${rDirPathXbashConfig}/${fileNameExcludeAll}
 
-    local filePathDb=$rFilePathXbashConfigDataBase
+    local filePathDb=$rFilePathXbashDataBase
     local tagName=ubuntuMaintainConfigInfo
     local keyName=DirPathsExcludeListSys
     local excludeListSys=($(ftIniGetValue $filePathDb $tagName $keyName))
