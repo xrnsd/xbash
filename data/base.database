@@ -3,6 +3,7 @@
 packageNameList=com.android.systemui \
                 com.android.launcher3 \
                 com.android.settings \
+                com.android.phone \
                 com.android.commands.monkey \
                 com.android.mms
 

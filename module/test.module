@@ -23,11 +23,11 @@ ftExample()
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' ERR
 
     while true; do case "$1" in
-    e | -e |--env) cat<<EOF
+    --env) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
-#    ${ftEffect}依赖包 example
-#    请尝试使用 sudo apt-get install example 补全依赖
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
 #=========================================================
 EOF
       return;;
@@ -42,23 +42,11 @@ EOF
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
-#    ftExample已被禁用，请确认
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
       return;;
     * ) break;;esac;done
-
-    #可用校验
-    if [ "$isEnable" != "true" ];then
-        ftExample --df
-        return
-    fi
-
-    #环境校验
-    if [ -z `which example` ]||[ -z `which example` ];then
-        ftExample -e
-        return
-    fi
 
     #参数解析,只支持短选项
     while getopts "x:yn" opt; do  case $opt in #参数x 需要跟数据,参数y或n不需要
@@ -71,11 +59,18 @@ EOF
     esac;done
 
     #耦合校验
-    #local valCount=1
+    local valCount=1
     local errorContent=
-    #if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$example1" ];then    errorContent="${errorContent}\\n[示例1]example1=$example1" ; fi
-    if [ -z "$example2" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
+    #while true; do case $1 in *)
+        #可用校验
+        if [ "$isEnable" != "true" ];then    ftExample --df;return    ; fi
+        #依赖校验
+        if [ -z `which exampleTools1` ];then    ftExample --env "exampleTools1";return    ; fi
+
+        if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+        if [ -z "$example1" ];then    errorContent="${errorContent}\\n[示例1]example1=$example1" ; fi
+        if [ -z "$example2" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
+    #break;;esac;done
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftExample -h

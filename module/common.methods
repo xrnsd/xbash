@@ -136,69 +136,6 @@ EOF
     fi
 }
 
-ftLnUtil()
-{
-    local ftEffect=xbash框架,获取软连接的真实路径
-    local lnPath=$1
-
-    while true; do case "$1" in
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftLnUtil 软连接路径
-#    ftLnUtil /home/xian-hp-u16/log/xb_backup
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$lnPath" ];then    errorContent="${errorContent}\\n[软连接为空]lnPath=$lnPath" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftLnUtil -h
-            return
-    fi
-    if [[ -L "$lnPath" ]]&&[ ! -z `which readlink` ]; then
-        echo $(readlink $lnPath)
-        return
-    fi
-
-    OLD_IFS="$IFS"
-    IFS="/"
-    arr=($lnPath)
-    IFS="$OLD_IFS"
-
-    i=${#arr[@]}
-    let i--
-    delDir=
-    while [ $i -ge 0 ]
-    do
-        [[ $lnPath =~ ^/  ]] && lnRealPath=$lnPath || lnRealPath=`pwd`/$lnPath
-        while [ -h $lnRealPath ]
-        do
-           b=`ls -ld $lnRealPath|awk '{print $NF}'`
-           c=`ls -ld $lnRealPath|awk '{print $(NF-2)}'`
-           [[ $b =~ ^/ ]] && lnRealPath=$b  || lnRealPath=`dirname $c`/$b
-        done
-        if [ "$lnRealPath" = "$lnPath" ];then
-            lnPath=${lnPath%/*}
-            delDir=${arr[$i]}/$delDir
-        else
-            local dirPath=${lnRealPath}/${delDir}
-            if [[ "$lnRealPath" = "/${delDir}" ]]; then
-                dirPath=$1
-            fi
-            echo $dirPath
-            break
-        fi
-        let i--
-    done
-}
-
 ftTest()
 {
     local ftEffect=函数demo调试
@@ -3390,7 +3327,7 @@ EOF
             if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
 
                 content=${content}${enterLine}"暗码清单：$(ftIniGetValue $filePathConfigHideNum 暗码清单 info)"
-                content=${content}${enterLine}"隐藏指令：$(ftIniGetValue $filePathConfigHideNum 隐藏 info)"
+                # content=${content}${enterLine}"隐藏指令：$(ftIniGetValue $filePathConfigHideNum 隐藏 info)"
                 content=${content}${enterLine}"工厂测试：$(ftIniGetValue $filePathConfigHideNum 工厂测试 info)"
                 content=${content}${enterLine}"imei编辑：$(ftIniGetValue $filePathConfigHideNum imei编辑 info)"
                 content=${content}${enterLine}"imei显示：$(ftIniGetValue $filePathConfigHideNum imei显示 info)"
@@ -3660,11 +3597,7 @@ complete -W "--backup --restore --sd_finish -b -r -s" ftMaintainSystem
 ftMaintainSystem()
 {
     local ftEffect=ubuntu系统维护
-    local filePathMaintain=${rDirPathXbashModule}/${rFileNameXbashModuleMaintain}
-    local filePathDb=$rFilePathXbashDataBase
-    local editType=$1
-    local dirPathLocal=${PWD}
-    editType=${editType:-'backup'}
+    local isEnable=false
 
     while true; do case "$1" in
     e | -e |--error) cat<<EOF
@@ -3674,11 +3607,18 @@ ftMaintainSystem()
 #=========================================================
 EOF
       return;;
-    -env) cat<<EOF
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
+EOF
+      return;;
+    --env) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
-#    依赖 sshpass pigz,请使用下面命令安装
-#    sudo apt-get install pigz
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
 #=========================================================
 EOF
       return;;
@@ -3693,6 +3633,11 @@ EOF
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
+    #可用校验
+    if [ "$isEnable" != "true" ];then
+        ftMaintainSystem --df
+        return
+    fi
 
      #环境校验
     if [ "$(whoami)" != "root" ];then
@@ -3701,12 +3646,17 @@ EOF
         return
     fi
     if [ -z `which pigz` ];then
-        ftMaintainSystem -env
+        ftMaintainSystem --env "pigz"
         return
     fi
     #耦合校验
     local valCount=1
     local errorContent=
+    local editType=$1
+    editType=${editType:-'backup'}
+    local dirPathLocal=${PWD}
+    local filePathDb=$rFilePathXbashDataBase
+    local filePathMaintain=${rDirPathXbashModule}/${rFileNameXbashModuleMaintain}
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -f "$filePathMaintain" ];then    errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain" 
     else source $filePathMaintain  ; fi
@@ -3721,6 +3671,10 @@ EOF
 
     case "$editType" in
         --sd_finish|-s)
+                    if [ -z `which e4defrag` ];then
+                        ftMaintainSystem --env "e4defrag"
+                        return
+                    fi
                     devNameDirPathList=`df -lh | awk '{print $1}'`
                     devMountDirPathList=(`df -lh | awk '{print $6}'`)
                     indexDevName=0
