@@ -95,7 +95,7 @@ if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then
 fi
 
 if [ ! -z `which find` ];then
-    alias xfs='effect=查找含特定字符串的文件;ftFind'
+    alias xfind='effect=查找含特定字符串的文件;ftFind'
 fi
 
 if [ -d "$ANDROID_SDK" ];then

@@ -108,34 +108,6 @@ ftReadAllFt()
         done
 }
 
-ftIsEnableByModuleName()
-{
-    local ftEffect=xbash框架,判断模块可用
-    local mModuleName=$1
-    local mModuleNameEnableList=
-
-        while true; do case "$1" in
-    h | H |-h | -H) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftIsEnableByModuleName 模块名  # val=$(ftIsEnableByModuleName xxxx)
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    local valCount=1
-    local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$moduleName" ];then    errorContent="${errorContent}\\n[无效模块名]moduleName=($moduleName)" ; fi
-    if [ -z "$ModuleNameEnableList" ];then    errorContent="${errorContent}\\n[可用模块列表为空]ModuleNameEnableList=($ModuleNameEnableList)" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftIsEnableByModuleName -h
-            return
-    fi
-}
-
 ftTest()
 {
     local ftEffect=函数demo调试
@@ -406,7 +378,7 @@ EOF
             deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
             deviceSdkVersion=${deviceSdkVersion:-'null'}
             export AutoEnv_deviceSdkVersion=$deviceSdkVersion
-            local AndroidVersion=$(ftGetAndroidVersionBySDKVersion $deviceSdkVersion)
+            local AndroidVersion=$(ftAutoGetAndroidVersionBySDKVersion $deviceSdkVersion)
             export AutoEnv_AndroidVersion=$AndroidVersion
     fi
 
@@ -940,7 +912,7 @@ EOF
 
 ftIniDeleteTag()
 {
-    local ftEffect=删除ini文件中对应的TAG块
+    local ftEffect=删除ini文件中对应TAG块
 
     while true; do case "$1" in
     h | H |-h | -H) cat<<EOF
@@ -987,6 +959,69 @@ EOF
                 local lineRange="${indexStart},${indexEnd}d"
                 #echo lineRange=$lineRange
                 sed -i $lineRange $filePathIni
+                break
+            fi
+        fi
+        ((index+=1))
+    done
+}
+
+ftIniDeleteItem()
+{
+    local ftEffect=删除ini文件中对应TAG中指定item
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftIniDeleteItem -p ini文件路径 -t TAG块名 -i item名
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #参数解析
+    local tagName
+    local itemName
+    local filePathIni
+    while getopts "p:t:i:" opt; do  case $opt in
+      t) tagName=$OPTARG
+          ;;
+       i) itemName=$OPTARG
+          ;;
+       p) filePathIni=$OPTARG
+          ;;
+    esac;done
+
+    #耦合校验
+    local errorContent=
+    if [ -z "$itemName" ];then    errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName" ; fi
+    if [ -z "$tagName" ];then    errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName" ; fi
+    if [ ! -f "$filePathIni" ];then  errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftIniDeleteItem -h
+            return
+    fi
+
+    local indexStart=
+    local indexEnd=
+    local index=0
+    cat $filePathIni | while read line ;do
+        if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
+            if [[ -z "$indexStart" ]]; then
+                indexStart=$index
+                ((indexStart+=1))
+            fi
+
+            if [[ "$line" =~ ^${itemName}* ]]; then
+                ((index+=1))
+                sed -i "${index}d" $filePathIni 
+                break
+            fi
+
+            if [[ -z "$line" ]]; then
+                indexEnd=$index
                 break
             fi
         fi
@@ -2878,7 +2913,7 @@ EOF
 
             # 生成说明文件
             if [[ ! -z "$isReadMe" ]]; then
-                    ftCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
+                    ftAutoCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
             fi
 
             #上传服务器
@@ -3118,7 +3153,7 @@ EOF
 
             # 生成说明文件
             if [[ ! -z "$isReadMe" ]]; then
-                    ftCreateReadMeBySoftwareVersion ${dirPathVersionSoftware}/${dirPathVersionSoftwareVersion}
+                    ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftware}/${dirPathVersionSoftwareVersion}
             fi
 
             #上传服务器
@@ -3133,7 +3168,7 @@ EOF
     cd $dirPathLocal
 }
 
-ftCreateReadMeBySoftwareVersion()
+ftAutoCreateReadMeBySoftwareVersion()
 {
     local ftEffect=创建软件版本相关修改记录和版本说明
     local dirPathCode=$ANDROID_BUILD_TOP
@@ -3146,8 +3181,8 @@ ftCreateReadMeBySoftwareVersion()
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
-#    ftCreateReadMeBySoftwareVersion out/pac
+#    ftAutoCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
+#    ftAutoCreateReadMeBySoftwareVersion out/pac
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -3171,10 +3206,10 @@ EOF
 
     #环境校验
     if [ -z `which todos` ]||[ -z `which fromdos` ];then
-        ftCreateReadMeBySoftwareVersion -e
+        ftAutoCreateReadMeBySoftwareVersion -e
     fi
     if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
-        ftCreateReadMeBySoftwareVersion -env
+        ftAutoCreateReadMeBySoftwareVersion -env
         return
     fi
     #耦合校验
@@ -3186,7 +3221,7 @@ EOF
     if [ ! -f "$filePathConfig" ];then    errorContent="${errorContent}\\n[工程out目录不存在]filePathConfig=$filePathConfig" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftCreateReadMeBySoftwareVersion -h
+            ftAutoCreateReadMeBySoftwareVersion -h
             return
     fi
     local dirPathLocal=${PWD}
@@ -3558,7 +3593,7 @@ EOF
         done
 }
 
-ftGetAndroidVersionBySDKVersion()
+ftAutoGetAndroidVersionBySDKVersion()
 {
     local ftEffect=根据SDK版本获取Android版本
     local sdkVersion=$1
@@ -3568,8 +3603,8 @@ ftGetAndroidVersionBySDKVersion()
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftGetAndroidVersionBySDKVersion 1.0~25
-#    ftGetAndroidVersionBySDKVersion 22
+#    ftAutoGetAndroidVersionBySDKVersion 1.0~25
+#    ftAutoGetAndroidVersionBySDKVersion 22
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -3583,7 +3618,7 @@ EOF
     if [ ! -f "$filePathDataBase" ];then    errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftGetAndroidVersionBySDKVersion -h
+            ftAutoGetAndroidVersionBySDKVersion -h
             return
     fi
 
@@ -4000,5 +4035,13 @@ EOF
 ftFind()
 {
     local ftEffect=find简单封装
-    find $1 -name "($2)" | xargs grep -e "$3"
+    local content=$3
+    echo $1
+    echo $3
+    if [[ ! -z "$content" ]]; then
+        find $1 -name "$2" | xargs grep -e "$content"
+        return
+    fi
+
+    find $1 -name "$2"
 }
