@@ -17,7 +17,7 @@ complete -W "-x -y -n" ftExample
 ftExample()
 {
     local ftEffect=函数模板
-    local isEnable=true
+    local isEnable=false
     # debug用
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' DEBUG
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' ERR
@@ -48,7 +48,7 @@ EOF
       return;;
     * ) break;;esac;done
 
-    #参数解析,只支持短选项
+    #参数解析1,只支持短选项,不支持在终端中直接解析
     while getopts "x:yn" opt; do  case $opt in #参数x 需要跟数据,参数y或n不需要
        x) example1=$OPTARG
           ;;
@@ -57,6 +57,24 @@ EOF
         n) example2=nn
           ;;
     esac;done
+    #参数解析2
+    local index=1
+    local argList=($@)
+    local valNameBase="_argVal"
+     for arg in $@ ;do
+             arg="${arg}${valNameBase}"
+             arg2="${argList[$index]}"
+
+             case "$arg" in
+                  -xxx${valNameBase} )   example1="${arg2:-'exampleDef1'}"
+                     ;;
+                  -xxx${valNameBase} )   example2="${arg2:-'exampleDef2'}"
+                     ;;
+                 # $(echo $arg|sed 's/[^0-9]//g'))  #数字判断
+                 #     ;;
+             esac
+             ((index+=1))
+      done
 
     #耦合校验
     local valCount=1

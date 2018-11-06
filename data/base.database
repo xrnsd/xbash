@@ -1,3 +1,8 @@
+#xbash
+[xbash]
+bashHistorySize=6000
+bashHistoryIncrementalSize=1000
+
 #开发用
 [androidDevicePackages]
 packageNameList=com.android.systemui \

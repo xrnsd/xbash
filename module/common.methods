@@ -3375,9 +3375,9 @@ EOF
                 content=${content}${enterLine}"imei显示：*#06#"
                 content=${content}${enterLine}"测试模式：*#*#180#*#*"
                 content=${content}${enterLine}"imei单双切换："
-                content=${content}${enterLine}"切换动画指令："
-                content=${content}${enterLine}"切换默认动画："
-                content=${content}${enterLine}"三星测试：*#0*#"
+                # content=${content}${enterLine}"切换动画指令："
+                # content=${content}${enterLine}"切换默认动画："
+                # content=${content}${enterLine}"三星测试：*#0*#"
             fi
 
             #git log 列表
@@ -3504,7 +3504,7 @@ EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
-# 环境检测
+    # 环境检测
     ftAutoInitEnv
     if [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ]; then
         ftAutoUpdateSoftwareVersion -e
@@ -3528,7 +3528,7 @@ EOF
     cd $ANDROID_BUILD_TOP
     #分支名
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    #软件版本名1
+    #软件版本名
     local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
     local filePathDeviceInfoSettingsBase=packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
     local filePathDeviceInfoSettings=${dirPathCode}/${filePathDeviceInfoSettingsBase}
@@ -3815,30 +3815,6 @@ EOF
 ftGitLogShell()
 {
     local ftEffect=git的log特定格式显示
-    local editType=$1
-    editType=${editType:-'20'}
-
-    local isAllBranchLog=
-    local isTagBranchLog=
-    local branchLogFormat=
-    local isCustomBranchLog=
-    local branchLogItemCount=
-    if (  echo -n $editType | grep -q -e "^[0-9][0-9]*$");then
-        branchLogItemCount=$editType
-    else
-        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
-        if (( $(expr index $editType "a") != "0" ));then   isAllBranchLog=true ; fi
-        if (( $(expr index $editType "t") != "0" ));then
-            isTagBranchLog=true
-            branchLogItemCount=$2
-            branchLogItemCount=${branchLogItemCount:-'20'}
-        fi
-        if (( $(expr index $editType "c") != "0" ));then
-            isCustomBranchLog=true
-            branchLogFormat=$3
-            branchLogFormat=${branchLogFormat:-'%s'}
-        fi
-    fi
 
     while true; do case "$1" in
     e | -e |--env) cat<<EOF
@@ -3877,6 +3853,37 @@ EOF
         ftGitLogShell -e
         return
     fi
+    #参数解析
+    local isAllBranchLog=
+    local isTagBranchLog=
+    local branchLogFormat=
+    local isCustomBranchLog=
+    local branchLogItemCount=20
+
+    local index=1
+    local editType=$1
+    local argList=($@)
+    local valNameBase="_argVal"
+    editType=${editType:-'20'}
+
+     for arg in $@ ;do
+             arg="${arg}${valNameBase}"
+             arg2="${argList[$index]}"
+
+             case "$arg" in
+                  -a${valNameBase} )  isAllBranchLog=true
+                     ;;
+                  -t${valNameBase} )   branchLogItemCount=${arg2:-'20'}
+                                                      isTagBranchLog=true
+                     ;;
+                  -c${valNameBase} )   branchLogItemCount=${arg2:-'20'}
+                                                      isCustomBranchLog=true
+                     ;;
+                 # $(echo $arg|sed 's/[^0-9]//g'))  #数字判断
+                 #     ;;
+             esac
+             ((index+=1))
+      done
 
     #耦合校验
     local valCount=3
@@ -3904,11 +3911,11 @@ EOF
        return
     fi
 
-    if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]];then
-        branchLogFormat="%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d"
+    if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]]&&[ "$isCustomBranchLog" != "true" ];then
+        branchLogFormat=${branchLogFormat:-'%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
         git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"$branchLogFormat" -$branchLogItemCount
     else
-        branchLogFormat="%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d"
+        branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
         git log --pretty=format:"$branchLogFormat" -$branchLogItemCount
     fi
 }
@@ -3982,7 +3989,8 @@ EOF
     local valCount=6
     local errorContent=
     if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$");then    errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong" ; fi
+    if (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$");then
+        errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoTest -h
