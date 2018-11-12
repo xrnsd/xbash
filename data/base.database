@@ -14,6 +14,9 @@ packageNameList=com.android.systemui \
 
 
 [androidSDK2Verison]
+28=Android9.0
+27=Android8.1
+26=Android8.0
 25=Android7.1
 24=Android7.0
 23=Android6.0

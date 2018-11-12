@@ -1,5 +1,7 @@
 [ubuntuMaintainConfigInfo]
-DirPathsExcludeListSys= \
+backupPackageSuffixName=tgz
+filePatheExclude=~/.cache/exclude.list
+dirPathsExcludeListSys= \
     /proc \
     /android \
     /lost+found \
@@ -10,7 +12,7 @@ DirPathsExcludeListSys= \
     /media \
     /var/tmp \
     /var/log
-DirPathsExcludeListHomeBase= \
+dirPathsExcludeListHomeBase= \
     .bashrc \
     .dmrc \
     .gitconfig \

@@ -10,7 +10,7 @@ bash的简单扩展与其他工具配置[部分]
 ----------
     1 xc/xc -h 查看简化命令说明，简化命令为脚本函数实现的封装
     2 xc -ft 查看全部脚本函数的简要说明，脚本函数 -h 查看对应函数的具体使用说明
-    3 建议,不要以root权限运行xc clean_data_garbage
+    3 建议,不要以root权限运行xc clear_trash
     4 环境目录[参考]
         /home/xxx/
         ├── xbash

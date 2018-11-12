@@ -60,8 +60,8 @@ if [ -f $rFilePathXbashModuleCommon ];then
 
     if [ ! -z `which git` ];then
         alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a'
-        alias xgl='effect=格式化显示20条git_log;ftGitLogShell 20'
-        alias xgll='effect=格式化显示100条git_log;ftGitLogShell 100' 
+        alias xgl='effect=格式化显示20条git_log;ftGitLogShell -n 20'
+        alias xgll='effect=格式化显示100条git_log;ftGitLogShell -n 100' 
 
         export PROMPT_COMMAND='\
         ftSetBashPs1ByGitBranch
