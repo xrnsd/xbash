@@ -51,6 +51,10 @@ fi
 
 # 字符串包含if [[ helloworld == *low* ]];then
 
+# 路径替换
+# a=/aa2344aa/123bb
+# echo b=$(echo $a | sed "s 123/  222/ ")
+
 # note=${note:-'常规'}
 
 # 遍历目录
@@ -75,3 +79,9 @@ mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
 #####---------------   demo函数     $2为第一个参数 -------------#########
 #####---------------------------------------------------------------------------#########
 # ===================================================================================================================================
+cd /home/wgx/code/mtk6580L/alps/bootable/bootloader/lk/dev/logo/r9a_hd720
+ filelist=$(ls $dirPathAnimationSourceRes)
+        for file in $filelist
+        do
+            mv $file ${file//r9a_hd720/qhd}
+        done

@@ -1,14 +1,57 @@
-#-------------------------android环境部分------------------
+#! /bin/bash
+#----------------    Android Dev Env Config    ---------------------------
 #export JAVA_HOME=/home/wgx/tools/jdk/1.6.038
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 export JRE_HOME=${JAVA_HOME}/jre 
 export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
-#-------------------------android优化加速部分------------------
-#编译加速 c/c++ 部分
+
+export ANDROID_SDK=${dirPathHomeTools}/sdk/4.4
+export ANDROID_SDK_HOME=$ANDROID_SDK
+export ANDROID_SDK_BUILD_TOOL=${ANDROID_SDK_HOME}/build-tools/android-4.4W
+export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r12b
+
+export PATH=$PATH:${JAVA_HOME}/bin:${JRE_HOME}/bin
+export PATH=$PATH:$ANDROID_SDK_BUILD_TOOL
+export PATH=$PATH:$ANDROID_NDK
+#export PATH=$PATH:/usr/local/cuda-7.5/bin:/usr/local/cuda-8.0/bin
+export PATH=$PATH:/usr/libexec/git-core
+
 #缓存目录[android优化加速部分]
-export CCACHE_DIR=/media/data/.ccache
+export CCACHE_DIR=/media/cache/.ccache
 export USE_CCACHE=1
 export CACHE_UMASK=002
 unset CCACHE_HARDLINK
 #分布式编译集群的IP组
 #export DISTCC_HOSTS="192.168.3.114"
+
+#------------------------------------  环境检测  ----------------------------------
+filePathGitBash=${dirPathHomeCmdConfig}/git/git-completion.bash
+
+if [ ! -d "$JAVA_HOME" ];then
+    echo -e "\033[1;31mJava_环境配置错误\n$JAVA_HOME不存在\n\033[0m"
+fi
+if [ ! -d "$ANDROID_SDK" ];then
+    echo -e "\033[1;31mAndroid_SDK_环境配置错误\n$ANDROID_SDK 不存在\n\033[0m"
+else
+        alias xl='export XCMD=xl;\
+                    adb logcat -c;\
+                    adb logcat | grep '
+        alias xlc='adb logcat | grep androidrun -i'
+        alias xle='export XCMD=xle;adb logcat "*:E"'
+        alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
+        alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
+        alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
+        alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
+        alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
+        alias xqchanglogo='adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
+        alias xqcamera_test_sub='adb shell am start -n com.mediatek.factorymode/com.mediatek.factorymode.camera.SubCamera'
+        # adb logcat |grep Displayed #获取activity 显示时间
+fi
+if [ ! -d "$ANDROID_NDK" ];then
+    echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
+fi
+if [ ! -f "$filePathGitBash" ];then
+    echo -e "\033[1;31mgit bash 配置文件:\n$filePathGitBash 不存在\033[0m"
+else
+    source $filePathGitBash
+fi

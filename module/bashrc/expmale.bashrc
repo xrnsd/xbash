@@ -110,15 +110,88 @@ fi
 #=========================================================================
 #====================== 自定义配置 =======================================
 #=========================================================================
+
+#----------------    函数实现   ----------------------------------
+ftLnUtil()
+{
+    local ftEffect=获取软连接的真实路径
+    local lnPath=$1
+
+    while true; do case "$1" in
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftLnUtil 软连接路径
+#    ftLnUtil /home/xian-hp-u16/log/xb_backup
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$lnPath" ];then    errorContent="${errorContent}\\n[软连接为空]lnPath=$lnPath" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftLnUtil -h
+            return
+    fi
+
+    OLD_IFS="$IFS"
+    IFS="/"
+    arr=($lnPath)
+    IFS="$OLD_IFS"
+
+    i=${#arr[@]}
+    let i--
+    delDir=
+    while [ $i -ge 0 ]
+    do
+        [[ $lnPath =~ ^/  ]] && lnRealPath=$lnPath || lnRealPath=`pwd`/$lnPath
+        while [ -h $lnRealPath ]
+        do
+           b=`ls -ld $lnRealPath|awk '{print $NF}'`
+           c=`ls -ld $lnRealPath|awk '{print $(NF-2)}'`
+           [[ $b =~ ^/ ]] && lnRealPath=$b  || lnRealPath=`dirname $c`/$b
+        done
+        if [ "$lnRealPath" = "$lnPath" ];then
+            lnPath=${lnPath%/*}
+            delDir=${arr[$i]}/$delDir
+        else
+            echo ${lnRealPath}${delDir}
+            break
+        fi
+        let i--
+    done
+}
 #----------------    基础变量    ----------------------------------
 userName=$(who am i | awk '{print $1}'|sort -u)
-userName=${userName:-`whoami | awk '{print $1}'|sort -u`}
+userName2=$(whoami | awk '{print $1}'|sort -u)
+userName=${userName:-$userName2}
+
 if [ "${S/ /}" != "$S" ];then
     userName=$(whoami) 
 fi
+dirNameXbash=cmds
 dirPathHome=/home/${userName}
-dirPathHomeCmd=${dirPathHome}/cmds
+# 根据.bashrc的软连接指向的文件路径截取出xbash根文件夹的名字[默认cmds]
+if [[ -f .bashrc ]]; then
+    filePathBashrc=$(ftLnUtil .bashrc)
+    if [[ "$filePathBashrc" != "${dirPathHome}/.bashrc " ]]; then
+                filePathBashrc=$(echo $filePathBashrc | sed "s ${dirPathHome}/   ")
+                OLD_IFS="$IFS"
+                IFS="/"
+                arrayItems=($filePathBashrc)
+                IFS="$OLD_IFS"
+                dirNameXbash=${arrayItems}
+    fi
+fi
+
+dirPathHomeCmd=${dirPathHome}/${dirNameXbash}
 dirPathHomeTools=${dirPathHome}/tools
+
 #---------------- xbash部分  ----------------------------------
 if [ ! -d "$dirPathHomeCmd" ];then
     echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeCmd=$dirPathHomeCmd]\033[0m"
@@ -141,14 +214,7 @@ fi
 
 #---------------------------------用户密码---------------------------------
 if [ -z "$rUserPwdBase" ];then
-    rUserPwdBase=123
     export rUserPwd=${rUserPwdBase:-'123'}
+    rUserPwdBase=rUserPwd
     readonly rUserPwd
 fi
-#----------------    临时命令    ---------------------------------
-alias xg6572='git clone git@192.168.1.188:mtk6572.git -b'
-
-#-------------------------android优化加速部分------------------
-#缓存目录[android优化加速部分]
-export CCACHE_DIR=/media/cache/.ccache
-
