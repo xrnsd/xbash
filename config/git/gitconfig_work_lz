@@ -1,8 +1,6 @@
 [user]
-	name = wgx_home
-	email = ziliaokuxian@163.com/15019962261/qq:1718686576
-[push]
-	default = simple
+	name = wgx
+	email = lz_wuguoxian@163.com/15019962261/qq:1718686576
 [color "status"]
     added = white
     changed = yellow

@@ -12,13 +12,19 @@ export HISTFILESIZE=10000000000
 export HISTSIZE=500
 # 以追加的方式保存命令历史
 shopt -s histappend
-export PROMPT_COMMAND="history -a"
+
+alias ..="cd .."
+alias ...="cd ../.."
+alias xcc='cd $OLDPWD'
+alias xr="source ~/.bashrc"
+alias xp="export XCMD=xp;readlink -f"
 
 #---------------- 自动整理bash历史记录  ----------------------------------
 filePathBashHistory=${dirPathHome}/.bash_history
 filePathBashHistoryTemp=${filePathBashHistory}_temp
 filePathBashHistoryArchive=${filePathBashHistory}_archive
 filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
+filePathGitBash=${dirPathHomeCmdConfig}/bashrc/git-completion.bash
 
 #去重
 sort -k2n $filePathBashHistory | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryTemp}&&\
@@ -36,26 +42,46 @@ if (($lineCount > $lineCountMax)); then
 fi
 
 #----------------    部分环境变量    ---------------------------
-export ANDROID_SDK=${dirPathHomeTools}/sdk
+export ANDROID_SDK=${dirPathHomeTools}/sdk/4.4
 export ANDROID_SDK_HOME=$ANDROID_SDK
 export ANDROID_SDK_BUILD_TOOL=${ANDROID_SDK_HOME}/build-tools/android-4.4W
-export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r12b
-export LD_LIBRARY_PATH=${dirPathHomeTools}/sp_flash_tool_v5.1548:${dirPathHomeTools}/sp_flash_tool_v5.1548/lib:$LD_LIBRARY_PATH
-export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$ANDROID_SDK_BUILD_TOOL:/usr/local/cuda-7.5/bin:$ANDROID_SDK/platform-tools:$ANDROID_SDK/tools:$ANDROID_NDK:/usr/local/cuda-8.0/bin/:$PATH
-#缓存目录[android优化加速部分]
-export CCACHE_DIR=/media/data/.ccache
+export ANDROID_NDK=${dirPathHomeTools}/ndk/android-ndk-r10c
+export PATH=${JAVA_HOME}/bin:${JRE_HOME}/bin:$ANDROID_SDK_BUILD_TOOL:/usr/local/cuda-7.5/bin:$ANDROID_SDK/tools:$ANDROID_NDK:/usr/local/cuda-8.0/bin/:$PATH
+export PATH=$PATH:/usr/libexec/git-core
 
-#--------------------------环境检测---------------------------
+#-------------------------标记为环境模式，此模式说明直接调用脚本实现------------------
+export  XMODULE="env"
+
+#------------------------------------  环境检测  ----------------------------------
 if [ ! -d "$JAVA_HOME" ];then
     echo -e "\033[1;31mJava_环境配置错误\n$JAVA_HOME不存在\n\033[0m"
 fi
 if [ ! -d "$ANDROID_SDK" ];then
     echo -e "\033[1;31mAndroid_SDK_环境配置错误\n$ANDROID_SDK 不存在\n\033[0m"
 else
-    alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
+            alias xl='export XCMD=xl;\
+                        adb logcat -c;\
+                        adb logcat | grep '
+            alias xlc='adb logcat | grep androidrun -i'
+            alias .9='export XCMD=.9;${dirPathHome}/tools/sdk/5.1/tools/draw9patch'
+            alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
+            alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
+            alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
+            alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
+            alias xqchanglogo='adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
+            alias xqcamera_test_sub='adb shell am start -n com.mediatek.factorymode/com.mediatek.factorymode.camera.SubCamera'
 fi
 if [ ! -d "$ANDROID_NDK" ];then
     echo -e "\033[1;31mAndroid_NDK_环境配置错误\n$ANDROID_NDK 不存在\033[0m"
+fi
+if [ ! -f "$filePathGitBash" ];then
+    echo -e "\033[1;31mgit bash 配置文件:\n$filePathGitBash 不存在\033[0m"
+else
+    source $filePathGitBash
+fi
+if [ ! -z `which todos` ]||[ ! -z `which fromdos` ];then
+    alias unix2dos=todos
+    alias dos2unix=fromdos
 fi
 
 fileNameXbashTragetConfigBase=config_base
@@ -71,9 +97,18 @@ if [ -f $filePathXbashTragetConfigBase ];then
     if [ -f ${rDirPathCmdsModule}/${rFileNameCmdModuleTools} ];then
         source  ${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
 
-        ftLog
-
-        #命令封装
+        alias xle='export XCMD=xle;\
+                        adb logcat "*:E"'
+        alias xgl='gitVersionMin="2.6.0";\
+            gitVersionNow=$(git --version);\
+            gitVersionNow=${gitVersionNow//git version/};\
+            gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g);\
+            if version_lt $gitVersionMin $gitVersionNow; then
+                git log --date=format-local:'%y%m%d' --pretty=format:"%C(bold blue) %H %Creset %an %ad %s" -15
+            else
+                git log --date=short --pretty=format:"%C(bold blue) %H %Creset %an %ad %s" -15
+            fi'
+        alias xmonkey='ftMonkeyTestByDevicesName'
         alias xb='export XCMD=xb;${dirPathHomeCmd}/main.sh'
         alias xk='export XCMD=xk;${dirPathHomeCmd}/main.sh'
         alias xc='export XCMD=xc;${dirPathHomeCmd}/main.sh'
@@ -83,8 +118,9 @@ if [ -f $filePathXbashTragetConfigBase ];then
         alias xss='export XCMD=xss;${dirPathHomeCmd}/main.sh reboot'
         alias xs='export XCMD=xs;${dirPathHomeCmd}/main.sh shutdown'
         alias xd='export XCMD=xd;${dirPathHomeCmd}/main.sh mtk_flashtool'
-        alias xi='export XCMD=xi;. ${dirPathHomeCmd}/${rFileNameCmdModuleCompile}'
         alias xt='export XCMD=xt;python ${dirPathHomeCmd}/module/test/pytools.py $2'
+        alias xi='export XCMD=xi;. ${dirPathHomeCmd}/${rFileNameCmdModuleCompile}'
+        alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
 
         #命令选项快速适配
         complete -W "compile" xi
@@ -92,57 +128,35 @@ if [ -f $filePathXbashTragetConfigBase ];then
         complete -W "systemui monkey launcher" xk
         complete -W "restartadb help gjh test clean_data_garbage vvv bootanim pac -v -vvv -ft -ftall" xc
 
+        # bash shell PS1 配置
+         export PROMPT_COMMAND='\
+         msg=$(history 1 | { read x y; echo $y; });\
+         if [[ $msg =~ "git" ]];then
+             ftSetBashPs1ByGitBranch
+         fi'
+        export PROMPT_COMMAND="ftSetBashPs1ByGitBranch;$PROMPT_COMMAND"
     else
         echo -e "\033[1;31mXbash函数加载失败[ToolsPath=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}]\033[0m"
     fi
 else
     echo -e "\033[1;31mXbash全局变量加载失败[filePathXbashTragetConfigBase=$filePathXbashTragetConfigBase]\033[0m"
 fi
-# 标记为环境模式，此模式说明直接调用脚本实现
-export  XMODULE="env"
-
-#--------------------------命令封装---------------------------
-alias ..="cd .."
-alias ...="cd ../.."
-alias xr="source ~/.bashrc"
-alias xgl='export XCMD=xgl;\
-    ftLog;\
-    git log --pretty=oneline -10 2>&1|tee -a $mFilePathLog'
-alias xp="export XCMD=xp;readlink -f"
-alias xl='export XCMD=xl;\
-    adb logcat -c;\
-    adb logcat | grep '
-alias xle='export XCMD=xle;\
-    ftLog;\
-    adb logcat -c;adb logcat "*:E" 2>&1|tee -a $mFilePathLog'
-alias xbh='export XCMD=xbh;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
-alias xkd='export XCMD=xkd;mkdir empty;rsync --delete-before -d -a -H -v --progress --stats empty $2;rm -r empty'
+#--------------------------命令封装[AOSP部分]---------------------------
 alias xversion='cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "custom_build_version";\
-        cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";\
-        cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"'
-
+                            cat packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java|grep "findPreference(KEY_BUILD_NUMBER).setSummary";\
+                            cat packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java|grep -C 1 "platformVersion.setText(getString(R.string.build_number)"'
 alias xmodel='cat build/tools/buildinfo.sh|grep "ro.product.model=";\
                             cat build/tools/buildinfo.sh|grep "ro.product.brand=";\
                             cat build/tools/buildinfo.sh|grep "ro.product.name=";\
                             cat build/tools/buildinfo.sh|grep "ro.product.device=";\
-                            cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"
-                            cat device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk |grep "product.model.num"'
-
-alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :="'
+                            cat device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk |grep "product.model.num";\
+                            cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"'
+alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :=";\
+                             cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "LZ_CONFIG_CAMERA_TYPE :="'
 
 alias xkk='cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SAM_FACTORYMODE";\
-        cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "TESTMODE_LIST";\
-        cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "VERALION"'
-
-alias xqcamera='adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
-alias xqsetting='adb shell am start -n com.android.settings/com.android.settings.Settings'
-alias xqselect='adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
-
-alias xkmonkey='adb shell kill $(adb shell ps | grep monkey | awk "{print $2}")'
-
-#--------------------------命令选项快速适配---------------------------
-complete -W "123" xl
-complete -W "123" xle
+                    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "TESTMODE_LIST";\
+                    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "VERALION"'
 
 #-------------------------android优化加速部分------------------
 #编译加速 c/c++ 部分

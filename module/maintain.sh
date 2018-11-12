@@ -70,7 +70,7 @@ ftRestoreChoiceSource()
 {
     local ftEffect=选择还原使用的版本[备份]包
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$mDirPathStoreSource" ]\
                 ||[ ! -d $mDirPathStoreSource ];then
@@ -185,7 +185,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$infoType" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -246,7 +246,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$mCmdsModuleDataDevicesList" ]\
                 ||[ -z "$rNameUser" ];then
@@ -344,7 +344,7 @@ ftSetBackupType()
 ftSetRestoreType()
 {
     local ftEffect=选择还原时忽略的目录
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ];then
         ftEcho -eax "函数[${ftEffect}]的参数错误 \
@@ -475,6 +475,9 @@ ftBackupOs()
     ftEcho -bh 开始${ftEffect}
     sudo tar -cvPzf  $mFilePathVersion --exclude-from=$fileNameExclude / \
      2>&1 |tee $mFilePathLog
+
+    # tar -cvPzf  --exclude-from=$fileNameExclude / | pigz -1 >$mFilePathVersion \
+    # 2>&1 |tee $mFilePathLog
 }
 
 ftAddNote()
@@ -501,7 +504,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if (( $#<$valCount ))||[ -z "$dirPathBackupRoot" ]\
                 ||[ -z "$versionName" ];then
@@ -580,7 +583,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=3
     if (( $#<$valCount ))||[ -z "$typeEdit" ]\
                 ||[ -z "$dirPathBackupRoot" ]\
@@ -686,7 +689,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=3
     if (( $#<$valCount ))||[ -z "$typeEdit" ]\
                 ||[ -z "$dirPathBackupRoot" ]\
@@ -832,7 +835,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=3
     if(( $#!=$valCount ))||[ -z "$version" ]\
                 ||[ -z "$note" ]\
@@ -924,7 +927,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z $mFilePathVersion ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -979,7 +982,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if(( $#!=$valCount ))||[ -z "$dirPathArray" ]\
                 ||[ -z "$fileTypeList" ];then

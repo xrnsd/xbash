@@ -2,6 +2,62 @@
 #####---------------------  说明  ---------------------------#########
 # 不可在此文件中出现不被函数包裹的调用或定义
 # 人话，这里只放函数
+# complete -W "example example" ftExample
+#####---------------------示例函数---------------------------#########
+ftExample()
+{
+    local ftEffect=函数模板
+    local isSecondTime=false
+
+    #使用示例
+    while true; do case "$1" in
+    #使用环境说明
+    e | -e |--env) cat<<EOF
+#=================== ${ftEffect}使用环境说明=============
+#
+#    工具依赖包 example
+#=========================================================
+EOF
+      return;;
+    #方法使用说明
+    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftExample 无参
+#    ftExample [example]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;;
+    #出现错误之后的尝试
+    x | X |-x | -X)
+        isSecondTime=true
+        ftEcho -s "尝试重新开始 [ftEffect]"
+    break;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ -z `which example` ]||[ -z `which example` ];then
+        ftExample -e
+    fi
+    #耦合校验
+    local valCount=1
+    if(( $#!=$valCount ))||[ -z "$example1" ]\
+                ||[ -z "$example2" ];then
+        ftEcho -ea "[${ftEffect}]的参数错误 \
+            [参数数量def=$valCount]valCount=$# \
+            [示例1]example1=$example1 \
+            请查看下面说明:"
+        if [ $isSecondTime = "false" ];then
+            ftExample -x
+        fi
+        ftExample -h
+        return
+    fi
+}
+
 #####---------------------工具函数---------------------------#########
 ftKillPhoneAppByPackageName()
 {
@@ -21,7 +77,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$packageName" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -32,7 +88,7 @@ EOF
         return
     fi
 
-    #adb状态检测
+    #adb连接状态检测
     local adbStatus=`adb get-state`
     if [ "$adbStatus" = "device" ];then
         #确定包存在
@@ -59,14 +115,14 @@ EOF
             done
         fi
     else
-        ftEcho -e adb状态[$adbStatus]异常,请重新尝试
+        ftEcho -e adb连接状态[$adbStatus]异常,请重新尝试
     fi
 }
 
 ftRestartAdb()
 {
     local ftEffect=重启adb sever
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rUserPwd" ];then
         ftEcho -eax "函数[${ftEffect}]的参数错误 \
@@ -86,15 +142,18 @@ ftInitDevicesList()
 {
     local ftEffect=初始化存储设备的列表
     local devDir=/media
-    local dirList=`ls $devDir`
+    local devNameDirPathList=`df -lh | awk '{print $1}'`
+    local devMountDirPathList=(`df -lh | awk '{print $6}'`)
     # 设备最小可用空间，小于则视为无效.单位M
     local devMinAvailableSpace=${1:-'0'}
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例===================
 #
-#    ftInitDevicesList [devMinAvailableSpace 单位M]
+#    ftInitDevicesList [devMinAvailableSpace 单位默认为MB]
 #    ftInitDevicesList 4096M
+#    ftInitDevicesList 4096G
+#    ftInitDevicesList 409600K
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then
@@ -102,13 +161,20 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
+    local devMinAvailableSpaceTemp=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//g/}
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//m/}
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//k/}
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//b/}
     local valCount=1
     if (( $#>$valCount ))||[ -z "$rDirPathUserHome" ]\
-                ||[ -z "$rNameUser" ];then
+                ||[ -z "$rNameUser" ]\
+                ||( ! echo -n $devMinAvailableSpaceTemp | grep -q -e "^[0-9][0-9]*$" );then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量def=$valCount]valCount=$# \
                 [默认用户的home目录]rDirPathUserHome=$rDirPathUserHome \
+                [可用空间限制]devMinAvailableSpace=$devMinAvailableSpace \
                 [默认用户名]rNameUser=$rNameUser \
                 请查看下面说明:"
         ftInitDevicesList -h
@@ -116,40 +182,42 @@ EOF
     fi
 
     unset mCmdsModuleDataDevicesList
+    local dirPathHome=(${rDirPathUserHome/$rNameUser\//$rNameUser})
+    local indexDevMount=0
+    local indexDevName=0
+    local sizeHome=$(ftDevAvailableSpace $dirPathHome true)
 
-    local index=0
-    mCmdsModuleDataDevicesList=(${rDirPathUserHome/$rNameUser\//$rNameUser})
-    #设备可用空间大小符合限制
-    sizeHome=$(ftDevAvailableSpace $mCmdsModuleDataDevicesList true)
-    if [ "$sizeHome" -gt "$devMinAvailableSpace" ];then
-        index=1;
+    devMinAvailableSpace=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
+    if [[ $devMinAvailableSpace =~ "g" ]]||[[ $devMinAvailableSpace =~ "gb" ]];then
+            devMinAvailableSpace=${devMinAvailableSpace//g/}
+            devMinAvailableSpace=$(( devMinAvailableSpace * 1024 ))
+
+    elif [[ $devMinAvailableSpace =~ "m" ]]||[[ $devMinAvailableSpace =~ "mb" ]];then
+            devMinAvailableSpace=${devMinAvailableSpace//m/}
+
+    elif [[ $devMinAvailableSpace =~ "k" ]]||[[ $devMinAvailableSpace =~ "kb" ]];then
+            devMinAvailableSpace=${devMinAvailableSpace//kb/}
+            devMinAvailableSpace=${devMinAvailableSpace//k/}
+            let devMinAvailableSpace=devMinAvailableSpace/1024
+    fi
+
+    if (($sizeHome>=$devMinAvailableSpace));then
+        mCmdsModuleDataDevicesList=$dirPathHome
+        indexDevMount=1;
     fi
     #开始记录设备文件
-    for dir in $dirList
+    for dir in ${devNameDirPathList[*]}
     do
-        #临时挂载设备
-        if [ ${dir} == $rNameUser ]; then
-            local dirTempList=`ls ${devDir}/${dir}`
-            for dirTemp in $dirTempList
-            do
-                devPathTemp=${devDir}/${dir}/${dirTemp}
-                sizeTemp=$(ftDevAvailableSpace $devPathTemp true)
-                # 确定目录已挂载,设备可用空间大小符合限制
-                if mountpoint -q $devPathTemp&&[ "$sizeTemp" -gt "$devMinAvailableSpace" ];then
-                    mCmdsModuleDataDevicesList[$index]=$devPathTemp
-                    index=`expr $index + 1`
-                fi
-            done
-        #长期挂载设备
-        else
-            devPath=${devDir}/${dir}
-            size=$(ftDevAvailableSpace $devPath true)
-            # 确定目录已挂载,设备可用空间大小符合限制
-            if mountpoint -q $devPath&&[ "$size" -gt "$devMinAvailableSpace" ];then
-                mCmdsModuleDataDevicesList[$index]=$devPath
-                index=`expr $index + 1`
+            devMountDirPath=${devMountDirPathList[indexDevName]}
+            if [[ $dir =~ "/dev/s" ]]&&[[ $devMountDirPath != "/" ]];then
+                    sizeTemp=$(ftDevAvailableSpace $devMountDirPath true)
+                    # 确定目录已挂载,设备可用空间大小符合限制
+                    if mountpoint -q $devMountDirPath&&(($sizeTemp>=$devMinAvailableSpace));then
+                        mCmdsModuleDataDevicesList[$indexDevMount]=$devMountDirPath
+                        indexDevMount=`expr $indexDevMount + 1`
+                    fi
             fi
-        fi
+            indexDevName=`expr $indexDevName + 1`
     done
     export mCmdsModuleDataDevicesList
 }
@@ -159,7 +227,7 @@ ftCleanDataGarbage()
     local ftEffect=清空回收站
     ftInitDevicesList
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$mCmdsModuleDataDevicesList" ];then
         ftEcho -ex "函数[${ftEffect}]的参数错误 \
@@ -172,18 +240,19 @@ ftCleanDataGarbage()
         dir=null
         if [ -d ${dirDev}/.Trash-1000 ];then
             dir=${dirDev}/.Trash-1000
-        else
-            if [ -d ${dirDev}/.local/share/Trash ];then
-                dir=${dirDev}/.local/share/Trash
-            fi
+        elif [ -d ${dirDev}/.local/share/Trash ];then
+            dir=${dirDev}/.local/share/Trash
         fi
         if [ -d $dir ];then
+            local dirPathLocal=$(pwd)
             cd $dir
-            if [ ! -d empty ];then
-                mkdir empty
-            fi
+
+            mkdir empty
             rsync --delete-before -d -a -H -v --progress --stats empty/ files/
             rm -rf files/*
+            rm -r empty
+
+            cd $dirPathLocal
         fi
     done
 }
@@ -204,7 +273,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rDirPathTools" ]\
                 ||[ ! -d "$rDirPathTools" ];then
@@ -213,7 +282,7 @@ EOF
                 [mtk下载工具路径]rDirPathTools=$rDirPathTools"
         ftMtkFlashTool -h
     fi
-    local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1548
+    local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1612.00.100
 
     cd $toolDirPath&&
     echo "$rUserPwd" | sudo -S ./flash_tool&&
@@ -249,7 +318,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=3
     if(( $#!=$valCount ))||[ -z "$type" ]\
                         ||[ -z "$isCreate" ]\
@@ -328,7 +397,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#<$valCount ));then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -464,7 +533,7 @@ EOF
 
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if(( $#!=$valCount ))||[ -z "$dirPathAnimation" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -544,13 +613,16 @@ EOF
         if [ $? -eq "2" ];then
             ftEcho -ex 空的动画资源，请确认[${dirPathAnimationSourceRes}]是否存在动画文件
         else
-            filelist=`ls $dirPathAnimationSourceRes`
+            filelist=$(ls $dirPathAnimationSourceRes)
+            local dirPathLocal=$PWD
+            cd $dirPathAnimationSourceRes
             for file in $filelist
             do
-                if [ ! -f $file ];then
+                if [ ! -f "$file" ];then
                     ftEcho -ex 动画资源包含错误类型的文件[${file}]，请确认
                 fi
             done
+            cd $dirPathLocal
         fi
 
         dirPathAnimationTraget=/home/${rNameUser}/${dirNameAnimation}
@@ -665,7 +737,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rDirPathUserHome" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -701,7 +773,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ -z "$rDirPathUserHome" ]\
                 ||[ -z "$rDirNameLog" ];then
@@ -778,7 +850,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local dirNameCmdModuleTest=test
     local filePathCmdModuleTest=${rDirPathCmdsModule}/${dirNameCmdModuleTest}/${rFileNameCmdModuleTestBase}
     if [ ! -d "$rDirPathCmdsModule" ]||[ ! -f "$filePathCmdModuleTest" ];then
@@ -789,7 +861,10 @@ EOF
         ftTest -h
         return
     fi
+
+    local dirPathLocal=$PWD
     $filePathCmdModuleTest "$@"
+    cd $dirPathLocal
 }
 
 ftBoot()
@@ -811,7 +886,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     if [ -z "$rUserPwd" ]||[ -z "$edittype" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
                 [参数数量_def=1/2]valCount=$# \
@@ -870,7 +945,7 @@ ftPushAppByName()
     # 确认ANDROID_PRODUCT_OUT非空,存在
     # 确认当前目录有效
     # 确认有对应模块名的apk文件存在
-    # 校验adb状态
+    # 校验adb连接状态
     # 确认adb权限
     # 确认手机有对应模块名的apk文件存在
     # 执行push操作
@@ -893,7 +968,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if(( $#>$valCount ))||[ -z "$fileNameNewAppApkBase" ]\
             ||(( $#==1 ))&&[ ! -d "$dirPathOut" ]\
@@ -938,7 +1013,7 @@ EOF
     #         echo $(echo $line | awk '{print $1}')
     #     fi
     # done
-    #adb状态检测 ___当前没有设备或存在多个设备，状态都不是device
+    #adb连接状态检测 ___当前没有设备或存在多个设备，状态都不是device
     if [ $(adb get-state) = "device" ];then
         #确定手机存在被覆盖的目标文件
         local statusDirAppApkPhone=$(adb shell ls $dirPathAppApkPhone)
@@ -961,7 +1036,7 @@ EOF
             while [[ $statusAdbRoot =~ "cannot" ]]||[[ $statusAdbRemount =~ "failed" ]]; do
                 echo statusAdbRoot=$statusAdbRoot
                 echo statusAdbRemount=$statusAdbRemount
-                ftEcho -e adb状态初始化失败,按y退出，按除y任意键重新尝试
+                ftEcho -e adb连接状态初始化失败,按y退出，按除y任意键重新尝试
                 read -n1 sel
                 case "$sel" in
                     y | Y )    exit;;
@@ -973,7 +1048,7 @@ EOF
             adb push $filePathAppApk $dirPathAppApkPhone
         fi
     else
-        ftEcho -e adb状态异常,请重新尝试
+        ftEcho -e adb连接状态异常,请重新尝试
     fi
 }
 
@@ -1009,7 +1084,7 @@ EOF
     fi
     local editType=del #surplus
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if(( $#!=$valCount ))||[ -z "$percentage" ]\
                 ||[ -z "$dirPathFileList" ]\
@@ -1104,7 +1179,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if(( $#>$valCount ))||[ ! -d "$dirPathFileList" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
@@ -1167,7 +1242,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=2
     if (( $#>$valCount ))||[ -z "$devDirPath" ]\
                 ||[ -z "$rDirPathCmdsData" ];then
@@ -1279,7 +1354,7 @@ ftGetKeyValueByBlockAndKey()
 EOF
     exit 1;; * )break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=3
     if(( $#!=$valCount ))||[ ! -f "$filePath" ]\
                 ||[ -z "$blockName" ]\
@@ -1343,7 +1418,7 @@ ftSetKeyValueByBlockAndKey()
 EOF
     exit 1;; * )break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=4
     if(( $#!=$valCount ))||[ ! -f "$filePath" ]\
                 ||[ -z "$blockName" ]\
@@ -1387,7 +1462,7 @@ ftCheckIniConfigSyntax()
 EOF
     exit 1;; * )break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -f "$filePath" ];then
         ftEcho -ea "函数[${ftEffect}]的参数错误 \
@@ -1462,7 +1537,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if (( $#>$valCount ))||[ ! -f "$filePathHosts" ]\
                 ||[ ! -d "$rDirPathCmdsData" ];then
@@ -1518,89 +1593,13 @@ ff02::2 ip6-allrouters
     fi
 }
 
-
-
 #===================    非通用实现[高度耦合]    ==========================
-ftCopySprdPacFileList()
-{
-    local ftEffect=自动复制sprd的pac相关文件
-    # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
-    # ANDROID_PRODUCT_OUT=/media/data/ptkfier/code/sp7731c/code/out/target/product/sp7731c_1h10_32v4
-    local dirPathCode=$ANDROID_BUILD_TOP
-    local dirPathOut=$ANDROID_PRODUCT_OUT
-
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
-#
-#    ftCopySprdPacFileList 无参
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then
-        return
-    fi
-    exit;; * ) break;; esac;done
-
-    #耦合变量校验
-    local valCount=0
-    if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
-            ||[ ! -d "$dirPathOut" ];then
-        ftEcho -ea "[${ftEffect}]的参数错误 \
-            [参数数量def=$valCount]valCount=$# \
-            [工程根目录]dirPathCode=$dirPathCode \
-            [工程out目录]dirPathOut=$dirPathOut \
-            请查看下面说明:"
-        ftCopySprdPacFileList -h
-        return
-    fi
-    cd $ANDROID_BUILD_TOP
-    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionName=${versionName/$keyVersion/}
-    versionName=${versionName/\");/}
-    versionName=$(echo $versionName |sed s/[[:space:]]//g)
-    local dirPathCodeRoot=${dirPathCode%/*}
-    local dirPathCodeRootPacres=${dirPathCodeRoot}/res
-    local dirNameBranchVersion=${branchName}____${versionName}____$(date -d "today" +"%y%m%d[%H:%M]")
-    local dirPathBranchVersion=${dirPathCodeRootPacres}/${dirNameBranchVersion}
-    local fileNameList=(boot.img \
-            cache.img \
-            fdl1.bin \
-            fdl2.bin \
-            persist.img \
-            prodnv.img \
-            recovery.img \
-            sysinfo.img \
-            system.img \
-            u-boot.bin \
-            u-boot-spl-16k.bin \
-            userdata.img\
-            SC7720_UMS.xml)
-    if [ -d "$dirPathBranchVersion" ];then
-        rm -rf $dirPathBranchVersion
-    fi
-    mkdir $dirPathBranchVersion
-
-    for fileName in ${fileNameList[*]}
-    do
-        filePath=${dirPathOut}/${fileName}
-        if [ -f $filePath ];then
-            cp -v -f $filePath $dirPathBranchVersion
-        else
-            ftEcho -ex 文件[$filePath]不存在
-            rm -rf $dirPathBranchVersion
-        fi
-    done
-}
-
 ftBackupOutsByMove()
 {
     local ftEffect=移动备份out
+    ftAutoInitEnv
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
-    local buildType=$TARGET_BUILD_VARIANT
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
@@ -1614,7 +1613,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -d "$dirPathOut" ];then
@@ -1629,37 +1628,20 @@ EOF
     cd $ANDROID_BUILD_TOP
     #分支名
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    #软件版本名
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionName=${versionName/$keyVersion/}
-    versionName=${versionName/\");/}
-    versionName=$(echo $versionName |sed s/[[:space:]]//g)
-    #软件编译类型
-    local filePathBuildInfo=${dirPathOut}/system/build.prop
-    local keybuildType="ro.build.type="
-    local buildTypeFile=
-    if [ -f "$filePathBuildInfo" ];then
-        buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
-        if [ ! -z "$buildTypeFile" ];then
-            buildTypeFile=${buildTypeFile/$keybuildType/}
-            if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
-                ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
-                buildType=$buildTypeFile
-            fi
-        else
-            ftEcho -e "[$filePathBuildInfo]中未找到编译类型"
-        fi
-    fi
+
+    local buildType=$AutoEnv_buildType
+    local versionName=$AutoEnv_versionName
 
     local dirPathCodeRootOuts=${dirPathCode%/*}/outs
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----$(date -d "today" +"%y%m%d[%H:%M]")
     local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
 
+    if [ ! -d "$dirPathCodeRootOuts" ];then
+        mkdir -p $dirPathCodeRootOuts
+    fi
+
     if [ ! -d "$dirPathOutBranchVersion" ];then
-        ftEcho -s "移动[$dirNameBranchVersion]\n\
- 到[$dirPathCodeRootOuts]"
+        ftEcho -s "移动[$dirNameBranchVersion]\n到[$dirPathCodeRootOuts]"
         mv out/ $dirPathOutBranchVersion
     else
         ftEcho -ex 存在相同out
@@ -1671,7 +1653,6 @@ ftYKSwitch()
 {
     local ftEffect=切换永恒星和康龙配置
     local type=$1
-    # ANDROID_BUILD_TOP=/media/data/ptkfier/code/sp7731c/code
     local dirPathCode=$ANDROID_BUILD_TOP
 
     #使用示例
@@ -1684,9 +1665,26 @@ EOF
     if [ "$XMODULE" = "env" ];then
         return
     fi
-    exit;; * ) break;; esac;done
+    exit;;
+ e | E |-e | -E) cat<<EOF
+#=================== [ ${ftEffect} ]的使用环境说明=============
+#
+#    ftYKSwitch 仅可用于 SPRD > 7731C > N9 的项目
+#=======================================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;;
+     * ) break;; esac;done
 
-    #耦合变量校验
+# 环境检测
+    ftAutoInitEnv
+    if [[ $AutoEnv_mnufacturers != "sprd" ]]; then
+        ftYKSwitch -e
+        return
+    fi
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$type" ]\
             ||[ ! -d "$dirPathCode" ];then
@@ -1699,94 +1697,53 @@ EOF
         return
     fi
 
+    local filePathConfig=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk
     local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
-    local tagYhx=//#define\ CAMERA_USE_KANGLONG_GC2365
-    local tagKl=#define\ CAMERA_USE_KANGLONG_GC2365
+    local key="LZ_CONFIG_CAMERA_TYPE :="
+    local configType=$(cat $filePathConfig|grep "$key")
+    if [ -f $filePathConfig ]&&[ ! -z "$configType" ];then
+        rm -rf ${ANDROID_PRODUCT_OUT}/obj/SHARED_LIBRARIES/camera.sc8830_intermediates
 
-    export mCameraType=$type
-    while true; do case "$type" in
-    yhx )
-        sed -i "s:$tagKl:$tagYhx:g" $filePathTraget
-        break;;
-    kl )
-         sed -i "s:$tagYhx:$tagKl:g" $filePathTraget
-        break;;
-    * )
-         export mCameraType=
-        ftEcho -ex 错误参数[type=$type]
-        break;;
-    esac;done
-}
+            local tagYhx="LZ_CONFIG_CAMERA_TYPE\ \:\=\ YHX"
+            local tagKl="LZ_CONFIG_CAMERA_TYPE\ \:\=\ KL"
+            configType=${configType//$key/}
+            configType=$(echo $configType |sed s/[[:space:]]//g)
+            configType=$(echo $configType | tr '[A-Z]' '[a-z]')
 
-ftRmNormalBin()
-{
-    local ftEffect=清空pac相关资源文件
-    local dirPathCode=$ANDROID_BUILD_TOP
-    local dirPathOut=$ANDROID_PRODUCT_OUT
-    local dirPathPacRes=$1
-
-    #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
-#
-#    ftRmNormalBin [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
-#    ftRmNormalBin out/pac
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then
-        return
+            if [ "$configType" != "$type" ];then
+                    while true; do case "$type" in
+                    yhx )
+                        sed -i "s:$tagKl:$tagYhx:g" $filePathConfig
+                        break;;
+                    kl )
+                        sed -i "s:$tagYhx:$tagKl:g" $filePathConfig
+                        break;;
+                    * )
+                         export mCameraType=
+                         ftEcho -ex 错误参数[type=$type]
+                        break;;
+                    esac;done
+                else
+                    ftEcho -e 参数相同configType=$configType type=$type
+                fi
+    elif [ -f $filePathTraget ];then
+            local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
+            local tagYhx=//#define\ CAMERA_USE_KANGLONG_GC2365
+            local tagKl=#define\ CAMERA_USE_KANGLONG_GC2365
+                while true; do case "$type" in
+                yhx )
+                    sed -i "s:$tagKl:$tagYhx:g" $filePathTraget
+                    break;;
+                kl )
+                     sed -i "s:$tagYhx:$tagKl:g" $filePathTraget
+                    break;;
+                * )
+                     export mCameraType=
+                    ftEcho -ex 错误参数[type=$type]
+                    break;;
+                esac;done
     fi
-    exit;; * ) break;; esac;done
-
-    #耦合变量校验
-    local valCount=1
-    if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
-            ||[ ! -d "$dirPathPacRes" ]\
-            ||[ ! -d "$dirPathOut" ];then
-        ftEcho -ea "[${ftEffect}]的参数错误 \
-            [参数数量def=$valCount]valCount=$# \
-            [工程根目录]dirPathCode=$dirPathCode \
-            [工程out目录]dirPathOut=$dirPathOut \
-            [工程Pac生成目录]dirPathPacRes=$dirPathPacRes \
-            请查看下面说明:"
-        ftRmNormalBin -h
-        return
-    fi
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionName=${versionName/$keyVersion/}
-    versionName=${versionName/\");/}
-    versionName=$(echo $versionName |sed s/[[:space:]]//g)
-
-    fileList=(SC7720_UMS.xml \
-        pac_7731c.pl \
-        fdl1.bin \
-        fdl2.bin \
-        nvitem.bin \
-        nvitem_wcn.bin \
-        prodnv.img \
-        u-boot-spl-16k.bin \
-        SC7702_pike_modem_AndroidM.dat \
-        DSP_DM_G2.bin \
-        SC8800G_pike_wcn_dts_modem.bin \
-        boot.img \
-        recovery.img \
-        system.img \
-        userdata.img \
-        "logo.bmp" \
-        cache.img \
-        sysinfo.img \
-        u-boot.bin \
-        persist.img)
-    cd $dirPathPacRes
-    for fileName in ${fileList[@]}
-    do
-        if [ -f "$fileName" ]; then
-            rm $fileName
-            echo "rm $fileName"
-        fi
-    done
+        export mCameraType=$type
 }
 
 ftAutoUploadHighSpeed()
@@ -1807,7 +1764,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))\
     ||([ ! -d "$pathContentUploadSource" ]&&[ ! -f "$pathContentUploadSource" ])\
@@ -1826,7 +1783,12 @@ EOF
     local pasword=123456
 
     local dirPathServer=/media/新卷
-    local dirPathUpload=智能机软件/SPRD7731C/鹏明珠/autoUpload
+
+    if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+        local dirPathUpload=智能机软件/SPRD7731C/鹏明珠/autoUpload
+    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+        local dirPathUpload=智能机软件/MTK6580/autoUpload
+    fi
 
     local dirPathContentUploadSource=$(dirname $pathContentUploadSource)
     local fileNameContentUploadSource=$(basename $pathContentUploadSource)
@@ -1857,7 +1819,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -f "$contentUploadSource" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
@@ -1896,15 +1858,15 @@ EOF
 complete -W "-y" ftAutoPacket
 ftAutoPacket()
 {
-    local ftEffect=生成7731c使用的pac
+    local ftEffect=基于android的out生成版本软件
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
-    local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
+    local isUpload=$1
 
     #使用示例
     while true; do case "$1" in    h | H |-h | -H) cat<<EOF
-#=================== [ ${ftEffect} ]的使用示例=============
+#=================== [   ${ftEffect}   ]的使用示例=============
 #
 #    ftAutoPacket 无参
 #    ftAutoPacket -y #自动打包，上传到188服务器
@@ -1913,107 +1875,151 @@ EOF
     if [ "$XMODULE" = "env" ];then
         return
     fi
-    exit;; * ) break;; esac;done
+    exit;;
+    env | -env |-ENV ) cat<<EOF
+#============== [   ${ftEffect}   ]的使用环境说明============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;;
+    * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ]\
+            ||[ -z "$ANDROID_PRODUCT_OUT" ]\
+            ||[ -z "$TARGET_BUILD_VARIANT" ];then
+        ftAutoPacket -env
+        return
+    fi
     local valCount=1
     if(( $#>$valCount ))||[ ! -d "$dirPathCode" ]\
-            ||[ ! -f "$filePathPacketScript" ]\
             ||[ ! -d "$dirPathOut" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
-            [packet打包脚本]filePathPacketScript=$filePathPacketScript \
             [工程out目录]dirPathOut=$dirPathOut \
             请查看下面说明:"
         ftAutoPacket -h
         return
     fi
-    local dirNamePacRes=packet
-    local dirPathPacRes=${dirPathCode}/out/${dirNamePacRes}
-    local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionName=${versionName/$keyVersion/}
-    versionName=${versionName/"\n"/_}
-    versionName=${versionName/\");/}
-    versionName=$(echo $versionName |sed s/[[:space:]]//g)
-    local dirPathPacResVersion=${dirPathPacRes}/${versionName}
 
-    local dirPathNormalBin=$dirPathOut
-    local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
-    local dirPathLogo=${dirPathCode%/*}/res
+    ftAutoInitEnv
     local dirPathLocal=$PWD
+    local dirNamePacRes=packet
+    local buildType=$AutoEnv_buildType
+    local dirPathPacRes=${dirPathCode}/out/${dirNamePacRes}
 
-    local filePathBuildInfo=${dirPathOut}/system/build.prop
-    local keybuildType="ro.build.type="
-    local buildTypeFile=
-    if [ -f "$filePathBuildInfo" ];then
-        buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
-        if [ ! -z "$buildTypeFile" ];then
-            buildTypeFile=${buildTypeFile/$keybuildType/}
-            if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
-                ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
-                buildType=$buildTypeFile
+    if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+            local dirPathNormalBin=$dirPathOut
+            local dirPathLogo=${dirPathCode%/*}/res
+            local versionName=$AutoEnv_versionName
+            local dirPathPacResVersion=${dirPathPacRes}/${versionName}
+            local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
+            local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
+            local filePathPacketScript=${rDirPathCmdsModule}/packet/pac_7731c.pl
+
+            if [ ! -f "$filePathPacketScript" ];then
+                    ftEcho -ea "[${ftEffect}]的参数错误 \
+                       找不到 [sprd的打包工具]filePathPacketScript=$filePathPacketScript \
+                        请查看下面说明:"
+                    ftAutoPacket -h
+                    return
             fi
-        else
-            ftEcho -e "[$filePathBuildInfo]中未找到编译类型"
-        fi
+
+            if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
+                    versionName=${versionName}____${buildType}
+                    dirPathPacResVersion=${dirPathPacRes}/${versionName}
+            fi
+
+            mkdir -p $dirPathPacResVersion
+            cd $dirPathPacResVersion
+
+            ftEcho -s "开始生成 ${versionName}.pac\n"
+            /usr/bin/perl $filePathPacketScript \
+                $versionName.pac \
+                SC77xx \
+                ${versionName}\
+                ${dirPathNormalBin}/SC7720_UMS.xml \
+                ${dirPathNormalBin}/fdl1.bin \
+                ${dirPathNormalBin}/fdl2.bin \
+                ${dirPathModemBin}/nvitem.bin \
+                ${dirPathModemBin}/nvitem_wcn.bin \
+                ${dirPathNormalBin}/prodnv.img \
+                ${dirPathNormalBin}/u-boot-spl-16k.bin \
+                ${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
+                ${dirPathModemBin}/DSP_DM_G2.bin \
+                ${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
+                ${dirPathNormalBin}/boot.img \
+                ${dirPathNormalBin}/recovery.img \
+                ${dirPathNormalBin}/system.img \
+                ${dirPathNormalBin}/userdata.img \
+                ${dirPathLogo}/logo.bmp \
+                ${dirPathNormalBin}/cache.img \
+                ${dirPathNormalBin}/sysinfo.img \
+                ${dirPathNormalBin}/u-boot.bin \
+                ${dirPathNormalBin}/persist.img&&
+            ftEcho -s 生成7731c使用的pac[${dirPathPacResVersion}/${versionName}.pac]
+
+    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+            local dirNamePackage="packages"
+            local dirNamePackageDataBase="dataBase"
+            local deviceName=`basename $ANDROID_PRODUCT_OUT`
+            local dirPathPacResVersion=${dirPathPacRes}/buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$(date -d "today" +"%Y%m%d")
+            local dirPathPackage=${dirPathPacResVersion}/${dirNamePackage}
+            local dirPathPackageDataBase=${dirPathPacResVersion}/${dirNamePackageDataBase}
+            local fileList=(boot.img \
+                            cache.img \
+                            lk.bin \
+                            logo.bin \
+                            MT6580_Android_scatter.txt \
+                            preloader_${deviceName}.bin
+                            ramdisk.img \
+                            recovery.img \
+                            secro.img \
+                            system.img \
+                            userdata.img)
+
+            local dataBaseFileList=
+            if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
+                dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
+                                                 obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
+            elif [ $deviceName = "keytak6580_weg_l" ];then
+                dataBaseFileList=(obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15 \
+                                                 obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n)
+            fi
+
+            mkdir -p $dirPathPacResVersion
+            mkdir -p $dirPathPackage
+            mkdir -p $dirPathPackageDataBase
+            cd $dirPathPacResVersion
+
+            #packages
+            for file in ${fileList[@]}
+            do
+                 cp -v -r -f  ${dirPathOut}/${file} ${dirPathPacResVersion}/${dirNamePackage}
+            done
+            # database
+            if [ ! -z "$dataBaseFileList" ];then
+                for file in ${dataBaseFileList[@]}
+                do
+                     cp -v -r -f  ${dirPathOut}/${file} ${dirPathPackageDataBase}
+                done
+            fi
     fi
 
-    if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
-        versionName=${versionName}____${buildType}
-    fi
+    # 生成说明文件
+    ftCreateReadMeBySoftwareVersion $dirPathPacResVersion
 
-    if [ ! -d $dirPathPacResVersion ];then
-        mkdir $dirPathPacResVersion
-    fi
-    cd $dirPathPacResVersion
-
-    ftEcho -s "开始生成 ${versionName}.pac\n"
-    /usr/bin/perl $filePathPacketScript \
-        $versionName.pac \
-        SC77xx \
-        ${versionName}\
-        ${dirPathNormalBin}/SC7720_UMS.xml \
-        ${dirPathNormalBin}/fdl1.bin \
-        ${dirPathNormalBin}/fdl2.bin \
-        ${dirPathModemBin}/nvitem.bin \
-        ${dirPathModemBin}/nvitem_wcn.bin \
-        ${dirPathNormalBin}/prodnv.img \
-        ${dirPathNormalBin}/u-boot-spl-16k.bin \
-        ${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
-        ${dirPathModemBin}/DSP_DM_G2.bin \
-        ${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
-        ${dirPathNormalBin}/boot.img \
-        ${dirPathNormalBin}/recovery.img \
-        ${dirPathNormalBin}/system.img \
-        ${dirPathNormalBin}/userdata.img \
-        ${dirPathLogo}/logo.bmp \
-        ${dirPathNormalBin}/cache.img \
-        ${dirPathNormalBin}/sysinfo.img \
-        ${dirPathNormalBin}/u-boot.bin \
-        ${dirPathNormalBin}/persist.img&&
-    ftEcho -s 生成7731c使用的pac[${dirPathPacResVersion}/${versionName}.pac]
-    if [ "$1" = "-y" ];then
-        ftCreateReadMeBySoftwareVersion $dirPathPacResVersion
-        #ftAutoUpload ${dirPathPacRes}/${versionName}.pac
+    while true; do case "$isUpload" in    y | Y |-y | -Y)
         ftAutoUploadHighSpeed $dirPathPacResVersion
-    fi
-    if [ "$1" = "-b" ];then
-        local serverIp=192.168.1.105
-        local userName=share
-        local pasword=123456
-        local dirPathMoule=desktop
-        ftEcho -s "开始上传${fileNameUploadSource} 到\n\
- ${serverIp}/${dirPathMoule}..."
-smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
-    put ${dirPathPacRes}/${versionName}.pac ${versionName}.pac
-EOF
-        ftEcho -s "${contentUploadSource}\n\
- 上传结束"
-    fi
+    break;; * ) break;; esac;done
+
     cd $dirPathLocal
 }
 
@@ -2037,7 +2043,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     if [ -z "$ftLanguageContent" ]&&[ ! -f "$filePathDevice" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
             [语言]ftLanguageContent=$ftLanguageContent \
@@ -2074,35 +2080,6 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
  my_ZG be_BY et_EE zu_ZA az_AZ hy_AM ka_GE lo_LA \
  mn_MN ne_NP kk_KZ si_LK)
 
-
-# 去掉重复语言
-    # index=0
-    # strB="_isdbwb"
-    # strC="_dddd"
-    # for cmd in ${shortList[@]}
-    # do
-    #     if [[ ${allList[index]} =~ $strC ]];then
-    #        continue;
-    #     fi
-
-    #     time=0
-    #     index2=0
-    #     for dd in ${shortList[@]}
-    #     do
-    #         if [ $dd = $cmd ];then
-    #             if(( $time!=0 ));then
-    #                 # echo 11 $dd
-    #                 echo "${dd}_`expr $index + 1`____`expr $index2 + 1`"
-    #                 allList[$index]=${allList[index]}_isdbwb
-    #                 allList[$index2]=${allList[index2]}_dddd
-    #             fi
-    #             time=`expr $time + 1`
-    #         fi
-    #         index2=`expr $index2 + 1`
-    #     done
-    #     index=`expr $index + 1`
-    # done
-
     if [ -z "$ftLanguageContent" ];then
         LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
         LanguageList=${LanguageList//PRODUCT_LOCALES :=/};  #删除PRODUCT_LOCALES :=
@@ -2130,11 +2107,11 @@ ca_ES hr_HR da_DK nl_BE en_AU en_GB en_CA en_IN en_IE\
         for base in ${sourceList[@]}
         do
             if [ $lc = $base ];then
-                if [ $orderIndex -eq 0 ];then
-                    echo "${tragetList[index]}(默认)"
-                else
-                    echo ${tragetList[index]}
-                fi
+                # if [ $orderIndex -eq 0 ];then
+                #     echo "${tragetList[index]}(默认)"
+                # else
+                echo ${tragetList[index]}
+                # fi
                 orderIndex=`expr $orderIndex + 1`
                 break;
             elif [[ $base =~ "/" ]]&&[[ $base =~ $lc ]]; then
@@ -2178,7 +2155,7 @@ EOF
         dirPathServerMoule=$dirPathServerMouleContent
     fi
 
-    #耦合变量校验
+    #耦合校验
     local valCount=5
     if(( $#!=$valCount ))||[ ! -f "$contentUploadSource" ]\
     ||([ ! -d "$contentUploadSource" ]&&[ ! -f "$contentUploadSource" ])\
@@ -2244,12 +2221,20 @@ ftCreateReadMeBySoftwareVersion()
     local ftEffect=创建软件版本相关修改记录和版本说明
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
-    local filePathDevice=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
-    local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
     local dirPathPacRes=$1
+    ftAutoInitEnv
 
+    while true; do case "$1" in
+    #使用环境说明
+    e | -e |--env) cat<<EOF
+#=================== ${ftEffect}使用环境说明=============
+#
+#    工具依赖包 unix2dos #sudo apt-get install tofrodos
+#=========================================================
+EOF
+      return;;
     #使用示例
-    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+    h | H |-h | -H) cat<<EOF
 #=================== [ ${ftEffect} ]的使用示例=============
 #
 #    ftCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
@@ -2261,82 +2246,176 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    if [ ! -d "$dirPathPacRes" ];then
-        mkdir $dirPathPacRes
-    fi
 
-    #耦合变量校验
+    #环境校验
+    if [ -z `which todos` ]||[ -z `which fromdos` ];then
+        ftCreateReadMeBySoftwareVersion -e
+    fi
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
-            ||[ ! -d "$dirPathOut" ]\
-            ||[ ! -f "$filePathDevice" ]\
-            ||[ ! -f "$filePathPawInfo" ];then
+            ||[ ! -d "$dirPathOut" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
             [参数数量def=$valCount]valCount=$# \
             [工程根目录]dirPathCode=$dirPathCode \
             [工程out目录]dirPathOut=$dirPathOut \
-            [工程Device的make文件]filePathDevice=$filePathDevice \
-            [工程暗码清单文件]filePathPawInfo=$filePathPawInfo \
             请查看下面说明:"
         ftCreateReadMeBySoftwareVersion -h
         return
     fi
 
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionName=${versionName/$keyVersion/}
-    versionName=${versionName/\");/}
-    versionName=$(echo $versionName |sed s/[[:space:]]//g)
+    if [ ! -d "$dirPathPacRes" ];then
+        mkdir $dirPathPacRes
+    fi
 
-    LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
-    LanguageList=${LanguageList//PRODUCT_LOCALES :=/};  #删除PRODUCT_LOCALES :=
+
+    local fileNameReadMeTemplate=客户说明.txt
+    local fileNameChangeListTemplate=修改记录.txt
+    local filePathReadMeTemplate=${dirPathPacRes}/${fileNameReadMeTemplate}
+    local filePathChangeListTemplate=${dirPathPacRes}/${fileNameChangeListTemplate}
+
+    local versionName=$AutoEnv_versionName
+
+    # 语言列表
+    #
+    #获取缩写列表
+    if [ $AutoEnv_mnufacturers = "sprd" ];then
+                local filePathDeviceSprd=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
+                if [[ -f "$filePathDeviceSprd" ]]; then
+                    local key="PRODUCT_LOCALES :="
+                    LanguageList=$(cat $filePathDeviceSprd|grep "$key")
+                    LanguageList=${LanguageList//$key/};
+                else
+                    ftEcho -e "[工程文件不存在:${filePathDeviceSprd}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
+                fi
+   elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+                local filePathDeviceMtk=${dirPathCode}/device/kdragon/m9_xinhaufei_r9_hd/ProjectConfig.mk
+                local filePathDeviceMtk2=${dirPathCode}/device/keytak/keytak6580_weg_l/ProjectConfig.mk
+                if [ -f "$filePathDeviceMtk" ]; then
+                    local key="MTK_PRODUCT_LOCALES = "
+                    LanguageList=$(cat $filePathDeviceMtk|grep "$key")
+                elif [ -f "$filePathDeviceMtk2" ]; then
+                    local key="MTK_PRODUCT_LOCALES = "
+                    LanguageList=$(cat $filePathDeviceMtk2|grep "$key")
+                else
+                    ftEcho -e "[工程文件不存在:${filePathDeviceMtk}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
+                fi
+    fi
+
+    LanguageList=${LanguageList//$key/};
     LanguageList=`ftLanguageUtils "$LanguageList"`  #缩写转化为中文
     LanguageList=${LanguageList//
 / };  # 删除回车
     LanguageList=(默认)${LanguageList}
 
     cd $dirPathCode
-    gitCommitList=$(git log --pretty=format:"%s" -10)
 
-    pawNuminfo=$(cat $filePathPawInfo|grep "private static final String PAW_NUM_INFO")  #获取暗码清单信息
-    pawNuminfo=${pawNuminfo//private static final String PAW_NUM_INFO =/};
-    # pawNuminfo=${pawNuminfo//";/};
-    #客户说明模板
-# 1. 版本号：A451_N9_3GW_ORRO_V1.2_20170225
+    #使用git 记录的修改记录
+    gitVersionMin="2.6.0"
+    gitVersionNow=$(git --version)
+    gitVersionNow=${gitVersionNow//git version/}
+    gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
-# 2. 语言:
+    if version_lt $gitVersionMin $gitVersionNow; then
+        gitCommitListOneDay=$(git log --date=format-local:'%y%m%d'  --since=1.day.ago --pretty=format:" %an %ad %s")
+        gitCommitListBefore=$(git log --date=format-local:'%y%m%d'  --before=1.day.ago --pretty=format:" %an %ad %s")
+    else
+        gitCommitListOneDay=$(git log  --since=1.day.ago  --pretty=format:" %s")
+        gitCommitListBefore=$(git log  --before=1.day.ago  --pretty=format:" %s")
+    fi
 
-#     英语(默认) 葡萄牙语 法语 意大利语 西班牙语 德语
+    # 暗码清单
+    local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
+    if [ -f $filePathPawInfo ];then
+            local pawNumInfo=$(cat $filePathPawInfo|grep "private static final String PAW_NUM_INFO")  #获取暗码清单信息
+            pawNumInfo=${pawNumInfo//private static final String PAW_NUM_INFO =/};
+            pawNumInfo=${pawNumInfo//\";/};
+            pawNumInfo=${pawNumInfo//\"/};
+            pawNumInfo=$(echo $pawNumInfo |sed s/[[:space:]]//g)
+    else
+            ftEcho -e "[工程暗码清单文件不存在，获取失败]\n$filePathPawInfo"
+    fi
 
-# 3. 修改点：
+    if [ $AutoEnv_mnufacturers = "sprd" ];then
 
-#     添加 RAM 128G，256G项
+    #摄像头配置相关
+    local filePathCameraConfig=${dirPathCode}/device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk
+    if [ -f $filePathCameraConfig ];then
+            local keyType="LZ_CONFIG_CAMERA_TYPE := "
+            local keySizeBack="CAMERA_SUPPORT_SIZE := "
+            local keySizeFront="FRONT_CAMERA_SUPPORT_SIZE := "
 
-    # 修改记录模板
-# 暗码清单：*070809##
-# 修改记录：
-#     A451_N9_3GW_ORRO_V1.2_20170228
-#     修改 隐藏 RAM max=4G,ROM max=64G
-#     修改 更新whatspp
+            local cameraTypeInfo=$(cat $filePathCameraConfig|grep "$keyType")
+            local cameraSizeBack=$(cat $filePathCameraConfig|grep "$keySizeBack")
+            local cameraSizeFront=$(cat $filePathCameraConfig|grep "$keySizeFront")
 
-    local fileNameReadMeTemplate=客户说明.txt
-    local fileNameChangeListTemplate=修改记录.txt
-    local filePathReadMeTemplate=${dirPathPacRes}/${fileNameReadMeTemplate}
-    local filePathChangeListTemplate=${dirPathPacRes}/${fileNameChangeListTemplate}
-    # 开始生成模板文件
+            cameraTypeInfo=${cameraTypeInfo//$keyType/};
+            cameraSizeFront=${cameraSizeFront//$keySizeFront/};
+
+            cameraSizeBack=${cameraSizeBack//${keySizeFront}$cameraSizeFront/};
+            cameraSizeBack=${cameraSizeBack//$keySizeBack/};
+
+            cameraTypeInfo=$(echo $cameraTypeInfo |sed s/[[:space:]]//g)
+            cameraSizeFront=$(echo $cameraSizeFront |sed s/[[:space:]]//g)
+            cameraSizeBack=$(echo $cameraSizeBack |sed s/[[:space:]]//g)
+    else
+            ftEcho -e "[相机配置文件不存在，获取失败]\n$filePathCameraConfig"
+    fi
+
+    #RAM/ROM
+    local filePathEnvsetup=${dirPathCode}/build/envsetup.sh
+    if [ -f $filePathEnvsetup ];then
+            local keyRom="export sizeRom="
+            local keyRam="export sizeRam="
+            local sizeRom=$(cat $filePathEnvsetup|grep "$keyRom")
+            local sizeRam=$(cat $filePathEnvsetup|grep "$keyRam")
+            sizeRom=${sizeRom//$keyRom/};
+            sizeRam=${sizeRam//$keyRam/};
+    else
+            ftEcho -e "[envsetup.sh不存在，获取失败]\n$filePathEnvsetup"
+    fi
+    fi
+
+    #============           客户说明          ====================
+    echo -e "$gitCommitListOneDay">$filePathReadMeTemplate
+    seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathReadMeTemplate >${filePathReadMeTemplate}.temp
+
     echo -e "1. 版本号：$versionName
-
 2. 语言:
-
     $LanguageList
+3. 修改点：\
+"| cat - ${filePathReadMeTemplate}.temp >$filePathReadMeTemplate
 
-3. 修改点：
+    #============           修改记录          ====================
+    echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
+    local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
+    seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+    echo -e "﻿/////////////////////////////////////////////////////////////////////////////
+///     修改记录有误要及时更正哦
+///     修改记录横线以上为新修改
+/////////////////////////////////////////////////////////////////////////////
+当前版本：$versionName
+暗码清单：$pawNumInfo
+设备信息暗码：
+屏幕正扫/反扫：
+摄像头类型：$cameraTypeInfo
+默认 前/后摄大小：$cameraSizeFront/$cameraSizeBack
+默认 RAM/ROM：$sizeRam/$sizeRom
+RAM 列表：$ramSizeListSel
+ROM 列表：$romSizeListSel
 
-$gitCommitList">$filePathReadMeTemplate
-    echo -e "﻿暗码清单：$pawNuminfo
-修改记录：
-$gitCommitList">$filePathChangeListTemplate
+修改记录：\
+"| cat - ${filePathReadMeTemplate}.temp >$filePathChangeListTemplate
+
+    echo -e "﻿==============================================================================\
+"| cat - ${filePathChangeListTemplate}.temp>>$filePathChangeListTemplate
+
+    # 转化为windows下格式
+    unix2dos $filePathReadMeTemplate
+    unix2dos $filePathChangeListTemplate
+
+    rm ${filePathReadMeTemplate}.temp
+    rm ${filePathChangeListTemplate}.temp
 }
 
 ftAutoLanguageUtil()
@@ -2357,7 +2436,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=0
     if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ]\
             ||[ ! -f "$filePathDevice" ];then
@@ -2405,7 +2484,7 @@ EOF
     break;;
     * ) break;;esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#!=$valCount ))||[ -z "$lnPath" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
@@ -2466,7 +2545,7 @@ EOF
     fi
     exit;; * ) break;; esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#>$valCount ))||[ ! -d "$dirPathCode" ];then
         ftEcho -ea "[${ftEffect}]的参数错误 \
@@ -2507,10 +2586,6 @@ EOF
     local dateOldTest=$(echo $versionNameTest | awk -F "_" '{print $NF}')
     local versionNameTestNew=${versionNameTest//$dateOldTest/$dateNew}
 
-    local filePathTraget=${dirPathCode}/vendor/sprd/modules/libcamera/oem2v0/src/sensor_cfg.c
-    local tagYhx=//#define\ CAMERA_USE_KANGLONG_GC2365
-    local tagKl=#define\ CAMERA_USE_KANGLONG_GC2365
-
     if [ ! -z "$1" ]&&[ "$1" = "-y" ];then
                 sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings&&
                 sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest&&
@@ -2523,7 +2598,7 @@ EOF
         ftEcho -y "是否更新软件版本号"
         read -n1 sel
         case "$sel" in
-            y | Y )    
+            y | Y )
                     sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings
                     sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest
                      while true; do
@@ -2554,7 +2629,7 @@ EOF
 ftAutoBuildMultiBranch()
 {
     local ftEffect=多版本[分支]编译
-    local filePathBranchList=/var/log/.bashrcs
+    local filePathBranchList=branch.list
     local dirPathCode=$ANDROID_BUILD_TOP
     local editType=$1
 
@@ -2575,7 +2650,7 @@ EOF
     exit;;
     * ) break;;esac;done
 
-    #耦合变量校验
+    #耦合校验
     local valCount=1
     if(( $#>$valCount ))||[ -z "$dirPathCode" ]\
                                         ||[ ! -d "$dirPathCode" ];then
@@ -2640,8 +2715,8 @@ EOF
             while true; do
                     echo
                     ftEcho -y 是否开始编译
-                    read -n1 sel
-                    case "$sel" in
+                    read -n1 select
+                    case "$select" in
                         y | Y )
                                         cat $filePathBranchList | while read line
                                         do
@@ -2650,9 +2725,7 @@ EOF
                                             #rm -rf out
                                             git reset --hard&&
                                             ftEcho -bh 将开始编译$branshName
-                                            git checkout   "$branshName"
-                                            git cherry-pick 7f909f221e8f8ff18e73835a55fc1d6e7e691ee1&&
-                                            git push origin "$branshName"
+                                            git checkout   "$branshName"&&
 
                                             # key="补充 修复 相机 缩略图显示异常"
                                             # hashVal=$(git log --pretty=oneline |grep "$key")
@@ -2662,22 +2735,21 @@ EOF
                                             # git checkout $hashVal vendor/sprd/partner/launcher
                                             # mv vendor/sprd/partner/launcher vendor/sprd/partner/launcher_${branshName}
 
+                                           # git push origin "$branshName"
 
-                                            #git push origin "$branshName"
-                                            # source build/envsetup.sh&&
-                                            # lunch sp7731c_1h10_32v4_oversea-user&&
-                                            # kheader&&
-                                            # make -j4&&
-                                            # if [ $isUpload = "true" ];then
-                                            #     ftAutoPacket -y
-                                            # else
-                                            #     ftAutoPacket
-                                            # fi&&
-                                            #     ftBackupOutsByMove
-                                            
-                                            # if [ $isBackupOut = "true" ];then
-                                            #     ftBackupOutsByMove
-                                            # fi
+                                            source build/envsetup.sh&&
+                                            lunch sp7731c_1h10_32v4_oversea-user&&
+                                            kheader&&
+                                            make -j4&&
+                                            if [ $isUpload = "true" ];then
+                                                ftAutoPacket -y
+                                            else
+                                                ftAutoPacket
+                                            fi
+
+                                            if [ $isBackupOut = "true" ];then
+                                                ftBackupOutsByMove
+                                            fi
                                         done
                                         git reset --hard
                                        break;;
@@ -2690,4 +2762,234 @@ EOF
                     esac
             done
     fi
+}
+
+ftSetBashPs1ByGitBranch()
+{
+    local ftEffect=根据git分支名,设定bash的PS1
+    local dir=. head
+
+    #使用示例
+    while true; do case "$1" in
+    #方法使用说明
+    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftSetBashPs1ByGitBranch 无参
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;;
+    * ) break;;esac;done
+    local defaultPrefix=xrnsd
+    if [ ! -z "$rNameUser" ]&&[ "$rNameUser" != "wgx" ];then
+        defaultPrefix=$rNameUser
+    fi
+
+    until [ "$dir" -ef / ]; do
+            if [ -f "$dir/.git/HEAD" ]; then
+                head=$(< "$dir/.git/HEAD")
+                if [[ $head = ref:\ refs/heads/* ]]; then
+                    git_branch="\nbranchName→ ${head#*/*/}"
+                elif [[ $head != '' ]]; then
+                    git_branch="\nbranchName→(detached)"
+                else
+                    git_branch="\nbranchName→(unknow)"
+                fi
+                export PS1="$defaultPrefix[\[\033[44m\]\w\[\033[0m\]]\
+\[\033[33m\]$git_branch:\[\033[0m\]"
+                return
+            fi
+            dir="../$dir"
+        done
+        export PS1="$defaultPrefix[\[\033[44m\]\w\[\033[0m\]]:"
+        git_branch=
+}
+
+#版本号大小对比
+VERSION="  1.9.1"
+VERSION2="   2.2"
+
+function version_gt() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"; }
+function version_le() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" == "$1"; }
+function version_lt() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1"; }
+function version_ge() { test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"; }
+# if version_gt $VERSION $VERSION2; then
+#    echo "$VERSION is greater than $VERSION2"
+# fi
+
+# if version_le $VERSION $VERSION2; then
+#    echo "$VERSION is less than or equal to $VERSION2"
+# fi
+
+# if version_lt $VERSION $VERSION2; then
+#    echo "$VERSION is less than $VERSION2"
+# fi
+
+# if version_ge $VERSION $VERSION2; then
+#    echo "$VERSION is greater than or equal to $VERSION2"
+# fi
+
+ftAutoInitEnv()
+{
+    local ftEffect=初始化基于Android_Build_Env的Auto_Env
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local dirPathOut=$ANDROID_PRODUCT_OUT
+    local buildType=$TARGET_BUILD_VARIANT
+
+    #使用示例
+    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftAutoInitEnv 无参
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;; * ) break;; esac;done
+
+    #耦合校验
+    local valCount=0
+    if(( $#!=$valCount ))||[ ! -d "$dirPathCode" ];then
+        ftEcho -ea "[${ftEffect}]的参数错误 \
+            [参数数量def=$valCount]valCount=$# \
+            [工程根目录]dirPathCode=$dirPathCode \
+            请查看下面说明:"
+        ftAutoInitEnv -h
+        return
+    fi
+    local dirPathLocal=$PWD
+    cd $dirPathCode
+
+    # 项目平台
+    local dirPathVendor=${dirPathCode}/vendor
+    if [ -d $dirPathVendor ];then
+            dirList=`ls $dirPathVendor`
+            for item in $dirList
+            do
+                if [ $item = "sprd" ];then
+                    local mnufacturers=sprd
+               elif [[ $item = "mediatek" ]]; then
+                    local mnufacturers=mtk
+               fi
+            done
+    else
+              ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败"
+    fi
+
+    #分支名
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+
+    #软件版本名
+    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+    local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+    if [ -f $filePathDeviceInfoSettings ];then
+        local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+        if [ -z "$versionName" ];then
+            versionName=`basename $ANDROID_PRODUCT_OUT`
+        else
+            versionName=${versionName/$keyVersion/}
+            versionName=${versionName/\");/}
+            versionName=$(echo $versionName |sed s/[[:space:]]//g)
+        fi
+    else
+        ftEcho -e "未找到 $filePathDeviceInfoSettings\n version name 获取失败"
+    fi
+    if [ $mnufacturers = "mtk" ]&&[ ! -z "$LZ_BUILD_VERSION" ]; then
+        versionName=$LZ_BUILD_VERSION
+    fi
+
+    #软件编译类型
+    if [ -d $dirPathOut ];then
+           local filePathBuildInfo=${dirPathOut}/system/build.prop
+            if [ -f $filePathBuildInfo ];then
+                        local keybuildType="ro.build.type="
+                        local buildTypeFile=
+                        if [ -f "$filePathBuildInfo" ];then
+                            buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
+                            if [ ! -z "$buildTypeFile" ];then
+                                buildTypeFile=${buildTypeFile/$keybuildType/}
+                                if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
+                                    ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
+                                    buildType=$buildTypeFile
+                                fi
+                            else
+                                ftEcho -e "[$filePathBuildInfo]中未找到编译类型"
+                            fi
+                        fi
+            else
+                        ftEcho -e "未找到 $filePathBuildInfo\n build Type[本地] 获取失败"
+            fi
+    fi
+
+    export AutoEnv_mnufacturers=
+    export AutoEnv_branchName=
+    export AutoEnv_versionName=
+    export AutoEnv_buildType=
+
+    export AutoEnv_mnufacturers=$mnufacturers
+    export AutoEnv_branchName=$branchName
+    export AutoEnv_versionName=$versionName
+    export AutoEnv_buildType=$buildType
+
+    cd $dirPathLocal
+}
+
+ftMonkeyTestByDevicesName()
+{
+    local ftEffect=kill掉包名为packageName的应用
+    local eventCount=$1
+
+    #使用示例
+    while true; do case "$1" in    h | H |-h | -H) cat<<EOF
+#=================== [ ${ftEffect} ]的使用示例=============
+#
+#    ftMonkeyTestByDevicesName [eventCount]
+#    ftMonkeyTestByDevicesName 1000000
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then
+        return
+    fi
+    exit;; * ) break;; esac;done
+
+    #耦合校验
+    local valCount=1
+    if(( $#>$valCount ))||( ! echo -n $eventCount | grep -q -e "^[0-9][0-9]*$");then
+        ftEcho -ea "函数[${ftEffect}]的参数错误 \
+                [参数数量def=$valCount]valCount=$# \
+                [事件数必须为整数]eventCount=$eventCount \
+                请查看下面说明:"
+        ftMonkeyTestByDevicesName -h
+        return
+    fi
+    #adb连接状态检测
+    local adbStatus=`adb get-state`
+    if [ "$adbStatus" = "device" ];then
+            local keyModel="ro.product.model="
+            local keySoftType="ro.build.type="
+            local fileNameLogBase="$(date -d "today" +"%y%m%d_%H%M")"
+
+            local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
+            deviceModelName=${deviceModelName//$keyModel/}
+            deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
+            deviceModelName=${deviceModelName:-'null'}
+
+            local deviceSoftType=$(adb shell cat /system/build.prop|grep "$keySoftType")
+            deviceSoftType=${deviceSoftType//$keySoftType/}
+            deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
+            deviceSoftType=${deviceSoftType:-'null'}
+
+            eventCount=${eventCount:-'1000000'}
+
+            filePathLog=$(pwd)/monkey_${deviceModelName}_${deviceSoftType}_${fileNameLogBase}.log
+
+            adb shell monkey --ignore-crashes --ignore-timeouts --ignore-security-exceptions -v -v -v $eventCount 2>&1 |tee $filePathLog
+    else
+        ftEcho -e adb连接状态[$adbStatus]异常,请重新尝试
+    fi
+
 }
