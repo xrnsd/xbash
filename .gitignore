@@ -1,9 +1,2 @@
 #config/bashrc_home
-log
-
-config/bashrc/config_bashrc_base.gone
-
-config/base/excludeDirsAll.list
-config/base/excludeDirsBase.list
-config/base/hosts.base
-config/base/hosts.new
+data/versionInfo.database

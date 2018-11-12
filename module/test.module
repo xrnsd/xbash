@@ -1,0 +1,76 @@
+#!/bin/bash
+#####-----------------------变量------------------------------#########
+readonly rModuleName=test/base.sh
+#####----------------------初始化demo环境--------------------------#######
+# 函数
+if [ -f $rFilePathXbashModuleCommon ];then
+    source  $rFilePathXbashModuleCommon
+else
+    echo -e "\033[1;31m    函数加载失败\n\
+    模块=$rModuleName\n\
+    toolsPath=$rFilePathXbashModuleCommon\n\
+    \033[0m"
+fi
+
+#####----------------------xbash 示例函数--------------------------#######
+complete -W "-x -y -n" ftExample
+ftExample()
+{
+    local ftEffect=函数模板
+    local isEnable=false
+    # debug用
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' DEBUG
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' ERR
+    #可用性校验
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftExample --df;return    ; fi
+
+    while true; do case "$1" in
+    --env) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    h | H |-h | -H) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftExample 无参
+#    ftExample [example]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #依赖校验
+    if [ -z $(which exampleTools1) ];then    ftExample --env "exampleTools1";return    ; fi
+    #参数解析
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
+    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -x )
+            example1="${arg2:-'exampleDef1'}" ;;
+        -yy )
+            example2="${arg2:-'exampleDef2'}" ;;
+    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$example1" ];then    errorContent="${errorContent}\\n[示例1]example1=$example1" ; fi
+    if [ -z "$example2" ];then    errorContent="${errorContent}\\n[示例2]example2=$example2" ; fi
+    if [ ! -z "$errorContent" ];then
+          ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+          ftExample -h
+          return
+    fi
+}
+
+# ==============================================================================================================

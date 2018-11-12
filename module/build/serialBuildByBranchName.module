@@ -1,0 +1,46 @@
+#!/bin/bash
+#####-----------------------固定部分------------------------------#########
+readonly rModuleName=module/build/serialBuildByBranchName.module
+readonly rRirPathProcessEnableId=/tmp/ProcessEnableIds
+fileNamePID=$1
+# 函数
+if [ -f $rFilePathXbashModuleCommon ];then
+    source  $rFilePathXbashModuleCommon
+else
+    echo -e "\033[1;31m    函数加载失败\n\
+    toolsPath=$rFilePathXbashModuleCommon\n\
+    \033[0m"
+fi
+
+ftEcho -s "任务 ${fileNamePID} :开始执行"
+#####----------------------自定义部分--------------------------#######
+
+#初始化build环境
+filePathBranchList=$2
+branchArray=($(cat $filePathBranchList))
+if [ -z "$branchArray" ];then
+    ftEcho -e "分支信息读取失败"
+    read -n1 ddd
+    exit;
+fi
+branchName="${branchArray[$fileNamePID]}"
+
+git checkout "$branchName"&&
+git pull
+source build/envsetup.sh &&
+lunch full_m9_qhd-user&&
+ftBackupOrRestoreOuts&&
+make -j6&&
+ftAutoPacket -a&&
+ftBackupOrRestoreOuts
+
+
+
+#####-----------------------固定部分------------------------------#########
+((fileNamePID=$fileNamePID+1))
+if (( ${#branchArray[@]}==$fileNamePID ));then
+    /bin/rm -f $rRirPathProcessEnableId
+else
+    echo enable > ${rRirPathProcessEnableId}/${fileNamePID}
+fi
+exit

@@ -1,0 +1,4055 @@
+#!/bin/bash
+#####---------------------  说明  ---------------------------#########
+# 不可在此文件中出现不被函数包裹的调用或定义
+# 人话，这里只放函数
+# complete -W "example example" ftExample
+
+#####---------------------基础函数---------------------------#########
+
+_ftMain()
+{
+    local ftEffect=bash内建命令和xbash扩展封装对应的参数补全实现_nodisplay
+    local curr_arg=${COMP_WORDS[COMP_CWORD]}
+    case "${COMP_WORDS[1]}" in
+                    -)
+                            COMP_WORDS[1]="-h"
+                            export COMP_WORDS=${COMP_WORDS[@]}; ;;
+                    *)  COMPREPLY=( $(compgen -W '-h -hb -hc --help restartadb test clear_trash  -v -vvv -ft' -- $curr_arg ) ); ;;
+      esac
+}
+
+ftMain()
+{
+    local ftEffect=早期工具主入口_nodisplay
+    while true; do
+    case $1 in
+    -c | clear_trash )
+                ftCleanDataGarbage
+                break;;
+    -t | test )
+                ftTest "$@"
+                break;;
+    -v | version )
+                echo \"Xrnsd extensions to bash\" $rXbashVersion
+                break;;
+    -h | help )
+                ftMain -ft ; echo
+                ftMain -hb
+                return;;
+    -hb )
+                ftEcho -s "bash内建命令和xbash扩展封装说明"
+ cat<<EOF
+====================================
+命令           说明
+====================================
+EOF
+                ftReadAllAlias| column -t
+                return;;
+    -ft )
+                ftEcho -s "xbash对bash扩展实现说明"
+cat<<EOF
+=========================================================
+命令                                 说明
+=========================================================
+EOF
+                ftReadAllFt | column -t
+                return;;
+    -vvv )
+                ftEcho -b xbash;        echo \"Xrnsd extensions to bash\" $rXbashVersion
+                ftEcho -b java;        java -version
+                ftEcho -b gcc;        gcc -v
+                break;;
+    restartadb)
+                ftRestartAdb
+                break;;
+    *)
+                ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -hc   #xbash对bash扩展实现说明"
+            return;;
+    esac
+    done
+}
+
+ftReadAllAlias()
+{
+        local ftEffect=显示bash内建等命令封装说明_nodisplay
+
+        if [[ -f $filePathXbashTragetBashrcBase ]]; then
+            local cmdName=
+            local cmdContent=
+            cat $filePathXbashTragetBashrcBase|grep alias  | while read line; do
+                    cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
+                    cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
+                    if [[ ! -z "$cmdContent" ]]; then
+                        printf "%14s  " $cmdName;echo $cmdContent
+                    fi
+            done
+        else
+            ftEcho -e "xbash配置不存在:$filePathXbashTragetBashrcBase"
+        fi
+}
+
+ftReadAllFt()
+{
+        local ftEffect=查看xbash对bash扩展实现说明_nodisplay
+
+        local key="local ftEffect="
+        for effectName in $(cat $rFilePathXbashModuleCommon |grep '^ft')
+        do
+            effectDescription=$(cat $rFilePathXbashModuleCommon |grep  -C 3 $effectName|grep "$key")
+            effectDescription=${effectDescription//$key/}
+            effectDescription=$(echo $effectDescription |sed s/[[:space:]]//g)
+            if [[ ${effectDescription: -9} = "nodisplay" ]];then
+                continue;
+            fi
+            effectName=${effectName//()/}
+            #echo "$effectName $effectDescription"
+
+            printf "%40s  " $effectName;echo $effectDescription
+        done
+}
+
+ftTest()
+{
+    local ftEffect=函数demo调试
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftTest 任意参数
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if [ ! -d "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome" ; fi
+    if [ ! -f "$rFilePathXbashModuleTest" ];then    errorContent="${errorContent}\\n[测试模块不存在]filePathXbashModuleTest=$rFilePathXbashModuleTest" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftTest -h
+            return
+    fi
+
+    local argList=($@)
+    local dirPathLocal=$PWD
+    local dirPathTemp=${rDirPathUserHome}/temp
+    if [[ ! -d "$dirPathTemp" ]]; then
+        mkdir $dirPathTemp||(ftEcho -e "${ftEffect} 创建demo环境目录失败:$dirPathTemp";return)
+    fi
+    if [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]]; then
+        cd $dirPathTemp
+    fi
+    ftTiming -i
+    $rFilePathXbashModuleTest ${argList[@]:1}
+    ftTiming
+    cd $dirPathLocal
+}
+
+ftEcho()
+{
+    local ftEffect=工具信息提示
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftEcho        内容    # 直接显示内容
+#    ftEcho    -b    内容    # 标题，不换行，对字符串的缩进敏感
+#    ftEcho    -bh    内容    # 标题，换行，对字符串的缩进敏感
+#    ftEcho    -e    内容    # 错误信息显示，对字符串的缩进敏感
+#    ftEcho    -ex    内容    # 错误信息显示，显示完退出，对字符串的缩进敏感
+#    ftEcho    -ea    内容    # 错误信息多行显示，对字符串的缩进不敏感,包含内置数组会显示不正常
+#    ftEcho    -eax    内容    # 错误信息多行显示，对字符串的缩进不敏感,包含内置数组会显示不正常，显示完退出
+#    ftEcho    -y    内容    # 特定信息显示,y/n，对字符串的缩进敏感
+#    ftEcho    -s    内容    # 执行信息，对字符串的缩进敏感
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    option=$1
+    option=${option:-'未制定显示信息'}
+    valList=$@
+    if [ ${#valList[@]} -eq 2 ];then
+        content=$(content |sed s/[[:space:]]//g)
+    else
+        #除第一个参数外的所有参数列表，可正常打印数组
+        content="${valList[@]/$option/}"
+        content=${content/ /}
+    fi
+    while true; do
+    case $option in
+
+    e | E | -e | -E)        echo -e "\033[1;31m$content\033[0m"; break;;
+    ex | EX | -ex | -EX)    echo -e "\033[1;31m$content\033[0m"
+                sleep 3
+                if [ "$XMODULE" = "env" ];then    return ; fi
+                exit;;
+    s | S | -s | -S)        echo -e "\033[1;33m$content\033[0m"; break;;
+    b | B| -b | -B)        echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
+    bh | BH | -bh | -BH)    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
+    y | Y | -y | -Y)        echo;echo -en "${content}[y/n]"; break;;
+    ye | YE | -ye | -YE) echo -en "${content}[y/n]"; break;;
+    r | R | -r | -R)        echo;echo -en "${content}"; break;;
+    ea| EA | -ea | -EA)    for val in ${content[@]}
+                do
+                    echo -e "\033[1;31m$val\033[0m";
+                done
+                break;;
+
+    eax| EAX | -eax | -EAX)    for val in ${content[@]}
+                do
+                    echo -e "\033[1;31m$val\033[0m";
+                done
+                exit;;
+    # 特定信息显示,命令说明的格式
+    g | G | -g | -G)
+    ftEcho -s “命令 参数 -h 可查看参数具体说明”
+    cat<<EOF
+=========================================================================
+命令    --- 参数/命令说明
+    |// 使用格式
+    |  参数     ---------------- [参数权限] ----    参数说明
+=========================================================================
+EOF
+break;;
+     -d | -D | --DEBUG)
+                local cmds=($@)
+                unset cmds[0]
+                 if [ "$DEBUG" = "true" ]; then
+                      ${cmds}
+                fi
+                break;;
+    * )    echo $option ;break;;
+    esac
+    done
+}
+
+ftTiming()
+{
+    local ftEffect=脚本操作耗时记录
+
+    if [ -z "$mTimingStart" ]||[ "$1" = "-i" ];then
+        mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
+        return 0;
+    fi
+
+     #时间少于1秒默认不显示操作耗时
+     #时间时分秒各单位不显示为零的结果
+    time2=$(date +%s -d $(date +"%H:%M:%S"))
+    time3=$(((time2-mTimingStart)%60))
+    time5=$(((time2-mTimingStart)/3600))
+    time4=$((((time2-mTimingStart)-time5*3600)/60))
+
+    if [ "$time5" -ne "0" ];then
+        hour=$time5时
+    else
+        hour=""
+    fi
+    if [ "$time4" -ne "0" ];then
+        minute=$time4分
+    else
+        minute=""
+    fi
+    if [ "$time3" -ne "0" ];then
+        second=$time3秒
+    else
+        second=""
+    fi
+    if [ "$time3" -eq "0" ]&&[ "$time4" -eq "0" ] &&[ "$time5" -eq "0" ];then
+        ftEcho -s 1秒没到就结束了
+    else
+        ftEcho -s "本技能耗时${hour}${minute}${second}  !"
+    fi
+    mTimingStart=
+}
+
+#####---------------------扩展函数---------------------------#########
+ftAutoInitEnv()
+{
+    local ftEffect=初始化xbash_Android_build相关所需的部分环境变量
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local dirPathOut=$ANDROID_PRODUCT_OUT
+    local buildType=$TARGET_BUILD_VARIANT
+    local editType=$1
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoInitEnv 无参
+#    ftAutoInitEnv -bp #build.prop高级信息读取
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --env ) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ]\
+        ||[ -z "$ANDROID_PRODUCT_OUT" ]\
+        ||[ -z "$TARGET_PRODUCT" ]\
+        ||[ -z "$TARGET_BUILD_VARIANT" ];then
+        ftAutoInitEnv --env
+        return
+    fi
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoInitEnv -h
+            return
+    fi
+
+    # build.prop高级信息读取
+    export AutoEnv_deviceModelName=
+    export AutoEnv_deviceSoftType=
+    export AutoEnv_deviceSoftVersion=
+    export AutoEnv_deviceSdkVersion=
+    export AutoEnv_AndroidVersion=
+
+    local keySoftType="ro.build.type="
+    local keyModel="ro.product.model="
+    local keySoftVersion="ro.build.display.id="
+    local keySDKVersion="ro.build.version.sdk="
+    local filePathSystemBuildprop=${dirPathOut}/system/build.prop
+
+    if [ "$2" = "-mobile" ];then
+                adb wait-for-device
+                local adbStatus=$(adb get-state)
+                if [ "$adbStatus" = "device" ];then
+                    local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
+                    local deviceSoftType=$(adb shell cat /system/build.prop|grep "$keySoftType")
+                    local deviceSoftVersion=$(adb shell cat /system/build.prop|grep "$keySoftVersion")
+                    local deviceSdkVersion=$(adb shell cat /system/build.prop|grep "$keySDKVersion")
+                else
+                        ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
+                       return
+                fi
+    elif [ -f "$filePathSystemBuildprop" ];then
+                local deviceModelName=$(cat $filePathSystemBuildprop|grep "$keyModel")
+                local deviceSoftType=$(cat $filePathSystemBuildprop|grep "$keySoftType")
+                local deviceSoftVersion=$(cat $filePathSystemBuildprop|grep "$keySoftVersion")
+                local deviceSdkVersion=$(cat $filePathSystemBuildprop|grep "$keySDKVersion")
+    elif [ "$1" = "-bp" ];then
+               ftEcho -s "未找到 $filePathSystemBuildprop\n版本软件信息未获取"
+               return
+    fi
+
+    if [ ! -z "$deviceSoftVersion" ];then
+            deviceModelName=${deviceModelName//$keyModel/}
+            deviceModelName=${deviceModelName// /_}
+            deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
+            deviceModelName=${deviceModelName:-'null'}
+            export AutoEnv_deviceModelName=$deviceModelName
+
+            deviceSoftType=${deviceSoftType//$keySoftType/}
+            deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
+            deviceSoftType=${deviceSoftType:-'null'}
+            export AutoEnv_deviceSoftType=$deviceSoftType
+
+            deviceSoftVersion=${deviceSoftVersion//$keySoftVersion/}
+            deviceSoftVersion=$(echo $deviceSoftVersion |sed s/[[:space:]]//g)
+            deviceSoftVersion=${deviceSoftVersion:-'null'}
+            export AutoEnv_deviceSoftVersion=$deviceSoftVersion
+
+            deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
+            deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
+            deviceSdkVersion=${deviceSdkVersion:-'null'}
+            export AutoEnv_deviceSdkVersion=$deviceSdkVersion
+            local AndroidVersion=$(ftAutoGetAndroidVersionBySDKVersion $deviceSdkVersion)
+            export AutoEnv_AndroidVersion=$AndroidVersion
+    fi
+
+    if [ "$editType" = "-bp" ];then
+        return
+    fi
+    # build.prop高级信息读取 end
+
+    local dirPathLocal=$PWD
+    cd $dirPathCode
+
+    # 项目平台
+    local dirPathVendor=${dirPathCode}/vendor
+    if [ -d $dirPathVendor ];then
+            dirList=`ls $dirPathVendor`
+            for item in $dirList
+            do
+                if [ $item = "sprd" ];then
+                    local mnufacturers=sprd
+               elif [[ $item = "mediatek" ]]; then
+                    local mnufacturers=mtk
+               fi
+            done
+    else
+              ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败"
+    fi
+
+    #device路径
+    export AutoEnv_deviceDirPath=
+    local dirPathDevice=$(find device/ -name "$(basename $ANDROID_PRODUCT_OUT)")
+    if [[ -d "$dirPathDevice" ]]; then
+        export AutoEnv_deviceDirPath=$dirPathDevice
+    fi
+
+    #分支名
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+
+    #软件版本名
+    if [ $mnufacturers = "sprd" ];then
+            local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+            local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+            if [ -f $filePathDeviceInfoSettings ];then
+                local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+                versionName=${versionName//$keyVersion/}
+                versionName=${versionName//\");/}
+                versionName=$(echo $versionName |sed s/[[:space:]]//g)
+            fi
+   elif [[ $mnufacturers = "mtk" ]]; then
+            local filePathOutBuildProp=${dirPathOut}/system/build.prop
+            if [ -f $filePathOutBuildProp ];then
+                    local keyVersion="ro.build.display.id="
+                    local versionName=$(cat $filePathOutBuildProp|grep $keyVersion)
+                    versionName=${versionName//$keyVersion/}
+                    if [ ! -z "$LZ_BUILD_VERSION" ]&&[[ "$versionName" != "$LZ_BUILD_VERSION" ]]; then
+                            ftEcho -e "环境与本地，软件版本不一致:\n本地:${versionName}\n环境:${LZ_BUILD_VERSION}"
+                    fi
+            elif [ ! -z "$LZ_BUILD_VERSION" ];then
+                    local versionName=$LZ_BUILD_VERSION
+            fi
+    fi
+    if [ -z "$versionName" ];then
+        versionName=`basename $ANDROID_PRODUCT_OUT`
+    fi
+    versionName=${versionName// /_}
+    versionName=${versionName//
+/_}
+
+    #软件编译类型
+    if [ -d $dirPathOut ];then
+            local filePathBuildInfo=${dirPathOut}/system/build.prop
+            local filePathPreviousBuildConfig=${dirPathOut}/previous_build_config.mk
+            if [ -f $filePathBuildInfo ];then
+                        local keybuildType="ro.build.type="
+                        local buildTypeFile=
+                        if [ -f "$filePathBuildInfo" ];then
+                            buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
+                            if [ ! -z "$buildTypeFile" ];then
+                                buildTypeFile=${buildTypeFile/$keybuildType/}
+                                if [ ! -z "$buildType" ]&&[ "$buildType" != "$buildTypeFile" ];then
+                                    ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
+                                    buildType=$buildTypeFile
+                                fi
+                            else
+                                ftEcho -e "[$filePathBuildInfo]中未找到编译类型"
+                            fi
+                        fi
+            else
+                        ftEcho -e "未找到 $filePathBuildInfo\n build Type[本地] 获取失败"
+
+                        if [ -f "$filePathPreviousBuildConfig" ];then
+                                info=$(cat $filePathPreviousBuildConfig|grep $TARGET_PRODUCT)
+                                if [ ! -z "$info" ];then
+
+                                    local OLD_IFS="$IFS"
+                                    IFS="-"
+                                    local arrayItems=($info)
+                                    IFS="$OLD_IFS"
+                                    if [ "$info" = "$arrayItems" ];then
+                                            ftEcho -e "${filePathPreviousBuildConfig} 信息解析失败"
+                                    else
+                                            local buildinfo=null
+                                            for item in ${arrayItems[@]}
+                                            do
+                                                if [[ "$item" = "$TARGET_PRODUCT" ]]; then
+                                                    buildinfo=
+                                                elif [[ -z "$buildinfo" ]]; then
+                                                    buildType=$item
+                                                    buildinfo=$buildType
+                                                fi
+                                            done
+                                    fi
+                                fi
+                        fi
+            fi
+    fi
+
+    #git分支信息解析
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local key="branchName="
+    local filePathGitConfigInfoLocal=${dirPathOut}/git.info
+    if [ -f "$filePathGitConfigInfoLocal" ];then
+        local bn=$(cat $filePathGitConfigInfoLocal|grep "$key")
+        if [ ! -z "$bn" ];then
+            local branchNameFile=${bn//$key/}
+            if [[ "$branchNameFile" != "$branchName" ]]; then
+                    ftEcho -e "环境与本地，分支不一致:\n本地:$branchNameFile\n环境:$branchName"
+            fi
+            branchName=$branchNameFile
+        else
+            echo "${key}${branchName}" >>$filePathGitConfigInfoLocal
+        fi
+    elif [ -d "$dirPathOut" ];then
+        echo "${key}${branchName}" >$filePathGitConfigInfoLocal
+    fi
+    if [ ! -z "$branchName" ];then
+        local OLD_IFS="$IFS"
+        IFS=")"
+        local arrayItems=($branchName)
+        IFS="$OLD_IFS"
+        if [ "$branchName" = "$arrayItems" ];then
+                ftEcho -e "分支名:${branchName} 不合法\n分支信息解析失败"
+        else
+                export AutoEnv_clientName=
+                export AutoEnv_projrctName=
+                export AutoEnv_modelAllName=
+                export AutoEnv_demandSignName=
+                export AutoEnv_motherboardName=
+                export AutoEnv_screenScanDirection=
+                export AutoEnv_BandInfo=
+                export AutoEnv_FlashConfig=
+
+
+                for item in ${arrayItems[@]}
+                do
+                        local key=${item%\(*}
+                        local val=${item//$key/}
+                        val=${val//\(/}
+                        key=${key//_/}
+
+                         if [[ $key = "CT" ]];then
+                            export AutoEnv_clientName=$val
+                         elif [[ $key = "PJ" ]];then
+                            export AutoEnv_projrctName=$val
+                         elif [[ $key = "SS" ]];then
+                            export AutoEnv_screenScanDirection=$val
+                        elif [[ $key = "DM" ]];then
+                            export AutoEnv_demandSignName=$val
+                        elif [[ $key = "PMA" ]];then
+                            export AutoEnv_modelAllName=$val
+                        elif [[ $key = "MBML" ]];then
+                            export AutoEnv_motherboardName=$val
+                        elif [[ $key = "BAND" ]];then
+                            export AutoEnv_BandInfo=$val
+                        elif [[ $key = "FLASH" ]];then
+                            export AutoEnv_FlashConfig=$val
+                        fi
+                done
+        fi
+    fi
+
+    export AutoEnv_buildType=
+    export AutoEnv_branchName=
+    export AutoEnv_versionName=
+    export AutoEnv_mnufacturers=
+
+    export AutoEnv_buildType=$buildType
+    export AutoEnv_branchName=$branchName
+    export AutoEnv_versionName=$versionName
+    export AutoEnv_mnufacturers=$mnufacturers
+
+    cd $dirPathLocal
+}
+
+ftFileDirEdit()
+{
+    local ftEffect=路径合法性校验
+    type=$1
+    isCreate=$2
+    path=$3
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftFileDirEdit [type] [isCreate] [path]
+#
+#    文件存在，创建，返回1
+#    ftFileDirEdit -f true /home/xian-hp-u16/xbash/${rFileNameXbashModuleTestBase}
+#
+#    文件夹存在，创建，返回1
+#    ftFileDirEdit -d true /home/xian-hp-u16/xbash/${rFileNameXbashModuleTestBase}
+#
+#    判断文件夹是否为空，空，返回2 非空，返回3,非文件夹，返回4
+#    ftFileDirEdit -e false /home/xian-hp-u16/xbash
+#    echo $?
+#===============================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=3
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$type" ];then    errorContent="${errorContent}\\n[操作参数]type=$type" ; fi
+    if [ -z "$isCreate" ];then    errorContent="${errorContent}\\n[是否新建]isCreate=$isCreate" ; fi
+    if [ -z "$path" ];then    errorContent="${path}\\n[被操作的目录或路径]path=$path" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftFileDirEdit -h
+            return
+    fi
+
+    while true; do
+    case "$type" in
+        e | E | -e | -E )
+            if [ ! -d $path ]; then
+                 return 4
+            fi
+            files=`ls $path`
+            if [ -z "$files" ]; then
+                 return 2
+            else
+                 return 3
+            fi
+            break;;
+        f | F | -f | -F )
+            if [ -f $path ];then
+                return 1
+            elif [ $isCreate = "true" ];then
+                touch $path
+                return 1
+            else
+                return 0
+            fi
+            break;;
+        d | D)
+            if [ -d $path ];then
+                return 1
+            elif [ $isCreate = "true" ];then
+                mkdir -p $path
+                return 1
+            else
+                return 0
+            fi
+            break;;
+        * )
+            ftEcho -e "函数[${ftEffect}]参数错误，请查看函数使用示例"
+            ftFileDirEdit -h
+            ;;
+    esac
+    done
+}
+
+ftDevAvailableSpace()
+{
+    local ftEffect=设备可用空间
+    local dirPathTraget=$1
+    local isReturn=$2
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftDevAvailableSpace [dirPathTraget] [[isReturn]]
+#    ftDevAvailableSpace /media/test
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathTraget" ];then    errorContent="${errorContent}\\n[设备路径不存在]dirPathTraget=$dirPathTraget" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftDevAvailableSpace -h
+            return
+    fi
+     local devAvailableSIzeList=`df -lh | awk '{print $4}'`
+     local devMountDirPathList=(`df -lh | awk '{print $6}'`)
+
+     local indexDevName=0
+     local devMountDirPath
+    for size in ${devAvailableSIzeList[*]}
+    do
+            devMountDirPath=${devMountDirPathList[indexDevName]}
+             length=${#dirPathTraget}
+            if [[ "${devMountDirPath:0:$length}" = "$dirPathTraget" ]]; then
+                    if [[ $size =~ "G" ]];then
+                            size=${size//G/}
+                            size=$(echo "$size * 1024" | bc)
+                    else
+                            size=${size//M/}
+                    fi
+                    echo $size|awk ' {print int ($0)} '
+            fi
+            ((indexDevName+=1))
+    done
+}
+
+#########################
+##                                                     ##
+##              ini文件操作实现            ##
+##                                                     ##
+#########################
+ftIniGetValue()
+{
+    local ftEffect=读取ini文件指定字段
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    #默认不输出异常信息
+#    ftIniGetValue [文件路径] [目标块TAG] [键名]
+#    value=\$(ftIniGetValue /temp/odbcinst.ini PostgreSQL Setup)
+#    value表示key对应的值
+# 
+#    #输出异常信息
+#    ftIniGetValue -f [文件路径] [目标块TAG] [键名]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #参数解析
+    local filePath=$1
+    local blockName=$2
+    local keyName=$3
+    local isReadSilence=
+    if [[ "$filePath" = "-f" ]]; then
+            filePath=$2
+            blockName=$3
+            keyName=$4
+            isReadSilence=true
+    fi
+
+    #耦合校验
+    local valCount=3
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[文件不存在]filePath=$filePath"
+    else
+        testBockName=$(cat $filePath|grep $blockName)
+        testKeyName=$(cat $filePath|grep $keyName)
+        if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
+        elif [ -z "$testBockName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
+        if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]keyName=$keyName"
+        elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName" ; fi
+    fi
+    if [ ! -z "$errorContent" ];then
+            if [[ -z "$isReadSilence" ]]; then
+                return
+            fi
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftIniGetValue -h
+            return
+    fi
+
+    local begin_block=0
+    local end_block=0
+
+    cat $filePath | while read line
+    do
+        if [ "X$line" = "X[$blockName]" ];then
+            begin_block=1
+            continue
+        fi
+        if [ $begin_block -eq 1 ];then
+            end_block=$(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')
+            if [ $end_block -eq 1 ];then
+                break
+            fi
+
+            need_ignore=$(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')
+            if [ $need_ignore -eq 1 ];then
+                continue
+            fi
+            key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
+            value=$(echo $line | awk -F= '{gsub("\t","",$2); print $2}')
+
+            if [ "X$keyName" = "X$key" ];then
+                echo $value
+                break
+            fi
+        fi
+    done
+}
+
+ftIniSetValue()
+{
+    local ftEffect=修改ini文件指定字段
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftIniSetValue [文件路径] [目标块TAG] [键名] [键对应的值]
+#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup 1232
+#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l "11 22 33 44"  #写入数组
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi
+    exit 1;; * )break;; esac;done
+
+    #参数解析
+    local isListValue
+    local filePath=$1
+    local blockName=$2
+    local keyName=$3
+    local keyValue=$4
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
+    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -l )   keyValue="${arg2}"
+                isListValue=true
+           ;;
+    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
+    #耦合校验
+    local errorContent=
+    if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
+    else
+        testBockName=$(cat $filePath|grep $blockName)
+        testKeyName=$(cat $filePath|grep $keyName)
+        if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
+        elif [ -z "$testBockName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
+        if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
+        elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName" ; fi
+        if [ -z "$keyValue" ];then    errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue" ;fi
+    fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftIniSetValue -h
+            return
+    fi
+    if [[ "$isListValue" = "true" ]]; then
+        return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath`
+    fi
+    keyValue=$(echo $keyValue |sed s/[[:space:]]//g)
+    return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName*=.* $keyName=$keyValue g;}" $filePath`
+}
+
+
+ftIniCheckConfigSyntax()
+{
+    local ftEffect=校验ini文件，确认文件有效
+    #============ini文件模板=====================
+    # # 注释１
+    # [block1]
+    # key1=val1
+
+    # # 注释２
+    # [block2]
+    # key2=val2
+    #===========================================
+
+    local filePath=$1
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftIniCheckConfigSyntax [file path]
+#    ftIniCheckConfigSyntax 123/config.ini
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi
+    exit 1;; * )break;; esac;done
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftIniCheckConfigSyntax -h
+            return
+    fi
+
+    ret=$(awk -F= 'BEGIN{valid=1}
+    {
+        #已经找到非法行,则一直略过处理
+        if(valid == 0) next
+        #忽略空行
+        if(length($0) == 0) next
+        #消除所有的空格
+        gsub(" |\t","",$0)
+        #检测是否是注释行
+        head_char=substr($0,1,1)
+        if (head_char != "#"){
+            #不是字段=值 形式的检测是否是目标块TAG
+            if( NF == 1){
+                b=substr($0,1,1)
+                len=length($0)
+                e=substr($0,len,1)
+                if (b != "[" || e != "]"){
+                    valid=0
+                }
+            }else if( NF == 2){
+            #检测字段=值 的字段开头是否是[
+                b=substr($0,1,1)
+                if (b == "["){
+                    valid=0
+                }
+            }else{
+            #存在多个=号分割的都非法
+                valid=0
+            }
+        }
+    }
+    END{print valid}' $filePath)
+
+    if [ $ret -eq 1 ];then
+        return 0
+    else
+        return 2
+    fi
+}
+
+ftIniDeleteTag()
+{
+    local ftEffect=删除ini文件中对应TAG块
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftIniDeleteTag -p ini文件路径 -t TAG块名
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #参数解析
+    local tagName
+    local filePathIni
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
+    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -t )   tagName="${arg2}"
+           ;;
+        -p )   filePathIni="${arg2}"
+           ;;
+    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
+    #耦合校验
+    local errorContent=
+    if [ -z "$tagName" ];then    errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName" ; fi
+    if [ ! -f "$filePathIni" ];then  errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftIniDeleteTag -h
+            return
+    fi
+
+    local indexStart=
+    local indexEnd=
+    local index=0
+    cat $filePathIni | while read line ;do
+        if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
+            if [[ -z "$indexStart" ]]; then
+                indexStart=$index
+                ((indexStart+=1))
+            fi
+
+            if [[ -z "$line" ]]; then
+                indexEnd=$index
+                local lineRange="${indexStart},${indexEnd}d"
+                #echo lineRange=$lineRange
+                sed -i $lineRange $filePathIni
+                break
+            fi
+        fi
+        ((index+=1))
+    done
+}
+
+ftIniDeleteItem()
+{
+    local ftEffect=删除ini文件中对应TAG中指定item
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftIniDeleteItem -p ini文件路径 -t TAG块名 -i item名
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #参数解析
+    local tagName
+    local itemName
+    local filePathIni
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
+    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -t )   tagName="${arg2}"
+           ;;
+        -l )   itemName="${arg2}"
+           ;;
+        -p )   filePathIni="${arg2}"
+           ;;
+    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
+
+    #耦合校验
+    local errorContent=
+    if [ -z "$itemName" ];then    errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName" ; fi
+    if [ -z "$tagName" ];then    errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName" ; fi
+    if [ ! -f "$filePathIni" ];then  errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftIniDeleteItem -h
+            return
+    fi
+
+    local indexStart=
+    local indexEnd=
+    local index=0
+    cat $filePathIni | while read line ;do
+        if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
+            if [[ -z "$indexStart" ]]; then
+                indexStart=$index
+                ((indexStart+=1))
+            fi
+
+            if [[ "$line" =~ ^${itemName}* ]]; then
+                ((index+=1))
+                sed -i "${index}d" $filePathIni 
+                break
+            fi
+
+            if [[ -z "$line" ]]; then
+                indexEnd=$index
+                break
+            fi
+        fi
+        ((index+=1))
+    done
+}
+
+ftIniCreateFileOrTag()
+{
+    local ftEffect=创建ini文件,添加TAG
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    添加内容
+#    ftIniCreateFileOrTag  -a -p 文件路径 -t 块名 -l 块对应的键值对列表
+#    覆盖文件
+#    ftIniCreateFileOrTag  -r -p 文件路径 -t 块名 -l 块对应的键值对列表
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #参数解析
+    local filePathIni
+    local editType
+    local contentTagName
+    local contentTagKeyValList
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
+    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+          -a )   editType=add
+             ;;
+          -r )   editType=replace
+             ;;
+          -p )   filePathIni="$arg2"
+             ;;
+          -t )   contentTagName="$arg2"
+             ;;
+          -l )   contentTagKeyValList="${arg2[@]}"
+             ;;
+    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
+    #耦合校验
+    local errorContent=
+    if [ -z "$filePathIni" ];then   errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]" ; fi
+    if [ -z "$contentTagName" ];then    errorContent="${errorContent}\\n[块名为空]contentTagName=$contentTagName" ; fi
+    if [ -z "$contentTagKeyValList" ];then    errorContent="${errorContent}\\n[块对应的列表为空]contentTagKeyValList=$contentTagKeyValList" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftIniCreateFileOrTag -h
+            return
+    fi
+    local content=
+    local enterLine="\n"
+    #added TAG
+    content=${enterLine}"[$contentTagName]"
+    #add List
+    for item in ${contentTagKeyValList[*]}
+    do
+        content=${content}${enterLine}"$item"
+    done
+    content=${content}${enterLine}
+
+    if [[ ! -f "$filePathIni" ]]||[ "$editType" = "replace" ]; then
+        localContent="#ini"
+        localContent=${localContent}${enterLine}"#文件由ftIniCreateFileOrTag自动创建，请避免手动编辑造成解析失败"
+        localContent=${localContent}${enterLine}
+        echo -e ${localContent} > $filePathIni
+    fi
+    echo -e "${content}" >> $filePathIni
+}
+#######################结束
+
+#版本号大小对比
+ftVersionComparison()
+{
+    local ftEffect=版本号大小比对beta
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftVersionComparison -h    #查看帮助
+#
+#    只能比对xx.xx格式的版本号
+#    echo $(ftVersionComparison 版本1 版本2)   #比对版本1和2大小
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=2
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftVersionComparison -h
+            return
+    fi
+
+    if [[ "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1" ]]; then
+        echo ">"
+    elif [[ "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1" ]]; then
+        echo "<"
+    elif [[ "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" == "$1" ]]; then
+        echo "<="
+    elif [[ "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1" ]]; then
+        echo ">="
+    fi
+}
+
+ftLanguageUtil()
+{
+    local ftEffect=语言缩写转换
+    local ftLanguageContent=$@
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local filePathDataBase=$rFilePathXbashDataBase
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftLanguageUtil 缩写列表
+#    ftLanguageUtil “ar_IL bn_BD my_MM zh_CN”
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+ --env ) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftLanguageUtil --env
+        return
+    fi
+    ftAutoInitEnv
+    if [ $AutoEnv_mnufacturers = "sprd" ];then
+            local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
+    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+            local filePathDevice=${dirPathCode}/device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
+    fi
+    local errorContent=
+    if [ -z "$ftLanguageContent" ];then    errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
+    elif [ ! -f "$filePathDevice" ];then    errorContent="${errorContent}\\n[工程Device的语言配置文件不存在]filePathDevice=$filePathDevice" ; fi
+    if [ ! -f "$filePathDataBase" ];then    errorContent="${errorContent}\\n[语言转化配置文件不存在]filePathDataBase=$filePathDataBase" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftLanguageUtil -h
+            return
+    fi
+    return=
+
+    local allList=($(ftIniGetValue $filePathDataBase languageList allList))
+    local shortList=($(ftIniGetValue $filePathDataBase languageList shortList))
+
+    if [ -z "$ftLanguageContent" ];then
+        LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
+        LanguageList=${LanguageList//PRODUCT_LOCALES :=/};  #删除PRODUCT_LOCALES :=
+        ftLanguageContent="$LanguageList"
+    fi
+
+    ftLanguageContent2=$(echo $ftLanguageContent|sed 's/_//g')
+    ftLanguageContent2=$(echo $ftLanguageContent2|sed s/[[:space:]]//g)
+    if [[ $ftLanguageContent2 =~ ^[a-zA-Z]+$ ]]; then
+        sourceList=(${shortList[@]})
+        tragetList=(${allList[@]})
+    elif [[ $ftLanguageContent2 =~ ^[a-zA-Z] ]];then
+        ftEcho -e 错误的参数:\\n${ftLanguageContent[@]}
+        exit
+    else
+        sourceList=(${allList[@]})
+        tragetList=(${shortList[@]})
+    fi
+
+    local orderIndex=0
+    for lc in ${ftLanguageContent[@]}
+    do
+        title="参数[${lc}] 转换失败"
+        index=0
+        for base in ${sourceList[@]}
+        do
+            if [ $lc = $base ];then
+                return="${return} ${tragetList[index]}"
+                ((orderIndex+=1))
+                break;
+            elif [[ $base =~ "/" ]]&&[[ $base =~ $lc ]]; then
+                return="${return} [${lc}]>${tragetList[index]}>[${base}]"
+                title=${lc}可能存在多种结果
+            elif((${#sourceList[@]}==`expr $index + 1`));then
+                ftEcho -e $title
+            fi
+            ((index+=1))
+        done
+    done
+}
+
+ftInitDevicesList()
+{
+    local ftEffect=初始化存储设备的列表
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftInitDevicesList [可用空间/单位默认为MB]
+#    ftInitDevicesList 4096M
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #参数解析
+    local devMinAvailableSpace=0  # 设备最小可用空间，小于则视为无效.单位M
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
+    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -s )   devMinAvailableSpace="${arg2:-'0'}"
+                devMinAvailableSpace=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
+           ;;
+    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
+
+    #耦合校验
+    local errorContent=
+    local devMinAvailableSpaceTemp=$devMinAvailableSpace
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//g/}
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//m/}
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//k/}
+    devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//b/}
+    if [ -z "$rDirPathXbash" ];then    errorContent="${errorContent}\\n[默认用户名]rNameUser=$rNameUser" ; fi
+    if [ -z "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome" ; fi
+    if ( ! echo -n $devMinAvailableSpaceTemp | grep -q -e "^[0-9][0-9]*$" );then    errorContent="${errorContent}\\n[可用空间限制]devMinAvailableSpace=$devMinAvailableSpace" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftInitDevicesList -h
+            return
+    fi
+
+    local indexDevMount=0
+    local indexDevName=0
+    local dirPathHome=$rDirPathUserHome #(${rDirPathUserHome/$rNameUser\//$rNameUser})
+    local sizeHome=$(ftDevAvailableSpace $dirPathHome)
+    local devNameDirPathList=`df -lh | awk '{print $1}'`
+    local devMountDirPathList=(`df -lh | awk '{print $6}'`)
+
+    if [[ $devMinAvailableSpace =~ "g" ]]||[[ $devMinAvailableSpace =~ "gb" ]];then
+            devMinAvailableSpace=${devMinAvailableSpace//g/}
+            devMinAvailableSpace=$(( devMinAvailableSpace * 1024 ))
+
+    elif [[ $devMinAvailableSpace =~ "m" ]]||[[ $devMinAvailableSpace =~ "mb" ]];then
+            devMinAvailableSpace=${devMinAvailableSpace//m/}
+
+    elif [[ $devMinAvailableSpace =~ "k" ]]||[[ $devMinAvailableSpace =~ "kb" ]];then
+            devMinAvailableSpace=${devMinAvailableSpace//kb/}
+            devMinAvailableSpace=${devMinAvailableSpace//k/}
+            let devMinAvailableSpace=devMinAvailableSpace/1024
+    fi
+
+    unset mXbashModuleDataDevicesList
+    if [[ $sizeHome -ge $devMinAvailableSpace ]]; then
+        mXbashModuleDataDevicesList=$dirPathHome
+        indexDevMount=1;
+    fi
+    #开始记录设备文件
+    for dir in ${devNameDirPathList[*]}
+    do
+            devMountDirPath=${devMountDirPathList[indexDevName]}
+            if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
+                    sizeTemp=$(ftDevAvailableSpace $devMountDirPath)
+                    # 确定目录已挂载,设备可用空间大小符合限制
+                    if [[ $devMinAvailableSpace -eq 0 ]]||(($sizeTemp>=$devMinAvailableSpace)); then
+                        if mountpoint -q $devMountDirPath;then
+                            mXbashModuleDataDevicesList[$indexDevMount]=$devMountDirPath
+                            ((indexDevMount+=1))
+                        fi
+                    fi
+            fi
+            ((indexDevName+=1))
+    done
+    export mXbashModuleDataDevicesList #=${mXbashModuleDataDevicesList[*]}
+}
+
+
+_adb() 
+{
+    local ftEffect=adb修正工具对应的参数补全实现
+     local curr_arg=${COMP_WORDS[COMP_CWORD]}
+    case "${COMP_WORDS[1]}" in
+                    -k)         COMPREPLY=( $(compgen -W 'home back menu down up lift right down  power' -- $curr_arg ) ); ;;
+                    install)  COMPREPLY=( $(compgen -W "-l -r -s" -- $curr_arg ) );
+                                # case "${COMP_WORDS[2]}" in
+                                #                 -l|-r|-s)  if [[ ! -z "$(ls -l |grep ".apk")" ]]; then
+                                #                                     COMPREPLY=( $(compgen -o filenames -W "`ls *.apk`" -- ${cur}) );
+                                #                                 fi ;;
+                                # esac
+                                ;;
+                    shell)  COMPREPLY=( $(compgen -W 'am pm input screencap screenrecord getprop dumpsys start text setprop start stop' -- $curr_arg ) );
+                                case "${COMP_WORDS[2]}" in
+                                                dumpsys)  COMPREPLY=( $(compgen -W 'notification cpuinfo meminfo activity' -- $curr_arg ) ); ;;
+                                                input)  COMPREPLY=( $(compgen -W 'keyevent text' -- $curr_arg ) ); ;;
+                                esac
+                                ;;
+                    logcat)  COMPREPLY=( $(compgen -W ' \"*:E\"  ' -- $curr_arg ) );
+                                ;;
+                    *)  COMPREPLY=( $(compgen -W 'push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot disable-verity' -- $curr_arg ) ); ;;
+      esac
+}
+complete -F _adb -A file adb
+adb()
+{
+    local ftEffect=adb修正工具
+
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local  filePathAdbNow=$(which adb)
+    local  filePathAdbLocal=/usr/bin/adb
+    local filePathDataBase=$rFilePathXbashDataBase
+
+    #环境校验
+    # if [ -z "$filePathAdbNow" ]||[ ! -d "$ANDROID_SDK" ];then
+    if [ ! -d "$ANDROID_SDK" ];then
+        cat<<EOF
+#===============[ ${ftEffect} ]的使用环境说明=============
+#
+#    Android SDK 环境异常，请查看配置
+#=========================================================
+EOF
+        return
+    fi
+
+    if [[ -f "$filePathAdbNow" ]]; then
+        local dirPathLocal=$(pwd)
+        local  filePathAdb=${dirPathCode}/out/host/linux-x86/bin/adb
+        if [[ "$dirPathLocal" = "$dirPathCode" ]]&&[[ -f "$filePathAdb" ]]; then
+            if [[ "$filePathAdbNow" != "$filePathAdb" ]]; then
+                local pid=$(lsof -i:5037  |grep adb |awk '{print $2}')
+                if [[ -f "$filePathAdbLocal" ]]; then
+                    echo $userPassword | sudo -p '' -S mv $filePathAdbLocal ${filePathAdbLocal}2
+                fi
+                ftRestartAdb
+            fi
+        fi
+    else
+        if [[ ! -f "${filePathAdbLocal}" ]]; then
+            if [[ -f "${filePathAdbLocal}2" ]]; then
+                echo $userPassword | sudo -p '' -S mv ${filePathAdbLocal}2 $filePathAdbLocal
+            else
+                local filePath=${ANDROID_SDK}/platform-tools/adb
+                if [[ ! -f "$filePath" ]]; then
+                    ftEcho -e "Android SDK 配置 失败，文件不存在：$filePath"
+                    return;
+                else
+                    echo $userPassword | sudo  -p ''  -S ln -s  ${ANDROID_SDK}/platform-tools/adb $filePathAdbLocal
+                fi
+            fi
+            ftRestartAdb
+        fi
+        filePathAdbNow=$filePathAdbLocal
+    fi
+
+    if [[ "$1" = "-k" ]]; then
+        if [ ! -f "$filePathDataBase" ];then
+            ftEcho -e "数据库文件不存在]filePathDataBase=$filePathDataBase"
+        else
+            local TagName=androidKeyCode
+            local keyCode=$(ftIniGetValue $filePathDataBase androidKeyCode $2)
+            if [[ ! -z "$keyCode" ]]; then
+                $filePathAdbNow shell input keyevent $keyCode
+            else
+                ftEcho -e "未知配置,请查看:$filePathDataBase"
+            fi
+        fi
+        return
+    fi
+
+     $filePathAdbNow "$@"
+}
+
+ftSetBashPs1ByGitBranch()
+{
+    local ftEffect=根据git分支名,设定bash的PS1
+    local editType=$1
+
+    local defaultPrefix=xrnsd
+    local defaultColorConfig=44
+    if [ ! -z "$rNameUser" ]&&[ "$rNameUser" != "wgx" ];then
+        defaultPrefix=$rNameUser
+    fi
+    if [ "$(whoami)" = "root" ];then
+        defaultPrefix="root"
+        defaultColorConfig=42
+    fi
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    if [ ! -z "$branchName" ]&&[ "$editType" != "-b" ];then
+        if [ ${#branchName} -gt "10" ];then
+            branchName="\nbranchName→ ${branchName}"
+        else
+            branchName="branchName→ ${branchName}"
+        fi
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]$branchName: \[\033[0m\]"
+    else
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
+    fi
+}
+
+ftCleanDataGarbage()
+{
+    local ftEffect=清空回收站
+    ftInitDevicesList
+
+    while true; do case "$1" in
+     -e |--exception) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    禁止在高权限下运行,转化普通用户后，再次尝试
+#=========================================================
+EOF
+      return;;
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftCleanDataGarbage [无参]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ `whoami` != $rNameUser ]||[ "$(whoami)" = "root" ]; then
+        ftCleanDataGarbage -e
+        return
+    fi
+    #耦合校验
+    local valCount=0
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$mXbashModuleDataDevicesList" ];then    errorContent="${errorContent}\\n[被清空回收站的设备的目录列表]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftCleanDataGarbage -h
+            return
+    fi
+
+    local dirPathLocal=$(pwd)
+    for dirDev in ${mXbashModuleDataDevicesList[*]}
+    do
+         local dir=null
+        if [ -d ${dirDev}/.Trash-1000 ];then
+            dir=${dirDev}/.Trash-1000
+        elif [ -d ${dirDev}/.local/share/Trash ];then
+            dir=${dirDev}/.local/share/Trash
+        fi
+        if [ -d $dir ];then
+            cd $dir
+
+            mkdir empty
+            rsync --delete-before -d -a -H -v --progress --stats empty/ files/
+            rm -rf files/*
+            rm -r empty
+
+        fi
+    done
+    cd $dirPathLocal
+}
+
+ftPath()
+{
+    local ftEffect=路径处理
+    local dirPath=$1
+    local fileName=$2
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftPath 路径       #去掉最后的斜杠
+#    ftPath 路径 文件  #正确拼接
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$dirPath" ];then    errorContent="${errorContent}\\n[路径字串不能为空]dirPath=$dirPath" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftPath -h
+            return
+    fi
+        if [[ "${dirPath: -1}" = "/" ]]; then
+            dirPath=${dirPath%/*}
+        fi
+        if [[ -z "$fileName" ]]; then
+            echo $dirPath
+        else
+            echo ${dirPath}/${fileName}
+        fi
+}
+
+
+#####---------------------工具函数---------------------------#########
+
+ftAutoBuildMultiBranch()
+{
+    local ftEffect=多分支串行编译
+    local filePathBranchList=branch.list
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local dirPathCodeOut=$ANDROID_PRODUCT_OUT
+    
+    local editType=$1
+    local timeLong=$2
+
+    if (  echo -n $editType | grep -q -e "^[0-9][0-9]*$")&&[[ -z "$timeLong" ]];then
+        timeLong=$editType
+        edittype=
+    fi
+    editType=${editType:-'-b'}
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoBuildMultiBranch 无参
+#
+#    ftAutoBuildMultiBranch -u 上传版本软件
+#    ftAutoBuildMultiBranch -b 备份out
+#    ftAutoBuildMultiBranch -ub或-bu 上传,备份out
+#    ftAutoBuildMultiBranch -a 上传,备份out
+#
+#    ftAutoBuildMultiBranch 时间[秒]   延时操作
+#    ftAutoBuildMultiBranch -xx 时间[秒]   延时操作
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --env ) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftAutoBuildMultiBranch --env
+        return
+    fi
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoBuildMultiBranch -h
+            return
+    fi
+
+    local isUpload=
+    local isBackupOut=
+    if [ -z "$1" ];then
+        ftEcho -s "将不会上传软件包，备份out"
+    else
+        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+        if (( $(expr index $editType "a") != "0" ));then
+             isUpload=true
+             isBackupOut=true
+        else
+            if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
+            if (( $(expr index $editType "b") != "0" ));then   isBackupOut=true ; fi
+        fi
+    fi
+    if [ -d "$dirPathCodeOut" ];then
+         while true; do
+                    echo
+                    ftEcho -y out已存在,选择
+                    read -n 1 sel
+                    case "$sel" in
+                        y | Y | -y  |  b  | B | b )    ftBackupOrRestoreOuts
+                                      break;;
+                        d | D )    rm -rf $dirPathCodeOut
+                                      break;;
+                        n | N |q | Q |e |E)    break;;
+                        * ) ftEcho -e 错误的选择：$sel
+                            echo "输入n/q/e 按键跳过"
+                            ;;
+                    esac
+            done
+    fi
+
+    cd $dirPathCode
+    echo $PWD
+    if [ ! -z "$(pgrep -f gedit)" ];then
+            while true; do
+                    echo
+                    ftEcho -y gedit 已打开是否关闭
+                    read -n 1 sel
+                    case "$sel" in
+                        y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
+                                      break;;
+                        n | N |q | Q)    return;;
+                        * ) ftEcho -e 错误的选择：$sel
+                            echo "输入n,q，离开"
+                            ;;
+                    esac
+            done
+    fi
+    git branch > $filePathBranchList&&
+    gedit $filePathBranchList&&
+    while [ ! -z "$(pgrep -f gedit)" ]
+    do
+        echo 等待中
+    done
+    content=`cat $filePathBranchList`
+    if [ ! -z "$content" ];then
+            ftEcho -b 将编译下面所有分支
+            cat $filePathBranchList | while read line
+            do
+                echo branchName=$line
+            done
+            while true; do
+                    echo
+                    ftEcho -y 是否开始编译
+                    read -n 1 select
+                    case "$select" in
+                        y | Y )
+                                        if [[ ! -z "$timeLong" ]]; then
+                                            tput sc
+                                            for i in `seq -w $timeLong -1 1`
+                                            do
+                                                echo -ne "\033[1;31m将在${i}秒开始编译，ctrl+c 取消\033[0m"
+                                                tput rc
+                                                tput ed
+                                                sleep 1
+                                            done
+                                        fi
+                                        cat $filePathBranchList | while read line
+                                        do
+                                            local branchName=$line
+                                            git reset --hard&&
+                                            ftEcho -bh 将开始编译$branchName
+                                            git checkout   "$branchName"||git reset --hard
+                                            # git pull
+
+                                            git push
+
+                                        done
+                                        git reset --hard
+                                       break;;
+                        n | N)    break;;
+                        q |Q)    exit;;
+                        * ) ftEcho -e 错误的选择：$sel
+                             echo "输入q，离开" ;;
+                    esac
+            done
+    fi
+    rm -f $filePathBranchList
+}
+
+complete -W "-b -h" ftAutoBuildMultiBranchEnvSeparation
+ftAutoBuildMultiBranchEnvSeparation()
+{
+    local ftEffect=多分支串行编译[环境独立]/在多个终端间串行执行命令
+    local editType=$1
+    editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+
+    local filePathserialBuildTool=${rDirPathXbashModule}/build/serialBuildByBranchName.module
+    local dirPathProcessEnableId=/tmp/ProcessEnableIds
+
+    while true; do case "$editType" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#    查看帮助
+#    ftAutoBuildMultiBranchEnvSeparation -h
+#
+#    根据分支列表进行串行编译
+#    ftAutoBuildMultiBranchEnvSeparation -b
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --env ) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftAutoBuildMultiBranchEnvSeparation --env
+        return
+    fi
+
+    local requestEnvState=$(/bin/rm -rf $dirPathProcessEnableId&&mkdir $dirPathProcessEnableId)
+    #trap '/bin/rm -rf $dirPathProcessEnableId;exit' SIGINT
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$editType" ];then    errorContent="${errorContent}\\n[请指定操作]" ; fi
+    if [ ! -z "$requestEnvState" ];then    errorContent="${errorContent}\\n[环境初始化异常,文件夹无法重置]requestEnvState=$requestEnvState" ; fi
+    if [ ! -f "$filePathserialBuildTool" ];then    errorContent="${errorContent}\\n[串行编译工具不存在]filePathserialBuildTool=$filePathserialBuildTool" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoBuildMultiBranchEnvSeparation -h
+            return
+    fi
+
+    if [[ "$editType" = "-b" ]]; then
+        local dirPathCode=$ANDROID_BUILD_TOP
+        local filePathBranchList=${dirPathProcessEnableId}/branch.list
+        cd $dirPathCode
+
+         if [ ! -z "$(pgrep -f gedit)" ];then
+                while true; do
+                        echo
+                        ftEcho -y gedit 已打开是否关闭
+                        read -n 1 sel
+                        case "$sel" in
+                            y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
+                                          break;;
+                            n | N |q | Q)    return;;
+                            * ) ftEcho -e 错误的选择：$sel
+                                echo "输入n,q，离开"
+                                ;;
+                        esac
+                done
+        fi
+        git branch > $filePathBranchList&&
+        gedit $filePathBranchList&&
+        while [ ! -z "$(pgrep -f gedit)" ]
+        do
+            echo 等待中
+        done
+        local branchArray=($(cat $filePathBranchList))
+        if [ ! -z "$branchArray" ];then
+                    export branchArray
+                    echo enable>${dirPathProcessEnableId}/0
+                    for (( index = 0; index <${#branchArray[@]}; index++ )); do
+                        filePathState="${dirPathProcessEnableId}/${index}"
+                        while [ ! -f "$filePathState" ]||[ "enable" != $(cat $filePathState) ]; do
+                                sleep 2
+                        done
+                        gnome-terminal  --title="任务:${index} : 编译${branchArray[$fileNamePID]}" -x bash -c "$filePathserialBuildTool $index $filePathBranchList"
+                    done
+        fi
+    fi
+}
+
+ftKillApplicationByPackageName()
+{
+    local ftEffect=kill掉包名为packageName的应用
+    local packageName=$1
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftKillApplicationByPackageName [packageName]
+#    ftKillApplicationByPackageName com.android.settings
+#=========================================================
+EOF
+
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$packageName" ];then    errorContent="${errorContent}\\n[应用包名]packageName=$packageName" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftKillApplicationByPackageName -h
+            return
+    fi
+
+    #adb连接状态检测
+    adb wait-for-device
+    local adbStatus=$(adb get-state)
+    if [ "$adbStatus" != "device" ];then
+        ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
+        return
+    fi
+
+    while true; do case "$packageName" in
+        systemui)   packageName="com.android.systemui"  ;break;;
+        launcher3|launcher) packageName="com.android.launcher3"  ;break;;
+        monkey)     packageName="com.android.commands.monkey"  ;break;;
+    * ) break;;esac;done
+
+    local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
+    if ( echo -n $pid | grep -q -e "^[0-9][0-9]*$"); then
+        adb shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
+        local rootInfo=$(adb root|grep cannot)
+        local remountInfo=$(adb remount|grep failed)
+        if [[ ! -z "$rootInfo" ]]; then
+            ftEcho -e "adb提权失败:$rootInfo"
+        elif [[ ! -z "$remountInfo" ]]; then
+            ftEcho -e "adb提权失败:$remountInfo"
+        fi
+
+        adb shell kill $pid&&ftEcho -s "kill $pid"
+    elif [[ -z "$(adb shell pm list packages|grep $packageName)" ]]; then
+         ftEcho -e 包名[${packageName}]不存在，请确认
+        while [ ! -n "$(adb shell pm list packages|grep $packageName)" ]; do
+            ftEcho -y 是否重新开始
+            read -n 1 sel
+            case "$sel" in
+                y | Y )
+                    # adb shell am force-stop $packageName
+                    ftKillApplicationByPackageName $packageName
+                    break;;
+                * )if [ "$XMODULE" = "env" ];then    return ; fi
+                    exit;;
+            esac
+        done
+    fi
+}
+
+ftLogcatApplicationByPackageName()
+{
+    local ftEffect=打印指定log
+    local packageName=$1
+    local vContent=$2
+    if [[ -z "$packageName" ]]; then
+        adb logcat 
+        return;
+    fi
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#     打印所有log
+#    ftLogcatApplicationByPackageName
+#
+#     打印包名为 com.android.settings的应用输出的log
+#    ftLogcatApplicationByPackageName com.android.settings
+#
+#     打印包含123456的log
+#    ftLogcatApplicationByPackageName 123456
+#
+#     打印包含123456 不包含777  的log
+#    ftLogcatApplicationByPackageName 123456 7777
+#
+#=========================================================
+EOF
+
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$packageName" ];then    errorContent="${errorContent}\\n[应用包名]packageName=$packageName" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftLogcatApplicationByPackageName -h
+            return
+    fi
+
+    #adb连接状态检测
+    adb wait-for-device
+    local adbStatus=$(adb get-state)
+    if [ "$adbStatus" != "device" ];then
+        ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
+        return
+    fi
+
+    while true; do case "$packageName" in
+        systemui)   packageName="com.android.systemui"  ;break;;
+        launcher3) packageName="com.android.launcher3"  ;break;;
+    * ) break;;esac;done
+
+    local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
+    if ( echo -n $pid | grep -q -e "^[0-9][0-9]*$"); then
+            if [[ ! -z "$vContent" ]]; then
+                adb logcat |grep $pid |grep -v $vContent
+                return;
+            fi
+            adb logcat |grep $pid
+    else
+            if [[ ! -z "$vContent" ]]; then
+                adb logcat |grep -i $packageName |grep -v $vContent
+                return;
+            fi
+            adb logcat |grep -i $packageName
+    fi
+}
+
+ftRestartAdb()
+{
+    local ftEffect=重启adbSever
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftRestartAdb [无参]
+#=========================================================
+EOF
+
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=0
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$userPassword" ];then    errorContent="${errorContent}\\n[默认用户密码]userPassword=$userPassword" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -eax "$errorContent \\n请查看下面说明:"
+            ftRestartAdb -h
+            return
+    fi
+    echo $userPassword | sudo  -p '' -S adb kill-server >/dev/null
+    echo "server kill ......"
+    sleep 2
+    echo $userPassword | sudo  -p '' -S adb start-server >/dev/null
+    echo "server start ......"
+    adb devices
+}
+
+ftMtkFlashTool()
+{
+    local ftEffect=mtk下载工具
+    local tempDirPath=`pwd`
+    export OLDPWD=$tempDirPath
+    local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1612.00.100
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftMtkFlashTool 无参
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=0
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$rDirPathTools" ];then    errorContent="${errorContent}\\n[mtk下载工具存放目录为空]rDirPathTools=$rDirPathTools" ; fi
+    if [ ! -d "$toolDirPath" ];then    errorContent="${errorContent}\\n[mtk下载工具路径不存在]toolDirPath=$toolDirPath" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftMtkFlashTool -h
+            return
+    fi
+
+    cd $toolDirPath&& trap 'cd $tempDirPath;exit' SIGINT
+    echo "$userPassword" | sudo   -p '' -S ${rDirPathTools}/sp_flash_tool_v5.1612.00.100/flash_tool
+    cd $tempDirPath
+}
+
+complete -W "create new" ftBootAnimation
+ftBootAnimation()
+{
+    local ftEffect=生成开关机动画
+    local editType=$1
+    local dirPathAnimation=$2
+    local dirPathBase=$(pwd)
+
+    while true; do case "$1" in    -h | --help)
+        cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#    请进入动画资源目录后执行xc bootanim xxx
+#    ftBootAnimation [edittype] [path]
+#
+#    直接生成动画包，不做其他操作，不确认资源文件是否有效
+#    ftBootAnimation create /home/xxxx/test/bootanimation2
+#
+#    初始化生成bootanimation2.zip所需要的东东，然后生成动画包
+#    ftBootAnimation new /home/xxxx/test/bootanimation2
+#============================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;; esac;done
+
+    #耦合校验
+    local valCount=2
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$dirPathAnimation" ];then    errorContent="${errorContent}\\n[动画资源目录]dirPathAnimation=$dirPathAnimation" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftBootAnimation -h
+            return
+    fi
+
+    while true; do
+    case "$editType" in
+    create)
+        #默认运行前提环境
+        #所在文件夹为动画包解压生成的，也就是该参数默认只能重新打包
+        local dirNamePackageName=${dirPathAnimation##*/}.zip
+        local fileConfig=`ls $dirPathAnimation|grep '.txt'`
+
+        ftEcho -r  "请输入动画包的包名(回车默认animation):"
+        read customPackageName
+        if [ ${#customPackageName} != 0 ];then
+            dirNamePackageName=${customPackageName}.zip
+        fi
+
+        if [ -z "$dirNamePackageName" ]||[ -z "$fileConfig" ];then
+            ftEcho -e "函数[${ftEffect}]运行出现错误，请查看函数"
+            echo dirNamePackageName=$dirNamePackageName
+            echo fileConfig=$fileConfig
+        fi
+
+        cd $dirPathAnimation
+        zip -r -0 ${dirNamePackageName} */* ${fileConfig} >/dev/null
+        cd $dirPathBase
+
+        while true; do
+        ftEcho -y 已生成${dirNamePackageName}，是否清尾
+        read -n 1 sel
+        case "$sel" in
+            y | Y )
+                local filePath=/${rDirPathUserHome}/${dirNamePackageName}
+                if [ -f $filePath ];then
+                    while true; do
+                    echo
+                    ftEcho -y 有旧的${dirNamePackageName}，是否覆盖
+                    read -n 1 sel
+                    case "$sel" in
+                        y | Y )    break;;
+                        n | N)    mv $filePath /${rDirPathUserHome}/${dirNamePackageName/.zip/_old.zip};break;;
+                        q |Q)    exit;;
+                        * ) ftEcho -e 错误的选择：$sel
+                            echo "输入q，离开" ;;
+                    esac
+                    done
+                fi
+                mv ${dirPathAnimation}/${dirNamePackageName} $filePath&&
+                rm -rf $dirPathAnimation
+                break;;
+            n | N| q |Q)  exit;;
+            * )    ftEcho -e 错误的选择：$sel
+                echo "输入n，q，离开";;
+        esac
+        done
+        break;;
+    new)
+        local dirNamePart0=part0
+        local dirNamePart1=part1
+        local fileNameDesc=desc.txt
+        local fileNameLast
+        local dirNameAnimation=animation
+
+        dirPathAnimationSourceRes=$dirPathAnimation
+        cd $dirPathAnimationSourceRes
+
+        ftFileDirEdit -e false $dirPathAnimationSourceRes
+        if [ $? -eq "2" ];then
+            ftEcho -ex 空的动画资源，请确认[${dirPathAnimationSourceRes}]是否存在动画文件
+        else
+            filelist=$(ls $dirPathAnimationSourceRes)
+            local dirPathLocal=$PWD
+            cd $dirPathAnimationSourceRes && trap 'cd $dirPathLocal;exit' SIGINT
+            for file in $filelist
+            do
+                if [ ! -f "$file" ];then
+                    ftEcho -ex 动画资源包含错误类型的文件[${file}]，请确认
+                fi
+            done
+            cd $dirPathLocal
+        fi
+
+        dirPathAnimationTraget=/${rDirPathUserHome}/${dirNameAnimation}
+
+        ftFileDirEdit -e false $dirPathAnimationTraget
+        if [ -d $dirPathAnimationTraget ]||[ $? -eq   "3" ];then
+            while true; do
+            ftEcho -y ${ftEffect}的目标文件[${dirPathAnimationTraget}]夹非空，是否删除重建
+            read -n 1 sel
+            case "$sel" in
+                y|Y) rm -rf $dirPathAnimationTraget
+                        break;;
+                n|N|q|Q)  exit;;
+                *) ftEcho -e 错误的选择：$sel
+                    echo "输入n，q，离开";;
+            esac
+            done
+        fi
+        mkdir  -p ${dirPathAnimationTraget}/${dirNamePart0}
+        mkdir      ${dirPathAnimationTraget}/${dirNamePart1}
+        touch  ${dirPathAnimationTraget}/${fileNameDesc}
+
+        #文件名去空格
+        for loop in `ls -1 | tr ' '  '#'`
+        do
+            mv  "`echo $loop | sed 's/#/ /g' `"  "`echo $loop |sed 's/#//g' `"  2> /dev/null
+        done
+
+        local file1=${filelist[0]}
+        local file1=${file1##*.}
+        if [ $file1 != "jpg" ]&&[ $file1 != "png" ];then
+            ftEcho -e 特殊格式[${file1}]动画资源文件，生成包大小可能异常
+        fi
+
+        #文件重命名
+        index=0
+        for file in $filelist
+        do
+            # echo “filename: ${file%.*}”
+            # echo “extension: ${file##*.}”
+            a=$((1000+$index))
+            # 重命名图片，复制到part0
+            fileNameLast=${a:1}.${file##*.}
+            cp  $file  ${dirPathAnimationTraget}/${dirNamePart0}/${fileNameLast}
+            ((index+=1))
+        done
+        # 复制最后一张图片到part1
+        cp  ${dirPathAnimationTraget}/${dirNamePart0}/${fileNameLast} ${dirPathAnimationTraget}/${dirNamePart1}/${fileNameLast}
+
+        # 图片的宽    图片的高   每秒显示的帧数
+        # 标识符    循环的次数  阶段切换间隔时间 对应图片的目录
+        # 标识符    循环的次数  阶段切换间隔时间 对应图片的目录
+        # 480           250       15
+        # p               1           0            part0
+        # p               0           10          part1
+
+        local resolutionWidth
+        local resolutionHeight
+        local frameRate
+        local cycleCount
+        while [ -z "$resolutionWidth" ]||[ -z "$resolutionHeight" ]||[ -z "$frameRate" ]||[ -z "$cycleCount" ]; do
+            if [ -z "$resolutionWidth" ];then
+                ftEcho -r  请输入动画的宽:
+                read resolutionWidth
+            elif [ -z "$resolutionHeight" ]; then
+                ftEcho -r  请输入动画的高:
+                read resolutionHeight
+            elif [ -z "$frameRate" ]; then
+                ftEcho -r  请输入动画的帧率:
+                read frameRate
+            elif [ -z "$cycleCount" ]; then
+                ftEcho -r  请输入动画的循环次数:
+                read cycleCount
+            fi
+        done
+
+        #生成desc.txt
+        echo -e "$resolutionWidth $resolutionHeight $frameRate\n\
+p $cycleCount 0 part0\n\
+p 0 0 part1" >${dirPathAnimationTraget}/${fileNameDesc}
+
+        # 生成动画包
+        ftBootAnimation create $dirPathAnimationTraget
+        break;;
+     * )
+        ftEcho -e "函数[${ftEffect}]参数错误，请查看函数使用示例"
+        ftBootAnimation -h
+        break;;
+    esac
+    done
+}
+
+ftGjh()
+{
+    local ftEffect=生成国际化所需的xml文件
+    local isEnable=false #年久失修，暂时关闭
+    #可用性校验
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftGjh --df;return    ; fi
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftGjh 无参数
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 年久失修，暂时关闭，请确认
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=0
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftGjh -h
+            return
+    fi
+
+    local filePath=${rDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar
+    if [ -f $filePath ];then
+        $filePath
+    else
+        ftEcho -e "[${ftEffect}]找不到[$filePath]"
+    fi
+}
+
+ftPowerManagement()
+{
+    local ftEffect=延时免密码关机重启
+    local edittype=$1
+    local timeLong=$2
+    timeLong=${timeLong:-$2}
+    timeLong=${timeLong:-'10'}
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#    ftPowerManagement 关机/重启 时间/秒
+#    ftPowerManagement shutdown/reboot 100
+#    xs 时间/秒 #制定时间后关机,不带时间则默认十秒
+#    xss 时间/秒 #制定时间后重启,不带时间则默认十秒
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local errorContent=
+    if [ -z "$userPassword" ];then    errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword" ; fi
+    if [ -z "$edittype" ];then    errorContent="${errorContent}\\n[操作参数为空]edittype=$edittype" ; fi
+    if ( ! echo -n $timeLong | grep -q -e "^[0-9][0-9]*$" );then    errorContent="${errorContent}\\n[倒计时时长无效]timeLong=$timeLong" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftPowerManagement -h
+            return
+    fi
+
+    while true; do
+    case "$edittype" in
+        shutdown )
+            tput sc
+            for i in `seq -w $timeLong -1 1`
+            do
+                tput rc;tput ed
+                echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
+                sleep 1
+            done
+            echo $userPassword | sudo   -p '' -S shutdown -h now
+            break;;
+        reboot)
+            tput sc
+            for i in `seq -w $timeLong -1 1`
+            do
+                tput rc;tput ed
+                echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
+                sleep 1
+            done
+            echo $userPassword | sudo   -p '' -S reboot
+            break;;
+            * ) ftEcho -e 错误的选择：$sel
+                echo "输入q，离开"
+                break;;
+    esac
+    done
+}
+
+ftReduceFileList()
+{
+    local ftEffect=精简动画帧文件
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftReduceFileList 保留的百分比 目录
+#    ftReduceFileList 60 /home/xxxx/temp
+#
+#    ftReduceFileList 目录
+#    ftReduceFileList /home/xxxx/temp
+# 由于水平有限，实现对60%和50%之类的比例不敏感
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    if (( $#==2 ));then
+        local percentage=$1
+        local dirPathFileList=$2
+    elif (( $#==1 ));then
+        local dirPathFileList=$1
+        local percentage=100
+        ftEcho -r  "请输入保留的百分比:"
+        read percentage
+    fi
+    local editType=del #surplus
+
+    #耦合校验
+    local valCount=2
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$percentage" ];then    errorContent="${errorContent}\\n[百分比取值为空]percentage=$percentage" ; fi
+    if [ -z "$dirPathFileList" ];then    errorContent="${errorContent}\\n[目标目录为空]dirPathFileList=$dirPathFileList" ; fi
+    if ( ! echo -n $percentage | grep -q -e "^[0-9][0-9]*$");then    errorContent="${errorContent}\\n[百分比取值无效，只能是数字]percentage=$percentage" ; fi
+    if (( $percentage<0 ))||(( $percentage>100 ));then    errorContent="${errorContent}\\n[百分比取值无效 0<=*<=100]percentage=$percentage" ; fi
+    if [ ! -d "$dirPathFileList" ];then    errorContent="${errorContent}\\n[目标目录]dirPathFileList=$dirPathFileList" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftReduceFileList -h
+            return
+    fi
+    ftFileDirEdit -e false $dirPathFileList
+    if [ $? -eq "2" ];then
+        ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
+    # else
+    #     for file in `ls $dirPathFileList`
+    #     do
+    #         if [ ! -f $file ];then
+    #             ftEcho -e 资源目录包含不是文件的东东：[${dirPathFileList}/${file}]
+    #         fi
+    #     done
+    fi
+
+    if (( $percentage>50 ));then
+        percentage=`expr 100 - $percentage`
+        editType=surplus
+    fi
+    continueThreshold=`expr 100 / $percentage`
+
+    local dirNameFileListBase=${dirPathFileList##*/}
+    local dirNameFileListBackup=${dirNameFileListBase}_bakup
+    local dirPathFileListBackup=${dirPathFileList%/*}/${dirNameFileListBackup}
+    if [ ! -d $dirPathFileListBackup ];then
+        mkdir $dirPathFileListBackup
+        cp -rf ${dirPathFileList}/*  $dirPathFileListBackup
+    fi
+
+     fileList=`ls $dirPathFileList`
+    index=0
+    for file in $fileList
+    do
+        ((index+=1))
+        # if (( `expr $index % $continueThreshold`== 0 ));then
+        #     if [ $editType = "del" ];then
+        #         echo del_file=$file
+        #     elif [ $editType = "surplus" ];then
+        #         continue;
+        #     fi
+        # else
+        #     if [ $editType = "del" ];then
+        #         continue;
+        #     elif [ $editType = "surplus" ];then
+        #         echo del_file=$file
+        #     fi
+        # fi
+        if (( `expr $index % $continueThreshold`== 0 ));then
+            if [ $editType = "surplus" ];then
+                continue;
+            fi
+        elif [ $editType = "del" ];then
+            continue;
+        fi
+        rm -f ${dirPathFileList}/$file
+    done
+}
+
+complete -W "-z" ftReNameFile
+ftReNameFile()
+{
+    local ftEffect=批量重命名文件
+    local valCount=4
+    local errorContent=
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    不指定文件名长度默认为4
+#    ftReNameFile 目录
+#    ftReNameFile /home/xxxx/temp
+#    ftReNameFile 目录 修改后的文件长度
+#    ftReNameFile /home/xxxx/temp 5
+#
+#    ftReNameFile -z 目录 前缀
+#    ftReNameFile -z /home/xxxx/temp test
+#    ftReNameFile -z 目录 前缀 文件名后缀
+#    ftReNameFile -z /home/xxxx/temp test test2
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    -z |-t )
+         local editTypePrefixes=$1
+         local dirPathFileList=$2
+         local prefixContent=$3
+         local suffixContent=$4
+         valCount=4
+         break;;
+    * )
+            local dirPathFileList=$1
+            local lengthFileName=$2
+            local prefixContent=
+            local suffixContent=
+            valCount=2
+            if [[ "$1" =~ ^-.* ]]; then
+                errorContent="${errorContent}\\n[错误的参数指定]val=$1"
+                dirPathFileList=$2
+                lengthFileName=$3
+            fi
+            break
+    ;;esac;done
+
+    #耦合校验
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathFileList" ];then    errorContent="${errorContent}\\n[目标目录不存在]dirPathFileList=$dirPathFileList" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftReNameFile -h
+            return
+    fi
+
+    ftFileDirEdit -e false $dirPathFileList
+    if [ $? -eq "2" ];then
+        ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
+    fi
+
+    local dirNameFileListRename=RenameFiles
+    local dirPathFileListRename=${dirPathFileList}/${dirNameFileListRename}
+    local index=0
+    local lengthFileNameBase=
+
+    if [ -d $dirPathFileListRename ];then
+        rm -rf $dirPathFileListRename
+    fi
+    mkdir $dirPathFileListRename
+    cd $dirPathFileList
+    for file in `ls $dirPathFileList|tr " " "?"`
+    do
+        if [ "$file" == "$dirNameFileListRename" ];then
+            continue
+        fi
+
+        file=${file//'?'/' '}
+        local fileName=${file%.*}
+        local fileFormatName=${file##*.}
+
+        if [[ "$editTypePrefixes" == "-t" ]]; then
+            prefixContent=${prefixContent// /"[[:space:]]"}
+            fileName="$(echo $file |sed s/$prefixContent/$suffixContent/g)"
+            mv "${dirPathFileList}/${file}" "${dirPathFileList}/${fileName}"
+            continue;
+        fi
+
+        file=$(echo $file |sed s/[[:space:]]//g)
+        fileName=${file%.*}
+        if [[ $file =~ "." ]];then
+            fileFormatName=".${file##*.}"
+        else
+            fileFormatName=
+        fi
+
+        if [[ -z  "lengthFileNameBase" ]]||[ ${#lengthFileNameBase} = "0" ]; then
+                if [[ -z "$lengthFileName" ]]; then
+                    lengthFileName=${#fileName}
+                fi
+                lengthFileNameBase=1
+                while (( $lengthFileName > 0  ))
+                do
+                    ((lengthFileName-=1))
+                    ((lengthFileNameBase*=10))
+                done
+        fi
+        fileNameBase=$((lengthFileNameBase+$index))
+
+        if [[ -z "$editTypePrefixes" ]]; then
+            fileName=${fileNameBase:1}
+        fi
+        cp -rf "${dirPathFileList}/${file}" ${dirPathFileListRename}/${prefixContent}${fileName}${suffixContent}${fileFormatName}
+        ((index+=1))
+    done
+}
+
+#===================    非通用实现[高度耦合]    ==========================
+ftBackupOrRestoreOuts()
+{
+    local ftEffect=Android编译生成out相关自动维护
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local dirPathOut=$ANDROID_PRODUCT_OUT
+    local editType=$1
+    local filterString=$2
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#    备份out
+#    ftBackupOrRestoreOuts 无参
+#    移动匹配out到当前项目
+#    ftBackupOrRestoreOuts -m
+#    ftBackupOrRestoreOuts -m xxx   #分支名包含xxx的out列表
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --env ) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
+        ftBackupOrRestoreOuts --env
+        return
+    fi
+
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftBackupOrRestoreOuts -h
+            return
+    fi
+
+    cd $ANDROID_BUILD_TOP
+    #分支名
+
+    ftAutoInitEnv
+    local buildType=$AutoEnv_buildType
+    local versionName=$AutoEnv_versionName
+    local branchName="$AutoEnv_branchName"
+
+    local dirNameCodeRootOuts=outs
+    local dirPathCodeRootOuts=${dirPathCode%/*}/${dirNameCodeRootOuts}
+    local versionInfoDateTime=$(date -d "today" +"%y%m%d[%H:%M]")
+    local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----${versionInfoDateTime}
+    local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
+
+    if [ ! -d "$dirPathCodeRootOuts" ];then
+        if [[ "$editType" = "-m" ]]; then
+            ftEcho -e "${dirNameCodeRootOuts}为空"
+            return
+        fi
+        mkdir -p $dirPathCodeRootOuts
+    fi
+
+    if [[ "$editType" = "-m" ]]; then
+        if [[ -d "$dirPathOut" ]]||[[ -d "${dirPathCode}/out" ]]; then
+            ftEcho -e "out已存在 ,请先备份"
+            return
+        fi
+        local branchName=$filterString
+        if [[ -z "$filterString" ]]; then
+            branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+        fi
+        local dirPathOutList=($(ls $dirPathCodeRootOuts|grep $branchName))
+        if [[ -z "$dirPathOutList" ]]; then
+            ftEcho -e "未找到\n分支[$branchName]对应的out"
+            return
+        fi
+        local itemCount=${#dirPathOutList[@]}
+        local dirNameOutTraget=$dirPathOutList
+        if (( $itemCount>1 ));then
+            ftEcho -s 对应分支对应多个out,请选择
+            local index=0
+            for item in ${dirPathOutList[@]}
+            do
+                printf "%-4s %-4s\n" [$index] $item
+                ((index+=1))
+            done
+            ftEcho -r  "请输入对应的序号(回车默认0):"
+            if (( $itemCount>9 ));then
+                read tIndex
+            else
+                read -n 1 tIndex
+            fi&&echo
+            #设定默认值
+            if [ ${#tIndex} == 0 ]; then
+                tIndex=0
+            elif (( $itemCount<=$tIndex ))||(( $tIndex<0 ));then
+                ftEcho -e "\n无效的序号:${tIndex}"
+                 return
+            fi
+            dirNameOutTraget=${dirPathOutList[$tIndex]}
+        fi
+        mv ${dirPathCodeRootOuts}/${dirNameOutTraget} ${dirPathCode}/out&&
+        ftEcho -s "移动 ${dirPathCodeRootOuts}/${dirNameOutTraget}\n 到  ${dirPathCode}/out"
+        return
+    fi
+
+    local dirPathOutTop=${dirPathCode}/out
+    if [ ! -d "$dirPathOutBranchVersion" ];then
+        if [[ ! -d "$dirPathOutTop" ]]; then
+             ftEcho -e "out 不存在"
+             return
+        fi
+        if [[ ! -d "$dirPathOut" ]]; then
+             ftEcho -e "out 不完整"
+             dirNameBranchVersion=${dirNameBranchVersion}____section
+        fi
+
+        local fileNameGitLogInfo=git.log
+        local filePathGitLogInfo=${dirPathOutTop}/${fileNameGitLogInfo}
+        if [[ ! -f $filePathGitLogInfo ]]; then
+            touch $filePathGitLogInfo
+        fi
+        echo -e "
+======================================================================================================
+$dirNameBranchVersion
+======================================================================================================
+    $(ftGitLogShell -tc 20 "%h  %s")" >> $filePathGitLogInfo
+        mv ${dirPathOutTop}/ $dirPathOutBranchVersion&&
+        ftEcho -s "移动 $dirPathOutTop \n到  ${dirPathCodeRootOuts}/${dirNameBranchVersion}"
+    else
+        ftEcho -ex 存在相同out
+    fi
+}
+
+ftAutoUploadHighSpeed()
+{
+    local ftEffect=上传文件到制定smb服务器路径[高速版]
+    #存放上传源的目录
+    local dirPathContentUploadSource=$1
+    local serverIp=$2
+
+    while true; do case "$1" in
+     -e |--exception) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    依赖 sshpass pigz,请使用下面命令安装
+#    sudo apt-get install sshpass pigz pv
+#=========================================================
+EOF
+      return;;
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoUploadHighSpeed 源存放目录
+#
+#    路径:acb/def/123/kkk.zip
+#    ftAutoUploadHighSpeed acb/def/123 kkk.zip
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ -z `which sshpass` ]||[ -z `which pigz` ]||[ -z `which pv` ];then
+        ftAutoUploadHighSpeed -e
+        return
+    fi
+    #耦合校验
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathContentUploadSource" ];then    errorContent="${errorContent}\\n上传源存放目录不存在:dirPathContentUploadSource=$dirPathContentUploadSource" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoUploadHighSpeed -h
+            return
+    fi
+    local tagName=serverConfig_${serverIp}
+    local userName=$(ftIniGetValue $rFilePathXbashDataBase $tagName userName)
+    local userPassword=$(ftIniGetValue $rFilePathXbashDataBase $tagName userPassword)
+    local dirPathPackage=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackage)
+
+    # 自动添加旧软件的TAG
+    local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
+    local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
+    if [[ -d $dirPathServerLocal ]]; then
+            local versionPath=$(dirname $dirPathServerLocal)
+            local versionName=$(basename $dirPathServerLocal)
+
+             ls $versionPath | while read line;do
+                if [[  ${line//$versionName} != $line ]]; then
+                    local dirPath=${versionPath}/${line}
+                    local dirPath_old=${dirPath}_old
+                    if [[ -d "$dirPath_old" ]]; then
+                        dirPath_old=${dirPath_old}_old
+                    fi
+                    mv $dirPath $dirPath_old
+                fi
+            done
+    fi
+
+    ftEcho -s "\n========================\n开始上传文件:\n  ${dirPathContentUploadSource}\n服务器路径:\n  ${serverIp}$dirPathPackage\n========================\n"
+
+    local packageSize=$(du -sk $dirPathContentUploadSource | cut -f1)k
+    tar -cv  ${dirPathContentUploadSource%%/*}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
+
+    ftEcho -s "上传结束"
+}
+
+complete -W "-a" ftAutoPacket
+ftAutoPacket()
+{
+    local ftEffect=基于android的out生成版本软件包
+
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' DEBUG
+    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' ERR
+
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local dirPathOut=$ANDROID_PRODUCT_OUT
+    local buildType=$TARGET_BUILD_VARIANT
+    local editType=$1
+    local filePathDataBase=$rFilePathXbashDataBase
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoPacket #自动打包
+#    ftAutoPacket -y #免确认自动清理out/packet
+#    ftAutoPacket -u #上传到188服务器
+#    ftAutoPacket -r  #添加说明
+#    ftAutoPacket -p #打包
+#    ftAutoPacket -ryup # 根据需要,自由组合,顺序,大小写随意
+#    ftAutoPacket -a #默认启动全部流程
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --env ) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;; esac;done
+
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ]\
+            ||[ -z "$TARGET_PRODUCT" ]\
+            ||[ -z "$ANDROID_PRODUCT_OUT" ]\
+            ||[ -z "$TARGET_BUILD_VARIANT" ];then
+        ftAutoPacket --env
+        return
+    fi
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    if [ ! -d "$dirPathOut" ];then    errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut" ; fi
+    if [ ! -f "$filePathDataBase" ];then    errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase" ; fi
+    if [ ! -z "$errorContent" ]||[[ -z "$editType" ]];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoPacket -h
+            return
+    fi
+
+    local isClean=
+    local isReadMe=
+    local isUpload=
+    local isPacket=
+    local isCopy=
+    local isSpecial=
+    local isMove=
+    editType=$(echo $editType | tr '[A-Z]' '[a-z]')
+    if (( $(expr index $editType "a") != "0" ));then
+         isClean=true
+         isReadMe=true
+         isUpload=true
+         isPacket=true
+    else
+        if (( $(expr index $editType "y") != "0" ));then   isClean=true ; fi
+        if (( $(expr index $editType "m") != "0" ));then  isMove=true ; fi
+        if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
+        if (( $(expr index $editType "r") != "0" ));then   isReadMe=true ; fi
+        if (( $(expr index $editType "p") != "0" ));then   isPacket=true;isReadMe=true; fi
+        if (( $(expr index $editType "c") != "0" ));then   isCopy=true ; fi
+        if (( $(expr index $editType "t") != "0" ));then
+               isSpecial=true
+               isPacket=true
+        fi
+    fi
+
+    ftAutoInitEnv
+    local dirPathLocal=$dirPathCode
+    local dirNameVersionSoftware=packet
+    local buildType=$AutoEnv_buildType
+    local dirPathVersionSoftware=${dirPathCode}/out/${dirNameVersionSoftware}
+
+    if [[ -d "$dirPathVersionSoftware" ]]; then
+            if [[ -n "$isClean" ]]; then
+                rm  -rf $dirPathVersionSoftware
+                ftEcho -s "删除旧的软件包"
+            elif [[ ! -z "$isMove" ]]; then
+                mv $dirPathVersionSoftware ${dirPathVersionSoftware}_old
+                ftEcho -s "发现软件包,移至xx_old"
+            elif [[ -z "$isUpload" ]]; then
+                  while true; do
+                        ftEcho -y "有旧的软件包  ${dirPathVersionSoftware}\n是否删除"
+                        read -n 1 sel
+                        case "$sel" in
+                            y | Y ) rm  -rf $dirPathVersionSoftware
+                                       break;;
+                            n | N | q |Q)    break ;;
+                            * ) ftEcho -e 错误的选择：$sel
+                                echo "输入n，q，离开";;
+                        esac
+                done
+                echo
+            fi
+    fi
+
+    if [[ ! -d "$dirPathVersionSoftware" ]]; then
+        mkdir $dirPathVersionSoftware
+    fi && cd $dirPathVersionSoftware && trap 'cd $dirPathLocal;exit' SIGINT
+
+    if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+            if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
+                ftEcho -ea " ${ftEffect} 缺少平台${AutoEnv_mnufacturers}的项目${TARGET_PRODUCT}的配置\
+                \n请查看下面说明:"
+                ftAutoPacket -h
+                return
+            fi
+            local dirPathNormalBin=$dirPathOut
+            local dirPathLogo=${dirPathCode%/*}/res
+            local versionName=$AutoEnv_versionName
+            local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${versionName}
+            local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
+            local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
+            local filePathPacketScript=${rDirPathXbashModule}/packet_7731c.module
+
+            if [[ ! -z "$(cat $versionName|grep 451)" ]]; then
+                dirPathModemBin=${dirPathModemBin}2
+            fi
+
+            if [ ! -f "$filePathPacketScript" ];then
+                    ftEcho -ea "[${ftEffect}]的参数错误 \
+                       找不到 [sprd的打包工具]filePathPacketScript=$filePathPacketScript \
+                        请查看下面说明:"
+                    ftAutoPacket -h
+                    return
+            fi
+
+            if [ ! -z "$buildType" ]&&[ $buildType != "user" ];then
+                    versionName=${versionName}____${buildType}
+            fi
+
+            local dirPathVersionSoftwareLocal="智能机软件"
+            local tagName="lzProjrctConfigBranch2CtName"
+            local clientNameAll=$(ftIniGetValue $filePathDataBase $tagName $AutoEnv_clientName)
+            tagName="lzProjrctConfigBranch2PlatformName"
+            local platformName=$(ftIniGetValue $filePathDataBase $tagName $TARGET_PRODUCT)
+            if [ ! -z "$platformName" ];then
+                 dirPathVersionSoftwareLocal=${dirPathVersionSoftwareLocal}/${platformName}/${clientNameAll:-'autoUpload'}/${versionName}
+            else
+                 dirPathVersionSoftwareLocal=${dirPathVersionSoftwareLocal}/autoUpload/${versionName}
+            fi
+
+            dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirPathVersionSoftwareLocal}
+            mkdir -p $dirPathVersionSoftwareVersion
+
+            # 生成软件包
+            if [[ ! -z "$isPacket" ]]; then
+                   ftEcho -s "开始生成 ${versionName}.pac\n"
+                    cd $dirPathVersionSoftwareVersion && trap 'cd $dirPathLocal;exit' SIGINT
+
+                    /usr/bin/perl $filePathPacketScript \
+                        $versionName.pac \
+                        SC77xx \
+                        ${versionName}\
+                        ${dirPathNormalBin}/SC7720_UMS.xml \
+                        ${dirPathNormalBin}/fdl1.bin \
+                        ${dirPathNormalBin}/fdl2.bin \
+                        ${dirPathModemBin}/nvitem.bin \
+                        ${dirPathModemBin}/nvitem_wcn.bin \
+                        ${dirPathNormalBin}/prodnv.img \
+                        ${dirPathNormalBin}/u-boot-spl-16k.bin \
+                        ${dirPathModemBin}/SC7702_pike_modem_AndroidM.dat \
+                        ${dirPathModemBin}/DSP_DM_G2.bin \
+                        ${dirPathModemBin}/SC8800G_pike_wcn_dts_modem.bin \
+                        ${dirPathNormalBin}/boot.img \
+                        ${dirPathNormalBin}/recovery.img \
+                        ${dirPathNormalBin}/system.img \
+                        ${dirPathNormalBin}/userdata.img \
+                        ${dirPathLogo}/logo.bmp \
+                        ${dirPathNormalBin}/cache.img \
+                        ${dirPathNormalBin}/sysinfo.img \
+                        ${dirPathNormalBin}/u-boot.bin \
+                        ${dirPathNormalBin}/persist.img&&
+                    ftEcho -s 生成7731c使用的pac[${dirPathVersionSoftwareVersion}/${versionName}.pac]
+                    cd $dirPathLocal
+            fi
+
+            # 生成说明文件
+            if [[ ! -z "$isReadMe" ]]; then
+                    ftAutoCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
+            fi
+
+            #上传服务器
+            if [[ ! -z "$isUpload" ]]; then
+                    ftAutoUploadHighSpeed $dirPathVersionSoftwareLocal 192.168.1.188
+            fi
+
+
+    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+            local dirNamePackage="packages"
+            local dirNameOtaPackage="otaPackages"
+            local dirNamePackageDataBase="dataBase"
+            local deviceName=`basename $ANDROID_PRODUCT_OUT`
+
+            local dataBaseFileList=
+            if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
+                tagName="lzProjrctConfigSoftwareDataBaseFileLIst"
+                dataBaseFileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList))
+            elif [ $deviceName = "keytak6580_weg_l" ];then
+                # local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
+                local dirPathDatabaseBpBase=${dirPathOut}/obj/ETC
+                local dirNameModems=$(ls ${dirPathDatabaseBpBase}/|grep "BPLGUInfoCustomAppSrcP_")
+                for dirName in ${dirNameModems[@]}
+                do
+                    dirName=${dirName//:/}
+                    local dirPath=${dirPathDatabaseBpBase}/${dirName}
+                    for fileName in $(ls $dirPath)
+                    do
+                        local filePath=${dirPath}/${fileName}
+                        if [[ ! -f "$filePath" ]]; then
+                            ftEcho -e "文件${filePath}不存在"
+                        else
+                            dataBaseFileList=(${dataBaseFileList[@]} $filePath)
+                        fi
+                    done
+                done
+                dataBaseFileList=(${dataBaseFileList[@]} ${dirPathOut}/obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15)
+            elif [ $deviceName = "m9_qhd" ];then
+                # local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
+                local dirPathDatabaseBpBase=${dirPathOut}/obj/ETC
+                local dirNameModems=$(ls ${dirPathDatabaseBpBase}/|grep "BPLGUInfoCustomAppSrcP_")
+                for dirName in ${dirNameModems[@]}
+                do
+                    dirName=${dirName//:/}
+                    local dirPath=${dirPathDatabaseBpBase}/${dirName}
+                    for fileName in $(ls $dirPath)
+                    do
+                        local filePath=${dirPath}/${fileName}
+                        if [[ ! -f "$filePath" ]]; then
+                            ftEcho -e "文件${filePath}不存在"
+                        else
+                            dataBaseFileList=(${dataBaseFileList[@]} $filePath)
+                        fi
+                    done
+                done
+                dataBaseFileList=(${dataBaseFileList[@]} ${dirPathOut}/obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50)
+            else
+                ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的对应项目${deviceName}的Database配置\
+                \n请查看下面说明:"
+                ftAutoPacket -h
+                return
+            fi
+
+            # system.img文件最新修改时间
+            if [[ -f "${dirPathOut}/system.img" ]]; then
+                    local key="最近更改："
+                    local fileChangeTime=$(stat ${dirPathOut}/system.img|grep $key|awk '{print $1}'|sed s/-//g)
+                    fileChangeTime=${fileChangeTime//$key/}
+                    fileChangeTime=${fileChangeTime:-$(date -d "today" +"%y%m%d")}
+            fi
+
+            if [ ! -z "$AutoEnv_clientName" ];then #解析git分支,初始化客户等相关信息
+                ftAutoInitEnv -bp
+
+                local dirPathGitBranchInfoGroup=
+                local dirPathVersionSoftwareVersion=
+
+                #版本路径 服务器根路径部分
+                local dirPathUploadTraget=智能机软件
+
+                local tagName="lzProjrctConfigBranch2CtName"
+                local clientNameAll=$(ftIniGetValue $filePathDataBase $tagName $AutoEnv_clientName)
+                tagName="lzProjrctConfigBranch2PlatformName"
+                local platformName=$(ftIniGetValue $filePathDataBase $tagName $TARGET_PRODUCT)
+                if [ ! -z "$platformName" ];then
+                     dirPathUploadTraget=${dirPathUploadTraget}/${platformName}/${clientNameAll:-'autoUpload'}
+                else
+                     dirPathUploadTraget=${dirPathUploadTraget}/autoUpload
+                fi
+
+
+                if [[ -z "$dirPathUploadTraget" ]]; then
+                    ftEcho -e "分支信息解析结果为空,请查看配置"
+                    return;
+                else
+                    dirPathVersionSoftwareVersion=${dirPathUploadTraget}
+                fi
+
+                #版本路径 分支信息部分
+                if [[ ! -z "$AutoEnv_motherboardName" ]]; then
+                    dirPathGitBranchInfoGroup=${AutoEnv_motherboardName}
+                fi
+                if [[ ! -z "$AutoEnv_projrctName" ]]; then
+                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_projrctName}
+                fi
+                if [[ ! -z "$AutoEnv_demandSignName" ]]; then
+                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_demandSignName}
+                fi
+                if [[ ! -z "$AutoEnv_deviceModelName" ]]; then
+                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_deviceModelName}
+
+                    if [[ ! -z "$AutoEnv_BandInfo" ]]; then #添加 modem 配置信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_B${AutoEnv_BandInfo}
+                    fi
+                    if [[ ! -z "$AutoEnv_FlashConfig" ]]; then #添加 flash信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_${AutoEnv_FlashConfig}
+                    fi
+                else
+                    if [[ ! -z "$AutoEnv_BandInfo" ]]; then #添加 modem 配置信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/B${AutoEnv_BandInfo}
+                    fi
+                    if [[ ! -z "$AutoEnv_FlashConfig" ]]; then #添加 flash信息
+                        dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_FlashConfig}
+                    fi
+                fi
+                # if  [ ! -z "$AutoEnv_AndroidVersion" ]&&(($AutoEnv_deviceSdkVersion>22)); then
+                #         dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_AndroidVersion}
+                # fi
+                if [[ -z "$dirPathGitBranchInfoGroup" ]]; then
+                    ftEcho -e "分支信息解析结果为空,请查看配置"
+                    return;
+                else
+                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirPathGitBranchInfoGroup}
+                fi
+
+                local dirNameVeriosionBase=${AutoEnv_versionName}
+                #非user版本标记编译类型
+                if [ "$AutoEnv_buildType" != "user" ];then
+                     dirNameVeriosionBase=${buildType}____${dirNameVeriosionBase}
+                fi
+                #软件版本的日期与当前时间不一致就设定编译时间
+                arr=(${AutoEnv_versionName//_/ })
+                length=${#arr[@]}
+                ((length-=1))
+                local versionNameDate=${arr[$length]}
+                if [[ $versionNameDate =~ "." ]];then
+                    versionNameDate=${versionNameDate%.*}
+                fi
+                if [ ! -z "$fileChangeTime" ]&&[ "$versionNameDate" != "${fileChangeTime}" ];then
+                    export AutoEnv_SoftwareVersion_BuildTime=buildtime____${fileChangeTime}
+                     dirNameVeriosionBase=${dirNameVeriosionBase}____${AutoEnv_SoftwareVersion_BuildTime}
+                fi
+
+                if [[ ! -z "$isSpecial" ]]; then
+                    ftEcho -r $"请输入版本: "${dirNameVeriosionBase}"\n相应的说明[回车默认为常规]:"
+                    read tag
+                    tag=${tag:-'常规'}
+                    dirNameVeriosionBase=${tag}____${dirNameVeriosionBase}
+                fi
+                dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
+
+            else
+                if [ ! -z "$fileChangeTime" ];then
+                    local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${fileChangeTime}____buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$fileChangeTime
+                else
+                    local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/buildType[${buildType}]__versionName[${AutoEnv_versionName}]
+                fi
+            fi
+
+            if [[ ! -z "AutoEnv_motherboardName" ]]; then
+                dirPathUploadTraget=${dirPathUploadTraget}/${AutoEnv_motherboardName}
+            fi
+            local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
+            local dirPathOtaPackage=${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
+            local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
+            local dirPathOta=${dirPathOut}/obj/PACKAGING/target_files_intermediates
+            if [[ -d "$dirPathOta" ]]; then
+                local otaFileList=$(ls ${dirPathOta}/${TARGET_PRODUCT}-target_files-* |grep .zip)
+            else
+                ftEcho -e "OTA相关包未找到"
+            fi
+
+            # 生成本地软件包
+            if [[ ! -z "$isPacket" ]]; then
+                    mkdir -p $dirPathVersionSoftwareVersion
+
+                    ftEcho -s "\n========================\n开始生成版本软件包:\n  ${dirNameVeriosionBase}\n路径:\n  ${dirPathVersionSoftwareVersion}\n========================\n"
+                    #packages
+                    filePathSystemImage=${dirPathOut}/system.img
+                    if [[ -f "$filePathSystemImage" ]]; then
+                        mkdir -p $dirPathPackage
+                        # packages需要的文件列表
+                        tagName="lzProjrctConfigSoftwarePackageFileLIst"
+                        local fileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList) preloader_${deviceName}.bin)
+                        for file in ${fileList[@]}
+                        do
+                            local filePath=${dirPathOut}/${file}
+                             if [[ ! -f "$filePath" ]]; then
+                                 ftEcho -e "${filePath}\n不存在"
+                                 return;
+                             fi
+                             printf "%-2s %-30s\n" 复制 $file
+                             cp -r -f  $filePath $dirPathPackage
+                        done
+                    else
+                        ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage"
+                        return;
+                    fi
+                    #otaPackages
+                    if [[ ! -z "$otaFileList" ]]; then
+                        mkdir -p $dirPathOtaPackage
+                        for file in ${otaFileList[@]}
+                        do
+                             if [[ ! -f "$file" ]]; then
+                                 ftEcho -e "${file}\n不存在"
+                                 return;
+                             fi
+                             printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
+                             cp -r -f  $file $dirPathOtaPackage
+                        done
+                    fi
+                    # database
+                    if [ ! -z "$dataBaseFileList" ];then
+                        mkdir -p $dirPathPackageDataBase
+                        for filePath in ${dataBaseFileList[@]}
+                        do
+                             if [[ ! -f "$filePath" ]]; then
+                                 ftEcho -e "${filePath}\n不存在"
+                             else
+                                fileName=`basename $filePath`
+                                printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
+                                 cp -r -f  $filePath $dirPathPackageDataBase
+                             fi
+                        done
+                    fi
+            fi
+
+            # 生成说明文件
+            if [[ ! -z "$isReadMe" ]]; then
+                    ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftware}/${dirPathVersionSoftwareVersion}
+            fi
+
+            #上传服务器
+            if [[ ! -z "$isUpload" ]]; then
+                    ftAutoUploadHighSpeed $dirPathVersionSoftwareVersion 192.168.1.188
+            fi
+    else
+            ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的配置\n请查看下面说明:"
+            ftAutoPacket -h
+            return
+    fi
+    cd $dirPathLocal
+}
+
+ftAutoCreateReadMeBySoftwareVersion()
+{
+    local ftEffect=创建软件版本相关修改记录和版本说明
+    local dirPathCode=$ANDROID_BUILD_TOP
+    local dirPathOut=$ANDROID_PRODUCT_OUT
+    local dirPathVersionSoftware=$1
+    local filePathConfig=$rFilePathXbashDataBase
+    dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
+#    ftAutoCreateReadMeBySoftwareVersion out/pac
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    e | -e) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    工具依赖包 unix2dos #sudo apt-get install tofrodos
+#=========================================================
+EOF
+      return;;
+    --env ) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ -z `which todos` ]||[ -z `which fromdos` ];then
+        ftAutoCreateReadMeBySoftwareVersion -e
+    fi
+    if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
+        ftAutoCreateReadMeBySoftwareVersion --env
+        return
+    fi
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    if [ ! -d "$dirPathOut" ];then    errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut" ; fi
+    if [ ! -f "$filePathConfig" ];then    errorContent="${errorContent}\\n[工程out目录不存在]filePathConfig=$filePathConfig" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoCreateReadMeBySoftwareVersion -h
+            return
+    fi
+    local dirPathLocal=${PWD}
+    local fileNameReadMeTemplate=客户说明.txt
+    local fileNameChangeListTemplate=修改记录.txt
+    local filePathReadMeTemplate=${dirPathVersionSoftware}/${fileNameReadMeTemplate}
+    local filePathChangeListTemplate=${dirPathVersionSoftware}/${fileNameChangeListTemplate}
+    local versionName=$AutoEnv_versionName
+
+    if [ ! -d "$dirPathVersionSoftware" ];then
+        mkdir $dirPathVersionSoftware
+    fi
+
+    cd $dirPathCode&& trap 'cd $dirPathLocal;exit' SIGINT
+    ftAutoInitEnv
+
+
+    #使用git 记录的修改记录
+    local gitCommitListOneDay=$(ftGitLogShell -t 30)
+    local gitCommitListBefore=$(ftGitLogShell -t 30)
+
+# ===============================================
+# =================     客户说明          ================
+# ===============================================
+
+    # if [[ "$AutoEnv_clientName" = "PMZ" ]]||[[ $AutoEnv_mnufacturers = "sprd" ]]; then
+    #         #获取语言缩写列表
+    #         ftAutoLanguageUtil
+    #         LanguageList=(默认)${return}
+
+    #         echo -e "$gitCommitListOneDay">$filePathReadMeTemplate
+    #         seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathReadMeTemplate >${filePathReadMeTemplate}.temp
+
+    #         enterLine="\n"
+    #         content="版本号 : $versionName"${enterLine}
+    #         content=${content}${enterLine}"2. 语言:"
+    #         content=${content}${enterLine}"$LanguageList"
+    #         echo -e ${content}${enterLine}${enterLine}"3. 修改点:"| cat - ${filePathReadMeTemplate}.temp >$filePathReadMeTemplate
+
+    #         unix2dos $filePathReadMeTemplate # 转化为windows下格式
+    #         rm ${filePathReadMeTemplate}.temp
+    # fi
+
+# ===============================================
+# =================     修改记录    ==================
+# ===============================================
+    if [ $AutoEnv_mnufacturers = "sprd" ];then
+            # 暗码清单,动画切换暗码
+            local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
+            if [ -f $filePathPawInfo ];then
+                    local key="    private static final String PAW_NUM_INFO ="
+                    local pawNumInfo=$(cat $filePathPawInfo|grep "$key")  #获取暗码清单信息
+                    pawNumInfo=${pawNumInfo//$key/};
+                    pawNumInfo=${pawNumInfo//\";/};
+                    pawNumInfo=${pawNumInfo//\"/};
+                    pawNumInfo=$(echo $pawNumInfo |sed s/[[:space:]]//g)
+
+                    key="    private static final String LOGO_CHANGE ="
+                    local changLogoNumInfo=$(cat $filePathPawInfo|grep "$key")  #动画切换暗码信息
+                    changLogoNumInfo=${changLogoNumInfo//$key/};
+                    changLogoNumInfo=${changLogoNumInfo//\";/};
+                    changLogoNumInfo=${changLogoNumInfo//\"/};
+                    changLogoNumInfo=$(echo $changLogoNumInfo |sed s/[[:space:]]//g)
+            else
+                    ftEcho -e "[工程暗码配置文件不存在:]\n$filePathPawInfo"
+            fi
+
+            #摄像头配置相关
+            local filePathCameraConfig=${dirPathCode}/${AutoEnv_deviceDirPath}/BoardConfig.mk
+            if [ -f $filePathCameraConfig ];then
+                    local keyType="LZ_CONFIG_CAMERA_TYPE := "
+                    local keySizeBack="CAMERA_SUPPORT_SIZE := "
+                    local keySizeFront="FRONT_CAMERA_SUPPORT_SIZE := "
+
+                    local cameraTypeInfo=$(cat $filePathCameraConfig|grep "$keyType")
+                    local cameraSizeBackMax=$(cat $filePathCameraConfig|grep "$keySizeBack")
+                    local cameraSizeFrontMax=$(cat $filePathCameraConfig|grep "$keySizeFront")
+
+                    cameraTypeInfo=${cameraTypeInfo//$keyType/};
+                    cameraSizeFrontMax=${cameraSizeFrontMax//$keySizeFront/};
+
+                    cameraSizeBackMax=${cameraSizeBackMax//${keySizeFront}$cameraSizeFrontMax/};
+                    cameraSizeBackMax=${cameraSizeBackMax//$keySizeBack/};
+
+                    cameraTypeInfo=$(echo $cameraTypeInfo |sed s/[[:space:]]//g)
+                    cameraSizeFrontMax=$(echo $cameraSizeFrontMax |sed s/[[:space:]]//g)
+                    cameraSizeBackMax=$(echo $cameraSizeBackMax |sed s/[[:space:]]//g)
+
+                    sizeFcameraList=(real 2M 5M 8M)
+                    sizeBcameraList=(real 2M 5M 8M 12M)
+                    local cameraSizeFrontDefault=${sizeFcameraList[LZ_FCAM]}
+                    local cameraSizeBackDefault=${sizeBcameraList[LZ_BCAM]}
+            else
+                    ftEcho -e "[相机配置文件不存在，获取失败]\n$filePathCameraConfig"
+            fi
+
+            #修改记录头部
+            local enterLine="\n"
+            local content="当前版本：$versionName"${enterLine}
+            content=${content}${enterLine}"说明：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+            content=${content}${enterLine}
+            content=${content}${enterLine}"摄像头类型：$cameraTypeInfo"
+            content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFrontDefault/$cameraSizeBackDefault"
+            content=${content}${enterLine}"真实插值 前/后摄大小：$cameraSizeFrontMax/$cameraSizeBackMax"
+            # content=${content}${enterLine}"默认 RAM/ROM：$sizeRam/$sizeRom"
+            content=${content}${enterLine}
+            content=${content}${enterLine}"暗码清单：$pawNumInfo"
+            # content=${content}${enterLine}"隐藏：*#312#*"
+            # content=${content}${enterLine}"imei显示：*#06#"
+            # content=${content}${enterLine}"imei编辑：*#*#3646633#*#*"
+            # content=${content}${enterLine}"单项测试[列表]：*#7353#"
+            # content=${content}${enterLine}"单项测试[宫格]：*#0*#"
+            # content=${content}${enterLine}"三星测试：*#1234#"
+            content=${content}${enterLine}"开关机动画暗码：$changLogoNumInfo"
+
+            #git log 列表
+            echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
+            # local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathReadMeTemplate}.temp)
+            # seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+            seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+
+            # 合并头部和git log 列表
+            echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+
+            # 转化为windows下面文件格式
+            unix2dos $filePathChangeListTemplate
+
+   elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+
+            #修改记录头部
+            local enterLine="\n"
+            local content="当前版本：$versionName"${enterLine}
+            content=${content}${enterLine}"$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+            content=${content}${enterLine}
+            local filePathConfigHideNum=${dirPathCode}/vendor/lz/hideNum.config
+            if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
+
+                content=${content}${enterLine}"暗码清单：$(ftIniGetValue $filePathConfigHideNum 暗码清单 info)"
+                # content=${content}${enterLine}"隐藏指令：$(ftIniGetValue $filePathConfigHideNum 隐藏 info)"
+                content=${content}${enterLine}"工厂测试：$(ftIniGetValue $filePathConfigHideNum 工厂测试 info)"
+                content=${content}${enterLine}"imei编辑：$(ftIniGetValue $filePathConfigHideNum imei编辑 info)"
+                content=${content}${enterLine}"imei显示：$(ftIniGetValue $filePathConfigHideNum imei显示 info)"
+                content=${content}${enterLine}"工程模式：$(ftIniGetValue $filePathConfigHideNum 工程模式 info)"
+                content=${content}${enterLine}"硬件信息查看：$(ftIniGetValue $filePathConfigHideNum 硬件信息查看 info)"
+                #content=${content}${enterLine}"sn码显示：$(ftIniGetValue $filePathConfigHideNum sn码 info)"
+            else
+                content=${content}${enterLine}"隐藏指令："
+                content=${content}${enterLine}"imei编辑："
+                content=${content}${enterLine}"imei显示：*#06#"
+                content=${content}${enterLine}"测试模式：*#*#180#*#*"
+                content=${content}${enterLine}"imei单双切换："
+                # content=${content}${enterLine}"切换动画指令："
+                # content=${content}${enterLine}"切换默认动画："
+                # content=${content}${enterLine}"三星测试：*#0*#"
+            fi
+
+            #git log 列表
+            echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
+            # local gitCommitListBeforeSize=$(awk 'END{print NR}' ${filePathChangeListTemplate})
+            # seq 10 | awk '{printf("    %02d %s\n", NR+size, $0)}' size="$gitCommitListBeforeSize" $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+            seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+
+            # 合并头部和git log 列表
+            echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+
+            # 转化为windows下面文件格式
+            unix2dos $filePathChangeListTemplate
+    fi
+
+    rm ${filePathChangeListTemplate}.temp
+    cd $dirPathLocal
+}
+
+ftAutoLanguageUtil()
+{
+    local ftEffect=语言缩写转化为中文
+    local dirPathCode=$ANDROID_BUILD_TOP
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoLanguageUtil 无参
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --env ) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftAutoLanguageUtil --env
+        return
+    fi
+    local valCount=0
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathCode"  ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoLanguageUtil -h
+            return
+    fi
+
+    ftAutoInitEnv
+
+    #获取缩写列表
+    if [ $AutoEnv_mnufacturers = "sprd" ];then
+                local filePathDeviceSprd=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
+                if [[ -f "$filePathDeviceSprd" ]]; then
+                    local key="#PRODUCT_LOCALES := "
+                    LanguageListInvalid=$(cat $filePathDeviceSprd|grep "$key")
+                    key="PRODUCT_LOCALES :="
+                    LanguageList=$(cat $filePathDeviceSprd|grep "$key")
+                    LanguageList=${LanguageList//$LanguageListInvalid/};
+                    LanguageList=${LanguageList//$key/};
+                else
+                    ftEcho -e "[工程文件不存在:${filePathDeviceSprd}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
+                    ftAutoLanguageUtil -h
+                    return
+                fi
+   elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+                # local filePathDeviceMtk=${dirPathCode}/${AutoEnv_deviceDirPath}/full_keytak6580_weg_l.mk
+                local filePathDeviceMtk=${dirPathCode}/device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
+                if [ -f "$filePathDeviceMtk" ]; then
+                     local key="#PRODUCT_LOCALES := "
+                    # LanguageList=$(grep ^$key $filePathDeviceMtk)
+                    LanguageListInvalid=$(cat $filePathDeviceMtk|grep "$key")
+                    key="PRODUCT_LOCALES := "
+                    # LanguageList=$(grep ^$key $filePathDeviceMtk)
+                    LanguageList=$(cat $filePathDeviceMtk|grep "$key")
+                    LanguageList=${LanguageList//$LanguageListInvalid/};
+                    LanguageList=${LanguageList//$key/};
+                else
+                    ftEcho -e "[工程文件不存在:${filePathDeviceMtk}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
+                    ftAutoLanguageUtil -h
+                    return
+                fi
+    fi
+
+    ftLanguageUtil "${LanguageList//$key/}"
+}
+
+ftAutoUpdateSoftwareVersion()
+{
+    local ftEffect=更新sprd7731c_N9的软件版本
+    local dirPathCode=$ANDROID_BUILD_TOP
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoUpdateSoftwareVersion 无参
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    e | E |-e | -E) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    ftAutoUpdateSoftwareVersion 仅可用于 SPRD > 7731C > N9 的项目
+#=======================================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --env ) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    # 环境检测
+    ftAutoInitEnv
+    if [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ]; then
+        ftAutoUpdateSoftwareVersion -e
+        return
+    fi
+    #耦合校验
+    if [ -z "$ANDROID_BUILD_TOP" ];then
+        ftAutoUpdateSoftwareVersion --env
+        return
+    fi
+    local valCount=1
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoUpdateSoftwareVersion -h
+            return
+    fi
+
+    cd $ANDROID_BUILD_TOP
+    #分支名
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    #软件版本名
+    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+    local filePathDeviceInfoSettingsBase=packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+    local filePathDeviceInfoSettings=${dirPathCode}/${filePathDeviceInfoSettingsBase}
+    local versionNameSet=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+    versionNameSet=${versionNameSet/$keyVersion/}
+    versionNameSet=${versionNameSet/\");/}
+    versionNameSet=$(echo $versionNameSet |sed s/[[:space:]]//g)
+
+    local keyVersion2="R.string.build_number"
+    local filePathSystemVersionTestBase=packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java
+    local filePathSystemVersionTest=${dirPathCode}/${filePathSystemVersionTestBase}
+    local versionNameTest=$(cat $filePathSystemVersionTest |sed s/[[:space:]]//g|grep -C 1 "$keyVersion2")
+    versionNameTest=$(echo $versionNameTest |sed s/[[:space:]]//g)
+    versionNameTest=${versionNameTest//\"/}
+    versionNameTest=${versionNameTest//\\n/}
+    versionNameTest=${versionNameTest//+/}
+    versionNameTest=${versionNameTest//);/}
+    versionNameTest=${versionNameTest//linuxVersion.setText(getString(R.string.prop_version)getPropVersion()platformVersion.setText(getString(R.string.build_number)/}
+
+    # 更新版本号的日期段
+    local dateNew=$(date -d "today" +"%Y%m%d")
+
+    local dateOldSet=$(echo $versionNameSet | awk -F "_" '{print $NF}')
+    local versionNameSetNew=${versionNameSet//$dateOldSet/$dateNew}
+    local dateOldTest=$(echo $versionNameTest | awk -F "_" '{print $NF}')
+    local versionNameTestNew=${versionNameTest//$dateOldTest/$dateNew}
+
+    if [ ! -z "$1" ]&&[ "$1" = "-y" ];then
+                sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings&&
+                sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest&&
+                git add $filePathDeviceInfoSettingsBase $filePathSystemVersionTestBase&&
+                git commit -m "版本 ${versionNameTestNew}"
+                return
+    fi
+
+     while true; do
+        ftEcho -y "是否更新软件版本号"
+        read -n 1 sel
+        case "$sel" in
+            y | Y )
+                    sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings
+                    sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest
+                     while true; do
+                        ftEcho -y "是否提交修改"
+                        read -n 1 sel&&
+                        echo
+                        case "$sel" in
+                            y | Y )
+                                ftEcho -s 提交开始，请稍等
+                                git add $filePathDeviceInfoSettingsBase $filePathSystemVersionTestBase&&git commit -m "版本 ${versionNameTestNew}"
+                                break;;
+                            n | N | q |Q)    return;;
+                            * ) ftEcho -e 错误的选择：$sel
+                                echo "输入n，q，离开";;
+                            esac
+                            done
+                break;;
+            n | N | q |Q)    exit;;
+            * ) ftEcho -e 错误的选择：$sel
+                 echo "输入n，q，离开";;
+        esac
+        done
+}
+
+ftAutoGetAndroidVersionBySDKVersion()
+{
+    local ftEffect=根据SDK版本获取Android版本
+    local sdkVersion=$1
+    local filePathDataBase=$rFilePathXbashDataBase
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoGetAndroidVersionBySDKVersion 1.0~25
+#    ftAutoGetAndroidVersionBySDKVersion 22
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$sdkVersion" ];then    errorContent="${errorContent}\\n[SDK版本]sdkVersion=$sdkVersion" ; fi
+    if [ ! -f "$filePathDataBase" ];then    errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoGetAndroidVersionBySDKVersion -h
+            return
+    fi
+
+   local tagName="androidSDK2Verison"
+   local androidVersionName=$(ftIniGetValue $filePathDataBase $tagName $sdkVersion)
+   # echo ${androidVersionName:-'unkonwSdkVersion'}
+   echo $androidVersionName
+}
+
+complete -W "-b -r -s" ftMaintainSystem
+ftMaintainSystem()
+{
+    local ftEffect=ubuntu系统维护
+    local isEnable=true
+
+    while true; do case "$1" in
+    e | -e |--error) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    当前用户权限过低，请转换为root 用户后重新运行
+#=========================================================
+EOF
+      return;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
+EOF
+      return;;
+    --env) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#=========================================================
+EOF
+      return;;
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftMaintainSystem 操作类型
+#    ftMaintainSystem -s / --sd_finish #整理磁盘
+#    ftMaintainSystem -b / --backup #备份系统
+#    ftMaintainSystem -r / --restore #还原备份
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+    #可用校验
+    if [ "$isEnable" != "true" ];then
+        ftMaintainSystem --df
+        return
+    fi
+
+     #环境校验
+    if [ "$(whoami)" != "root" ];then
+        ftMaintainSystem -e
+        return
+    fi
+    if [ -z $(which pigz) ];then
+        ftMaintainSystem --env "pigz"
+        return
+    fi
+    #参数解析
+    local editType=backup
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
+    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -s )   editType=sdFinish
+           ;;
+        -b )   editType=backup
+           ;;
+        -r )   editType=restore
+           ;;
+    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
+    #耦合校验
+    local errorContent=
+    local dirPathLocal=${PWD}
+    local filePathMaintain=${rDirPathXbashModule}/${rFileNameXbashModuleMaintain}
+    if [ ! -f "$filePathMaintain" ];then    errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftMaintainSystem -h
+            return
+    fi
+    local  filePathVersionInfoVersion=${rDirPathXbashData}/versionInfo.database
+    local  filePathVersionInfoMaintain=${rDirPathXbashData}/maintain.database
+
+    source $filePathMaintain
+    case "$editType" in
+        backup )
+                    local filePathVersionInfo=$filePathVersionInfoVersion
+                    local infoVersionName=backup_${rNameUser}_$(date -d "today" +"%Y%m%d")
+                    local fileNameVersion=${infoVersionName}.$(ftIniGetValue $filePathVersionInfoMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
+                    cd /&& trap 'cd $dirPathLocal;exit' SIGINT
+                    #预写入版本信息
+                        ftIniCreateFileOrTag -a -p $filePathVersionInfo -t $infoVersionName -l "\
+                            fileName=$fileNameVersion \
+                            backupType=null \
+                            dirPathStore=null \
+                            backupPackageNote=null \
+                            MD5=null \
+                            hwCpu=null \
+                            hwMainboard=null \
+                            swSystemVersion=null \
+                            swSystemType=null"
+                    #选择存放备份包的设备
+                        ftSetBackupDevDir -b -p $filePathVersionInfo -v $infoVersionName
+                    #选择备份类型
+                        ftSetBackupType -p $filePathVersionInfo -v $infoVersionName -pm $filePathVersionInfoMaintain
+                    #记录备份包相关系统信息
+                        ftSystemEnv -a -p $filePathVersionInfo -v $infoVersionName
+                    #写入版本说明
+                        ftMaintainInfoNote -a -p $filePathVersionInfo -v $infoVersionName
+                    #显示当前配置信息
+                        ftEcho -s "生成的备份包：$(ftIniGetValue  $fileName $infoVersionName fileName)"
+                        ftEcho -s  "备份包的说明：$(ftIniGetValue  $fileName $infoVersionName  backupPackageNote)"
+                        ftEcho -s  "备份包保存路径：$(ftIniGetValue  $fileName $infoVersionName  dirPathStore)"
+                    #扫描设备,同步相同备份
+                        # ftBackUpDevScanning -p $filePathVersionInfo -f $fileNameVersion -d "${mXbashModuleDataDevicesList[*]}"
+                    #生成备份包
+                        ftBackupOs -p $filePathVersionInfo
+                    #记录备份包校验信息
+                        local filePathStore=$(ftIniGetValue $filePathVersionInfoVersion $infoVersionName dirPathStore)/${fileNameVersion}
+                        ftMD5  -p $filePathVersionInfo -s $filePathStore
+                    #把备份同步到不同设备上
+                        # ftSynchronous -d "${mXbashModuleDataDevicesList[*]}" -s ".*\.tgz"
+                    ;;
+        restore )
+                    local tagNaeMaintain=restoreConfigInfo
+                    #预写入待还原版本信息
+                        ftIniCreateFileOrTag -a -p $filePathVersionInfoMaintain -t $tagNaeMaintain -l "\
+                                fileName=null \
+                                dirPathStore=null \
+                                dirPathRestoreExclude=null"                               
+                    #选择存放备份包的设备
+                        ftSetBackupDevDir -r -p $filePathVersionInfoMaintain -v $tagNaeMaintain
+                    #选择备份包
+                        ftRestoreChoiceSource -p $filePathVersionInfoVersion -pm $filePathVersionInfoMaintain -t $tagNaeMaintain
+                    #检查备份包和当前系统兼容程度
+                        local fileName=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain fileName)
+                        ftSystemEnv -c -p $filePathVersionInfoMaintain -v ${fileName%.*}
+                    #检查备份包是否损坏
+                        local dirPathStore=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain dirPathStore)
+                        ftMD5 -p $filePathVersionInfoVersion -c "${dirPathStore}/${fileName}"
+                    #选择备份包覆盖的忽略路径
+                        ftSetRestoreOverryList -pm $filePathVersionInfoMaintain -t $tagNaeMaintain
+                    #当前配置信息显示
+                        local versionName=${fileName%.*}
+                        ftEcho -s  "使用的备份包：${dirPathStore}/${fileName}"
+                        ftEcho -s  "备份包的说明：$(ftIniGetValue $filePathVersionInfoVersion $versionName backupPackageNote)"
+                        ftEcho -s  "还原时将忽略目录：$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain  dirPathRestoreExclude)"
+                    #执行还原操作
+                        ftRestoreOperate -pm $filePathVersionInfoMaintain -t  $tagNaeMaintain -d "/"
+                    #删除还原版本信息
+                        ftIniDeleteTag -p $filePathVersionInfoMaintain -t $tagNaeMaintain
+        ;;
+        sdFinish )
+                    if [ -z $(which e4defrag) ];then
+                        ftMaintainSystem --env "e4defrag"
+                        return
+                    fi
+                    devNameDirPathList=`df -lh | awk '{print $1}'`
+                    devMountDirPathList=(`df -lh | awk '{print $6}'`)
+                    indexDevName=0
+                    indexDev=0
+                    devPathList=
+                    for dir in ${devNameDirPathList[*]}
+                    do
+                            devMountDirPath=${devMountDirPathList[indexDevName]}
+                            if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
+                                   printf " \e[33m %-2s \e[0m %-15s \n" [$indexDev] $dir
+                                   devPathList[$indexDev]=$dir
+                                   ((indexDev+=1))
+                            fi
+                            ((indexDevName+=1))
+                    done
+
+                    itemCount=${#devPathList[@]}
+                    ftEcho -r  "请输入对应的序号(回车默认0):"
+                    if (( $itemCount>9 ));then
+                        read tIndex
+                    else
+                        read -n 1 tIndex
+                    fi&&echo
+                    #设定默认值
+                    if [ ${#tIndex} == 0 ]; then
+                        tIndex=0
+                    elif (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$");then
+                        ftEcho -e "\n无效的序号:${tIndex}"
+                         return
+                    fi
+                    e4defrag -v -c $${devPathList[$tIndex]}
+                    return ;;
+        * ) ftMaintainSystem -h ; return ;; esac
+        cd $dirPathLocal;
+}
+
+ftGitLogShell()
+{
+    local ftEffect=git的log特定格式显示
+
+    while true; do case "$1" in
+     -e |--exception) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    ${ftEffect}依赖包
+#    请尝试使用 sudo apt-get install git git-core git-gui git-doc 补全依赖
+#=========================================================
+EOF
+      return;;
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    全部分支log
+#    ftGitLogShell -a
+#
+#    默认自定义格式20条
+#    ftGitLogShell 数量
+#
+#    只有tag的git log输出
+#    ftGitLogShell -t 数量
+#
+#    自定义格式输出
+#    ftGitLogShell -c 数量 格式字串
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ -z `which git` ];then
+        ftGitLogShell -e
+        return
+    fi
+    if [[ ! -z "$isAllBranchLog" ]]&&[ -z `which gitk` ]; then
+        ftGitLogShell -e
+        return
+    fi
+    #参数解析
+    local isAllBranchLog=
+    local isTagBranchLog=
+    local branchLogFormat=
+    local isCustomBranchLog=
+    local branchLogItemCount=20
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
+    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -a )   isAllBranchLog=true
+           ;;
+        -t )   branchLogItemCount="${arg2:-'20'}"
+                isTagBranchLog=true
+           ;;
+        -c )   branchLogItemCount="${arg2:-'20'}"
+                isCustomBranchLog=true
+           ;;
+    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
+    #耦合校验
+    # local valCount=3
+    # local errorContent=
+    # if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    # if [ ! -z "$errorContent" ];then
+    #         ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+    #         ftGitLogShell -h
+    #         return
+    # fi
+
+    local gitVersionMin="2.6.0"
+    local gitVersionNow=$(git --version)
+    gitVersionNow=${gitVersionNow//git version/}
+    gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
+
+    if [[ ! -z "$isAllBranchLog" ]]; then
+       gitk --all
+       return
+    fi
+
+    if [[ ! -z "$isTagBranchLog" ]]; then
+       branchLogFormat=${branchLogFormat:-'%s'}
+       git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount
+       return
+    fi
+
+    if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]]&&[ "$isCustomBranchLog" != "true" ];then
+        branchLogFormat=${branchLogFormat:-'%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
+        git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"$branchLogFormat" -$branchLogItemCount
+    else
+        branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
+        git log --pretty=format:"$branchLogFormat" -$branchLogItemCount
+    fi
+}
+
+complete -W " --reboot_count --reboot_wait_time --event_count --path -rc -rwt -ec -p -h --help" ftAutoTest
+ftAutoTest()
+{
+    local ftEffect=Android自动测试
+
+    while true; do case "$1" in
+     -e |--exception) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明=============
+#
+#    adb 找不到请确认 Android SDK 配置是否正确
+#=========================================================
+EOF
+      return;;
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    #-xx 为独立参数类型标识,不可拆分
+#    #参数之间没有先后约束
+#
+#    ftAutoTest -p /home/xxx/xxx
+#    ftAutoTest -rc 2000 #重启2000次
+#    ftAutoTest -rwt 2000 #每2000s重启一次
+#    ftAutoTest -ec 2000 #monkey事件数为2000
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [ -z `which adb` ];then
+        ftAutoTest -e
+        return
+    fi
+    #参数解析
+    local editType=$1
+
+    local eventCountDef=$(( 100 * 100 *100 ))
+    local rebootTimeLongDef=-1
+    local rebootCountDef=1
+
+    local eventCount=$eventCountDef
+    local rebootTimeLong=$rebootTimeLongDef
+    local rebootCount=$rebootCountDef
+    local dirPathLogRoot=~/download
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
+    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+              -p  | --path )  dirPathLogRoot=${arg2:-'dirPathLogRoot'}
+                    ;;
+              -rc  | --reboot_count )  rebootCount=${arg2:-'rebootCountDef'}
+                    ;;
+             -rwt | --reboot_wait_time )  rebootTimeLong=${arg2:-'rebootTimeLongDef'}
+                    ;;
+             -ec | --event_count )  eventCount=${arg2:-'eventCountDef'}
+                    ;;
+    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
+    #耦合校验
+    local valCount=6
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$");then
+        errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftAutoTest -h
+            return
+    fi
+
+    local dirPathLogMonkey=${dirPathLogRoot}/monkey/$(date -d "today" +"%y%m%d%H%M%S")
+    local filePathLogMonkey=${dirPathLogMonkey}/monkey.log
+    local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
+    local logcatFlag="*:E"
+    local monkeyConfig="--ignore-crashes --ignore-timeouts --ignore-security-exceptions -p com.android.launcher3 -v -v -v ${eventCount}"
+
+    if [[ ! -d $dirPathLogMonkey ]]; then
+        mkdir -p $dirPathLogMonkey
+    fi
+
+    if (( $rebootCount==$rebootCountDef ));then
+            local adbStatus=$(adb get-state)
+            if [ "$adbStatus" != "device" ];then
+                ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
+                return
+            fi
+    fi
+    while true; do
+        adb wait-for-device && trap 'ftKillApplicationByPackageName monkey;exit' SIGINT
+        # while [[ -z $(adb shell ps |grep launcher3) ]]; do
+        #     ftEcho -s "等待launcer3启动"
+        #     sleep 5
+        # done
+        # sleep 5
+        # adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher
+        if (($rebootTimeLong!=$rebootTimeLongDef)); then
+            timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
+            timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+        else
+            adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
+            adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+        fi
+
+        rebootCount=$((rebootCount - 1))
+        if (( $rebootCount>0 )); then
+            ftEcho -s "开始重启"
+            adb reboot
+        else
+            break
+        fi
+    done
+}
+
+ftFind()
+{
+    local ftEffect=find简单封装
+    local content=$3
+    echo $1
+    echo $3
+    if [[ ! -z "$content" ]]; then
+        find $1 -name "$2" | xargs grep -e "$content"
+        return
+    fi
+
+    find $1 -name "$2"
+}
