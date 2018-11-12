@@ -1,0 +1,111 @@
+#! /bin/bash
+#####----------------------变量--------------------------#########
+
+#外部参数
+export rBaseShellParameter1=$0
+export rBaseShellParameter2=$1
+export rBaseShellParameter3=$2
+
+# 基本配置
+export rXbashVersion="V0.1.0.0"
+# 标记为脚本模式，此模式说明使用实现对应的封装命令
+export XMODULE="script"
+
+rNameUser=$(who am i | awk '{print $1}'|sort -u)
+rNameUser=${rNameUser:-`whoami | awk '{print $1}'|sort -u`}
+if [ "${S/ /}" != "$S" ];then
+    rNameUser=$(whoami)
+fi
+export rNameUser
+
+export rDirPathUserHome=/home/${rNameUser}
+# home/xxxx
+export rDirNameLog=log
+export rDirNameTools=tools
+export rDirNameCmd=cmds
+# home/$rNameUser/xxxx
+export rDirNameCmdConfig=config
+export rDirNameCmdData=data
+export rDirNameCmdModule=module
+# home/$rNameUser/cmds/modiule/test
+export rDirNameCmdModuleTest=test
+
+# home/$rNameUser/xxxx
+export rDirPathCmds=${rDirPathUserHome}/${rDirNameCmd}
+# home/$rNameUser/cmds/xxxx
+export rDirPathCmdsData=${rDirPathCmds}/${rDirNameCmdData}
+export rDirPathCmdsConfig=${rDirPathCmds}/${rDirNameCmdConfig}
+export rDirPathCmdsModule=${rDirPathCmds}/${rDirNameCmdModule}
+export rDirPathCmdsModuleTest=${rDirPathCmdsModule}/${rDirNameCmdModuleTest}
+
+# home/$rNameUser/cmds/modiule/test/xxxx
+export rFileNameCmdModuleTestBase=base.sh
+# home/$rNameUser/cmds/modiule/xxxx
+export rFileNameCmdModuleTools=tools.sh
+export rFileNameCmdModuleCompile=compile.sh
+export rFileNameCmdModuleMS=maintain.sh
+
+# home/$rNameUser/cmds/modiule/xxxx
+export rFilePathCmdModuleTools=${rDirPathCmdsModule}/${rFileNameCmdModuleTools}
+export rFilePathCmdModuleTestBase=${rDirPathCmdsModuleTest}/${rFileNameCmdModuleTestBase}
+
+export rDirPathLog=${rDirPathUserHome}/${rDirNameLog}
+export mFilePathLog #=${rDirPathUserHome}/${rDirNameLog}/${rBaseShellParameter2}.log
+
+export rIsDebug=false
+export rTimeBackup=$(date -d "today" +"%m%d-%H:%M:%S")
+
+export rCmdsPermissionRoot=(xb backup restore)
+export rCmdsPermissionBase=(restartadb help monkey systemui launcher mtk_flashtool gjh bootanim pac)
+
+export mCmdsModuleDataDevicesList=()
+export mTimingStart
+
+commandAuthority=null
+
+
+# 非基本配置
+export rDirPathTools=${rDirPathUserHome}/${rDirNameTools}
+
+# ========设定只读=========
+#外部参数
+readonly rBaseShellParameter1
+readonly rBaseShellParameter2
+readonly rBaseShellParameter3
+
+# 基本配置
+readonly rXbashVersion
+readonly rNameUser
+readonly rDirPathUserHome
+
+readonly rDirNameLog
+readonly rDirNameTools
+readonly rDirNameCmd
+
+readonly rDirNameCmdConfig
+readonly rDirNameCmdData
+readonly rDirNameCmdModule
+
+readonly rDirNameCmdModuleTest
+
+readonly rDirPathCmds
+readonly rDirPathCmdsData
+readonly rDirPathCmdsConfig
+readonly rDirPathCmdsModule
+readonly rDirPathLog
+readonly rDirPathCmdsModuleTest
+
+readonly rFileNameCmdModuleTestBase
+readonly rFileNameCmdModuleTools
+readonly rFileNameCmdModuleCompile
+readonly rFileNameCmdModuleMS
+
+readonly rFilePathCmdModuleTools
+readonly rFilePathCmdModuleTestBase
+
+readonly rCmdsPermissionRoot
+readonly rCmdsPermissionBase
+readonly rTimeBackup
+readonly rIsDebug
+# 非基本配置
+readonly rDirPathTools

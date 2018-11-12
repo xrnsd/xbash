@@ -1,39 +1,87 @@
-# Xrnsd-extensions-to-bash   
-android mmi开发环境的bash简单扩展
-##说明：
-###环境耦合度教高，需要解耦，下面时作者环境说明
-####1.环境目录
-		home/xxx/tools     环境相关工具
-		home/xxx/cmds      本项目文件
-		home/xxx/.bashrc   为home/xxx/cmds/config/bashrc_xxxx的软连
-						
-####2.工程结构
-		cmds/config     					环境相关工具
-			config/bashrc_root_work_lz     	为root相关bash配置文件
-			config/bashrc_work_lz     		为普通用户相关bash配置文件
-		cmds/module     					脚本实现文件[具体功能]
-			module/base     				Xrnsd-extensions-to-bash的流程控制
-			module/compile.sh     			Xrnsd-extensions-to-bash的项目编译初始化
-			module/system_backup_restore.sh Xrnsd-extensions-to-bash的系统维护
-			module/test.sh     				Xrnsd-extensions-to-bash的demo测试
-			module/tools     				Xrnsd-extensions-to-bash的小功能实现
-		cmds/main.sh     					Xrnsd-extensions-to-bash主入口
-		cmds/value     						全局参数
-				
-####3.准备操作
-		1 下载项目
-			clone xxx
-		2 修改项目目录名称，这步跳过的话需要修改 Xrnsd-extensions-to-bash/config/bashrc_xxxx
-			mv Xrnsd-extensions-to-bash cmds
-		
-		3 使用自定义普通用户bash配置
-				cd /home/xxx
-				mv .bashrc .bashrc_base.backup
-				#bashrc_xxx默认为bashrc_work_lz
-				ln -s cmds/config/bashrc_xxx
-		4 使用自定义root用户bash配置
-				cd /root
-				mv .bashrc .bashrc_base.backup
-				#bashrc_xxx默认为bashrc_root_work_lz
-				ln -s /home/xxxx/cmds/config/bashrc_root_xxx
-		5 输入xc 查看帮助
+android mmi开发环境的简单扩展[shell]
+![Logo](data/logo.png)
+=====
+1.工程结构
+----------
+    Xrnsd-extensions-to-bash在下面简写为xbash
+    cmds
+    ├── config    -------------------------  工具相关配置
+    │        ├── bashrc                           bashrc通用配置
+    │        │     ├── config_bashrc_base         bashrc配置
+    │        │     └── config_bashrc_base.gone    bashrc部分可忽略配置
+    │        │
+    │        ├── sublime_text                     sublime_text通用配置
+    │        │     └── Preferences.sublime-settings sublime_text的用户配置
+    │        │
+    │        ├── config_base                      全局参数
+    │        └── config_system_init               android build环境初始化工具的配置文件
+    │
+    ├── data    --------------------------- 工具相关数据
+    │        ├── logo.png
+    │        ├── logo.psd
+    │        └── user-dirs.dirs                    home下默认文件夹配置
+    │
+    ├── log   ------------------------------ 运行日志
+    │
+    ├── module    -----------------------    脚本实现文件[具体功能]
+    │        │
+    │        ├── compile.sh                     项目编译初始化
+    │        ├── bashrc   --------------------  bashrc独立配置
+    │        │      ├── bashrc_base                为普通用户相关bash配置文件
+    │        │      ├── bashrc_home                为作者使用的普通用户相关bash配置文件
+    │        │      ├── bashrc_work_lz             为普通用户相关bash配置文件
+    │        │      └── bashrc_root_work_lz        为root相关bash配置文件
+    │        ├── init     -------------------   初始化工具
+    │        │      ├── base.sh                    初始化工具
+    │        │      ├── init_xbash.sh              环境初始化工具
+    │        │      └── init_system.sh             android mmi 环境初始化工具
+    │        ├── packet   -------------------   packet工具
+    │        │      └── pac_7731c.pl               sprd的7731c的packet生成工具
+    │        ├── test    --------------------   脚本测试工具
+    │        │      ├── base.sh                     demo测试,请忽略此文件的修改
+    │        │      ├── pytools.py                  脚本语法逻辑校验高亮工具
+    │        │      └── pytools.README
+    │        ├── maintain.sh                    系统维护
+    │        └── tools.sh   -----------------   工具函数实现
+    │
+    ├── main.sh    -----------------------    主入口
+    │
+    └── README.md
+
+2 已验证环境
+----------
+        ubuntu12.04 x64
+        ubuntu14.04 x64
+        ubuntu16.04 x64
+
+3 环境目录[参考]
+----------
+        /home/xxx/
+        ├── tools     -------------------  环境相关
+        │        ├───── jdk  ---------------    java jdk
+        │        ├───── sdk  ---------------    android sdk
+        │        └───── sp_flash_tool_v5.1548   全局参数
+        ├── cmds      -------------------  xbash目录
+        └── .bashrc   -------------------  xbash中bashrc_work_lz的软连接
+
+4.初始化环境
+----------
+    1 cd Xrnsd-extensions-to-bash
+    2 sudo chmod -R a+x main.sh module/ config/
+    3 ./init.sh #初始化,下面命令3选1
+        ├── ./init.sh         初始化xbash
+        ├── ./init.sh -system 初始化system
+        └── ./init.sh -all    初始化system,初始化xbash
+    4 重开一个终端,输入ftReadMe 或 xc -h
+
+5.bug_list
+----------
+    1 ftInitDevicesList 获取的设备列表不全
+
+6.其他
+----------
+    1 xc ,xb 为命令分类，搭配参数时和其余命令一样指向具体功能实现，xc为常用且稳定的实现
+    2 在bash直接使用方法,不会记录xbash日志
+    3 建议,不要以root权限运行xc clean_data_garbage
+    4 建议,不要开启xx[休眠]，这玩意脾气不好
+    5 对记录和校验版本包软件和硬件信息相关实现修改，会影响历史备份的使用[导致检测失败]
