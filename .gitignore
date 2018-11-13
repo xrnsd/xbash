@@ -1,3 +1,4 @@
 #config/bashrc_home
 database/versionInfo.database
 database/user
+config/user/wgx.config
