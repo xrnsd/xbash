@@ -2667,7 +2667,7 @@ ftAutoUploadHighSpeed()
     local serverIp=$2
 
     while true; do case "$1" in
-     -e |--exception) cat<<EOF
+    --rely) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    依赖 sshpass pigz,请使用下面命令安装
@@ -2689,7 +2689,7 @@ EOF
 
     #环境校验
     if [ -z `which sshpass` ]||[ -z `which pigz` ]||[ -z `which pv` ];then
-        ftAutoUploadHighSpeed -e
+        ftAutoUploadHighSpeed --rely
         return
     fi
     #耦合校验
@@ -3203,7 +3203,7 @@ ftAutoCreateReadMeBySoftwareVersion()
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    e | -e) cat<<EOF
+    --rely) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    工具依赖包 unix2dos #sudo apt-get install tofrodos
@@ -3223,7 +3223,7 @@ EOF
 
     #环境校验
     if [ -z `which todos` ]||[ -z `which fromdos` ];then
-        ftAutoCreateReadMeBySoftwareVersion -e
+        ftAutoCreateReadMeBySoftwareVersion --rely
     fi
     if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
         ftAutoCreateReadMeBySoftwareVersion --env
@@ -3666,7 +3666,7 @@ EOF
 #=========================================================
 EOF
       return;;
-    --env) cat<<EOF
+    --rely) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    ${ftEffect}依赖包 $2
@@ -3697,7 +3697,7 @@ EOF
         return
     fi
     if [ -z $(which pigz) ];then
-        ftMaintainSystem --env "pigz"
+        ftMaintainSystem --rely "pigz"
         return
     fi
     #参数解析
@@ -3796,7 +3796,7 @@ EOF
         ;;
         sdFinish )
                     if [ -z $(which e4defrag) ];then
-                        ftMaintainSystem --env "e4defrag"
+                        ftMaintainSystem --rely "e4defrag"
                         return
                     fi
                     devNameDirPathList=`df -lh | awk '{print $1}'`
@@ -3840,7 +3840,7 @@ ftGitLogShell()
     local ftEffect=git的log特定格式显示
 
     while true; do case "$1" in
-     -e |--exception) cat<<EOF
+     --rely) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    ${ftEffect}依赖包
@@ -3863,11 +3863,11 @@ EOF
 
     #环境校验
     if [ -z `which git` ];then
-        ftGitLogShell -e
+        ftGitLogShell --rely
         return
     fi
     if [[ ! -z "$isAllBranchLog" ]]&&[ -z `which gitk` ]; then
-        ftGitLogShell -e
+        ftGitLogShell --rely
         return
     fi
     #参数解析
@@ -3934,7 +3934,7 @@ ftAutoTest()
     local ftEffect=Android自动测试
 
     while true; do case "$1" in
-     -e |--exception) cat<<EOF
+     --rely) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    adb 找不到请确认 Android SDK 配置是否正确
@@ -3958,7 +3958,7 @@ EOF
 
     #环境校验
     if [ -z `which adb` ];then
-        ftAutoTest -e
+        ftAutoTest --rely
         return
     fi
     #参数解析

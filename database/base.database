@@ -1,6 +1,6 @@
 #xbash
 [xbash]
-bashHistorySize=6000
+bashHistoryThresholdSize=3000
 bashHistoryIncrementalSize=1000
 
 #开发用

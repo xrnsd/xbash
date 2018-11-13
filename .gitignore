@@ -1,2 +1,3 @@
 #config/bashrc_home
-data/versionInfo.database
+database/versionInfo.database
+database/user

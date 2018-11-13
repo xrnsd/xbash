@@ -37,10 +37,10 @@ bash的简单扩展与其他工具配置[部分]
         │        ├── test.module  --------------------  xbash的测试工具
         │        ├── init.module  --------------------  xbash安装初始化工具
         │        ├── common.methods  -----------------  xbash自定义实现方法
-        │        ├── maintain.module  ----------------  系统维护工具
+        │        ├── maintain.methods  ----------------  系统维护工具
         │        ├── bash_input.module  --------------  配置命令历史适配逻辑
         │        ├── packet_7731c.module  ------------  7731c的packet打包工具
-        │        ├── git-completion.methods  ---------  git非自定义的bash扩张
+        │        ├── git_completion.methods  ---------  git非自定义的bash扩张
         │        └── build    -----------------------   独立窗口串行多进程实现
         │                   ├── serialBuildByBranchName.module
         │                   └── serialBuildDemo.module

@@ -30,12 +30,19 @@ if [ -f $rFilePathXbashModuleCommon ];then
         && cp -rf $filePathBashHistoryArchive $filePathBashHistory
 
         #历史扩容
-        bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistorySize)
+        bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryThresholdSize)
+        filePathXbashDataBaseUser=${rDirPathXbashDataUser}/${rNameUser}.database
+        if [[ -f $filePathXbashDataBaseUser ]]; then
+            bashHistorySizeBase=$(ftIniGetValue  $filePathXbashDataBaseUser xbash bashHistoryThresholdSize)
+        else
+            ftIniCreateFileOrTag -r -p $filePathXbashDataBaseUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
+        fi
+
         bashHistoryIncrementalSize=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryIncrementalSize)
         bashHistorySize=$(awk 'END{print NR}' $filePathBashHistory)
         if (($bashHistorySize>$bashHistorySizeBase)); then
             ((bashHistorySize=$bashHistorySize+$bashHistoryIncrementalSize))
-            ftIniSetValue $rFilePathXbashDataBase xbash bashHistorySize $bashHistorySize
+            ftIniSetValue $filePathXbashDataBaseUser xbash bashHistoryThresholdSize $bashHistorySize
         else
             bashHistorySize=$bashHistorySizeBase
         fi

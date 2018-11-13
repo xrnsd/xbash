@@ -25,14 +25,6 @@ ftExample()
     if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftExample --df;return    ; fi
 
     while true; do case "$1" in
-    --env) cat<<EOF
-#===================[   ${ftEffect}   ]的使用环境说明=============
-#
-#    ${ftEffect}依赖包 $2
-#    请尝试使用 sudo apt-get install $2 补全依赖
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     h | H |-h | -H) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
@@ -41,6 +33,7 @@ EOF
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
@@ -48,10 +41,28 @@ EOF
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+
+    --rely) cat<<EOF
+#===================[   ${ftEffect}   ]的依赖说明=============
+#
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+
+    --env) cat<<EOF
+#===================[   ${ftEffect}   ]的使用环境说明==============
+#
+# 环境未初始化
+# 使用前,请先初始化[xxxxxxxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
     #依赖校验
-    if [ -z $(which exampleTools1) ];then    ftExample --env "exampleTools1";return    ; fi
+    if [ -z $(which exampleTools1) ];then    ftExample --rely "exampleTools1";return    ; fi
     #参数解析
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
     eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
