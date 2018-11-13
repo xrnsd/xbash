@@ -1415,12 +1415,9 @@ ftSetBashPs1ByGitBranch()
 {
     local ftEffect=根据git分支名,设定bash的PS1
     local editType=$1
-
-    local defaultPrefix=xrnsd
+    local defaultPrefix=${rNameUser:-'xbash'}
     local defaultColorConfig=44
-    if [ ! -z "$rNameUser" ]&&[ "$rNameUser" != "wgx" ];then
-        defaultPrefix=$rNameUser
-    fi
+
     if [ "$(whoami)" = "root" ];then
         defaultPrefix="root"
         defaultColorConfig=42
