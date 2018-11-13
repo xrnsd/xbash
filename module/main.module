@@ -35,6 +35,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
         if [[ -f $filePathXbashDataBaseUser ]]; then
             bashHistorySizeBase=$(ftIniGetValue  $filePathXbashDataBaseUser xbash bashHistoryThresholdSize)
         else
+            mkdir $rDirPathXbashDataUser > /dev/null
             ftIniCreateFileOrTag -r -p $filePathXbashDataBaseUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
         fi
 
