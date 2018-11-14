@@ -1022,11 +1022,13 @@ EOF
                 indexStart=$index
             fi
 
-            if (($index==$lineCount))||[[ -z "$line" ]]; then
+            if (($index==$lineCount));then
                 ((index+=1))
+                line=
+            fi
+            if [[ -z "$line" ]]; then
                 indexEnd=$index
                 local lineRange="${indexStart},${indexEnd}d"
-
                 # echo lineRange=$lineRange
                 sed -i $lineRange $filePathIni
                 break
