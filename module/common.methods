@@ -187,6 +187,7 @@ EOF
                 if [ "$XMODULE" = "env" ];then    return ; fi
                 exit;;
     s | S | -s | -S)        echo -e "\033[1;33m$content\033[0m"; break;;
+    -sh | -SH)        echo;echo -e "\033[1;33m$content\033[0m";echo; break;;
     b | B| -b | -B)        echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
     bh | BH | -bh | -BH)    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
     y | Y | -y | -Y)        echo;echo -en "${content}[y/n]"; break;;
@@ -4035,13 +4036,14 @@ EOF
                     #写入版本说明
                         ftMaintainInfoNote -a -p $filePathVersionInfo -v $infoVersionName
                     #显示当前配置信息
-                        ftEcho -s "生成的备份包：$(ftIniGetValue  $fileName $infoVersionName fileName)"
-                        ftEcho -s  "备份包的说明：$(ftIniGetValue  $fileName $infoVersionName  backupPackageNote)"
-                        ftEcho -s  "备份包保存路径：$(ftIniGetValue  $fileName $infoVersionName  dirPathStore)"
+                        ftEcho -bh "备份关键信息"
+                        ftEcho -s "生成的备份包：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName fileName)"
+                        ftEcho -s  "备份包的说明：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName  backupPackageNote)"
+                        ftEcho -s  "备份包保存路径：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName  dirPathStore)"
                     #扫描设备,同步相同备份
                         # ftBackUpDevScanning -p $filePathVersionInfo -f $fileNameVersion -d "${mXbashModuleDataDevicesList[*]}"
                     #生成备份包
-                        ftBackupOs -p $filePathVersionInfo
+                        ftBackupOs -p $filePathVersionInfo -v $infoVersionName -pm $filePathVersionInfoMaintain
                     #记录备份包校验信息
                         local filePathStore=$(ftIniGetValue $filePathVersionInfoVersion $infoVersionName dirPathStore)/${fileNameVersion}
                         ftMD5  -p $filePathVersionInfo -s $filePathStore

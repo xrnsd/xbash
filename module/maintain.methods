@@ -152,49 +152,6 @@ EOF
     fi
 }
 
-ftEchoInfo()
-{
-    local ftEffect=脚本操作信息显示，用于关键操作前的确认
-
-    while true; do case "$1" in
-    -h | --help) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftEchoInfo [editType]
-#    ftEchoInfo backup/restore
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    #参数解析
-    local infoType
-
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -b )   infoType="backup"
-           ;;
-        -r )   infoType="restore"
-           ;;
-    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
-    #耦合校验
-    local errorContent=
-    if [ -z "$infoType" ];then    errorContent="${errorContent}\\n[显示信息类型为空]infoType=$infoType" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftEchoInfo -h
-            return
-    fi
-
-    ftEcho -bh 请确认下面信息
-    if [ $infoType = "restore" ];then
-
-    elif [ $infoType = "backup" ];then
-    else
-        ftEcho -ex 一脸懵逼
-    fi
-}
-
 ftSetBackupDevDir()
 {
     local ftEffect=选择备份包存放的设备
@@ -281,7 +238,7 @@ EOF
          ftEcho -e 错误的选择：$dir
     done
 
-    local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}
+    local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}/${versionName}
 
     case "$editType" in
     backup )
@@ -399,7 +356,7 @@ EOF
         exit
     fi
 
-    ftEcho -bh 开始更新排除列表
+    ftEcho -sh 更新排除列表
     rm -rf $filePatheExclude > /dev/null
     for dirpath in ${dirsExclude[@]}
     do
@@ -483,10 +440,13 @@ EOF
     #参数解析
     local filePathIni
     local versionName
+    local filePathIniMaintain
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
     eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
                   -p )   filePathIni="$arg2"
+                     ;;
+                  -pm )   filePathIniMaintain="${arg2}"
                      ;;
                   -v )   versionName="$arg2"
                      ;;
@@ -494,6 +454,7 @@ EOF
     #耦合校验
     local errorContent=
     if [ ! -f "$filePathIni" ];then    errorContent="${errorContent}\\n[信息路径为空]filePathIni=$filePathIni" ; fi
+    if [ ! -f "$filePathIniMaintain" ];then    errorContent="${errorContent}\\n[工具数据库文件不存在]filePathIniMaintain=$filePathIniMaintain" ; fi
     if [ -z "$versionName" ];then    errorContent="${errorContent}\\n[版本号为空]versionName=$versionName" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
@@ -501,8 +462,12 @@ EOF
             return
     fi
 
-    local fileNameVersion=$(ftIniGetValue $filePathVersionInfoVersion $infoVersionName $versionName fileName)
-    local filePathVersion=$(ftIniGetValue $filePathVersionInfoVersion $infoVersionName $versionName dirPathStore)/${fileNameVersion}
+    local fileNameVersion=$(ftIniGetValue $filePathVersionInfoVersion  $versionName fileName)
+    local dirPathStore=$(ftIniGetValue $filePathVersionInfoVersion $versionName dirPathStore)
+    local fileNameExclude=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo filePatheExclude)
+
+    local filePathVersion=${dirPathStore}/${fileNameVersion}
+    local filePathVersionLog=${dirPathStore}/${fileNameVersion%.*}.log
     while true; do
         ftEcho -y 是否开始备份[回车默认为y ]
         read -n 1 sel
@@ -534,11 +499,10 @@ EOF
                         sudo rm -rf /var/cache/apt/archives
                     #生成备份包
                         ftEcho -bh 开始${ftEffect}
-                        sudo tar --use-compress-program=pigz -cvPf $filePathVersion --exclude-from=$fileNameExclude / # 2>&1 |tee $mFilePathLog
+                        sudo tar --use-compress-program=pigz -cvPf $filePathVersion --exclude-from=$fileNameExclude /  2>&1 |tee $filePathVersionLog
+                    #扫尾
                         rm $fileNameExclude>/dev/null
-                    # 清除权限限制
-                        chmod 777 -R $filePathStore
-                        chmod 777 $filePathVersionInfo
+                        chmod 777 -R $dirPathStore
                         break;;
             n | N | q |Q)  return ;;
             * ) ftEcho -e 错误的选择：$sel
@@ -639,22 +603,24 @@ EOF
             return
     fi
 
-    local fileNameVersion=$(basename $filePath)
-    fileNameVersion=${fileNameVersion%.*}
+    local fileNameVersion=$(basename $filePathVersion)
+    local versionName=${fileNameVersion%.*}
 
     if [ "$editType" = "setMd5" ]; then
-        local md5Code=$(md5sum $filePath | awk '{print $1}') 
-        ftIniSetValue $filePathInfo $fileNameVersion MD5 $md5Code
+        ftEcho -bh "备份包 : ${fileNameVersion} 正在记录MD5信息，请稍等"
+        local md5Code=$(md5sum $filePathVersion | awk '{print $1}')
+        ftIniSetValue $filePathInfo $versionName MD5 $md5Code
         return
     fi
 
     if [ "$editType" = "checkMd5" ]; then
-        local Md5Code=$(ftIniGetValue $filePathInfo $fileNameVersion MD5)
+        ftEcho -bh "备份包 : ${fileNameVersion} 检验MD5信息"
+        local Md5Code=$(ftIniGetValue $filePathInfo $versionName MD5)
         if [[ -z "$Md5Code" ]]; then
             ftEcho -e "未找到备份包 : ${fileNameVersion}  的原始MD5"
             return;
         fi
-        local Md5CodeNow=$(md5sum $filePath | awk '{print $1}')
+        local Md5CodeNow=$(md5sum $filePathVersion | awk '{print $1}')
         if [ "$Md5CodeNow"x != "$Md5Code"x ]; then
             echo "MD5检验失败，码不一致"
         fi
@@ -727,7 +693,7 @@ EOF
         ftIniSetValue $filePathInfo $versionName $keySystemVersion $keySystemVersion
         ftIniSetValue $filePathInfo $versionName $keySystemType $infoHw32x64
 
-        ftEcho -s 版本${versionName}相关系统信息记录完成
+        ftEcho -sh 版本${versionName}相关系统信息记录完成
         return
     fi
 
@@ -886,8 +852,8 @@ EOF
                         cp -rf -v $filePathversionNameTarget $filePathVersion
 
                         #清除权限限制
-                        chmod 777 $filePathVersion
-                    n | N | q |Q)break;;
+                        chmod 777 $filePathVersion ;;
+                    n | N | q |Q) return ;;
                     * ) ftEcho -e 错误的选择：$sel
                          echo "输入n，q，离开";;
             esac; done
