@@ -183,7 +183,6 @@ EOF
 
     e | E | -e | -E)        echo -e "\033[1;31m$content\033[0m"; break;;
     ex | EX | -ex | -EX)    echo -e "\033[1;31m$content\033[0m"
-                sleep 3
                 if [ "$XMODULE" = "env" ];then    return ; fi
                 exit;;
     s | S | -s | -S)        echo -e "\033[1;33m$content\033[0m"; break;;
@@ -1014,24 +1013,27 @@ EOF
 
     local indexStart=
     local indexEnd=
-    local index=0
-    cat $filePathIni | while read line ;do
+    local index=1
+    local lineCount=$(cat $filePathIni|wc -l)
+    while read -r line
+    do
         if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
             if [[ -z "$indexStart" ]]; then
                 indexStart=$index
-                ((indexStart+=1))
             fi
 
-            if [[ -z "$line" ]]; then
+            if (($index==$lineCount))||[[ -z "$line" ]]; then
+                ((index+=1))
                 indexEnd=$index
                 local lineRange="${indexStart},${indexEnd}d"
-                #echo lineRange=$lineRange
+
+                # echo lineRange=$lineRange
                 sed -i $lineRange $filePathIni
                 break
             fi
         fi
         ((index+=1))
-    done
+    done < $filePathIni
 }
 
 ftIniDeleteItem()
@@ -4063,18 +4065,20 @@ EOF
                         ftRestoreChoiceSource -p $filePathVersionInfoVersion -pm $filePathVersionInfoMaintain -t $tagNaeMaintain
                     #检查备份包和当前系统兼容程度
                         local fileName=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain fileName)
-                        ftSystemEnv -c -p $filePathVersionInfoMaintain -v ${fileName%.*}
+                        ftSystemEnv -c -p $filePathVersionInfoVersion -v ${fileName%.*}
                     #检查备份包是否损坏
                         local dirPathStore=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain dirPathStore)
                         ftMD5 -p $filePathVersionInfoVersion -c "${dirPathStore}/${fileName}"
                     #选择备份包覆盖的忽略路径
                         ftSetRestoreOverryList -pm $filePathVersionInfoMaintain -t $tagNaeMaintain
                     #当前配置信息显示
+                        local fileName=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain  fileName)
                         local versionName=${fileName%.*}
-                        ftEcho -s  "使用的备份包：${dirPathStore}/${fileName}"
+                        ftEcho -bh "还原关键信息"
+                        ftEcho -s  "使用的备份包：$fileName"
                         ftEcho -s  "备份包的说明：$(ftIniGetValue $filePathVersionInfoVersion $versionName backupPackageNote)"
                         ftEcho -s  "还原时将忽略目录：$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain  dirPathRestoreExclude)"
-                    #执行还原操作
+                    # #执行还原操作
                         ftRestoreOperate -pm $filePathVersionInfoMaintain -t  $tagNaeMaintain -d "/"
                     #删除还原版本信息
                         ftIniDeleteTag -p $filePathVersionInfoMaintain -t $tagNaeMaintain

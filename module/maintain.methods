@@ -56,7 +56,7 @@ EOF
                 ftEcho -e 未找到备份包:${filePathVersion}
                 return
             fi
-            sudo tar --use-compress-program=pigz -xvpf $filePathVersion --exclude=$dirPathRestoreExclude -C $dirPathRestoreTarget  #2>&1 |tee $mFilePathLog
+            sudo tar --use-compress-program=pigz -xvpf $filePathVersion --exclude=$dirPathRestoreExclude -C /
             break;;
         n | N | q |Q)  exit;;
         * ) ftEcho -e 错误的选择：$sel
@@ -104,50 +104,56 @@ EOF
             return
     fi
 
-    local suffixName=$(ftIniGetValue $filePathIni $tagNameMaintain backupPackageSuffixName)
-    local dirPathStore=$(ftIniGetValue $filePathIni $tagNameMaintain dirPathStore)
-    local fileList=$(find "$dirPathStore" -type f -name "*.${suffixName}")
+    local suffixName=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
+    local dirPathStore=$(ftIniGetValue $filePathIniMaintain $tagNameMaintain dirPathStore)
+    local filePathList=($(find ${dirPathStore} -name "*.${suffixName}"))
 
-    if [ -z "$fileList" ];then
+    if [ -z "$filePathList" ];then
         ftEcho -ex 在${dirPathStore}没找到有效的备份包
+        exit
     else
-        ftEcho -b 请${ftEffect}
-        echo "[序号]        备份包名    ----------------    备注        "
-        echo
-        for file in $fileList
+        ftEcho -bh 请${ftEffect}
+        local index=0
+        printf "%-2s %-36s %-50s\n\n" 序号 备份包版本号 版本备注
+        for filePath in ${filePathList[*]}
         do
-            local versionName=${file%.*}
+            local fileName=$(basename $filePath)
+            local versionName=${fileName%.*}
             local note=$(ftIniGetValue $filePathIni $versionName backupPackageNote)
-            if [[ -z "$note" ]]; then
-               fileList[$index]="null"
-               note="无效版本，无相关记录"
-               continue
-            fi
-            echo [ ${index} ] ${versionName}"   ----------------   "${note}
+            note=${note:-'无效版本，无相关记录'}
+            printf "[%-2d] %-30s %-50s\n" ${index} ${versionName} ${note}
             ((index+=1))
         done
         while true; do
+            local index=0
             ftEcho -r  "请输入备份包对应的序号(回车默认0):"
-            if [ ${#fileList[@]} -gt 9 ];then
-                read tIndex
+            if (( ${#filePathList[@]}>9 ));then
+                read index
             else
-                read -n 1 tIndex
-            fi
+                read -n 1 index
+            fi;echo
+
             #设定默认值
-            if [ ${#tIndex} == 0 ]; then
-                tIndex=0
+            if [ ${#index} == 0 ]; then
+                index=0
             fi
 
-            while [[ ${fileList[$tIndex]} = "null" ]]; do
-                ((tIndex=$tIndex+1))
-            done
-
-            if ( echo -n $tIndex | grep -q -e "^[0-9][0-9]*$");then
-                ftIniSetValue $tagNameMaintain $tagNameMaintain fileNameBackupVersion "${fileList[$tIndex]}"
-                break;
-            else
-                ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2...... 选择    输入 n，q 离开"
+            if ( ! echo -n $index | grep -q -e "^[0-9][0-9]*$");then
+                ftEcho -e 错误的选择：$index ;echo  "输入1,2...... 选择    输入 n，q 离开"
+                continue;
             fi
+
+            local filePath=${filePathList[$index]}
+            if [ ! -f "$filePath" ];then
+                ftEcho -e  "备份包:${filePath}不存在"
+                continue;
+            fi
+
+            local fileName=$(basename $filePath)
+            local dirPathStore=$(dirname $filePath)
+            ftIniSetValue $filePathIniMaintain $tagNameMaintain fileName "$fileName"
+            ftIniSetValue $filePathIniMaintain $tagNameMaintain dirPathStore "$dirPathStore"
+            break;
         done
     fi
 }
@@ -238,17 +244,17 @@ EOF
          ftEcho -e 错误的选择：$dir
     done
 
-    local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}/${versionName}
-
     case "$editType" in
     backup )
+        local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}/${versionName}
         if [ ! -d $dirPathStoreSource ];then
             mkdir -p $dirPathStoreSource
         fi
         ;;
     restore )
+        local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}
         if [ ! -d $dirPathStoreSource ];then
-            ftEcho -ex [$dirPathStoreSource]不存在,将退出
+            ftEcho -ex ${dirPathStoreSource}不存在,将退出
             return;
         fi
         ;;
@@ -408,20 +414,18 @@ EOF
     while true; do
         ftEcho -r  "请选择还原设置(回车默认忽略home):"
         read -n 1 typeIndex
+        echo
 
         #设定默认值
         if [ ${#typeIndex} == 0 ]; then
             typeIndex=1
         fi
         case $typeIndex in
-        1 | 2)break;;
-        n | N | q |Q)    exit;;
-        * )        ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";break;;
-    esac
-    done
-    case $typeIndex in
-        1 )        ftIniSetValue $filePathIniMaintain $tagNameMaintain dirPathRestoreExclude $rDirPathUserHome;break;;
-    esac
+            1) ftIniSetValue $filePathIniMaintain $tagNameMaintain dirPathRestoreExclude $rDirPathUserHome;break;;
+            2) break;;
+            n | N | q |Q)    exit;;
+            * )        ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";break;;
+    esac;done
 }
 
 ftBackupOs()
@@ -614,15 +618,18 @@ EOF
     fi
 
     if [ "$editType" = "checkMd5" ]; then
-        ftEcho -bh "备份包 : ${fileNameVersion} 检验MD5信息"
+        ftEcho -bh "备份包 : ${versionName} 检验MD5信息"
         local Md5Code=$(ftIniGetValue $filePathInfo $versionName MD5)
         if [[ -z "$Md5Code" ]]; then
             ftEcho -e "未找到备份包 : ${fileNameVersion}  的原始MD5"
-            return;
+            exit
         fi
         local Md5CodeNow=$(md5sum $filePathVersion | awk '{print $1}')
         if [ "$Md5CodeNow"x != "$Md5Code"x ]; then
-            echo "MD5检验失败，码不一致"
+            ftEcho -e "MD5检验失败，码不一致"
+            exit
+        else
+            ftEcho -s "备份包 : ${versionName} 检验MD5成功"
         fi
     fi
 }
@@ -690,7 +697,7 @@ EOF
 
         ftIniSetValue $filePathInfo $versionName $keyCpu $infoHwCpu
         ftIniSetValue $filePathInfo $versionName $keyMainboard $infoHwMainboard
-        ftIniSetValue $filePathInfo $versionName $keySystemVersion $keySystemVersion
+        ftIniSetValue $filePathInfo $versionName $keySystemVersion $infoHwSystem
         ftIniSetValue $filePathInfo $versionName $keySystemType $infoHw32x64
 
         ftEcho -sh 版本${versionName}相关系统信息记录完成
@@ -699,7 +706,7 @@ EOF
 
     if [ ${editType} == "check" ]; then
 
-        ftEcho -b 检查备份包和当前系统兼容程度
+        ftEcho -bh 检查备份包和当前系统兼容程度
 
         local infoHwCpuVersion=$(ftIniGetValue  $filePathInfo $versionName $keyCpu)
         local infoHwMainboardVersion=$(ftIniGetValue  $filePathInfo $versionName $keyMainboard)
@@ -746,8 +753,10 @@ EOF
             returns=不兼容
         fi
         if [ ! -z "$returns" ]; then
-                ftEcho -s 备份包：${dirNameBackupInfoVersion}系统兼容性检测结果为${returns}
-                return 9
+            ftEcho -s "备份包：${versionName} 系统兼容性检测结果为${returns}"
+            return 9
+        else
+            ftEcho -s "备份包：${versionName} 兼容当前系统"
         fi
     fi
 }
