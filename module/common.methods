@@ -2,7 +2,6 @@
 #####---------------------  说明  ---------------------------#########
 # 不可在此文件中出现不被函数包裹的调用或定义
 # 人话，这里只放函数
-# complete -W "example example" ftExample
 
 #####---------------------基础函数---------------------------#########
 
@@ -270,6 +269,9 @@ ftTiming()
 ftAutoInitEnv()
 {
     local ftEffect=初始化xbash_Android_build相关所需的部分环境变量
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoInitEnv --df;return    ; fi
+
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local buildType=$TARGET_BUILD_VARIANT
@@ -281,6 +283,13 @@ ftAutoInitEnv()
 #
 #    ftAutoInitEnv 无参
 #    ftAutoInitEnv -bp #build.prop高级信息读取
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;       
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -565,9 +574,12 @@ EOF
 ftFileDirEdit()
 {
     local ftEffect=路径合法性校验
-    type=$1
-    isCreate=$2
-    path=$3
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftFileDirEdit --df;return    ; fi
+
+    local type=$1
+    local isCreate=$2
+    local path=$3
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
@@ -585,6 +597,13 @@ ftFileDirEdit()
 #    ftFileDirEdit -e false /home/xian-hp-u16/xbash
 #    echo $?
 #===============================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
@@ -646,6 +665,9 @@ EOF
 ftDevAvailableSpace()
 {
     local ftEffect=设备可用空间
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftDevAvailableSpace --df;return    ; fi
+
     local dirPathTraget=$1
     local isReturn=$2
 
@@ -655,6 +677,13 @@ ftDevAvailableSpace()
 #
 #    ftDevAvailableSpace [dirPathTraget] [[isReturn]]
 #    ftDevAvailableSpace /media/test
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -700,6 +729,8 @@ EOF
 ftIniGetValue()
 {
     local ftEffect=读取ini文件指定字段
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftIniGetValue --df;return    ; fi
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
@@ -712,6 +743,13 @@ ftIniGetValue()
 # 
 #    #输出异常信息
 #    ftIniGetValue -f [文件路径] [目标块TAG] [键名]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -784,6 +822,8 @@ EOF
 ftIniSetValue()
 {
     local ftEffect=修改ini文件指定字段
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftIniSetValue --df;return    ; fi
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
@@ -794,8 +834,15 @@ ftIniSetValue()
 #    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l "11 22 33 44"  #写入数组
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit 1;; * )break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+* )break;; esac;done
 
     #参数解析
     local isListValue
@@ -838,6 +885,8 @@ EOF
 ftIniCheckConfigSyntax()
 {
     local ftEffect=校验ini文件，确认文件有效
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftIniCheckConfigSyntax --df;return    ; fi
     #============ini文件模板=====================
     # # 注释１
     # [block1]
@@ -857,8 +906,15 @@ ftIniCheckConfigSyntax()
 #    ftIniCheckConfigSyntax 123/config.ini
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi
-    exit 1;; * )break;; esac;done
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * )break;; esac;done
 
     #耦合校验
     local valCount=1
@@ -914,12 +970,21 @@ EOF
 ftIniDeleteTag()
 {
     local ftEffect=删除ini文件中对应TAG块
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftIniDeleteTag --df;return    ; fi
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftIniDeleteTag -p ini文件路径 -t TAG块名
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -971,12 +1036,21 @@ EOF
 ftIniDeleteItem()
 {
     local ftEffect=删除ini文件中对应TAG中指定item
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftIniDeleteItem --df;return    ; fi
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftIniDeleteItem -p ini文件路径 -t TAG块名 -i item名
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1036,6 +1110,8 @@ EOF
 ftIniCreateFileOrTag()
 {
     local ftEffect=创建ini文件,添加TAG
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftIniCreateFileOrTag --df;return    ; fi
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
@@ -1045,6 +1121,13 @@ ftIniCreateFileOrTag()
 #    ftIniCreateFileOrTag  -a -p 文件路径 -t 块名 -l 块对应的键值对列表
 #    覆盖文件
 #    ftIniCreateFileOrTag  -r -p 文件路径 -t 块名 -l 块对应的键值对列表
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1104,6 +1187,8 @@ EOF
 ftVersionComparison()
 {
     local ftEffect=版本号大小比对beta
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftVersionComparison --df;return    ; fi
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
@@ -1113,6 +1198,13 @@ ftVersionComparison()
 #
 #    只能比对xx.xx格式的版本号
 #    echo $(ftVersionComparison 版本1 版本2)   #比对版本1和2大小
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1142,6 +1234,9 @@ EOF
 ftLanguageUtil()
 {
     local ftEffect=语言缩写转换
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftLanguageUtil --df;return    ; fi
+
     local ftLanguageContent=$@
     local dirPathCode=$ANDROID_BUILD_TOP
     local filePathDataBase=$rFilePathXbashDataBase
@@ -1152,6 +1247,13 @@ ftLanguageUtil()
 #
 #    ftLanguageUtil 缩写列表
 #    ftLanguageUtil “ar_IL bn_BD my_MM zh_CN”
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1234,6 +1336,8 @@ EOF
 ftInitDevicesList()
 {
     local ftEffect=初始化存储设备的列表
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftInitDevicesList --df;return    ; fi
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
@@ -1241,6 +1345,13 @@ ftInitDevicesList()
 #
 #    ftInitDevicesList [可用空间/单位默认为MB]
 #    ftInitDevicesList 4096M
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1438,7 +1549,8 @@ ftSetBashPs1ByGitBranch()
 ftCleanDataGarbage()
 {
     local ftEffect=清空回收站
-    ftInitDevicesList
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftCleanDataGarbage --df;return    ; fi
 
     while true; do case "$1" in
      -e |--exception) cat<<EOF
@@ -1455,6 +1567,13 @@ EOF
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
     #环境校验
@@ -1463,6 +1582,7 @@ EOF
         return
     fi
     #耦合校验
+    ftInitDevicesList
     local valCount=0
     local errorContent=
     if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
@@ -1538,6 +1658,9 @@ EOF
 ftAutoBuildMultiBranch()
 {
     local ftEffect=多分支串行编译
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoBuildMultiBranch --df;return    ; fi
+
     local filePathBranchList=branch.list
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathCodeOut=$ANDROID_PRODUCT_OUT
@@ -1572,6 +1695,13 @@ EOF
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1697,6 +1827,9 @@ complete -W "-b -h" ftAutoBuildMultiBranchEnvSeparation
 ftAutoBuildMultiBranchEnvSeparation()
 {
     local ftEffect=多分支串行编译[环境独立]/在多个终端间串行执行命令
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoBuildMultiBranchEnvSeparation --df;return    ; fi
+
     local editType=$1
     editType=$(echo $editType | tr '[A-Z]' '[a-z]')
 
@@ -1719,6 +1852,13 @@ EOF
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1790,6 +1930,9 @@ EOF
 ftKillApplicationByPackageName()
 {
     local ftEffect=kill掉包名为packageName的应用
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftKillApplicationByPackageName --df;return    ; fi
+
     local packageName=$1
 
     while true; do case "$1" in
@@ -1800,7 +1943,13 @@ ftKillApplicationByPackageName()
 #    ftKillApplicationByPackageName com.android.settings
 #=========================================================
 EOF
-
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
+EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
@@ -1860,7 +2009,10 @@ EOF
 
 ftLogcatApplicationByPackageName()
 {
-    local ftEffect=打印指定log
+    local ftEffect=打印指定包名输出的log
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftLogcatApplicationByPackageName --df;return    ; fi
+
     local packageName=$1
     local vContent=$2
     if [[ -z "$packageName" ]]; then
@@ -1886,6 +2038,13 @@ ftLogcatApplicationByPackageName()
 #=========================================================
 EOF
 
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
+EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
@@ -1932,6 +2091,9 @@ EOF
 ftRestartAdb()
 {
     local ftEffect=重启adbSever
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftRestartAdb --df;return    ; fi
+
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
@@ -1940,7 +2102,13 @@ ftRestartAdb()
 #    ftRestartAdb [无参]
 #=========================================================
 EOF
-
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
+EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;;esac;done
 
@@ -1965,6 +2133,9 @@ EOF
 ftMtkFlashTool()
 {
     local ftEffect=mtk下载工具
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftMtkFlashTool --df;return    ; fi
+
     local tempDirPath=`pwd`
     export OLDPWD=$tempDirPath
     local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1612.00.100
@@ -1973,6 +2144,13 @@ ftMtkFlashTool()
 #===================[   ${ftEffect}   ]的使用示例==============
 #
 #    ftMtkFlashTool 无参
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1999,6 +2177,9 @@ complete -W "create new" ftBootAnimation
 ftBootAnimation()
 {
     local ftEffect=生成开关机动画
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftBootAnimation --df;return    ; fi
+
     local editType=$1
     local dirPathAnimation=$2
     local dirPathBase=$(pwd)
@@ -2015,6 +2196,13 @@ ftBootAnimation()
 #    初始化生成bootanimation2.zip所需要的东东，然后生成动画包
 #    ftBootAnimation new /home/xxxx/test/bootanimation2
 #============================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
     * ) break;; esac;done
@@ -2245,6 +2433,9 @@ EOF
 ftPowerManagement()
 {
     local ftEffect=延时免密码关机重启
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftPowerManagement --df;return    ; fi
+
     local edittype=$1
     local timeLong=$2
     timeLong=${timeLong:-$2}
@@ -2257,6 +2448,13 @@ ftPowerManagement()
 #    ftPowerManagement shutdown/reboot 100
 #    xs 时间/秒 #制定时间后关机,不带时间则默认十秒
 #    xss 时间/秒 #制定时间后重启,不带时间则默认十秒
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -2305,6 +2503,9 @@ EOF
 ftReduceFileList()
 {
     local ftEffect=精简动画帧文件
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftReduceFileList --df;return    ; fi
+
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
@@ -2316,6 +2517,13 @@ ftReduceFileList()
 #    ftReduceFileList 目录
 #    ftReduceFileList /home/xxxx/temp
 # 由于水平有限，实现对60%和50%之类的比例不敏感
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -2405,6 +2613,9 @@ complete -W "-z" ftReNameFile
 ftReNameFile()
 {
     local ftEffect=批量重命名文件
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftReNameFile --df;return    ; fi
+
     local valCount=4
     local errorContent=
 
@@ -2422,6 +2633,13 @@ ftReNameFile()
 #    ftReNameFile -z /home/xxxx/temp test
 #    ftReNameFile -z 目录 前缀 文件名后缀
 #    ftReNameFile -z /home/xxxx/temp test test2
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -2520,6 +2738,9 @@ EOF
 ftBackupOrRestoreOuts()
 {
     local ftEffect=Android编译生成out相关自动维护
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftBackupOrRestoreOuts --df;return    ; fi
+
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local editType=$1
@@ -2541,6 +2762,13 @@ EOF
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -2659,6 +2887,9 @@ $dirNameBranchVersion
 ftAutoUploadHighSpeed()
 {
     local ftEffect=上传文件到制定smb服务器路径[高速版]
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoUploadHighSpeed --df;return    ; fi
+
     #存放上传源的目录
     local dirPathContentUploadSource=$1
     local serverIp=$2
@@ -2679,6 +2910,13 @@ EOF
 #
 #    路径:acb/def/123/kkk.zip
 #    ftAutoUploadHighSpeed acb/def/123 kkk.zip
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -2735,6 +2973,9 @@ complete -W "-a" ftAutoPacket
 ftAutoPacket()
 {
     local ftEffect=基于android的out生成版本软件包
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoPacket --df;return    ; fi
+
 
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' DEBUG
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' ERR
@@ -2749,12 +2990,10 @@ ftAutoPacket()
     -h | --help) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftAutoPacket #自动打包
-#    ftAutoPacket -y #免确认自动清理out/packet
+#    ftAutoPacket -y  #免确认自动清理out/packet
 #    ftAutoPacket -u #上传到188服务器
 #    ftAutoPacket -r  #添加说明
 #    ftAutoPacket -p #打包
-#    ftAutoPacket -ryup # 根据需要,自由组合,顺序,大小写随意
 #    ftAutoPacket -a #默认启动全部流程
 #=========================================================
 EOF
@@ -2764,6 +3003,13 @@ EOF
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -3185,6 +3431,9 @@ EOF
 ftAutoCreateReadMeBySoftwareVersion()
 {
     local ftEffect=创建软件版本相关修改记录和版本说明
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then  ftAutoCreateReadMeBySoftwareVersion  --df;return    ; fi
+
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
     local dirPathVersionSoftware=$1
@@ -3213,6 +3462,13 @@ EOF
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -3414,6 +3670,9 @@ EOF
 ftAutoLanguageUtil()
 {
     local ftEffect=语言缩写转化为中文
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoLanguageUtil --df;return    ; fi
+
     local dirPathCode=$ANDROID_BUILD_TOP
 
     while true; do case "$1" in
@@ -3429,6 +3688,13 @@ EOF
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -3491,6 +3757,9 @@ EOF
 ftAutoUpdateSoftwareVersion()
 {
     local ftEffect=更新sprd7731c_N9的软件版本
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoUpdateSoftwareVersion --df;return    ; fi
+
     local dirPathCode=$ANDROID_BUILD_TOP
 
     while true; do case "$1" in
@@ -3501,7 +3770,7 @@ ftAutoUpdateSoftwareVersion()
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    e | E |-e | -E) cat<<EOF
+    -e | --exception) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    ftAutoUpdateSoftwareVersion 仅可用于 SPRD > 7731C > N9 的项目
@@ -3513,6 +3782,13 @@ EOF
 #
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -3610,6 +3886,9 @@ EOF
 ftAutoGetAndroidVersionBySDKVersion()
 {
     local ftEffect=根据SDK版本获取Android版本
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoGetAndroidVersionBySDKVersion --df;return    ; fi
+
     local sdkVersion=$1
     local filePathDataBase=$rFilePathXbashDataBase
 
@@ -3619,6 +3898,13 @@ ftAutoGetAndroidVersionBySDKVersion()
 #
 #    ftAutoGetAndroidVersionBySDKVersion 1.0~25
 #    ftAutoGetAndroidVersionBySDKVersion 22
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -3649,7 +3935,7 @@ ftMaintainSystem()
     local isEnable=true
 
     while true; do case "$1" in
-    e | -e |--error) cat<<EOF
+    --env) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    当前用户权限过低，请转换为root 用户后重新运行
@@ -3690,7 +3976,7 @@ EOF
 
      #环境校验
     if [ "$(whoami)" != "root" ];then
-        ftMaintainSystem -e
+        ftMaintainSystem --env
         return
     fi
     if [ -z $(which pigz) ];then
@@ -3835,6 +4121,9 @@ EOF
 ftGitLogShell()
 {
     local ftEffect=git的log特定格式显示
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then  ftGitLogShell --df;return    ; fi
+
 
     while true; do case "$1" in
      --rely) cat<<EOF
@@ -3848,11 +4137,17 @@ EOF
     -h | --help) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    
 #    ftGitLogShell -a  #全部分支log
 #    ftGitLogShell -n 数量
 #    ftGitLogShell -t "Tag名"  #只输出包含tag的git log
 #    ftGitLogShell -c "格式字串" #自定义格式输出
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -3917,8 +4212,9 @@ EOF
     fi
 
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]]&&[ "$isCustomBranchLog" != "true" ];then
-        branchLogFormat=${branchLogFormat:-'%C(green)%<(17,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
-        git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"$branchLogFormat" -$branchLogItemCount
+        branchLogFormat=${branchLogFormat:-'%C(green)%<(9,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
+        #git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"$branchLogFormat" -$branchLogItemCount
+        git log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount
     else
         branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
         git log --pretty=format:"$branchLogFormat" -$branchLogItemCount
@@ -3929,6 +4225,9 @@ complete -W " --reboot_count --reboot_wait_time --event_count --path -rc -rwt -e
 ftAutoTest()
 {
     local ftEffect=Android自动测试
+    local isEnable=true
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoTest --df;return    ; fi
+
 
     while true; do case "$1" in
      --rely) cat<<EOF
@@ -3948,6 +4247,13 @@ EOF
 #    ftAutoTest -rc 2000 #重启2000次
 #    ftAutoTest -rwt 2000 #每2000s重启一次
 #    ftAutoTest -ec 2000 #monkey事件数为2000
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;

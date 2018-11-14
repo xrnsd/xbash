@@ -55,33 +55,27 @@ if [ -f $rFilePathXbashModuleCommon ];then
     export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
     export ENV_XBASH_INIT_STATED=1
 
-    alias xd='effect=MTK下载工具;ftMtkFlashTool'
-    alias xX='effect=字符串转大写;_xX(){  echo $1 | tr '[a-z]' '[A-Z]' ;};_xX $1'
-    alias Xx='effect=字符串转小写;_Xx(){  echo $1 | tr '[A-Z]' '[a-z]' ;};_Xx $1'
-    alias xkf='effect=解除文件或目录占用;fuser -m -k -i '
-    alias xb='effect=系统维护;ftMaintainSystem'
     alias xc='effect=xbash主入口[旧];ftMain'
+    alias xb='effect=系统维护;ftMaintainSystem'
+    alias xd='effect=MTK下载工具;ftMtkFlashTool'
+    alias xkf='effect=解除文件或目录占用;fuser -m -k -i '
     alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
     alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
+    alias xX='effect=字符串转大写;_xX(){  echo "$1" | tr '[a-z]' '[A-Z]' ;};_xX $1'
+    alias Xx='effect=字符串转小写;_Xx(){  echo "$1" | tr '[A-Z]' '[a-z]' ;};_Xx $1'
     alias xbh='effect=bash命令历史插值;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
     alias xu='effect=打开xbash配置文件;gedit  $filePathUserConfig $filePathXbashTragetBashrcBase $filePathXbashTragetBashrcConfigBase'
 
     if [ ! -z `which git` ];then
+        export PROMPT_COMMAND='ftSetBashPs1ByGitBranch' #  if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then    ftSetBashPs1ByGitBranch ; fi
+
         alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a'
         alias xgl='effect=格式化显示20条git_log;ftGitLogShell -n 20'
-        alias xgll='effect=格式化显示100条git_log;ftGitLogShell -n 100' 
-
-        export PROMPT_COMMAND='\
-        ftSetBashPs1ByGitBranch
-        if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then
-         ftSetBashPs1ByGitBranch
-        fi'
-        alias xbranch="effect=过滤git仓库已经checkout分支;git branch|grep -i "
-        alias xbrancha="effect=过滤git仓库所有分支;git branch -a|grep -i "
-
-        alias xpusht="effect=提交分支的tag标签;git push origin --tags $AutoEnv_branchName"
-        alias xaddt="effect=添加tag标签;git tag -a "
+        alias xgll='effect=格式化显示100条git_log;ftGitLogShell -n 100'
+        alias xbrancha="effect=过滤git仓库所有分支;git branch -a|grep -i"
+        alias xbranch="effect=过滤git仓库已经checkout分支;git branch|grep -i"
     fi
+
     if [ -d "$JAVA_HOME" ]&&[ -d "out" ];then
         #java -jar signapk.jar platform.x509.pem platform.pk8  待签名名字.apk  签名后名字.apk "命令进行签名
         alias xAppSignature='effect=apk文件签名;java -jar out/host/linux-x86/framework/signapk.jar  build/target/product/security/platform.x509.pem build/target/product/security/platform.pk8'
@@ -105,13 +99,13 @@ if [ ! -z `which find` ];then
 fi
 
 if [ -d "$ANDROID_SDK" ];then
-    alias xl='effect=过滤adb_logcat;adb logcat -c;ftLogcatApplicationByPackageName'
-    alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
-    alias xlc='effect=清除指定包名的数据; adb shell pm clear'
     alias xle='effect=过滤错误的进程;adb logcat "*:E"'
-    alias xtp="effect=打印任务栈的栈顶信息;adb shell dumpsys activity top"
-    alias xlp="effect=根据包名过滤log;adb logcat -c;ftLogcatApplicationByPackageName"
+    alias xlc='effect=清除指定包名的数据; adb shell pm clear'
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
+    alias xtp="effect=打印任务栈的栈顶信息;adb shell dumpsys activity top"
+    alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
+    alias xl='effect=过滤adb_logcat;adb logcat -c;ftLogcatApplicationByPackageName'
+    alias xlp="effect=根据包名过滤log;adb logcat -c;ftLogcatApplicationByPackageName"
     alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
     alias xdv='effect=手机录屏;adb shell screenrecord /sdcard/sv.mp4&&adb pull /sdcard/sv.mp4 ~/download/'
 
