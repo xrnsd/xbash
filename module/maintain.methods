@@ -247,9 +247,6 @@ EOF
     case "$editType" in
     backup )
         local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}/${versionName}
-        if [ ! -d $dirPathStoreSource ];then
-            mkdir -p $dirPathStoreSource
-        fi
         ;;
     restore )
         local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}
@@ -503,6 +500,9 @@ EOF
                         sudo rm -rf /var/cache/apt/archives
                     #生成备份包
                         ftEcho -bh 开始${ftEffect}
+                        if [ ! -d $dirPathStore ];then
+                            mkdir -p $dirPathStore
+                        fi
                         sudo tar --use-compress-program=pigz -cvPf $filePathVersion --exclude-from=$fileNameExclude /  2>&1 |tee $filePathVersionLog
                     #扫尾
                         rm $fileNameExclude>/dev/null
@@ -850,11 +850,6 @@ EOF
                             ftEcho -e 设备[${devDirPath}]上的同名备份包[${versionName}]不兼容
                             break
                         fi
-                        #实现逻辑有问题暂时屏蔽
-                        # if [ ! -z "$(ftMD5 -c $dirPathTarget -p $filePathIni)" ];then
-                        #     ftEcho -e 设备[${devDirPath}]上的同名备份包[${versionName}]无效
-                        #     break
-                        # fi
 
                         #复制备份包
                         local filePathVersion=${dirPathStore}/${fileName}

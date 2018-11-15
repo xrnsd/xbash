@@ -53,7 +53,7 @@ EOF
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
     eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -x )
-            example1="${arg2:-'exampleDef1'}" ;;
+            example1="${arg2:-"exampleDef1"}" ;;
     * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
     #耦合校验
     local valCount=1

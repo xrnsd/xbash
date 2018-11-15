@@ -4002,7 +4002,6 @@ EOF
     * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
     #耦合校验
     local errorContent=
-    local dirPathLocal=${PWD}
     local filePathMaintain=${rDirPathXbashModule}/${rFileNameXbashModuleMaintain}
     if [ ! -f "$filePathMaintain" ];then    errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain" ; fi
     if [ ! -z "$errorContent" ];then
@@ -4010,12 +4009,14 @@ EOF
             ftMaintainSystem -h
             return
     fi
+    source $filePathMaintain
+
     local  filePathVersionInfoVersion=${rDirPathXbashData}/versionInfo.database
     local  filePathVersionInfoMaintain=${rDirPathXbashData}/maintain.database
 
-    source $filePathMaintain
     case "$editType" in
         backup )
+                    local dirPathLocal=${PWD}
                     local filePathVersionInfo=$filePathVersionInfoVersion
                     local infoVersionName=backup_${rNameUser}_$(date -d "today" +"%Y%m%d")
                     local fileNameVersion=${infoVersionName}.$(ftIniGetValue $filePathVersionInfoMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
@@ -4053,7 +4054,7 @@ EOF
                         ftMD5  -p $filePathVersionInfo -s $filePathStore
                     #把备份同步到不同设备上
                         # ftSynchronous -d "${mXbashModuleDataDevicesList[*]}" -s ".*\.tgz"
-                    ;;
+                    cd $dirPathLocal; ;;
         restore )
                     local tagNaeMaintain=restoreConfigInfo
                     #预写入待还原版本信息
@@ -4084,7 +4085,7 @@ EOF
                         ftRestoreOperate -pm $filePathVersionInfoMaintain -t  $tagNaeMaintain -d "/"
                     #删除还原版本信息
                         ftIniDeleteTag -p $filePathVersionInfoMaintain -t $tagNaeMaintain
-        ;;
+                    ;;
         sdFinish )
                     if [ -z $(which e4defrag) ];then
                         ftMaintainSystem --rely "e4defrag"
@@ -4123,7 +4124,6 @@ EOF
                     e4defrag -v -c $${devPathList[$tIndex]}
                     return ;;
         * ) ftMaintainSystem -h ; return ;; esac
-        cd $dirPathLocal;
 }
 
 ftGitLogShell()
