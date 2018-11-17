@@ -92,8 +92,7 @@ ftReadAllFt()
         local ftEffect=查看xbash对bash扩展实现说明_nodisplay
 
         local key="local ftEffect="
-        for effectName in $(cat $rFilePathXbashModuleCommon |grep '^ft')
-        do
+        for effectName in $(cat $rFilePathXbashModuleCommon |grep '^ft') ; do
             effectDescription=$(cat $rFilePathXbashModuleCommon |grep  -C 3 $effectName|grep "$key")
             effectDescription=${effectDescription//$key/}
             effectDescription=$(echo $effectDescription |sed s/[[:space:]]//g)
@@ -192,14 +191,12 @@ EOF
     y | Y | -y | -Y)        echo;echo -en "${content}[y/n]"; break;;
     ye | YE | -ye | -YE) echo -en "${content}[y/n]"; break;;
     r | R | -r | -R)        echo;echo -en "${content}"; break;;
-    ea| EA | -ea | -EA)    for val in ${content[@]}
-                do
+    ea| EA | -ea | -EA)    for val in ${content[@]} ; do
                     echo -e "\033[1;31m$val\033[0m";
                 done
                 break;;
 
-    eax| EAX | -eax | -EAX)    for val in ${content[@]}
-                do
+    eax| EAX | -eax | -EAX)    for val in ${content[@]} ; do
                     echo -e "\033[1;31m$val\033[0m";
                 done
                 exit;;
@@ -393,8 +390,7 @@ EOF
     local dirPathVendor=${dirPathCode}/vendor
     if [ -d $dirPathVendor ];then
             dirList=`ls $dirPathVendor`
-            for item in $dirList
-            do
+            for item in $dirList ; do
                 if [ $item = "sprd" ];then
                     local mnufacturers=sprd
                elif [[ $item = "mediatek" ]]; then
@@ -479,8 +475,7 @@ EOF
                                             ftEcho -e "${filePathPreviousBuildConfig} 信息解析失败"
                                     else
                                             local buildinfo=null
-                                            for item in ${arrayItems[@]}
-                                            do
+                                            for item in ${arrayItems[@]} ;  do
                                                 if [[ "$item" = "$TARGET_PRODUCT" ]]; then
                                                     buildinfo=
                                                 elif [[ -z "$buildinfo" ]]; then
@@ -530,8 +525,7 @@ EOF
                 export AutoEnv_FlashConfig=
 
 
-                for item in ${arrayItems[@]}
-                do
+                for item in ${arrayItems[@]} ; do
                         local key=${item%\(*}
                         local val=${item//$key/}
                         val=${val//\(/}
@@ -704,8 +698,7 @@ EOF
 
      local indexDevName=0
      local devMountDirPath
-    for size in ${devAvailableSIzeList[*]}
-    do
+    for size in ${devAvailableSIzeList[*]} ; do
             devMountDirPath=${devMountDirPathList[indexDevName]}
              length=${#dirPathTraget}
             if [[ "${devMountDirPath:0:$length}" = "$dirPathTraget" ]]; then
@@ -792,8 +785,7 @@ EOF
     local begin_block=0
     local end_block=0
 
-    cat $filePath | while read line
-    do
+    cat $filePath | while read line ; do
         if [ "X$line" = "X[$blockName]" ];then
             begin_block=1
             continue
@@ -1015,8 +1007,7 @@ EOF
     local indexEnd=
     local index=1
     local lineCount=$(cat $filePathIni|wc -l)
-    while read -r line
-    do
+    while read -r line ; do
         if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
             if [[ -z "$indexStart" ]]; then
                 indexStart=$index
@@ -1172,8 +1163,7 @@ EOF
     #added TAG
     content=${enterLine}"[$contentTagName]"
     #add List
-    for item in ${contentTagKeyValList[*]}
-    do
+    for item in ${contentTagKeyValList[*]} ; do
         content=${content}${enterLine}"$item"
     done
     content=${content}${enterLine}
@@ -1317,12 +1307,10 @@ EOF
     fi
 
     local orderIndex=0
-    for lc in ${ftLanguageContent[@]}
-    do
+    for lc in ${ftLanguageContent[@]} ; do
         title="参数[${lc}] 转换失败"
         index=0
-        for base in ${sourceList[@]}
-        do
+        for base in ${sourceList[@]} ; do
             if [ $lc = $base ];then
                 return="${return} ${tragetList[index]}"
                 ((orderIndex+=1))
@@ -1414,8 +1402,7 @@ EOF
         indexDevMount=1;
     fi
     #开始记录设备文件
-    for dir in ${devNameDirPathList[*]}
-    do
+    for dir in ${devNameDirPathList[*]} ;do
             devMountDirPath=${devMountDirPathList[indexDevName]}
             if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
                     sizeTemp=$(ftDevAvailableSpace $devMountDirPath)
@@ -1599,8 +1586,7 @@ EOF
     fi
 
     local dirPathLocal=$(pwd)
-    for dirDev in ${mXbashModuleDataDevicesList[*]}
-    do
+    for dirDev in ${mXbashModuleDataDevicesList[*]} ; do
          local dir=null
         if [ -d ${dirDev}/.Trash-1000 ];then
             dir=${dirDev}/.Trash-1000
@@ -1778,15 +1764,13 @@ EOF
     fi
     git branch > $filePathBranchList&&
     gedit $filePathBranchList&&
-    while [ ! -z "$(pgrep -f gedit)" ]
-    do
+    while [ ! -z "$(pgrep -f gedit)" ] ; do
         echo 等待中
     done
     content=`cat $filePathBranchList`
     if [ ! -z "$content" ];then
             ftEcho -b 将编译下面所有分支
-            cat $filePathBranchList | while read line
-            do
+            cat $filePathBranchList | while read line ; do
                 echo branchName=$line
             done
             while true; do
@@ -1797,16 +1781,14 @@ EOF
                         y | Y )
                                         if [[ ! -z "$timeLong" ]]; then
                                             tput sc
-                                            for i in `seq -w $timeLong -1 1`
-                                            do
+                                            for i in `seq -w $timeLong -1 1` ; do
                                                 echo -ne "\033[1;31m将在${i}秒开始编译，ctrl+c 取消\033[0m"
                                                 tput rc
                                                 tput ed
                                                 sleep 1
                                             done
                                         fi
-                                        cat $filePathBranchList | while read line
-                                        do
+                                        cat $filePathBranchList | while read line ; do
                                             local branchName=$line
                                             git reset --hard&&
                                             ftEcho -bh 将开始编译$branchName
@@ -1913,8 +1895,7 @@ EOF
         fi
         git branch > $filePathBranchList&&
         gedit $filePathBranchList&&
-        while [ ! -z "$(pgrep -f gedit)" ]
-        do
+        while [ ! -z "$(pgrep -f gedit)" ] ; do
             echo 等待中
         done
         local branchArray=($(cat $filePathBranchList))
@@ -2293,8 +2274,7 @@ EOF
             filelist=$(ls $dirPathAnimationSourceRes)
             local dirPathLocal=$PWD
             cd $dirPathAnimationSourceRes && trap 'cd $dirPathLocal;exit' SIGINT
-            for file in $filelist
-            do
+            for file in $filelist ; do
                 if [ ! -f "$file" ];then
                     ftEcho -ex 动画资源包含错误类型的文件[${file}]，请确认
                 fi
@@ -2323,8 +2303,7 @@ EOF
         touch  ${dirPathAnimationTraget}/${fileNameDesc}
 
         #文件名去空格
-        for loop in `ls -1 | tr ' '  '#'`
-        do
+        for loop in `ls -1 | tr ' '  '#'` ; do
             mv  "`echo $loop | sed 's/#/ /g' `"  "`echo $loop |sed 's/#//g' `"  2> /dev/null
         done
 
@@ -2336,8 +2315,7 @@ EOF
 
         #文件重命名
         index=0
-        for file in $filelist
-        do
+        for file in $filelist ; do
             # echo “filename: ${file%.*}”
             # echo “extension: ${file##*.}”
             a=$((1000+$index))
@@ -2480,8 +2458,7 @@ EOF
     case "$edittype" in
         shutdown )
             tput sc
-            for i in `seq -w $timeLong -1 1`
-            do
+            for i in `seq -w $timeLong -1 1` ; do
                 tput rc;tput ed
                 echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
                 sleep 1
@@ -2490,8 +2467,7 @@ EOF
             break;;
         reboot)
             tput sc
-            for i in `seq -w $timeLong -1 1`
-            do
+            for i in `seq -w $timeLong -1 1` ; do
                 tput rc;tput ed
                 echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
                 sleep 1
@@ -2562,13 +2538,6 @@ EOF
     ftFileDirEdit -e false $dirPathFileList
     if [ $? -eq "2" ];then
         ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
-    # else
-    #     for file in `ls $dirPathFileList`
-    #     do
-    #         if [ ! -f $file ];then
-    #             ftEcho -e 资源目录包含不是文件的东东：[${dirPathFileList}/${file}]
-    #         fi
-    #     done
     fi
 
     if (( $percentage>50 ));then
@@ -2587,22 +2556,8 @@ EOF
 
      fileList=`ls $dirPathFileList`
     index=0
-    for file in $fileList
-    do
+    for file in $fileList ; do
         ((index+=1))
-        # if (( `expr $index % $continueThreshold`== 0 ));then
-        #     if [ $editType = "del" ];then
-        #         echo del_file=$file
-        #     elif [ $editType = "surplus" ];then
-        #         continue;
-        #     fi
-        # else
-        #     if [ $editType = "del" ];then
-        #         continue;
-        #     elif [ $editType = "surplus" ];then
-        #         echo del_file=$file
-        #     fi
-        # fi
         if (( `expr $index % $continueThreshold`== 0 ));then
             if [ $editType = "surplus" ];then
                 continue;
@@ -2693,8 +2648,7 @@ EOF
     fi
     mkdir $dirPathFileListRename
     cd $dirPathFileList
-    for file in `ls $dirPathFileList|tr " " "?"`
-    do
+    for file in `ls $dirPathFileList|tr " " "?"` ; do
         if [ "$file" == "$dirNameFileListRename" ];then
             continue
         fi
@@ -2723,8 +2677,7 @@ EOF
                     lengthFileName=${#fileName}
                 fi
                 lengthFileNameBase=1
-                while (( $lengthFileName > 0  ))
-                do
+                while (( $lengthFileName > 0  )) ; do
                     ((lengthFileName-=1))
                     ((lengthFileNameBase*=10))
                 done
@@ -2836,8 +2789,7 @@ EOF
         if (( $itemCount>1 ));then
             ftEcho -s 对应分支对应多个out,请选择
             local index=0
-            for item in ${dirPathOutList[@]}
-            do
+            for item in ${dirPathOutList[@]} ; do
                 printf "%-4s %-4s\n" [$index] $item
                 ((index+=1))
             done
@@ -3201,12 +3153,10 @@ EOF
                 # local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
                 local dirPathDatabaseBpBase=${dirPathOut}/obj/ETC
                 local dirNameModems=$(ls ${dirPathDatabaseBpBase}/|grep "BPLGUInfoCustomAppSrcP_")
-                for dirName in ${dirNameModems[@]}
-                do
+                for dirName in ${dirNameModems[@]} ; do
                     dirName=${dirName//:/}
                     local dirPath=${dirPathDatabaseBpBase}/${dirName}
-                    for fileName in $(ls $dirPath)
-                    do
+                    for fileName in $(ls $dirPath) ; do
                         local filePath=${dirPath}/${fileName}
                         if [[ ! -f "$filePath" ]]; then
                             ftEcho -e "文件${filePath}不存在"
@@ -3220,12 +3170,10 @@ EOF
                 # local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
                 local dirPathDatabaseBpBase=${dirPathOut}/obj/ETC
                 local dirNameModems=$(ls ${dirPathDatabaseBpBase}/|grep "BPLGUInfoCustomAppSrcP_")
-                for dirName in ${dirNameModems[@]}
-                do
+                for dirName in ${dirNameModems[@]} ; do
                     dirName=${dirName//:/}
                     local dirPath=${dirPathDatabaseBpBase}/${dirName}
-                    for fileName in $(ls $dirPath)
-                    do
+                    for fileName in $(ls $dirPath) ; do
                         local filePath=${dirPath}/${fileName}
                         if [[ ! -f "$filePath" ]]; then
                             ftEcho -e "文件${filePath}不存在"
@@ -3372,9 +3320,8 @@ EOF
                         mkdir -p $dirPathPackage
                         # packages需要的文件列表
                         tagName="lzProjrctConfigSoftwarePackageFileLIst"
-                        local fileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}_fileList) preloader_${deviceName}.bin)
-                        for file in ${fileList[@]}
-                        do
+                        local fileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}))
+                        for file in ${fileList[@]}; do
                             local filePath=${dirPathOut}/${file}
                              if [[ ! -f "$filePath" ]]; then
                                  ftEcho -e "${filePath}\n不存在"
@@ -3390,8 +3337,7 @@ EOF
                     #otaPackages
                     if [[ ! -z "$otaFileList" ]]; then
                         mkdir -p $dirPathOtaPackage
-                        for file in ${otaFileList[@]}
-                        do
+                        for file in ${otaFileList[@]}; do
                              if [[ ! -f "$file" ]]; then
                                  ftEcho -e "${file}\n不存在"
                                  return;
@@ -3403,8 +3349,7 @@ EOF
                     # database
                     if [ ! -z "$dataBaseFileList" ];then
                         mkdir -p $dirPathPackageDataBase
-                        for filePath in ${dataBaseFileList[@]}
-                        do
+                        for filePath in ${dataBaseFileList[@]}; do
                              if [[ ! -f "$filePath" ]]; then
                                  ftEcho -e "${filePath}\n不存在"
                              else
@@ -4096,8 +4041,7 @@ EOF
                     indexDevName=0
                     indexDev=0
                     devPathList=
-                    for dir in ${devNameDirPathList[*]}
-                    do
+                    for dir in ${devNameDirPathList[*]} ; do
                             devMountDirPath=${devMountDirPathList[indexDevName]}
                             if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
                                    printf " \e[33m %-2s \e[0m %-15s \n" [$indexDev] $dir

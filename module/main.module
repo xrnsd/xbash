@@ -53,12 +53,11 @@ if [ -f $rFilePathXbashModuleCommon ];then
 
     #bash PS1 配置
     export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
-    export ENV_XBASH_INIT_STATED=1
 
     alias xc='effect=xbash主入口[旧];ftMain'
     alias xb='effect=系统维护;ftMaintainSystem'
     alias xd='effect=MTK下载工具;ftMtkFlashTool'
-    alias xkf='effect=解除文件或目录占用;fuser -m -k -i '
+    alias xkf='effect=解除文件或目录占用;fuser -m -k -i'
     alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
     alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
     alias xX='effect=字符串转大写;_xX(){  echo "$1" | tr '[a-z]' '[A-Z]' ;};_xX $1'
@@ -86,7 +85,6 @@ if [ -f $rFilePathXbashModuleCommon ];then
     complete -F _ftMain xc
 else
     echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$rFilePathXbashModuleCommon]\033[0m"
-    export ENV_XBASH_INIT_STATED=-1
 fi
 
 if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then

@@ -115,8 +115,7 @@ EOF
         ftEcho -bh 请${ftEffect}
         local index=0
         printf "%-2s %-36s %-50s\n\n" 序号 备份包版本号 版本备注
-        for filePath in ${filePathList[*]}
-        do
+        for filePath in ${filePathList[*]} ; do
             local fileName=$(basename $filePath)
             local versionName=${fileName%.*}
             local note=$(ftIniGetValue $filePathIni $versionName backupPackageNote)
@@ -212,8 +211,7 @@ EOF
     local index=0;
     local devEffectiveSpace
 
-    for dev in ${mXbashModuleDataDevicesList[*]}
-    do
+    for dev in ${mXbashModuleDataDevicesList[*]} ; do
         devEffectiveSpace=$(ftDevAvailableSpace $dev)
         let devEffectiveSpace=devEffectiveSpace/1024
         echo -n "[${index}] ";printf "%-25s  " $dev;echo "可用：${devEffectiveSpace}G"
@@ -361,8 +359,7 @@ EOF
 
     ftEcho -sh 更新排除列表
     rm -rf $filePatheExclude > /dev/null
-    for dirpath in ${dirsExclude[@]}
-    do
+    for dirpath in ${dirsExclude[@]} ; do
      echo $dirpath >>$filePatheExclude
     done
 }
@@ -919,14 +916,12 @@ EOF
         y | Y )
             ftEcho -bh 开始同步!
 
-            for dirpath in ${dirPathArray[@]}
-            do
-            for dirpath2 in ${dirPathArray[@]}
-            do
-                if [ ${dirpath} != ${dirpath2} ]; then
-                    find $dirpath -regex "$fileTypeList" -exec cp {} -u -n -v -r $dirpath2 \;
-                fi
-            done
+            for dirpath in ${dirPathArray[@]} ; do
+                for dirpath2 in ${dirPathArray[@]} ; do
+                    if [ ${dirpath} != ${dirpath2} ]; then
+                        find $dirpath -regex "$fileTypeList" -exec cp {} -u -n -v -r $dirpath2 \;
+                    fi
+                done
             done
             ftEcho -s 同步结束！
             break;;
