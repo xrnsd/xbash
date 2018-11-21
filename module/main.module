@@ -39,16 +39,16 @@ if [ -f $rFilePathXbashModuleCommon ];then
             ftIniCreateFileOrTag -r -p $filePathXbashDataBaseUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
         fi
 
-        bashHistoryIncrementalSize=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryIncrementalSize)
-        bashHistorySize=$(awk 'END{print NR}' $filePathBashHistory)
-        if (($bashHistorySize>$bashHistorySizeBase)); then
-            ((bashHistorySize=$bashHistorySize+$bashHistoryIncrementalSize))
-            ftIniSetValue $filePathXbashDataBaseUser xbash bashHistoryThresholdSize $bashHistorySize
-        else
-            bashHistorySize=$bashHistorySizeBase
-        fi
-        export HISTSIZE=$bashHistorySize
-        export HISTFILESIZE=$bashHistorySize
+        # bashHistoryIncrementalSize=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryIncrementalSize)
+        # bashHistorySize=$(awk 'END{print NR}' $filePathBashHistory)
+        # if (($bashHistorySize>$bashHistorySizeBase)); then
+        #     ((bashHistorySize=$bashHistorySize+$bashHistoryIncrementalSize))
+        #     ftIniSetValue $filePathXbashDataBaseUser xbash bashHistoryThresholdSize $bashHistorySize
+        # else
+        #     bashHistorySize=$bashHistorySizeBase
+        # fi
+        # export HISTSIZE=$bashHistorySize
+        # export HISTFILESIZE=$bashHistorySize
     fi
 
     #bash PS1 配置
