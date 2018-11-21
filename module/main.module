@@ -68,7 +68,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
     if [ ! -z `which git` ];then
         export PROMPT_COMMAND='ftSetBashPs1ByGitBranch' #  if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then    ftSetBashPs1ByGitBranch ; fi
 
-        alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a'
+        alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
         alias xgl='effect=格式化显示20条git_log;ftGitLogShell -n 20'
         alias xgll='effect=格式化显示100条git_log;ftGitLogShell -n 100'
         alias xbrancha="effect=过滤git仓库所有分支;git branch -a|grep -i"

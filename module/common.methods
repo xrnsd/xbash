@@ -4121,10 +4121,12 @@ EOF
     local isCustomBranchLog
     local branchLogItemCount
     local branchLogItemCountDef=20
+    local pathTarget
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
     eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -a )   isAllBranchLog=true
+                pathTarget="${arg2}"
                 branchLogItemCount=0
                 ;;
         -t )
@@ -4154,7 +4156,8 @@ EOF
     gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
     if [[ ! -z "$isAllBranchLog" ]]; then
-       gitk --all
+       #git update-index --untracked-cache
+       gitk --all "${pathTarget}"
        return
     fi
 
@@ -4296,12 +4299,11 @@ EOF
 
 ftFind()
 {
-    local ftEffect=find简单封装
-    local content=$3
-    echo $1
-    echo $3
+    local ftEffect=find的简单封装
+    local content="$3"
+
     if [[ ! -z "$content" ]]; then
-        find $1 -name "$2" | xargs grep -e "$content"
+        find $1 -name "$2" | xargs grep -e "${content}"
         return
     fi
 
