@@ -1733,7 +1733,7 @@ EOF
                     ftEcho -y out已存在,选择
                     read -n 1 sel
                     case "$sel" in
-                        y | Y | -y  |  b  | B | b )    ftBackupOrRestoreOuts
+                        y | Y | -y  |  b  | B | b )    ftAutoBackupOrRestoreOuts
                                       break;;
                         d | D )    rm -rf $dirPathCodeOut
                                       break;;
@@ -2693,11 +2693,11 @@ EOF
 }
 
 #===================    非通用实现[高度耦合]    ==========================
-ftBackupOrRestoreOuts()
+ftAutoBackupOrRestoreOuts()
 {
     local ftEffect=Android编译生成out相关自动维护
     local isEnable=true
-    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftBackupOrRestoreOuts --df;return    ; fi
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoBackupOrRestoreOuts --df;return    ; fi
 
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
@@ -2708,10 +2708,10 @@ ftBackupOrRestoreOuts()
     -h | --help) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #    备份out
-#    ftBackupOrRestoreOuts 无参
+#    ftAutoBackupOrRestoreOuts 无参
 #    移动匹配out到当前项目
-#    ftBackupOrRestoreOuts -m
-#    ftBackupOrRestoreOuts -m xxx   #分支名包含xxx的out列表
+#    ftAutoBackupOrRestoreOuts -m
+#    ftAutoBackupOrRestoreOuts -m xxx   #分支名包含xxx的out列表
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -2734,7 +2734,7 @@ EOF
 
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
-        ftBackupOrRestoreOuts --env
+        ftAutoBackupOrRestoreOuts --env
         return
     fi
 
@@ -2744,7 +2744,7 @@ EOF
     if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftBackupOrRestoreOuts -h
+            ftAutoBackupOrRestoreOuts -h
             return
     fi
 
@@ -2757,6 +2757,7 @@ EOF
     local branchName="$AutoEnv_branchName"
 
     local dirNameCodeRootOuts=outs
+    local dirPathOutTop=${dirPathCode}/out
     local dirPathCodeRootOuts=${dirPathCode%/*}/${dirNameCodeRootOuts}
     local versionInfoDateTime=$(date -d "today" +"%y%m%d[%H:%M]")
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----${versionInfoDateTime}
@@ -2771,9 +2772,25 @@ EOF
     fi
 
     if [[ "$editType" = "-m" ]]; then
-        if [[ -d "$dirPathOut" ]]||[[ -d "${dirPathCode}/out" ]]; then
-            ftEcho -e "out已存在 ,请先备份"
-            return
+        if [[ -d "$dirPathOut" ]]||[[ -d "$dirPathOutTop" ]]; then
+            #lunch生成的out，视为无效
+            local excludeConfigInfo=($(ftIniGetValue $rFilePathXbashDataBase backupOrRestoreOutsInfo excludeConfig))
+            local excludeConfigSize=${#excludeConfigInfo[@]}
+            local dirPathOutTopInfo=($(ls $dirPathOutTop))
+            local dirPathOutTopSize=${#dirPathOutTopInfo[@]}
+            for item in ${excludeConfigInfo[@]} ; do
+                    item=${dirPathOutTop}/${item}
+                    if [[ ! -d "$item" ]]&&[[ ! -f "$item" ]]; then
+                        excludeConfigSize=0
+                        break;
+                    fi
+            done
+            if (( $excludeConfigSize == $dirPathOutTopSize )); then
+                rm -rf $dirPathOutTop
+            else
+                ftEcho -e "out已存在 ,请先备份"
+                return
+            fi
         fi
         local branchName=$filterString
         if [[ -z "$filterString" ]]; then
@@ -2808,12 +2825,11 @@ EOF
             fi
             dirNameOutTraget=${dirPathOutList[$tIndex]}
         fi
-        mv ${dirPathCodeRootOuts}/${dirNameOutTraget} ${dirPathCode}/out&&
-        ftEcho -s "移动 ${dirPathCodeRootOuts}/${dirNameOutTraget}\n 到  ${dirPathCode}/out"
+        mv ${dirPathCodeRootOuts}/${dirNameOutTraget} $dirPathOutTop&&
+        ftEcho -s "移动 ${dirPathCodeRootOuts}/${dirNameOutTraget}\n 到  ${dirPathOutTop}"
         return
     fi
 
-    local dirPathOutTop=${dirPathCode}/out
     if [ ! -d "$dirPathOutBranchVersion" ];then
         if [[ ! -d "$dirPathOutTop" ]]; then
              ftEcho -e "out 不存在"

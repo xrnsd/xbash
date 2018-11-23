@@ -608,9 +608,10 @@ EOF
     local versionName=${fileNameVersion%.*}
 
     if [ "$editType" = "setMd5" ]; then
-        ftEcho -s "备份包 : ${fileNameVersion} 正在记录MD5信息，请稍等"
+        ftEcho -s "正在记录备份包 : ${fileNameVersion} 的MD5信息，请稍等"
         local md5Code=$(md5sum $filePathVersion | awk '{print $1}')
         ftIniSetValue $filePathInfo $versionName MD5 $md5Code
+        ftEcho -s "已生成备份包 : ${fileNameVersion} 的MD5信息"
         return
     fi
 
