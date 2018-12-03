@@ -58,7 +58,7 @@ EOF
                 ftRestartAdb
                 break;;
     *)
-                ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -hc   #xbash对bash扩展实现说明"
+                ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -ft   #xbash对bash扩展实现说明"
             return;;
     esac
     done
