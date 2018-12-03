@@ -1,8 +1,4 @@
 #!/bin/bash
-#####---------------------  说明  ---------------------------#########
-# 不可在此文件中出现不被函数包裹的调用或定义
-# 人话，这里只放函数
-
 #####---------------------基础函数---------------------------#########
 
 _ftMain()
@@ -108,7 +104,7 @@ ftReadAllFt()
 
 ftTest()
 {
-    local ftEffect=函数demo调试
+    local ftEffect=函数demo调试_nodisplay
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
@@ -148,7 +144,7 @@ EOF
 
 ftEcho()
 {
-    local ftEffect=工具信息提示
+    local ftEffect=工具信息提示_nodisplay
     while true; do case "$1" in
     -h | --help) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
@@ -225,7 +221,7 @@ break;;
 
 ftTiming()
 {
-    local ftEffect=脚本操作耗时记录
+    local ftEffect=脚本操作耗时记录_nodisplay
 
     if [ -z "$mTimingStart" ]||[ "$1" = "-i" ];then
         mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
@@ -260,6 +256,43 @@ ftTiming()
         ftEcho -s "本技能耗时${hour}${minute}${second}  !"
     fi
     mTimingStart=
+}
+
+ftPath()
+{
+    local ftEffect=路径处理_nodisplay
+    local dirPath=$1
+    local fileName=$2
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftPath 路径       #去掉最后的斜杠
+#    ftPath 路径 文件  #正确拼接
+#=========================================================
+EOF
+    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    * ) break;;esac;done
+
+    #耦合校验
+    local valCount=2
+    local errorContent=
+    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    if [ -z "$dirPath" ];then    errorContent="${errorContent}\\n[路径字串不能为空]dirPath=$dirPath" ; fi
+    if [ ! -z "$errorContent" ];then
+            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftPath -h
+            return
+    fi
+        if [[ "${dirPath: -1}" = "/" ]]; then
+            dirPath=${dirPath%/*}
+        fi
+        if [[ -z "$fileName" ]]; then
+            echo $dirPath
+        else
+            echo ${dirPath}/${fileName}
+        fi
 }
 
 #####---------------------扩展函数---------------------------#########
@@ -1181,7 +1214,7 @@ EOF
 #版本号大小对比
 ftVersionComparison()
 {
-    local ftEffect=版本号大小比对beta
+    local ftEffect=版本号大小对比_nodisplay
     local isEnable=true
     if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftVersionComparison --df;return    ; fi
 
@@ -1604,43 +1637,6 @@ EOF
         fi
     done
     cd $dirPathLocal
-}
-
-ftPath()
-{
-    local ftEffect=路径处理
-    local dirPath=$1
-    local fileName=$2
-
-    while true; do case "$1" in
-    -h | --help) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftPath 路径       #去掉最后的斜杠
-#    ftPath 路径 文件  #正确拼接
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    #耦合校验
-    local valCount=2
-    local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$dirPath" ];then    errorContent="${errorContent}\\n[路径字串不能为空]dirPath=$dirPath" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftPath -h
-            return
-    fi
-        if [[ "${dirPath: -1}" = "/" ]]; then
-            dirPath=${dirPath%/*}
-        fi
-        if [[ -z "$fileName" ]]; then
-            echo $dirPath
-        else
-            echo ${dirPath}/${fileName}
-        fi
 }
 
 

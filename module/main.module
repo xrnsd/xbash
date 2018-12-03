@@ -51,9 +51,6 @@ if [ -f $rFilePathXbashModuleCommon ];then
         export HISTFILESIZE=$bashHistorySize
     fi
 
-    #bash PS1 配置
-    export PROMPT_COMMAND='ftSetBashPs1ByGitBranch -b'
-
     alias xc='effect=xbash主入口[旧];ftMain'
     alias xb='effect=系统维护;ftMaintainSystem'
     alias xd='effect=MTK下载工具;ftMtkFlashTool'
@@ -66,6 +63,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
     alias xu='effect=打开xbash配置文件;gedit  $filePathUserConfig $filePathXbashTragetBashrcBase $filePathXbashTragetBashrcConfigBase'
 
     if [ ! -z `which git` ];then
+        #bash PS1 配置
         export PROMPT_COMMAND='ftSetBashPs1ByGitBranch' #  if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then    ftSetBashPs1ByGitBranch ; fi
 
         alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
