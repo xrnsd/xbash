@@ -1,4 +1,8 @@
 #!/bin/bash
+#####---------------------  说明  ---------------------------#########
+# 不可在此文件中出现不被函数包裹的调用或定义
+# 人话，这里只放函数
+
 ftRestoreOperate()
 {
     local ftEffect=根据备份包还原系统
@@ -52,7 +56,7 @@ EOF
                 ftEcho -e 未找到备份包:${filePathVersion}
                 return
             fi
-            sudo tar --use-compress-program=pigz -xvpf $filePathVersion --exclude=$dirPathRestoreExclude -C $dirPathRestoreTarget  #2>&1 |tee $mFilePathLog
+            sudo tar --use-compress-program=pigz -xvpf $filePathVersion --exclude=$dirPathRestoreExclude -C /
             break;;
         n | N | q |Q)  exit;;
         * ) ftEcho -e 错误的选择：$sel
@@ -100,94 +104,56 @@ EOF
             return
     fi
 
-    local suffixName=$(ftIniGetValue $filePathIni $tagNameMaintain backupPackageSuffixName)
-    local dirPathStore=$(ftIniGetValue $filePathIni $tagNameMaintain dirPathStore)
-    local fileList=$(find "$dirPathStore" -type f -name "*.${suffixName}")
+    local suffixName=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
+    local dirPathStore=$(ftIniGetValue $filePathIniMaintain $tagNameMaintain dirPathStore)
+    local filePathList=($(find ${dirPathStore} -name "*.${suffixName}"))
 
-    if [ -z "$fileList" ];then
+    if [ -z "$filePathList" ];then
         ftEcho -ex 在${dirPathStore}没找到有效的备份包
+        exit
     else
-        ftEcho -b 请${ftEffect}
-        echo "[序号]        备份包名    ----------------    备注        "
-        echo
-        for file in $fileList
-        do
-            local versionName=${file%.*}
+        ftEcho -bh 请${ftEffect}
+        local index=0
+        printf "%-2s %-36s %-50s\n\n" 序号 备份包版本号 版本备注
+        for filePath in ${filePathList[*]} ; do
+            local fileName=$(basename $filePath)
+            local versionName=${fileName%.*}
             local note=$(ftIniGetValue $filePathIni $versionName backupPackageNote)
-            if [[ -z "$note" ]]; then
-               fileList[$index]="null"
-               note="无效版本，无相关记录"
-               continue
-            fi
-            echo [ ${index} ] ${versionName}"   ----------------   "${note}
+            note=${note:-'无效版本，无相关记录'}
+            printf "[%-2d] %-30s %-50s\n" ${index} ${versionName} ${note}
             ((index+=1))
         done
         while true; do
+            local index=0
             ftEcho -r  "请输入备份包对应的序号(回车默认0):"
-            if [ ${#fileList[@]} -gt 9 ];then
-                read tIndex
+            if (( ${#filePathList[@]}>9 ));then
+                read index
             else
-                read -n 1 tIndex
-            fi
+                read -n 1 index
+            fi;echo
+
             #设定默认值
-            if [ ${#tIndex} == 0 ]; then
-                tIndex=0
+            if [ ${#index} == 0 ]; then
+                index=0
             fi
 
-            while [[ ${fileList[$tIndex]} = "null" ]]; do
-                ((tIndex=$tIndex+1))
-            done
-
-            if ( echo -n $tIndex | grep -q -e "^[0-9][0-9]*$");then
-                ftIniSetValue $tagNameMaintain $tagNameMaintain fileNameBackupVersion "${fileList[$tIndex]}"
-                break;
-            else
-                ftEcho -e 错误的选择：$tIndex ;echo  "输入1,2...... 选择    输入 n，q 离开"
+            if ( ! echo -n $index | grep -q -e "^[0-9][0-9]*$");then
+                ftEcho -e 错误的选择：$index ;echo  "输入1,2...... 选择    输入 n，q 离开"
+                continue;
             fi
+
+            local filePath=${filePathList[$index]}
+            if [ ! -f "$filePath" ];then
+                ftEcho -e  "备份包:${filePath}不存在"
+                continue;
+            fi
+
+            local fileName=$(basename $filePath)
+            local dirPathStore=$(dirname $filePath)
+            ftIniSetValue $filePathIniMaintain $tagNameMaintain fileName "$fileName"
+            ftIniSetValue $filePathIniMaintain $tagNameMaintain dirPathStore "$dirPathStore"
+            break;
         done
-    fi
-}
-
-ftEchoInfo()
-{
-    local ftEffect=脚本操作信息显示，用于关键操作前的确认
-
-    while true; do case "$1" in
-    -h | --help) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftEchoInfo [editType]
-#    ftEchoInfo backup/restore
-#=========================================================
-EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
-    * ) break;;esac;done
-
-    #参数解析
-    local infoType
-
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -b )   infoType="backup"
-           ;;
-        -r )   infoType="restore"
-           ;;
-    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
-    #耦合校验
-    local errorContent=
-    if [ -z "$infoType" ];then    errorContent="${errorContent}\\n[显示信息类型为空]infoType=$infoType" ; fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftEchoInfo -h
-            return
-    fi
-
-    ftEcho -bh 请确认下面信息
-    if [ $infoType = "restore" ];then
-
-    elif [ $infoType = "backup" ];then
-    else
-        ftEcho -ex 一脸懵逼
     fi
 }
 
@@ -245,8 +211,7 @@ EOF
     local index=0;
     local devEffectiveSpace
 
-    for dev in ${mXbashModuleDataDevicesList[*]}
-    do
+    for dev in ${mXbashModuleDataDevicesList[*]} ; do
         devEffectiveSpace=$(ftDevAvailableSpace $dev)
         let devEffectiveSpace=devEffectiveSpace/1024
         echo -n "[${index}] ";printf "%-25s  " $dev;echo "可用：${devEffectiveSpace}G"
@@ -277,17 +242,14 @@ EOF
          ftEcho -e 错误的选择：$dir
     done
 
-    local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}
-
     case "$editType" in
     backup )
-        if [ ! -d $dirPathStoreSource ];then
-            mkdir -p $dirPathStoreSource
-        fi
+        local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}/${versionName}
         ;;
     restore )
+        local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}
         if [ ! -d $dirPathStoreSource ];then
-            ftEcho -ex [$dirPathStoreSource]不存在,将退出
+            ftEcho -ex ${dirPathStoreSource}不存在,将退出
             return;
         fi
         ;;
@@ -395,10 +357,9 @@ EOF
         exit
     fi
 
-    ftEcho -bh 开始更新排除列表
+    ftEcho -sh 更新排除列表
     rm -rf $filePatheExclude > /dev/null
-    for dirpath in ${dirsExclude[@]}
-    do
+    for dirpath in ${dirsExclude[@]} ; do
      echo $dirpath >>$filePatheExclude
     done
 }
@@ -447,20 +408,18 @@ EOF
     while true; do
         ftEcho -r  "请选择还原设置(回车默认忽略home):"
         read -n 1 typeIndex
+        echo
 
         #设定默认值
         if [ ${#typeIndex} == 0 ]; then
             typeIndex=1
         fi
         case $typeIndex in
-        1 | 2)break;;
-        n | N | q |Q)    exit;;
-        * )        ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";break;;
-    esac
-    done
-    case $typeIndex in
-        1 )        ftIniSetValue $filePathIniMaintain $tagNameMaintain dirPathRestoreExclude $rDirPathUserHome;break;;
-    esac
+            1) ftIniSetValue $filePathIniMaintain $tagNameMaintain dirPathRestoreExclude $rDirPathUserHome;break;;
+            2) break;;
+            n | N | q |Q)    exit;;
+            * )        ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";break;;
+    esac;done
 }
 
 ftBackupOs()
@@ -479,10 +438,13 @@ EOF
     #参数解析
     local filePathIni
     local versionName
+    local filePathIniMaintain
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
     eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
                   -p )   filePathIni="$arg2"
+                     ;;
+                  -pm )   filePathIniMaintain="${arg2}"
                      ;;
                   -v )   versionName="$arg2"
                      ;;
@@ -490,6 +452,7 @@ EOF
     #耦合校验
     local errorContent=
     if [ ! -f "$filePathIni" ];then    errorContent="${errorContent}\\n[信息路径为空]filePathIni=$filePathIni" ; fi
+    if [ ! -f "$filePathIniMaintain" ];then    errorContent="${errorContent}\\n[工具数据库文件不存在]filePathIniMaintain=$filePathIniMaintain" ; fi
     if [ -z "$versionName" ];then    errorContent="${errorContent}\\n[版本号为空]versionName=$versionName" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
@@ -497,8 +460,12 @@ EOF
             return
     fi
 
-    local fileNameVersion=$(ftIniGetValue $filePathVersionInfoVersion $infoVersionName $versionName fileName)
-    local filePathVersion=$(ftIniGetValue $filePathVersionInfoVersion $infoVersionName $versionName dirPathStore)/${fileNameVersion}
+    local fileNameVersion=$(ftIniGetValue $filePathVersionInfoVersion  $versionName fileName)
+    local dirPathStore=$(ftIniGetValue $filePathVersionInfoVersion $versionName dirPathStore)
+    local fileNameExclude=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo filePatheExclude)
+
+    local filePathVersion=${dirPathStore}/${fileNameVersion}
+    local filePathVersionLog=${dirPathStore}/${fileNameVersion%.*}.log
     while true; do
         ftEcho -y 是否开始备份[回车默认为y ]
         read -n 1 sel
@@ -530,11 +497,13 @@ EOF
                         sudo rm -rf /var/cache/apt/archives
                     #生成备份包
                         ftEcho -bh 开始${ftEffect}
-                        sudo tar --use-compress-program=pigz -cvPf $filePathVersion --exclude-from=$fileNameExclude / # 2>&1 |tee $mFilePathLog
+                        if [ ! -d $dirPathStore ];then
+                            mkdir -p $dirPathStore
+                        fi
+                        sudo tar --use-compress-program=pigz -cvPf $filePathVersion --exclude-from=$fileNameExclude /  2>&1 |tee $filePathVersionLog
+                    #扫尾
                         rm $fileNameExclude>/dev/null
-                    # 清除权限限制
-                        chmod 777 -R $filePathStore
-                        chmod 777 $filePathVersionInfo
+                        chmod 777 -R $dirPathStore
                         break;;
             n | N | q |Q)  return ;;
             * ) ftEcho -e 错误的选择：$sel
@@ -635,24 +604,30 @@ EOF
             return
     fi
 
-    local fileNameVersion=$(basename $filePath)
-    fileNameVersion=${fileNameVersion%.*}
+    local fileNameVersion=$(basename $filePathVersion)
+    local versionName=${fileNameVersion%.*}
 
     if [ "$editType" = "setMd5" ]; then
-        local md5Code=$(md5sum $filePath | awk '{print $1}') 
-        ftIniSetValue $filePathInfo $fileNameVersion MD5 $md5Code
+        ftEcho -s "正在记录备份包 : ${fileNameVersion} 的MD5信息，请稍等"
+        local md5Code=$(md5sum $filePathVersion | awk '{print $1}')
+        ftIniSetValue $filePathInfo $versionName MD5 $md5Code
+        ftEcho -s "已生成备份包 : ${fileNameVersion} 的MD5信息"
         return
     fi
 
     if [ "$editType" = "checkMd5" ]; then
-        local Md5Code=$(ftIniGetValue $filePathInfo $fileNameVersion MD5)
+        ftEcho -bh "备份包 : ${versionName} 检验MD5信息"
+        local Md5Code=$(ftIniGetValue $filePathInfo $versionName MD5)
         if [[ -z "$Md5Code" ]]; then
             ftEcho -e "未找到备份包 : ${fileNameVersion}  的原始MD5"
-            return;
+            exit
         fi
-        local Md5CodeNow=$(md5sum $filePath | awk '{print $1}')
+        local Md5CodeNow=$(md5sum $filePathVersion | awk '{print $1}')
         if [ "$Md5CodeNow"x != "$Md5Code"x ]; then
-            echo "MD5检验失败，码不一致"
+            ftEcho -e "MD5检验失败，码不一致"
+            exit
+        else
+            ftEcho -s "备份包 : ${versionName} 检验MD5成功"
         fi
     fi
 }
@@ -720,16 +695,16 @@ EOF
 
         ftIniSetValue $filePathInfo $versionName $keyCpu $infoHwCpu
         ftIniSetValue $filePathInfo $versionName $keyMainboard $infoHwMainboard
-        ftIniSetValue $filePathInfo $versionName $keySystemVersion $keySystemVersion
+        ftIniSetValue $filePathInfo $versionName $keySystemVersion $infoHwSystem
         ftIniSetValue $filePathInfo $versionName $keySystemType $infoHw32x64
 
-        ftEcho -s 版本${versionName}相关系统信息记录完成
+        ftEcho -sh 版本${versionName}相关系统信息记录完成
         return
     fi
 
     if [ ${editType} == "check" ]; then
 
-        ftEcho -b 检查备份包和当前系统兼容程度
+        ftEcho -bh 检查备份包和当前系统兼容程度
 
         local infoHwCpuVersion=$(ftIniGetValue  $filePathInfo $versionName $keyCpu)
         local infoHwMainboardVersion=$(ftIniGetValue  $filePathInfo $versionName $keyMainboard)
@@ -776,8 +751,10 @@ EOF
             returns=不兼容
         fi
         if [ ! -z "$returns" ]; then
-                ftEcho -s 备份包：${dirNameBackupInfoVersion}系统兼容性检测结果为${returns}
-                return 9
+            ftEcho -s "备份包：${versionName} 系统兼容性检测结果为${returns}"
+            return 9
+        else
+            ftEcho -s "备份包：${versionName} 兼容当前系统"
         fi
     fi
 }
@@ -871,19 +848,14 @@ EOF
                             ftEcho -e 设备[${devDirPath}]上的同名备份包[${versionName}]不兼容
                             break
                         fi
-                        #实现逻辑有问题暂时屏蔽
-                        # if [ ! -z "$(ftMD5 -c $dirPathTarget -p $filePathIni)" ];then
-                        #     ftEcho -e 设备[${devDirPath}]上的同名备份包[${versionName}]无效
-                        #     break
-                        # fi
 
                         #复制备份包
                         local filePathVersion=${dirPathStore}/${fileName}
                         cp -rf -v $filePathversionNameTarget $filePathVersion
 
                         #清除权限限制
-                        chmod 777 $filePathVersion
-                    n | N | q |Q)break;;
+                        chmod 777 $filePathVersion ;;
+                    n | N | q |Q) return ;;
                     * ) ftEcho -e 错误的选择：$sel
                          echo "输入n，q，离开";;
             esac; done
@@ -945,14 +917,12 @@ EOF
         y | Y )
             ftEcho -bh 开始同步!
 
-            for dirpath in ${dirPathArray[@]}
-            do
-            for dirpath2 in ${dirPathArray[@]}
-            do
-                if [ ${dirpath} != ${dirpath2} ]; then
-                    find $dirpath -regex "$fileTypeList" -exec cp {} -u -n -v -r $dirpath2 \;
-                fi
-            done
+            for dirpath in ${dirPathArray[@]} ; do
+                for dirpath2 in ${dirPathArray[@]} ; do
+                    if [ ${dirpath} != ${dirpath2} ]; then
+                        find $dirpath -regex "$fileTypeList" -exec cp {} -u -n -v -r $dirpath2 \;
+                    fi
+                done
             done
             ftEcho -s 同步结束！
             break;;

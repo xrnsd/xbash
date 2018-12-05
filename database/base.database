@@ -1,6 +1,6 @@
 #xbash
 [xbash]
-bashHistorySize=6000
+bashHistoryThresholdSize=3000
 bashHistoryIncrementalSize=1000
 
 #开发用
@@ -50,7 +50,7 @@ sp7731c_1h10_32v4_oversea=SPRD7731C
 full_m9_qhd=MTK6580M
 
 [lzProjrctConfigSoftwarePackageFileLIst]
-full_keytak6580_weg_l_fileList= \
+full_keytak6580_weg_l= \
     boot.img \
     cache.img \
     lk.bin \
@@ -60,8 +60,9 @@ full_keytak6580_weg_l_fileList= \
     recovery.img \
     secro.img \
     system.img \
-    userdata.img
-full_m9_qhd_fileList= \
+    userdata.img \
+    preloader_keytak6580_weg_l.bin
+full_m9_qhd= \
     boot.img \
     cache.img \
     lk.bin \
@@ -229,3 +230,6 @@ dirPathPackageLocal=/media/server/1.55/nfs/
 [projectSoftwareReadMeInfo]
 recordCreator=吴国献 [17178686576 / lz_wuguoxian@163.com]
 recordMeTag=请在给客户发送软件时,通知下面这位添加软件版本修改的版本TAG,方便后期追溯
+
+[backupOrRestoreOutsInfo]
+excludeConfig=lz.macros

@@ -29,10 +29,10 @@ git checkout "$branchName"&&
 git pull
 source build/envsetup.sh &&
 lunch full_m9_qhd-user&&
-ftBackupOrRestoreOuts&&
+ftAutoBackupOrRestoreOuts&&
 make -j6&&
 ftAutoPacket -a&&
-ftBackupOrRestoreOuts
+ftAutoBackupOrRestoreOuts
 
 
 

@@ -1,6 +1,6 @@
 [ubuntuMaintainConfigInfo]
 backupPackageSuffixName=tgz
-filePatheExclude=~/.cache/exclude.list
+filePatheExclude=/tmp/exclude.list
 dirPathsExcludeListSys= \
     /proc \
     /android \
@@ -91,4 +91,3 @@ dirPathsExcludeListHomeBase= \
     .rpmdb \
     w7_170815.desktop \
     .xsession-errors
-

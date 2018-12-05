@@ -1,5 +1,5 @@
 #!/bin/bash
-#####-----------------------变量初始化------------------------------#########
+#####-----------------------变量初始化-----------------------#########
 local exceptionContent=
 # 获取xbash所在目录 获取用户名,用户名对应密码
 # 根据 config/example.config 新建 config/用户名.config，在.gitignore中插入记录
@@ -26,7 +26,7 @@ while [[ status -ne "0" ]]; do
     status=$?
 done||exceptionContent=" 用户信息配置初始化失败"
 
-#####-----------------------配置文件生成------------------------------#########
+#####-----------------------配置文件生成-----------------------#########
 # git config
 if [ -z `which git` ];then
         echo $userPasswdLocal | sudo -p '' -S apt-get install  git ||(echo git安装失败，请重新安装;return)
@@ -41,48 +41,51 @@ if [ ! -f "$filePathGitConfig" ];then
 fi||exceptionContent="${exceptionContent}\n git配置初始化失败"
 
 # config
-        fileNameXbashConfigNew=${userNameLocal}.config
-        dirPathXbashConfigBashrc=${dirPathLocal}/config/user
+        dirPathXbashConfigBashrc=${dirPathLocal}/config
         filePathXbashConfigExample=${dirPathXbashConfigBashrc}/expmale.config
-        filePathXbashConfigNew=${dirPathXbashConfigBashrc}/${fileNameXbashConfigNew}
+        filePathXbashConfigNew=${dirPathXbashConfigBashrc}/user/${userNameLocal}.config
 
-        taguserPasswordBase="export\ userPassword="
-        taguserPasswordNew="export\ userPassword=$userPasswdLocal"
+        if [[ -f "$filePathXbashConfigExample" ]]; then
+            taguserPasswordBase="export\ userPassword="
+            taguserPasswordNew="export\ userPassword=$userPasswdLocal"
 
-        cp $filePathXbashConfigExample $filePathXbashConfigNew
+            cp $filePathXbashConfigExample $filePathXbashConfigNew
 
-        sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败"
+            sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败"
+        else
+            exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败"
+        fi
 
-# bash
-        filePathXbashModuleBashrcNew=${userNameLocal}/main.xbashrc
-        if [[ ! -f "$filePathXbashModuleBashrcNew" ]]; then
+# module
+        dirPathXbashModuleBashrc=${dirPathLocal}/module/user
+        filePathXbashModuleUser=${dirPathXbashModuleBashrc}/${userNameLocal}.module
+        filePathXbashModuleBashrcNew=${dirPathLocal}/main
+        dirPathHomeLocal=/home/${userNameLocal}
+        filePathHomeLocalConfig=${dirPathHomeLocal}/.bashrc
+
+        mkdir $dirPathXbashModuleBashrc > /dev/null
+        echo "#! /bin/bash" > $filePathXbashModuleUser
+
+        if [[ -f "$filePathXbashModuleBashrcNew" ]]; then
+            mv ${filePathHomeLocalConfig} ${filePathHomeLocalConfig}_backup
+            ln -s $filePathXbashModuleBashrcNew $filePathHomeLocalConfig
+        else
             exceptionContent="${exceptionContent}\n xbash生效初始化失败"
         fi
 
 #.inputrc
         fileNameXbashModuleBashrcInputrcBase=bash_input.module
         fileNameXbashModuleBashrcInputrcTraget=.inputrc
-        filePathXbashModuleBashrcInputrc=${userNameLocal}/module/${fileNameXbashModuleBashrcInputrcTraget}
-        if [[ ! -f "$filePathXbashModuleBashrcInputrc" ]]; then
+        filePathXbashModuleBashrcInputrc=${userNameLocal}/module/${fileNameXbashModuleBashrcInputrcBase}
+        filePathHomeLocalConfigInputrc=${dirPathHomeLocal}/${fileNameXbashModuleBashrcInputrcTraget}
+        if [[ -f "$filePathXbashModuleBashrcInputrc" ]]; then
+            mv ${filePathHomeLocalConfigInputrc} ${filePathHomeLocalConfigInputrc}_backup
+            ln -s $filePathXbashModuleBashrcInputrc $filePathHomeLocalConfigInputrc
+        else
             exceptionContent="${exceptionContent}\n xbash配置的命令历史适配逻辑初始化失败"
         fi
 
-#自定义配置
-#1 bashrc PS1 显示git branch 名字
-#2 bashrc 历史 自动备份去重复
-#3 
-
-#####-----------------------配置生效------------------------------#########
-dirPathHomeLocal=/home/${userNameLocal}
-filePathHomeLocalConfig=${dirPathHomeLocal}/.bashrc
-
-mv ${filePathHomeLocalConfig} ${filePathHomeLocalConfig}_backup
-ln -s $filePathXbashModuleBashrcNew $filePathHomeLocalConfig
-
-filePathHomeLocalConfigInputrc=${dirPathHomeLocal}/${fileNameXbashModuleBashrcInputrc}
-mv ${filePathHomeLocalConfigInputrc} ${filePathHomeLocalConfigInputrc}_backup
-ln -s $filePathXbashModuleBashrcInputrc $filePathHomeLocalConfigInputrc
-
+#####-----------------------配置生效-----------------------#########
 #if [ ! -z `which git` ];then
     cd $dirPathLocal
     branchName="user_${userNameLocal}"
@@ -93,7 +96,7 @@ ln -s $filePathXbashModuleBashrcInputrc $filePathHomeLocalConfigInputrc
     echo "commit config by $userNameLocal"
 #fi
 
-#####------------------初始化结果信息显示-----------------------#########
+#####-----------------------初始化结果信息显示-----------------------#########
 if [[ -z "$exceptionContent" ]]; then
     echo "$diaNameLocal 初始化成功"
 else
