@@ -141,7 +141,7 @@ else
                     return
             fi
             mkdir $dirPathHomeXbashConfigBashrc > /dev/null
-            cp -rf -v $filePathExpmaleConfig $filePathUserConfig
+            cp -rf $filePathExpmaleConfig $filePathUserConfig
         fi
         source $filePathUserConfig&& export filePathUserConfig=$filePathUserConfig
 
