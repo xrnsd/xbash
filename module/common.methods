@@ -2840,10 +2840,11 @@ EOF
             touch $filePathGitLogInfo
         fi
         echo -e "
+
 ======================================================================================================
 $dirNameBranchVersion
 ======================================================================================================
-    $(ftGitLogShell  -n 20 -c "%h  %s")" >> $filePathGitLogInfo
+$(ftGitLogShell  -n 20 -c "%h  %s")" >> $filePathGitLogInfo
         mv ${dirPathOutTop}/ $dirPathOutBranchVersion&&
         ftEcho -s "移动 $dirPathOutTop \n到  ${dirPathCodeRootOuts}/${dirNameBranchVersion}"
     else
@@ -3320,6 +3321,9 @@ EOF
                              fi
                              printf "%-2s %-30s\n" 复制 $file
                              cp -r -f  $filePath $dirPathPackage
+                             # rsync --progress  $filePath $dirPathPackage
+                             # printf "\033[0;32;36m 复制 $file\n\033[0m"
+                             # pv $filePath > ${dirPathPackage}/${file}
                         done
                     else
                         ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage"
