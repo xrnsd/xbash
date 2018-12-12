@@ -96,7 +96,6 @@ ftReadAllFt()
                 continue;
             fi
             effectName=${effectName//()/}
-            #echo "$effectName $effectDescription"
 
             printf "%40s  " $effectName;echo $effectDescription
         done
@@ -3997,6 +3996,7 @@ EOF
                         ftMD5  -p $filePathVersionInfo -s $filePathStore
                     #把备份同步到不同设备上
                         # ftSynchronous -d "${mXbashModuleDataDevicesList[*]}" -s ".*\.tgz"
+                        ftEcho -s "备份完成"
                     cd $dirPathLocal; ;;
         restore )
                     local tagNaeMaintain=restoreConfigInfo
@@ -4028,6 +4028,7 @@ EOF
                         ftRestoreOperate -pm $filePathVersionInfoMaintain -t  $tagNaeMaintain -d "/"
                     #删除还原版本信息
                         ftIniDeleteTag -p $filePathVersionInfoMaintain -t $tagNaeMaintain
+                        ftEcho -s "还原结束"
                     ;;
         sdFinish )
                     if [ -z $(which e4defrag) ];then
@@ -4256,7 +4257,13 @@ EOF
     local filePathLogMonkey=${dirPathLogMonkey}/monkey.log
     local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
     local logcatFlag="*:E"
-    local monkeyConfig="--ignore-crashes --ignore-timeouts --ignore-security-exceptions -p com.android.launcher3 -v -v -v ${eventCount}"
+    local monkeyConfig
+    monkeyConfig=${monkeyConfig}" --wait-dbg"
+    monkeyConfig=${monkeyConfig}" --hprof"
+    monkeyConfig=${monkeyConfig}" --ignore-crashes --ignore-timeouts --ignore-security-exceptions"
+    monkeyConfig=${monkeyConfig}" -p com.android.launcher3"
+    monkeyConfig=${monkeyConfig}" -v -v -v"
+    monkeyConfig=${monkeyConfig}" ${eventCount}"
 
     if [[ ! -d $dirPathLogMonkey ]]; then
         mkdir -p $dirPathLogMonkey
