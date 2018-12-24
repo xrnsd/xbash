@@ -66,10 +66,4 @@ EOF
           return
     fi
 }
-# ==============================================================================================================
-# NullPointer="java.lang.NullPointerException"
-# IllegalState="java.lang.IllegalStateException"
-# IllegalArgument="java.lang.IllegalArgumentException"
-# ArrayIndexOutOfBounds="java.lang.ArrayIndexOutOfBoundsException"
-# RuntimeException="java.lang.RuntimeException"
-# SecurityException="java.lang.SecurityException"
+# ============================================================================================================== packages

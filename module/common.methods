@@ -1638,39 +1638,20 @@ EOF
 
 
 #####---------------------工具函数---------------------------#########
-
-ftAutoBuildMultiBranch()
+ftAutoAddGitPatch()
 {
-    local ftEffect=多分支串行编译
+    local ftEffect=批量添加git_patch
     local isEnable=true
-    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoBuildMultiBranch --df;return    ; fi
+    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoAddGitPatch --df;return    ; fi
 
     local filePathBranchList=branch.list
     local dirPathCode=$ANDROID_BUILD_TOP
-    local dirPathCodeOut=$ANDROID_PRODUCT_OUT
-    
-    local editType=$1
-    local timeLong=$2
-
-    if (  echo -n $editType | grep -q -e "^[0-9][0-9]*$")&&[[ -z "$timeLong" ]];then
-        timeLong=$editType
-        edittype=
-    fi
-    editType=${editType:-'-b'}
 
     while true; do case "$1" in
     -h | --help) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftAutoBuildMultiBranch 无参
-#
-#    ftAutoBuildMultiBranch -u 上传版本软件
-#    ftAutoBuildMultiBranch -b 备份out
-#    ftAutoBuildMultiBranch -ub或-bu 上传,备份out
-#    ftAutoBuildMultiBranch -a 上传,备份out
-#
-#    ftAutoBuildMultiBranch 时间[秒]   延时操作
-#    ftAutoBuildMultiBranch -xx 时间[秒]   延时操作
+#    ftAutoAddGitPatch 无参
 #=========================================================
 EOF
     if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
@@ -1693,53 +1674,19 @@ EOF
 
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ];then
-        ftAutoBuildMultiBranch --env
+        ftAutoAddGitPatch --env
         return
     fi
-    local valCount=2
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
     if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftAutoBuildMultiBranch -h
+            ftAutoAddGitPatch -h
             return
     fi
 
-    local isUpload=
-    local isBackupOut=
-    if [ -z "$1" ];then
-        ftEcho -s "将不会上传软件包，备份out"
-    else
-        editType=$(echo $editType | tr '[A-Z]' '[a-z]')
-        if (( $(expr index $editType "a") != "0" ));then
-             isUpload=true
-             isBackupOut=true
-        else
-            if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
-            if (( $(expr index $editType "b") != "0" ));then   isBackupOut=true ; fi
-        fi
-    fi
-    if [ -d "$dirPathCodeOut" ];then
-         while true; do
-                    echo
-                    ftEcho -y out已存在,选择
-                    read -n 1 sel
-                    case "$sel" in
-                        y | Y | -y  |  b  | B | b )    ftAutoBackupOrRestoreOuts
-                                      break;;
-                        d | D )    rm -rf $dirPathCodeOut
-                                      break;;
-                        n | N |q | Q |e |E)    break;;
-                        * ) ftEcho -e 错误的选择：$sel
-                            echo "输入n/q/e 按键跳过"
-                            ;;
-                    esac
-            done
-    fi
-
     cd $dirPathCode
-    echo $PWD
+
     if [ ! -z "$(pgrep -f gedit)" ];then
             while true; do
                     echo
@@ -1772,26 +1719,13 @@ EOF
                     read -n 1 select
                     case "$select" in
                         y | Y )
-                                        if [[ ! -z "$timeLong" ]]; then
-                                            tput sc
-                                            for i in `seq -w $timeLong -1 1` ; do
-                                                echo -ne "\033[1;31m将在${i}秒开始编译，ctrl+c 取消\033[0m"
-                                                tput rc
-                                                tput ed
-                                                sleep 1
+                                        local filePathAddPatchTool=${rDirPathXbashModule}/git/multiBranch.module
+                                        if [[ -f $filePathAddPatchTool  ]]; then
+                                            cat $filePathBranchList | while read branchName ; do
+                                                    $filePathAddPatchTool $branchName
                                             done
+                                            git reset --hard
                                         fi
-                                        cat $filePathBranchList | while read line ; do
-                                            local branchName=$line
-                                            git reset --hard&&
-                                            ftEcho -bh 将开始编译$branchName
-                                            git checkout   "$branchName"||git reset --hard
-                                            # git pull
-
-                                            git push
-
-                                        done
-                                        git reset --hard
                                        break;;
                         n | N)    break;;
                         q |Q)    exit;;
