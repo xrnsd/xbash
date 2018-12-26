@@ -112,14 +112,14 @@ ftTest()
 #    ftTest 任意参数
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local valCount=1
     local errorContent=
-    if [ ! -d "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome" ; fi
-    if [ ! -f "$rFilePathXbashModuleTest" ];then    errorContent="${errorContent}\\n[测试模块不存在]filePathXbashModuleTest=$rFilePathXbashModuleTest" ; fi
+    [ ! -d "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome"
+    [ ! -f "$rFilePathXbashModuleTest" ] && errorContent="${errorContent}\\n[测试模块不存在]filePathXbashModuleTest=$rFilePathXbashModuleTest"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftTest -h
@@ -159,7 +159,7 @@ ftEcho()
 #    ftEcho    -s    内容    # 执行信息，对字符串的缩进敏感
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     option=$1
@@ -177,7 +177,7 @@ EOF
 
     e | E | -e | -E)        echo -e "\033[1;31m$content\033[0m"; break;;
     ex | EX | -ex | -EX)    echo -e "\033[1;31m$content\033[0m"
-                if [ "$XMODULE" = "env" ];then    return ; fi
+                [ "$XMODULE" = "env" ] && return 
                 exit;;
     s | S | -s | -S)        echo -e "\033[1;33m$content\033[0m"; break;;
     -sh | -SH)        echo;echo -e "\033[1;33m$content\033[0m";echo; break;;
@@ -271,14 +271,14 @@ ftPath()
 #    ftPath 路径 文件  #正确拼接
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local valCount=2
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$dirPath" ];then    errorContent="${errorContent}\\n[路径字串不能为空]dirPath=$dirPath" ; fi
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ -z "$dirPath" ] && errorContent="${errorContent}\\n[路径字串不能为空]dirPath=$dirPath"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftPath -h
@@ -317,14 +317,14 @@ ftIniGetValue()
 #    ftIniGetValue -f [文件路径] [目标块TAG] [键名]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #参数解析
@@ -342,7 +342,7 @@ EOF
     #耦合校验
     local valCount=3
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[文件不存在]filePath=$filePath"
     else
         testBockName=$(cat $filePath|grep $blockName)
@@ -405,14 +405,14 @@ ftIniSetValue()
 #    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l "11 22 33 44"  #写入数组
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
 * )break;; esac;done
 
     #参数解析
@@ -477,21 +477,21 @@ ftIniCheckConfigSyntax()
 #    ftIniCheckConfigSyntax 123/config.ini
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * )break;; esac;done
 
     #耦合校验
     local valCount=1
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ ! -f "$filePath" ] && errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftIniCheckConfigSyntax -h
@@ -551,14 +551,14 @@ ftIniDeleteTag()
 #    ftIniDeleteTag -p ini文件路径 -t TAG块名
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #参数解析
@@ -574,8 +574,8 @@ EOF
     * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
     #耦合校验
     local errorContent=
-    if [ -z "$tagName" ];then    errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName" ; fi
-    if [ ! -f "$filePathIni" ];then  errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni" ; fi
+    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
+    [ ! -f "$filePathIni" ] && errorContent="${errorContent}}\\n[文件不存在]filePathIni=$filePathIni"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftIniDeleteTag -h
@@ -621,14 +621,14 @@ ftIniDeleteItem()
 #    ftIniDeleteItem -p ini文件路径 -t TAG块名 -i item名
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #参数解析
@@ -648,9 +648,9 @@ EOF
 
     #耦合校验
     local errorContent=
-    if [ -z "$itemName" ];then    errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName" ; fi
-    if [ -z "$tagName" ];then    errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName" ; fi
-    if [ ! -f "$filePathIni" ];then  errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni" ; fi
+    [ -z "$itemName" ] && errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName"
+    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
+    [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftIniDeleteItem -h
@@ -698,14 +698,14 @@ ftIniCreateFileOrTag()
 #    ftIniCreateFileOrTag  -r -p 文件路径 -t 块名 -l 块对应的键值对列表
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #参数解析
@@ -729,9 +729,9 @@ EOF
     * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
     #耦合校验
     local errorContent=
-    if [ -z "$filePathIni" ];then   errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]" ; fi
-    if [ -z "$contentTagName" ];then    errorContent="${errorContent}\\n[块名为空]contentTagName=$contentTagName" ; fi
-    if [ -z "$contentTagKeyValList" ];then    errorContent="${errorContent}\\n[块对应的列表为空]contentTagKeyValList=$contentTagKeyValList" ; fi
+    [ -z "$filePathIni" ] && errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]"
+    [ -z "$contentTagName" ] && errorContent="${errorContent}\\n[块名为空]contentTagName=$contentTagName"
+    [ -z "$contentTagKeyValList" ] && errorContent="${errorContent}\\n[块对应的列表为空]contentTagKeyValList=$contentTagKeyValList"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftIniCreateFileOrTag -h
@@ -776,14 +776,14 @@ ftAutoInitEnv()
 #    ftAutoInitEnv -bp #build.prop高级信息读取
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;       
+    [ "$XMODULE" = "env" ] && return ; exit;;       
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -791,7 +791,7 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
@@ -804,8 +804,8 @@ EOF
     fi
     local valCount=2
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoInitEnv -h
@@ -1086,23 +1086,23 @@ ftFileDirEdit()
 #    echo $?
 #===============================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local valCount=3
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$type" ];then    errorContent="${errorContent}\\n[操作参数]type=$type" ; fi
-    if [ -z "$isCreate" ];then    errorContent="${errorContent}\\n[是否新建]isCreate=$isCreate" ; fi
-    if [ -z "$path" ];then    errorContent="${path}\\n[被操作的目录或路径]path=$path" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$type" ] && errorContent="${errorContent}\\n[操作参数]type=$type"
+    [ -z "$isCreate" ] && errorContent="${errorContent}\\n[是否新建]isCreate=$isCreate"
+    [ -z "$path" ] && errorContent="${errorContent}\\n[被操作的目录或路径]path=$path"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftFileDirEdit -h
@@ -1167,21 +1167,21 @@ ftDevAvailableSpace()
 #    ftDevAvailableSpace /media/test
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local valCount=1
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$dirPathTraget" ];then    errorContent="${errorContent}\\n[设备路径不存在]dirPathTraget=$dirPathTraget" ; fi
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ ! -d "$dirPathTraget" ] && errorContent="${errorContent}\\n[设备路径不存在]dirPathTraget=$dirPathTraget"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftDevAvailableSpace -h
@@ -1225,20 +1225,20 @@ ftVersionComparison()
 #    echo $(ftVersionComparison 版本1 版本2)   #比对版本1和2大小
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local valCount=2
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftVersionComparison -h
@@ -1274,14 +1274,14 @@ ftLanguageUtil()
 #    ftLanguageUtil “ar_IL bn_BD my_MM zh_CN”
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
  --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -1289,7 +1289,7 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1306,7 +1306,7 @@ EOF
     local errorContent=
     if [ -z "$ftLanguageContent" ];then    errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
     elif [ ! -f "$filePathDevice" ];then    errorContent="${errorContent}\\n[工程Device的语言配置文件不存在]filePathDevice=$filePathDevice" ; fi
-    if [ ! -f "$filePathDataBase" ];then    errorContent="${errorContent}\\n[语言转化配置文件不存在]filePathDataBase=$filePathDataBase" ; fi
+    [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[语言转化配置文件不存在]filePathDataBase=$filePathDataBase"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftLanguageUtil -h
@@ -1348,7 +1348,7 @@ EOF
             elif [[ $base =~ "/" ]]&&[[ $base =~ $lc ]]; then
                 return="${return} [${lc}]>${tragetList[index]}>[${base}]"
                 title=${lc}可能存在多种结果
-            elif((${#sourceList[@]}==`expr $index + 1`));then
+            elif((${#sourceList[@]}==$(($index + 1)) ));then
                 ftEcho -e $title
             fi
             ((index+=1))
@@ -1370,14 +1370,14 @@ ftInitDevicesList()
 #    ftInitDevicesList 4096M
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #参数解析
@@ -1397,9 +1397,9 @@ EOF
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//m/}
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//k/}
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//b/}
-    if [ -z "$rDirPathXbash" ];then    errorContent="${errorContent}\\n[默认用户名]rNameUser=$rNameUser" ; fi
-    if [ -z "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome" ; fi
-    if ( ! echo -n $devMinAvailableSpaceTemp | grep -q -e "^[0-9][0-9]*$" );then    errorContent="${errorContent}\\n[可用空间限制]devMinAvailableSpace=$devMinAvailableSpace" ; fi
+    [ -z "$rDirPathXbash" ] && errorContent="${errorContent}\\n[默认用户名]rNameUser=$rNameUser"
+    [ -z "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome"
+    ( ! echo -n $devMinAvailableSpaceTemp | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[可用空间限制]devMinAvailableSpace=$devMinAvailableSpace"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftInitDevicesList -h
@@ -1588,14 +1588,14 @@ EOF
 #    ftCleanDataGarbage [无参]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #环境校验
@@ -1607,8 +1607,8 @@ EOF
     ftInitDevicesList
     local valCount=0
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$mXbashModuleDataDevicesList" ];then    errorContent="${errorContent}\\n[被清空回收站的设备的目录列表]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$mXbashModuleDataDevicesList" ] && errorContent="${errorContent}\\n[被清空回收站的设备的目录列表]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftCleanDataGarbage -h
@@ -1654,7 +1654,7 @@ ftAutoAddGitPatch()
 #    ftAutoAddGitPatch 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -1662,14 +1662,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1678,7 +1678,7 @@ EOF
         return
     fi
     local errorContent=
-    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    [ ! -d "$dirPathCode" ]&& errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoAddGitPatch -h
@@ -1760,7 +1760,7 @@ ftAutoBuildMultiBranchEnvSeparation()
 #    ftAutoBuildMultiBranchEnvSeparation -b
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -1768,14 +1768,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1790,10 +1790,10 @@ EOF
     #耦合校验
     local valCount=1
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$editType" ];then    errorContent="${errorContent}\\n[请指定操作]" ; fi
-    if [ ! -z "$requestEnvState" ];then    errorContent="${errorContent}\\n[环境初始化异常,文件夹无法重置]requestEnvState=$requestEnvState" ; fi
-    if [ ! -f "$filePathserialBuildTool" ];then    errorContent="${errorContent}\\n[串行编译工具不存在]filePathserialBuildTool=$filePathserialBuildTool" ; fi
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ -z "$editType" ] && errorContent="${errorContent}\\n[请指定操作]"
+    [ ! -z "$requestEnvState" ] && errorContent="${errorContent}\\n[环境初始化异常,文件夹无法重置]requestEnvState=$requestEnvState" 
+    [ ! -f "$filePathserialBuildTool" ] && errorContent="${errorContent}\\n[串行编译工具不存在]filePathserialBuildTool=$filePathserialBuildTool"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoBuildMultiBranchEnvSeparation -h
@@ -1856,21 +1856,21 @@ ftKillApplicationByPackageName()
 #    ftKillApplicationByPackageName com.android.settings
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local valCount=1
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$packageName" ];then    errorContent="${errorContent}\\n[应用包名]packageName=$packageName" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$packageName" ] && errorContent="${errorContent}\\n[应用包名]packageName=$packageName"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftKillApplicationByPackageName -h
@@ -1913,7 +1913,7 @@ EOF
                     # adb shell am force-stop $packageName
                     ftKillApplicationByPackageName $packageName
                     break;;
-                * )if [ "$XMODULE" = "env" ];then    return ; fi
+                * )[ "$XMODULE" = "env" ] && return 
                     exit;;
             esac
         done
@@ -1951,21 +1951,21 @@ ftLogcatApplicationByPackageName()
 #=========================================================
 EOF
 
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local valCount=2
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$packageName" ];then    errorContent="${errorContent}\\n[应用包名]packageName=$packageName" ; fi
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ -z "$packageName" ] && errorContent="${errorContent}\\n[应用包名]packageName=$packageName"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftLogcatApplicationByPackageName -h
@@ -2015,21 +2015,21 @@ ftRestartAdb()
 #    ftRestartAdb [无参]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local valCount=0
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$userPassword" ];then    errorContent="${errorContent}\\n[默认用户密码]userPassword=$userPassword" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$userPassword" ] && errorContent="${errorContent}\\n[默认用户密码]userPassword=$userPassword"
     if [ ! -z "$errorContent" ];then
             ftEcho -eax "$errorContent \\n请查看下面说明:"
             ftRestartAdb -h
@@ -2059,22 +2059,22 @@ ftMtkFlashTool()
 #    ftMtkFlashTool 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local valCount=0
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$rDirPathTools" ];then    errorContent="${errorContent}\\n[mtk下载工具存放目录为空]rDirPathTools=$rDirPathTools" ; fi
-    if [ ! -d "$toolDirPath" ];then    errorContent="${errorContent}\\n[mtk下载工具路径不存在]toolDirPath=$toolDirPath" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$rDirPathTools" ] && errorContent="${errorContent}\\n[mtk下载工具存放目录为空]rDirPathTools=$rDirPathTools"
+    [ ! -d "$toolDirPath" ] && errorContent="${errorContent}\\n[mtk下载工具路径不存在]toolDirPath=$toolDirPath"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftMtkFlashTool -h
@@ -2110,21 +2110,21 @@ ftBootAnimation()
 #    ftBootAnimation new /home/xxxx/test/bootanimation2
 #============================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;; esac;done
 
     #耦合校验
     local valCount=2
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$dirPathAnimation" ];then    errorContent="${errorContent}\\n[动画资源目录]dirPathAnimation=$dirPathAnimation" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$dirPathAnimation" ] && errorContent="${errorContent}\\n[动画资源目录]dirPathAnimation=$dirPathAnimation"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftBootAnimation -h
@@ -2311,21 +2311,21 @@ ftGjh()
 #    ftGjh 无参数
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 年久失修，暂时关闭，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local valCount=0
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$rDirPathUserHome" ];then    errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftGjh -h
@@ -2360,21 +2360,21 @@ ftPowerManagement()
 #    xss 时间/秒 #制定时间后重启,不带时间则默认十秒
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local errorContent=
-    if [ -z "$userPassword" ];then    errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword" ; fi
-    if [ -z "$edittype" ];then    errorContent="${errorContent}\\n[操作参数为空]edittype=$edittype" ; fi
-    if ( ! echo -n $timeLong | grep -q -e "^[0-9][0-9]*$" );then    errorContent="${errorContent}\\n[倒计时时长无效]timeLong=$timeLong" ; fi
+    [ -z "$userPassword" ] && errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword"
+    [ -z "$edittype" ] && errorContent="${errorContent}\\n[操作参数为空]edittype=$edittype"
+    ( ! echo -n $timeLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[倒计时时长无效]timeLong=$timeLong"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftPowerManagement -h
@@ -2427,14 +2427,14 @@ ftReduceFileList()
 # 由于水平有限，实现对60%和50%之类的比例不敏感
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     if (( $#==2 ));then
@@ -2451,12 +2451,12 @@ EOF
     #耦合校验
     local valCount=2
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$percentage" ];then    errorContent="${errorContent}\\n[百分比取值为空]percentage=$percentage" ; fi
-    if [ -z "$dirPathFileList" ];then    errorContent="${errorContent}\\n[目标目录为空]dirPathFileList=$dirPathFileList" ; fi
-    if ( ! echo -n $percentage | grep -q -e "^[0-9][0-9]*$");then    errorContent="${errorContent}\\n[百分比取值无效，只能是数字]percentage=$percentage" ; fi
-    if (( $percentage<0 ))||(( $percentage>100 ));then    errorContent="${errorContent}\\n[百分比取值无效 0<=*<=100]percentage=$percentage" ; fi
-    if [ ! -d "$dirPathFileList" ];then    errorContent="${errorContent}\\n[目标目录]dirPathFileList=$dirPathFileList" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$percentage" ] && errorContent="${errorContent}\\n[百分比取值为空]percentage=$percentage"
+    [ -z "$dirPathFileList" ] && errorContent="${errorContent}\\n[目标目录为空]dirPathFileList=$dirPathFileList"
+    ( ! echo -n $percentage | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[百分比取值无效，只能是数字]percentage=$percentage"
+    (( $percentage<0 ))||(( $percentage>100 )) && errorContent="${errorContent}\\n[百分比取值无效 0<=*<=100]percentage=$percentage"
+    [ ! -d "$dirPathFileList" ] && errorContent="${errorContent}\\n[目标目录]dirPathFileList=$dirPathFileList"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftReduceFileList -h
@@ -2471,7 +2471,7 @@ EOF
         percentage=`expr 100 - $percentage`
         editType=surplus
     fi
-    continueThreshold=`expr 100 / $percentage`
+    continueThreshold=$((100 / ${percentage} ))
 
     local dirNameFileListBase=${dirPathFileList##*/}
     local dirNameFileListBackup=${dirNameFileListBase}_bakup
@@ -2522,14 +2522,14 @@ ftReNameFile()
 #    ftReNameFile -z /home/xxxx/temp test test2
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     -z |-t )
          local editTypePrefixes=$1
          local dirPathFileList=$2
@@ -2552,8 +2552,8 @@ EOF
     ;;esac;done
 
     #耦合校验
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$dirPathFileList" ];then    errorContent="${errorContent}\\n[目标目录不存在]dirPathFileList=$dirPathFileList" ; fi
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ ! -d "$dirPathFileList" ] && errorContent="${errorContent}\\n[目标目录不存在]dirPathFileList=$dirPathFileList"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftReNameFile -h
@@ -2641,7 +2641,7 @@ ftAutoBackupOrRestoreOuts()
 #    ftAutoBackupOrRestoreOuts -m xxx   #分支名包含xxx的out列表
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -2649,14 +2649,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
@@ -2667,8 +2667,8 @@ EOF
 
     local valCount=2
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoBackupOrRestoreOuts -h
@@ -2813,14 +2813,14 @@ EOF
 #    ftAutoUploadHighSpeed acb/def/123 kkk.zip
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #环境校验
@@ -2831,8 +2831,8 @@ EOF
     #耦合校验
     local valCount=2
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$dirPathContentUploadSource" ];then    errorContent="${errorContent}\\n上传源存放目录不存在:dirPathContentUploadSource=$dirPathContentUploadSource" ; fi
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ ! -d "$dirPathContentUploadSource" ] && errorContent="${errorContent}\\n上传源存放目录不存在:dirPathContentUploadSource=$dirPathContentUploadSource"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoUploadHighSpeed -h
@@ -2877,7 +2877,6 @@ ftAutoPacket()
     local isEnable=true
     if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftAutoPacket --df;return    ; fi
 
-
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' DEBUG
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' ERR
 
@@ -2891,14 +2890,14 @@ ftAutoPacket()
     -h | --help) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
-#    ftAutoPacket -y  #免确认自动清理out/packet
+#    ftAutoPacket -y #免确认自动清理out/packet
 #    ftAutoPacket -u #上传到188服务器
-#    ftAutoPacket -r  #添加说明
+#    ftAutoPacket -r #添加说明
 #    ftAutoPacket -p #打包
 #    ftAutoPacket -a #默认启动全部流程
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -2906,14 +2905,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;; esac;done
 
     #耦合校验
@@ -2924,43 +2923,34 @@ EOF
         ftAutoPacket --env
         return
     fi
-    local valCount=2
+    local valCount=1
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
-    if [ ! -d "$dirPathOut" ];then    errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut" ; fi
-    if [ ! -f "$filePathDataBase" ];then    errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase" ; fi
-    if [ ! -z "$errorContent" ]||[[ -z "$editType" ]];then
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
+    [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
+    [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase"
+    if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoPacket -h
             return
     fi
 
-    local isClean=
-    local isReadMe=
-    local isUpload=
-    local isPacket=
-    local isCopy=
-    local isSpecial=
-    local isMove=
-    editType=$(echo $editType | tr '[A-Z]' '[a-z]')
-    if (( $(expr index $editType "a") != "0" ));then
-         isClean=true
-         isReadMe=true
-         isUpload=true
-         isPacket=true
-    else
-        if (( $(expr index $editType "y") != "0" ));then   isClean=true ; fi
-        if (( $(expr index $editType "m") != "0" ));then  isMove=true ; fi
-        if (( $(expr index $editType "u") != "0" ));then   isUpload=true ; fi
-        if (( $(expr index $editType "r") != "0" ));then   isReadMe=true ; fi
-        if (( $(expr index $editType "p") != "0" ));then   isPacket=true;isReadMe=true; fi
-        if (( $(expr index $editType "c") != "0" ));then   isCopy=true ; fi
-        if (( $(expr index $editType "t") != "0" ));then
-               isSpecial=true
-               isPacket=true
-        fi
-    fi
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
+    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -a )local isClean=true
+             local isReadMe=true
+             local isUpload=true
+             local isPacket=true
+             ;;
+        -y )local isClean=true ;;
+        -m )local isMove=true ;;
+        -u )local isUpload=true ;;
+        -r )local isReadMe=true ;;
+        -p )local isPacket=true ;;
+        -c )local isCopy=true ;;
+        -t )local isSpecial=true
+             local  isPacket=true ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
     ftAutoInitEnv
     local dirPathLocal=$dirPathCode
@@ -3329,7 +3319,7 @@ ftAutoCreateReadMeBySoftwareVersion()
 #    ftAutoCreateReadMeBySoftwareVersion out/pac
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --rely) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -3345,14 +3335,14 @@ EOF
 #
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #环境校验
@@ -3366,10 +3356,10 @@ EOF
     #耦合校验
     local valCount=1
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
-    if [ ! -d "$dirPathOut" ];then    errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut" ; fi
-    if [ ! -f "$filePathConfig" ];then    errorContent="${errorContent}\\n[工程out目录不存在]filePathConfig=$filePathConfig" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
+    [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
+    [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[工程out目录不存在]filePathConfig=$filePathConfig"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoCreateReadMeBySoftwareVersion -h
@@ -3563,7 +3553,7 @@ ftAutoLanguageUtil()
 #    ftAutoLanguageUtil 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -3571,14 +3561,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
@@ -3588,8 +3578,8 @@ EOF
     fi
     local valCount=0
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$dirPathCode"  ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoLanguageUtil -h
@@ -3650,14 +3640,14 @@ ftAutoUpdateSoftwareVersion()
 #    ftAutoUpdateSoftwareVersion 无参
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     -e | --exception) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    ftAutoUpdateSoftwareVersion 仅可用于 SPRD > 7731C > N9 的项目
 #=======================================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -3665,14 +3655,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     # 环境检测
@@ -3688,8 +3678,8 @@ EOF
     fi
     local valCount=1
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ ! -d "$dirPathCode" ];then    errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode" ; fi
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoUpdateSoftwareVersion -h
@@ -3781,22 +3771,22 @@ ftAutoGetAndroidVersionBySDKVersion()
 #    ftAutoGetAndroidVersionBySDKVersion 22
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #耦合校验
     local valCount=1
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$sdkVersion" ];then    errorContent="${errorContent}\\n[SDK版本]sdkVersion=$sdkVersion" ; fi
-    if [ ! -f "$filePathDataBase" ];then    errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ -z "$sdkVersion" ] && errorContent="${errorContent}\\n[SDK版本]sdkVersion=$sdkVersion"
+    [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftAutoGetAndroidVersionBySDKVersion -h
@@ -3847,7 +3837,7 @@ EOF
 #    ftMaintainSystem -r / --restore #还原备份
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
     #可用校验
     if [ "$isEnable" != "true" ];then
@@ -3879,7 +3869,7 @@ EOF
     #耦合校验
     local errorContent=
     local filePathMaintain=${rDirPathXbashModule}/${rFileNameXbashModuleMaintain}
-    if [ ! -f "$filePathMaintain" ];then    errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain" ; fi
+    [ ! -f "$filePathMaintain" ] && errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain"
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftMaintainSystem -h
@@ -3962,7 +3952,21 @@ EOF
                         ftRestoreOperate -pm $filePathVersionInfoMaintain -t  $tagNaeMaintain -d "/"
                     #删除还原版本信息
                         ftIniDeleteTag -p $filePathVersionInfoMaintain -t $tagNaeMaintain
-                        ftEcho -s "还原结束"
+                    #还原成功后重启生效
+                        while true; do
+                        ftEcho -y "是否重启 [回车重启]"
+                        read -n 1 sel
+                         if [ ${#sel} == 0 ]; then
+                            sel=y
+                         fi
+                        case "$sel" in
+                            y | Y )
+                                ftPowerManagement reboot 5
+                                break;;
+                            n | N | q |Q)  exit;;
+                            * ) ftEcho -e 错误的选择：$sel
+                                echo "输入n，q，离开";;
+                        esac;done
                     ;;
         sdFinish )
                     if [ -z $(which e4defrag) ];then
@@ -4028,14 +4032,14 @@ EOF
 #    ftGitLogShell -c "格式字串" #自定义格式输出
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #环境校验
@@ -4137,14 +4141,14 @@ EOF
 #    ftAutoTest -ec 2000 #monkey事件数为2000
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #环境校验
@@ -4178,7 +4182,7 @@ EOF
     #耦合校验
     local valCount=6
     local errorContent=
-    if (( $#>$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     if (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$");then
         errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong" ; fi
     if [ ! -z "$errorContent" ];then

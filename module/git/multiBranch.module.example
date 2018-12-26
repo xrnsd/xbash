@@ -1,0 +1,16 @@
+#!/bin/bash
+#####-----------------------固定部分------------------------------#########
+branchName=$1
+git reset --hard&&
+ftEcho -bh 将开始切换到$branchName
+git checkout   "$branchName"||continue
+git pull
+#####----------------------自定义部分--------------------------#######
+git cherry-pick 5d189b6||continue
+git cherry-pick a7e01d1||continue
+
+
+
+
+#####-----------------------固定部分------------------------------#########
+git push

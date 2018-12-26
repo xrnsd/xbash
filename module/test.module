@@ -1,4 +1,7 @@
 #!/bin/bash
+#####-----------------------加载公用模块--------------------------#######
+filePathCommonModule=${rDirPathXbashModule}/${rFileNameXbashModuleCommon}
+[[ -f "$filePathCommonModule" ]] && source $filePathCommonModule
 #####-----------------------xbash 示例函数--------------------------#######
 complete -W "-x -y -n" ftExample
 ftExample()
@@ -18,7 +21,7 @@ ftExample()
 #    ftExample xxxx
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
 
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
@@ -26,7 +29,7 @@ EOF
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
 
     --rely) cat<<EOF
 #===================[   ${ftEffect}   ]的依赖说明=============
@@ -35,7 +38,7 @@ EOF
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
 
     --env) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明==============
@@ -44,7 +47,7 @@ EOF
 # 使用前,请先初始化[xxxxxxxxx]
 #=========================================================
 EOF
-    if [ "$XMODULE" = "env" ];then    return ; fi; exit;;
+    [ "$XMODULE" = "env" ] && return ; exit;;
     * ) break;;esac;done
 
     #依赖校验
@@ -54,12 +57,12 @@ EOF
     eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -x )
             example1="${arg2:-"exampleDef1"}" ;;
-    * ) if [[ -z "${arg}" ]]; then  break ;fi ;; esac;done
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #耦合校验
     local valCount=1
     local errorContent=
-    if (( $#!=$valCount ));then    errorContent="${errorContent}\\n[参数数量def=$valCount]valCount=$#" ; fi
-    if [ -z "$example1" ];then    errorContent="${errorContent}\\n[示例1]example1=$example1" ; fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$TTest1" ] && errorContent="${errorContent}\\n[示例1]TTest1=$TTest1"
     if [ ! -z "$errorContent" ];then
           ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
           ftExample -h
