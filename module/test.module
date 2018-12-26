@@ -9,7 +9,7 @@ ftExample()
     local ftEffect=函数模板
     #可用性校验
     local isEnable=false
-    if [ "$isEnable" != "true" ]&&[ "$1" != "--df" ];then    ftExample --df;return    ; fi
+    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftExample --df && return
     #Debug用
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' DEBUG
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' ERR
@@ -51,7 +51,7 @@ EOF
     * ) break;;esac;done
 
     #依赖校验
-    if [ -z $(which exampleTools1) ];then    ftExample --rely "exampleTools1";return    ; fi
+    [ -z $(which exampleTools1) ] && ftExample --rely "exampleTools1" && return
     #参数解析
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
     eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
@@ -63,10 +63,8 @@ EOF
     local errorContent=
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$TTest1" ] && errorContent="${errorContent}\\n[示例1]TTest1=$TTest1"
-    if [ ! -z "$errorContent" ];then
-          ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-          ftExample -h
-          return
-    fi
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftExample -h && return
+
+    #实现主体
 }
 # ============================================================================================================== packages
