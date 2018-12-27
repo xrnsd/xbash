@@ -4030,3 +4030,97 @@ ftFind()
     [[ ! -z "$3" ]] && find $1 -name "$2" | xargs grep -e "$3" && return
     find $1 -name "$2"
 }
+
+ftGitCheckoutBtanch()
+{
+    local ftEffect=快速切换分支
+    local branchNameTag="$1"
+    #可用性校验
+    local isEnable=true
+    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftGitCheckoutBtanch --df && return
+
+    while true; do case "$1" in
+    -h | --help) cat<<EOF
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftGitCheckoutBtanch 分支TAG
+#=========================================================
+EOF
+    [ "$XMODULE" = "env" ] && return ; exit;;
+
+    --df) cat<<EOF
+#===================[   ${ftEffect}   ]的状态说明==============
+#
+#    ${ftEffect} 已被禁用，请确认
+#=========================================================
+EOF
+    [ "$XMODULE" = "env" ] && return ; exit;;
+
+    --rely) cat<<EOF
+#===================[   ${ftEffect}   ]的依赖说明=============
+#
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#=========================================================
+EOF
+    [ "$XMODULE" = "env" ] && return ; exit;;
+    * ) break;;esac;done
+
+    #依赖校验
+    [ -z $(which git) ] && ftGitCheckoutBtanch --rely "git" && return
+    #参数解析
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
+    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -x )
+            example1="${arg2:-"exampleDef1"}" ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    #耦合校验
+    local valCount=1
+    local errorContent=
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBtanch -h && return
+
+    #实现主体
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local branchList=($(git branch|grep -i "$branchNameTag" |grep -v "$branchNameNow"))
+    if [[ -z "$branchList" ]]; then
+        ftEcho -e "未找到[$branchNameTag]对应的分支"
+        return
+    fi
+    local itemCount=${#branchList[@]}
+    local branchNameTraget=$branchList
+    if (( $itemCount>1 ));then
+        local index=0
+        for item in ${branchList[@]} ; do
+            printf "%-4s %-4s\n" [$index] $item
+            ((index+=1))
+        done
+        ftEcho -r  "请输入对应的序号(回车默认0):"
+        if (( $itemCount>9 ));then
+            read tIndex
+        else
+            read -n 1 tIndex
+        fi&&echo
+        #设定默认值
+        if [ ${#tIndex} == 0 ]; then
+            tIndex=0
+        elif (( $itemCount<=$tIndex ))||(( $tIndex<0 ));then
+            ftEcho -e "\n无效的序号:${tIndex}"
+             return
+        fi
+        branchNameTraget=${branchList[$tIndex]}
+    fi
+    while true; do
+        echo -n "是否切换到: ";ftEcho -sn "${branchNameTraget}";echo -n "[y/n](回车默认y)"
+        read -n 1 sel
+        [ ${#sel} == 0 ] && sel=y
+        case "$sel" in
+            y | Y )
+                git checkout "$branchNameTraget"
+                break;;
+            n | N | q |Q)  exit;;
+            * ) ftEcho -e 错误的选择：$sel
+                echo "输入n，q，离开";;
+    esac;done
+}

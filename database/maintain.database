@@ -13,6 +13,9 @@ dirPathsExcludeListSys= \
     /var/tmp \
     /var/log
 dirPathsExcludeListHomeBase= \
+    xbash \
+    xconfig \
+    xwords
     .bashrc \
     .dmrc \
     .gitconfig \

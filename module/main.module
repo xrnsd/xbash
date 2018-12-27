@@ -70,7 +70,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
         alias xgl='effect=格式化显示20条git_log;ftGitLogShell -n 20'
         alias xgll='effect=格式化显示100条git_log;ftGitLogShell -n 100'
         alias xbrancha="effect=过滤git仓库所有分支;git branch -a|grep -i"
-        alias xbranch="effect=过滤git仓库已经checkout分支;git branch|grep -i"
+        alias xbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch"
     fi
 
     if [ -d "$JAVA_HOME" ]&&[ -d "out" ];then
