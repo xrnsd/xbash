@@ -21,7 +21,7 @@ ftExample()
 #    ftExample xxxx
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
 
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
@@ -29,7 +29,7 @@ EOF
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
 
     --rely) cat<<EOF
 #===================[   ${ftEffect}   ]的依赖说明=============
@@ -38,7 +38,7 @@ EOF
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
 
     --env) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明==============
@@ -47,7 +47,7 @@ EOF
 # 使用前,请先初始化[xxxxxxxxx]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #依赖校验
@@ -56,7 +56,8 @@ EOF
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
     eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -x )
-            example1="${arg2:-"exampleDef1"}" ;;
+            example1="${arg2}" ;;
+            #example1="${arg2:-"exampleDef1"}" ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #耦合校验
     local valCount=1

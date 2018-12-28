@@ -14,7 +14,7 @@ ftRestoreOperate()
 #    ftRestoreOperate -pm 工具数据库路径 -t 默认tag名 -d 还原的目标路径
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -72,7 +72,7 @@ ftRestoreChoiceSource()
 #    ftRestoreChoiceSource -p 版本数据库路径 -pm 工具数据库路径 -t 默认tag名
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -161,7 +161,7 @@ ftSetBackupDevDir()
 #    ftSetBackupDevDir -r -p 工具数据库路径 -v 默认tag
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -352,7 +352,7 @@ ftSetRestoreOverryList()
 #    ftSetRestoreOverryList -pm 工具数据库路径 -t 默认tag名
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -403,7 +403,7 @@ ftBackupOs()
 #    ftBackupOs -p 数据库路径
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
     #参数解析
     local filePathIni
@@ -485,7 +485,7 @@ ftMaintainInfoNote()
 #
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -534,7 +534,7 @@ ftMD5()
 #    ftMD5 -p MD5信息保存路径 -s 备份包路径
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -604,7 +604,7 @@ ftSystemEnv()
 #
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -746,14 +746,14 @@ ftBackUpDevScanning()
 #    ftBackUpDevScanning backup_cg_wgx_20161202 常规 "\${mXbashModuleDataDevicesList[*]}"
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -827,14 +827,14 @@ ftSynchronous()
 #    ftSynchronous -d "/media/data_xx /media/data_xx" -s ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析

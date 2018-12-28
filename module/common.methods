@@ -109,7 +109,7 @@ ftTest()
 #    ftTest 任意参数
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -152,7 +152,7 @@ ftEcho()
 #    ftEcho    -sn    内容    # 执行信息,不换行，对字符串的缩进敏感
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     option=$1
@@ -247,7 +247,7 @@ ftPath()
 #    ftPath 路径 文件  #正确拼接
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -289,14 +289,14 @@ ftIniGetValue()
 #    ftIniGetValue -f [文件路径] [目标块TAG] [键名]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -377,14 +377,14 @@ ftIniSetValue()
 #    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l "11 22 33 44"  #写入数组
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
 * )break;; esac;done
 
     #参数解析
@@ -451,14 +451,14 @@ ftIniCheckConfigSyntax()
 #    ftIniCheckConfigSyntax 123/config.ini
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * )break;; esac;done
 
     #耦合校验
@@ -522,14 +522,14 @@ ftIniDeleteTag()
 #    ftIniDeleteTag -p ini文件路径 -t TAG块名
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -589,14 +589,14 @@ ftIniDeleteItem()
 #    ftIniDeleteItem -p ini文件路径 -t TAG块名 -i item名
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -663,14 +663,14 @@ ftIniCreateFileOrTag()
 #    ftIniCreateFileOrTag  -r -p 文件路径 -t 块名 -l 块对应的键值对列表
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -739,14 +739,14 @@ ftAutoInitEnv()
 #    ftAutoInitEnv -bp #build.prop高级信息读取
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;       
+    return ;;       
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -754,7 +754,7 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1044,14 +1044,14 @@ ftFileDirEdit()
 #    echo $?
 #===============================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1122,14 +1122,14 @@ ftDevAvailableSpace()
 #    ftDevAvailableSpace /media/test
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1177,14 +1177,14 @@ ftVersionComparison()
 #    echo $(ftVersionComparison 版本1 版本2)   #比对版本1和2大小
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1223,14 +1223,14 @@ ftLanguageUtil()
 #    ftLanguageUtil “ar_IL bn_BD my_MM zh_CN”
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
  --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -1238,7 +1238,7 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1316,14 +1316,14 @@ ftInitDevicesList()
 #    ftInitDevicesList 4096M
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -1529,14 +1529,14 @@ EOF
 #    ftCleanDataGarbage [无参]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #环境校验
@@ -1589,7 +1589,7 @@ ftAutoAddGitPatch()
 #    ftAutoAddGitPatch 无参
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -1597,14 +1597,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1691,7 +1691,7 @@ ftAutoBuildMultiBranchEnvSeparation()
 #    ftAutoBuildMultiBranchEnvSeparation -b
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -1699,14 +1699,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1784,14 +1784,14 @@ ftKillApplicationByPackageName()
 #    ftKillApplicationByPackageName com.android.settings
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1876,14 +1876,14 @@ ftLogcatApplicationByPackageName()
 #=========================================================
 EOF
 
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1937,14 +1937,14 @@ ftRestartAdb()
 #    ftRestartAdb [无参]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -1981,14 +1981,14 @@ ftMtkFlashTool()
 #    ftMtkFlashTool 无参
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -2029,14 +2029,14 @@ ftBootAnimation()
 #    ftBootAnimation new /home/xxxx/test/bootanimation2
 #============================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;; esac;done
 
     #耦合校验
@@ -2225,14 +2225,14 @@ ftGjh()
 #    ftGjh 无参数
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 年久失修，暂时关闭，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -2271,14 +2271,14 @@ ftPowerManagement()
 #    xss 时间/秒 #制定时间后重启,不带时间则默认十秒
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -2335,14 +2335,14 @@ ftReduceFileList()
 # 由于水平有限，实现对60%和50%之类的比例不敏感
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     if (( $#==2 ));then
@@ -2426,14 +2426,14 @@ ftReNameFile()
 #    ftReNameFile -z /home/xxxx/temp test test2
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     -z |-t )
          local editTypePrefixes=$1
          local dirPathFileList=$2
@@ -2532,7 +2532,7 @@ ftAutoBackupOrRestoreOuts()
 #    ftAutoBackupOrRestoreOuts -m xxx   #分支名包含xxx的out列表
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -2540,14 +2540,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -2696,14 +2696,14 @@ EOF
 #    ftAutoUploadHighSpeed acb/def/123 kkk.zip
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #环境校验
@@ -2773,7 +2773,7 @@ ftAutoPacket()
 #    ftAutoPacket -a #默认启动全部流程
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -2781,14 +2781,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;; esac;done
 
     #耦合校验
@@ -3157,7 +3157,7 @@ ftAutoCreateReadMeBySoftwareVersion()
 #    ftAutoCreateReadMeBySoftwareVersion out/pac
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --rely) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -3173,14 +3173,14 @@ EOF
 #
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #环境校验
@@ -3358,7 +3358,7 @@ ftAutoLanguageUtil()
 #    ftAutoLanguageUtil 无参
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -3366,14 +3366,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -3441,14 +3441,14 @@ ftAutoUpdateSoftwareVersion()
 #    ftAutoUpdateSoftwareVersion 无参
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     -e | --exception) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
 #    ftAutoUpdateSoftwareVersion 仅可用于 SPRD > 7731C > N9 的项目
 #=======================================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --env ) cat<<EOF
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #
@@ -3456,14 +3456,14 @@ EOF
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     # 环境检测
@@ -3569,14 +3569,14 @@ ftAutoGetAndroidVersionBySDKVersion()
 #    ftAutoGetAndroidVersionBySDKVersion 22
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -3633,7 +3633,7 @@ EOF
 #    ftMaintainSystem -r / --restore #还原备份
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #环境校验
@@ -3812,14 +3812,14 @@ EOF
 #    ftGitLogShell -c "格式字串" #自定义格式输出
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #环境校验
@@ -3912,14 +3912,14 @@ EOF
 #    ftAutoTest -ec 2000 #monkey事件数为2000
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
 #
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #环境校验
@@ -4029,7 +4029,7 @@ ftGitCheckoutBtanch()
 #    ftGitCheckoutBtanch -a 分支TAG
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
 
     --df) cat<<EOF
 #===================[   ${ftEffect}   ]的状态说明==============
@@ -4037,7 +4037,7 @@ EOF
 #    ${ftEffect} 已被禁用，请确认
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
 
     --rely) cat<<EOF
 #===================[   ${ftEffect}   ]的依赖说明=============
@@ -4046,7 +4046,7 @@ EOF
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #=========================================================
 EOF
-    [ "$XMODULE" = "env" ] && return ; exit;;
+    return ;;
     * ) break;;esac;done
 
     #依赖校验

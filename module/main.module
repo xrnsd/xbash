@@ -13,7 +13,6 @@ alias ...="effect=进入爷目录;cd ../.."
 alias xcc='effect=进入原目录;cd $OLDPWD'
 alias xr="effect=更新xbash配置;source ~/.bashrc"
 if [ -f $rFilePathXbashModuleCommon ];then
-    export XMODULE="env" #标记为环境模式，此模式说明直接调用脚本实现
     source  $rFilePathXbashModuleCommon
 
     #处理bash历史记录
