@@ -189,24 +189,6 @@ EOF
                     echo -e "\033[1;31m$val\033[0m";
                 done
                 exit;;
-    # 特定信息显示,命令说明的格式
-    g | G | -g | -G)
-    ftEcho -s “命令 参数 -h 可查看参数具体说明”
-    cat<<EOF
-=========================================================================
-命令    --- 参数/命令说明
-    |// 使用格式
-    |  参数     ---------------- [参数权限] ----    参数说明
-=========================================================================
-EOF
-break;;
-     -d | -D | --DEBUG)
-                local cmds=($@)
-                unset cmds[0]
-                 if [ "$DEBUG" = "true" ]; then
-                      ${cmds}
-                fi
-                break;;
     * )    echo $option ;break;;
     esac
     done
@@ -343,9 +325,8 @@ EOF
         elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName" ; fi
     fi
     if [ ! -z "$errorContent" ];then
-            if [[ -z "$isReadSilence" ]]; then
-                return
-            fi
+            [[ -z "$isReadSilence" ]]&&return
+
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftIniGetValue -h
             return
@@ -877,9 +858,8 @@ EOF
     #device路径
     export AutoEnv_deviceDirPath=
     local dirPathDevice=$(find device/ -name "$(basename $ANDROID_PRODUCT_OUT)")
-    if [[ -d "$dirPathDevice" ]]; then
-        export AutoEnv_deviceDirPath=$dirPathDevice
-    fi
+
+    [[ -d "$dirPathDevice" ]] && export AutoEnv_deviceDirPath=$dirPathDevice
 
     #分支名
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
@@ -907,9 +887,8 @@ EOF
                     local versionName=$LZ_BUILD_VERSION
             fi
     fi
-    if [ -z "$versionName" ];then
-        versionName=`basename $ANDROID_PRODUCT_OUT`
-    fi
+    [ -z "$versionName" ] && versionName=$(basename $ANDROID_PRODUCT_OUT)
+
     versionName=${versionName// /_}
     versionName=${versionName//
 /_}
@@ -4043,7 +4022,11 @@ ftGitCheckoutBtanch()
     -h | --help) cat<<EOF
 #===================[   ${ftEffect}   ]的使用示例==============
 #
+#    在本地所有分支中查找
 #    ftGitCheckoutBtanch 分支TAG
+#
+#    在仓库所有分支中查找
+#    ftGitCheckoutBtanch -a 分支TAG
 #=========================================================
 EOF
     [ "$XMODULE" = "env" ] && return ; exit;;
@@ -4069,25 +4052,35 @@ EOF
     #依赖校验
     [ -z $(which git) ] && ftGitCheckoutBtanch --rely "git" && return
     #参数解析
+    local isAllBranchs
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
     eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -x )
-            example1="${arg2:-"exampleDef1"}" ;;
+        -a ) isAllBranchs=true;
+             branchNameTag="${arg2}" ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #耦合校验
-    local valCount=1
+    local valCount=2
     local errorContent=
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    (( $#==0 ))||(( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBtanch -h && return
 
     #实现主体
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     local branchList=($(git branch|grep -i "$branchNameTag" |grep -v "$branchNameNow"))
-    if [[ -z "$branchList" ]]; then
-        ftEcho -e "未找到[$branchNameTag]对应的分支"
-        return
+
+    if [[ ! -z "$isAllBranchs" ]];then
+        local key="remotes/origin/"
+        local branchListServer=($(git branch -a|grep -i "$branchNameTag" |grep -v "$branchNameNow" |grep "$key"))
+        for (( i = 0; i < ${#branchListServer[@]}; i++ )); do
+            branchListServer[$i]=$(echo ${branchListServer[$i]} | sed -e "s:$key::g")
+        done
+        branchList=(${branchList[@]} ${branchListServer[@]}) #合并本地和仓库分支
+        branchList=($(echo ${branchList[@]} | sed 's/ /\n/g'|sort |uniq)) #去重
     fi
+
+    [[ -z "$branchList" ]] && ftEcho -e "未找到[$branchNameTag]对应的分支" && return
+
     local itemCount=${#branchList[@]}
     local branchNameTraget=$branchList
     if (( $itemCount>1 ));then
@@ -4111,8 +4104,10 @@ EOF
         fi
         branchNameTraget=${branchList[$tIndex]}
     fi
+
     while true; do
-        echo -n "是否切换到: ";ftEcho -sn "${branchNameTraget}";echo -n "[y/n](回车默认y)"
+        echo "是否切换到: "
+        ftEcho -sn "${branchNameTraget}";echo -n "[y/n](回车默认y)"
         read -n 1 sel
         [ ${#sel} == 0 ] && sel=y
         case "$sel" in
