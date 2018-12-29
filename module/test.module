@@ -9,47 +9,29 @@ ftExample()
     local ftEffect=函数模板
     #可用性校验
     local isEnable=false
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftExample --df && return
     #Debug用
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' DEBUG
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' ERR
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftExample xxxx
-#=========================================================
-EOF
-    return ;;
-
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
-
-    --rely) cat<<EOF
+    --rely) echo -e "\
 #===================[   ${ftEffect}   ]的依赖说明=============
-#
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
-#=========================================================
-EOF
-    return ;;
-
-    --env) cat<<EOF
+#========================================================="; return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    ftExample xxxx
+#========================================================="; return ;;
+    --env) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明==============
-#
 # 环境未初始化
 # 使用前,请先初始化[xxxxxxxxx]
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
     [ -z $(which exampleTools1) ] && ftExample --rely "exampleTools1" && return
     #参数解析

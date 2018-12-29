@@ -8,13 +8,10 @@ ftRestoreOperate()
     local ftEffect=根据备份包还原系统
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftRestoreOperate -pm 工具数据库路径 -t 默认tag名 -d 还原的目标路径
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -66,13 +63,10 @@ ftRestoreChoiceSource()
     local ftEffect=选择还原使用的版本[备份]包
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftRestoreChoiceSource -p 版本数据库路径 -pm 工具数据库路径 -t 默认tag名
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -151,17 +145,14 @@ ftSetBackupDevDir()
     local ftEffect=选择备份包存放的设备
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #   选择存储备份包的设备路径
 #    ftSetBackupDevDir -b -p 版本数据库路径 -v 版本号
 #
 #   选择读取备份包的设备路径
 #    ftSetBackupDevDir -r -p 工具数据库路径 -v 默认tag
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -245,26 +236,16 @@ ftSetBackupType()
 {
     local ftEffect=设定备份类型和备份忽略列表
     local isEnable=true
-    #可用校验
-    [ "$isEnable" != "true" ] && ftSetBackupType --df && return
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftSetBackupType -p 版本数据库路径 -v 版本名 -pm 工具数据库
-#=========================================================
-EOF
-      return;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-      return;;
+#=========================================================" ;return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local filePathIni
     local versionName
@@ -346,13 +327,10 @@ ftSetRestoreOverryList()
     local ftEffect=选择还原时忽略的目录
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftSetRestoreOverryList -pm 工具数据库路径 -t 默认tag名
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -397,13 +375,10 @@ ftBackupOs()
     local ftEffect=生成备份包
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftBackupOs -p 数据库路径
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
     #参数解析
     local filePathIni
@@ -480,12 +455,10 @@ ftMaintainInfoNote()
     local ftEffect=记录备份包相关备注
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
-#=========================================================
-EOF
-    return ;;
+#           ftMaintainInfoNote -a -p 版本数据库路径 -v 版本号
+#========================================================="; return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -524,17 +497,14 @@ ftMD5()
     local ftEffect=记录和校验备份包的MD5
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #   根据备份包的MD5校验是否修改
 #    ftMD5 -p MD5信息保存路径 -c 备份包路径
 #
 #   保存备份包的MD5信息
 #    ftMD5 -p MD5信息保存路径 -s 备份包路径
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -593,18 +563,15 @@ ftSystemEnv()
     local ftEffect=记录和校验备份包软件和硬件信息
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #   记录备份包的系统软硬件信息
 #    ftSystemEnv -a -v 版本号 -p 版本号对应信息存储路径
 #
 #   校验备份包是否兼容当前系统软硬件环境
 #    ftSystemEnv -c -v 版本号 -p 版本号对应信息存储路径
 #
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
     #参数解析
@@ -736,26 +703,15 @@ ftBackUpDevScanning()
     local ftEffect=备份设备扫描,同步
     local isEnable=true
 
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftBackUpDevScanning --df && return
-
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftBackUpDevScanning [versionName] [note] [backup_dev_list]
-#    ftBackUpDevScanning backup_cg_wgx_20161202 常规 "\${mXbashModuleDataDevicesList[*]}"
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#       ftBackUpDevScanning -p 版本数据库路径 -f 备份包文件名 -d 需要同步的设备路径列表
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local devList
     local fileName
@@ -816,27 +772,16 @@ ftSynchronous()
     local ftEffect=在不同设备间同步备份包
     local isEnable=true
 
-    #可用性校验
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftSynchronous --df && return
-
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftSynchronous -d "设备路径列表" -s "文件后缀通配列表"
-#    ftSynchronous -d "/media/data_xx /media/data_xx" -s ".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info"
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#    ftSynchronous -d \"设备路径列表\" -s \"文件后缀通配列表\"
+#    ftSynchronous -d \"/media/data_xx /media/data_xx\" -s \".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info\"
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local dirPathArray=$1
     local fileTypeList=$2

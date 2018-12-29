@@ -18,42 +18,29 @@ ftMain()
     local ftEffect=早期工具主入口_nodisplay
     while true; do
     case $1 in
-    -c | clear_trash )
-                ftCleanDataGarbage
-                break;;
-    -t | test )
-                ftTest "$@"
-                break;;
     -v | version )
                 echo \"Xrnsd extensions to bash\" $rXbashVersion
+                break;;
+    clear_trash )
+                ftCleanDataGarbage
+                break;;
+    test )
+                ftTest "$@"
                 break;;
     -h | help )
                 ftMain -ft ; echo
                 ftMain -hb
                 return;;
     -hb )
-                ftEcho -s "bash内建命令和xbash扩展封装说明"
- cat<<EOF
-====================================
-命令           说明
-====================================
-EOF
+                ftEcho -s "bash内建命令和xbash扩展封装说明" ; 
+                echo -e "=========================================================\n命令           说明\n========================================================="
                 ftReadAllAlias| column -t
                 return;;
     -ft )
-                ftEcho -s "xbash对bash扩展实现说明"
-cat<<EOF
-=========================================================
-命令                                 说明
-=========================================================
-EOF
+                ftEcho -s "xbash对bash扩展实现说明" ;
+                echo -e "=========================================================\n命令                                 说明\n========================================================="
                 ftReadAllFt | column -t
                 return;;
-    -vvv )
-                ftEcho -b xbash;        echo \"Xrnsd extensions to bash\" $rXbashVersion
-                ftEcho -b java;        java -version
-                ftEcho -b gcc;        gcc -v
-                break;;
     restartadb)
                 ftRestartAdb
                 break;;
@@ -103,13 +90,10 @@ ftTest()
     local ftEffect=函数demo调试_nodisplay
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftTest 任意参数
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -137,9 +121,8 @@ ftEcho()
 {
     local ftEffect=工具信息提示_nodisplay
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftEcho        内容    # 直接显示内容
 #    ftEcho    -b    内容    # 标题，不换行，对字符串的缩进敏感
 #    ftEcho    -bh    内容    # 标题，换行，对字符串的缩进敏感
@@ -150,9 +133,7 @@ ftEcho()
 #    ftEcho    -y    内容    # 特定信息显示,y/n，对字符串的缩进敏感
 #    ftEcho    -s    内容    # 执行信息，对字符串的缩进敏感
 #    ftEcho    -sn    内容    # 执行信息,不换行，对字符串的缩进敏感
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
     option=$1
@@ -240,14 +221,11 @@ ftPath()
     local fileName=$2
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftPath 路径       #去掉最后的斜杠
 #    ftPath 路径 文件  #正确拼接
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
     #耦合校验
@@ -274,12 +252,10 @@ ftIniGetValue()
 {
     local ftEffect=读取ini文件指定字段
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftIniGetValue --df && return
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    #默认不输出异常信息
 #    ftIniGetValue [文件路径] [目标块TAG] [键名]
 #    value=\$(ftIniGetValue /temp/odbcinst.ini PostgreSQL Setup)
@@ -287,18 +263,11 @@ ftIniGetValue()
 # 
 #    #输出异常信息
 #    ftIniGetValue -f [文件路径] [目标块TAG] [键名]
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local filePath=$1
     local blockName=$2
@@ -366,27 +335,18 @@ ftIniSetValue()
 {
     local ftEffect=修改ini文件指定字段
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftIniSetValue --df && return
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftIniSetValue [文件路径] [目标块TAG] [键名] [键对应的值]
 #    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup 1232
-#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l "11 22 33 44"  #写入数组
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l \"11 22 33 44\"  #写入数组
+#========================================================="; return ;;
 * )break;; esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local isListValue
     local filePath=$1
@@ -404,13 +364,11 @@ EOF
     local errorContent=
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
     else
-        testBockName=$(cat $filePath|grep $blockName)
-        testKeyName=$(cat $filePath|grep $keyName)
         if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
-        elif [ -z "$testBockName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
+        elif [ -z "$(cat $filePath|grep $blockName)" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
         if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
-        elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName" ; fi
-        if [ -z "$keyValue" ];then    errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue" ;fi
+        elif [ -z "$(cat $filePath|grep $keyName)" ];then    errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName" ; fi
+        [ -z "$keyValue" ] &&  errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
     fi
     if [ ! -z "$errorContent" ];then
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
@@ -426,112 +384,20 @@ EOF
     return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName*=.* $keyName=$keyValue g;}" $filePath`
 }
 
-
-ftIniCheckConfigSyntax()
-{
-    local ftEffect=校验ini文件，确认文件有效
-    local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftIniCheckConfigSyntax --df && return
-    #============ini文件模板=====================
-    # # 注释１
-    # [block1]
-    # key1=val1
-
-    # # 注释２
-    # [block2]
-    # key2=val2
-    #===========================================
-
-    local filePath=$1
-    while true; do case "$1" in
-    -h | --help) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftIniCheckConfigSyntax [file path]
-#    ftIniCheckConfigSyntax 123/config.ini
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
-    * )break;; esac;done
-
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ ! -f "$filePath" ] && errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniCheckConfigSyntax -h && return
-
-    #实现主体
-    ret=$(awk -F= 'BEGIN{valid=1}
-    {
-        #已经找到非法行,则一直略过处理
-        if(valid == 0) next
-        #忽略空行
-        if(length($0) == 0) next
-        #消除所有的空格
-        gsub(" |\t","",$0)
-        #检测是否是注释行
-        head_char=substr($0,1,1)
-        if (head_char != "#"){
-            #不是字段=值 形式的检测是否是目标块TAG
-            if( NF == 1){
-                b=substr($0,1,1)
-                len=length($0)
-                e=substr($0,len,1)
-                if (b != "[" || e != "]"){
-                    valid=0
-                }
-            }else if( NF == 2){
-            #检测字段=值 的字段开头是否是[
-                b=substr($0,1,1)
-                if (b == "["){
-                    valid=0
-                }
-            }else{
-            #存在多个=号分割的都非法
-                valid=0
-            }
-        }
-    }
-    END{print valid}' $filePath)
-
-    if [ $ret -eq 1 ];then
-        return 0
-    else
-        return 2
-    fi
-}
-
 ftIniDeleteTag()
 {
     local ftEffect=删除ini文件中对应TAG块
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftIniDeleteTag --df && return
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftIniDeleteTag -p ini文件路径 -t TAG块名
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local tagName
     local filePathIni
@@ -580,25 +446,16 @@ ftIniDeleteItem()
 {
     local ftEffect=删除ini文件中对应TAG中指定item
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftIniDeleteItem --df && return
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftIniDeleteItem -p ini文件路径 -t TAG块名 -i item名
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local tagName
     local itemName
@@ -651,28 +508,19 @@ ftIniCreateFileOrTag()
 {
     local ftEffect=创建ini文件,添加TAG
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftIniCreateFileOrTag --df && return
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    添加内容
 #    ftIniCreateFileOrTag  -a -p 文件路径 -t 块名 -l 块对应的键值对列表
 #    覆盖文件
 #    ftIniCreateFileOrTag  -r -p 文件路径 -t 块名 -l 块对应的键值对列表
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local filePathIni
     local editType
@@ -739,7 +587,6 @@ ftAutoInitEnv()
 {
     local ftEffect=初始化xbash_Android_build相关所需的部分环境变量
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftAutoInitEnv --df && return
 
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
@@ -747,31 +594,20 @@ ftAutoInitEnv()
     local editType=$1
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftAutoInitEnv 无参
 #    ftAutoInitEnv -bp #build.prop高级信息读取
-#=========================================================
-EOF
-    return ;;       
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
-    --env ) cat<<EOF
+#========================================================="; return ;;
+    --env ) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ]\
         ||[ -z "$ANDROID_PRODUCT_OUT" ]\
@@ -1036,39 +872,29 @@ ftFileDirEdit()
 {
     local ftEffect=路径合法性校验
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftFileDirEdit --df && return
 
     local type=$1
     local isCreate=$2
     local path=$3
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftFileDirEdit [type] [isCreate] [path]
 #
 #    文件存在，创建，返回1
-#    ftFileDirEdit -f true /home/xian-hp-u16/xbash/${rFileNameXbashModuleTestBase}
+#    ftFileDirEdit -f true xxxxx
 #
 #    文件夹存在，创建，返回1
-#    ftFileDirEdit -d true /home/xian-hp-u16/xbash/${rFileNameXbashModuleTestBase}
+#    ftFileDirEdit -d true xxxxx
 #
-#    判断文件夹是否为空，空，返回2 非空，返回3,非文件夹，返回4
+#    判断文件夹是否为空 。空 返回2 ，非空 返回3，非文件夹 返回4
 #    ftFileDirEdit -e false /home/xian-hp-u16/xbash
-#    echo $?
-#===============================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#==============================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=3
     local errorContent=
@@ -1124,29 +950,20 @@ ftDevAvailableSpace()
 {
     local ftEffect=设备可用空间
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftDevAvailableSpace --df && return
 
     local dirPathTraget=$1
     local isReturn=$2
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftDevAvailableSpace [dirPathTraget] [[isReturn]]
 #    ftDevAvailableSpace /media/test
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=1
     local errorContent=
@@ -1180,28 +997,19 @@ ftVersionComparison()
 {
     local ftEffect=版本号大小对比_nodisplay
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftVersionComparison --df && return
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftVersionComparison -h    #查看帮助
 #
 #    只能比对xx.xx格式的版本号
-#    echo $(ftVersionComparison 版本1 版本2)   #比对版本1和2大小
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#    echo \$(ftVersionComparison 版本1 版本2)   #比对版本1和2大小
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=2
     local errorContent=
@@ -1224,38 +1032,26 @@ ftLanguageUtil()
 {
     local ftEffect=语言缩写转换
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftLanguageUtil --df && return
 
     local ftLanguageContent=$@
     local dirPathCode=$ANDROID_BUILD_TOP
     local filePathDataBase=$rFilePathXbashDataBase
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftLanguageUtil 缩写列表
 #    ftLanguageUtil “ar_IL bn_BD my_MM zh_CN”
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
- --env ) cat<<EOF
+#========================================================="; return ;;
+ --env ) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ];then
         ftLanguageUtil --env
@@ -1321,26 +1117,17 @@ ftInitDevicesList()
 {
     local ftEffect=初始化存储设备的列表
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftInitDevicesList --df && return
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftInitDevicesList [可用空间/单位默认为MB]
 #    ftInitDevicesList 4096M
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local devMinAvailableSpace=0  # 设备最小可用空间，小于则视为无效.单位M
 
@@ -1445,13 +1232,7 @@ adb()
     #环境校验
     # if [ -z "$filePathAdbNow" ]||[ ! -d "$ANDROID_SDK" ];then
     if [ ! -d "$ANDROID_SDK" ];then
-        cat<<EOF
-#===============[ ${ftEffect} ]的使用环境说明=============
-#
-#    Android SDK 环境异常，请查看配置
-#=========================================================
-EOF
-        return
+        echo -e "#===============[ ${ftEffect} ]的使用环境说明=============\n#    Android SDK 环境异常，请查看配置\n#=========================================================" ; return
     fi
 
     if [[ -f "$filePathAdbNow" ]]; then
@@ -1528,32 +1309,20 @@ ftCleanDataGarbage()
 {
     local ftEffect=清空回收站
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftCleanDataGarbage --df && return
 
     while true; do case "$1" in
-     -e |--exception) cat<<EOF
+     -e |--exception) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 #    禁止在高权限下运行,转化普通用户后，再次尝试
-#=========================================================
-EOF
-      return;;
-    -h | --help) cat<<EOF
+#=========================================================" ;return;;
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftCleanDataGarbage [无参]
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     i[ `whoami` != $rNameUser ]||[ "$(whoami)" = "root" ] && ftCleanDataGarbage -e && return
     #耦合校验
@@ -1588,107 +1357,11 @@ EOF
 
 
 #####---------------------工具函数---------------------------#########
-ftAutoAddGitPatch()
-{
-    local ftEffect=批量添加git_patch
-    local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftAutoAddGitPatch --df && return
-
-    local filePathBranchList=branch.list
-    local dirPathCode=$ANDROID_BUILD_TOP
-
-    while true; do case "$1" in
-    -h | --help) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftAutoAddGitPatch 无参
-#=========================================================
-EOF
-    return ;;
-    --env ) cat<<EOF
-#===================[   ${ftEffect}   ]的使用环境说明=============
-#
-# 环境未初始化
-# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
-    * ) break;;esac;done
-
-    #耦合校验
-    if [ -z "$ANDROID_BUILD_TOP" ];then
-        ftAutoAddGitPatch --env
-        return
-    fi
-    local errorContent=
-    [ ! -d "$dirPathCode" ]&& errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoAddGitPatch -h && return
-
-    #实现主体
-    cd $dirPathCode
-    if [ ! -z "$(pgrep -f gedit)" ];then
-            while true; do
-                    echo
-                    ftEcho -y gedit 已打开是否关闭
-                    read -n 1 sel
-                    case "$sel" in
-                        y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
-                                      break;;
-                        n | N |q | Q)    return;;
-                        * ) ftEcho -e 错误的选择：$sel
-                            echo "输入n,q，离开"
-                            ;;
-                    esac
-            done
-    fi
-    git branch > $filePathBranchList&&
-    gedit $filePathBranchList&&
-    while [ ! -z "$(pgrep -f gedit)" ] ; do
-        echo 等待中
-    done
-    content=`cat $filePathBranchList`
-    if [ ! -z "$content" ];then
-            ftEcho -b 将编译下面所有分支
-            cat $filePathBranchList | while read line ; do
-                echo branchName=$line
-            done
-            while true; do
-                    echo
-                    ftEcho -y 是否开始编译
-                    read -n 1 select
-                    case "$select" in
-                        y | Y )
-                                        local filePathAddPatchTool=${rDirPathXbashModule}/git/multiBranch.module
-                                        if [[ -f $filePathAddPatchTool  ]]; then
-                                            cat $filePathBranchList | while read branchName ; do
-                                                    $filePathAddPatchTool $branchName
-                                            done
-                                            git reset --hard
-                                        fi
-                                       break;;
-                        n | N)    break;;
-                        q |Q)    exit;;
-                        * ) ftEcho -e 错误的选择：$sel
-                             echo "输入q，离开" ;;
-                    esac
-            done
-    fi
-    rm -f $filePathBranchList
-}
-
 complete -W "-b -h" ftAutoBuildMultiBranchEnvSeparation
 ftAutoBuildMultiBranchEnvSeparation()
 {
     local ftEffect=多分支串行编译[环境独立]/在多个终端间串行执行命令
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftAutoBuildMultiBranchEnvSeparation --df && return
 
     local editType=$1
     editType=$(echo $editType | tr '[A-Z]' '[a-z]')
@@ -1697,33 +1370,23 @@ ftAutoBuildMultiBranchEnvSeparation()
     local dirPathProcessEnableId=/tmp/ProcessEnableIds
 
     while true; do case "$editType" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    查看帮助
 #    ftAutoBuildMultiBranchEnvSeparation -h
 #
 #    根据分支列表进行串行编译
 #    ftAutoBuildMultiBranchEnvSeparation -b
-#=========================================================
-EOF
-    return ;;
-    --env ) cat<<EOF
+#========================================================="; return ;;
+    --env ) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ];then
         ftAutoBuildMultiBranchEnvSeparation --env
@@ -1787,28 +1450,19 @@ ftKillApplicationByPackageName()
 {
     local ftEffect=kill掉包名为packageName的应用
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftKillApplicationByPackageName --df && return
 
     local packageName=$1
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftKillApplicationByPackageName [packageName]
 #    ftKillApplicationByPackageName com.android.settings
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=1
     local errorContent=
@@ -1864,7 +1518,6 @@ ftLogcatApplicationByPackageName()
 {
     local ftEffect=打印指定包名输出的log
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftLogcatApplicationByPackageName --df && return
 
     local packageName=$1
     local vContent=$2
@@ -1874,7 +1527,7 @@ ftLogcatApplicationByPackageName()
     fi
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #     打印所有log
 #    ftLogcatApplicationByPackageName
@@ -1888,19 +1541,11 @@ ftLogcatApplicationByPackageName()
 #     打印包含123456 不包含777  的log
 #    ftLogcatApplicationByPackageName 123456 7777
 #
-#=========================================================
-EOF
-
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=2
     local errorContent=
@@ -1942,26 +1587,16 @@ ftRestartAdb()
 {
     local ftEffect=重启adbSever
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftRestartAdb --df && return
-
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftRestartAdb [无参]
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=0
     local errorContent=
@@ -1984,28 +1619,19 @@ ftMtkFlashTool()
 {
     local ftEffect=mtk下载工具
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftMtkFlashTool --df && return
 
     local tempDirPath=`pwd`
     export OLDPWD=$tempDirPath
     local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1612.00.100
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftMtkFlashTool 无参
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=0
     local errorContent=
@@ -2025,14 +1651,13 @@ ftBootAnimation()
 {
     local ftEffect=生成开关机动画
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftBootAnimation --df && return
 
     local editType=$1
     local dirPathAnimation=$2
     local dirPathBase=$(pwd)
 
-    while true; do case "$1" in    -h | --help)
-        cat<<EOF
+    while true; do case "$1" in
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    请进入动画资源目录后执行xc bootanim xxx
 #    ftBootAnimation [edittype] [path]
@@ -2042,18 +1667,11 @@ ftBootAnimation()
 #
 #    初始化生成bootanimation2.zip所需要的东东，然后生成动画包
 #    ftBootAnimation new /home/xxxx/test/bootanimation2
-#============================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#============================================================"; return ;;
     * ) break;; esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=2
     local errorContent=
@@ -2230,26 +1848,16 @@ ftGjh()
 {
     local ftEffect=生成国际化所需的xml文件_disable
     local isEnable=false #年久失修，暂时关闭
-    #可用性校验
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftGjh --df && return
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftGjh 无参数
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 年久失修，暂时关闭，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=0
     local errorContent=
@@ -2270,7 +1878,6 @@ ftPowerManagement()
 {
     local ftEffect=延时免密码关机重启
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftPowerManagement --df && return
 
     local edittype=$1
     local timeLong=$2
@@ -2278,24 +1885,17 @@ ftPowerManagement()
     timeLong=${timeLong:-'10'}
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    ftPowerManagement 关机/重启 时间/秒
 #    ftPowerManagement shutdown/reboot 100
 #    xs 时间/秒 #制定时间后关机,不带时间则默认十秒
 #    xss 时间/秒 #制定时间后重启,不带时间则默认十秒
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local errorContent=
     [ -z "$userPassword" ] && errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword"
@@ -2335,30 +1935,6 @@ ftReduceFileList()
 {
     local ftEffect=精简动画帧文件
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftReduceFileList --df && return
-
-
-    while true; do case "$1" in
-    -h | --help) cat<<EOF
-#===================[   ${ftEffect}   ]的使用示例==============
-#
-#    ftReduceFileList 保留的百分比 目录
-#    ftReduceFileList 60 /home/xxxx/temp
-#
-#    ftReduceFileList 目录
-#    ftReduceFileList /home/xxxx/temp
-# 由于水平有限，实现对60%和50%之类的比例不敏感
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
-    * ) break;;esac;done
 
     if (( $#==2 ));then
         local percentage=$1
@@ -2371,6 +1947,20 @@ EOF
     fi
     local editType=del #surplus
 
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    ftReduceFileList 保留的百分比 目录
+#    ftReduceFileList 60 /home/xxxx/temp
+#
+#    ftReduceFileList 目录
+#    ftReduceFileList /home/xxxx/temp
+# 由于水平有限，实现对60%和50%之类的比例不敏感
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=2
     local errorContent=
@@ -2420,15 +2010,13 @@ ftReNameFile()
 {
     local ftEffect=批量重命名文件
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftReNameFile --df && return
 
     local valCount=4
     local errorContent=
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    不指定文件名长度默认为4
 #    ftReNameFile 目录
 #    ftReNameFile /home/xxxx/temp
@@ -2439,16 +2027,7 @@ ftReNameFile()
 #    ftReNameFile -z /home/xxxx/temp test
 #    ftReNameFile -z 目录 前缀 文件名后缀
 #    ftReNameFile -z /home/xxxx/temp test test2
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     -z |-t )
          local editTypePrefixes=$1
          local dirPathFileList=$2
@@ -2470,6 +2049,8 @@ EOF
             break
     ;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathFileList" ] && errorContent="${errorContent}\\n[目标目录不存在]dirPathFileList=$dirPathFileList"
@@ -2530,7 +2111,6 @@ ftAutoBackupOrRestoreOuts()
 {
     local ftEffect=Android编译生成out相关自动维护
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftAutoBackupOrRestoreOuts --df && return
 
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
@@ -2538,41 +2118,27 @@ ftAutoBackupOrRestoreOuts()
     local filterString=$2
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    备份out
 #    ftAutoBackupOrRestoreOuts 无参
 #    移动匹配out到当前项目
 #    ftAutoBackupOrRestoreOuts -m
 #    ftAutoBackupOrRestoreOuts -m xxx   #分支名包含xxx的out列表
-#=========================================================
-EOF
-    return ;;
-    --env ) cat<<EOF
+#========================================================="; return ;;
+    --env ) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
-    if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
-        ftAutoBackupOrRestoreOuts --env
-        return
-    fi
-
     local valCount=2
     local errorContent=
+    [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoBackupOrRestoreOuts --env && return
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoBackupOrRestoreOuts -h && return
@@ -2687,40 +2253,28 @@ ftAutoUploadHighSpeed()
 {
     local ftEffect=上传文件到制定smb服务器路径[高速版]
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftAutoUploadHighSpeed --df && return
 
     #存放上传源的目录
     local dirPathContentUploadSource=$1
     local serverIp=$2
 
     while true; do case "$1" in
-    --rely) cat<<EOF
+    --rely) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 #    依赖 sshpass pigz,请使用下面命令安装
 #    sudo apt-get install sshpass pigz pv
-#=========================================================
-EOF
-      return;;
-    -h | --help) cat<<EOF
+#=========================================================" ;return;;
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftAutoUploadHighSpeed 源存放目录
 #
 #    路径:acb/def/123/kkk.zip
 #    ftAutoUploadHighSpeed acb/def/123 kkk.zip
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [ -z `which sshpass` ]||[ -z `which pigz` ]||[ -z `which pv` ] && ftAutoUploadHighSpeed --rely && return
     #耦合校验
@@ -2766,7 +2320,6 @@ ftAutoPacket()
 {
     local ftEffect=基于android的out生成版本软件包
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftAutoPacket --df && return
 
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' DEBUG
     # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' ERR
@@ -2778,34 +2331,23 @@ ftAutoPacket()
     local filePathDataBase=$rFilePathXbashDataBase
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftAutoPacket -y #免确认自动清理out/packet
 #    ftAutoPacket -u #上传到188服务器
 #    ftAutoPacket -r #添加说明
 #    ftAutoPacket -p #打包
 #    ftAutoPacket -a #默认启动全部流程
-#=========================================================
-EOF
-    return ;;
-    --env ) cat<<EOF
+#========================================================="; return ;;
+    --env ) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;; esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ]\
             ||[ -z "$TARGET_PRODUCT" ]\
@@ -3156,7 +2698,6 @@ ftAutoCreateReadMeBySoftwareVersion()
 {
     local ftEffect=创建软件版本相关修改记录和版本说明
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&ftAutoCreateReadMeBySoftwareVersion  --df && return
 
     local dirPathCode=$ANDROID_BUILD_TOP
     local dirPathOut=$ANDROID_PRODUCT_OUT
@@ -3165,39 +2706,25 @@ ftAutoCreateReadMeBySoftwareVersion()
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftAutoCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
 #    ftAutoCreateReadMeBySoftwareVersion out/pac
-#=========================================================
-EOF
-    return ;;
-    --rely) cat<<EOF
+#========================================================="; return ;;
+    --rely) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 #    工具依赖包 unix2dos #sudo apt-get install tofrodos
-#=========================================================
-EOF
-      return;;
-    --env ) cat<<EOF
+#========================================================="; return;;
+    --env ) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [ -z `which todos` ]||[ -z `which fromdos` ] && ftAutoCreateReadMeBySoftwareVersion --rely && return
     [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
@@ -3362,35 +2889,23 @@ ftAutoLanguageUtil()
 {
     local ftEffect=语言缩写转化为中文
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftAutoLanguageUtil --df && return
 
     local dirPathCode=$ANDROID_BUILD_TOP
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftAutoLanguageUtil 无参
-#=========================================================
-EOF
-    return ;;
-    --env ) cat<<EOF
+#========================================================="; return ;;
+    --env ) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     if [ -z "$ANDROID_BUILD_TOP" ];then
         ftAutoLanguageUtil --env
@@ -3443,44 +2958,29 @@ EOF
 
 ftAutoUpdateSoftwareVersion()
 {
-    local ftEffect=更新sprd7731c_N9的软件版本
+    local ftEffect=更新sprd7731c_N9的软件版本_disable
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftAutoUpdateSoftwareVersion --df && return
 
     local dirPathCode=$ANDROID_BUILD_TOP
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftAutoUpdateSoftwareVersion 无参
-#=========================================================
-EOF
-    return ;;
-    -e | --exception) cat<<EOF
+#========================================================="; return ;;
+    -e | --exception) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 #    ftAutoUpdateSoftwareVersion 仅可用于 SPRD > 7731C > N9 的项目
-#=======================================================================
-EOF
-    return ;;
-    --env ) cat<<EOF
+#======================================================================="; return ;;
+    --env ) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     # 环境检测
     ftAutoInitEnv
     if [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ]; then
@@ -3571,29 +3071,20 @@ ftAutoGetAndroidVersionBySDKVersion()
 {
     local ftEffect=根据SDK版本获取Android版本
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftAutoGetAndroidVersionBySDKVersion --df && return
 
     local sdkVersion=$1
     local filePathDataBase=$rFilePathXbashDataBase
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftAutoGetAndroidVersionBySDKVersion 1.0~25
 #    ftAutoGetAndroidVersionBySDKVersion 22
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=1
     local errorContent=
@@ -3614,43 +3105,28 @@ ftMaintainSystem()
 {
     local ftEffect=ubuntu系统维护
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftMaintainSystem --df && return
 
     while true; do case "$1" in
-    --env) cat<<EOF
+    --env) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 #    当前用户权限过低，请转换为root 用户后重新运行
-#=========================================================
-EOF
-      return;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-      return;;
-    --rely) cat<<EOF
+#========================================================="; return;;
+    --rely) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
-#=========================================================
-EOF
-      return;;
-    -h | --help) cat<<EOF
+#========================================================="; return;;
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftMaintainSystem 操作类型
 #    ftMaintainSystem -s / --sd_finish #整理磁盘
 #    ftMaintainSystem -b / --backup #备份系统
 #    ftMaintainSystem -r / --restore #还原备份
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [ "$(whoami)" != "root" ] && ftMaintainSystem --env && return
     [ -z $(which pigz) ] && ftMaintainSystem --rely "pigz" && return
@@ -3739,7 +3215,6 @@ EOF
                     #选择备份包覆盖的忽略路径
                         ftSetRestoreOverryList -pm $filePathVersionInfoMaintain -t $tagNaeMaintain
                     #当前配置信息显示
-                        local fileName=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain  fileName)
                         local versionName=${fileName%.*}
                         ftEcho -bh "还原关键信息"
                         ftEcho -s  "使用的备份包：$fileName"
@@ -3806,37 +3281,24 @@ ftGitLogShell()
 {
     local ftEffect=git的log特定格式显示
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&ftGitLogShell --df && return
-
 
     while true; do case "$1" in
-     --rely) cat<<EOF
+     --rely) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 #    ${ftEffect}依赖包
 #    请尝试使用 sudo apt-get install git git-core git-gui git-doc 补全依赖
-#=========================================================
-EOF
-      return;;
-    -h | --help) cat<<EOF
+#========================================================="; return;;
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    ftGitLogShell -a  #全部分支log
 #    ftGitLogShell -n 数量
-#    ftGitLogShell -t "Tag名"  #只输出包含tag的git log
-#    ftGitLogShell -c "格式字串" #自定义格式输出
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#    ftGitLogShell -t Tag名  #只输出包含tag的git log
+#    ftGitLogShell -c \"格式字串\" #自定义格式输出
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [ -z $(which git) ] && ftGitLogShell --rely && return
     [[ ! -z "$isAllBranchLog" ]]&&[ -z `which gitk` ] && ftGitLogShell --rely && return
@@ -3904,20 +3366,14 @@ ftAutoTest()
 {
     local ftEffect=Android自动测试
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftAutoTest --df && return
-
 
     while true; do case "$1" in
-     --rely) cat<<EOF
+     --rely) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#
 #    adb 找不到请确认 Android SDK 配置是否正确
-#=========================================================
-EOF
-      return;;
-    -h | --help) cat<<EOF
+#========================================================="; return;;
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    #-xx 为独立参数类型标识,不可拆分
 #    #参数之间没有先后约束
 #
@@ -3925,18 +3381,11 @@ EOF
 #    ftAutoTest -rc 2000 #重启2000次
 #    ftAutoTest -rwt 2000 #每2000s重启一次
 #    ftAutoTest -ec 2000 #monkey事件数为2000
-#=========================================================
-EOF
-    return ;;
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [ -z `which adb` ] && ftAutoTest --rely && return
     #参数解析
@@ -4025,45 +3474,103 @@ ftFind()
     find $1 -name "$2"
 }
 
+ftGitAddPatch()
+{
+    local ftEffect=批量添加git_patch
+    local isEnable=true
+
+    local filePathBranchList=branch.list
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    ftGitAddPatch 无参
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #耦合校验
+    local filePathAddPatchTool=${rDirPathXbashModule}/git/multiBranch.module
+    [ ! -f "$filePathAddPatchTool" ]&&[ -f "${filePathAddPatchTool}.example" ] &&\
+        ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
+
+    #实现主体
+    if [ ! -z "$(pgrep -f gedit)" ];then
+            while true; do
+                    echo
+                    ftEcho -y gedit 已打开是否关闭
+                    read -n 1 sel
+                    case "$sel" in
+                        y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}')
+                                      break;;
+                        n | N |q | Q)    return;;
+                        * ) ftEcho -e 错误的选择：$sel
+                            echo "输入n,q，离开"
+                            ;;
+                    esac
+            done
+    fi
+    git branch > $filePathBranchList&&
+    gedit $filePathBranchList&&
+    while [ ! -z "$(pgrep -f gedit)" ] ; do
+        echo 等待中
+    done
+    content=`cat $filePathBranchList`
+    if [ ! -z "$content" ];then
+            ftEcho -b 将编译下面所有分支
+            cat $filePathBranchList | while read line ; do
+                echo branchName=$line
+            done
+            while true; do
+                    echo
+                    ftEcho -y 是否开始编译
+                    read -n 1 select
+                    case "$select" in
+                        y | Y )
+                                        if [[ ! -f $filePathAddPatchTool  ]]; then
+                                            ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在"
+                                            return
+                                        fi
+                                        cat $filePathBranchList | while read branchName ; do
+                                                $filePathAddPatchTool $branchName
+                                        done
+                                        git reset --hard
+                                       break;;
+                        n  |q )    return;;
+                        * ) ftEcho -e 错误的选择：$sel
+                             echo "输入q，离开" ;;
+                    esac
+            done
+    fi
+    rm -f $filePathBranchList
+}
+
 ftGitCheckoutBtanch()
 {
     local ftEffect=快速切换分支
-    local branchNameTag="$1"
-    #可用性校验
     local isEnable=true
-    [ "$isEnable" != "true" ]&&[ "$1" != "--df" ] &&  ftGitCheckoutBtanch --df && return
+
+    local branchNameTag="$1"
 
     while true; do case "$1" in
-    -h | --help) cat<<EOF
+    -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#
 #    在本地所有分支中查找
 #    ftGitCheckoutBtanch 分支TAG
 #
 #    在仓库所有分支中查找
 #    ftGitCheckoutBtanch -a 分支TAG
-#=========================================================
-EOF
-    return ;;
-
-    --df) cat<<EOF
-#===================[   ${ftEffect}   ]的状态说明==============
-#
-#    ${ftEffect} 已被禁用，请确认
-#=========================================================
-EOF
-    return ;;
-
-    --rely) cat<<EOF
+#========================================================="; return ;;
+    --rely) echo -e "\
 #===================[   ${ftEffect}   ]的依赖说明=============
-#
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
-#=========================================================
-EOF
-    return ;;
+#========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
     [ -z $(which git) ] && ftGitCheckoutBtanch --rely "git" && return
     #参数解析
