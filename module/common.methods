@@ -55,17 +55,15 @@ ftReadAllAlias()
 {
         local ftEffect=显示bash内建等命令封装说明_nodisplay
 
-        if [[ -f $filePathXbashTragetBashrcBase ]]; then
-            local cmdName=
-            local cmdContent=
-            cat $filePathXbashTragetBashrcBase|grep alias  | while read line; do
-                    cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
-                    cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
-                    [[ ! -z "$cmdContent" ]] && printf "%14s  " $cmdName;echo $cmdContent
-            done
-        else
-            ftEcho -e "xbash配置不存在:$filePathXbashTragetBashrcBase"
-        fi
+        [[ ! -f $filePathXbashTragetBashrcBase ]] && ftEcho -e "xbash配置不存在:$filePathXbashTragetBashrcBase" && return
+
+        local cmdName=
+        local cmdContent=
+        cat $filePathXbashTragetBashrcBase|grep alias  | while read line; do
+                cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
+                cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
+                [[ ! -z "$cmdContent" ]] && printf "%14s  " $cmdName;echo $cmdContent
+        done
 }
 
 ftReadAllFt()
@@ -107,10 +105,10 @@ ftTest()
     local argList=($@)
     local dirPathLocal=$PWD
     local dirPathTemp=${rDirPathUserHome}/temp
-    if [[ ! -d "$dirPathTemp" ]]; then
-        mkdir $dirPathTemp||(ftEcho -e "${ftEffect} 创建demo环境目录失败:$dirPathTemp";return)
-    fi
+
+    [[ ! -d "$dirPathTemp" ]] && mkdir $dirPathTemp||(ftEcho -e "${ftEffect} 创建demo环境目录失败:$dirPathTemp";return)
     [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp
+
     ftTiming -i
     $rFilePathXbashModuleTest ${argList[@]:1}
     ftTiming
@@ -179,10 +177,7 @@ ftTiming()
 {
     local ftEffect=脚本操作耗时记录_nodisplay
 
-    if [ -z "$mTimingStart" ]||[ "$1" = "-i" ];then
-        mTimingStart=$(date +%s -d $(date +"%H:%M:%S"))
-        return 0;
-    fi
+    [ -z "$mTimingStart" ]||[ "$1" = "-i" ] && mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
 
      #时间少于1秒默认不显示操作耗时
      #时间时分秒各单位不显示为零的结果
@@ -306,27 +301,21 @@ ftIniGetValue()
     local end_block=0
 
     cat $filePath | while read line ; do
-        if [ "X$line" = "X[$blockName]" ];then
-            begin_block=1
-            continue
-        fi
+        [ "X$line" = "X[$blockName]" ] && begin_block=1 && continue
+
         if [ $begin_block -eq 1 ];then
             end_block=$(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')
-            if [ $end_block -eq 1 ];then
-                break
-            fi
+
+            [ $end_block -eq 1 ] && break
 
             need_ignore=$(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')
-            if [ $need_ignore -eq 1 ];then
-                continue
-            fi
+
+            [ $need_ignore -eq 1 ] && continue
+
             key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
             value=$(echo $line | awk -F= '{gsub("\t","",$2); print $2}')
 
-            if [ "X$keyName" = "X$key" ];then
-                echo $value
-                break
-            fi
+            [ "X$keyName" = "X$key" ] && echo $value && break
         fi
     done
 }
@@ -377,9 +366,7 @@ ftIniSetValue()
     fi
 
     #实现主体
-    if [[ "$isListValue" = "true" ]]; then
-        return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath`
-    fi
+    [[ "$isListValue" = "true" ]] && return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath`
     keyValue=$(echo $keyValue |sed s/[[:space:]]//g)
     return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName*=.* $keyName=$keyValue g;}" $filePath`
 }
@@ -683,9 +670,7 @@ ftAutoInitEnv()
             export AutoEnv_AndroidVersion=$AndroidVersion
     fi
 
-    if [ "$editType" = "-bp" ];then
-        return
-    fi
+    [ "$editType" = "-bp" ] && return
     # build.prop高级信息读取 end
 
     local dirPathLocal=$PWD
@@ -834,23 +819,14 @@ ftAutoInitEnv()
                         val=${val//\(/}
                         key=${key//_/}
 
-                         if [[ $key = "CT" ]];then
-                            export AutoEnv_clientName=$val
-                         elif [[ $key = "PJ" ]];then
-                            export AutoEnv_projrctName=$val
-                         elif [[ $key = "SS" ]];then
-                            export AutoEnv_screenScanDirection=$val
-                        elif [[ $key = "DM" ]];then
-                            export AutoEnv_demandSignName=$val
-                        elif [[ $key = "PMA" ]];then
-                            export AutoEnv_modelAllName=$val
-                        elif [[ $key = "MBML" ]];then
-                            export AutoEnv_motherboardName=$val
-                        elif [[ $key = "BAND" ]];then
-                            export AutoEnv_BandInfo=$val
-                        elif [[ $key = "FLASH" ]];then
-                            export AutoEnv_FlashConfig=$val
-                        fi
+                         [[ $key = "CT" ]] && export AutoEnv_clientName=$val && continue
+                         [[ $key = "PJ" ]] && export AutoEnv_projrctName=$val && continue
+                         [[ $key = "SS" ]] && export AutoEnv_screenScanDirection=$val && continue
+                         [[ $key = "DM" ]] && export AutoEnv_demandSignName=$val && continue
+                         [[ $key = "PMA" ]] && export AutoEnv_modelAllName=$val && continue
+                         [[ $key = "MBML" ]] && export AutoEnv_motherboardName=$val && continue
+                         [[ $key = "BAND" ]] && export AutoEnv_BandInfo=$val && continue
+                         [[ $key = "FLASH" ]] && export AutoEnv_FlashConfig=$val && continue
                 done
         fi
     fi
@@ -908,9 +884,8 @@ ftFileDirEdit()
     while true; do
     case "$type" in
         e | E | -e | -E )
-            if [ ! -d $path ]; then
-                 return 4
-            fi
+            [ ! -d $path ] && return 4
+
             files=`ls $path`
             if [ -z "$files" ]; then
                  return 2
@@ -1017,15 +992,10 @@ ftVersionComparison()
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftVersionComparison -h && return
 
     #实现主体
-    if [[ "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1" ]]; then
-        echo ">"
-    elif [[ "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1" ]]; then
-        echo "<"
-    elif [[ "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" == "$1" ]]; then
-        echo "<="
-    elif [[ "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1" ]]; then
-        echo ">="
-    fi
+    [[ "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1" ]] && echo ">" && return
+    [[ "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1" ]] && echo "<" && return
+    [[ "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" == "$1" ]] && echo "<=" && return
+    [[ "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1" ]] && echo ">=" && return
 }
 
 ftLanguageUtil()
@@ -1053,10 +1023,8 @@ ftLanguageUtil()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
-    if [ -z "$ANDROID_BUILD_TOP" ];then
-        ftLanguageUtil --env
-        return
-    fi
+    [ -z "$ANDROID_BUILD_TOP" ] && ftLanguageUtil --env && return
+
     ftAutoInitEnv
     if [ $AutoEnv_mnufacturers = "sprd" ];then
             local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
@@ -1231,9 +1199,7 @@ adb()
 
     #环境校验
     # if [ -z "$filePathAdbNow" ]||[ ! -d "$ANDROID_SDK" ];then
-    if [ ! -d "$ANDROID_SDK" ];then
-        echo -e "#===============[ ${ftEffect} ]的使用环境说明=============\n#    Android SDK 环境异常，请查看配置\n#=========================================================" ; return
-    fi
+    [ ! -d "$ANDROID_SDK" ] && echo -e "#===============[ ${ftEffect} ]的使用环境说明=============\n#    Android SDK 环境异常，请查看配置\n#=========================================================" ; return
 
     if [[ -f "$filePathAdbNow" ]]; then
         local dirPathLocal=$(pwd)
@@ -1388,10 +1354,7 @@ ftAutoBuildMultiBranchEnvSeparation()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
-    if [ -z "$ANDROID_BUILD_TOP" ];then
-        ftAutoBuildMultiBranchEnvSeparation --env
-        return
-    fi
+    [ -z "$ANDROID_BUILD_TOP" ] && ftAutoBuildMultiBranchEnvSeparation --env && return
 
     local requestEnvState=$(/bin/rm -rf $dirPathProcessEnableId&&mkdir $dirPathProcessEnableId)
     #trap '/bin/rm -rf $dirPathProcessEnableId;exit' SIGINT
@@ -1474,10 +1437,7 @@ ftKillApplicationByPackageName()
     #adb连接状态检测
     adb wait-for-device
     local adbStatus=$(adb get-state)
-    if [ "$adbStatus" != "device" ];then
-        ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
-        return
-    fi
+    [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
 
     while true; do case "$packageName" in
         systemui)   packageName="com.android.systemui"  ;break;;
@@ -1521,10 +1481,7 @@ ftLogcatApplicationByPackageName()
 
     local packageName=$1
     local vContent=$2
-    if [[ -z "$packageName" ]]; then
-        adb logcat 
-        return;
-    fi
+    [[ -z "$packageName" ]] && adb logcat && return
 
     while true; do case "$1" in
     -h | --help) echo -e "\
@@ -1557,10 +1514,7 @@ ftLogcatApplicationByPackageName()
     #adb连接状态检测
     adb wait-for-device
     local adbStatus=$(adb get-state)
-    if [ "$adbStatus" != "device" ];then
-        ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
-        return
-    fi
+    [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
 
     while true; do case "$packageName" in
         systemui)   packageName="com.android.systemui"  ;break;;
@@ -1783,9 +1737,7 @@ ftBootAnimation()
 
         local file1=${filelist[0]}
         local file1=${file1##*.}
-        if [ $file1 != "jpg" ]&&[ $file1 != "png" ];then
-            ftEcho -e 特殊格式[${file1}]动画资源文件，生成包大小可能异常
-        fi
+        [ $file1 != "jpg" ]&&[ $file1 != "png" ] && ftEcho -e 特殊格式[${file1}]动画资源文件，生成包大小可能异常
 
         #文件重命名
         index=0
@@ -2159,10 +2111,7 @@ ftAutoBackupOrRestoreOuts()
     local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
 
     if [ ! -d "$dirPathCodeRootOuts" ];then
-        if [[ "$editType" = "-m" ]]; then
-            ftEcho -e "${dirNameCodeRootOuts}为空"
-            return
-        fi
+        [[ "$editType" = "-m" ]] && ftEcho -e "${dirNameCodeRootOuts}为空" && return
         mkdir -p $dirPathCodeRootOuts
     fi
 
@@ -2175,10 +2124,7 @@ ftAutoBackupOrRestoreOuts()
             local dirPathOutTopSize=${#dirPathOutTopInfo[@]}
             for item in ${excludeConfigInfo[@]} ; do
                     item=${dirPathOutTop}/${item}
-                    if [[ ! -d "$item" ]]&&[[ ! -f "$item" ]]; then
-                        excludeConfigSize=0
-                        break;
-                    fi
+                    [[ ! -d "$item" ]]&&[[ ! -f "$item" ]] && excludeConfigSize=0 && break
             done
             if (( $excludeConfigSize == $dirPathOutTopSize )); then
                 rm -rf $dirPathOutTop
@@ -2189,11 +2135,10 @@ ftAutoBackupOrRestoreOuts()
         fi
         local branchName=$filterString
         [[ -z "$filterString" ]] && branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+
         local dirPathOutList=($(ls $dirPathCodeRootOuts|grep $branchName))
-        if [[ -z "$dirPathOutList" ]]; then
-            ftEcho -e "未找到\n分支[$branchName]对应的out"
-            return
-        fi
+        [[ -z "$dirPathOutList" ]] && ftEcho -e "未找到\n分支[$branchName]对应的out" && return
+
         local itemCount=${#dirPathOutList[@]}
         local dirNameOutTraget=$dirPathOutList
         if (( $itemCount>1 ));then
@@ -2224,10 +2169,7 @@ ftAutoBackupOrRestoreOuts()
     fi
 
     if [ ! -d "$dirPathOutBranchVersion" ];then
-        if [[ ! -d "$dirPathOutTop" ]]; then
-             ftEcho -e "out 不存在"
-             return
-        fi
+        [[ ! -d "$dirPathOutTop" ]] && ftEcho -e "out 不存在" && return
         if [[ ! -d "$dirPathOut" ]]; then
              ftEcho -e "out 不完整"
              dirNameBranchVersion=${dirNameBranchVersion}____section
@@ -2639,10 +2581,8 @@ ftAutoPacket()
                         local fileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}))
                         for file in ${fileList[@]}; do
                             local filePath=${dirPathOut}/${file}
-                             if [[ ! -f "$filePath" ]]; then
-                                 ftEcho -e "找不到 : ${filePath}"
-                                 return;
-                             fi
+                            [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && return
+
                              printf "%-2s %-30s\n" 复制 $file
                              cp -r -f  $filePath $dirPathPackage
                              # rsync --progress  $filePath $dirPathPackage
@@ -2650,17 +2590,14 @@ ftAutoPacket()
                              # pv $filePath > ${dirPathPackage}/${file}
                         done
                     else
-                        ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage"
-                        return;
+                        ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage" && return
                     fi
                     #otaPackages
                     if [[ ! -z "$otaFileList" ]]; then
                         mkdir -p $dirPathOtaPackage
                         for file in ${otaFileList[@]}; do
-                             if [[ ! -f "$file" ]]; then
-                                 ftEcho -e "找不到 : ${file}"
-                                 return;
-                             fi
+                             [[ ! -f "$file" ]] && ftEcho -e "找不到 : ${file}" && return
+
                              printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
                              cp -r -f  $file $dirPathOtaPackage
                         done
@@ -2670,13 +2607,11 @@ ftAutoPacket()
                         mkdir -p $dirPathPackageDataBase
                         for filePath in ${dataBaseFileList[@]}; do
                              [[ ! -f "$filePath" ]] && filePath=${dirPathOut}/${filePath}
-                             if [[ ! -f "$filePath" ]]; then
-                                 ftEcho -e "找不到 : ${filePath}"
-                             else
-                                fileName=`basename $filePath`
-                                printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
-                                 cp -r -f  $filePath $dirPathPackageDataBase
-                             fi
+                             [[ ! -f "$filePath" ]] &&  ftEcho -e "找不到 : ${filePath}" && continue
+
+                            fileName=`basename $filePath`
+                            printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
+                             cp -r -f  $filePath $dirPathPackageDataBase
                         done
                     fi
             fi
@@ -2907,10 +2842,8 @@ ftAutoLanguageUtil()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
-    if [ -z "$ANDROID_BUILD_TOP" ];then
-        ftAutoLanguageUtil --env
-        return
-    fi
+    [ -z "$ANDROID_BUILD_TOP" ] && ftAutoLanguageUtil --env && return
+
     local valCount=0
     local errorContent=
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -2983,15 +2916,11 @@ ftAutoUpdateSoftwareVersion()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     # 环境检测
     ftAutoInitEnv
-    if [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ]; then
-        ftAutoUpdateSoftwareVersion -e
-        return
-    fi
+    [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ] && ftAutoUpdateSoftwareVersion -e && return
+
     #耦合校验
-    if [ -z "$ANDROID_BUILD_TOP" ];then
-        ftAutoUpdateSoftwareVersion --env
-        return
-    fi
+    [ -z "$ANDROID_BUILD_TOP" ] && ftAutoUpdateSoftwareVersion --env && return
+
     local valCount=1
     local errorContent=
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
@@ -3239,10 +3168,8 @@ ftMaintainSystem()
                         esac;done
                     ;;
         sdFinish )
-                    if [ -z $(which e4defrag) ];then
-                        ftMaintainSystem --rely "e4defrag"
-                        return
-                    fi
+                    [ -z $(which e4defrag) ] && ftMaintainSystem --rely "e4defrag" && return
+
                     devNameDirPathList=`df -lh | awk '{print $1}'`
                     devMountDirPathList=(`df -lh | awk '{print $6}'`)
                     indexDevName=0
@@ -3340,16 +3267,9 @@ ftGitLogShell()
     gitVersionNow=${gitVersionNow//git version/}
     gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
-    if [[ ! -z "$isAllBranchLog" ]]; then
-       #git update-index --untracked-cache
-       gitk --all "${pathTarget}"
-       return
-    fi
+    [[ ! -z "$isAllBranchLog" ]] && gitk --all "${pathTarget}" && return
 
-    if [[ ! -z "$isTagBranchLog" ]]; then
-       git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount
-       return
-    fi
+    [[ ! -z "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return
 
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]]&&[ "$isCustomBranchLog" != "true" ];then
         branchLogFormat=${branchLogFormat:-'%C(green)%<(9,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
@@ -3435,10 +3355,7 @@ ftAutoTest()
 
     if (( $rebootCount==$rebootCountDef ));then
             local adbStatus=$(adb get-state)
-            if [ "$adbStatus" != "device" ];then
-                ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
-                return
-            fi
+            [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
     fi
     while true; do
         adb wait-for-device && trap 'ftKillApplicationByPackageName monkey;exit' SIGINT
@@ -3528,10 +3445,8 @@ ftGitAddPatch()
                     read -n 1 select
                     case "$select" in
                         y | Y )
-                                        if [[ ! -f $filePathAddPatchTool  ]]; then
-                                            ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在"
-                                            return
-                                        fi
+                                        [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return
+
                                         cat $filePathBranchList | while read branchName ; do
                                                 $filePathAddPatchTool $branchName
                                         done

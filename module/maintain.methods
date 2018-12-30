@@ -45,10 +45,7 @@ ftRestoreOperate()
             local dirPathRestoreExclude=$(ftIniGetValue $filePathIniMaintain $tagNameMaintain dirPathRestoreExclude)
             local filePathVersion=${dirPathStore}/${fileName}
 
-            if [ ! -f $filePathVersion ];then
-                ftEcho -e 未找到备份包:${filePathVersion}
-                return
-            fi
+            [ ! -f $filePathVersion ] && ftEcho -e 未找到备份包:${filePathVersion} && return
             sudo tar --use-compress-program=pigz -xvpf $filePathVersion --exclude=$dirPathRestoreExclude -C /
             break;;
         n | N | q |Q)  exit;;
@@ -94,50 +91,40 @@ ftRestoreChoiceSource()
     local dirPathStore=$(ftIniGetValue $filePathIniMaintain $tagNameMaintain dirPathStore)
     local filePathList=($(find ${dirPathStore} -name "*.${suffixName}"))
 
-    if [ -z "$filePathList" ];then
-        ftEcho -ex 在${dirPathStore}没找到有效的备份包
-        exit
-    else
-        ftEcho -bh 请${ftEffect}
+    [ -z "$filePathList" ] && ftEcho -ex 在${dirPathStore}没找到有效的备份包 && exit
+
+    ftEcho -bh 请${ftEffect}
+    local index=0
+    printf "%-2s %-36s %-50s\n\n" 序号 备份包版本号 版本备注
+    for filePath in ${filePathList[*]} ; do
+        local fileName=$(basename $filePath)
+        local versionName=${fileName%.*}
+        local note=$(ftIniGetValue $filePathIni $versionName backupPackageNote)
+        note=${note:-'无效版本，无相关记录'}
+        printf "[%-2d] %-30s %-50s\n" ${index} ${versionName} ${note}
+        ((index+=1))
+    done
+    while true; do
         local index=0
-        printf "%-2s %-36s %-50s\n\n" 序号 备份包版本号 版本备注
-        for filePath in ${filePathList[*]} ; do
-            local fileName=$(basename $filePath)
-            local versionName=${fileName%.*}
-            local note=$(ftIniGetValue $filePathIni $versionName backupPackageNote)
-            note=${note:-'无效版本，无相关记录'}
-            printf "[%-2d] %-30s %-50s\n" ${index} ${versionName} ${note}
-            ((index+=1))
-        done
-        while true; do
-            local index=0
-            ftEcho -r  "请输入备份包对应的序号(回车默认0):"
-            if (( ${#filePathList[@]}>9 ));then
-                read index
-            else
-                read -n 1 index
-            fi;echo
+        ftEcho -r  "请输入备份包对应的序号(回车默认0):"
+        if (( ${#filePathList[@]}>9 ));then
+            read index
+        else
+            read -n 1 index
+        fi;echo
 
-            [ ${#index} == 0 ] && index=0 #设定默认值
+        [ ${#index} == 0 ] && index=0 #设定默认值
+        ( ! echo -n $index | grep -q -e "^[0-9][0-9]*$")&& ftEcho -e 错误的选择：$index ;echo  "输入1,2...... 选择    输入 n，q 离开" && continue
 
-            if ( ! echo -n $index | grep -q -e "^[0-9][0-9]*$");then
-                ftEcho -e 错误的选择：$index ;echo  "输入1,2...... 选择    输入 n，q 离开"
-                continue;
-            fi
+        local filePath=${filePathList[$index]}
+        [ ! -f "$filePath" ] && ftEcho -e  "备份包:${filePath}不存在" && continue
 
-            local filePath=${filePathList[$index]}
-            if [ ! -f "$filePath" ];then
-                ftEcho -e  "备份包:${filePath}不存在"
-                continue;
-            fi
-
-            local fileName=$(basename $filePath)
-            local dirPathStore=$(dirname $filePath)
-            ftIniSetValue $filePathIniMaintain $tagNameMaintain fileName "$fileName"
-            ftIniSetValue $filePathIniMaintain $tagNameMaintain dirPathStore "$dirPathStore"
-            break;
-        done
-    fi
+        local fileName=$(basename $filePath)
+        local dirPathStore=$(dirname $filePath)
+        ftIniSetValue $filePathIniMaintain $tagNameMaintain fileName "$fileName"
+        ftIniSetValue $filePathIniMaintain $tagNameMaintain dirPathStore "$dirPathStore"
+        break;
+    done
 }
 
 ftSetBackupDevDir()
@@ -544,10 +531,8 @@ ftMD5()
     if [ "$editType" = "checkMd5" ]; then
         ftEcho -bh "备份包 : ${versionName} MD5检验开始"
         local Md5Code=$(ftIniGetValue $filePathInfo $versionName MD5)
-        if [[ -z "$Md5Code" ]]; then
-            ftEcho -e "备份包 : ${versionName}  原始MD5未找到"
-            exit
-        fi
+        [[ -z "$Md5Code" ]] && ftEcho -e "备份包 : ${versionName}  原始MD5未找到" && exit
+
         local Md5CodeNow=$(md5sum $filePathVersion | awk '{print $1}')
         if [ "$Md5CodeNow"x != "$Md5Code"x ]; then
             ftEcho -e "备份包 : ${versionName} MD5检验失败"
@@ -683,9 +668,8 @@ ftSel()
     local ftEffect=备份包软件和硬件信息校验操作选择
     local title=$1
     local valCount=1
-    if(( $#!=$valCount ))||[ -z "$title" ];then
-        ftEcho -ex "函数[${ftEffect}]参数错误"
-    fi
+    (( $#!=$valCount ))||[ -z "$title" ] && ftEcho -ex "函数[${ftEffect}]参数错误"
+
     while true; do
     ftEcho -y "$1有变动,是否忽悠"
     read -n 1 sel
@@ -748,10 +732,7 @@ ftBackUpDevScanning()
                 case "$sel" in
                     y | Y )
                         #可用性校验
-                        if [ ! -z "$(ftSystemEnv -c $versionName -p $filePathIni)" ];then
-                            ftEcho -e 设备[${devDirPath}]上的同名备份包[${versionName}]不兼容
-                            break
-                        fi
+                        [ ! -z "$(ftSystemEnv -c $versionName -p $filePathIni)" ] && ftEcho -e 设备[${devDirPath}]上的同名备份包[${versionName}]不兼容 && break
 
                         #复制备份包
                         local filePathVersion=${dirPathStore}/${fileName}
@@ -808,9 +789,8 @@ ftSynchronous()
 
             for dirpath in ${dirPathArray[@]} ; do
                 for dirpath2 in ${dirPathArray[@]} ; do
-                    if [ ${dirpath} != ${dirpath2} ]; then
-                        find $dirpath -regex "$fileTypeList" -exec cp {} -u -n -v -r $dirpath2 \;
-                    fi
+                    [ ${dirpath} == ${dirpath2} ] && continue
+                    find $dirpath -regex "$fileTypeList" -exec cp {} -u -n -v -r $dirpath2 \;
                 done
             done
             ftEcho -s 同步结束！
