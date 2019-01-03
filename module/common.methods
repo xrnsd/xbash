@@ -106,7 +106,7 @@ ftTest()
     local dirPathLocal=$PWD
     local dirPathTemp=${rDirPathUserHome}/temp
 
-    [[ ! -d "$dirPathTemp" ]] && mkdir $dirPathTemp||(ftEcho -e "${ftEffect} 创建demo环境目录失败:$dirPathTemp";return)
+    #[[ ! -d "$dirPathTemp" ]] && mkdir $dirPathTemp||(ftEcho -e "${ftEffect} 创建demo环境目录失败:$dirPathTemp";return)
     [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp
 
     ftTiming -i
@@ -1199,7 +1199,7 @@ adb()
 
     #环境校验
     # if [ -z "$filePathAdbNow" ]||[ ! -d "$ANDROID_SDK" ];then
-    [ ! -d "$ANDROID_SDK" ] && echo -e "#===============[ ${ftEffect} ]的使用环境说明=============\n#    Android SDK 环境异常，请查看配置\n#=========================================================" ; return
+    [ ! -d "$ANDROID_SDK" ] && echo -e "#===============[ ${ftEffect} ]的使用环境说明=============\n#    Android SDK 环境异常，请查看配置\n#=========================================================" && return
 
     if [[ -f "$filePathAdbNow" ]]; then
         local dirPathLocal=$(pwd)
