@@ -2208,10 +2208,9 @@ ftAutoUploadHighSpeed()
 #=========================================================" ;return;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#    ftAutoUploadHighSpeed 源存放目录
+#    ftAutoUploadHighSpeed 源存放目录 服务器地址
 #
-#    路径:acb/def/123/kkk.zip
-#    ftAutoUploadHighSpeed acb/def/123 kkk.zip
+#    ftAutoUploadHighSpeed xxx 192.168.xxx.xxx
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -2224,29 +2223,42 @@ ftAutoUploadHighSpeed()
     local errorContent=
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathContentUploadSource" ] && errorContent="${errorContent}\\n上传源存放目录不存在:dirPathContentUploadSource=$dirPathContentUploadSource"
+    if [ -z "$serverIp" ];then
+        errorContent="${errorContent}\\n 这个东西送到哪都没说:serverIp=$serverIp"
+    else
+        if [ "$serverIp" = "$(/sbin/ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6 |grep 192.168.|awk '{print $2}'|tr -d "addr:" |tr -d "地址")" ];then
+            errorContent="${errorContent}\\n 目标服务器指向本机，请确认配置:serverIp=$serverIp"
+        else
+            local tagName=serverConfig_${serverIp}
+            local userName=$(ftIniGetValue $rFilePathXbashDataBase $tagName userName)
+            local userPassword=$(ftIniGetValue $rFilePathXbashDataBase $tagName userPassword)
+            local dirPathPackage=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackage)
+
+            [ -z "$userName" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]用户名获取失败"
+            [ -z "$userPassword" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]密码获取失败"
+            [ -z "$dirPathPackage" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]目标路径获取失败"
+        fi
+    fi
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoUploadHighSpeed -h && return
 
     #实现主体
-    local tagName=serverConfig_${serverIp}
-    local userName=$(ftIniGetValue $rFilePathXbashDataBase $tagName userName)
-    local userPassword=$(ftIniGetValue $rFilePathXbashDataBase $tagName userPassword)
-    local dirPathPackage=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackage)
-
     # 自动添加旧软件的TAG
     local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
-    local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
-    if [[ -d $dirPathServerLocal ]]; then
-            local versionPath=$(dirname $dirPathServerLocal)
-            local versionName=$(basename $dirPathServerLocal)
+    if [[ ! -z "$dirPathServerLocalBase" ]]; then
+        local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
+        if [[ -d $dirPathServerLocal ]]; then
+                local versionPath=$(dirname $dirPathServerLocal)
+                local versionName=$(basename $dirPathServerLocal)
 
-             ls $versionPath | while read line;do
-                if [[  ${line//$versionName} != $line ]]; then
-                    local dirPath=${versionPath}/${line}
-                    local dirPath_old=${dirPath}_old
-                    [[ -d "$dirPath_old" ]] && dirPath_old=${dirPath_old}_old
-                    mv $dirPath $dirPath_old
-                fi
-            done
+                ls $versionPath | while read line;do
+                    if [[  ${line//$versionName} != $line ]]; then
+                        local dirPath=${versionPath}/${line}
+                        local dirPath_old=${dirPath}_old
+                        [[ -d "$dirPath_old" ]] && dirPath_old=${dirPath_old}_old
+                        mv $dirPath $dirPath_old
+                    fi
+                done
+        fi
     fi
 
     ftEcho -s "\n========================\n开始上传文件:\n  ${dirPathContentUploadSource}\n服务器路径:\n  ${serverIp}$dirPathPackage\n========================\n"
