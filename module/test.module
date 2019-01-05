@@ -35,11 +35,10 @@ ftExample()
     #依赖校验
     [ -z $(which exampleTools1) ] && ftExample --rely "exampleTools1" && return
     #参数解析
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -x )
-            example1="${arg2}" ;;
-            #example1="${arg2:-"exampleDef1"}" ;;
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -x ) example1="${arg2}"
+              # example1="${arg2:-"exampleDef1"}" 
+          ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #耦合校验
     local valCount=1

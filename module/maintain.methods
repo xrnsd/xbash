@@ -19,8 +19,7 @@ ftRestoreOperate()
     local tagNameMaintain
     local dirPathRestoreTarget
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
             -pm )   filePathIniMaintain="${arg2}"
            ;;
             -t )   tagNameMaintain="${arg2}"
@@ -71,8 +70,7 @@ ftRestoreChoiceSource()
     local filePathIniMaintain
     local tagNameMaintain
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
             -p )   filePathIni="${arg2}"
            ;;
             -pm )   filePathIniMaintain="${arg2}"
@@ -147,8 +145,7 @@ ftSetBackupDevDir()
     local filePathIni
     local versionName
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
             -b )   editType=backup
            ;;
             -r )   editType=restore
@@ -238,8 +235,7 @@ ftSetBackupType()
     local versionName
     local filePathIniMaintain
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
             -p )   filePathIni="${arg2}"
            ;;
             -pm )   filePathIniMaintain="${arg2}"
@@ -324,8 +320,7 @@ ftSetRestoreOverryList()
     local filePathIniMaintain
     local tagNameMaintain
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
             -pm )   filePathIniMaintain="${arg2}"
            ;;
             -t )   tagNameMaintain="${arg2}"
@@ -372,8 +367,7 @@ ftBackupOs()
     local versionName
     local filePathIniMaintain
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
                   -p )   filePathIni="$arg2"
                      ;;
                   -pm )   filePathIniMaintain="${arg2}"
@@ -453,8 +447,7 @@ ftMaintainInfoNote()
     local filePathIni
     local versionName
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
                   -a )  editType=add
                      ;;
                   -r )   editType=read
@@ -499,8 +492,7 @@ ftMD5()
     local filePathVersion
     local filePathInfo
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -c )   filePathVersion="${arg2}"
                 editType=checkMd5
            ;;
@@ -564,8 +556,7 @@ ftSystemEnv()
     local versionName
     local filePathInfo
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -a) editType=add
           ;;
         -c) editType=check
@@ -702,8 +693,7 @@ ftBackUpDevScanning()
     local filePathIni
     local versionName
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -p )   filePathIni="${arg2}"
            ;;
         -d )   devList="${arg2}"
@@ -767,8 +757,7 @@ ftSynchronous()
     local dirPathArray=$1
     local fileTypeList=$2
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -d )   dirPathArray="${arg2}"
            ;;
         -s )   fileTypeList="${arg2}"

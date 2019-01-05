@@ -343,8 +343,7 @@ ftIniSetValue()
     local keyName=$3
     local keyValue=$4
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -l )   keyValue="${arg2}"
                 isListValue=true
            ;;
@@ -389,8 +388,7 @@ ftIniDeleteTag()
     local tagName
     local filePathIni
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -t )   tagName="${arg2}"
            ;;
         -p )   filePathIni="${arg2}"
@@ -448,8 +446,7 @@ ftIniDeleteItem()
     local itemName
     local filePathIni
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -t )   tagName="${arg2}"
            ;;
         -l )   itemName="${arg2}"
@@ -514,8 +511,7 @@ ftIniCreateFileOrTag()
     local contentTagName
     local contentTagKeyValList
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
           -a )   editType=add
              ;;
           -r )   editType=replace
@@ -1099,8 +1095,7 @@ ftInitDevicesList()
     #参数解析
     local devMinAvailableSpace=0  # 设备最小可用空间，小于则视为无效.单位M
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -s )   devMinAvailableSpace="${arg2:-'0'}"
                 devMinAvailableSpace=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
            ;;
@@ -2319,8 +2314,7 @@ ftAutoPacket()
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoPacket -h && return
 
     #实现主体
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -a )local isClean=true
              local isReadMe=true
              local isUpload=true
@@ -3074,8 +3068,7 @@ ftMaintainSystem()
     #参数解析
     local editType=backup
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -s )   editType=sdFinish
            ;;
         -b )   editType=backup
@@ -3161,7 +3154,7 @@ ftMaintainSystem()
                         ftEcho -s  "使用的备份包：$fileName"
                         ftEcho -s  "备份包的说明：$(ftIniGetValue $filePathVersionInfoVersion $versionName backupPackageNote)"
                         ftEcho -s  "还原时将忽略目录：$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain  dirPathRestoreExclude)"
-                    # #执行还原操作
+                    #执行还原操作
                         ftRestoreOperate -pm $filePathVersionInfoMaintain -t  $tagNaeMaintain -d "/"
                     #删除还原版本信息
                         ftIniDeleteTag -p $filePathVersionInfoMaintain -t $tagNaeMaintain
@@ -3250,22 +3243,18 @@ ftGitLogShell()
     local branchLogItemCountDef=20
     local pathTarget
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -a )   isAllBranchLog=true
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -a )  isAllBranchLog=true
                 pathTarget="${arg2}"
                 branchLogItemCount=0
                 ;;
-        -t )
-                branchLogFormat=${branchLogFormat:-'%s'}
+        -t )   branchLogFormat=${branchLogFormat:-'%s'}
                 isTagBranchLog=true
                 ;;
-        -c )
-                branchLogFormat=${arg2}
+        -c )   branchLogFormat=${arg2}
                 isCustomBranchLog=true
                 ;;
-        -n )
-                branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
+        -n )  branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
                 ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
@@ -3332,8 +3321,7 @@ ftAutoTest()
     local rebootCount=$rebootCountDef
     local dirPathLogRoot=~/download
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
               -p  | --path )  dirPathLogRoot=${arg2:-'dirPathLogRoot'}
                     ;;
               -rc  | --reboot_count )  rebootCount=${arg2:-'rebootCountDef'}
@@ -3502,8 +3490,7 @@ ftGitCheckoutBtanch()
     [ -z $(which git) ] && ftGitCheckoutBtanch --rely "git" && return
     #参数解析
     local isAllBranchs
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do
-    eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -a ) isAllBranchs=true;
              branchNameTag="${arg2}" ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
