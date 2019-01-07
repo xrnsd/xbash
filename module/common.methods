@@ -147,24 +147,23 @@ ftEcho()
     while true; do
     case $option in
 
-    e | E | -e | -E)        echo -e "\033[1;31m$content\033[0m"; break;;
-    ex | EX | -ex | -EX)    echo -e "\033[1;31m$content\033[0m"
+    -e )      echo -e "\033[1;31m$content\033[0m"; break;;
+    -ex )    echo -e "\033[1;31m$content\033[0m"
                 [ "$XMODULE" = "env" ] && return 
                 exit;;
-    s | S | -s | -S)        echo -e "\033[1;33m$content\033[0m"; break;;
-     -sn)        echo -en "\033[1;33m$content\033[0m"; break;;
-    -sh | -SH)        echo;echo -e "\033[1;33m$content\033[0m";echo; break;;
-    b | B| -b | -B)        echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
-    bh | BH | -bh | -BH)    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
-    y | Y | -y | -Y)        echo;echo -en "${content}[y/n]"; break;;
-    ye | YE | -ye | -YE) echo -en "${content}[y/n]"; break;;
-    r | R | -r | -R)        echo;echo -en "${content}"; break;;
-    ea| EA | -ea | -EA)    for val in ${content[@]} ; do
+    -s )       echo -e "\033[1;33m$content\033[0m"; break;;
+    -sn )     echo -en "\033[1;33m$content\033[0m"; break;;
+    -sh )     echo;echo -e "\033[1;33m$content\033[0m";echo; break;;
+    -b )       echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
+    -bh )    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
+    -y )       echo;echo -en "${content}[y/n]"; break;;
+    -ye )     echo -en "${content}[y/n]"; break;;
+    -r )        echo;echo -en "${content}"; break;;
+   -ea )      for val in ${content[@]} ; do
                     echo -e "\033[1;31m$val\033[0m";
                 done
                 break;;
-
-    eax| EAX | -eax | -EAX)    for val in ${content[@]} ; do
+    -eax )    for val in ${content[@]} ; do
                     echo -e "\033[1;31m$val\033[0m";
                 done
                 exit;;
@@ -179,34 +178,18 @@ ftTiming()
 
     [ -z "$mTimingStart" ]||[ "$1" = "-i" ] && mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
 
-     #时间少于1秒默认不显示操作耗时
-     #时间时分秒各单位不显示为零的结果
-    time2=$(date +%s -d $(date +"%H:%M:%S"))
-    time3=$(((time2-mTimingStart)%60))
-    time5=$(((time2-mTimingStart)/3600))
-    time4=$((((time2-mTimingStart)-time5*3600)/60))
-
-    if [ "$time5" -ne "0" ];then
-        hour=$time5时
-    else
-        hour=""
-    fi
-    if [ "$time4" -ne "0" ];then
-        minute=$time4分
-    else
-        minute=""
-    fi
-    if [ "$time3" -ne "0" ];then
-        second=$time3秒
-    else
-        second=""
-    fi
-    if [ "$time3" -eq "0" ]&&[ "$time4" -eq "0" ] &&[ "$time5" -eq "0" ];then
-        ftEcho -s 1秒没到就结束了
-    else
-        ftEcho -s "本技能耗时${hour}${minute}${second}  !"
-    fi
+    local content=
+    local timeNow=$(date +%s -d $(date +"%H:%M:%S"))
+    local time3=$(((timeNow-mTimingStart)%60))
+    local time5=$(((timeNow-mTimingStart)/3600))
+    local time4=$((((timeNow-mTimingStart)-time5*3600)/60))
     mTimingStart=
+
+    (($time3==0)) && (($time4==0)) && (($time5==0)) && return
+    (($time5!=0)) && content="${content}${time5}时"
+    (($time4!=0)) && content="${content}${time4}分"
+    (($time3!=0)) && content="${content}${time3}秒"
+    ftEcho -s "本技能耗时${content}  !"
 }
 
 ftPath()
@@ -214,29 +197,32 @@ ftPath()
     local ftEffect=路径处理_nodisplay
     local dirPath=$1
     local fileName=$2
+    if [[ "$1" = "-s" ]]; then
+        local isEchoExceptionInfo=true
+        dirPath=$2
+        fileName=$3
+    fi
 
     while true; do case "$1" in
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    ftPath 路径       #去掉最后的斜杠
-#    ftPath 路径 文件  #正确拼接
+#    ftPath 路径 文件  #正确拼接路径
+#    ftPath -s 路径 文件  #正确拼接路径，显示错误提示
 #========================================================="; return ;;
     * ) break;;esac;done
 
     #耦合校验
-    local valCount=2
+    local valCount=3
     local errorContent=
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -z "$dirPath" ] && errorContent="${errorContent}\\n[路径字串不能为空]dirPath=$dirPath"
+    [ ! -z "$errorContent" ] && [ -z "$isEchoExceptionInfo" ] && return
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPath -h && return
 
     #实现主体
     [[ "${dirPath: -1}" = "/" ]] && dirPath=${dirPath%/*}
-    if [[ -z "$fileName" ]]; then
-        echo $dirPath
-    else
-        echo ${dirPath}/${fileName}
-    fi
+    [[ -z "$fileName" ]] && echo $dirPath || echo ${dirPath}/${fileName}
 }
 #########################
 ##                                                     ##
@@ -290,7 +276,6 @@ ftIniGetValue()
     fi
     if [ ! -z "$errorContent" ];then
             [[ -z "$isReadSilence" ]]&&return
-
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftIniGetValue -h
             return
@@ -358,11 +343,7 @@ ftIniSetValue()
         elif [ -z "$(cat $filePath|grep $keyName)" ];then    errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName" ; fi
         [ -z "$keyValue" ] &&  errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
     fi
-    if [ ! -z "$errorContent" ];then
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftIniSetValue -h
-            return
-    fi
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h && return
 
     #实现主体
     [[ "$isListValue" = "true" ]] && return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath`
@@ -556,7 +537,7 @@ ftIniCreateFileOrTag()
                 y | Y )echo 
                     ftIniDeleteTag -p $filePathIni -t $contentTagName
                     break;;
-                n | N | q |Q)  echo
+                n | q )  echo
                     exit ;;
                 * ) ftEcho -e "错误的选择：$sel"
                     echo "输入n，q，离开";;
@@ -683,9 +664,8 @@ ftAutoInitEnv()
                     local mnufacturers=mtk
                fi
             done
-    else
-              ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败"
     fi
+    [[ -z "$mnufacturers" ]] && ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败"
 
     #device路径
     export AutoEnv_deviceDirPath=
@@ -877,44 +857,19 @@ ftFileDirEdit()
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftFileDirEdit -h && return
 
     #实现主体
-    while true; do
-    case "$type" in
-        e | E | -e | -E )
-            [ ! -d $path ] && return 4
-
-            files=`ls $path`
-            if [ -z "$files" ]; then
-                 return 2
-            else
-                 return 3
-            fi
-            break;;
-        f | F | -f | -F )
-            if [ -f $path ];then
-                return 1
-            elif [ $isCreate = "true" ];then
-                touch $path
-                return 1
-            else
-                return 0
-            fi
-            break;;
-        d | D)
-            if [ -d $path ];then
-                return 1
-            elif [ $isCreate = "true" ];then
-                mkdir -p $path
-                return 1
-            else
-                return 0
-            fi
-            break;;
-        * )
-            ftEcho -e "函数[${ftEffect}]参数错误，请查看函数使用示例"
-            ftFileDirEdit -h
-            ;;
-    esac
-    done
+    while true; do case "$type" in
+        -e | -E )   [ ! -d $path ] && return 4
+                        [ -z $(ls $path) ] && return 2 ||return 3
+                        ;;
+         -f | -F )   [ -f $path ] && return 1
+                        [ $isCreate = "true" ] && touch $path && return 1 || return 0
+                        ;;
+        -d | -D)   [ -d $path ] && return 1
+                        [ $isCreate = "true" ] && mkdir -p $path && return 1 || return 0
+                        ;;
+        * )    ftEcho -e "函数[${ftEffect}]参数错误，请查看函数使用示例"
+                ftFileDirEdit -h
+        ;;esac;done
 }
 
 ftDevAvailableSpace()
@@ -1131,14 +1086,11 @@ ftInitDevicesList()
     elif [[ $devMinAvailableSpace =~ "k" ]]||[[ $devMinAvailableSpace =~ "kb" ]];then
             devMinAvailableSpace=${devMinAvailableSpace//kb/}
             devMinAvailableSpace=${devMinAvailableSpace//k/}
-            let devMinAvailableSpace=devMinAvailableSpace/1024
+            devMinAvailableSpace=$(($devMinAvailableSpace/1024))
     fi
 
     unset mXbashModuleDataDevicesList
-    if [[ $sizeHome -ge $devMinAvailableSpace ]]; then
-        mXbashModuleDataDevicesList=$dirPathHome
-        indexDevMount=1;
-    fi
+    (( $sizeHome>=$devMinAvailableSpace )) && mXbashModuleDataDevicesList=$dirPathHome && indexDevMount=1
     #开始记录设备文件
     for dir in ${devNameDirPathList[*]} ;do
             devMountDirPath=${devMountDirPathList[indexDevName]}
@@ -1163,7 +1115,8 @@ _adb()
     local ftEffect=adb修正工具对应的参数补全实现
     local curr_arg=${COMP_WORDS[COMP_CWORD]}
     case "${COMP_WORDS[1]}" in
-                    -k)         COMPREPLY=( $(compgen -W 'home back menu down up lift right down  power' -- $curr_arg ) ); ;;
+                    -k)         COMPREPLY=( $(compgen -W 'home back menu down up lift right down  power' -- $curr_arg ) )
+                                  ;;
                     install)  COMPREPLY=( $(compgen -W "-l -r -s" -- $curr_arg ) );
                                 # case "${COMP_WORDS[2]}" in
                                 #                 -l|-r|-s)  if [[ ! -z "$(ls -l |grep ".apk")" ]]; then
@@ -1212,12 +1165,8 @@ adb()
                 echo $userPassword | sudo -p '' -S mv ${filePathAdbLocal}2 $filePathAdbLocal
             else
                 local filePath=${ANDROID_SDK}/platform-tools/adb
-                if [[ ! -f "$filePath" ]]; then
-                    ftEcho -e "Android SDK 配置 失败，文件不存在：$filePath"
-                    return;
-                else
-                    echo $userPassword | sudo  -p ''  -S ln -s  ${ANDROID_SDK}/platform-tools/adb $filePathAdbLocal
-                fi
+                [[ ! -f "$filePath" ]] && ftEcho -e "Android SDK 配置 失败，文件不存在：$filePath" && return
+                echo $userPassword | sudo  -p ''  -S ln -s  ${ANDROID_SDK}/platform-tools/adb $filePathAdbLocal
             fi
             ftRestartAdb
         fi
@@ -1225,17 +1174,13 @@ adb()
     fi
 
     if [[ "$1" = "-k" ]]; then
-        if [ ! -f "$filePathDataBase" ];then
-            ftEcho -e "数据库文件不存在]filePathDataBase=$filePathDataBase"
-        else
-            local TagName=androidKeyCode
-            local keyCode=$(ftIniGetValue $filePathDataBase androidKeyCode $2)
-            if [[ ! -z "$keyCode" ]]; then
-                $filePathAdbNow shell input keyevent $keyCode
-            else
-                ftEcho -e "未知配置,请查看:$filePathDataBase"
-            fi
-        fi
+        [ ! -f "$filePathDataBase" ] && ftEcho -e "数据库文件不存在]filePathDataBase=$filePathDataBase" && return
+
+        local TagName=androidKeyCode
+        local keyCode=$(ftIniGetValue $filePathDataBase androidKeyCode $2)
+
+        [[ -z "$keyCode" ]] && ftEcho -e "未知配置,请查看:$filePathDataBase" && return
+        $filePathAdbNow shell input keyevent $keyCode
         return
     fi
 
@@ -1245,15 +1190,13 @@ adb()
 ftSetBashPs1ByGitBranch()
 {
     local ftEffect=根据git分支名,设定bash的PS1
+
     local editType=$1
     local defaultPrefix=${rNameUser:-'xbash'}
     local defaultColorConfig=44
-
-    if [ "$(whoami)" = "root" ];then
-        defaultPrefix="root"
-        defaultColorConfig=42
-    fi
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+
+    [ "$(whoami)" = "root" ] && defaultPrefix="root" && defaultColorConfig=42
     if [ ! -z "$branchName" ]&&[ "$editType" != "-b" ];then
         if [ ${#branchName} -gt "10" ];then
             branchName="\nbranchName→ ${branchName}"
@@ -1379,15 +1322,14 @@ ftAutoBuildMultiBranchEnvSeparation()
                                           break;;
                             n | N |q | Q)    return;;
                             * ) ftEcho -e 错误的选择：$sel
-                                echo "输入n,q，离开"
-                                ;;
+                                echo "输入n,q，离开"; ;;
                         esac
                 done
         fi
         git branch > $filePathBranchList&&
         gedit $filePathBranchList&&
         while [ ! -z "$(pgrep -f gedit)" ] ; do
-            echo 等待中
+            echo 等待中 ;sleep 1
         done
         local branchArray=($(cat $filePathBranchList))
         if [ ! -z "$branchArray" ];then
@@ -1445,12 +1387,9 @@ ftKillApplicationByPackageName()
         adb shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
         local rootInfo=$(adb root|grep cannot)
         local remountInfo=$(adb remount|grep failed)
-        if [[ ! -z "$rootInfo" ]]; then
-            ftEcho -e "adb提权失败:$rootInfo"
-        elif [[ ! -z "$remountInfo" ]]; then
-            ftEcho -e "adb提权失败:$remountInfo"
-        fi
 
+        [[ ! -z "$rootInfo" ]] && ftEcho -e "adb提权失败:$rootInfo"
+        [[ ! -z "$remountInfo" ]] && ftEcho -e "adb提权失败:$remountInfo"
         adb shell kill $pid&&ftEcho -s "kill $pid"
     elif [[ -z "$(adb shell pm list packages|grep $packageName)" ]]; then
          ftEcho -e 包名[${packageName}]不存在，请确认
@@ -1698,9 +1637,7 @@ ftBootAnimation()
             local dirPathLocal=$PWD
             cd $dirPathAnimationSourceRes && trap 'cd $dirPathLocal;exit' SIGINT
             for file in $filelist ; do
-                if [ ! -f "$file" ];then
-                    ftEcho -ex 动画资源包含错误类型的文件[${file}]，请确认
-                fi
+                [ ! -f "$file" ] && ftEcho -ex "动画资源包含错误类型的文件[${file}]，请确认" && break
             done
             cd $dirPathLocal
         fi
@@ -1854,26 +1791,26 @@ ftPowerManagement()
     while true; do
     case "$edittype" in
         shutdown )
-            tput sc
-            for i in `seq -w $timeLong -1 1` ; do
-                tput rc;tput ed
-                echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
-                sleep 1
-            done
-            echo $userPassword | sudo   -p '' -S shutdown -h now
-            break;;
-        reboot)
-            tput sc
-            for i in `seq -w $timeLong -1 1` ; do
-                tput rc;tput ed
-                echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
-                sleep 1
-            done
-            echo $userPassword | sudo   -p '' -S reboot
-            break;;
-            * ) ftEcho -e 错误的选择：$sel
-                echo "输入q，离开"
+                tput sc
+                for i in `seq -w $timeLong -1 1` ; do
+                    tput rc;tput ed
+                    echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
+                    sleep 1
+                done
+                echo $userPassword | sudo   -p '' -S shutdown -h now
                 break;;
+        reboot)
+                tput sc
+                for i in `seq -w $timeLong -1 1` ; do
+                    tput rc;tput ed
+                    echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
+                    sleep 1
+                done
+                echo $userPassword | sudo   -p '' -S reboot
+                break;;
+        * ) ftEcho -e 错误的选择：$sel
+            echo "输入q，离开"
+            break;;
     esac
     done
 }
@@ -1923,10 +1860,7 @@ ftReduceFileList()
     ftFileDirEdit -e false $dirPathFileList
     [ $? -eq "2" ] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
 
-    if (( $percentage>50 ));then
-        percentage=$((100 - $percentage))
-        editType=surplus
-    fi
+    (( $percentage>50 )) && percentage=$((100 - $percentage)) && editType=surplus
     continueThreshold=$((100 / ${percentage} ))
 
     local dirNameFileListBase=${dirPathFileList##*/}
@@ -1942,9 +1876,7 @@ ftReduceFileList()
     for file in $fileList ; do
         ((index+=1))
         if (( `expr $index % $continueThreshold`== 0 ));then
-            if [ $editType = "surplus" ];then
-                continue;
-            fi
+            [ $editType = "surplus" ] && continue
         elif [ $editType = "del" ];then
             continue;
         fi
@@ -2007,10 +1939,10 @@ ftReNameFile()
     ftFileDirEdit -e false $dirPathFileList
     [ $? -eq "2" ] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
 
-    local dirNameFileListRename=RenameFiles
-    local dirPathFileListRename=${dirPathFileList}/${dirNameFileListRename}
     local index=0
     local lengthFileNameBase=
+    local dirNameFileListRename=RenameFiles
+    local dirPathFileListRename=${dirPathFileList}/${dirNameFileListRename}
 
     [ -d $dirPathFileListRename ] && rm -rf $dirPathFileListRename
     mkdir $dirPathFileListRename
@@ -2031,11 +1963,7 @@ ftReNameFile()
 
         file=$(echo $file |sed s/[[:space:]]//g)
         fileName=${file%.*}
-        if [[ $file =~ "." ]];then
-            fileFormatName=".${file##*.}"
-        else
-            fileFormatName=
-        fi
+        [[ $file =~ "." ]] && fileFormatName=".${file##*.}" || fileFormatName=
 
         if [[ -z  "lengthFileNameBase" ]]||[ ${#lengthFileNameBase} = "0" ]; then
                 [[ -z "$lengthFileName" ]] && lengthFileName=${#fileName}
@@ -2349,7 +2277,7 @@ ftAutoPacket()
                         case "$sel" in
                             y | Y ) rm  -rf $dirPathVersionSoftware
                                        break;;
-                            n | N | q |Q)    break ;;
+                            n | q )    break ;;
                             * ) ftEcho -e 错误的选择：$sel
                                 echo "输入n，q，离开";;
                         esac
@@ -2525,12 +2453,8 @@ ftAutoPacket()
                 # if  [ ! -z "$AutoEnv_AndroidVersion" ]&&(($AutoEnv_deviceSdkVersion>22)); then
                 #         dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_AndroidVersion}
                 # fi
-                if [[ -z "$dirPathGitBranchInfoGroup" ]]; then
-                    ftEcho -e "分支信息解析结果为空,请查看配置"
-                    return;
-                else
-                    dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirPathGitBranchInfoGroup}
-                fi
+                [[ -z "$dirPathGitBranchInfoGroup" ]] && ftEcho -e "分支信息解析结果为空,请查看配置" && return
+                dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirPathGitBranchInfoGroup}
 
                 local dirNameVeriosionBase=${AutoEnv_versionName}
                 #非user版本标记编译类型
@@ -2989,13 +2913,13 @@ ftAutoUpdateSoftwareVersion()
                                 ftEcho -s 提交开始，请稍等
                                 git add $filePathDeviceInfoSettingsBase $filePathSystemVersionTestBase&&git commit -m "版本 ${versionNameTestNew}"
                                 break;;
-                            n | N | q |Q)    return;;
+                            n | q )    return;;
                             * ) ftEcho -e 错误的选择：$sel
                                 echo "输入n，q，离开";;
                             esac
                             done
                 break;;
-            n | N | q |Q)    exit;;
+            n | q )    exit;;
             * ) ftEcho -e 错误的选择：$sel
                  echo "输入n，q，离开";;
         esac
@@ -3167,7 +3091,7 @@ ftMaintainSystem()
                             y | Y )
                                 ftPowerManagement reboot 5
                                 break;;
-                            n | N | q |Q)  exit;;
+                            n | q )  exit;;
                             * ) ftEcho -e 错误的选择：$sel
                                 echo "输入n，q，离开";;
                         esac;done
@@ -3550,7 +3474,7 @@ ftGitCheckoutBtanch()
             y | Y )echo 
                 git checkout "$branchNameTraget"
                 break;;
-            n | N | q |Q)  echo
+            n | q )  echo
                 return;;
             * ) ftEcho -e 错误的选择：$sel
                 echo "输入n，q，离开";;

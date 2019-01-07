@@ -47,7 +47,7 @@ ftRestoreOperate()
             [ ! -f $filePathVersion ] && ftEcho -e 未找到备份包:${filePathVersion} && return
             sudo tar --use-compress-program=pigz -xvpf $filePathVersion --exclude=$dirPathRestoreExclude -C /
             break;;
-        n | N | q |Q)  exit;;
+        n | q )  exit;;
         * ) ftEcho -e 错误的选择：$sel
             echo "输入n，q，离开";;
     esac
@@ -173,7 +173,7 @@ ftSetBackupDevDir()
 
     for dev in ${mXbashModuleDataDevicesList[*]} ; do
         devEffectiveSpace=$(ftDevAvailableSpace $dev)
-        let devEffectiveSpace=devEffectiveSpace/1024
+        devEffectiveSpace=$(($devEffectiveSpace/1024))
         echo -n "[${index}] ";printf "%-25s  " $dev;echo "可用：${devEffectiveSpace}G"
         #echo [ ${index} ] $dev 可用$(ftDevAvailableSpace $dev)
         #echo [ ${index} ] ${mXbashModuleDataDevicesList[$index]}
@@ -201,16 +201,11 @@ ftSetBackupDevDir()
     done
 
     case "$editType" in
-    backup )
-        local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}/${versionName}
-        ;;
-    restore )
-        local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}
-        if [ ! -d $dirPathStoreSource ];then
-            ftEcho -ex ${dirPathStoreSource}不存在,将退出
-            return;
-        fi
-        ;;
+    backup ) local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}/${versionName}
+                    ;;
+    restore ) local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}
+                    [ ! -d $dirPathStoreSource ] && ftEcho -ex ${dirPathStoreSource}不存在,将退出 && return
+                    ;;
     esac
     # 写入数据
     ftIniSetValue $filePathIni $versionName dirPathStore "$dirPathStoreSource"
@@ -237,11 +232,11 @@ ftSetBackupType()
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
             -p )   filePathIni="${arg2}"
-           ;;
+                     ;;
             -pm )   filePathIniMaintain="${arg2}"
-           ;;
+                     ;;
             -v )   versionName="${arg2}"
-           ;;
+                     ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
@@ -266,8 +261,8 @@ ftSetBackupType()
         case $typeIndex in
             1)        infoBackupType=cg; break;;
             2)        infoBackupType=bx; break;;
-             n | N | q |Q)    exit;;
-            * )        ftEcho -e 错误的选择：$typeIndex ;echo "输入1,2 选择    输入n，q离开";break;;
+            n | q) exit;;
+            * )       ftEcho -e 错误的选择：$typeIndex ;echo "输入1,2 选择    输入n，q离开";break;;
     esac;done
     # 写入数据,备份类型
     ftIniSetValue $filePathIni $versionName backupType $infoBackupType
@@ -322,9 +317,9 @@ ftSetRestoreOverryList()
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
             -pm )   filePathIniMaintain="${arg2}"
-           ;;
+                     ;;
             -t )   tagNameMaintain="${arg2}"
-           ;;
+                     ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
@@ -347,7 +342,7 @@ ftSetRestoreOverryList()
         case $typeIndex in
             1) ftIniSetValue $filePathIniMaintain $tagNameMaintain dirPathRestoreExclude $rDirPathUserHome;break;;
             2) break;;
-            n | N | q |Q)    exit;;
+            n | q) exit;;
             * )        ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";break;;
     esac;done
 }
@@ -405,7 +400,7 @@ ftBackupOs()
                             y | Y )
                                      rm -f $filePathVersion
                                     break;;
-                            n | N | q |Q)  return ;;
+                            n | q )  return ;;
                             * ) ftEcho -e 错误的选择：$sel
                             echo "输入n，q，离开";;
                         esac; done
@@ -425,7 +420,7 @@ ftBackupOs()
                         rm $fileNameExclude>/dev/null
                         chmod 777 -R $dirPathStore
                         break;;
-            n | N | q |Q)  return ;;
+            n | q )  return ;;
             * ) ftEcho -e 错误的选择：$sel
             echo "输入n，q，离开";;
         esac; done
@@ -526,12 +521,9 @@ ftMD5()
         [[ -z "$Md5Code" ]] && ftEcho -e "备份包 : ${versionName}  原始MD5未找到" && exit
 
         local Md5CodeNow=$(md5sum $filePathVersion | awk '{print $1}')
-        if [ "$Md5CodeNow"x != "$Md5Code"x ]; then
-            ftEcho -e "备份包 : ${versionName} MD5检验失败"
-            exit
-        else
-            ftEcho -s "备份包 : ${versionName} MD5检验成功"
-        fi
+        [ "$Md5CodeNow"x != "$Md5Code"x ] && ftEcho -e "备份包 : ${versionName} MD5检验失败" && exit
+
+        ftEcho -s "备份包 : ${versionName} MD5检验成功"
     fi
 }
 
@@ -645,12 +637,8 @@ ftSystemEnv()
             ftEcho -e 系统版本的位数不一致，将自动退出
             returns=不兼容
         fi
-        if [ ! -z "$returns" ]; then
-            ftEcho -s "备份包：${versionName} 系统兼容性检测结果为${returns}"
-            return 9
-        else
-            ftEcho -s "备份包：${versionName} 兼容当前系统"
-        fi
+        [ ! -z "$returns" ] && ftEcho -s "备份包：${versionName} 系统兼容性检测结果为${returns}" && return 9
+        ftEcho -s "备份包：${versionName} 兼容当前系统"
     fi
 }
 
@@ -666,7 +654,7 @@ ftSel()
     read -n 1 sel
     case "$sel" in
         y | Y )    echo 已忽略$1;break;;
-        n | N | q |Q)    exit;;
+        n | q )   exit;;
         * ) ftEcho -e 错误的选择：$sel
             echo "输入n，q，离开";;
     esac
@@ -730,7 +718,7 @@ ftBackUpDevScanning()
 
                         #清除权限限制
                         chmod 777 $filePathVersion ;;
-                    n | N | q |Q) return ;;
+                    n | q ) return ;;
                     * ) ftEcho -e 错误的选择：$sel
                          echo "输入n，q，离开";;
             esac; done

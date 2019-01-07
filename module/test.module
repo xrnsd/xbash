@@ -31,7 +31,7 @@ ftExample()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
     [ -z $(which exampleTools1) ] && ftExample --rely "exampleTools1" && return
     #参数解析
