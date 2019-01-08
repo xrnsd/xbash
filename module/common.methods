@@ -109,9 +109,9 @@ ftTest()
     #[[ ! -d "$dirPathTemp" ]] && mkdir $dirPathTemp||(ftEcho -e "${ftEffect} 创建demo环境目录失败:$dirPathTemp";return)
     [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp
 
-    ftTiming -i
+    ftTimeConsuming -i
     $rFilePathXbashModuleTest ${argList[@]:1}
-    ftTiming
+    ftTimeConsuming
     cd $dirPathLocal
 }
 
@@ -172,7 +172,7 @@ ftEcho()
     done
 }
 
-ftTiming()
+ftTimeConsuming()
 {
     local ftEffect=脚本操作耗时记录_nodisplay
 
@@ -290,16 +290,13 @@ ftIniGetValue()
 
         if [ $begin_block -eq 1 ];then
             end_block=$(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')
-
             [ $end_block -eq 1 ] && break
 
             need_ignore=$(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')
-
             [ $need_ignore -eq 1 ] && continue
 
             key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
             value=$(echo $line | awk -F= '{gsub("\t","",$2); print $2}')
-
             [ "X$keyName" = "X$key" ] && echo $value && break
         fi
     done
@@ -388,9 +385,7 @@ ftIniDeleteTag()
     local lineCount=$(cat $filePathIni|wc -l)
     while read -r line ; do
         if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
-            if [[ -z "$indexStart" ]]; then
-                indexStart=$index
-            fi
+            [[ -z "$indexStart" ]] && indexStart=$index
 
             if (($index==$lineCount));then
                 ((index+=1))
@@ -460,10 +455,7 @@ ftIniDeleteItem()
                 break
             fi
 
-            if [[ -z "$line" ]]; then
-                indexEnd=$index
-                break
-            fi
+            [[ -z "$line" ]] && indexEnd=$index && break
         fi
         ((index+=1))
     done
@@ -859,7 +851,7 @@ ftFileDirEdit()
     #实现主体
     while true; do case "$type" in
         -e | -E )   [ ! -d $path ] && return 4
-                        [ -z $(ls $path) ] && return 2 ||return 3
+                        [[ -z $(ls $path) ]] && return 2 ||return 3
                         ;;
          -f | -F )   [ -f $path ] && return 1
                         [ $isCreate = "true" ] && touch $path && return 1 || return 0
@@ -1508,8 +1500,6 @@ ftMtkFlashTool()
     local ftEffect=mtk下载工具
     local isEnable=true
 
-    local tempDirPath=`pwd`
-    export OLDPWD=$tempDirPath
     local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1612.00.100
     while true; do case "$1" in
     -h | --help) echo -e "\
@@ -1521,17 +1511,13 @@ ftMtkFlashTool()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
-    local valCount=0
     local errorContent=
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
-    [ -z "$rDirPathTools" ] && errorContent="${errorContent}\\n[mtk下载工具存放目录为空]rDirPathTools=$rDirPathTools"
     [ ! -d "$toolDirPath" ] && errorContent="${errorContent}\\n[mtk下载工具路径不存在]toolDirPath=$toolDirPath"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMtkFlashTool -h && return
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的出现错误:${errorContent}\\n" && return
 
     #实现主体
-    cd $toolDirPath&& trap 'cd $tempDirPath;exit' SIGINT
-    echo "$userPassword" | sudo   -p '' -S ${rDirPathTools}/sp_flash_tool_v5.1612.00.100/flash_tool
-    cd $tempDirPath
+    echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+    sudo ${toolDirPath}/flash_tool
 }
 
 complete -W "create new" ftBootAnimation
@@ -1820,6 +1806,18 @@ ftReduceFileList()
     local ftEffect=精简动画帧文件
     local isEnable=true
 
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+# 
+#    ftReduceFileList 保留的百分比 目录
+#    ftReduceFileList 60 /home/xxxx/temp  #由于水平有限，实现对60%和50%之类的比例不敏感
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #耦合校验
     if (( $#==2 ));then
         local percentage=$1
         local dirPathFileList=$2
@@ -1830,29 +1828,13 @@ ftReduceFileList()
         read percentage
     fi
     local editType=del #surplus
-
-    while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
-#    ftReduceFileList 保留的百分比 目录
-#    ftReduceFileList 60 /home/xxxx/temp
-#
-#    ftReduceFileList 目录
-#    ftReduceFileList /home/xxxx/temp
-# 由于水平有限，实现对60%和50%之类的比例不敏感
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #耦合校验
     local valCount=2
     local errorContent=
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
-    [ -z "$percentage" ] && errorContent="${errorContent}\\n[百分比取值为空]percentage=$percentage"
-    [ -z "$dirPathFileList" ] && errorContent="${errorContent}\\n[目标目录为空]dirPathFileList=$dirPathFileList"
-    ( ! echo -n $percentage | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[百分比取值无效，只能是数字]percentage=$percentage"
-    (( $percentage<0 ))||(( $percentage>100 )) && errorContent="${errorContent}\\n[百分比取值无效 0<=*<=100]percentage=$percentage"
+    if [ -z "$percentage" ]\
+        ||( ! echo -n $percentage | grep -q -e "^[0-9][0-9]*$")\
+        ||(( $percentage<0 ))\
+        ||(( $percentage>100 ));then errorContent="${errorContent}\\n[百分比取值错误]percentage=$percentage" ;fi
     [ ! -d "$dirPathFileList" ] && errorContent="${errorContent}\\n[目标目录]dirPathFileList=$dirPathFileList"
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftReduceFileList -h && return
 
@@ -1871,11 +1853,11 @@ ftReduceFileList()
         cp -rf ${dirPathFileList}/*  $dirPathFileListBackup
     fi
 
-     fileList=`ls $dirPathFileList`
+    fileList=$(ls $dirPathFileList)
     index=0
     for file in $fileList ; do
         ((index+=1))
-        if (( `expr $index % $continueThreshold`== 0 ));then
+        if (( $(expr $index % $continueThreshold)== 0 ));then
             [ $editType = "surplus" ] && continue
         elif [ $editType = "del" ];then
             continue;
@@ -2169,7 +2151,7 @@ ftAutoUploadHighSpeed()
     local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
     if [[ ! -z "$dirPathServerLocalBase" ]]; then
         local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
-        if [[ -d $dirPathServerLocal ]]; then
+        if [[ -d $dirPathServerLocal ]]&&[ ! -z "$ANDROID_BUILD_TOP" ]; then
                 local versionPath=$(dirname $dirPathServerLocal)
                 local versionName=$(basename $dirPathServerLocal)
 
