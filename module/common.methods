@@ -3128,7 +3128,8 @@ ftGitLogShell()
 #========================================================="; return;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#    ftGitLogShell -a  #全部分支log
+#    ftGitLogShell -a  # 全部分支log
+#    ftGitLogShell -a  路径 # 指定路径下的全部分支log
 #    ftGitLogShell -n 数量
 #    ftGitLogShell -t Tag名  #只输出包含tag的git log
 #    ftGitLogShell -c \"格式字串\" #自定义格式输出
@@ -3302,12 +3303,14 @@ ftGitAddPatch()
     local ftEffect=批量添加git_patch
     local isEnable=true
 
+    local branchTag=$1
     local filePathBranchList=branch.list
 
     while true; do case "$1" in
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    ftGitAddPatch 无参
+#    ftGitAddPatch 分支TAG   #只操作名称中有TAG的分支
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -3334,16 +3337,38 @@ ftGitAddPatch()
                     esac
             done
     fi
-    git branch > $filePathBranchList&&
-    gedit $filePathBranchList&&
+    if [[ -z $branchTag ]]; then
+        git branch > $filePathBranchList
+    else
+        local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+        local branchList=($(git branch|grep -i "$branchTag" |grep -v "$branchNameNow"))
+
+        if [[ ! -z "$isAllBranchs" ]];then
+            local key="remotes/origin/"
+            local branchListServer=($(git branch -a|grep -i "$branchTag" |grep -v "$branchNameNow" |grep -v "remotes/origin/HEAD -> origin/master" |grep "$key"))
+            for (( i = 0; i < ${#branchListServer[@]}; i++ )); do
+                branchListServer[$i]=$(echo ${branchListServer[$i]} | sed -e "s:$key::g")
+            done
+            branchList=(${branchList[@]} ${branchListServer[@]}) #合并本地和仓库分支
+            branchList=($(echo ${branchList[@]} | sed 's/ /\n/g'|sort |uniq)) #去重
+        fi
+        rm -f $filePathBranchList > /dev/null
+        for item in ${branchList[@]} ; do
+            echo "${item}" >> $filePathBranchList
+        done
+    fi  && trap 'rm -f $filePathBranchList;return' SIGINT
+    gedit $filePathBranchList &&
     while [ ! -z "$(pgrep -f gedit)" ] ; do
-        echo 等待中
+        sleep 2
     done
+
     content=`cat $filePathBranchList`
     if [ ! -z "$content" ];then
-            ftEcho -b 将编译下面所有分支
+            ftEcho -b 将操作下面所有分支
+            local index=0
             cat $filePathBranchList | while read line ; do
-                echo branchName=$line
+                printf "%-5s %-4s\n" [$index] $line
+                ((index+=1))
             done
             while true; do
                     echo
@@ -3358,7 +3383,7 @@ ftGitAddPatch()
                                         done
                                         git reset --hard
                                        break;;
-                        n  |q )    return;;
+                        n  |q )    break;;
                         * ) ftEcho -e 错误的选择：$sel
                              echo "输入q，离开" ;;
                     esac
