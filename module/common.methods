@@ -648,7 +648,7 @@ ftAutoInitEnv()
     # 项目平台
     local dirPathVendor=${dirPathCode}/vendor
     if [ -d $dirPathVendor ];then
-            dirList=`ls $dirPathVendor`
+            dirList=$(ls $dirPathVendor)
             for item in $dirList ; do
                 if [ $item = "sprd" ];then
                     local mnufacturers=sprd
@@ -890,8 +890,8 @@ ftDevAvailableSpace()
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftDevAvailableSpace -h && return
 
     #实现主体
-     local devAvailableSIzeList=`df -lh | awk '{print $4}'`
-     local devMountDirPathList=(`df -lh | awk '{print $6}'`)
+     local devAvailableSIzeList=$(df -lh | awk '{print $4}')
+     local devMountDirPathList=($(df -lh | awk '{print $6}'))
      local indexDevName=0
      local devMountDirPath
      for size in ${devAvailableSIzeList[*]} ; do
@@ -1065,8 +1065,8 @@ ftInitDevicesList()
     local indexDevName=0
     local dirPathHome=$rDirPathUserHome #(${rDirPathUserHome/$rNameUser\//$rNameUser})
     local sizeHome=$(ftDevAvailableSpace $dirPathHome)
-    local devNameDirPathList=`df -lh | awk '{print $1}'`
-    local devMountDirPathList=(`df -lh | awk '{print $6}'`)
+    local devNameDirPathList=$(df -lh | awk '{print $1}')
+    local devMountDirPathList=($(df -lh | awk '{print $6}'))
 
     if [[ $devMinAvailableSpace =~ "g" ]]||[[ $devMinAvailableSpace =~ "gb" ]];then
             devMinAvailableSpace=${devMinAvailableSpace//g/}
@@ -1220,7 +1220,7 @@ ftCleanDataGarbage()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
-    i[ `whoami` != $rNameUser ]||[ "$(whoami)" = "root" ] && ftCleanDataGarbage -e && return
+    i[ "$(whoami)" != $rNameUser ]||[ "$(whoami)" = "root" ] && ftCleanDataGarbage -e && return
     #耦合校验
     ftInitDevicesList
     local valCount=0
@@ -1560,7 +1560,7 @@ ftBootAnimation()
         #默认运行前提环境
         #所在文件夹为动画包解压生成的，也就是该参数默认只能重新打包
         local dirNamePackageName=${dirPathAnimation##*/}.zip
-        local fileConfig=`ls $dirPathAnimation|grep '.txt'`
+        local fileConfig=$(ls $dirPathAnimation|grep '.txt')
 
         ftEcho -r  "请输入动画包的包名(回车默认animation):"
         read customPackageName
@@ -1649,8 +1649,8 @@ ftBootAnimation()
         touch  ${dirPathAnimationTraget}/${fileNameDesc}
 
         #文件名去空格
-        for loop in `ls -1 | tr ' '  '#'` ; do
-            mv  "`echo $loop | sed 's/#/ /g' `"  "`echo $loop |sed 's/#//g' `"  2> /dev/null
+        for loop in $(ls -1 | tr ' '  '#') ; do
+            mv  "$(echo $loop | sed 's/#/ /g' )"  "$(echo $loop |sed 's/#//g')"  2> /dev/null
         done
 
         local file1=${filelist[0]}
@@ -1778,7 +1778,7 @@ ftPowerManagement()
     case "$edittype" in
         shutdown )
                 tput sc
-                for i in `seq -w $timeLong -1 1` ; do
+                for i in $(seq -w $timeLong -1 1) ; do
                     tput rc;tput ed
                     echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
                     sleep 1
@@ -1787,7 +1787,7 @@ ftPowerManagement()
                 break;;
         reboot)
                 tput sc
-                for i in `seq -w $timeLong -1 1` ; do
+                for i in $(seq -w $timeLong -1 1) ; do
                     tput rc;tput ed
                     echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
                     sleep 1
@@ -1929,7 +1929,7 @@ ftReNameFile()
     [ -d $dirPathFileListRename ] && rm -rf $dirPathFileListRename
     mkdir $dirPathFileListRename
     cd $dirPathFileList
-    for file in `ls $dirPathFileList|tr " " "?"` ; do
+    for file in $(ls $dirPathFileList|tr " " "?") ; do
         [ "$file" == "$dirNameFileListRename" ] && continue
 
         file=${file//'?'/' '}
@@ -2122,7 +2122,7 @@ ftAutoUploadHighSpeed()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
-    [ -z `which sshpass` ]||[ -z `which pigz` ]||[ -z `which pv` ] && ftAutoUploadHighSpeed --rely && return
+    [ -z $(which sshpass) ]||[ -z $(which pigz) ]||[ -z $(which pv) ] && ftAutoUploadHighSpeed --rely && return
     #耦合校验
     local valCount=2
     local errorContent=
@@ -2354,7 +2354,7 @@ ftAutoPacket()
             local dirNamePackage="packages"
             local dirNameOtaPackage="otaPackages"
             local dirNamePackageDataBase="dataBase"
-            local deviceName=`basename $ANDROID_PRODUCT_OUT`
+            local deviceName=$(basename $ANDROID_PRODUCT_OUT)
 
             local dataBaseFileList=
             if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
@@ -2521,7 +2521,7 @@ ftAutoPacket()
                              [[ ! -f "$filePath" ]] && filePath=${dirPathOut}/${filePath}
                              [[ ! -f "$filePath" ]] &&  ftEcho -e "找不到 : ${filePath}" && continue
 
-                            fileName=`basename $filePath`
+                            fileName=$(basename $filePath)
                             printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
                              cp -r -f  $filePath $dirPathPackageDataBase
                         done
@@ -2573,7 +2573,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
-    [ -z `which todos` ]||[ -z `which fromdos` ] && ftAutoCreateReadMeBySoftwareVersion --rely && return
+    [ -z $(which todos) ]||[ -z $(which fromdos) ] && ftAutoCreateReadMeBySoftwareVersion --rely && return
     [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
     #耦合校验
     local valCount=1
@@ -3081,8 +3081,8 @@ ftMaintainSystem()
         sdFinish )
                     [ -z $(which e4defrag) ] && ftMaintainSystem --rely "e4defrag" && return
 
-                    devNameDirPathList=`df -lh | awk '{print $1}'`
-                    devMountDirPathList=(`df -lh | awk '{print $6}'`)
+                    devNameDirPathList=$(df -lh | awk '{print $1}')
+                    devMountDirPathList=($(df -lh | awk '{print $6}'))
                     indexDevName=0
                     indexDev=0
                     devPathList=
@@ -3140,7 +3140,7 @@ ftGitLogShell()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [ -z $(which git) ] && ftGitLogShell --rely && return
-    [[ ! -z "$isAllBranchLog" ]]&&[ -z `which gitk` ] && ftGitLogShell --rely && return
+    [[ ! -z "$isAllBranchLog" ]]&&[ -z $(which gitk) ] && ftGitLogShell --rely && return
     #参数解析
     local isAllBranchLog
     local isTagBranchLog
@@ -3162,6 +3162,7 @@ ftGitLogShell()
                 isCustomBranchLog=true
                 ;;
         -n )  branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
+                (( $#==3 ))&&(echo -n $3 | grep -q -e "^[0-9][0-9]*$")&&(($3>$branchLogItemCount)) && branchLogItemCount=$3
                 ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
@@ -3215,7 +3216,7 @@ ftAutoTest()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
-    [ -z `which adb` ] && ftAutoTest --rely && return
+    [ -z $(which adb) ] && ftAutoTest --rely && return
     #参数解析
     local editType=$1
 
@@ -3349,7 +3350,7 @@ ftGitAddPatch()
             for (( i = 0; i < ${#branchListServer[@]}; i++ )); do
                 branchListServer[$i]=$(echo ${branchListServer[$i]} | sed -e "s:$key::g")
             done
-            branchList=(${branchList[@]} ${branchListServer[@]}) #合并本地和仓库分支
+            branchList=(${branchList[@]} ${branchListServer[@]} ${branchNameNow}) #合并本地和仓库分支
             branchList=($(echo ${branchList[@]} | sed 's/ /\n/g'|sort |uniq)) #去重
         fi
         rm -f $filePathBranchList > /dev/null
@@ -3362,7 +3363,7 @@ ftGitAddPatch()
         sleep 2
     done
 
-    content=`cat $filePathBranchList`
+    content=$(cat $filePathBranchList)
     if [ ! -z "$content" ];then
             ftEcho -b 将操作下面所有分支
             local index=0
@@ -3473,8 +3474,8 @@ ftGitCheckoutBtanch()
     fi
 
     while true; do
-        echo "是否切换到: "
-        ftEcho -sn "${branchNameTraget}";echo -n "[y/n](回车默认y)"
+        echo -n "是否切换到:  " ;ftEcho -s "${branchNameTraget}"
+        echo -n "[y/n](回车默认y)"
         read -n 1 sel
         [ ${#sel} == 0 ] && sel=y
         case "$sel" in

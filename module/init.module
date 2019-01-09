@@ -28,7 +28,7 @@ done||exceptionContent=" 用户信息配置初始化失败"
 
 #####-----------------------配置文件生成-----------------------#########
 # git config
-if [ -z `which git` ];then
+if [ -z $(which git) ];then
         echo $userPasswdLocal | sudo -p '' -S apt-get install  git ||(echo git安装失败，请重新安装;return)
 fi
 filePathGitConfig=/home/${userNameLocal}/.gitconfig
@@ -86,7 +86,7 @@ fi||exceptionContent="${exceptionContent}\n git配置初始化失败"
         fi
 
 #####-----------------------配置生效-----------------------#########
-#if [ ! -z `which git` ];then
+#if [ -z $(which git) ];then
     cd $dirPathLocal
     branchName="user_${userNameLocal}"
     git branch $branchName

@@ -59,15 +59,13 @@ if [ -f $rFilePathXbashModuleCommon ];then
     alias xX='effect=字符串转大写;_xX(){  echo "$1" | tr '[a-z]' '[A-Z]' ;};_xX $1'
     alias Xx='effect=字符串转小写;_Xx(){  echo "$1" | tr '[A-Z]' '[a-z]' ;};_Xx $1'
     alias xbh='effect=bash命令历史插值;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
-    alias xu='effect=打开xbash配置文件;gedit  $filePathUserConfig $filePathXbashTragetBashrcBase $filePathXbashTragetBashrcConfigBase'
 
-    if [ ! -z `which git` ];then
+    if [ ! -z $(which git) ];then
         #bash PS1 配置
         export PROMPT_COMMAND='ftSetBashPs1ByGitBranch' #  if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then    ftSetBashPs1ByGitBranch ; fi
 
         alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
-        alias xgl='effect=格式化显示20条git_log;ftGitLogShell -n 20'
-        alias xgll='effect=格式化显示100条git_log;ftGitLogShell -n 100'
+        alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
         alias xbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a"
         alias xbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch"
     fi
@@ -84,18 +82,17 @@ else
     echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$rFilePathXbashModuleCommon]\033[0m"
 fi
 
-if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then
+if [ ! -z $(which todos) ]&&[ ! -z $(which fromdos) ];then
     alias unix2dos=todos
     alias dos2unix=fromdos
 fi
 
-if [ ! -z `which find` ];then
+if [ ! -z $(which find) ];then
     alias xfind='effect=查找含特定字符串的文件;ftFind'
 fi
 
 if [ -d "$ANDROID_SDK" ];then
     alias xle='effect=过滤错误的进程;adb logcat "*:E"'
-    alias xlc='effect=清除指定包名的数据; adb shell pm clear'
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
     alias xtp="effect=打印任务栈的栈顶信息;adb shell dumpsys activity top"
     alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
