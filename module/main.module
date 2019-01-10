@@ -1,5 +1,7 @@
 #!/bin/bash
-#----------------    xbash config  ---------------------------
+#####---------------------  bash 配置  ---------------------------#########
+shopt -s histappend    #多个终端情况下，共享history
+#####---------------------  xbash config  ---------------------------#########
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
 alias xcc='effect=进入原目录;cd $OLDPWD'
@@ -55,7 +57,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
 
     if [ ! -z $(which git) ];then
         #bash PS1 配置
-        export PROMPT_COMMAND='ftSetBashPs1ByGitBranch' #  if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then    ftSetBashPs1ByGitBranch ; fi
+        export PROMPT_COMMAND='ftSetBashPs1ByGitBranch'
 
         alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
         alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
@@ -114,12 +116,12 @@ fi
 
 if [ -d "vendor/mediatek" ];then
         alias xnum='echo "隐藏[Select]：";     cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SELECT"|grep "final";\
-                                echo "IMEI码显示：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_DISPLAY"|grep "final";\
-                                echo "IMEI码编辑：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_EDIT"|grep "final";\
-                                echo -n "    ";     cat vendor/lz/op_cust.sh|grep "LZ_IMEI_EDIT_NUM";\
-                                echo "工厂模式：";   cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_FACTORY_TEST"|grep "final";\
-                                echo -n "    "; cat vendor/lz/op_cust.sh|grep "LZ_FACTORY_TEST_NUM";\
-                                echo "开关机动画修改：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_MULTI_BOOT_ANIMATION"|grep "final"'
+                            echo "IMEI码显示：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_DISPLAY"|grep "final";\
+                            echo "IMEI码编辑：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_EDIT"|grep "final";\
+                            echo -n "    ";     cat vendor/lz/op_cust.sh|grep "LZ_IMEI_EDIT_NUM";\
+                            echo "工厂模式：";   cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_FACTORY_TEST"|grep "final";\
+                            echo -n "    "; cat vendor/lz/op_cust.sh|grep "LZ_FACTORY_TEST_NUM";\
+                            echo "开关机动画修改：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_MULTI_BOOT_ANIMATION"|grep "final"'
 fi
 
 if [ -d "vendor/sprd" ];then
@@ -134,7 +136,6 @@ if [ -d "vendor/sprd" ];then
                                cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"'
         alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :=";\
                                 cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "LZ_CONFIG_CAMERA_TYPE :="'
-
         alias xnum='echo "隐藏[Select]：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SELECT"|grep "final";\
                                 echo "IMEI码显示：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_DISPLAY"|grep "final";\
                                 echo "IMEI码编辑：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "WRITE_IMEI"|grep "final";\

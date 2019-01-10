@@ -3190,7 +3190,7 @@ ftGitLogShell()
     fi
 }
 
-complete -W " --reboot_count --reboot_wait_time --event_count --path -rc -rwt -ec -p -h --help" ftAutoTest
+complete -W "-rc -rt -e -p -h -d" ftAutoTest
 ftAutoTest()
 {
     local ftEffect=Android自动测试
@@ -3299,8 +3299,19 @@ ftFind()
 {
     local ftEffect=find的简单封装
 
-    [[ ! -z "$3" ]] && find $1 -name "$2" | xargs grep -e "$3" && return
-    find $1 -name "$2"
+    local nameList=(${2})
+    local nameAll="${nameList}"
+
+    [[ -z "$nameList" ]] && ftEcho -e "参数缺失，请确认" && return
+    if ((  ${#nameList[@]} > 1 )); then
+           local i=${#nameList[@]}
+            while (( $i > 1 )) ;do ((i-=1))
+              nameAll=${nameAll}" -o -name ${nameList[$i]}"
+            done
+    fi
+    # find . -name '*.py' | xargs -I {} mv {} ./Python
+    [[ ! -z "$3" ]] && find $1 ! -type d -name $nameAll | xargs grep -e "$3" |grep -e "$3" && return
+    find $1 ! -type d -name $nameAll
 }
 
 ftGitAddPatch()
