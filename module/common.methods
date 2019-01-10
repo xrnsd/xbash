@@ -2284,7 +2284,7 @@ ftAutoPacket()
             local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${versionName}
             local dirPathModemBin=${dirPathCode%/*}/res/packet_modem
             local softwareVersion=MocorDroid6.0_Trunk_16b_rls1_W16.29.2
-            local filePathPacketScript=${rDirPathXbashModule}/packet_7731c.module
+            local filePathPacketScript=${rDirPathXbashModule}/build/packet_7731c.module
 
             [[ ! -z "$(cat $versionName|grep 451)" ]] && dirPathModemBin=${dirPathModemBin}2
 
@@ -3206,10 +3206,11 @@ ftAutoTest()
 #    #-xx 为独立参数类型标识,不可拆分
 #    #参数之间没有先后约束
 #
-#    ftAutoTest -p /home/xxx/xxx
-#    ftAutoTest -rc 2000 #重启2000次
-#    ftAutoTest -rwt 2000 #每2000s重启一次
-#    ftAutoTest -ec 2000 #monkey事件数为2000
+#    ftAutoTest -p "com.xx com.yy.zz" #限制测试的包名
+#    ftAutoTest -d /home/xxx/xxx        # log存放路径
+#    ftAutoTest -rc 2000                          #重启2000次
+#    ftAutoTest -rt 2000                          #每2000s重启一次
+#    ftAutoTest -e 2000                           #monkey事件数为2000
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -3227,16 +3228,18 @@ ftAutoTest()
     local eventCount=$eventCountDef
     local rebootTimeLong=$rebootTimeLongDef
     local rebootCount=$rebootCountDef
-    local dirPathLogRoot=~/download
+    local dirPathLogRoot=~/log
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-              -p  | --path )  dirPathLogRoot=${arg2:-'dirPathLogRoot'}
+              -p)  local packageNameList=${arg2}
                     ;;
-              -rc  | --reboot_count )  rebootCount=${arg2:-'rebootCountDef'}
+              -d)  dirPathLogRoot=${arg2:-'dirPathLogRoot'}
                     ;;
-             -rwt | --reboot_wait_time )  rebootTimeLong=${arg2:-'rebootTimeLongDef'}
+              -rc)  rebootCount=${arg2:-'rebootCountDef'}
                     ;;
-             -ec | --event_count )  eventCount=${arg2:-'eventCountDef'}
+             -rt)  rebootTimeLong=${arg2:-'rebootTimeLongDef'}
+                    ;;
+             -e)  eventCount=${arg2:-'eventCountDef'}
                     ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
@@ -3252,10 +3255,11 @@ ftAutoTest()
     local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
     local logcatFlag="*:E"
     local monkeyConfig
+
     monkeyConfig=${monkeyConfig}" --wait-dbg"
-    monkeyConfig=${monkeyConfig}" --hprof"
+    # monkeyConfig=${monkeyConfig}" --hprof"
     monkeyConfig=${monkeyConfig}" --ignore-crashes --ignore-timeouts --ignore-security-exceptions"
-    monkeyConfig=${monkeyConfig}" -p com.android.launcher3"
+    [ ! -z "$packageNameList" ] && for packageName in ${packageNameList[@]} ; do monkeyConfig=${monkeyConfig}" -p ${packageName}" ;done
     monkeyConfig=${monkeyConfig}" -v -v -v"
     monkeyConfig=${monkeyConfig}" ${eventCount}"
 
@@ -3277,8 +3281,8 @@ ftAutoTest()
             timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
             timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
         else
-            adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
-            adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+            adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
+            adb shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
         fi
 
         rebootCount=$((rebootCount - 1))
@@ -3357,7 +3361,7 @@ ftGitAddPatch()
         for item in ${branchList[@]} ; do
             echo "${item}" >> $filePathBranchList
         done
-    fi  && trap 'rm -f $filePathBranchList;return' SIGINT
+    fi  && trap 'rm -f $filePathBranchList;exit' SIGINT
     gedit $filePathBranchList &&
     while [ ! -z "$(pgrep -f gedit)" ] ; do
         sleep 2

@@ -1,12 +1,4 @@
 #!/bin/bash
-#####---------------------  bash 配置  ---------------------------#########
-# 忽略特定命令
-export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
-#多个终端情况下，共享history
-#shopt -s histappend
-#清除整个命令历史中的重复条目
-#export HISTCONTROL=erasedups
-
 #----------------    xbash config  ---------------------------
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
@@ -25,8 +17,9 @@ if [ -f $rFilePathXbashModuleCommon ];then
         filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
         cat $filePathBashHistory >> $filePathBashHistoryArchive \
         && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
-        && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive \
-        && cp -rf $filePathBashHistoryArchive $filePathBashHistory
+        && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
+
+        bashHistorySize=$(awk 'END{print NR}' $filePathBashHistoryArchive)
 
         #历史扩容
         filePathXbashDataBaseUser=${rDirPathXbashDataUser}/${rNameUser}.database
@@ -38,16 +31,16 @@ if [ -f $rFilePathXbashModuleCommon ];then
             ftIniCreateFileOrTag -r -p $filePathXbashDataBaseUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
         fi
 
-        bashHistoryIncrementalSize=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryIncrementalSize)
-        bashHistorySize=$(awk 'END{print NR}' $filePathBashHistory)
         if (($bashHistorySize>$bashHistorySizeBase)); then
-            ((bashHistorySize=$bashHistorySize+$bashHistoryIncrementalSize))
+            ((bashHistorySize=$bashHistorySize+$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryIncrementalSize)))
             ftIniSetValue $filePathXbashDataBaseUser xbash bashHistoryThresholdSize $bashHistorySize
         else
             bashHistorySize=$bashHistorySizeBase
         fi
+
         export HISTSIZE=$bashHistorySize
         export HISTFILESIZE=$bashHistorySize
+        cp -rf $filePathBashHistoryArchive $filePathBashHistory
     fi
 
     alias xc='effect=xbash主入口[旧];ftMain'
