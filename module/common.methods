@@ -3382,13 +3382,15 @@ ftGitAddPatch()
     if [ ! -z "$content" ];then
             ftEcho -b 将操作下面所有分支
             local index=0
+            local num=$(awk 'END{print NR}' $filePathBranchList) ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
             cat $filePathBranchList | while read line ; do
-                printf "%-5s %-4s\n" [$index] $line
+                # printf "%-5s %-4s\n" [$index] $line
+                echo -n "[" ; ftEcho -sn "$(printf "%${length}d" $index)" ; echo -n "]"  ; printf "   %-4s\n" $line
                 ((index+=1))
             done
             while true; do
                     echo
-                    ftEcho -y 是否开始编译
+                    ftEcho -y 是否开始
                     read -n 1 select
                     case "$select" in
                         y | Y )
@@ -3468,8 +3470,9 @@ ftGitCheckoutBtanch()
     local branchNameTraget=$branchList
     if (( $itemCount>1 ));then
         local index=0
+        local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
         for item in ${branchList[@]} ; do
-            printf "%-5s %-4s\n" [$index] $item
+            echo -n "[" ; ftEcho -sn "$(printf "%${length}d" $index)" ; echo -n "]"  ; printf "   %-4s\n" $item
             ((index+=1))
         done
         ftEcho -r  "请输入对应的序号(回车默认0):"
