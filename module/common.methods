@@ -3334,6 +3334,7 @@ ftGitAddPatch()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local filePathAddPatchTool=${rDirPathXbashModule}/git/multiBranch.module
+    local filePathFailInfo="/home/wgx/.cache/ftGitAddPatch.log" ; [ -f "$filePathFailInfo" ]&&rm $filePathFailInfo
     [ ! -f "$filePathAddPatchTool" ]&&[ -f "${filePathAddPatchTool}.example" ] &&\
         ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
 
@@ -3382,22 +3383,23 @@ ftGitAddPatch()
     if [ ! -z "$content" ];then
             ftEcho -b 将操作下面所有分支
             local index=0
-            local num=$(awk 'END{print NR}' $filePathBranchList) ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
+            # local num=$(awk 'END{print NR}' $filePathBranchList) ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
             cat $filePathBranchList | while read line ; do
-                # printf "%-5s %-4s\n" [$index] $line
-                echo -n "[" ; ftEcho -sn "$(printf "%${length}d" $index)" ; echo -n "]"  ; printf "   %-4s\n" $line
+                # echo -n "[" ; ftEcho -sn "$(printf "%${length}d" $index)" ; echo -n "]"  ; printf "   %-4s\n" $line
+                echo $line
                 ((index+=1))
             done
             while true; do
                     echo
                     ftEcho -y 是否开始
                     read -n 1 select
+                    [ ${#select} == 0 ] && select=y
                     case "$select" in
                         y | Y )
                                         [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return
 
                                         cat $filePathBranchList | while read branchName ; do
-                                                $filePathAddPatchTool $branchName
+                                                $filePathAddPatchTool $branchName $filePathFailInfo
                                         done
                                         git reset --hard
                                        break;;

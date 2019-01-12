@@ -3,3 +3,4 @@
 filePathCommonModule=${rDirPathXbashModule}/${rFileNameXbashModuleCommon}
 [[ -f "$filePathCommonModule" ]] && source $filePathCommonModule
 # ==============================================================================================================
+
