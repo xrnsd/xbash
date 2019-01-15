@@ -106,13 +106,12 @@ ftTest()
     local dirPathLocal=$PWD
     local dirPathTemp=${rDirPathUserHome}/temp
 
-    #[[ ! -d "$dirPathTemp" ]] && mkdir $dirPathTemp||(ftEcho -e "${ftEffect} 创建demo环境目录失败:$dirPathTemp";return)
-    [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp
+    [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp && trap '[ -d $dirPathLocal ] && cd $dirPathLocal && exit' SIGINT
 
     ftTimeConsuming -i
     $rFilePathXbashModuleTest ${argList[@]:1}
     ftTimeConsuming
-    cd $dirPathLocal
+    cd $dirPathLocal && dirPathLocal=null
 }
 
 ftEcho()
@@ -809,7 +808,7 @@ ftAutoInitEnv()
     export AutoEnv_versionName=$versionName
     export AutoEnv_mnufacturers=$mnufacturers
 
-    cd $dirPathLocal
+    cd $dirPathLocal && dirPathLocal=null
 }
 
 ftFileDirEdit()
@@ -1248,7 +1247,7 @@ ftCleanDataGarbage()
 
         fi
     done
-    cd $dirPathLocal
+    cd $dirPathLocal && dirPathLocal=null
 }
 
 
@@ -1287,7 +1286,6 @@ ftAutoBuildMultiBranchEnvSeparation()
     [ -z "$ANDROID_BUILD_TOP" ] && ftAutoBuildMultiBranchEnvSeparation --env && return
 
     local requestEnvState=$(/bin/rm -rf $dirPathProcessEnableId&&mkdir $dirPathProcessEnableId)
-    #trap '/bin/rm -rf $dirPathProcessEnableId;exit' SIGINT
 
     #耦合校验
     local valCount=1
@@ -1621,11 +1619,11 @@ ftBootAnimation()
         else
             filelist=$(ls $dirPathAnimationSourceRes)
             local dirPathLocal=$PWD
-            cd $dirPathAnimationSourceRes && trap 'cd $dirPathLocal;exit' SIGINT
+            cd $dirPathAnimationSourceRes && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && exit' SIGINT
             for file in $filelist ; do
                 [ ! -f "$file" ] && ftEcho -ex "动画资源包含错误类型的文件[${file}]，请确认" && break
             done
-            cd $dirPathLocal
+            cd $dirPathLocal&&dirPathLocal=
         fi
 
         dirPathAnimationTraget=/${rDirPathUserHome}/${dirNameAnimation}
@@ -2269,7 +2267,7 @@ ftAutoPacket()
     fi
 
     [[ ! -d "$dirPathVersionSoftware" ]] && mkdir $dirPathVersionSoftware
-    cd $dirPathVersionSoftware && trap 'cd $dirPathLocal;exit' SIGINT
+    cd $dirPathVersionSoftware && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && exit' SIGINT
 
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
@@ -2315,7 +2313,7 @@ ftAutoPacket()
             # 生成软件包
             if [[ ! -z "$isPacket" ]]; then
                    ftEcho -s "开始生成 ${versionName}.pac\n"
-                    cd $dirPathVersionSoftwareVersion && trap 'cd $dirPathLocal;exit' SIGINT
+                    cd $dirPathVersionSoftwareVersion  && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && exit' SIGINT
 
                     /usr/bin/perl $filePathPacketScript \
                         $versionName.pac \
@@ -2341,7 +2339,7 @@ ftAutoPacket()
                         ${dirPathNormalBin}/u-boot.bin \
                         ${dirPathNormalBin}/persist.img&&
                     ftEcho -s 生成7731c使用的pac[${dirPathVersionSoftwareVersion}/${versionName}.pac]
-                    cd $dirPathLocal
+                    cd $dirPathLocal && dirPathLocal=
             fi
 
             # 生成说明文件
@@ -2538,7 +2536,7 @@ ftAutoPacket()
             ftAutoPacket -h
             return
     fi
-    cd $dirPathLocal
+    cd $dirPathLocal && dirPathLocal=null
 }
 
 ftAutoCreateReadMeBySoftwareVersion()
@@ -2593,7 +2591,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     local versionName=$AutoEnv_versionName
 
     [ ! -d "$dirPathVersionSoftware" ] && mkdir $dirPathVersionSoftware
-    cd $dirPathCode&& trap 'cd $dirPathLocal;exit' SIGINT
+    cd $dirPathCode && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && exit' SIGINT
     ftAutoInitEnv
 
     #使用git 记录的修改记录
@@ -2729,7 +2727,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     fi
 
     rm ${filePathChangeListTemplate}.temp
-    cd $dirPathLocal
+    cd $dirPathLocal && dirPathLocal=
 }
 
 ftAutoLanguageUtil()
@@ -2999,7 +2997,7 @@ ftMaintainSystem()
                     local filePathVersionInfo=$filePathVersionInfoVersion
                     local infoVersionName=backup_${rNameUser}_$(date -d "today" +"%Y%m%d")
                     local fileNameVersion=${infoVersionName}.$(ftIniGetValue $filePathVersionInfoMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
-                    cd /&& trap 'cd $dirPathLocal;exit' SIGINT
+                    cd / && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && exit' SIGINT
                     #预写入版本信息
                         ftIniCreateFileOrTag -a -p $filePathVersionInfo -t $infoVersionName -l "\
                             fileName=$fileNameVersion \
@@ -3034,7 +3032,7 @@ ftMaintainSystem()
                     #把备份同步到不同设备上
                         # ftSynchronous -d "${mXbashModuleDataDevicesList[*]}" -s ".*\.tgz"
                         ftEcho -s "备份完成"
-                    cd $dirPathLocal; ;;
+                    cd $dirPathLocal && dirPathLocal=; ;;
         restore )
                     local tagNaeMaintain=restoreConfigInfo
                     #预写入待还原版本信息
@@ -3270,7 +3268,7 @@ ftAutoTest()
             [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
     fi
     while true; do
-        adb wait-for-device && trap 'ftKillApplicationByPackageName monkey;exit' SIGINT
+        adb wait-for-device
         # while [[ -z $(adb shell ps |grep launcher3) ]]; do
         #     ftEcho -s "等待launcer3启动"
         #     sleep 5
@@ -3373,7 +3371,7 @@ ftGitAddPatch()
         for item in ${branchList[@]} ; do
             echo "${item}" >> $filePathBranchList
         done
-    fi  && trap 'rm -f $filePathBranchList;exit' SIGINT
+    fi
     gedit $filePathBranchList &&
     while [ ! -z "$(pgrep -f gedit)" ] ; do
         sleep 2
@@ -3395,9 +3393,7 @@ ftGitAddPatch()
                     read -n 1 select
                     [ ${#select} == 0 ] && select=y
                     case "$select" in
-                        y | Y )
-                                        [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return
-
+                        y | Y )     [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return
                                         cat $filePathBranchList | while read branchName ; do
                                                 $filePathAddPatchTool $branchName $filePathFailInfo
                                         done
