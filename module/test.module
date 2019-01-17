@@ -1,5 +1,4 @@
 #!/bin/bash
 #####-----------------------加载公用模块--------------------------#######
-filePathCommonModule=${rDirPathXbashModule}/${rFileNameXbashModuleCommon}
-[[ -f "$filePathCommonModule" ]] && source $filePathCommonModule
+[[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
 # ==============================================================================================================

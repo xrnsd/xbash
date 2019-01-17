@@ -106,12 +106,13 @@ ftTest()
     local dirPathLocal=$PWD
     local dirPathTemp=${rDirPathUserHome}/temp
 
-    [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp && trap '[ -d $dirPathLocal ] && cd $dirPathLocal && exit' SIGINT
+    [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp && trap '[ -d $dirPathLocal ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
     ftTimeConsuming -i
     $rFilePathXbashModuleTest ${argList[@]:1}
     ftTimeConsuming
-    cd $dirPathLocal && dirPathLocal=null
+    cd $dirPathLocal
+    trap SIGINT
 }
 
 ftEcho()
@@ -808,7 +809,8 @@ ftAutoInitEnv()
     export AutoEnv_versionName=$versionName
     export AutoEnv_mnufacturers=$mnufacturers
 
-    cd $dirPathLocal && dirPathLocal=null
+    cd $dirPathLocal
+    trap SIGINT
 }
 
 ftFileDirEdit()
@@ -1247,9 +1249,9 @@ ftCleanDataGarbage()
 
         fi
     done
-    cd $dirPathLocal && dirPathLocal=null
+    cd $dirPathLocal
+    trap SIGINT
 }
-
 
 #####---------------------工具函数---------------------------#########
 complete -W "-b -h" ftAutoBuildMultiBranchEnvSeparation
@@ -1619,11 +1621,12 @@ ftBootAnimation()
         else
             filelist=$(ls $dirPathAnimationSourceRes)
             local dirPathLocal=$PWD
-            cd $dirPathAnimationSourceRes && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && exit' SIGINT
+            cd $dirPathAnimationSourceRes && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
             for file in $filelist ; do
                 [ ! -f "$file" ] && ftEcho -ex "动画资源包含错误类型的文件[${file}]，请确认" && break
             done
-            cd $dirPathLocal&&dirPathLocal=
+            cd $dirPathLocal
+            trap SIGINT
         fi
 
         dirPathAnimationTraget=/${rDirPathUserHome}/${dirNameAnimation}
@@ -2267,7 +2270,7 @@ ftAutoPacket()
     fi
 
     [[ ! -d "$dirPathVersionSoftware" ]] && mkdir $dirPathVersionSoftware
-    cd $dirPathVersionSoftware && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && exit' SIGINT
+    cd $dirPathVersionSoftware && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
     if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
@@ -2313,7 +2316,7 @@ ftAutoPacket()
             # 生成软件包
             if [[ ! -z "$isPacket" ]]; then
                    ftEcho -s "开始生成 ${versionName}.pac\n"
-                    cd $dirPathVersionSoftwareVersion  && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && exit' SIGINT
+                    cd $dirPathVersionSoftwareVersion  && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
                     /usr/bin/perl $filePathPacketScript \
                         $versionName.pac \
@@ -2536,7 +2539,8 @@ ftAutoPacket()
             ftAutoPacket -h
             return
     fi
-    cd $dirPathLocal && dirPathLocal=null
+    cd $dirPathLocal
+    trap SIGINT
 }
 
 ftAutoCreateReadMeBySoftwareVersion()
@@ -2591,7 +2595,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     local versionName=$AutoEnv_versionName
 
     [ ! -d "$dirPathVersionSoftware" ] && mkdir $dirPathVersionSoftware
-    cd $dirPathCode && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && exit' SIGINT
+    cd $dirPathCode && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
     ftAutoInitEnv
 
     #使用git 记录的修改记录
@@ -2727,7 +2731,8 @@ ftAutoCreateReadMeBySoftwareVersion()
     fi
 
     rm ${filePathChangeListTemplate}.temp
-    cd $dirPathLocal && dirPathLocal=
+    cd $dirPathLocal
+    trap  SIGINT
 }
 
 ftAutoLanguageUtil()
@@ -2997,7 +3002,7 @@ ftMaintainSystem()
                     local filePathVersionInfo=$filePathVersionInfoVersion
                     local infoVersionName=backup_${rNameUser}_$(date -d "today" +"%Y%m%d")
                     local fileNameVersion=${infoVersionName}.$(ftIniGetValue $filePathVersionInfoMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
-                    cd / && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && exit' SIGINT
+                    cd / && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
                     #预写入版本信息
                         ftIniCreateFileOrTag -a -p $filePathVersionInfo -t $infoVersionName -l "\
                             fileName=$fileNameVersion \
@@ -3032,7 +3037,8 @@ ftMaintainSystem()
                     #把备份同步到不同设备上
                         # ftSynchronous -d "${mXbashModuleDataDevicesList[*]}" -s ".*\.tgz"
                         ftEcho -s "备份完成"
-                    cd $dirPathLocal && dirPathLocal=; ;;
+                    cd $dirPathLocal
+                    trap SIGINT; ;;
         restore )
                     local tagNaeMaintain=restoreConfigInfo
                     #预写入待还原版本信息
