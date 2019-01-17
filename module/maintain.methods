@@ -156,7 +156,7 @@ ftSetBackupDevDir()
            ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
-    ftInitDevicesList -s 4096M # 初始化设备列表[mXbashModuleDataDevicesList]
+    ftInitDevicesList -s 8192M # 初始化设备列表[mXbashModuleDataDevicesList]
     local errorContent=
     [ -z "$rDirPathXbash" ] && errorContent="${errorContent}\\n[默认用户名为空]rNameUser=$rNameUser"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[备份包数据库文件不存在]filePathIni=$filePathIni"
@@ -182,7 +182,7 @@ ftSetBackupDevDir()
     echo
 
     while true; do
-        ftEcho -r  "请选择存放备份文件的设备[0~$(expr $index - 1),q](回车默认当前用户目录):"
+        ftEcho -r  "请选择存放备份文件的设备[0~$(expr $index - 1),q](回车默认0):"
         if [ ${#mXbashModuleDataDevicesList[@]} -gt 9 ];then
             read dir
         else

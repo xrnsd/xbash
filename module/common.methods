@@ -897,8 +897,17 @@ ftDevAvailableSpace()
      local devMountDirPath
      for size in ${devAvailableSIzeList[*]} ; do
             devMountDirPath=${devMountDirPathList[indexDevName]}
-             length=${#dirPathTraget}
-            if [[ "${devMountDirPath:0:$length}" = "$dirPathTraget" ]]; then
+             # length=${#dirPathTraget}
+            # if [[ "${devMountDirPath:0:$length}" = "$dirPathTraget" ]]; then
+            #         if [[ $size =~ "G" ]];then
+            #                 size=${size//G/}
+            #                 size=$(echo "$size * 1024" | bc)
+            #         else
+            #                 size=${size//M/}
+            #         fi
+            #         echo $size|awk ' {print int ($0)} '
+            # fi
+            if [[ "$devMountDirPath" = "$dirPathTraget" ]]; then
                     if [[ $size =~ "G" ]];then
                             size=${size//G/}
                             size=$(echo "$size * 1024" | bc)
@@ -906,6 +915,7 @@ ftDevAvailableSpace()
                             size=${size//M/}
                     fi
                     echo $size|awk ' {print int ($0)} '
+                    break
             fi
             ((indexDevName+=1))
     done
@@ -1083,14 +1093,15 @@ ftInitDevicesList()
     fi
 
     unset mXbashModuleDataDevicesList
-    (( $sizeHome>=$devMinAvailableSpace )) && mXbashModuleDataDevicesList=$dirPathHome && indexDevMount=1
+    [ ! -z "$sizeHome" ] && (( $sizeHome>=$devMinAvailableSpace )) && mXbashModuleDataDevicesList=$dirPathHome && indexDevMount=1
     #开始记录设备文件
     for dir in ${devNameDirPathList[*]} ;do
             devMountDirPath=${devMountDirPathList[indexDevName]}
             if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
                     sizeTemp=$(ftDevAvailableSpace $devMountDirPath)
+                    [[ -z "sizeTemp" ]] && continue
                     # 确定目录已挂载,设备可用空间大小符合限制
-                    if [[ $devMinAvailableSpace -eq 0 ]]||(($sizeTemp>=$devMinAvailableSpace)); then
+                    if (( $devMinAvailableSpace==0 ))||(( $sizeTemp>$devMinAvailableSpace )); then
                         if mountpoint -q $devMountDirPath;then
                             mXbashModuleDataDevicesList[$indexDevMount]=$devMountDirPath
                             ((indexDevMount+=1))

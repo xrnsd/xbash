@@ -92,4 +92,10 @@ dirPathsExcludeListHomeBase= \
     .pip \
     .rpmdb \
     w7_170815.desktop \
-    .xsession-errors
+    .xsession-errors \
+    .local/share/Trash
+[restoreConfigInfo]
+fileName=null
+dirPathStore=null
+dirPathRestoreExclude=null
+
