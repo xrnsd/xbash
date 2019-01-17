@@ -75,10 +75,10 @@ full_m9_qhd= \
     preloader_m9_qhd.bin
 
 [lzProjrctConfigSoftwareDataBaseFileLIst]
-m9_xinhaufei_r9_hd_fileList= \
+m9_xinhaufei_r9_hd= \
     obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
     obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n
-full_m9_qhd_fileList= \
+full_m9_qhd= \
     obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
     obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n
 

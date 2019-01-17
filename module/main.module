@@ -1,19 +1,12 @@
 #!/bin/bash
 #####---------------------  bash 配置  ---------------------------#########
-# 忽略特定命令
-export HISTIGNORE="[   ]*:ls:ll:cd:vi:pwd:sync:exit:history*"
-#多个终端情况下，共享history
-#shopt -s histappend
-#清除整个命令历史中的重复条目
-#export HISTCONTROL=erasedups
-
-#----------------    xbash config  ---------------------------
+shopt -s histappend    #多个终端情况下，共享history
+#####---------------------  xbash config  ---------------------------#########
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
 alias xcc='effect=进入原目录;cd $OLDPWD'
 alias xr="effect=更新xbash配置;source ~/.bashrc"
 if [ -f $rFilePathXbashModuleCommon ];then
-    export XMODULE="env" #标记为环境模式，此模式说明直接调用脚本实现
     source  $rFilePathXbashModuleCommon
 
     #处理bash历史记录
@@ -26,8 +19,9 @@ if [ -f $rFilePathXbashModuleCommon ];then
         filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
         cat $filePathBashHistory >> $filePathBashHistoryArchive \
         && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
-        && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive \
-        && cp -rf $filePathBashHistoryArchive $filePathBashHistory
+        && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
+
+        bashHistorySize=$(awk 'END{print NR}' $filePathBashHistoryArchive)
 
         #历史扩容
         filePathXbashDataBaseUser=${rDirPathXbashDataUser}/${rNameUser}.database
@@ -39,16 +33,16 @@ if [ -f $rFilePathXbashModuleCommon ];then
             ftIniCreateFileOrTag -r -p $filePathXbashDataBaseUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
         fi
 
-        bashHistoryIncrementalSize=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryIncrementalSize)
-        bashHistorySize=$(awk 'END{print NR}' $filePathBashHistory)
         if (($bashHistorySize>$bashHistorySizeBase)); then
-            ((bashHistorySize=$bashHistorySize+$bashHistoryIncrementalSize))
+            ((bashHistorySize=$bashHistorySize+$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryIncrementalSize)))
             ftIniSetValue $filePathXbashDataBaseUser xbash bashHistoryThresholdSize $bashHistorySize
         else
             bashHistorySize=$bashHistorySizeBase
         fi
+
         export HISTSIZE=$bashHistorySize
         export HISTFILESIZE=$bashHistorySize
+        cp -rf $filePathBashHistoryArchive $filePathBashHistory
     fi
 
     alias xc='effect=xbash主入口[旧];ftMain'
@@ -59,18 +53,16 @@ if [ -f $rFilePathXbashModuleCommon ];then
     alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
     alias xX='effect=字符串转大写;_xX(){  echo "$1" | tr '[a-z]' '[A-Z]' ;};_xX $1'
     alias Xx='effect=字符串转小写;_Xx(){  echo "$1" | tr '[A-Z]' '[a-z]' ;};_Xx $1'
-    alias xbh='effect=bash命令历史插值;cat $filePathBashHistoryArchive $filePathBashHistory |grep $2'
-    alias xu='effect=打开xbash配置文件;gedit  $filePathUserConfig $filePathXbashTragetBashrcBase $filePathXbashTragetBashrcConfigBase'
+    alias xbh='effect=bash命令历史查询;cat $filePathBashHistory |grep'
 
-    if [ ! -z `which git` ];then
+    if [ ! -z $(which git) ];then
         #bash PS1 配置
-        export PROMPT_COMMAND='ftSetBashPs1ByGitBranch' #  if [[ $(history 1 | { read x y; echo $y; }) =~ "git" ]];then    ftSetBashPs1ByGitBranch ; fi
+        export PROMPT_COMMAND='ftSetBashPs1ByGitBranch'
 
         alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
-        alias xgl='effect=格式化显示20条git_log;ftGitLogShell -n 20'
-        alias xgll='effect=格式化显示100条git_log;ftGitLogShell -n 100'
-        alias xbrancha="effect=过滤git仓库所有分支;git branch -a|grep -i"
-        alias xbranch="effect=过滤git仓库已经checkout分支;git branch|grep -i"
+        alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
+        alias xbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a"
+        alias xbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch"
     fi
 
     if [ -d "$JAVA_HOME" ]&&[ -d "out" ];then
@@ -85,18 +77,17 @@ else
     echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$rFilePathXbashModuleCommon]\033[0m"
 fi
 
-if [ ! -z `which todos` ]&&[ ! -z `which fromdos` ];then
+if [ ! -z $(which todos) ]&&[ ! -z $(which fromdos) ];then
     alias unix2dos=todos
     alias dos2unix=fromdos
 fi
 
-if [ ! -z `which find` ];then
+if [ ! -z $(which find) ];then
     alias xfind='effect=查找含特定字符串的文件;ftFind'
 fi
 
 if [ -d "$ANDROID_SDK" ];then
     alias xle='effect=过滤错误的进程;adb logcat "*:E"'
-    alias xlc='effect=清除指定包名的数据; adb shell pm clear'
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
     alias xtp="effect=打印任务栈的栈顶信息;adb shell dumpsys activity top"
     alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
@@ -125,12 +116,12 @@ fi
 
 if [ -d "vendor/mediatek" ];then
         alias xnum='echo "隐藏[Select]：";     cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SELECT"|grep "final";\
-                                echo "IMEI码显示：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_DISPLAY"|grep "final";\
-                                echo "IMEI码编辑：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_EDIT"|grep "final";\
-                                echo -n "    ";     cat vendor/lz/op_cust.sh|grep "LZ_IMEI_EDIT_NUM";\
-                                echo "工厂模式：";   cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_FACTORY_TEST"|grep "final";\
-                                echo -n "    "; cat vendor/lz/op_cust.sh|grep "LZ_FACTORY_TEST_NUM";\
-                                echo "开关机动画修改：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_MULTI_BOOT_ANIMATION"|grep "final"'
+                            echo "IMEI码显示：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_DISPLAY"|grep "final";\
+                            echo "IMEI码编辑：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_EDIT"|grep "final";\
+                            echo -n "    ";     cat vendor/lz/op_cust.sh|grep "LZ_IMEI_EDIT_NUM";\
+                            echo "工厂模式：";   cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_FACTORY_TEST"|grep "final";\
+                            echo -n "    "; cat vendor/lz/op_cust.sh|grep "LZ_FACTORY_TEST_NUM";\
+                            echo "开关机动画修改：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_MULTI_BOOT_ANIMATION"|grep "final"'
 fi
 
 if [ -d "vendor/sprd" ];then
@@ -145,7 +136,6 @@ if [ -d "vendor/sprd" ];then
                                cat frameworks/base/core/res/res/values/strings.xml |grep "wifi_tether_configure_ssid_default"'
         alias xcamera='cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "CAMERA_SUPPORT_SIZE :=";\
                                 cat device/sprd/scx20/sp7731c_1h10_32v4/BoardConfig.mk|grep "LZ_CONFIG_CAMERA_TYPE :="'
-
         alias xnum='echo "隐藏[Select]：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_SELECT"|grep "final";\
                                 echo "IMEI码显示：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "MMI_IMEI_DISPLAY"|grep "final";\
                                 echo "IMEI码编辑：";    cat packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java|grep "WRITE_IMEI"|grep "final";\
