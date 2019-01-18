@@ -2978,6 +2978,14 @@ ftMaintainSystem()
 #    ftMaintainSystem -b / --backup #备份系统
 #    ftMaintainSystem -r / --restore #还原备份
 #========================================================="; return ;;
+    -c)
+    local dirPathLocal=$2
+    local dirPathStore=$3
+    [ -d "$dirPathLocal" ] && cd $dirPathLocal
+    [ -d "$dirPathStore" ] && rm -rf $dirPathStore
+    ftIniDeleteTag -p $filePathVersionInfo -t $infoVersionName
+    trap SIGINT
+    return ;;
     * ) break;;esac;done
 
     #可用性校验
@@ -3013,7 +3021,8 @@ ftMaintainSystem()
                     local filePathVersionInfo=$filePathVersionInfoVersion
                     local infoVersionName=backup_${rNameUser}_$(date -d "today" +"%Y%m%d")
                     local fileNameVersion=${infoVersionName}.$(ftIniGetValue $filePathVersionInfoMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
-                    cd / && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
+                    # 进入根目录
+                        cd /
                     #预写入版本信息
                         ftIniCreateFileOrTag -a -p $filePathVersionInfo -t $infoVersionName -l "\
                             fileName=$fileNameVersion \
@@ -3025,6 +3034,7 @@ ftMaintainSystem()
                             hwMainboard=null \
                             swSystemVersion=null \
                             swSystemType=null"
+                        trap 'ftMaintainSystem -c $dirPathLocal $dirPathStore && exit' SIGINT
                     #选择存放备份包的设备
                         ftSetBackupDevDir -b -p $filePathVersionInfo -v $infoVersionName
                     #选择备份类型
@@ -3038,25 +3048,27 @@ ftMaintainSystem()
                         ftEcho -s "生成的备份包：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName fileName)"
                         ftEcho -s  "备份包的说明：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName  backupPackageNote)"
                         ftEcho -s  "备份包保存路径：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName  dirPathStore)"
-                    #扫描设备,同步相同备份
+                    #扫描设备,确认是否相同备份
                         # ftBackUpDevScanning -p $filePathVersionInfo -f $fileNameVersion -d "${mXbashModuleDataDevicesList[*]}"
                     #生成备份包
                         ftBackupOs -p $filePathVersionInfo -v $infoVersionName -pm $filePathVersionInfoMaintain
                     #记录备份包校验信息
                         local filePathStore=$(ftIniGetValue $filePathVersionInfoVersion $infoVersionName dirPathStore)/${fileNameVersion}
-                        ftMD5  -p $filePathVersionInfo -s $filePathStore
+                        [ -f "$filePathStore" ] && ftMD5  -p $filePathVersionInfo -s $filePathStore && ftEcho -s "备份完成"
                     #把备份同步到不同设备上
                         # ftSynchronous -d "${mXbashModuleDataDevicesList[*]}" -s ".*\.tgz"
-                        ftEcho -s "备份完成"
-                    cd $dirPathLocal
-                    trap SIGINT; ;;
+                    #清尾
+                        cd $dirPathLocal
+                        trap SIGINT
+                    ;;
         restore )
                     local tagNaeMaintain=restoreConfigInfo
                     #预写入待还原版本信息
                         ftIniCreateFileOrTag -a -p $filePathVersionInfoMaintain -t $tagNaeMaintain -l "\
                                 fileName=null \
                                 dirPathStore=null \
-                                dirPathRestoreExclude=null"                               
+                                dirPathRestoreExclude=null"
+                        trap 'ftIniDeleteTag -p $filePathVersionInfoMaintain -t $tagNaeMaintain && exit' SIGINT
                     #选择存放备份包的设备
                         ftSetBackupDevDir -r -p $filePathVersionInfoMaintain -v $tagNaeMaintain
                     #选择备份包
@@ -3092,6 +3104,8 @@ ftMaintainSystem()
                             * ) ftEcho -e 错误的选择：$sel
                                 echo "输入n，q，离开";;
                         esac;done
+                    #清尾
+                        trap SIGINT
                     ;;
         sdFinish )
                     [ -z $(which e4defrag) ] && ftMaintainSystem --rely "e4defrag" && return

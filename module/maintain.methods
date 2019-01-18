@@ -353,6 +353,13 @@ ftBackupOs()
 #===================[   ${ftEffect}   ]的使用示例==============
 #    ftBackupOs -p 数据库路径
 #========================================================="; return ;;
+    -c)
+        local filePathIni=$2
+        local versionName=$3
+        local dirPathStore=$(ftIniGetValue $filePathIni $versionName dirPathStore)
+        [ -d "$dirPathStore" ] && rm -rf $dirPathStore
+        ftIniDeleteTag -p $filePathIni -t $versionName
+        return ;;
     * ) break;;esac;done
     #参数解析
     local filePathIni
@@ -374,8 +381,8 @@ ftBackupOs()
     [ -z "$versionName" ] && errorContent="${errorContent}\\n[版本号为空]versionName=$versionName"
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBackupOs -h && return
 
-    local fileNameVersion=$(ftIniGetValue $filePathVersionInfoVersion  $versionName fileName)
-    local dirPathStore=$(ftIniGetValue $filePathVersionInfoVersion $versionName dirPathStore)
+    local fileNameVersion=$(ftIniGetValue $filePathIni  $versionName fileName)
+    local dirPathStore=$(ftIniGetValue $filePathIni $versionName dirPathStore)
     local fileNameExclude=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo filePatheExclude)
 
     local filePathVersion=${dirPathStore}/${fileNameVersion}
@@ -395,27 +402,28 @@ ftBackupOs()
                         echo
                         case "$sel" in
                             y | Y )
-                                     rm -f $filePathVersion
+                                     rm -f $dirPathStore
                                     break;;
                             n | q )  return ;;
                             * ) ftEcho -e 错误的选择：$sel
                             echo "输入n，q，离开";;
                         esac; done
                     #清理临时文件
-                        sudo apt-get autoclean
-                        sudo apt-get clean
-                        sudo apt-get autoremove
-                        sudo apt-get install -f
-                        sudo apt-get install deborphan -y
-                        dpkg -l |grep ^rc|awk '{print $2}' |sudo xargs dpkg -P
-                        sudo rm -rf /var/cache/apt/archives
+                        apt-get autoclean
+                        apt-get clean
+                        apt-get autoremove
+                        apt-get install -f
+                        apt-get install deborphan -y
+                        dpkg -l |grep ^rc|awk '{print $2}' | xargs dpkg -P
+                        rm -rf /var/cache/apt/archives
                     #生成备份包
                         ftEcho -bh 开始${ftEffect}
                         [ ! -d $dirPathStore ] && mkdir -p $dirPathStore
-                        sudo tar --use-compress-program=pigz -cvPf $filePathVersion --exclude-from=$fileNameExclude /  2>&1 |tee $filePathVersionLog
+                        tar --use-compress-program=pigz -cvPf $filePathVersion --exclude-from=$fileNameExclude /  2>&1 |tee $filePathVersionLog \
+                            || ftBackupOs -c $filePathIni $versionName
                     #扫尾
                         rm $fileNameExclude>/dev/null
-                        chmod 777 -R $dirPathStore
+                        [ -d $dirPathStore ] && chmod 777 -R $dirPathStore
                         break;;
             n | q )  return ;;
             * ) ftEcho -e 错误的选择：$sel
