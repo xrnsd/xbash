@@ -238,8 +238,8 @@ ftIniGetValue()
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    #默认不输出异常信息
-#    ftIniGetValue [文件路径] [目标块TAG] [键名]
-#    value=\$(ftIniGetValue /temp/odbcinst.ini PostgreSQL Setup)
+#    ftIniGetValue 文件路径 目标块TAG 键名
+#    value=\$(ftIniGetValue 文件路径 目标块TAG 键名)
 #    value表示key对应的值
 # 
 #    #输出异常信息

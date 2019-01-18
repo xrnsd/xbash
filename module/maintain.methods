@@ -281,13 +281,10 @@ ftSetBackupType()
         ((index+=1))
     done
 
-    local dirPathsExcludeBase=(${excludeListSys[@]} ${excludeListHomeBase[@]} ${excludeListHomeRoot[@]})
-    local dirPathsExcludeAll=(${excludeListSys[@]})
-
     if [ $infoBackupType = "cg" ];then
-        dirsExclude=${dirPathsExcludeBase[*]}
+        dirsExclude=(${excludeListSys[@]} ${excludeListHomeBase[@]} ${excludeListHomeRoot[@]})
     elif [ $infoBackupType = "bx" ];then
-        dirsExclude=${dirPathsExcludeAll[*]}
+        dirsExclude=(${excludeListSys[@]})
     else
         ftEcho -ex  你想金包还是银包呢
         exit

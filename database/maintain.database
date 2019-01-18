@@ -1,4 +1,4 @@
-[ubuntuMaintainConfigInfo]
+ [ubuntuMaintainConfigInfo]
 backupPackageSuffixName=tgz
 filePatheExclude=/tmp/exclude.list
 dirPathsExcludeListSys= \
@@ -15,7 +15,7 @@ dirPathsExcludeListSys= \
 dirPathsExcludeListHomeBase= \
     xbash \
     xconfig \
-    xwords
+    xwords \
     .bashrc \
     .dmrc \
     .gitconfig \
