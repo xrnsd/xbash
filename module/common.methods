@@ -1232,7 +1232,7 @@ ftCleanDataGarbage()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
-    i[ "$(whoami)" != $rNameUser ]||[ "$(whoami)" = "root" ] && ftCleanDataGarbage -e && return
+    [ "$(whoami)" != $rNameUser ]||[ "$(whoami)" = "root" ] && ftCleanDataGarbage -e && return
     #耦合校验
     ftInitDevicesList
     local valCount=0
@@ -3481,11 +3481,15 @@ ftGitCheckoutBtanch()
 
     #实现主体
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    local branchList=($(git branch|grep -i "$branchNameTag" |grep -v "$branchNameNow"))
+    local branchList=($(git branch|grep -i "$branchNameTag" \
+                                                         |grep -v "$branchNameNow"))
 
     if [[ ! -z "$isAllBranchs" ]];then
         local key="remotes/origin/"
-        local branchListServer=($(git branch -a|grep -i "$branchNameTag" |grep -v "$branchNameNow" |grep -v "remotes/origin/HEAD -> origin/master" |grep "$key"))
+        local branchListServer=($(git branch -a|grep -i "$branchNameTag" \
+                                                                             |grep -v "$branchNameNow" \
+                                                                             |grep -v "remotes/origin/HEAD -> origin/master" \
+                                                                             |grep "$key"))
         for (( i = 0; i < ${#branchListServer[@]}; i++ )); do
             branchListServer[$i]=$(echo ${branchListServer[$i]} | sed -e "s:$key::g")
         done
@@ -3500,6 +3504,7 @@ ftGitCheckoutBtanch()
     if (( $itemCount>1 ));then
         local index=0
         local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
+        ftEcho -sn "$(printf "%${length}s" "-" | sed -e "s: :-:g")" ; ftEcho -sn "->"  ; ftEcho -s "$(printf "   %-4s\n" $branchNameNow)"
         for item in ${branchList[@]} ; do
             echo -n "[" ; ftEcho -sn "$(printf "%${length}d" $index)" ; echo -n "]"  ; printf "   %-4s\n" $item
             ((index+=1))
@@ -3521,8 +3526,7 @@ ftGitCheckoutBtanch()
     fi
 
     while true; do
-        echo -n "是否切换到:  " ;ftEcho -s "${branchNameTraget}"
-        echo -n "[y/n](回车默认y)"
+        echo -n "是否切换到,[y/n](回车默认y):  " ;ftEcho -sn "${branchNameTraget}  "
         read -n 1 sel
         [ ${#sel} == 0 ] && sel=y
         case "$sel" in
@@ -3593,6 +3597,5 @@ ftPdfPasswordClear()
             rm "${dirPathTemp2}" > /dev/null
         fi
     done
-
     IFS=$SAVEIFS
 }

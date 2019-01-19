@@ -7,6 +7,7 @@ dirPathsExcludeListSys= \
     /lost+found \
     /mnt \
     /tmp \
+    /dev \
     /sys \
     /.Trash-0 \
     /media \
