@@ -104,15 +104,13 @@ ftRestoreChoiceSource()
     done
     while true; do
         local index=0
-        ftEcho -r  "请输入备份包对应的序号(回车默认0):"
-        if (( ${#filePathList[@]}>9 ));then
-            read index
-        else
-            read -n 1 index
-        fi;echo
 
+        local itemCount=${#filePathList[@]}
+        local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
+        ftEcho -r  "请输入备份包对应的序号(回车默认0):"
+        read -n $length index &&echo
         [ ${#index} == 0 ] && index=0 #设定默认值
-        ( ! echo -n $index | grep -q -e "^[0-9][0-9]*$")&& ftEcho -e 错误的选择：$index ;echo  "输入1,2...... 选择    输入 n，q 离开" && continue
+        (( $itemCount<=$index ))||(( $index<0 ))||( ! echo -n $index | grep -q -e "^[0-9][0-9]*$")&& ftEcho -e 错误的选择：$index ;echo  "请输入数字" && exit
 
         local filePath=${filePathList[$index]}
         [ ! -f "$filePath" ] && ftEcho -e  "备份包:${filePath}不存在" && continue
