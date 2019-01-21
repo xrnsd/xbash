@@ -3317,6 +3317,7 @@ ftGitCheckoutBtanch()
     local isEnable=true
 
     local branchNameTag="$1"
+    local delayLong="$2"
 
     while true; do case "$1" in
     -h | --help) echo -e "\
@@ -3326,6 +3327,9 @@ ftGitCheckoutBtanch()
 #
 #    在仓库所有分支中查找
 #    ftGitCheckoutBtanch -a 分支TAG
+#
+#    在仓库所有分支中查找
+#    ftGitCheckoutBtanch 分支TAG 切换分支延时时长[单位s]
 #========================================================="; return ;;
     --rely) echo -e "\
 #===================[   ${ftEffect}   ]的依赖说明=============
@@ -3342,13 +3346,15 @@ ftGitCheckoutBtanch()
     local isAllBranchs
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -a ) isAllBranchs=true;
-             branchNameTag="${arg2}" ;;
+             branchNameTag="${arg2}"
+             delayLong=$3 ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #耦合校验
     local valCount=2
     local errorContent=
     (( $#==0 ))||(( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
+    [ ! -z "$delayLong" ]&&( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBtanch -h && return
 
     #实现主体
@@ -3400,7 +3406,14 @@ ftGitCheckoutBtanch()
         [ ${#sel} == 0 ] && sel=y
         case "$sel" in
             y | Y )echo 
-                git checkout "$branchNameTraget"
+                if [ ! -z "$delayLong" ]; then
+                    tput sc
+                    for i in $(seq -w $delayLong -1 1) ; do
+                        tput rc;tput ed
+                        echo -ne "\033[1;31m将在${i}秒后切换分支，ctrl+c 取消\033[0m"
+                        sleep 1
+                    done
+                fi && git checkout "$branchNameTraget"
                 break;;
             n | q )  echo
                 return;;
