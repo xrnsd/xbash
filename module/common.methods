@@ -386,18 +386,12 @@ ftIniDeleteTag()
     while read -r line ; do
         if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
             [[ -z "$indexStart" ]] && indexStart=$index
+            (($index==$lineCount)) &&  ((index+=1)) && line= || continue
 
-            if (($index==$lineCount));then
-                ((index+=1))
-                line=
-            fi
-            if [[ -z "$line" ]]; then
-                indexEnd=$index
-                local lineRange="${indexStart},${indexEnd}d"
-                # echo lineRange=$lineRange
-                sed -i $lineRange $filePathIni
-                break
-            fi
+            indexEnd=$index
+            local lineRange="${indexStart},${indexEnd}d"
+            sed -i $lineRange $filePathIni
+            break
         fi
         ((index+=1))
     done < $filePathIni
@@ -444,10 +438,7 @@ ftIniDeleteItem()
     local index=0
     cat $filePathIni | while read line ;do
         if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
-            if [[ -z "$indexStart" ]]; then
-                indexStart=$index
-                ((indexStart+=1))
-            fi
+            [[ -z "$indexStart" ]] && indexStart=$index && ((indexStart+=1))
 
             if [[ "$line" =~ ^${itemName}* ]]; then
                 ((index+=1))
@@ -1080,16 +1071,16 @@ ftInitDevicesList()
     local devMountDirPathList=($(df -lh | awk '{print $6}'))
 
     if [[ $devMinAvailableSpace =~ "g" ]]||[[ $devMinAvailableSpace =~ "gb" ]];then
+            devMinAvailableSpace=${devMinAvailableSpace//gb/}
             devMinAvailableSpace=${devMinAvailableSpace//g/}
-            devMinAvailableSpace=$(( devMinAvailableSpace * 1024 ))
-
+            (( devMinAvailableSpace*=1024 ))
     elif [[ $devMinAvailableSpace =~ "m" ]]||[[ $devMinAvailableSpace =~ "mb" ]];then
+            devMinAvailableSpace=${devMinAvailableSpace//mb/}
             devMinAvailableSpace=${devMinAvailableSpace//m/}
-
     elif [[ $devMinAvailableSpace =~ "k" ]]||[[ $devMinAvailableSpace =~ "kb" ]];then
             devMinAvailableSpace=${devMinAvailableSpace//kb/}
             devMinAvailableSpace=${devMinAvailableSpace//k/}
-            devMinAvailableSpace=$(($devMinAvailableSpace/1024))
+            ((devMinAvailableSpace/=1024))
     fi
 
     unset mXbashModuleDataDevicesList
@@ -3499,10 +3490,16 @@ ftGitCheckoutBtanch()
     local branchNameTraget=$branchList
     if (( $itemCount>1 ));then
         local index=0
+        local indexNow
         local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
-        ftEcho -sn "$(printf "%${length}s" "-" | sed -e "s: :-:g")" ; ftEcho -sn "->"  ; ftEcho -s "$(printf "   %-4s\n" $branchNameNow)"
+        for item in $(git branch|grep -i "$branchNameTag" ) ; do
+            [[  ! $item =~ "$branchNameTag"  ]] && indexNow=$((index-1)) && index=0 && break
+            ((index+=1))
+        done
         for item in ${branchList[@]} ; do
             echo -n "[" ; ftEcho -sn "$(printf "%${length}d" $index)" ; echo -n "]"  ; printf "   %-4s\n" $item
+            (( $index == $indexNow )) && ftEcho -sn "$(printf "%${length}s" "-" | sed -e "s: :-:g")" && ftEcho -sn "->"  &&\
+                                                                  ftEcho -s "$(printf "   %-4s\n" $branchNameNow)" &&  indexNow=-1
             ((index+=1))
         done
         ftEcho -r  "请输入对应的序号(回车默认0):"
