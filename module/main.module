@@ -57,7 +57,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
 
     if [ ! -z $(which git) ];then
         #bash PS1 配置
-        export PROMPT_COMMAND='ftSetBashPs1ByGitBranch'
+        export PROMPT_COMMAND='ftSetBashPs1ByGitBranch;history -a'
 
         alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
         alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'

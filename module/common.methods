@@ -1202,12 +1202,8 @@ ftSetBashPs1ByGitBranch()
 
     [ "$(whoami)" = "root" ] && defaultPrefix="root" && defaultColorConfig=42
     if [ ! -z "$branchName" ]&&[ "$editType" != "-b" ];then
-        if [ ${#branchName} -gt "10" ];then
-            branchName="\nbranchName→ ${branchName}"
-        else
-            branchName="branchName→ ${branchName}"
-        fi
-        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]$branchName: \[\033[0m\]"
+        (( ${#branchName}>10 )) && branchName="\nbranchName→ ${branchName}: " || branchName="branchName→ ${branchName}: "
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]${branchName}\[\033[0m\]"
     else
         export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
     fi
@@ -3210,7 +3206,7 @@ ftGitLogShell()
     [[ ! -z "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return
 
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]]&&[ "$isCustomBranchLog" != "true" ];then
-        branchLogFormat=${branchLogFormat:-'%C(green)%<(9,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
+        branchLogFormat=${branchLogFormat:-'%C(green)%<(9,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
         #git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"$branchLogFormat" -$branchLogItemCount
         git log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount
     else
@@ -3510,11 +3506,7 @@ ftGitCheckoutBtanch()
             ((index+=1))
         done
         ftEcho -r  "请输入对应的序号(回车默认0):"
-        if (( $itemCount>9 ));then
-            read tIndex
-        else
-            read -n 1 tIndex
-        fi&&echo
+        read -n $length tIndex && echo
         #设定默认值
         if [ ${#tIndex} == 0 ]; then
             tIndex=0
