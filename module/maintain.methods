@@ -356,6 +356,8 @@ ftBackupOs()
         local versionName=$3
         local dirPathStore=$(ftIniGetValue $filePathIni $versionName dirPathStore)
         [ -d "$dirPathStore" ] && rm -rf $dirPathStore
+        local dirPathStoreParent=$(dirname  $dirPathStore)
+        [ -z "$(ls $dirPathStoreParent)" ] && rm -rf $dirPathStoreParent
         ftIniDeleteTag -p $filePathIni -t $versionName
         return ;;
     * ) break;;esac;done
