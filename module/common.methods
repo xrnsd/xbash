@@ -3342,16 +3342,16 @@ ftGitCheckoutBtanch()
     local branchNameTraget=$branchList
     if (( $itemCount>1 ));then
         local index=0
-        local indexNow
+        local indexNow=-1
         local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
         for item in $(git branch|grep -i "$branchNameTag" ) ; do
-            [[  ! $item =~ "$branchNameTag"  ]] && indexNow=$((index-1)) && index=0 && break
+            [[  ! $item =~ "$branchNameTag"  ]] && indexNow=$((index-1)) && break
             ((index+=1))
-        done
+        done ; index=0
         for item in ${branchList[@]} ; do
             echo -n "[" ; ftEcho -sn "$(printf "%${length}d" $index)" ; echo -n "]"  ; printf "   %-4s\n" $item
-            (( $index == $indexNow )) && ftEcho -sn "$(printf "%${length}s" "-" | sed -e "s: :-:g")" && ftEcho -sn "->"  &&\
-                                                                  ftEcho -s "$(printf "   %-4s\n" $branchNameNow)" &&  indexNow=-1
+            (( $index == $indexNow )) &&\
+                    ftEcho -sn "$(printf "%${length}s" "-" | sed -e "s: :-:g")" && ftEcho -sn "->" && ftEcho -s "$(printf "   %-4s\n" $branchNameNow)" &&  indexNow=-1
             ((index+=1))
         done
         ftEcho -r  "请输入对应的序号(回车默认0):"
@@ -3375,7 +3375,7 @@ ftGitCheckoutBtanch()
                         echo -ne "\033[1;31m将在${i}秒后切换分支，ctrl+c 取消\033[0m"
                         sleep 1
                     done
-                fi && git checkout "$branchNameTraget"
+                fi #&& git checkout "$branchNameTraget"
                 break;;
             n | q )  echo
                 return;;
