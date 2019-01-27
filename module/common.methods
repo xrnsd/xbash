@@ -3344,8 +3344,9 @@ ftGitCheckoutBtanch()
         local index=0
         local indexNow=-1
         local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
+        branchNameTag=${branchNameTag^^}
         for item in $(git branch|grep -i "$branchNameTag" ) ; do
-            [[  ! $item =~ "$branchNameTag"  ]] && indexNow=$((index-1)) && break
+            [[  ! ${item^^} =~ "$branchNameTag"  ]] && indexNow=$((index)) && break
             ((index+=1))
         done ; index=0
         for item in ${branchList[@]} ; do
@@ -3375,7 +3376,7 @@ ftGitCheckoutBtanch()
                         echo -ne "\033[1;31m将在${i}秒后切换分支，ctrl+c 取消\033[0m"
                         sleep 1
                     done
-                fi #&& git checkout "$branchNameTraget"
+                fi && git checkout "$branchNameTraget"
                 break;;
             n | q )  echo
                 return;;
