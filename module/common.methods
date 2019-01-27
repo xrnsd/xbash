@@ -2669,6 +2669,8 @@ ftAutoLanguageUtil()
     local isEnable=true
 
     local dirPathCode=$ANDROID_BUILD_TOP
+    local targetProduct=$TARGET_PRODUCT
+    local filePathDataBase=$rFilePathXbashDataBase
 
     while true; do case "$1" in
     -h | --help) echo -e "\
@@ -2685,34 +2687,26 @@ ftAutoLanguageUtil()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
-    [ -z "$ANDROID_BUILD_TOP" ] && ftAutoLanguageUtil --env && return
+    [ ! -d "$dirPathCode" ]||[ -z "$targetProduct" ] && ftAutoLanguageUtil --env && return
 
     local valCount=0
     local errorContent=
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
-    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[语言转化配置库不存在]filePathDataBase=$filePathDataBase"
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoLanguageUtil -h && return
 
     #实现主体
-    ftAutoInitEnv
-    #获取缩写列表
-    if [ $AutoEnv_mnufacturers = "sprd" ];then
-                local filePathDeviceSprd=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
-                if [[ ! -f "$filePathDeviceSprd" ]]; then
-                    ftEcho -e "[工程文件不存在:${filePathDeviceSprd}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
-                    ftAutoLanguageUtil -h
-                    return
-                fi
-   elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-                local filePathDeviceMtk=${dirPathCode}/device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
-                if [ ! -f "$filePathDeviceMtk" ]; then
-                    ftEcho -e "[工程文件不存在:${filePathDeviceMtk}\n，语言缩写列表 获取失败]\n$filePathPawInfo"
-                    ftAutoLanguageUtil -h
-                    return
-                fi
+    local filePathDeviceProductLocales=($(ftIniGetValue $filePathDataBase lzProjrctConfigProductLocales $targetProduct))
+    filePathDeviceProductLocales=${dirPathCode}/${filePathDeviceProductLocales}
+
+    if [[ ! -f "$filePathDeviceProductLocales" ]]; then
+        ftEcho -sn "语言转化配置文件不存在: "
+        ftEcho -e "$filePathDeviceProductLocales"
+        ftAutoLanguageUtil -h
+        return
     fi
     local key="PRODUCT_LOCALES := "
-    local LanguageList=$(cat $filePathDeviceMtk|grep "$key"|grep -v "#PRODUCT_LOCALES := ")
+    local LanguageList=$(cat $filePathDeviceProductLocales|grep "$key"|grep -v "#PRODUCT_LOCALES := ")
     LanguageList=${LanguageList//$key/}
     ftLanguageUtil "${LanguageList[@]}"
 }
