@@ -37,7 +37,7 @@ ftMain()
                 ftReadAllAlias| column -t
                 return;;
     -ft )
-                ftEcho -s "xbash对bash扩展实现说明" ;
+                ftEcho -s "对bash的扩展实现说明" ;
                 echo -e "=========================================================\n命令                                 说明\n========================================================="
                 ftReadAllFt | column -t
                 return;;
@@ -45,7 +45,7 @@ ftMain()
                 ftRestartAdb
                 break;;
     *)
-                ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -ft   #xbash对bash扩展实现说明"
+                ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -ft   #对bash的扩展实现说明"
             return;;
     esac
     done
@@ -68,7 +68,7 @@ ftReadAllAlias()
 
 ftReadAllFt()
 {
-        local ftEffect=查看xbash对bash扩展实现说明_nodisplay
+        local ftEffect=查看对bash的扩展实现说明_nodisplay
 
         local key="local ftEffect="
         for effectName in $(cat $rFilePathXbashModuleCommon |grep '^ft') ; do
@@ -931,37 +931,22 @@ ftLanguageUtil()
     local ftEffect=语言缩写转换
     local isEnable=true
 
-    local ftLanguageContent=$@
-    local dirPathCode=$ANDROID_BUILD_TOP
+    local ftLanguageContent="${1}"
     local filePathDataBase=$rFilePathXbashDataBase
 
     while true; do case "$1" in
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#    ftLanguageUtil 缩写列表
-#    ftLanguageUtil “ar_IL bn_BD my_MM zh_CN”
-#========================================================="; return ;;
- --env ) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
-# 环境未初始化
-# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#    ftLanguageUtil "ar_IL bn_BD my_MM zh_CN"
+#    ftLanguageUtil "阿拉伯语 孟加拉语 缅甸语 简体中文"
 #========================================================="; return ;;
     * ) break;;esac;done
 
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #耦合校验
-    [ -z "$ANDROID_BUILD_TOP" ] && ftLanguageUtil --env && return
 
-    ftAutoInitEnv
-    if [ $AutoEnv_mnufacturers = "sprd" ];then
-            local filePathDevice=${dirPathCode}/${AutoEnv_deviceDirPath}/sp7731c_1h10_32v4_oversea.mk
-    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-            local filePathDevice=${dirPathCode}/device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
-    fi
     local errorContent=
-    if [ -z "$ftLanguageContent" ];then    errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
-    elif [ ! -f "$filePathDevice" ];then    errorContent="${errorContent}\\n[工程Device的语言配置文件不存在]filePathDevice=$filePathDevice" ; fi
+    [ -z "$ftLanguageContent" ] &&  errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
     [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[语言转化配置文件不存在]filePathDataBase=$filePathDataBase"
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLanguageUtil -h && return
 
@@ -970,21 +955,12 @@ ftLanguageUtil()
     local allList=($(ftIniGetValue $filePathDataBase languageList allList))
     local shortList=($(ftIniGetValue $filePathDataBase languageList shortList))
 
-    if [ -z "$ftLanguageContent" ];then
-        LanguageList=$(cat $filePathDevice|grep "PRODUCT_LOCALES :=")  #获取缩写列表
-        LanguageList=${LanguageList//PRODUCT_LOCALES :=/};  #删除PRODUCT_LOCALES :=
-        ftLanguageContent="$LanguageList"
-    fi
+    local ftLanguageContent2=${ftLanguageContent//_/}
+    ftLanguageContent2=${ftLanguageContent2// /}
 
-    ftLanguageContent2=$(echo $ftLanguageContent|sed 's/_//g')
-    ftLanguageContent2=$(echo $ftLanguageContent2|sed s/[[:space:]]//g)
-    if [[ $ftLanguageContent2 =~ ^[a-zA-Z]+$ ]]; then
-        sourceList=(${shortList[@]})
-        tragetList=(${allList[@]})
-    elif [[ $ftLanguageContent2 =~ ^[a-zA-Z] ]];then
-        ftEcho -e 错误的参数:\\n${ftLanguageContent[@]}
-        exit
-    else
+    local sourceList=(${shortList[@]})
+    local tragetList=(${allList[@]})
+    if [[ ! "$ftLanguageContent2" =~  ^[a-zA-Z]+$ ]]; then
         sourceList=(${allList[@]})
         tragetList=(${shortList[@]})
     fi
@@ -1002,11 +978,13 @@ ftLanguageUtil()
                 returnVal="${returnVal} [${lc}]>${tragetList[index]}>[${base}]"
                 title=${lc}可能存在多种结果
             elif((${#sourceList[@]}==$(($index + 1)) ));then
+                echo -n "base=${base}"
                 ftEcho -e $title
             fi
             ((index+=1))
         done
     done
+    echo ${returnVal[@]}
 }
 
 ftInitDevicesList()
@@ -2725,12 +2703,6 @@ ftAutoLanguageUtil()
                     ftAutoLanguageUtil -h
                     return
                 fi
-                local key="#PRODUCT_LOCALES := "
-                LanguageListInvalid=$(cat $filePathDeviceSprd|grep "$key")
-                key="PRODUCT_LOCALES :="
-                LanguageList=$(cat $filePathDeviceSprd|grep "$key")
-                LanguageList=${LanguageList//$LanguageListInvalid/};
-                LanguageList=${LanguageList//$key/};
    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
                 local filePathDeviceMtk=${dirPathCode}/device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
                 if [ ! -f "$filePathDeviceMtk" ]; then
@@ -2738,15 +2710,11 @@ ftAutoLanguageUtil()
                     ftAutoLanguageUtil -h
                     return
                 fi
-                local key="#PRODUCT_LOCALES := "
-                LanguageListInvalid=$(cat $filePathDeviceMtk|grep "$key")
-                key="PRODUCT_LOCALES := "
-                LanguageList=$(cat $filePathDeviceMtk|grep "$key")
-                LanguageList=${LanguageList//$LanguageListInvalid/};
-                LanguageList=${LanguageList//$key/};
     fi
-
-    ftLanguageUtil "${LanguageList//$key/}"
+    local key="PRODUCT_LOCALES := "
+    local LanguageList=$(cat $filePathDeviceMtk|grep "$key"|grep -v "#PRODUCT_LOCALES := ")
+    LanguageList=${LanguageList//$key/}
+    ftLanguageUtil "${LanguageList[@]}"
 }
 
 ftAutoUpdateSoftwareVersion()
