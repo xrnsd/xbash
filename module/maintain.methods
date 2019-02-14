@@ -35,8 +35,9 @@ ftRestoreOperate()
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftRestoreOperate -h && return
 
     while true; do
-    ftEcho -y 是否开始还原
+    ftEcho -y "是否开始还原(回车默认y)"
     read -n 1 sel
+    [ ${#sel} == 0 ] && sel=y
     case "$sel" in
         y | Y )
             local fileName=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain fileName)
@@ -110,7 +111,9 @@ ftRestoreChoiceSource()
         ftEcho -r  "请输入备份包对应的序号(回车默认0):"
         read -n $length index &&echo
         [ ${#index} == 0 ] && index=0 #设定默认值
-        (( $itemCount<=$index ))||(( $index<0 ))||( ! echo -n $index | grep -q -e "^[0-9][0-9]*$")&& ftEcho -e 错误的选择：$index ;echo  "请输入数字" && exit
+        if (( $itemCount<=$index ))||(( $index<0 ))||( ! echo -n $index | grep -q -e "^[0-9][0-9]*$");then
+             ftEcho -e 错误的选择：$index ;echo  "请输入数字" && exit
+        fi
 
         local filePath=${filePathList[$index]}
         [ ! -f "$filePath" ] && ftEcho -e  "备份包:${filePath}不存在" && continue

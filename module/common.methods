@@ -133,10 +133,11 @@ ftEcho()
 #    ftEcho    -sn    内容    # 执行信息,不换行，对字符串的缩进敏感
 #========================================================="; return ;;
     * ) break;;esac;done
-
-    option=$1
+    
+    local content
+    local option=$1
     option=${option:-'未制定显示信息'}
-    valList=$@
+    local valList=$@
     if [ ${#valList[@]} -eq 2 ];then
         content=$(content |sed s/[[:space:]]//g)
     else
@@ -367,19 +368,22 @@ ftIniDeleteTag()
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteTag -h && return
 
     #实现主体
-    local indexStart=
-    local indexEnd=
     local index=1
+    local indexEnd=
+    local indexStart=
     local lineCount=$(cat $filePathIni|wc -l)
     while read -r line ; do
         if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
             [[ -z "$indexStart" ]] && indexStart=$index
-            (($index==$lineCount)) &&  ((index+=1)) && line= || continue
+            (($index==$lineCount)) && ((index+=1)) && line=
 
-            indexEnd=$index
-            local lineRange="${indexStart},${indexEnd}d"
-            sed -i $lineRange $filePathIni
-            break
+            if [[ -z "$line" ]]; then
+                indexEnd=$index
+                local lineRange="${indexStart},${indexEnd}d"
+                # echo lineRange=$lineRange
+                sed -i $lineRange $filePathIni
+                break
+            fi
         fi
         ((index+=1))
     done < $filePathIni
@@ -497,22 +501,21 @@ ftIniCreateFileOrTag()
         localContent=${localContent}${enterLine}
         echo -e ${localContent} > $filePathIni
     fi
-    if [ ! -z "$(cat $filePathIni |grep  $contentTagName)" ]; then
-        while true; do
-            echo -n "存在旧TAG，是否删除[y/n](回车默认y)"
-            read -n 1 sel
-            [ ${#sel} == 0 ] && sel=y
-            case "$sel" in
-                y | Y )echo 
-                    ftIniDeleteTag -p $filePathIni -t $contentTagName
-                    break;;
-                n | q )  echo
-                    exit ;;
+
+    if [ ! -z "$(cat $filePathIni |grep  $contentTagName)" ];then
+        echo -n "存在旧TAG，是否删除[y/n](回车默认y)"
+        read -n 1 sel
+        [ ${#sel} == 0 ] && sel=y
+        while true; do case "$sel" in
+                y | Y )echo
+                    while [ ! -z "$(cat $filePathIni |grep  $contentTagName)" ]; do
+                        ftIniDeleteTag -p $filePathIni -t $contentTagName
+                    done; break;;
+                n | q )  echo ; exit ;;
                 * ) ftEcho -e "错误的选择：$sel"
                     echo "输入n，q，离开";;
-        esac;done
-    fi
-    echo -e "${content}" >> $filePathIni
+    esac;done ; fi
+    echo  -e "${content}" >> $filePathIni
 }
 
 #####---------------------扩展函数---------------------------#########
@@ -2856,7 +2859,7 @@ ftMaintainSystem()
     [ "$(whoami)" != "root" ] && ftMaintainSystem --env && return
     [ -z $(which pigz) ] && ftMaintainSystem --rely "pigz" && return
     #参数解析
-    local editType=backup
+    local editType
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -s )   editType=sdFinish
@@ -2869,8 +2872,9 @@ ftMaintainSystem()
     #耦合校验
     local errorContent=
     local filePathMaintain=${rDirPathXbashModule}/${rFileNameXbashModuleMaintain}
+    [ -z "$editType" ] && errorContent="${errorContent}\\n[你想做啥哩]editType=$editType"
     [ ! -f "$filePathMaintain" ] && errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMaintainSystem -h && return
+    [ ! -z "$errorContent" ] && ftEcho -ea "[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMaintainSystem -h && return
 
     #实现主体
     source $filePathMaintain
