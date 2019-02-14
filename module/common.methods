@@ -3315,6 +3315,10 @@ ftGitCheckoutBtanch()
              branchNameTag="${arg2}"
              delayLong=$3 ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    if [[ -z "$branchNameTag" ]]; then
+        git branch
+        return
+    fi
     #耦合校验
     local valCount=2
     local errorContent=
@@ -3340,8 +3344,10 @@ ftGitCheckoutBtanch()
         branchList=($(echo ${branchList[@]} | sed 's/ /\n/g'|sort |uniq)) #去重
     fi
 
-    [[ -z "$branchList" ]] && ftEcho -e "未找到[$branchNameTag]对应的分支" && return
-
+    if [[ -z "$branchList" ]];then
+       [[ $branchNameNow =~ "$branchNameTag" ]] &&  ftEcho -s "只有当前分支包含TAG，无需切换" && return
+       ftEcho -e "未找到[$branchNameTag]对应的分支" && return
+    fi
     local itemCount=${#branchList[@]}
     local branchNameTraget=$branchList
     if (( $itemCount>1 ));then
