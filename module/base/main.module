@@ -7,8 +7,12 @@ alias ...="effect=进入爷目录;cd ../.."
 alias xcc='effect=进入原目录;cd $OLDPWD'
 alias xr="effect=更新xbash配置;source ~/.bashrc"
 if [ -f $rFilePathXbashModuleCommon ];then
+    #加载common
     source  $rFilePathXbashModuleCommon
-
+    #加载auto
+    [ -f $rFilePathXbashModuleAuto ] && source $rFilePathXbashModuleAuto
+    #加载input
+    [ -f $rFilePathXbashModuleInput ] && [ "$rFilePathXbashModuleInput" != "$(readlink -f ~/.inputrc)" ] && rm -rf ~/.inputrc && ln -sf $rFilePathXbashModuleInput ~/.inputrc
     #处理bash历史记录
     if [ "$(whoami)" != "root" ];then
         filePathBashHistory=${dirPathHome}/.bash_history
