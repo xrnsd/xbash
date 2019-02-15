@@ -54,7 +54,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
     alias xX='effect=字符串转大写;_xX(){  echo "$1" | tr '[a-z]' '[A-Z]' ;};_xX $1'
     alias Xx='effect=字符串转小写;_Xx(){  echo "$1" | tr '[A-Z]' '[a-z]' ;};_Xx $1'
     alias xbh='effect=bash命令历史查询;cat $filePathBashHistory |grep'
-    alias ftAutoGetAndroidVersionBySDKVersion='effect=bash命令历史查询;ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison'
+    alias ftAutoGetAndroidVersionBySDKVersion='effect=android版本查询;ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison'
 
     if [ ! -z $(which git) ];then
         #bash PS1 配置

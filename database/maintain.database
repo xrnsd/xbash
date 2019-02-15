@@ -95,8 +95,3 @@ dirPathsExcludeListHomeBase= \
     w7_170815.desktop \
     .xsession-errors \
     .local/share/Trash
-[restoreConfigInfo]
-fileName=null
-dirPathStore=null
-dirPathRestoreExclude=null
-
