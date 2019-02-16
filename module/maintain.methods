@@ -428,7 +428,7 @@ ftBackupOs()
                         rm $fileNameExclude>/dev/null
                         [ -d $dirPathStore ] && chmod 777 -R $dirPathStore
                         break;;
-            n | q )  return ;;
+            n | q )  ftCleanUpInvalidRecords -p $filePathIni > dev/null ;return ;;
             * ) ftEcho -e 错误的选择：$sel
             echo "输入n，q，离开";;
         esac; done
@@ -468,10 +468,26 @@ ftMaintainInfoNote()
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMaintainInfoNote -h && return
 
     if [[ "$editType" = "add" ]]; then
-        ftEcho -r  "请输入版本   ["${versionName}"]  相应的说明[回车默认为常规]:"
-        read note
-        local noteBase="默认" #未输入写入默认值
-        ftIniSetValue $filePathIni $versionName backupPackageNote "${note:-"$noteBase"}"
+        local fileNameVersionNote="${versionName}的相应说明"
+        if [ ! -z "$(pgrep -f gedit)" ];then
+            while true; do echo && ftEcho -y gedit 已打开是否关闭
+            read -n 1 sel
+            case "$sel" in
+                y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}') && break;;
+                n | N |q | Q)    exit;;
+                * ) ftEcho -e 错误的选择：$sel && echo "输入n,q，离开" ; ;;
+            esac ; done
+        fi
+        if touch $fileNameVersionNote ; then
+            XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit $fileNameVersionNote
+        else
+            ftEcho -ex "创建临时备注信息文件失败"
+            return;
+        fi
+        note=$(cat $fileNameVersionNote)
+        note=$(echo $note |sed s/[[:space:]]/_/g)
+        ftIniSetValue $filePathIni $versionName backupPackageNote "${note:-"默认"}"
+        rm -rf $fileNameVersionNote
     fi
 }
 
@@ -785,4 +801,50 @@ ftSynchronous()
             echo "输入n，q，离开";;
     esac
     done
+}
+
+ftCleanUpInvalidRecords()
+{
+    local ftEffect=清除无效版本记录
+    #可用性校验
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    ftCleanUpInvalidRecords -p 版本数据库路径
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local filePathIni
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+            -p )   filePathIni="${arg2}"
+           ;;
+    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    #耦合校验
+    local errorContent=
+    [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[备份包数据库文件不存在]filePathIni=$filePathIni"
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCleanUpInvalidRecords -h && return
+
+    #实现主体
+    local result
+    local MD5
+    local backupPackageNote
+    for versionName in $(cat $filePathIni|grep "\[backup" ); do
+         versionName=${versionName//\[/}
+         versionName=${versionName//\]/}
+         MD5=$(ftIniGetValue $filePathIni $versionName MD5)
+         backupPackageNote=$(ftIniGetValue $filePathIni $versionName backupPackageNote)
+        if [[ -z $MD5 ]] || [[ -z $backupPackageNote ]]; then
+            ftIniDeleteTag -p $filePathIni -t $versionName
+            result="deleted"
+        fi
+    done
+    if [[ ! -z "$result" ]]; then
+        ftEcho -s "删除部分无效版本记录"
+    fi
 }

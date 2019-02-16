@@ -148,7 +148,7 @@ ftEcho()
     option=${option:-'未制定显示信息'}
     local valList=$@
     if [ ${#valList[@]} -eq 2 ];then
-        content=$(content |sed s/[[:space:]]//g)
+        content=$(echo $content |sed s/[[:space:]]//g)
     else
         #除第一个参数外的所有参数列表，可正常打印数组
         content="${valList[@]/$option/}"
@@ -1635,13 +1635,15 @@ ftMaintainSystem()
                     local fileNameVersion=${infoVersionName}.$(ftIniGetValue $filePathVersionInfoMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
                     # 进入根目录
                         cd /
+                    #清理无效版本记录
+                    ftCleanUpInvalidRecords -p $filePathVersionInfoVersion
                     #预写入版本信息
                         ftIniCreateFileOrTag -a -p $filePathVersionInfo -t $infoVersionName -l "\
                             fileName=$fileNameVersion \
                             backupType=null \
                             dirPathStore=null \
                             backupPackageNote=null \
-                            MD5=null \
+                            MD5= \
                             hwCpu=null \
                             hwMainboard=null \
                             swSystemVersion=null \
@@ -1675,6 +1677,8 @@ ftMaintainSystem()
                     ;;
         restore )
                     local tagNaeMaintain=restoreConfigInfo
+                    #清理无效版本记录
+                    ftCleanUpInvalidRecords -p $filePathVersionInfoVersion
                     #预写入待还原版本信息
                         ftIniCreateFileOrTag -a -p $filePathVersionInfoMaintain -t $tagNaeMaintain -l "\
                                 fileName=null \
