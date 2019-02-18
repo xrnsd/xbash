@@ -1636,7 +1636,7 @@ ftMaintainSystem()
                     # 进入根目录
                         cd /
                     #清理无效版本记录
-                    ftCleanUpInvalidRecords -p $filePathVersionInfoVersion
+                        ftCleanUpInvalidRecords -p $filePathVersionInfoVersion
                     #预写入版本信息
                         ftIniCreateFileOrTag -a -p $filePathVersionInfo -t $infoVersionName -l "\
                             fileName=$fileNameVersion \
@@ -1678,7 +1678,7 @@ ftMaintainSystem()
         restore )
                     local tagNaeMaintain=restoreConfigInfo
                     #清理无效版本记录
-                    ftCleanUpInvalidRecords -p $filePathVersionInfoVersion
+                        ftCleanUpInvalidRecords -p $filePathVersionInfoVersion
                     #预写入待还原版本信息
                         ftIniCreateFileOrTag -a -p $filePathVersionInfoMaintain -t $tagNaeMaintain -l "\
                                 fileName=null \
