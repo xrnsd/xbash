@@ -886,7 +886,8 @@ ftSetBashPs1ByGitBranch()
 
     [ "$(whoami)" = "root" ] && defaultPrefix="root" && defaultColorConfig=42
     if [ ! -z "$branchName" ]&&[ "$editType" != "-b" ];then
-        (( ${#branchName}>$COLUMNS/2-11 )) && branchName="\nbranchName→ ${branchName}: " || branchName="branchName→ ${branchName}: "
+        local ps1=$(pwd)${branchName}
+        (( ${#ps1}>$COLUMNS/2-11 )) && branchName="\nbranchName→ ${branchName}: " || branchName="branchName→ ${branchName}: "
         export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]${branchName}\[\033[0m\]"
     else
         export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
