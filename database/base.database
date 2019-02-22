@@ -34,7 +34,7 @@ packageNameList=com.android.systemui \
 10=Android2.3.3-2.3.7
 9=Android2.3-2.3.2
 
-
+#客户名
 [lzProjrctConfigBranch2CtName]
 XHF=新华菲
 DHX=东华新
@@ -43,12 +43,14 @@ DCHS=鼎城恒生
 CDHT=诚达恒泰
 TXD=腾信达
 
+#项目对应平台名
 [lzProjrctConfigBranch2PlatformName]
 keytak6580_weg_l=MTK6580
 full_keytak6580_weg_l=MTK6580
 sp7731c_1h10_32v4_oversea=SPRD7731C
 full_m9_qhd=MTK6580M
 
+#项目软件包packages文件名列表
 [lzProjrctConfigSoftwarePackageFileLIst]
 full_keytak6580_weg_l= \
     boot.img \
@@ -74,6 +76,14 @@ full_m9_qhd= \
     userdata.img \
     preloader_m9_qhd.bin
 
+#语言列表配置文件路径
+[lzProjrctConfigProductLocales]
+keytak6580_weg_l=device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
+full_keytak6580_weg_l=device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
+sp7731c_1h10_32v4_oversea=device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
+full_m9_qhd=device/kdragon/m9_qhd/full_m9_qhd.mk
+
+#项目软件包database文件名列表
 [lzProjrctConfigSoftwareDataBaseFileLIst]
 m9_xinhaufei_r9_hd= \
     obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \

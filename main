@@ -124,6 +124,7 @@ fi
     export dirPathHomeTools=${dirPathHome}/tools
     export dirPathHomeXbashConfig=${dirPathHomeXbash}/config
     export dirPathHomeXbashModule=${dirPathHomeXbash}/module
+    export dirPathHomeXbashModuleBase=${dirPathHomeXbashModule}/base
     export dirPathHomeXbashConfigBashrc=${dirPathHomeXbashConfig}/user
 #---------------- xbash配置, 加载用户独立配置  ------------------
     filePathUserConfig=${dirPathHomeXbashConfigBashrc}/${userName}.config
@@ -139,7 +140,7 @@ fi
     fi
     source $filePathUserConfig&& export filePathUserConfig=$filePathUserConfig
 #---------------- xbash配置, 加载通用扩展  ------------------
-    filePathXbashTragetBashrcBase=${dirPathHomeXbashModule}/main.module
+    filePathXbashTragetBashrcBase=${dirPathHomeXbashModuleBase}/main.module
     if [ -f "$filePathXbashTragetBashrcBase" ];then
                 source $filePathXbashTragetBashrcBase&& export filePathXbashTragetBashrcBase=$filePathXbashTragetBashrcBase
     else
