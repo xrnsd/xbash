@@ -763,15 +763,13 @@ ftInitDevicesList()
     local devNameDirPathList=$(df -lh | awk '{print $1}')
     local devMountDirPathList=($(df -lh | awk '{print $6}'))
 
-    if [[ $devMinAvailableSpace =~ "g" ]]||[[ $devMinAvailableSpace =~ "gb" ]];then
-            devMinAvailableSpace=${devMinAvailableSpace//gb/}
+    devMinAvailableSpace=${devMinAvailableSpace//b/}
+    if [[ $devMinAvailableSpace =~ "g" ]];then
             devMinAvailableSpace=${devMinAvailableSpace//g/}
             (( devMinAvailableSpace*=1024 ))
-    elif [[ $devMinAvailableSpace =~ "m" ]]||[[ $devMinAvailableSpace =~ "mb" ]];then
-            devMinAvailableSpace=${devMinAvailableSpace//mb/}
+    elif [[ $devMinAvailableSpace =~ "m" ]];then
             devMinAvailableSpace=${devMinAvailableSpace//m/}
-    elif [[ $devMinAvailableSpace =~ "k" ]]||[[ $devMinAvailableSpace =~ "kb" ]];then
-            devMinAvailableSpace=${devMinAvailableSpace//kb/}
+    elif [[ $devMinAvailableSpace =~ "k" ]];then
             devMinAvailableSpace=${devMinAvailableSpace//k/}
             ((devMinAvailableSpace/=1024))
     fi
