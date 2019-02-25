@@ -920,21 +920,21 @@ ftCleanDataGarbage()
 
     #实现主体
     local dirPathLocal=$(pwd)
-    for dirDev in ${mXbashModuleDataDevicesList[*]} ; do
-         local dir=null
-        if [ -d ${dirDev}/.Trash-1000 ];then
-            dir=${dirDev}/.Trash-1000
-        elif [ -d ${dirDev}/.local/share/Trash ];then
-            dir=${dirDev}/.local/share/Trash
+    for dirDevPath in ${mXbashModuleDataDevicesList[*]}  ${rDirPathUserHome}; do
+        if [ -d ${dirDevPath}/.Trash-1000 ];then
+            dirDevPath=${dirDevPath}/.Trash-1000
+        elif [ -d ${dirDevPath}/.local/share/Trash ];then
+            dirDevPath=${dirDevPath}/.local/share/Trash
+        else
+            continue
         fi
-        if [ -d $dir ];then
-            cd $dir && trap '[ -d files ] && cd $dirPathLocal && exit' SIGINT
 
-            [ ! -d empty ] && mkdir empty
-            rsync --delete-before -d -a -H -v --progress --stats empty/ files/
-            rm -rf files/*
-            trap SIGINT
-        fi
+        cd $dirDevPath && trap '[ -d files ] && cd $dirPathLocal && exit' SIGINT
+
+        [ ! -d empty ] && mkdir empty
+        rsync --delete-before -d -a -H -v --progress --stats empty/ files/
+        rm -rf files/*
+        trap SIGINT
     done
     cd $dirPathLocal
     trap SIGINT
