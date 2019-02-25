@@ -184,7 +184,7 @@ ftSetBackupDevDir()
 
     while true; do
         ftEcho -r  "请选择存放备份文件的设备[0~$(expr $index - 1),q](回车默认0):"
-        if [ ${#mXbashModuleDataDevicesList[@]} -gt 9 ];then
+        if (( ${#mXbashModuleDataDevicesList[@]} > 9 ));then
             read dir
         else
             read -n 1 dir

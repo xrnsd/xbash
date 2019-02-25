@@ -286,16 +286,12 @@ ftIniGetValue()
     cat $filePath | while read line ; do
         [ "X$line" = "X[$blockName]" ] && begin_block=1 && continue
 
-        if [ $begin_block -eq 1 ];then
-            end_block=$(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')
-            [ $end_block -eq 1 ] && break
-
-            need_ignore=$(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')
-            [ $need_ignore -eq 1 ] && continue
+        if (( $begin_block==1 ));then
+            (( $(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')==1 )) && break
+            (( $(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')==1 )) && continue
 
             key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
-            value=$(echo $line | awk -F= '{gsub("\t","",$2); print $2}')
-            [ "X$keyName" = "X$key" ] && echo $value && break
+            [ "X$keyName" = "X$key" ] && echo $(echo $line | awk -F= '{gsub("\t","",$2); print $2}') && break
         fi
     done
 }
@@ -614,9 +610,11 @@ ftDevAvailableSpace()
      for size in ${devAvailableSIzeList[*]} ; do
             devMountDirPath=${devMountDirPathList[indexDevName]}
             if [[ "$devMountDirPath" = "$dirPathTraget" ]]; then
-                    if [[ $size =~ "G" ]];then
+                    # size=${size^^}
+                    if [[ $size == *G ]];then
                             size=${size//G/}
-                            size=$(echo "$size * 1024" | bc)
+                            size=${size%.*}
+                            ((size*=1024))
                     else
                             size=${size//M/}
                     fi
@@ -739,7 +737,7 @@ ftInitDevicesList()
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -s )   devMinAvailableSpace="${arg2:-'0'}"
-                devMinAvailableSpace=$(echo $devMinAvailableSpace | tr '[A-Z]' '[a-z]')
+                devMinAvailableSpace=${devMinAvailableSpace,,}
            ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
 
@@ -930,13 +928,12 @@ ftCleanDataGarbage()
             dir=${dirDev}/.local/share/Trash
         fi
         if [ -d $dir ];then
-            cd $dir
+            cd $dir && trap '[ -d files ] && cd $dirPathLocal && exit' SIGINT
 
-            mkdir empty
+            [ ! -d empty ] && mkdir empty
             rsync --delete-before -d -a -H -v --progress --stats empty/ files/
             rm -rf files/*
-            rm -r empty
-
+            trap SIGINT
         fi
     done
     cd $dirPathLocal
@@ -1054,16 +1051,10 @@ ftLogcatApplicationByPackageName()
 
     local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
     if ( echo -n $pid | grep -q -e "^[0-9][0-9]*$"); then
-            if [[ ! -z "$vContent" ]]; then
-                adb logcat |grep $pid |grep -v $vContent
-                return;
-            fi
+            [[ ! -z "$vContent" ]] && adb logcat |grep $pid |grep -v $vContent && return
             adb logcat |grep $pid
     else
-            if [[ ! -z "$vContent" ]]; then
-                adb logcat |grep -i $packageName |grep -v $vContent
-                return;
-            fi
+            [[ ! -z "$vContent" ]] && adb logcat |grep -i $packageName |grep -v $vContent && return
             adb logcat |grep -i $packageName
     fi
 }
@@ -1745,7 +1736,7 @@ ftMaintainSystem()
                     #设定默认值
                     [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
                     (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
-                    e4defrag -v -c $${devPathList[$tIndex]}
+                    e4defrag -v -c ${devPathList[$tIndex]}
                     return ;;
         * ) ftMaintainSystem -h ; return ;; esac
 }
@@ -2091,7 +2082,7 @@ ftPdfPasswordClear()
         if [[ -d "$dirPathTemp" ]]; then
             ftPdfPasswordClear -d "$dirPathTemp" -p "$passwordNum"
         elif [[ ! -z $(echo $line |grep -i ".pdf") ]]; then
-            local dirPathTemp2="${dirPathTarget}/222222${line}"
+            local dirPathTemp2="${dirPathTarget}/temp_${line}"
             cp -rf $dirPathTemp $dirPathTemp2
             qpdf --password='$passwordNum' --decrypt $dirPathTemp2 $dirPathTemp && ftEcho -sn "${dirPathTemp}";echo "  [密码已清除]"
             rm "${dirPathTemp2}" > /dev/null
