@@ -394,6 +394,63 @@ ftIniDeleteTag()
     done < $filePathIni
 }
 
+ftIniAddItem()
+{
+    local ftEffect=在ini文件中对应TAG中添加item
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    ftIniAddItem -p ini文件路径 -t TAG块名  -l 块对应的键值对列表
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local tagName
+    local itemContent
+    local filePathIni
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -t )   tagName="${arg2}"        ;;
+        -l )   itemContent="${arg2}"    ;;
+        -p )   filePathIni="${arg2}"    ;;
+    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+
+    #耦合校验
+    local errorContent=
+    [ -z "$itemContent" ] && errorContent="${errorContent}\\n[缺少必要参数]itemContent=$itemContent"
+    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
+    [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniAddItem -h && return
+
+    #实现主体
+    local indexStart=0
+    local index=1
+    local tagContent
+    cat $filePathIni | while read line ;do
+        if [[ "$line" = "[${tagName}]" ]]||(( $indexStart != 0 )); then
+            (( $indexStart == 0 )) && indexStart=1
+            tagContent=(${tagContent[@]} ${line})
+            if [[ -z "$line" ]]; then
+                for item in ${itemContent[*]} ; do
+                    for itemBase in ${tagContent[*]}; do
+                        [[ "${itemBase}" = "${item}" ]] &&item= && break
+                    done
+                    [ -z "${item}" ] && break
+                    sed  -i "${index}i ${item}" $filePathIni
+                    ((index+=1))
+                done
+                break
+            fi
+        fi
+        ((index+=1))
+    done
+
+}
+
 ftIniDeleteItem()
 {
     local ftEffect=删除ini文件中对应TAG中指定item
@@ -416,7 +473,7 @@ ftIniDeleteItem()
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -t )   tagName="${arg2}"
            ;;
-        -l )   itemName="${arg2}"
+        -i )   itemName="${arg2}"
            ;;
         -p )   filePathIni="${arg2}"
            ;;
