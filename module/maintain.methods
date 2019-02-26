@@ -20,12 +20,9 @@ ftRestoreOperate()
     local dirPathRestoreTarget
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-            -pm )   filePathIniMaintain="${arg2}"
-           ;;
-            -t )   tagNameMaintain="${arg2}"
-           ;;
-            -d )   dirPathRestoreTarget="${arg2}"
-           ;;
+            -pm )   filePathIniMaintain="${arg2}"           ;;
+            -t )   tagNameMaintain="${arg2}"                 ;;
+            -d )   dirPathRestoreTarget="${arg2}"           ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
@@ -72,12 +69,9 @@ ftRestoreChoiceSource()
     local tagNameMaintain
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-            -p )   filePathIni="${arg2}"
-           ;;
-            -pm )   filePathIniMaintain="${arg2}"
-           ;;
-            -t )   tagNameMaintain="${arg2}"
-           ;;
+            -p )   filePathIni="${arg2}"                        ;;
+            -pm )   filePathIniMaintain="${arg2}"       ;;
+            -t )   tagNameMaintain="${arg2}"            ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
@@ -147,14 +141,10 @@ ftSetBackupDevDir()
     local versionName
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-            -b )   editType=backup
-           ;;
-            -r )   editType=restore
-           ;;
-            -p )   filePathIni="${arg2}"
-           ;;
-            -v )   versionName="${arg2}"
-           ;;
+            -b )   editType=backup              ;;
+            -r )   editType=restore              ;;
+            -p )   filePathIni="${arg2}"        ;;
+            -v )   versionName="${arg2}"    ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     ftInitDevicesList -s 8192M # 初始化设备列表[mXbashModuleDataDevicesList]
@@ -169,7 +159,7 @@ ftSetBackupDevDir()
 
     local devTarget
     local devTargetDir
-    local index=0;
+    local index=0
     local devEffectiveSpace
 
     for dev in ${mXbashModuleDataDevicesList[*]} ; do
@@ -232,12 +222,9 @@ ftSetBackupType()
     local filePathIniMaintain
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-            -p )   filePathIni="${arg2}"
-                     ;;
-            -pm )   filePathIniMaintain="${arg2}"
-                     ;;
-            -v )   versionName="${arg2}"
-                     ;;
+            -p )   filePathIni="${arg2}"                        ;;
+            -pm )   filePathIniMaintain="${arg2}"      ;;
+            -v )   versionName="${arg2}"                    ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
@@ -314,10 +301,8 @@ ftSetRestoreOverryList()
     local tagNameMaintain
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-            -pm )   filePathIniMaintain="${arg2}"
-                     ;;
-            -t )   tagNameMaintain="${arg2}"
-                     ;;
+            -pm )   filePathIniMaintain="${arg2}"   ;;
+            -t )   tagNameMaintain="${arg2}"         ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
@@ -370,12 +355,9 @@ ftBackupOs()
     local filePathIniMaintain
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-                  -p )   filePathIni="$arg2"
-                     ;;
-                  -pm )   filePathIniMaintain="${arg2}"
-                     ;;
-                  -v )   versionName="$arg2"
-                     ;;
+                  -p )   filePathIni="$arg2"                        ;;
+                  -pm )   filePathIniMaintain="${arg2}"   ;;
+                  -v )   versionName="$arg2"                    ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
@@ -451,14 +433,10 @@ ftMaintainInfoNote()
     local versionName
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-                  -a )  editType=add
-                     ;;
-                  -r )   editType=read
-                     ;;
-                  -p )   filePathIni="$arg2"
-                     ;;
-                  -v )   versionName="$arg2"
-                     ;;
+                  -a )  editType=add                ;;
+                  -r )   editType=read              ;;
+                  -p )   filePathIni="$arg2"        ;;
+                  -v )   versionName="$arg2"    ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
@@ -573,14 +551,10 @@ ftSystemEnv()
     local filePathInfo
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -a) editType=add
-          ;;
-        -c) editType=check
-          ;;
-        -v) versionName="$arg2"
-          ;;
-        -p) filePathInfo="$arg2"
-          ;;
+        -a) editType=add                    ;;
+        -c) editType=check                  ;;
+        -v) versionName="$arg2"     ;;
+        -p) filePathInfo="$arg2"        ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
@@ -770,10 +744,8 @@ ftSynchronous()
     local fileTypeList=$2
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -d )   dirPathArray="${arg2}"
-           ;;
-        -s )   fileTypeList="${arg2}"
-           ;;
+        -d )   dirPathArray="${arg2}"        ;;
+        -s )   fileTypeList="${arg2}"           ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
@@ -822,8 +794,7 @@ ftCleanUpInvalidRecords()
     local filePathIni
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-            -p )   filePathIni="${arg2}"
-           ;;
+            -p )   filePathIni="${arg2}"    ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=

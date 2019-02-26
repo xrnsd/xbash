@@ -227,9 +227,237 @@ ftPath()
 ##              ini文件操作实现           ##
 ##                                                     ##
 #########################
+ftIniCreateFileOrTag()
+{
+    local ftEffect=创建ini文件,添加TAG
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    添加内容
+#    ftIniCreateFileOrTag  -a -p 文件路径 -t 块名 -l 块对应的键值对列表
+#    覆盖文件
+#    ftIniCreateFileOrTag  -r -p 文件路径 -t 块名 -l 块对应的键值对列表
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local filePathIni
+    local editType
+    local contentTagName
+    local contentTagKeyValList
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+          -a )   editType=add                                   ;;
+          -r )   editType=replace                               ;;
+          -p )   filePathIni="$arg2"                            ;;
+          -t )   contentTagName="$arg2"                 ;;
+          -l )   contentTagKeyValList="${arg2[@]}" ;;
+    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    #耦合校验
+    local errorContent=
+    [ -z "$filePathIni" ] && errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]"
+    [ -z "$contentTagName" ] && errorContent="${errorContent}\\n[块名为空]contentTagName=$contentTagName"
+    [ -z "$contentTagKeyValList" ] && errorContent="${errorContent}\\n[块对应的列表为空]contentTagKeyValList=$contentTagKeyValList"
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniCreateFileOrTag -h && return
+
+    #实现主体
+    local content=
+    local enterLine="\n"
+    #added TAG
+    content=${enterLine}"[$contentTagName]"
+    #add List
+    for item in ${contentTagKeyValList[*]} ; do content=${content}${enterLine}"$item" ;done
+    content=${content}${enterLine}
+
+    if [[ ! -f "$filePathIni" ]]||[ "$editType" = "replace" ]; then
+        localContent="#ini"
+        localContent=${localContent}${enterLine}"#文件由ftIniCreateFileOrTag自动创建，请避免手动编辑造成解析失败"
+        localContent=${localContent}${enterLine}
+        echo -e ${localContent} > $filePathIni
+    fi
+
+    if [ ! -z "$(cat $filePathIni |grep  $contentTagName)" ];then
+        echo -n "存在旧TAG，是否删除[y/n](回车默认y)"
+        read -n 1 sel
+        [ ${#sel} == 0 ] && sel=y
+        while true; do case "$sel" in
+                y | Y )echo
+                    while [ ! -z "$(cat $filePathIni |grep  $contentTagName)" ]; do
+                        ftIniDeleteTag -p $filePathIni -t $contentTagName
+                    done; break;;
+                n | q )  echo ; exit ;;
+                * ) ftEcho -e "错误的选择：$sel"
+                    echo "输入n，q，离开";;
+    esac;done ; fi
+    echo  -e "${content}" >> $filePathIni
+}
+
+ftIniDeleteTag()
+{
+    local ftEffect=删除ini文件中对应TAG块
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    ftIniDeleteTag -p ini文件路径 -t TAG块名
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local tagName
+    local filePathIni
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -t )   tagName="${arg2}"        ;;
+        -p )   filePathIni="${arg2}"     ;;
+    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    #耦合校验
+    local errorContent=
+    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
+    [ ! -f "$filePathIni" ] && errorContent="${errorContent}}\\n[文件不存在]filePathIni=$filePathIni"
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteTag -h && return
+
+    #实现主体
+    local index=1
+    local indexEnd=
+    local indexStart=
+    local lineCount=$(cat $filePathIni|wc -l)
+    while read -r line ; do
+        if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
+            [[ -z "$indexStart" ]] && indexStart=$index
+            (($index==$lineCount)) && ((index+=1)) && line=
+
+            if [[ -z "$line" ]]; then
+                indexEnd=$index
+                local lineRange="${indexStart},${indexEnd}d"
+                # echo lineRange=$lineRange
+                sed -i $lineRange $filePathIni
+                break
+            fi
+        fi
+        ((index+=1))
+    done < $filePathIni
+}
+
+ftIniAddItem()
+{
+    local ftEffect=在对应TAG中添加指定item
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    ftIniAddItem -p ini文件路径 -t TAG块名  -l 块对应的键值对列表
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local tagName
+    local itemContent
+    local filePathIni
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -t )   tagName="${arg2}"        ;;
+        -l )   itemContent="${arg2}"    ;;
+        -p )   filePathIni="${arg2}"    ;;
+    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+
+    #耦合校验
+    local errorContent=
+    [ -z "$itemContent" ] && errorContent="${errorContent}\\n[缺少必要参数]itemContent=$itemContent"
+    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
+    [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniAddItem -h && return
+
+    #实现主体
+    local indexStart=0
+    local index=1
+    local tagContent
+    cat $filePathIni | while read line ;do
+        if [[ "$line" = "[${tagName}]" ]]||(( $indexStart != 0 )); then
+            (( $indexStart == 0 )) && indexStart=1
+            tagContent=(${tagContent[@]} ${line})
+            if [[ -z "$line" ]]; then
+                for item in ${itemContent[*]} ; do
+                    for itemBase in ${tagContent[*]}; do
+                        [[ "${itemBase}" = "${item}" ]] &&item= && break
+                    done
+                    [ -z "${item}" ] && break
+                    sed  -i "${index}i ${item}" $filePathIni
+                    ((index+=1))
+                done
+                break
+            fi
+        fi
+        ((index+=1))
+    done
+
+}
+
+ftIniDeleteItem()
+{
+    local ftEffect=在对应TAG中删除指定item
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    ftIniDeleteItem -p ini文件路径 -t TAG块名 -i item名
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local tagName
+    local itemName
+    local filePathIni
+
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -t )   tagName="${arg2}"            ;;
+        -i )   itemName="${arg2}"           ;;
+        -p )   filePathIni="${arg2}"        ;;
+    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+
+    #耦合校验
+    local errorContent=
+    [ -z "$itemName" ] && errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName"
+    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
+    [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteItem -h && return
+
+    #实现主体
+    local indexStart=
+    local indexEnd=
+    local index=0
+    cat $filePathIni | while read line ;do
+        if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
+            [[ -z "$indexStart" ]] && indexStart=$index && ((indexStart+=1))
+
+            if [[ "$line" =~ ^${itemName}* ]]; then
+                ((index+=1))
+                sed -i "${index}d" $filePathIni 
+                break
+            fi
+
+            [[ -z "$line" ]] && indexEnd=$index && break
+        fi
+        ((index+=1))
+    done
+}
+
 ftIniGetValue()
 {
-    local ftEffect=读取ini文件指定字段
+    local ftEffect=在对应TAG中读取指定item
     local isEnable=true
 
     while true; do case "$1" in
@@ -298,7 +526,7 @@ ftIniGetValue()
 
 ftIniSetValue()
 {
-    local ftEffect=修改ini文件指定字段
+    local ftEffect=在对应TAG中修改指定item
     local isEnable=true
 
     while true; do case "$1" in
@@ -341,245 +569,11 @@ ftIniSetValue()
     keyValue=$(echo $keyValue |sed s/[[:space:]]//g)
     return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName*=.* $keyName=$keyValue g;}" $filePath`
 }
-
-ftIniDeleteTag()
-{
-    local ftEffect=删除ini文件中对应TAG块
-    local isEnable=true
-
-    while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
-#    ftIniDeleteTag -p ini文件路径 -t TAG块名
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #参数解析
-    local tagName
-    local filePathIni
-
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -t )   tagName="${arg2}"
-           ;;
-        -p )   filePathIni="${arg2}"
-           ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #耦合校验
-    local errorContent=
-    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
-    [ ! -f "$filePathIni" ] && errorContent="${errorContent}}\\n[文件不存在]filePathIni=$filePathIni"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteTag -h && return
-
-    #实现主体
-    local index=1
-    local indexEnd=
-    local indexStart=
-    local lineCount=$(cat $filePathIni|wc -l)
-    while read -r line ; do
-        if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
-            [[ -z "$indexStart" ]] && indexStart=$index
-            (($index==$lineCount)) && ((index+=1)) && line=
-
-            if [[ -z "$line" ]]; then
-                indexEnd=$index
-                local lineRange="${indexStart},${indexEnd}d"
-                # echo lineRange=$lineRange
-                sed -i $lineRange $filePathIni
-                break
-            fi
-        fi
-        ((index+=1))
-    done < $filePathIni
-}
-
-ftIniAddItem()
-{
-    local ftEffect=在ini文件中对应TAG中添加item
-    local isEnable=true
-
-    while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
-#    ftIniAddItem -p ini文件路径 -t TAG块名  -l 块对应的键值对列表
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #参数解析
-    local tagName
-    local itemContent
-    local filePathIni
-
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -t )   tagName="${arg2}"        ;;
-        -l )   itemContent="${arg2}"    ;;
-        -p )   filePathIni="${arg2}"    ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-
-    #耦合校验
-    local errorContent=
-    [ -z "$itemContent" ] && errorContent="${errorContent}\\n[缺少必要参数]itemContent=$itemContent"
-    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
-    [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniAddItem -h && return
-
-    #实现主体
-    local indexStart=0
-    local index=1
-    local tagContent
-    cat $filePathIni | while read line ;do
-        if [[ "$line" = "[${tagName}]" ]]||(( $indexStart != 0 )); then
-            (( $indexStart == 0 )) && indexStart=1
-            tagContent=(${tagContent[@]} ${line})
-            if [[ -z "$line" ]]; then
-                for item in ${itemContent[*]} ; do
-                    for itemBase in ${tagContent[*]}; do
-                        [[ "${itemBase}" = "${item}" ]] &&item= && break
-                    done
-                    [ -z "${item}" ] && break
-                    sed  -i "${index}i ${item}" $filePathIni
-                    ((index+=1))
-                done
-                break
-            fi
-        fi
-        ((index+=1))
-    done
-
-}
-
-ftIniDeleteItem()
-{
-    local ftEffect=删除ini文件中对应TAG中指定item
-    local isEnable=true
-
-    while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
-#    ftIniDeleteItem -p ini文件路径 -t TAG块名 -i item名
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #参数解析
-    local tagName
-    local itemName
-    local filePathIni
-
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -t )   tagName="${arg2}"
-           ;;
-        -i )   itemName="${arg2}"
-           ;;
-        -p )   filePathIni="${arg2}"
-           ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-
-    #耦合校验
-    local errorContent=
-    [ -z "$itemName" ] && errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName"
-    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
-    [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteItem -h && return
-
-    #实现主体
-    local indexStart=
-    local indexEnd=
-    local index=0
-    cat $filePathIni | while read line ;do
-        if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
-            [[ -z "$indexStart" ]] && indexStart=$index && ((indexStart+=1))
-
-            if [[ "$line" =~ ^${itemName}* ]]; then
-                ((index+=1))
-                sed -i "${index}d" $filePathIni 
-                break
-            fi
-
-            [[ -z "$line" ]] && indexEnd=$index && break
-        fi
-        ((index+=1))
-    done
-}
-
-ftIniCreateFileOrTag()
-{
-    local ftEffect=创建ini文件,添加TAG
-    local isEnable=true
-
-    while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
-#    添加内容
-#    ftIniCreateFileOrTag  -a -p 文件路径 -t 块名 -l 块对应的键值对列表
-#    覆盖文件
-#    ftIniCreateFileOrTag  -r -p 文件路径 -t 块名 -l 块对应的键值对列表
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #参数解析
-    local filePathIni
-    local editType
-    local contentTagName
-    local contentTagKeyValList
-
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-          -a )   editType=add
-             ;;
-          -r )   editType=replace
-             ;;
-          -p )   filePathIni="$arg2"
-             ;;
-          -t )   contentTagName="$arg2"
-             ;;
-          -l )   contentTagKeyValList="${arg2[@]}"
-             ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #耦合校验
-    local errorContent=
-    [ -z "$filePathIni" ] && errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]"
-    [ -z "$contentTagName" ] && errorContent="${errorContent}\\n[块名为空]contentTagName=$contentTagName"
-    [ -z "$contentTagKeyValList" ] && errorContent="${errorContent}\\n[块对应的列表为空]contentTagKeyValList=$contentTagKeyValList"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniCreateFileOrTag -h && return
-
-    #实现主体
-    local content=
-    local enterLine="\n"
-    #added TAG
-    content=${enterLine}"[$contentTagName]"
-    #add List
-    for item in ${contentTagKeyValList[*]} ; do content=${content}${enterLine}"$item" ;done
-    content=${content}${enterLine}
-
-    if [[ ! -f "$filePathIni" ]]||[ "$editType" = "replace" ]; then
-        localContent="#ini"
-        localContent=${localContent}${enterLine}"#文件由ftIniCreateFileOrTag自动创建，请避免手动编辑造成解析失败"
-        localContent=${localContent}${enterLine}
-        echo -e ${localContent} > $filePathIni
-    fi
-
-    if [ ! -z "$(cat $filePathIni |grep  $contentTagName)" ];then
-        echo -n "存在旧TAG，是否删除[y/n](回车默认y)"
-        read -n 1 sel
-        [ ${#sel} == 0 ] && sel=y
-        while true; do case "$sel" in
-                y | Y )echo
-                    while [ ! -z "$(cat $filePathIni |grep  $contentTagName)" ]; do
-                        ftIniDeleteTag -p $filePathIni -t $contentTagName
-                    done; break;;
-                n | q )  echo ; exit ;;
-                * ) ftEcho -e "错误的选择：$sel"
-                    echo "输入n，q，离开";;
-    esac;done ; fi
-    echo  -e "${content}" >> $filePathIni
-}
-
+#########################
+##                                                     ##
+##              ini文件操作实现            ##
+##                                                     ##
+#########################
 
 
 ftFileDirEdit()
@@ -667,7 +661,6 @@ ftDevAvailableSpace()
      for size in ${devAvailableSIzeList[*]} ; do
             devMountDirPath=${devMountDirPathList[indexDevName]}
             if [[ "$devMountDirPath" = "$dirPathTraget" ]]; then
-                    # size=${size^^}
                     if [[ $size == *G ]];then
                             size=${size//G/}
                             size=${size%.*}
@@ -858,7 +851,7 @@ _adb()
     case "${COMP_WORDS[1]}" in
                     -k)         COMPREPLY=( $(compgen -W 'home back menu down up lift right down  power' -- $curr_arg ) )
                                   ;;
-                    install)  COMPREPLY=( $(compgen -W "-l -r -s" -- $curr_arg ) );
+                    install)  COMPREPLY=( $(compgen -W "-l -r -s" -- $curr_arg ) )
                                 # case "${COMP_WORDS[2]}" in
                                 #                 -l|-r|-s)  if [[ ! -z "$(ls -l |grep ".apk")" ]]; then
                                 #                                     COMPREPLY=( $(compgen -o filenames -W "`ls *.apk`" -- ${cur}) );
@@ -871,7 +864,7 @@ _adb()
                                                 input)  COMPREPLY=( $(compgen -W 'keyevent text' -- $curr_arg ) ); ;;
                                 esac
                                 ;;
-                    logcat)  COMPREPLY=( $(compgen -W ' \"*:E\"  ' -- $curr_arg ) );
+                    logcat)  COMPREPLY=( $(compgen -W ' \"*:E\"  ' -- $curr_arg ) )
                                 ;;
                     *)  COMPREPLY=( $(compgen -W 'push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot disable-verity' -- $curr_arg ) ); ;;
       esac
@@ -1052,8 +1045,7 @@ ftKillApplicationByPackageName()
                     # adb shell am force-stop $packageName
                     ftKillApplicationByPackageName $packageName
                     break;;
-                * )[ "$XMODULE" = "env" ] && return 
-                    exit;;
+                * ) return ;;
             esac
         done
     fi
@@ -1655,12 +1647,9 @@ ftMaintainSystem()
     local editType
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -s )   editType=sdFinish
-           ;;
-        -b )   editType=backup
-           ;;
-        -r )   editType=restore
-           ;;
+        -s )   editType=sdFinish    ;;
+        -b )   editType=backup     ;;
+        -r )   editType=restore      ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
@@ -2116,10 +2105,8 @@ ftPdfPasswordClear()
     local dirPathTarget
     local passwordNum
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -d ) dirPathTarget="${arg2}"
-          ;;
-        -p ) passwordNum="${arg2}"
-          ;;
+        -d ) dirPathTarget="${arg2}"    ;;
+        -p ) passwordNum="${arg2}"  ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #耦合校验
     local valCount=2

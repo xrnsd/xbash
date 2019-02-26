@@ -1290,16 +1290,11 @@ ftAutoTest()
     local dirPathLogRoot=~/log
 
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-              -p)  local packageNameList=${arg2}
-                    ;;
-              -d)  dirPathLogRoot=${arg2:-'dirPathLogRoot'}
-                    ;;
-              -rc)  rebootCount=${arg2:-'rebootCountDef'}
-                    ;;
-             -rt)  rebootTimeLong=${arg2:-'rebootTimeLongDef'}
-                    ;;
-             -e)  eventCount=${arg2:-'eventCountDef'}
-                    ;;
+              -p)  local packageNameList=${arg2}                            ;;
+              -d)  dirPathLogRoot=${arg2:-'dirPathLogRoot'}          ;;
+              -rc)  rebootCount=${arg2:-'rebootCountDef'}              ;;
+             -rt)  rebootTimeLong=${arg2:-'rebootTimeLongDef'}  ;;
+             -e)  eventCount=${arg2:-'eventCountDef'}                   ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local valCount=6
