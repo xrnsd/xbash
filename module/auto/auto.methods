@@ -1250,7 +1250,7 @@ ftAutoUpdateSoftwareVersion()
 }
 
 complete -W "-rc -rt -e -p -h -d" ftAutoTest
-function ftAutoTest()
+ftAutoTest()
 {
     local ftEffect=AndroidMonkey测试
     local isEnable=true
@@ -1317,6 +1317,7 @@ function ftAutoTest()
     local dirPathLogMonkey=${dirPathLogMonkeyBase}/${dirNameLogMonkey}
     local filePathLogMonkey=${dirPathLogMonkey}/monkey.log
     local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
+    local dirPathDevicesTarget="/storage/sdcard0"
     local logcatFlag= #"*:E"
     local monkeyConfig
 
@@ -1326,19 +1327,17 @@ function ftAutoTest()
         if [[ ! -z $packageBlackNameList ]]; then
             local fileNameBlack="monkey.blacklist"
             local filePathBlack="${rDirPathUserHome}/temp/${fileNameBlack}"
-            local dirPathBlackTarget="/storage/sdcard0/"
             rm -rf $filePathBlack
             for packageName in ${packageBlackNameList[@]} ; do echo package:${packageName} >> $filePathBlack ;done
-            adb push $filePathBlack $dirPathBlackTarget && monkeyConfig=${monkeyConfig}" --pkg-blacklist-file ${filePathBlack}"
+            adb push $filePathBlack $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-blacklist-file ${filePathBlack}"
 
         elif [[ ! -z $packageNameList ]]; then
             if ((${#packageNameList[@]}>1)); then
                 local fileNameWhite="monkey.whitelist"
                 local filePathWhite="${rDirPathUserHome}/temp/${fileNameWhite}"
-                local dirPathWhiteTarget="/storage/sdcard0/"
                 rm -rf $filePathWhite
                 for packageName in ${packageWhiteNameList[@]} ; do echo package:${packageName} >> $filePathWhite ;done
-                adb push $filePathWhite $dirPathWhiteTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhite}"
+                adb push $filePathWhite $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhite}"
             else
                 monkeyConfig=${monkeyConfig}" -p ${packageNameList}"
             fi
@@ -1364,12 +1363,14 @@ function ftAutoTest()
                 adb shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
         else
                 while true; do
-                # while [[ -z $(adb shell ps |grep launcher3) ]]; do
-                #     ftEcho -s "等待launcer3启动"
-                #     sleep 5
-                # done
-                # sleep 5
-                # adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher
+                ftEcho -s "等待设备连接" && adb wait-for-device && ftEcho -s "连接设备成功"
+                [ "$(adb get-state)" != "device" ] && ftEcho -e "设备连接状态异常,请重新尝试" && break
+                tput sc ; while [[ -z $(adb shell ps |grep launcher) ]]; do
+                    tput rc;tput ed
+                    ftEcho -sn "等待launcer启动..."
+                    sleep 5
+                done ;echo
+
                 if (($rebootTimeLong!=$rebootTimeLongDef)); then
                     timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
                     timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
@@ -1380,7 +1381,7 @@ function ftAutoTest()
 
                 rebootCount=$((rebootCount - 1))
                 if (( $rebootCount>0 )); then
-                    ftEcho -s "开始重启"
+                    ftEcho -s "开始设备重启"
                     adb reboot
                 else
                     break
@@ -1389,5 +1390,6 @@ function ftAutoTest()
         fi
     #扫尾
         for pid in $(ps -ef |grep adb |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
+        [ ! -z $(adb shell ls ${dirPathDevicesTarget}/mtklog) ] && ftEcho -s "正在导出mtklog,请稍等..." && adb pull ${dirPathDevicesTarget}/mtklog $dirPathLogMonkey
         mv $dirPathLogMonkey ${dirPathLogMonkey}_done
 }
