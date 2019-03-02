@@ -1250,9 +1250,9 @@ ftAutoUpdateSoftwareVersion()
 }
 
 complete -W "-rc -rt -e -p -h -d" ftAutoTest
-ftAutoTest()
+function ftAutoTest()
 {
-    local ftEffect=Android自动测试
+    local ftEffect=AndroidMonkey测试
     local isEnable=true
 
     while true; do case "$1" in
@@ -1265,11 +1265,11 @@ ftAutoTest()
 #    #-xx 为独立参数类型标识,不可拆分
 #    #参数之间没有先后约束
 #
-#    ftAutoTest -p "com.xx com.yy.zz" #限制测试的包名
-#    ftAutoTest -d /home/xxx/xxx        # log存放路径
-#    ftAutoTest -rc 2000                          #重启2000次
-#    ftAutoTest -rt 2000                          #每2000s重启一次
-#    ftAutoTest -e 2000                           #monkey事件数为2000
+#    ftAutoTest -p "com.xx com.yy.zz" #只测试的包名
+#    ftAutoTest -pb "com.xx com.yy.zz" #禁止测试的包名
+#    ftAutoTest -d /home/xxx/xxx    # log存放路径
+#    ftAutoTest -rc 3000    2000        #每3000s重启一次,重启2000次
+#    ftAutoTest -e 2000             #monkey事件数为2000
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -1289,62 +1289,105 @@ ftAutoTest()
     local rebootCount=$rebootCountDef
     local dirPathLogRoot=~/log
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-              -p)  local packageNameList=${arg2}                            ;;
-              -d)  dirPathLogRoot=${arg2:-'dirPathLogRoot'}          ;;
-              -rc)  rebootCount=${arg2:-'rebootCountDef'}              ;;
-             -rt)  rebootTimeLong=${arg2:-'rebootTimeLongDef'}  ;;
-             -e)  eventCount=${arg2:-'eventCountDef'}                   ;;
+    local packageNameList
+    local packageBlackNameList
+    local packageWhiteNameList
+    local arg ; local arg2 ; local arg3 ; local index ; for ((i=1;i<=$#;i++)) ; do 
+        eval value=\${${i}} ; arg=${value}
+        ((index=i+1)) ;eval value2=\${${index}} ; arg2=${value2}
+        ((index=i+1)) ;eval value3=\${${index}} ; arg3=${value3}
+         case "${arg}" in
+              -p)     packageNameList=${arg2}                            ;;
+              -pb)   packageBlackNameList=${arg2}                   ;;
+              -d)     dirPathLogRoot=${arg2:-'dirPathLogRoot'}          ;;
+              -rc)    rebootTimeLong=${arg2:-'rebootTimeLongDef'}
+                       rebootCount=${arg3:-'rebootCountDef'}  ;;
+              -e)     eventCount=${arg2:-'eventCountDef'}                   ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
-    local valCount=6
     local errorContent=
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong"
+    [[ ! -z $packageBlackNameList ]]&&[[ ! -z $packageNameList ]] && errorContent="${errorContent}\\n 包限制配置错误1"
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoTest -h && return
 
     #实现主体
-    local dirPathLogMonkey=${dirPathLogRoot}/monkey/$(date -d "today" +"%y%m%d%H%M%S")
+    local filePathDeviceInfo=/system/build.prop
+    local dirPathLogMonkeyBase=${dirPathLogRoot}/monkey
+    local dirNameLogMonkey=$(date -d "today" +"%y%m%d%H%M%S")
+    local dirPathLogMonkey=${dirPathLogMonkeyBase}/${dirNameLogMonkey}
     local filePathLogMonkey=${dirPathLogMonkey}/monkey.log
     local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
-    local logcatFlag="*:E"
+    local logcatFlag= #"*:E"
     local monkeyConfig
 
-    monkeyConfig=${monkeyConfig}" --wait-dbg"
-    # monkeyConfig=${monkeyConfig}" --hprof"
-    monkeyConfig=${monkeyConfig}" --ignore-crashes --ignore-timeouts --ignore-security-exceptions"
-    [ ! -z "$packageNameList" ] && for packageName in ${packageNameList[@]} ; do monkeyConfig=${monkeyConfig}" -p ${packageName}" ;done
-    monkeyConfig=${monkeyConfig}" -v -v -v"
-    monkeyConfig=${monkeyConfig}" ${eventCount}"
+    # monkey命令参数配置
+        # monkeyConfig=${monkeyConfig}" --wait-dbg"
+        monkeyConfig=${monkeyConfig}" --ignore-crashes --ignore-timeouts --ignore-security-exceptions"
+        if [[ ! -z $packageBlackNameList ]]; then
+            local fileNameBlack="monkey.blacklist"
+            local filePathBlack="${rDirPathUserHome}/temp/${fileNameBlack}"
+            local dirPathBlackTarget="/storage/sdcard0/"
+            rm -rf $filePathBlack
+            for packageName in ${packageBlackNameList[@]} ; do echo package:${packageName} >> $filePathBlack ;done
+            adb push $filePathBlack $dirPathBlackTarget && monkeyConfig=${monkeyConfig}" --pkg-blacklist-file ${filePathBlack}"
 
-    [[ ! -d $dirPathLogMonkey ]] && mkdir -p $dirPathLogMonkey
+        elif [[ ! -z $packageNameList ]]; then
+            if ((${#packageNameList[@]}>1)); then
+                local fileNameWhite="monkey.whitelist"
+                local filePathWhite="${rDirPathUserHome}/temp/${fileNameWhite}"
+                local dirPathWhiteTarget="/storage/sdcard0/"
+                rm -rf $filePathWhite
+                for packageName in ${packageWhiteNameList[@]} ; do echo package:${packageName} >> $filePathWhite ;done
+                adb push $filePathWhite $dirPathWhiteTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhite}"
+            else
+                monkeyConfig=${monkeyConfig}" -p ${packageNameList}"
+            fi
+        fi
+        monkeyConfig=${monkeyConfig}" -v -v -v"
+        monkeyConfig=${monkeyConfig}" ${eventCount}"
 
-    if (( $rebootCount==$rebootCountDef ));then
-            local adbStatus=$(adb get-state)
-            [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
-    fi
-    while true; do
+    #adb状态确认
         adb wait-for-device
-        # while [[ -z $(adb shell ps |grep launcher3) ]]; do
-        #     ftEcho -s "等待launcer3启动"
-        #     sleep 5
-        # done
-        # sleep 5
-        # adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher
-        if (($rebootTimeLong!=$rebootTimeLongDef)); then
-            timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
-            timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+        local adbStatus=$(adb get-state)
+        [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
+    #环境清理
+        for folder in $(ls $dirPathLogMonkeyBase); do  [[ ! $folder =~ "done" ]] && rm -rf ${dirPathLogMonkeyBase}/${folder} ;done
+        [[ ! -d $dirPathLogMonkey ]] && mkdir -p $dirPathLogMonkey
+    #无效进程清理
+        for pid in $(ps -ef |grep adb |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
+        ftKillApplicationByPackageName monkey > /dev/null
+    #记录设备信息
+        adb pull $filePathDeviceInfo $dirPathLogMonkey > /dev/null&& ftEcho -s "设备信息已保存到${dirPathLogMonkey}"
+    #开始测试
+        if (( $rebootCount==$rebootCountDef ));then
+                adb logcat "$logcatFlag" > $filePathLogAdbLogcat &
+                adb shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
         else
-            adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
-            adb shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
-        fi
+                while true; do
+                # while [[ -z $(adb shell ps |grep launcher3) ]]; do
+                #     ftEcho -s "等待launcer3启动"
+                #     sleep 5
+                # done
+                # sleep 5
+                # adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher
+                if (($rebootTimeLong!=$rebootTimeLongDef)); then
+                    timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
+                    timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+                else
+                    adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
+                    adb shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
+                fi
 
-        rebootCount=$((rebootCount - 1))
-        if (( $rebootCount>0 )); then
-            ftEcho -s "开始重启"
-            adb reboot
-        else
-            break
+                rebootCount=$((rebootCount - 1))
+                if (( $rebootCount>0 )); then
+                    ftEcho -s "开始重启"
+                    adb reboot
+                else
+                    break
+                fi
+            done
         fi
-    done
+    #扫尾
+        for pid in $(ps -ef |grep adb |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
+        mv $dirPathLogMonkey ${dirPathLogMonkey}_done
 }
