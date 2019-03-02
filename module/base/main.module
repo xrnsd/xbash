@@ -112,7 +112,7 @@ if [ -d "$ANDROID_SDK" ];then
         packageNameList="$(ftIniGetValue $rFilePathXbashDataBase androidDevicePackages packageNameList)"
     fi
     complete -W "${packageNameList[@]} launcher" xlc
-    complete -W "${packageNameList[@]} launcher systemui" xk
+    complete -W "${packageNameList[@]} launcher systemui monkey" xk
     complete -W "${packageNameList[@]} launcher systemui" xlp
     complete -W "${packageNameList[@]} launcher systemui 123456" xl
 else
