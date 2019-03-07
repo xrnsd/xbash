@@ -118,7 +118,7 @@ fi
 #---------------- 变量初始化  ----------------------------------
     [[ -z "$SUDO_USER" ]] && userName=$USER || userName=$SUDO_USER
     export dirPathHome=/home/${userName}
-    export dirPathHomeXbash=$(dirname $(readlink -f  $BASH_SOURCE)) #${dirPathHome}/xbash
+    export dirPathHomeXbash=$(dirname $(readlink -f  $BASH_SOURCE))
     export dirNameXbash=$(basename $dirPathHomeXbash)
 
     [ ! -d "$dirPathHomeXbash" ] && echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeXbash=$dirPathHomeXbash]\033[0m" && return
