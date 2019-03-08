@@ -46,7 +46,6 @@ ftEcho()
         esac;done
         echo
     fi
-      
 }
 
 ftInitGitConfig()
@@ -59,7 +58,7 @@ ftInitGitConfig()
         ftEcho -e "git没有安装，请手动安装"
         return
     fi
-    
+
     filePathGitConfig=/home/${userNameLocal}/.gitconfig
     if [ ! -f "$filePathGitConfig" ];then
         echo -en "请输入git用户名:"
@@ -69,7 +68,6 @@ ftInitGitConfig()
         ftEcho -s "已自动初始化gitconfig,需要修改的请查看$filePathGitConfig"
     fi||exceptionContent="${exceptionContent}\n git配置初始化失败"
 }
-
 
 ftInitUserConfig()
 {
@@ -131,11 +129,9 @@ ftInitMoule()
     [ ! -d "$dirPathXbashModuleUser" ]&& mkdir -p $dirPathXbashModuleUser
     [ ! -f "$filePathXbashModuleUser" ]&&echo "#! /bin/bash" > $filePathXbashModuleUser
     if [ -f "$filePathXbashModuleBashrcNew" ]; then
-        if [ $(readlink -f  $filePathHomeLocalBashrc) = $filePathHomeLocalBashrc ];then
-            cd $dirPathHomeLocal
-            mv ${filePathHomeLocalBashrc} ${filePathHomeLocalBashrc}_backup
-            ln -s $filePathXbashModuleBashrcNew .bashrc || exceptionContent="${exceptionContent}\n xbash生效初始化失败"
-        fi
+        cd $dirPathHomeLocal
+        [[ -f "$filePathHomeLocalBashrc" ]]&&[ $(readlink -f  $filePathHomeLocalBashrc) != $filePathXbashModuleBashrcNew ] && mv ${filePathHomeLocalBashrc} ${filePathHomeLocalBashrc}_backup
+        ln -s $filePathXbashModuleBashrcNew .bashrc || exceptionContent="${exceptionContent}\n xbash生效初始化失败"
     else
         exceptionContent="${exceptionContent}\n xbash生效初始化失败,文件不存在:${filePathXbashModuleBashrcNew}"
     fi
@@ -150,7 +146,7 @@ ftInitInputrc()
     local dirPathLocal=$(pwd)
     if [[ -f "$filePathXbashModuleBashrcInputrc" ]]; then
         cd $dirPathHomeLocal
-        [[ -f "$filePathHomeLocalConfigInputrc" ]] && mv ${filePathHomeLocalConfigInputrc} ${filePathHomeLocalConfigInputrc}_backup
+        [[ -f "$filePathHomeLocalConfigInputrc" ]]&&[ $(readlink -f  $filePathHomeLocalConfigInputrc) != $filePathXbashModuleBashrcInputrc ] && mv ${filePathHomeLocalConfigInputrc} ${filePathHomeLocalConfigInputrc}_backup
         ln -s $filePathXbashModuleBashrcInputrc $fileNameXbashModuleBashrcInputrcTraget
     else
         exceptionContent="${exceptionContent}\n xbash配置的命令历史适配逻辑初始化失败"
