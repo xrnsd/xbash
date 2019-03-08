@@ -482,8 +482,9 @@ ftAutoUploadHighSpeed()
     while true; do case "$1" in
     --rely) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#    依赖 sshpass pigz,请使用下面命令安装
-#    sudo apt-get install sshpass pigz pv
+#    依赖缺失,请使用下面命令安装
+#    sudo add-apt-repository ppa:pi-rho/security&&sudo apt-get update
+#    sudo apt-get install sshpass pigz pv nmap
 #=========================================================" ;return;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
@@ -496,7 +497,7 @@ ftAutoUploadHighSpeed()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
-    [ -z $(which sshpass) ]||[ -z $(which pigz) ]||[ -z $(which pv) ] && ftAutoUploadHighSpeed --rely && return
+    [ -z $(which nmap) ]||[ -z $(which sshpass) ]||[ -z $(which pigz) ]||[ -z $(which pv) ] && ftAutoUploadHighSpeed --rely && return
     #耦合校验
     local valCount=2
     local errorContent=
@@ -521,29 +522,40 @@ ftAutoUploadHighSpeed()
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoUploadHighSpeed -h && return
 
     #实现主体
-    # 自动添加旧软件的TAG
-    local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
-    if [[ ! -z "$dirPathServerLocalBase" ]]; then
-        local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
-        if [[ -d $dirPathServerLocal ]]&&[ ! -z "$ANDROID_BUILD_TOP" ]; then
-                local versionPath=$(dirname $dirPathServerLocal)
-                local versionName=$(basename $dirPathServerLocal)
-
-                ls $versionPath | while read line;do
-                    if [[  ${line//$versionName} != $line ]]; then
-                        local dirPath=${versionPath}/${line}
-                        local dirPath_old=${dirPath}_old
-                        [[ -d "$dirPath_old" ]] && dirPath_old=${dirPath_old}_old
-                        mv $dirPath $dirPath_old
-                    fi
-                done
-        fi
-    fi
 
     ftEcho -s "\n========================\n开始上传文件:\n  ${dirPathContentUploadSource}\n服务器路径:\n  ${serverIp}$dirPathPackage\n========================\n"
 
-    local packageSize=$(du -sk $dirPathContentUploadSource | cut -f1)k
-    tar -cv  ${dirPathContentUploadSource%%/*}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
+    local serverProtInfo="$(nmap $serverIp)"
+    if [[ -z $(echo ${serverProtInfo[@]}|grep ssh) ]]&&[[ ! -z $(echo ${serverProtInfo[@]}|grep 445) ]]; then #使用smb协议
+        local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
+        if ! mountpoint -q $dirPathServerLocalBase; then
+            ftEcho -e "当前目录未挂载服务器共享目录:\n${dirPathUploadLocal}" && return
+        else
+            local key="智能机软件"
+            cp -r -b -S _old -v $key $(echo $dirPathServerLocalBase | sed -e "s:/$key::g")
+        fi
+    else #使用ssh协议
+        # 自动添加旧软件的TAG
+        local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
+        if [[ ! -z "$dirPathServerLocalBase" ]]; then
+            local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
+            if [[ -d $dirPathServerLocal ]]&&[ ! -z "$ANDROID_BUILD_TOP" ]; then
+                    local versionPath=$(dirname $dirPathServerLocal)
+                    local versionName=$(basename $dirPathServerLocal)
+
+                    ls $versionPath | while read line;do
+                        if [[  ${line//$versionName} != $line ]]; then
+                            local dirPath=${versionPath}/${line}
+                            local dirPath_old=${dirPath}_old
+                            [[ -d "$dirPath_old" ]] && dirPath_old=${dirPath_old}_old
+                            mv $dirPath $dirPath_old
+                        fi
+                    done
+            fi
+        fi
+        local packageSize=$(du -sk $dirPathContentUploadSource | cut -f1)k
+        tar -cv  ${dirPathContentUploadSource%%/*}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
+    fi
 
     ftEcho -s "上传结束"
 }
@@ -722,7 +734,7 @@ ftAutoPacket()
             [[ ! -z "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
 
             #上传服务器
-            [[ ! -z "$isUpload" ]] && ftAutoUploadHighSpeed $dirPathVersionSoftwareLocal 192.168.1.188
+            [[ ! -z "$isUpload" ]] && ftAutoUploadHighSpeed $dirPathVersionSoftwareLocal 192.168.1.75
 
     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
             local dirNamePackage="packages"
@@ -1352,6 +1364,7 @@ ftAutoTest()
     #环境清理
         for folder in $(ls $dirPathLogMonkeyBase); do  [[ ! $folder =~ "done" ]] && rm -rf ${dirPathLogMonkeyBase}/${folder} ;done
         [[ ! -d $dirPathLogMonkey ]] && mkdir -p $dirPathLogMonkey
+        adb logcat -c
     #无效进程清理
         for pid in $(ps -ef |grep adb |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
         ftKillApplicationByPackageName monkey > /dev/null

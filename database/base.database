@@ -231,11 +231,17 @@ userPassword=123456
 dirPathPackage=/media/packages
 dirPathPackageLocal=/media/server/1.188
 
+[serverConfig_192.168.1.75]
+userName=lzsoft
+userPassword=123
+dirPathPackage=/media/server/1.75/智能机软件
+dirPathPackageLocal=/media/server/1.75/智能机软件
+
 [serverConfig_192.168.1.55]
 userName=wb1
 userPassword=x6b7n37g
 dirPathPackage=/media/data/nfs
-dirPathPackageLocal=/media/server/1.55/nfs/
+dirPathPackageLocal=/media/server/1.55/nfs
 
 [projectSoftwareReadMeInfo]
 recordCreator=吴国献 [17178686576 / lz_wuguoxian@163.com]
