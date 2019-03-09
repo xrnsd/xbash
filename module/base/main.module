@@ -61,8 +61,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
     alias ftAutoGetAndroidVersionBySDKVersion='effect=android版本查询;ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison'
 
     if [ ! -z $(which git) ];then
-        #bash PS1 配置
-        export PROMPT_COMMAND='ftSetBashPs1ByGitBranch;history -a'
+        [ -f "$rFilePathGitBash" ] && source $rFilePathGitBash || echo -e "\033[1;31mgit bash 配置文件:\n$rFilePathGitBash 不存在\033[0m"
 
         alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
         alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
@@ -112,11 +111,9 @@ if [ -d "$ANDROID_SDK" ];then
         packageNameList="$(ftIniGetValue $rFilePathXbashDataBase androidDevicePackages packageNameList)"
     fi
     complete -W "${packageNameList[@]} launcher" xlc
-    complete -W "${packageNameList[@]} launcher systemui" xk
+    complete -W "${packageNameList[@]} launcher systemui monkey" xk
     complete -W "${packageNameList[@]} launcher systemui" xlp
     complete -W "${packageNameList[@]} launcher systemui 123456" xl
-else
-    echo -e "\033[1;31m Android SDK 扩展加载失败[ANDROID_SDK=$ANDROID_SDK]\033[0m"
 fi
 
 if [ -d "vendor/mediatek" ];then

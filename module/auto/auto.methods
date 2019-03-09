@@ -277,11 +277,10 @@ ftAutoBuildMultiBranchEnvSeparation()
     local ftEffect=多分支串行编译[环境独立]/在多个终端间串行执行命令
     local isEnable=true
 
-    local editType=$1
-    editType=$(echo $editType | tr '[A-Z]' '[a-z]')
-
+    local editType=${1,,} #转小写
     local filePathserialBuildTool=${rDirPathXbashModuleAuto}/serialBuildByBranchName.module
     local dirPathProcessEnableId=/tmp/ProcessEnableIds
+    local requestEnvState=$(/bin/rm -rf $dirPathProcessEnableId&&mkdir $dirPathProcessEnableId)
 
     while true; do case "$editType" in
     -h | --help) echo -e "\
@@ -303,8 +302,6 @@ ftAutoBuildMultiBranchEnvSeparation()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     [ -z "$ANDROID_BUILD_TOP" ] && ftAutoBuildMultiBranchEnvSeparation --env && return
-
-    local requestEnvState=$(/bin/rm -rf $dirPathProcessEnableId&&mkdir $dirPathProcessEnableId)
 
     #耦合校验
     local valCount=1
@@ -485,8 +482,9 @@ ftAutoUploadHighSpeed()
     while true; do case "$1" in
     --rely) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#    依赖 sshpass pigz,请使用下面命令安装
-#    sudo apt-get install sshpass pigz pv
+#    依赖缺失,请使用下面命令安装
+#    sudo add-apt-repository ppa:pi-rho/security&&sudo apt-get update
+#    sudo apt-get install sshpass pigz pv nmap
 #=========================================================" ;return;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
@@ -499,7 +497,7 @@ ftAutoUploadHighSpeed()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
-    [ -z $(which sshpass) ]||[ -z $(which pigz) ]||[ -z $(which pv) ] && ftAutoUploadHighSpeed --rely && return
+    [ -z $(which nmap) ]||[ -z $(which sshpass) ]||[ -z $(which pigz) ]||[ -z $(which pv) ] && ftAutoUploadHighSpeed --rely && return
     #耦合校验
     local valCount=2
     local errorContent=
@@ -524,29 +522,40 @@ ftAutoUploadHighSpeed()
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoUploadHighSpeed -h && return
 
     #实现主体
-    # 自动添加旧软件的TAG
-    local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
-    if [[ ! -z "$dirPathServerLocalBase" ]]; then
-        local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
-        if [[ -d $dirPathServerLocal ]]&&[ ! -z "$ANDROID_BUILD_TOP" ]; then
-                local versionPath=$(dirname $dirPathServerLocal)
-                local versionName=$(basename $dirPathServerLocal)
-
-                ls $versionPath | while read line;do
-                    if [[  ${line//$versionName} != $line ]]; then
-                        local dirPath=${versionPath}/${line}
-                        local dirPath_old=${dirPath}_old
-                        [[ -d "$dirPath_old" ]] && dirPath_old=${dirPath_old}_old
-                        mv $dirPath $dirPath_old
-                    fi
-                done
-        fi
-    fi
 
     ftEcho -s "\n========================\n开始上传文件:\n  ${dirPathContentUploadSource}\n服务器路径:\n  ${serverIp}$dirPathPackage\n========================\n"
 
-    local packageSize=$(du -sk $dirPathContentUploadSource | cut -f1)k
-    tar -cv  ${dirPathContentUploadSource%%/*}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
+    local serverProtInfo="$(nmap $serverIp)"
+    if [[ -z $(echo ${serverProtInfo[@]}|grep ssh) ]]&&[[ ! -z $(echo ${serverProtInfo[@]}|grep 445) ]]; then #使用smb协议
+        local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
+        if ! mountpoint -q $dirPathServerLocalBase; then
+            ftEcho -e "当前目录未挂载服务器共享目录:\n${dirPathUploadLocal}" && return
+        else
+            local key="智能机软件"
+            cp -r -b -S _old -v $key $(echo $dirPathServerLocalBase | sed -e "s:/$key::g")
+        fi
+    else #使用ssh协议
+        # 自动添加旧软件的TAG
+        local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
+        if [[ ! -z "$dirPathServerLocalBase" ]]; then
+            local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
+            if [[ -d $dirPathServerLocal ]]&&[ ! -z "$ANDROID_BUILD_TOP" ]; then
+                    local versionPath=$(dirname $dirPathServerLocal)
+                    local versionName=$(basename $dirPathServerLocal)
+
+                    ls $versionPath | while read line;do
+                        if [[  ${line//$versionName} != $line ]]; then
+                            local dirPath=${versionPath}/${line}
+                            local dirPath_old=${dirPath}_old
+                            [[ -d "$dirPath_old" ]] && dirPath_old=${dirPath_old}_old
+                            mv $dirPath $dirPath_old
+                        fi
+                    done
+            fi
+        fi
+        local packageSize=$(du -sk $dirPathContentUploadSource | cut -f1)k
+        tar -cv  ${dirPathContentUploadSource%%/*}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
+    fi
 
     ftEcho -s "上传结束"
 }
@@ -725,7 +734,7 @@ ftAutoPacket()
             [[ ! -z "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
 
             #上传服务器
-            [[ ! -z "$isUpload" ]] && ftAutoUploadHighSpeed $dirPathVersionSoftwareLocal 192.168.1.188
+            [[ ! -z "$isUpload" ]] && ftAutoUploadHighSpeed $dirPathVersionSoftwareLocal 192.168.1.75
 
     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
             local dirNamePackage="packages"
@@ -1255,24 +1264,24 @@ ftAutoUpdateSoftwareVersion()
 complete -W "-rc -rt -e -p -h -d" ftAutoTest
 ftAutoTest()
 {
-    local ftEffect=Android自动测试
+    local ftEffect=AndroidMonkey测试
     local isEnable=true
 
     while true; do case "$1" in
      --rely) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
-#    adb 找不到请确认 Android SDK 配置是否正确
+#    adb当前无法正常使用， 请确认 Android SDK 配置是否正确
 #========================================================="; return;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    #-xx 为独立参数类型标识,不可拆分
 #    #参数之间没有先后约束
 #
-#    ftAutoTest -p "com.xx com.yy.zz" #限制测试的包名
-#    ftAutoTest -d /home/xxx/xxx        # log存放路径
-#    ftAutoTest -rc 2000                          #重启2000次
-#    ftAutoTest -rt 2000                          #每2000s重启一次
-#    ftAutoTest -e 2000                           #monkey事件数为2000
+#    ftAutoTest -p "com.xx com.yy.zz" #只测试的包名
+#    ftAutoTest -pb "com.xx com.yy.zz" #禁止测试的包名
+#    ftAutoTest -d /home/xxx/xxx    # log存放路径
+#    ftAutoTest -rc 3000    2000        #每3000s重启一次,重启2000次
+#    ftAutoTest -e 2000             #monkey事件数为2000
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -1292,67 +1301,108 @@ ftAutoTest()
     local rebootCount=$rebootCountDef
     local dirPathLogRoot=~/log
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-              -p)  local packageNameList=${arg2}
-                    ;;
-              -d)  dirPathLogRoot=${arg2:-'dirPathLogRoot'}
-                    ;;
-              -rc)  rebootCount=${arg2:-'rebootCountDef'}
-                    ;;
-             -rt)  rebootTimeLong=${arg2:-'rebootTimeLongDef'}
-                    ;;
-             -e)  eventCount=${arg2:-'eventCountDef'}
-                    ;;
+    local packageNameList
+    local packageBlackNameList
+    local packageWhiteNameList
+    local arg ; local arg2 ; local arg3 ; local index ; for ((i=1;i<=$#;i++)) ; do 
+        eval value=\${${i}} ; arg=${value}
+        ((index=i+1)) ;eval value2=\${${index}} ; arg2=${value2}
+        ((index=i+1)) ;eval value3=\${${index}} ; arg3=${value3}
+         case "${arg}" in
+              -p)     packageNameList=${arg2}                            ;;
+              -pb)   packageBlackNameList=${arg2}                   ;;
+              -d)     dirPathLogRoot=${arg2:-'dirPathLogRoot'}          ;;
+              -rc)    rebootTimeLong=${arg2:-'rebootTimeLongDef'}
+                       rebootCount=${arg3:-'rebootCountDef'}  ;;
+              -e)     eventCount=${arg2:-'eventCountDef'}                   ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
-    local valCount=6
     local errorContent=
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong"
+    [[ ! -z $packageBlackNameList ]]&&[[ ! -z $packageNameList ]] && errorContent="${errorContent}\\n 包限制配置错误1"
     [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoTest -h && return
 
     #实现主体
-    local dirPathLogMonkey=${dirPathLogRoot}/monkey/$(date -d "today" +"%y%m%d%H%M%S")
+    local filePathDeviceInfo=/system/build.prop
+    local dirPathLogMonkeyBase=${dirPathLogRoot}/monkey
+    local dirNameLogMonkey=$(date -d "today" +"%y%m%d%H%M%S")
+    local dirPathLogMonkey=${dirPathLogMonkeyBase}/${dirNameLogMonkey}
     local filePathLogMonkey=${dirPathLogMonkey}/monkey.log
     local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
-    local logcatFlag="*:E"
+    local dirPathDevicesTarget="/storage/sdcard0"
+    local logcatFlag= #"*:E"
     local monkeyConfig
 
-    monkeyConfig=${monkeyConfig}" --wait-dbg"
-    # monkeyConfig=${monkeyConfig}" --hprof"
-    monkeyConfig=${monkeyConfig}" --ignore-crashes --ignore-timeouts --ignore-security-exceptions"
-    [ ! -z "$packageNameList" ] && for packageName in ${packageNameList[@]} ; do monkeyConfig=${monkeyConfig}" -p ${packageName}" ;done
-    monkeyConfig=${monkeyConfig}" -v -v -v"
-    monkeyConfig=${monkeyConfig}" ${eventCount}"
+    # monkey命令参数配置
+        # monkeyConfig=${monkeyConfig}" --wait-dbg"
+        monkeyConfig=${monkeyConfig}" --ignore-crashes --ignore-timeouts --ignore-security-exceptions"
+        if [[ ! -z $packageBlackNameList ]]; then
+            local fileNameBlack="monkey.blacklist"
+            local filePathBlack="${rDirPathUserHome}/temp/${fileNameBlack}"
+            rm -rf $filePathBlack
+            for packageName in ${packageBlackNameList[@]} ; do echo package:${packageName} >> $filePathBlack ;done
+            adb push $filePathBlack $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-blacklist-file ${filePathBlack}"
 
-    [[ ! -d $dirPathLogMonkey ]] && mkdir -p $dirPathLogMonkey
+        elif [[ ! -z $packageNameList ]]; then
+            if ((${#packageNameList[@]}>1)); then
+                local fileNameWhite="monkey.whitelist"
+                local filePathWhite="${rDirPathUserHome}/temp/${fileNameWhite}"
+                rm -rf $filePathWhite
+                for packageName in ${packageWhiteNameList[@]} ; do echo package:${packageName} >> $filePathWhite ;done
+                adb push $filePathWhite $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhite}"
+            else
+                monkeyConfig=${monkeyConfig}" -p ${packageNameList}"
+            fi
+        fi
+        monkeyConfig=${monkeyConfig}" -v -v -v"
+        monkeyConfig=${monkeyConfig}" ${eventCount}"
 
-    if (( $rebootCount==$rebootCountDef ));then
-            local adbStatus=$(adb get-state)
-            [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
-    fi
-    while true; do
+    #adb状态确认
         adb wait-for-device
-        # while [[ -z $(adb shell ps |grep launcher3) ]]; do
-        #     ftEcho -s "等待launcer3启动"
-        #     sleep 5
-        # done
-        # sleep 5
-        # adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher
-        if (($rebootTimeLong!=$rebootTimeLongDef)); then
-            timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
-            timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+        local adbStatus=$(adb get-state)
+        [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
+    #环境清理
+        for folder in $(ls $dirPathLogMonkeyBase); do  [[ ! $folder =~ "done" ]] && rm -rf ${dirPathLogMonkeyBase}/${folder} ;done
+        [[ ! -d $dirPathLogMonkey ]] && mkdir -p $dirPathLogMonkey
+        adb logcat -c
+    #无效进程清理
+        for pid in $(ps -ef |grep adb |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
+        ftKillApplicationByPackageName monkey > /dev/null
+    #记录设备信息
+        adb pull $filePathDeviceInfo $dirPathLogMonkey > /dev/null&& ftEcho -s "设备信息已保存到${dirPathLogMonkey}"
+    #开始测试
+        if (( $rebootCount==$rebootCountDef ));then
+                adb logcat "$logcatFlag" > $filePathLogAdbLogcat &
+                adb shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
         else
-            adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
-            adb shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
-        fi
+                while true; do
+                ftEcho -s "等待设备连接" && adb wait-for-device && ftEcho -s "连接设备成功"
+                [ "$(adb get-state)" != "device" ] && ftEcho -e "设备连接状态异常,请重新尝试" && break
+                tput sc ; while [[ -z $(adb shell ps |grep launcher) ]]; do
+                    tput rc;tput ed
+                    ftEcho -sn "等待launcer启动..."
+                    sleep 5
+                done ;echo
 
-        rebootCount=$((rebootCount - 1))
-        if (( $rebootCount>0 )); then
-            ftEcho -s "开始重启"
-            adb reboot
-        else
-            break
+                if (($rebootTimeLong!=$rebootTimeLongDef)); then
+                    timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
+                    timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+                else
+                    adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
+                    adb shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
+                fi
+
+                rebootCount=$((rebootCount - 1))
+                if (( $rebootCount>0 )); then
+                    ftEcho -s "开始设备重启"
+                    adb reboot
+                else
+                    break
+                fi
+            done
         fi
-    done
+    #扫尾
+        for pid in $(ps -ef |grep adb |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
+        [ ! -z $(adb shell ls ${dirPathDevicesTarget}/mtklog) ] && ftEcho -s "正在导出mtklog,请稍等..." && adb pull ${dirPathDevicesTarget}/mtklog $dirPathLogMonkey
+        mv $dirPathLogMonkey ${dirPathLogMonkey}_done
 }
