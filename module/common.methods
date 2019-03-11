@@ -348,7 +348,7 @@ ftIniDeleteTag()
 
 ftIniAddItem()
 {
-    local ftEffect=在对应TAG中添加指定item
+    local ftEffect=在ini文件对应TAG中添加指定item
     local isEnable=true
 
     while true; do case "$1" in
@@ -405,7 +405,7 @@ ftIniAddItem()
 
 ftIniDeleteItem()
 {
-    local ftEffect=在对应TAG中删除指定item
+    local ftEffect=在ini文件对应TAG中删除指定item
     local isEnable=true
 
     while true; do case "$1" in
@@ -457,7 +457,7 @@ ftIniDeleteItem()
 
 ftIniGetValue()
 {
-    local ftEffect=在对应TAG中读取指定item
+    local ftEffect=在ini文件对应TAG中读取指定item
     local isEnable=true
 
     while true; do case "$1" in
@@ -526,7 +526,7 @@ ftIniGetValue()
 
 ftIniSetValue()
 {
-    local ftEffect=在对应TAG中修改指定item
+    local ftEffect=在ini文件对应TAG中修改指定item
     local isEnable=true
 
     while true; do case "$1" in
@@ -571,7 +571,7 @@ ftIniSetValue()
 }
 #########################
 ##                                                     ##
-##              ini文件操作实现            ##
+##       ini文件操作实现结束           ##
 ##                                                     ##
 #########################
 

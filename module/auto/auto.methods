@@ -472,7 +472,7 @@ $(ftGitLogShell  -n 20 -c "%h  %s")" >> $filePathGitLogInfo
 
 ftAutoUploadHighSpeed()
 {
-    local ftEffect=上传文件到制定smb服务器路径[高速版]
+    local ftEffect=文件[夹]上传
     local isEnable=true
 
     #存放上传源的目录
