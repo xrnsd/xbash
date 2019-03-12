@@ -12,78 +12,94 @@ dirPathsExcludeListSys= \
     /.Trash-0 \
     /media \
     /var/tmp \
-    /var/log
+    /var/log \
+    /opt/longene/qq \
+    /usr/share/help \
+    /usr/lib/vmware/help \
+    /usr/share/gnome/help \
+    /usr/share/doc \
+    /usr/share/pixmaps \
+    /usr/share/hplip/data \
+    /usr/lib/vmware/isoimages \
+    /usr/share/icons/HighContrast/icon-theme.cache \
+    /usr/share/icons/oxygen/icon-theme.cache \
+    /usr/share/icons/Paper/.icon-theme.cache \
+    /usr/share/icons/gnome/icon-theme.cache \
+    /opt/android_studio_preview/lib/ant/docs.zip \
+    /usr/share/virtualbox/VBoxGuestAdditions.iso \
+    /usr/share/pyzy/db/open-phrase.db
 dirPathsExcludeListHomeBase= \
+    AndroidStudioProjects \
+    cmds \
+    code \
+    doc \
+    download \
+    floobits \
+    GAT_TEMP \
     xbash \
     xconfig \
-    xwords \
+    log \
+    temp \
+    tools \
+    server \
+    imgs \
+    PlayOnLinux's virtual drives \
+    workspaces \
+    w7_170815.desktop \
+    VirtualBoxVMs \
     .bashrc \
     .dmrc \
     .gitconfig \
-     .history-timestamp \
+    .history-timestamp \
     .kshdb_hist \
-     .pki \
-     server \
+    .pki \
     .watershed \
-     .xsession-errors.old \
-    doc \
+    .xsession-errors.old \
     .git-credentials \
     .ICEauthority \
     .lesshst \
-     .PlayOnLinux \
+    .PlayOnLinux \
     .sogouinput \
-     .wine \
+    .wine \
     .xware-desktop \
     .adobe \
     .byteexec \
-    download \
     .gksu.lock \
-     imgs \
-     PlayOnLinux's virtual drives \
-    workspaces \
     .cache \
-     .emulator_console_auth_token \
+    .emulator_console_auth_token \
     .longene \
     .subversion \
-     .Xauthority \
+    .Xauthority \
     .AndroidStudioPreview3.0 \
-    cmds \
-    floobits \
     .gnome2 \
     .jack \
     .macromedia \
-     .pub \
-     .swt \
-    xbash \
-    AndroidStudioProjects \
-     code \
+    .pub \
+    .swt \
     .fontconfig \
     .gnome2_private \
-     .jack-server \
-     .metadata \
+    .jack-server \
+    .metadata \
     .qd \
-    temp \
     .xchm \
     .apport-ignore.xml \
-     .compiz \
+    .compiz \
     .fr-3XdPtb \
     .gphoto \
     .jack-settings \
     .mozilla \
-     .remmina \
+    .remmina \
     .thumbnails \
     .freerdp \
     .gradle \
-     .repoconfig \
+    .repoconfig \
     .thunderbird \
     .bash_history_archive \
-     .dbus \
-    GAT_TEMP \
+    .dbus \
     .gstreamer-0.10 \
-     .kde \
+    .kde \
     .mysql_history \
     .repo_.gitconfig.json \
-    tools \
     .xsel.log \
     .bash_logout \
     .distcc \
@@ -92,6 +108,12 @@ dirPathsExcludeListHomeBase= \
     .kingsoft \
     .pip \
     .rpmdb \
-    w7_170815.desktop \
     .xsession-errors \
-    .local/share/Trash
+    .local/share \
+    .nvm \
+    .npm \
+    .config/sublime-text-3 \
+    .config/sogou-qimpanel \
+    .config/google-chrome \
+    .config/menus \
+    .electron
