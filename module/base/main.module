@@ -28,12 +28,12 @@ if [ -f $rFilePathXbashModuleCommon ];then
         bashHistorySize=$(awk 'END{print NR}' $filePathBashHistoryArchive)
 
         #历史扩容
-        filePathXbashDataBaseUser=${rDirPathXbashDataUser}/${rNameUser}.database
+        filePathXbashDataBaseUser=${rDirPathXbashModuleUser}/${rNameUser}.database
         if [[ -f $filePathXbashDataBaseUser ]]; then
             bashHistorySizeBase=$(ftIniGetValue  $filePathXbashDataBaseUser xbash bashHistoryThresholdSize)
         else
             bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryThresholdSize)
-            mkdir $rDirPathXbashDataUser > /dev/null
+            mkdir $rDirPathXbashModuleUser > /dev/null
             ftIniCreateFileOrTag -r -p $filePathXbashDataBaseUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
         fi
 

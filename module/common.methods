@@ -1638,15 +1638,15 @@ ftMaintainSystem()
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     #耦合校验
     local errorContent=
-    local filePathMaintain=${rDirPathXbashModule}/${rFileNameXbashModuleMaintain}
+    local filePathMaintain=${rDirPathXbashModuleMaintain}/${rFileNameXbashModuleMaintain}
     [ -z "$editType" ] && errorContent="${errorContent}\\n[你想做啥哩]editType=$editType"
     [ ! -f "$filePathMaintain" ] && errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain"
     [ ! -z "$errorContent" ] && ftEcho -ea "[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMaintainSystem -h && return
 
     #实现主体
     source $filePathMaintain
-    local  filePathVersionInfoVersion=${rDirPathXbashData}/versionInfo.database
-    local  filePathVersionInfoMaintain=${rDirPathXbashData}/maintain.database
+    local  filePathVersionInfoVersion=${rDirPathXbashModuleMaintain}/versionInfo.database
+    local  filePathVersionInfoMaintain=${rDirPathXbashModuleMaintain}/maintain.database
 
     case "$editType" in
         backup )
