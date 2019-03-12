@@ -2133,3 +2133,57 @@ ftPdfPasswordClear()
     done
     IFS=$SAVEIFS
 }
+
+complete -W "-f" ftApkSignature
+ftApkSignature()
+{
+    local ftEffect=apk签名
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    ftApkSignature -f xxx.apk
+#========================================================="; return ;;
+    --env) echo -e "\
+#===================[   ${ftEffect}   ]的使用环境说明==============
+# 环境未初始化
+# 使用前,请先初始化
+# source build/envsetup.sh && lunuch xxxxx
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #环境校验
+    local toolFilePathSignapk=out/host/linux-x86/framework/signapk.jar
+    [ ! -f "$toolFilePathSignapk" ] && [ ! -d "$ANDROID_BUILD_TOP" ] && ftApkSignature --env && return
+    [ -d "$ANDROID_BUILD_TOP" ]&& cd $ANDROID_BUILD_TOP
+    #参数解析
+    local filePathApk
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -f ) filePathApk="${arg2}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    #耦合校验
+    local valCount=2
+    local errorContent=
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$JAVA_HOME" ] && errorContent="${errorContent}\\n[java环境未配置]缺失JAVA_HOME"
+    [ ! -f "$toolFilePathSignapk" ] && errorContent="${errorContent}\\n[缺少有效的签名工具]${toolFilePathSignapk}不存在"
+    [ ! -f "$filePathApk" ] && errorContent="${errorContent}\\n[你想干嘛]${filePathApk}不存在"
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftApkSignature -h && return
+
+    #实现主体
+    local toolFilePathPlatformx509pem=build/target/product/security/platform.x509.pem
+    local toolFilePathPlatformpk8=build/target/product/security/platform.pk8
+
+    local fileNameApk=$(basename $filePathApk)
+    local fileNameApkBase=${fileNameApk%.*}
+    local fileNameApkEnd=${fileNameApk##*.}
+    local fileNameApkNew=$(dirname $filePathApk)/${fileNameApkBase}_new${fileNameApkEnd}
+
+    java -jar $toolFilePathSignapk $toolFilePathPlatformx509pem $toolFilePathPlatformpk8 $filePathApk $fileNameApkNew \
+    && mv $fileNameApkNew $filePathApk&&ftEcho -s  "${filePathApk}  签名成功"|| ftEcho -s "${filePathApk}签名失败"
+}
+
