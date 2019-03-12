@@ -1619,6 +1619,7 @@ ftMaintainSystem()
     [ -d "$dirPathLocal" ] && cd $dirPathLocal
     [ -d "$dirPathStore" ] && rm -rf $dirPathStore
     ftIniDeleteTag -p $filePathVersionInfo -t $infoVersionName
+    rm -rf /${infoVersionName}的相应说明
     trap SIGINT
     return ;;
     * ) break;;esac;done
@@ -1705,6 +1706,7 @@ ftMaintainSystem()
                     #把备份同步到不同设备上
                         # ftSynchronous -d "${mXbashModuleDataDevicesList[*]}" -s ".*\.tgz"
                     #清尾
+                        rm -rf /${infoVersionName}的相应说明
                         cd $dirPathLocal
                         trap SIGINT
                     ;;
