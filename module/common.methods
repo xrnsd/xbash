@@ -1679,17 +1679,29 @@ ftMaintainSystem()
                     #写入版本说明
                         ftMaintainInfoNote -a -p $filePathVersionInfo -v $infoVersionName
                     #显示当前配置信息
+                        local dirPathStore=$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName  dirPathStore)
                         ftEcho -bh "备份关键信息"
                         ftEcho -s "生成的备份包：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName fileName)"
                         ftEcho -s  "备份包的说明：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName  backupPackageNote)"
-                        ftEcho -s  "备份包保存路径：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName  dirPathStore)"
+                        ftEcho -s  "备份包保存路径：$dirPathStore"
                     #扫描设备,确认是否相同备份
                         # ftBackUpDevScanning -p $filePathVersionInfo -f $fileNameVersion -d "${mXbashModuleDataDevicesList[*]}"
                     #生成备份包
                         ftBackupOs -p $filePathVersionInfo -v $infoVersionName -pm $filePathVersionInfoMaintain
                     #记录备份包校验信息
-                        local filePathStore=$(ftIniGetValue $filePathVersionInfoVersion $infoVersionName dirPathStore)/${fileNameVersion}
+                        local filePathStore=$dirPathStore/${fileNameVersion}
                         [ -f "$filePathStore" ] && ftMD5  -p $filePathVersionInfo -s $filePathStore && ftEcho -s "备份完成"
+                    #版本信息备份
+                    ftIniCreateFileOrTag -r -p ${dirPathStore}/version.info -t $infoVersionName -l "\
+                            fileName=$fileNameVersion \
+                            backupType=$(ftIniGetValue  $filePathVersionInfo $infoVersionName backupType) \
+                            dirPathStore=$(ftIniGetValue  $filePathVersionInfo $infoVersionName dirPathStore) \
+                            backupPackageNote=$(ftIniGetValue  $filePathVersionInfo $infoVersionName backupPackageNote) \
+                            MD5=$(ftIniGetValue  $filePathVersionInfo $infoVersionName MD5) \
+                            hwCpu=$(ftIniGetValue  $filePathVersionInfo $infoVersionName hwCpu) \
+                            hwMainboard=$(ftIniGetValue  $filePathVersionInfo $infoVersionName hwMainboard) \
+                            swSystemVersion=$(ftIniGetValue  $filePathVersionInfo $infoVersionName swSystemVersion) \
+                            swSystemType=$(ftIniGetValue  $filePathVersionInfo $infoVersionName swSystemType)"
                     #把备份同步到不同设备上
                         # ftSynchronous -d "${mXbashModuleDataDevicesList[*]}" -s ".*\.tgz"
                     #清尾
