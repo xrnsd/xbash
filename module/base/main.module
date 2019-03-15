@@ -86,7 +86,7 @@ if [ ! -z $(which find) ];then
 fi
 
 if [ ! -z $(which du) ];then
-    alias x='effect=查找最占用空间的12个目录;du -h --max-depth=2 | sort -nr | head -12'
+    alias xDm='effect=查找最占用空间的12个目录;du -h --max-depth=2 | sort -nr | head -12'
 fi
 
 if [ -d "$ANDROID_SDK" ];then
