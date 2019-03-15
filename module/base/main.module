@@ -5,7 +5,7 @@ shopt -s histappend    #多个终端情况下，共享history
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
 alias xcc='effect=进入原目录;cd $OLDPWD'
-alias xr="effect=更新xbash配置;source ~/.bashrc"
+alias xr="effect=更新xbash配置;export isReset=true;source ~/.bashrc;export isReset="
 if [ -f $rFilePathXbashModuleCommon ];then
     #加载common
     source  $rFilePathXbashModuleCommon
@@ -62,7 +62,6 @@ if [ -f $rFilePathXbashModuleCommon ];then
 
     if [ ! -z $(which git) ];then
         [ -f "$rFilePathGitBash" ] && source $rFilePathGitBash || echo -e "\033[1;31mgit bash 配置文件:\n$rFilePathGitBash 不存在\033[0m"
-
         alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
         alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
         alias xbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a"
