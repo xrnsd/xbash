@@ -1307,7 +1307,7 @@ ftAutoTest()
     local arg ; local arg2 ; local arg3 ; local index ; for ((i=1;i<=$#;i++)) ; do 
         eval value=\${${i}} ; arg=${value}
         ((index=i+1)) ;eval value2=\${${index}} ; arg2=${value2}
-        ((index=i+1)) ;eval value3=\${${index}} ; arg3=${value3}
+        ((index=i+2)) ;eval value3=\${${index}} ; arg3=${value3}
          case "${arg}" in
               -p)     packageNameList=${arg2}                            ;;
               -pb)   packageBlackNameList=${arg2}                   ;;
