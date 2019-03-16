@@ -1036,60 +1036,78 @@ ftKillApplicationByPackageName()
     fi
 }
 
-ftLogcatApplicationByPackageName()
+ftLogcatApplicationByTag() 
 {
-    local ftEffect=打印指定包名输出的log
+    local ftEffect=打印指定包名输出或包含TAG的log
     local isEnable=true
-
-    local packageName=$1
-    local vContent=$2
-    [[ -z "$packageName" ]] && adb logcat && return
 
     while true; do case "$1" in
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #     打印所有log
-#    ftLogcatApplicationByPackageName
+#    ftLogcatApplicationByTag
 #
 #     打印包名为 com.android.settings的应用输出的log
-#    ftLogcatApplicationByPackageName com.android.settings
+#    ftLogcatApplicationByTag -p com.android.settings
 #
 #     打印包含123456的log
-#    ftLogcatApplicationByPackageName 123456
+#    ftLogcatApplicationByTag 123456
 #
 #     打印包含123456 不包含777  的log
-#    ftLogcatApplicationByPackageName 123456 7777
+#    ftLogcatApplicationByTag 123456 7777
+#
+#     打印包含123456 不包含777  的错误 log
+#    ftLogcatApplicationByTag -e123456 7777
 #
 #========================================================="; return ;;
     * ) break;;esac;done
 
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #耦合校验
-    local valCount=2
-    local errorContent=
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ -z "$packageName" ] && errorContent="${errorContent}\\n[应用包名]packageName=$packageName"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLogcatApplicationByPackageName -h && return
-
+    #参数解析
+    local tagContent=$1
+    local vContent=$2
+    local flagError=
+    local packageName=
+    local isUserPackageName=
+    local arg ; local arg2; local arg3 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; 
+    ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} 
+    ((index=i+2)) ; eval value3=\${${index}} ; arg3=${value3} 
+    case "${arg}" in
+        -p ) packageName="${arg2}"
+               vContent="${arg3}"
+               isUserPackageName=true
+          ;;
+        -e ) flagError="*:E"
+            if [[ -z "$packageName" ]]; then
+                tagContent=$2
+                vContent=$3
+            fi
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #实现主体
     #adb连接状态检测
     adb wait-for-device
     local adbStatus=$(adb get-state)
     [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
 
-    while true; do case "$packageName" in
-        systemui)   packageName="com.android.systemui"  ;break;;
-        launcher3) packageName="com.android.launcher3"  ;break;;
-    * ) break;;esac;done
+    [ -z "flagError" ]&&adb logcat -c
+    if [[ "$isUserPackageName" = "true" ]]; then
+        while true; do case "$packageName" in
+            systemui)   packageName="com.android.systemui"  ;break;;
+            launcher) packageName="com.android.launcher3"  ;break;;
+            launcher3) packageName="com.android.launcher3"  ;break;;
+        * ) break;;esac;done
 
-    local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
-    if ( echo -n $pid | grep -q -e "^[0-9][0-9]*$"); then
-            [[ ! -z "$vContent" ]] && adb logcat |grep $pid |grep -v $vContent && return
-            adb logcat |grep $pid
+        local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
+        echo pid=$pid
+        [[ -z "$vContent" ]] && adb logcat "${flagError}" |grep "${pid}"
+        adb logcat "${flagError}" |grep "${pid}" #|grep -v "${vContent}"
+    elif [ -z "$tagContent" ];then
+        adb logcat "${flagError}"
     else
-            [[ ! -z "$vContent" ]] && adb logcat |grep -i $packageName |grep -v $vContent && return
-            adb logcat |grep -i $packageName
+        [[ -z "$vContent" ]] && adb logcat "${flagError}" |grep "${tagContent}" && return
+        adb logcat "${flagError}" |grep "${tagContent}" |grep -v "${vContent}"
     fi
 }
 
