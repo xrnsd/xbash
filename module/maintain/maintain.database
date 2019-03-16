@@ -116,4 +116,7 @@ dirPathsExcludeListHomeBase= \
     .config/sogou-qimpanel \
     .config/google-chrome \
     .config/menus \
-    .electron
+    .electron \
+    .AndroidStudio3.3 \
+    .AndroidStudio3.2
+

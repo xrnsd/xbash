@@ -32,7 +32,7 @@ ftMain()
                 return;;
     -hb )
                 ftEcho -s "bash内建命令和xbash扩展封装说明" ; 
-                echo -e "=========================================================\n命令                                 说明\n========================================================="
+                echo -e "=========================================================\n命令                 说明\n========================================================="
                 ftReadAllAlias| column -t
                 return;;
     -ft )
@@ -2187,8 +2187,8 @@ ftApkSignature()
     && mv $fileNameApkNew $filePathApk&&ftEcho -s  "${filePathApk}  签名成功"|| ftEcho -s "${filePathApk}签名失败"
 }
 
-complete -W "-f -o" ftMergeOdex
-ftMergeOdex()
+complete -W "-f -o" ftApkMergeOdex
+ftApkMergeOdex()
 {
     local ftEffect=合并odex和apk
     local isEnable=false
@@ -2201,55 +2201,101 @@ ftMergeOdex()
 #========================================================="; return ;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#    ftMergeOdex -f xxx -o yyyy
+#    指定app名称，插上手机，执行pull和合并操作
+#    ftApkMergeOdex -n xxxx
+#    直接指定已存在包路径，执行合并操作
+#    ftApkMergeOdex -d framework路径 -f apk路径 -o odex文件路径
 #========================================================="; return ;;
     * ) break;;esac;done
 
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
-    [ -z $(which zip) ] && ftMergeOdex --rely "zip" && return
+    [ -z $(which zip) ] && ftApkMergeOdex --rely "zip" && return
     #参数解析
+    local isAutoPull=
+    local fileNameApk=
     local filePathApk=
     local filePathOdex=
+    local dirPathFramework=
     local filePathToolResign=/media/tools/appOdexBuild/re-sign.jar
     local filePathToolSmali=/media/tools/appOdexBuild/smali-2.2.6.jar
     local filePathToolBaksmali=/media/tools/appOdexBuild/baksmali-2.2.6.jar
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -o ) filePathOdex="${arg2}"
+        -n ) fileNameApk="${arg2}"
+               isAutoPull=true
+          ;;
+        -d ) dirPathFramework="${arg2}"
           ;;
         -f ) filePathApk="${arg2}"
+          ;;
+        -o ) filePathOdex="${arg2}"
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #耦合校验
     local valCount=1
     local errorContent=
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$JAVA_HOME" ] && errorContent="${errorContent}\\n[java环境未配置]缺失JAVA_HOME"
     [ ! -f "$filePathToolSmali" ] && errorContent="${errorContent}\\n[找不到${filePathToolSmali}]"
     [ ! -f "$filePathToolResign" ] && errorContent="${errorContent}\\n[找不到${filePathToolResign}]"
     [ ! -f "$toolFilePathBaksmali" ] && errorContent="${errorContent}\\n[找不到${toolFilePathBaksmali}]"
-    [ -z "$JAVA_HOME" ] && errorContent="${errorContent}\\n[java环境未配置]缺失JAVA_HOME"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMergeOdex -h && return
+    if [[ -z "$isAutoPull" ]]; then
+        [ ! -f "$filePathApk" ] && errorContent="${errorContent}\\n[找不到${filePathApk}]"
+        [ ! -f "$filePathOdex" ] && errorContent="${errorContent}\\n[找不到${filePathOdex}]"
+        [ ! -d "$dirPathFramework" ] && errorContent="${errorContent}\\n[找不到${dirPathFramework}]"
+    fi
+    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftApkMergeOdex -h && return
 
     #实现主体
-    #adb连接状态检测
-    adb wait-for-device
-    local adbStatus=$(adb get-state)
-    [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
+    # 连接手机的操作
+    #   判断adb状态，确认adb ok 
+    #   新建mergeOdex
+    #   进入mergeOdex
+    #   pull app
+    #   pull framework
+    #   设定 app路径 odex路径
+    #   设定 framework路径
 
-    local dirPathLocal=$(pwd)
-    cd /tmp&&mkdir mergeOdex&& cd mergeOdex
-    [[ ! -d "/tmp/mergeOdex" ]] && ftEcho -e "初始化失败" && return
+    # 复制 framework/arm/* 到 framework
+    # 复制 apk 到 framwork
+    # 复制 odex 到 framework
+    # odex转smali
+    # smali转dex
+    # classes.dex 和 apk 合并
+    # apk签名
+    # apk 移出并提示
+    # 清理 framework目录，确认后操作
+    # 回到原始目录
+    if [[ "$isAutoPull" = "true" ]]; then
+        #adb连接状态检测
+        adb wait-for-device
+        local adbStatus=$(adb get-state)
+        [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
 
-    adb pull system/app/*
-    adb pull system/priv-app/*
-    adb pull system/framework/*
-    cp -rf -v framework/arm/* framework
+        local dirPathLocal=$(pwd)
+        cd /tmp&&mkdir mergeOdex&& cd mergeOdex
+        [[ ! -d "/tmp/mergeOdex" ]] && ftEcho -e "初始化失败" && return
 
-    java -jar $toolFilePathBaksmali deodex $filePathOdex
-    java -jar $toolFilePathSmali assemble out -o classes.dex
-    zip -g $filePathApk classes.dex
-    java -jar $filePathToolResign $filePathApk
+        [[ "$fileNameApk" == *.apk* ]] && fileNameApk=$(echo $fileNameApk| sed -e "s:.apk::g")
+        local dirPathDevices=system/app/${fileNameApk}
+        [[ ! -z $(adb shell ls system/priv-app|grep $fileNameApk) ]]&&dirPathDevices=system/priv-app/${fileNameApk}
+        adb pull $dirPathDevices
+        adb pull system/framework/*
+        cp -rf -v framework/arm/* framework
 
+        filePathOdex=/tmp/mergeOdex/${fileNameApk}/oat/arm/${fileNameApk}.odex
+        dirPathFramework=/tmp/mergeOdex/framework
+    fi
+
+    echo "./Launcher3/oat/arm/Launcher3.odex" | sed -e "s:\./::g"
+
+    cd $dirPathFramework
+    java -jar $toolFilePathBaksmali deodex $filePathOdex || (ftEcho -e "odex转smali失败"&& return)
+    java -jar $toolFilePathSmali assemble out -o classes.dex || (ftEcho -e "smali转dex失败"&& return)
+    zip -g $filePathApk classes.dex || (ftEcho -e "classes.dex/apk合并失败"&& return)
+    java -jar $filePathToolResign $filePathApk || (ftEcho -e "apk签名失败"&& return)
+
+    rm -rf $dirPathFramework
     cd $dirPathLocal
 }
