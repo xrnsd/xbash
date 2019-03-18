@@ -61,7 +61,7 @@ ftReadAllAlias()
         cat $filePathXbashTragetBashrcBase|grep alias  | while read line; do
                 cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
                 cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
-                [[ ! -z "$cmdContent" ]] && printf "%14s  " $cmdName;echo $cmdContent
+                [[ -n "$cmdContent" ]] && printf "%14s  " $cmdName;echo $cmdContent
         done
 }
 
@@ -108,7 +108,7 @@ ftTest()
     local errorContent=
     [ ! -d "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome"
     [ ! -f "$rFilePathXbashModuleTest" ] && errorContent="${errorContent}\\n[测试模块不存在]filePathXbashModuleTest=$rFilePathXbashModuleTest"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftTest -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftTest -h && return
 
     #实现主体
     local argList=($@)
@@ -215,8 +215,8 @@ ftPath()
     local errorContent=
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -z "$dirPath" ] && errorContent="${errorContent}\\n[路径字串不能为空]dirPath=$dirPath"
-    [ ! -z "$errorContent" ] && [ -z "$isEchoExceptionInfo" ] && return
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPath -h && return
+    [ -n "$errorContent" ] && [ -z "$isEchoExceptionInfo" ] && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPath -h && return
 
     #实现主体
     [[ "${dirPath: -1}" = "/" ]] && dirPath=${dirPath%/*}
@@ -262,7 +262,7 @@ ftIniCreateFileOrTag()
     [ -z "$filePathIni" ] && errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]"
     [ -z "$contentTagName" ] && errorContent="${errorContent}\\n[块名为空]contentTagName=$contentTagName"
     [ -z "$contentTagKeyValList" ] && errorContent="${errorContent}\\n[块对应的列表为空]contentTagKeyValList=$contentTagKeyValList"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniCreateFileOrTag -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniCreateFileOrTag -h && return
 
     #实现主体
     local content=
@@ -280,13 +280,13 @@ ftIniCreateFileOrTag()
         echo -e ${localContent} > $filePathIni
     fi
 
-    if [ ! -z "$(cat $filePathIni |grep  $contentTagName)" ];then
+    if [ -n "$(cat $filePathIni |grep  $contentTagName)" ];then
         echo -n "存在旧TAG，是否删除[y/n](回车默认y)"
         read -n 1 sel
         [ ${#sel} == 0 ] && sel=y
         while true; do case "$sel" in
                 y | Y )echo
-                    while [ ! -z "$(cat $filePathIni |grep  $contentTagName)" ]; do
+                    while [ -n "$(cat $filePathIni |grep  $contentTagName)" ]; do
                         ftIniDeleteTag -p $filePathIni -t $contentTagName
                     done; break;;
                 n | q )  echo ; exit ;;
@@ -322,7 +322,7 @@ ftIniDeleteTag()
     local errorContent=
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}}\\n[文件不存在]filePathIni=$filePathIni"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteTag -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteTag -h && return
 
     #实现主体
     local index=1
@@ -330,7 +330,7 @@ ftIniDeleteTag()
     local indexStart=
     local lineCount=$(cat $filePathIni|wc -l)
     while read -r line ; do
-        if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
+        if [[ "$line" = "[${tagName}]" ]]||[[ -n "$indexStart" ]]; then
             [[ -z "$indexStart" ]] && indexStart=$index
             (($index==$lineCount)) && ((index+=1)) && line=
 
@@ -376,7 +376,7 @@ ftIniAddItem()
     [ -z "$itemContent" ] && errorContent="${errorContent}\\n[缺少必要参数]itemContent=$itemContent"
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniAddItem -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniAddItem -h && return
 
     #实现主体
     local indexStart=0
@@ -433,14 +433,14 @@ ftIniDeleteItem()
     [ -z "$itemName" ] && errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName"
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteItem -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteItem -h && return
 
     #实现主体
     local indexStart=
     local indexEnd=
     local index=0
     cat $filePathIni | while read line ;do
-        if [[ "$line" = "[${tagName}]" ]]||[[ ! -z "$indexStart" ]]; then
+        if [[ "$line" = "[${tagName}]" ]]||[[ -n "$indexStart" ]]; then
             [[ -z "$indexStart" ]] && indexStart=$index && ((indexStart+=1))
 
             if [[ "$line" =~ ^${itemName}* ]]; then
@@ -500,7 +500,7 @@ ftIniGetValue()
         if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]keyName=$keyName"
         elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName" ; fi
     fi
-    if [ ! -z "$errorContent" ];then
+    if [ -n "$errorContent" ];then
             [[ -z "$isReadSilence" ]]&&return
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftIniGetValue -h
@@ -562,7 +562,7 @@ ftIniSetValue()
         elif [ -z "$(cat $filePath|grep $keyName)" ];then    errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName" ; fi
         [ -z "$keyValue" ] &&  errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
     fi
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h && return
 
     #实现主体
     [[ "$isListValue" = "true" ]] && return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath`
@@ -610,7 +610,7 @@ ftFileDirEdit()
     [ -z "$type" ] && errorContent="${errorContent}\\n[操作参数]type=$type"
     [ -z "$isCreate" ] && errorContent="${errorContent}\\n[是否新建]isCreate=$isCreate"
     [ -z "$path" ] && errorContent="${errorContent}\\n[被操作的目录或路径]path=$path"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftFileDirEdit -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftFileDirEdit -h && return
 
     #实现主体
     while true; do case "$type" in
@@ -651,7 +651,7 @@ ftDevAvailableSpace()
     local errorContent=
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathTraget" ] && errorContent="${errorContent}\\n[设备路径不存在]dirPathTraget=$dirPathTraget"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftDevAvailableSpace -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftDevAvailableSpace -h && return
 
     #实现主体
      local devAvailableSIzeList=$(df -lh | awk '{print $4}')
@@ -697,7 +697,7 @@ ftVersionComparison()
     local valCount=2
     local errorContent=
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftVersionComparison -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftVersionComparison -h && return
 
     #实现主体
     [[ "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1" ]] && echo ">" && return
@@ -728,7 +728,7 @@ ftLanguageUtil()
     local errorContent=
     [ -z "$ftLanguageContent" ] &&  errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
     [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[语言转化配置文件不存在]filePathDataBase=$filePathDataBase"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLanguageUtil -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLanguageUtil -h && return
 
     #实现主体
     local returnVal
@@ -801,7 +801,7 @@ ftInitDevicesList()
     [ -z "$rDirPathXbash" ] && errorContent="${errorContent}\\n[默认用户名]rNameUser=$rNameUser"
     [ -z "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome"
     ( ! echo -n $devMinAvailableSpaceTemp | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[可用空间限制]devMinAvailableSpace=$devMinAvailableSpace"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftInitDevicesList -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftInitDevicesList -h && return
 
     #实现主体
     local indexDevMount=0
@@ -823,7 +823,7 @@ ftInitDevicesList()
     fi
 
     unset mXbashModuleDataDevicesList
-    [ ! -z "$sizeHome" ] && (( $sizeHome>=$devMinAvailableSpace )) && mXbashModuleDataDevicesList=$dirPathHome && indexDevMount=1
+    [ -n "$sizeHome" ] && (( $sizeHome>=$devMinAvailableSpace )) && mXbashModuleDataDevicesList=$dirPathHome && indexDevMount=1
     #开始记录设备文件
     for dir in ${devNameDirPathList[*]} ;do
             devMountDirPath=${devMountDirPathList[indexDevName]}
@@ -853,7 +853,7 @@ _adb()
                                   ;;
                     install)  COMPREPLY=( $(compgen -W "-l -r -s" -- $curr_arg ) )
                                 # case "${COMP_WORDS[2]}" in
-                                #                 -l|-r|-s)  if [[ ! -z "$(ls -l |grep ".apk")" ]]; then
+                                #                 -l|-r|-s)  if [[ -n "$(ls -l |grep ".apk")" ]]; then
                                 #                                     COMPREPLY=( $(compgen -o filenames -W "`ls *.apk`" -- ${cur}) );
                                 #                                 fi ;;
                                 # esac
@@ -931,7 +931,7 @@ ftSetBashPs1ByGitBranch()
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
     [ "$(whoami)" = "root" ] && defaultPrefix="root" && defaultColorConfig=42
-    if [ ! -z "$branchName" ]&&[ "$editType" != "-b" ];then
+    if [ -n "$branchName" ]&&[ "$editType" != "-b" ];then
         local ps1=$(pwd)${branchName}
         (( ${#ps1}>$COLUMNS/2-11 )) && branchName="\nbranchName→ ${branchName}: " || branchName="branchName→ ${branchName}: "
         export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]${branchName}\[\033[0m\]"
@@ -966,7 +966,7 @@ ftCleanDataGarbage()
     local errorContent=
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$mXbashModuleDataDevicesList" ] && errorContent="${errorContent}\\n[被清空回收站的设备的目录列表]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCleanDataGarbage -h  && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCleanDataGarbage -h  && return
 
     #实现主体
     local dirPathLocal=$(pwd)
@@ -1012,7 +1012,7 @@ ftKillApplicationByPackageName()
     local errorContent=
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$packageName" ] && errorContent="${errorContent}\\n[应用包名]packageName=$packageName"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftKillApplicationByPackageName -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftKillApplicationByPackageName -h && return
 
     #实现主体
     #adb连接状态检测
@@ -1026,7 +1026,7 @@ ftKillApplicationByPackageName()
         monkey)     packageName="com.android.commands.monkey"  ;break;;
     * ) break;;esac;done
 
-    if [[ ! -z "$(adb shell ps | grep $packageName | awk '{print $2}')" ]]; then
+    if [[ -n "$(adb shell ps | grep $packageName | awk '{print $2}')" ]]; then
         adb root > /dev/null
         adb remount > /dev/null
         adb shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
@@ -1130,7 +1130,7 @@ ftRestartAdb()
     local errorContent=
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$userPassword" ] && errorContent="${errorContent}\\n[默认用户密码]userPassword=$userPassword"
-    if [ ! -z "$errorContent" ];then
+    if [ -n "$errorContent" ];then
             ftEcho -eax "$errorContent \\n请查看下面说明:"
             ftRestartAdb -h
             return
@@ -1161,7 +1161,7 @@ ftMtkFlashTool()
     #耦合校验
     local errorContent=
     [ ! -d "$toolDirPath" ] && errorContent="${errorContent}\\n[mtk下载工具路径不存在]toolDirPath=$toolDirPath"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的出现错误:${errorContent}\\n" && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的出现错误:${errorContent}\\n" && return
 
     #实现主体
     echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
@@ -1199,7 +1199,7 @@ ftBootAnimation()
     local errorContent=
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$dirPathAnimation" ] && errorContent="${errorContent}\\n[动画资源目录]dirPathAnimation=$dirPathAnimation"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBootAnimation -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBootAnimation -h && return
 
     #实现主体
     while true; do
@@ -1378,7 +1378,7 @@ ftGjh()
     local errorContent=
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGjh -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGjh -h && return
 
     #实现主体
     local filePath=${rDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar
@@ -1416,7 +1416,7 @@ ftPowerManagement()
     [ -z "$userPassword" ] && errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword"
     [ -z "$edittype" ] && errorContent="${errorContent}\\n[操作参数为空]edittype=$edittype"
     ( ! echo -n $timeLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[倒计时时长无效]timeLong=$timeLong"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPowerManagement -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPowerManagement -h && return
 
     #实现主体
     while true; do
@@ -1481,7 +1481,7 @@ ftReduceFileList()
         ||(( $percentage<0 ))\
         ||(( $percentage>100 ));then errorContent="${errorContent}\\n[百分比取值错误]percentage=$percentage" ;fi
     [ ! -d "$dirPathFileList" ] && errorContent="${errorContent}\\n[目标目录]dirPathFileList=$dirPathFileList"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftReduceFileList -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftReduceFileList -h && return
 
     #实现主体
     ftFileDirEdit -e false $dirPathFileList
@@ -1560,7 +1560,7 @@ ftReNameFile()
     #耦合校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathFileList" ] && errorContent="${errorContent}\\n[目标目录不存在]dirPathFileList=$dirPathFileList"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftReNameFile -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftReNameFile -h && return
 
     #实现主体
     ftFileDirEdit -e false $dirPathFileList
@@ -1646,7 +1646,7 @@ ftMaintainSystem()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [ "$(whoami)" != "root" ] && ftMaintainSystem --env && return
-    [ -z $(which pigz) ] && ftMaintainSystem --rely "pigz" && return
+    [[ -z $(which pigz) ]] && ftMaintainSystem --rely "pigz" && return
     #参数解析
     local editType
 
@@ -1660,7 +1660,7 @@ ftMaintainSystem()
     local filePathMaintain=${rDirPathXbashModuleMaintain}/${rFileNameXbashModuleMaintain}
     [ -z "$editType" ] && errorContent="${errorContent}\\n[你想做啥哩]editType=$editType"
     [ ! -f "$filePathMaintain" ] && errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain"
-    [ ! -z "$errorContent" ] && ftEcho -ea "[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMaintainSystem -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMaintainSystem -h && return
 
     #实现主体
     source $filePathMaintain
@@ -1775,7 +1775,7 @@ ftMaintainSystem()
                         trap SIGINT
                     ;;
         sdFinish )
-                    [ -z $(which e4defrag) ] && ftMaintainSystem --rely "e4defrag" && return
+                    [[ -z $(which e4defrag) ]] && ftMaintainSystem --rely "e4defrag" && return
 
                     devNameDirPathList=$(df -lh | awk '{print $1}')
                     devMountDirPathList=($(df -lh | awk '{print $6}'))
@@ -1828,8 +1828,8 @@ ftGitLogShell()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
-    [ -z $(which git) ] && ftGitLogShell --rely && return
-    [[ ! -z "$isAllBranchLog" ]]&&[ -z $(which gitk) ] && ftGitLogShell --rely && return
+    [[ -z $(which git) ]] && ftGitLogShell --rely && return
+    [[ -n "$isAllBranchLog" ]]&&[ -z $(which gitk) ] && ftGitLogShell --rely && return
     #参数解析
     local isAllBranchLog
     local isTagBranchLog
@@ -1857,7 +1857,7 @@ ftGitLogShell()
     #耦合校验
     local errorContent=
     [ -z "$branchLogItemCount" ]||(($branchLogItemCount<0)) && errorContent="${errorContent}\\n[示例2]branchLogItemCount=$branchLogItemCount"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitLogShell -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitLogShell -h && return
 
     #实现主体
     local gitVersionMin="2.6.0"
@@ -1865,8 +1865,8 @@ ftGitLogShell()
     gitVersionNow=${gitVersionNow//git version/}
     gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
-    [[ ! -z "$isAllBranchLog" ]] && gitk --all "${pathTarget}" && return
-    [[ ! -z "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return
+    [[ -n "$isAllBranchLog" ]] && gitk --all "${pathTarget}" && return
+    [[ -n "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return
 
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]]&&[ "$isCustomBranchLog" != "true" ];then
         branchLogFormat=${branchLogFormat:-'%C(green)%<(9,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
@@ -1892,7 +1892,7 @@ ftFind()
               nameAll=${nameAll}" -o -name ${nameList[$i]}"
             done
     fi
-    [[ ! -z "$3" ]] && find $1 ! -type d -name $nameAll | xargs grep -e "$3" |grep -e "$3" && return
+    [[ -n "$3" ]] && find $1 ! -type d -name $nameAll | xargs grep -e "$3" |grep -e "$3" && return
     find $1 ! -type d -name $nameAll
 }
 
@@ -1921,7 +1921,7 @@ ftGitAddPatch()
         ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
 
     #实现主体
-    if [ ! -z "$(pgrep -f gedit)" ];then
+    if [ -n "$(pgrep -f gedit)" ];then
             while true; do echo && ftEcho -y gedit 已打开是否关闭
             read -n 1 sel
             case "$sel" in
@@ -1936,7 +1936,7 @@ ftGitAddPatch()
         local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
         local branchList=($(git branch|grep -i "$branchTag" |grep -v "$branchNameNow"))
 
-        if [[ ! -z "$isAllBranchs" ]];then
+        if [[ -n "$isAllBranchs" ]];then
             local key="remotes/origin/"
             local branchListServer=($(git branch -a|grep -i "$branchTag" |grep -v "$branchNameNow" |grep -v "remotes/origin/HEAD -> origin/master" |grep "$key"))
             for (( i = 0; i < ${#branchListServer[@]}; i++ )); do
@@ -1948,10 +1948,10 @@ ftGitAddPatch()
         rm -f $filePathBranchList > /dev/null
         for item in ${branchList[@]} ; do echo "${item}" >> $filePathBranchList ;done
     fi
-    gedit $filePathBranchList && while [ ! -z "$(pgrep -f gedit)" ] ; do sleep 2 ;done
+    gedit $filePathBranchList && while [ -n "$(pgrep -f gedit)" ] ; do sleep 2 ;done
 
     content=$(cat $filePathBranchList)
-    if [ ! -z "$content" ];then
+    if [ -n "$content" ];then
             ftEcho -b 将操作下面所有分支
             local index=0
             cat $filePathBranchList | while read line ; do echo $line && ((index+=1)) ; done
@@ -2005,7 +2005,7 @@ ftGitCheckoutBtanch()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
-    [ -z $(which git) ] && ftGitCheckoutBtanch --rely "git" && return
+    [[ -z $(which git) ]] && ftGitCheckoutBtanch --rely "git" && return
     #参数解析
     local isAllBranchs
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
@@ -2022,15 +2022,15 @@ ftGitCheckoutBtanch()
     local errorContent=
     (( $#==0 ))||(( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
-    [ ! -z "$delayLong" ]&&( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBtanch -h && return
+    [ -n "$delayLong" ]&&( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBtanch -h && return
 
     #实现主体
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     local branchList=($(git branch|grep -i "$branchNameTag" | sed -e "s:*::g"))
     for (( i = 0; i < ${#branchList[*]}; i++ )); do [[ "${branchList[$i]}" = "${branchNameNow}" ]] && unset branchList[$i] && break ;done
 
-    if [[ ! -z "$isAllBranchs" ]];then
+    if [[ -n "$isAllBranchs" ]];then
         local key="remotes/origin/"
         local branchListServer=($(git branch -a|grep -i "$branchNameTag" \
                                                                          |grep -v "remotes/origin/HEAD -> origin/master" \
@@ -2081,7 +2081,7 @@ ftGitCheckoutBtanch()
         [ ${#sel} == 0 ] && sel=y
         case "$sel" in
             y | Y )echo 
-                if [ ! -z "$delayLong" ]; then
+                if [ -n "$delayLong" ]; then
                     tput sc
                     for i in $(seq -w $delayLong -1 1) ; do
                         tput rc;tput ed
@@ -2119,7 +2119,7 @@ ftPdfPasswordClear()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
-    [ -z $(which qpdf) ] && ftPdfPasswordClear --rely "qpdf" && return
+    [[ -z $(which qpdf) ]] && ftPdfPasswordClear --rely "qpdf" && return
     #参数解析
     local dirPathTarget
     local passwordNum
@@ -2133,7 +2133,7 @@ ftPdfPasswordClear()
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -d "$dirPathTarget" ]&&[ ! -f "$dirPathTarget" ] && errorContent="${errorContent}\\n[啥玩意]dirPathTarget=$dirPathTarget"
     [ -z "$passwordNum" ] && errorContent="${errorContent}\\n[密码不见了，帮忙找找]"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPdfPasswordClear -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPdfPasswordClear -h && return
 
     #实现主体
     SAVEIFS=$IFS
@@ -2144,7 +2144,7 @@ ftPdfPasswordClear()
         local dirPathTemp="${dirPathTarget}/${line}"
         if [[ -d "$dirPathTemp" ]]; then
             ftPdfPasswordClear -d "$dirPathTemp" -p "$passwordNum"
-        elif [[ ! -z $(echo $line |grep -i ".pdf") ]]; then
+        elif [[ -n $(echo $line |grep -i ".pdf") ]]; then
             local dirPathTemp2="${dirPathTarget}/temp_${line}"
             cp -rf $dirPathTemp $dirPathTemp2
             qpdf --password='$passwordNum' --decrypt $dirPathTemp2 $dirPathTemp && ftEcho -sn "${dirPathTemp}";echo "  [密码已清除]"
@@ -2192,7 +2192,7 @@ ftApkSignature()
     [ -z "$JAVA_HOME" ] && errorContent="${errorContent}\\n[java环境未配置]缺失JAVA_HOME"
     [ ! -f "$toolFilePathSignapk" ] && errorContent="${errorContent}\\n[缺少有效的签名工具]${toolFilePathSignapk}不存在"
     [ ! -f "$filePathApk" ] && errorContent="${errorContent}\\n[你想干嘛]${filePathApk}不存在"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftApkSignature -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftApkSignature -h && return
 
     #实现主体
     local toolFilePathPlatformx509pem=build/target/product/security/platform.x509.pem
@@ -2231,7 +2231,7 @@ ftApkMergeOdex()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
-    [ -z $(which zip) ] && ftApkMergeOdex --rely "zip" && return
+    [[ -z $(which zip) ]] && ftApkMergeOdex --rely "zip" && return
     #参数解析
     local isAutoPull=
     local fileNameApk=
@@ -2265,7 +2265,7 @@ ftApkMergeOdex()
         [ ! -f "$filePathOdex" ] && errorContent="${errorContent}\\n[找不到${filePathOdex}]"
         [ ! -d "$dirPathFramework" ] && errorContent="${errorContent}\\n[找不到${dirPathFramework}]"
     fi
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftApkMergeOdex -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftApkMergeOdex -h && return
 
     #实现主体
     # 连接手机的操作
@@ -2299,7 +2299,7 @@ ftApkMergeOdex()
 
         [[ "$fileNameApk" == *.apk* ]] && fileNameApk=$(echo $fileNameApk| sed -e "s:.apk::g")
         local dirPathDevices=system/app/${fileNameApk}
-        [[ ! -z $(adb shell ls system/priv-app|grep $fileNameApk) ]]&&dirPathDevices=system/priv-app/${fileNameApk}
+        [[ -n $(adb shell ls system/priv-app|grep $fileNameApk) ]]&&dirPathDevices=system/priv-app/${fileNameApk}
         adb pull $dirPathDevices
         adb pull system/framework/*
         cp -rf -v framework/arm/* framework

@@ -29,7 +29,7 @@ ftRestoreOperate()
     [ ! -f "$filePathIniMaintain" ] && errorContent="${errorContent}\\n[工具数据库文件不存在]filePathIniMaintain=$filePathIniMaintain"
     [ ! -d "$dirPathRestoreTarget" ] && errorContent="${errorContent}\\n[还原的目标路径不存在]dirPathRestoreTarget=$dirPathRestoreTarget"
     [ -z "$tagNameMaintain" ] && errorContent="${errorContent}\\n[默认tag名为空]tagNameMaintain=$tagNameMaintain"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftRestoreOperate -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftRestoreOperate -h && return
 
     while true; do
     ftEcho -y "是否开始还原(回车默认y)"
@@ -78,7 +78,7 @@ ftRestoreChoiceSource()
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[备份包数据库文件不存在]filePathIni=$filePathIni"
     [ ! -f "$filePathIniMaintain" ] && errorContent="${errorContent}\\n[工具数据库文件不存在]filePathIniMaintain=$filePathIniMaintain"
     [ -z "$tagNameMaintain" ] && errorContent="${errorContent}\\n[默认tag名为空]tagNameMaintain=$tagNameMaintain"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftRestoreChoiceSource -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftRestoreChoiceSource -h && return
 
     local suffixName=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
     local dirPathStore=$(ftIniGetValue $filePathIniMaintain $tagNameMaintain dirPathStore)
@@ -153,7 +153,7 @@ ftSetBackupDevDir()
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[备份包数据库文件不存在]filePathIni=$filePathIni"
     [ -z "$versionName" ] && errorContent="${errorContent}\\n[备份包名为空]versionName=$versionName"
     [ -z "$mXbashModuleDataDevicesList" ] && errorContent="${errorContent}\\n[可用的备份包备份存储设备列表为空]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSetBackupDevDir -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSetBackupDevDir -h && return
 
     ftEcho -b 请${ftEffect}
 
@@ -231,7 +231,7 @@ ftSetBackupType()
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[版本数据库不存在]filePathIni=$filePathIni"
     [ ! -f "$filePathIniMaintain" ] && errorContent="${errorContent}\\n[工具数据库不存在]filePathIniMaintain=$filePathIniMaintain"
     [ -z "$versionName" ] && errorContent="${errorContent}\\n[备份包名为空]versionName=$versionName"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSetBackupType -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSetBackupType -h && return
 
     # 备份类型
     local infoBackupType=cg
@@ -309,7 +309,7 @@ ftSetRestoreOverryList()
     [ ! -d "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[默认用户的home目录不存在]rDirPathUserHome=$rDirPathUserHome"
     [ ! -f "$filePathIniMaintain" ] && errorContent="${errorContent}\\n[工具数据库文件不存在]filePathIniMaintain=$filePathIniMaintain"
     [ -z "$tagNameMaintain" ] && errorContent="${errorContent}\\n[默认tag名为空]tagNameMaintain=$tagNameMaintain"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSetRestoreOverryList -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSetRestoreOverryList -h && return
 
     ftEcho -b 请${ftEffect}
     echo -e "[1]\t忽略home"
@@ -364,7 +364,7 @@ ftBackupOs()
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[信息路径为空]filePathIni=$filePathIni"
     [ ! -f "$filePathIniMaintain" ] && errorContent="${errorContent}\\n[工具数据库文件不存在]filePathIniMaintain=$filePathIniMaintain"
     [ -z "$versionName" ] && errorContent="${errorContent}\\n[版本号为空]versionName=$versionName"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBackupOs -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBackupOs -h && return
 
     local fileNameVersion=$(ftIniGetValue $filePathIni  $versionName fileName)
     local dirPathStore=$(ftIniGetValue $filePathIni $versionName dirPathStore)
@@ -443,11 +443,11 @@ ftMaintainInfoNote()
     [ -z "$editType" ] && errorContent="${errorContent}\\n[不知道要干啥]editType=$editType"
     [ -z "$versionName" ] && errorContent="${errorContent}\\n[备份包名为空]versionName=$versionName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[信息路径为空]filePathIni=$filePathIni"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMaintainInfoNote -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMaintainInfoNote -h && return
 
     if [[ "$editType" = "add" ]]; then
         local fileNameVersionNote="${versionName}的相应说明"
-        if [ ! -z "$(pgrep -f gedit)" ];then
+        if [ -n "$(pgrep -f gedit)" ];then
             while true; do echo && ftEcho -y gedit 已打开是否关闭
             read -n 1 sel
             case "$sel" in
@@ -504,7 +504,7 @@ ftMD5()
     [ -z "$editType" ] && errorContent="${errorContent}\\n[不知道要干啥]editType=$editType"
     [ ! -f "$filePathInfo" ]&&  errorContent="${errorContent}\\n[没有相关版本信息文件]filePathInfo=$filePathInfo"
     [ ! -f "$filePathVersion" ] && errorContent="${errorContent}\\n[目标文件不存在]filePathVersion=$filePathVersion"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMD5 -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMD5 -h && return
 
     local fileNameVersion=$(basename $filePathVersion)
     local versionName=${fileNameVersion%.*}
@@ -560,7 +560,7 @@ ftSystemEnv()
     local errorContent=
     [ -z "$editType" ] && errorContent="${errorContent}\\n[操作参数为空]editType=$editType"
     [ ! -f "$filePathInfo" ]&&  errorContent="${errorContent}\\n[没有相关版本信息文件]filePathInfo=$filePathInfo"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSystemEnv -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSystemEnv -h && return
 
     local infoHwCpu=$(echo $userPassword | sudo  -p '' -S dmidecode |grep -i cpu|grep -i version|awk -F ':' '{print $2}'|sed s/[[:space:]]//g)
     local infoHwMainboard=$(echo $userPassword | sudo  -p '' -S dmidecode |grep Name |sed s/[[:space:]]//g)
@@ -635,7 +635,7 @@ ftSystemEnv()
             ftEcho -e 系统版本的位数不一致，将自动退出
             returns=不兼容
         fi
-        [ ! -z "$returns" ] && ftEcho -s "备份包：${versionName} 系统兼容性检测结果为${returns}" && return 9
+        [ -n "$returns" ] && ftEcho -s "备份包：${versionName} 系统兼容性检测结果为${returns}" && return 9
         ftEcho -s "备份包：${versionName} 兼容当前系统"
     fi
 }
@@ -693,7 +693,7 @@ ftBackUpDevScanning()
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[版本数据库不存在]filePathIni=$filePathIni"
     [ -z "$fileName" ] && errorContent="${errorContent}\\n[目标备份包名为空]fileName=$fileName"
     [ -z "$devList" ] && errorContent="${errorContent}\\n[存放备份包的设备目录列表为空]devList=${devList[@]} "
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBackUpDevScanning -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBackUpDevScanning -h && return
 
     local dirPathStore=$(ftIniGetValue $filePathIni $versionName dirPathStore)
 
@@ -708,7 +708,7 @@ ftBackUpDevScanning()
                 case "$sel" in
                     y | Y )
                         #可用性校验
-                        [ ! -z "$(ftSystemEnv -c $versionName -p $filePathIni)" ] && ftEcho -e 设备[${devDirPath}]上的同名备份包[${versionName}]不兼容 && break
+                        [ -n "$(ftSystemEnv -c $versionName -p $filePathIni)" ] && ftEcho -e 设备[${devDirPath}]上的同名备份包[${versionName}]不兼容 && break
 
                         #复制备份包
                         local filePathVersion=${dirPathStore}/${fileName}
@@ -751,7 +751,7 @@ ftSynchronous()
     local errorContent=
     [ -z "$fileTypeList" ] && errorContent="${errorContent}\\n[同步类型列表为空]fileTypeList=$fileTypeList"
     [ -z "$dirPathArray" ] && errorContent="${errorContent}\\n[同步设备目录列表为空]dirPathArray=${dirPathArray[@]}"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSynchronous -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSynchronous -h && return
 
     while true; do
     ftEcho -y 是否开始同步
@@ -799,7 +799,7 @@ ftCleanUpInvalidRecords()
     #耦合校验
     local errorContent=
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[备份包数据库文件不存在]filePathIni=$filePathIni"
-    [ ! -z "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCleanUpInvalidRecords -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCleanUpInvalidRecords -h && return
 
     #实现主体
     local result
@@ -815,7 +815,7 @@ ftCleanUpInvalidRecords()
             result="deleted"
         fi
     done
-    if [[ ! -z "$result" ]]; then
+    if [[ -n "$result" ]]; then
         ftEcho -s "删除部分无效版本记录"
     fi
 }

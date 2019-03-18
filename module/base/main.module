@@ -56,7 +56,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
     alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
     alias xSDK2AndroidVersion='effect=android版本查询;ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison'
 
-    if [ ! -z $(which git) ];then
+    if [[ -n $(which git) ]];then
         [ -f "$rFilePathGitBash" ] && source $rFilePathGitBash || echo -e "\033[1;31mgit bash 配置文件:\n$rFilePathGitBash 不存在\033[0m"
         alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
         alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
@@ -84,7 +84,7 @@ else
     echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$rFilePathXbashModuleCommon]\033[0m"
 fi
 
-if [ ! -z $(which cat) ];then
+if [[ -n $(which cat) ]];then
     alias xbuildprop='effect=打印部分out下build.prop信息;[ -f "${ANDROID_PRODUCT_OUT}/system/build.prop" ] &&\
                       cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.model=" && \
                       cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.brand=" && \
@@ -93,11 +93,11 @@ if [ ! -z $(which cat) ];then
     alias xbh='effect=bash命令历史查询;cat $filePathBashHistory |grep'
 fi
 
-if [ ! -z $(which du) ];then
+if [[ -n $(which du) ]];then
     alias xdm='effect=查找最占用空间的20个目录;du -m --max-depth=2 | sort -nr | head -20 '
 fi
 
-if [ ! -z $(which fuser) ];then
+if [[ -n $(which fuser) ]];then
      alias xkf='effect=解除文件或目录占用;fuser -m -k -i'
 fi
 
@@ -105,17 +105,17 @@ if [ -f /usr/bin/gnome-session-quit ] ;then
      alias xsss='effect=注销系统;/usr/bin/gnome-session-quit --logout --force'
 fi
 
-if [ ! -z $(which tr) ];then
+if [[ -n $(which tr) ]];then
     alias xX='effect=字符串转大写;_xX(){  echo "$1" | tr '[a-z]' '[A-Z]' ;};_xX $1'
     alias Xx='effect=字符串转小写;_Xx(){  echo "$1" | tr '[A-Z]' '[a-z]' ;};_Xx $1'
 fi
 
-if [ ! -z $(which todos) ]&&[ ! -z $(which fromdos) ];then
+if [[ -n $(which todos) ]]&&[[ -n $(which fromdos) ]];then
     alias unix2dos=todos
     alias dos2unix=fromdos
 fi
 
-if [ ! -z $(which find) ];then
+if [[ -n $(which find) ]];then
     alias xfind='effect=查找含特定字符串的文件;ftFind'
     alias xfs='effect=查找大于xxM的文件;_xFindFileBySize(){ find . -type f -size +$1  -print0 | xargs -0 du -h | sort -nr ;};_xFindFileBySize $1'
 fi
