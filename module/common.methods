@@ -2027,15 +2027,17 @@ ftGitCheckoutBtanch()
 
     #实现主体
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    local branchList=($(git branch|grep -i "$branchNameTag" \
-                                                         |grep -v "$branchNameNow"))
+    local branchList=($(git branch|grep -i "$branchNameTag" | sed -e "s:*::g"))
+    for (( i = 0; i < ${#branchList[*]}; i++ )); do [[ "${branchList[$i]}" = "${branchNameNow}" ]] && unset branchList[$i] && break ;done
 
     if [[ ! -z "$isAllBranchs" ]];then
         local key="remotes/origin/"
         local branchListServer=($(git branch -a|grep -i "$branchNameTag" \
-                                                                             |grep -v "$branchNameNow" \
-                                                                             |grep -v "remotes/origin/HEAD -> origin/master" \
-                                                                             |grep "$key"))
+                                                                         |grep -v "remotes/origin/HEAD -> origin/master" \
+                                                                         |grep "$key" \
+                                                                         | sed -e "s:*::g"))
+        for (( i = 0; i < ${#branchListServer[*]}; i++ )); do [[ "${branchListServer[$i]}" = "${branchNameNow}" ]] && \
+        unset branchListServer[$i] && break ;done
 
         for (( i = 0; i < ${#branchListServer[@]}; i++ )); do branchListServer[$i]=${branchListServer[$i]##*$key} ; done
         branchList=(${branchList[@]} ${branchListServer[@]}) #合并本地和仓库分支
@@ -2059,7 +2061,7 @@ ftGitCheckoutBtanch()
         done ; index=0
         for item in ${branchList[@]} ; do
             echo -n "[" ; ftEcho -sn "$(printf "%${length}d" $index)" ; echo -n "]"  ; printf "   %-4s\n" $item
-            if (( $index == $indexNow )) || (($itemCount-1==$index && $indexNow!=-1));then
+            if (( $index == $indexNow-1 )) || (( $index == $itemCount-1 && $indexNow!=-1 ));then
                     ftEcho -sn "$(printf "%${length}s" "-" | sed -e "s: :-:g")" && ftEcho -sn "->" && ftEcho -s "$(printf "   %-4s\n" $branchNameNow)"
                     indexNow=-1
             fi
