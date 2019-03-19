@@ -2007,7 +2007,7 @@ ftGitCheckoutBtanch()
     #依赖校验
     [[ -z $(which git) ]] && ftGitCheckoutBtanch --rely "git" && return
     #参数解析
-    local isAllBranchs
+    local isAllBranchs=
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -a ) isAllBranchs=true;
              branchNameTag="${arg2}"
@@ -2044,7 +2044,7 @@ ftGitCheckoutBtanch()
         branchList=($(echo ${branchList[@]} | sed 's/ /\n/g'|sort |uniq)) #去重
     fi
 
-    if [[ -z "$branchList" ]];then
+    if [[ -z "${branchList[@]}" ]];then
        [[ $branchNameNow =~ "$branchNameTag" ]] &&  ftEcho -s "只有当前分支包含TAG，无需切换" && return
        ftEcho -e "未找到[$branchNameTag]对应的分支" && return
     fi
@@ -2072,7 +2072,11 @@ ftGitCheckoutBtanch()
         #设定默认值
         [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
         (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
-        branchNameTraget=${branchList[$tIndex]}
+        index=0;for item in ${branchList[@]} ; do
+            [ -z "$item" ] && continue
+            (( $index == $tIndex )) && branchNameTraget=$item && break
+            ((index+=1))
+        done
     fi
 
     while true; do
