@@ -60,8 +60,8 @@ if [ -f $rFilePathXbashModuleCommon ];then
         [ -f "$rFilePathGitBash" ] && source $rFilePathGitBash || echo -e "\033[1;31mgit bash 配置文件:\n$rFilePathGitBash 不存在\033[0m"
         alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
         alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
-        alias xbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a"
-        alias xbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch"
+        alias xbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a -t"
+        alias xbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch -t"
     fi
 
     if [ -d "$ANDROID_SDK" ];then

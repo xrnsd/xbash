@@ -1981,20 +1981,22 @@ ftGitCheckoutBtanch()
     local ftEffect=快速切换分支
     local isEnable=true
 
-    local branchNameTag="$1"
-    local delayLong="$2"
-
     while true; do case "$1" in
     -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
-#    在本地所有分支中查找
-#    ftGitCheckoutBtanch 分支TAG
+#===================[   ${ftEffect}   ]的使用示例===============
+#    以下[参数对]无先后顺序可任意组合
 #
-#    在仓库所有分支中查找
-#    ftGitCheckoutBtanch -a 分支TAG
+#    在本地仓库中查切分支
+#    ftGitCheckoutBtanch
 #
-#    在仓库所有分支中查找
-#    ftGitCheckoutBtanch 分支TAG 切换分支延时时长[单位s]
+#    在本地仓库中查切含 xxxx 的分支
+#    ftGitCheckoutBtanch -t xxxx
+#
+#    在本地+远程仓库中查切含 xxxx 的分支
+#    ftGitCheckoutBtanch -a -t xxxx
+#
+#    在本地仓库中查切含 xxxx 的分支,延时yyyy秒后切换
+#    ftGitCheckoutBtanch -t xxxx -d yyyy
 #========================================================="; return ;;
     --rely) echo -e "\
 #===================[   ${ftEffect}   ]的依赖说明=============
@@ -2008,20 +2010,20 @@ ftGitCheckoutBtanch()
     #依赖校验
     [[ -z $(which git) ]] && ftGitCheckoutBtanch --rely "git" && return
     #参数解析
+    local delayLong=
     local isAllBranchs=
+    local branchNameTag=
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -a ) isAllBranchs=true;
-             branchNameTag="${arg2}"
-             delayLong=$3 ;;
+        -a ) isAllBranchs=true ;;
+        -t ) branchNameTag="${arg2}" ;;
+        -d ) delayLong="${arg2}" ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     if [[ -z "$branchNameTag" ]]; then
         git branch
         return
     fi
     #耦合校验
-    local valCount=2
     local errorContent=
-    (( $#==0 ))||(( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
     [ -n "$delayLong" ]&&( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBtanch -h && return
