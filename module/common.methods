@@ -1934,7 +1934,8 @@ ftGitAddPatch()
         git branch > $filePathBranchList
     else
         local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-        local branchList=($(git branch|grep -i "$branchTag" |grep -v "$branchNameNow"))
+        local branchList=($(git branch|grep -i "$branchTag" | sed -e "s:*::g"))
+        for (( i = 0; i < ${#branchList[*]}; i++ )); do [[ "${branchList[$i]}" = "${branchNameNow}" ]] && unset branchList[$i] && break ;done
 
         if [[ -n "$isAllBranchs" ]];then
             local key="remotes/origin/"
