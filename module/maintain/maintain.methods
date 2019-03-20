@@ -778,7 +778,6 @@ ftSynchronous()
 ftCleanUpInvalidRecords()
 {
     local ftEffect=清除无效版本记录
-    #可用性校验
     local isEnable=true
 
     while true; do case "$1" in

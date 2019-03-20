@@ -1157,8 +1157,8 @@ ftAutoLanguageUtil()
 
 ftAutoUpdateSoftwareVersion()
 {
-    local ftEffect=更新sprd7731c_N9的软件版本_disable
-    local isEnable=true
+    local ftEffect=更新sprd7731c_N9的软件版本
+    local isEnable=false
 
     local dirPathCode=$ANDROID_BUILD_TOP
 

@@ -70,25 +70,21 @@ ftReadAllFt()
         local ftEffect=查看对bash的扩展实现说明_nodisplay
 
         local key="local ftEffect="
-        for effectName in $(cat $rFilePathXbashModuleCommon |grep '^ft') ; do
-            effectDescription=$(cat $rFilePathXbashModuleCommon |grep  -C 3 $effectName|grep "$key")
+        local keyEnable="local isEnable="
+        local effectDescription=
+        local effectDescriptionEnable=
+        for effectName in $(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto |grep '^ft') ; do
+            effectDescription=$(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto|grep  -C 3 $effectName|grep "$key")
+            [[ $effectDescription =~ "nodisplay" ]]&&continue
             effectDescription=${effectDescription//$key/}
             effectDescription=${effectDescription// /}
 
-            effectName=${effectName//()/}
-            [[ $effectDescription =~ "nodisplay" ]]&&continue
+            effectDescriptionEnable=$(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto|grep  -C 3 $effectName|grep "$keyEnable")
+            effectDescriptionEnable=${effectDescriptionEnable//$keyEnable/}
+            effectDescriptionEnable=${effectDescriptionEnable// /}
 
-            printf "%40s  " $effectName;[[ $effectDescription =~ "disable" ]] && ftEcho -s "[年久失修,暂时关闭]" || echo $effectDescription
-        done
-        for effectName in $(cat $rFilePathXbashModuleAuto |grep '^ft') ; do
-            effectDescription=$(cat $rFilePathXbashModuleAuto |grep  -C 3 $effectName|grep "$key")
-            effectDescription=${effectDescription//$key/}
-            effectDescription=${effectDescription// /}
-
-            effectName=${effectName//()/}
-            [[ $effectDescription =~ "nodisplay" ]]&&continue
-
-            printf "%40s  " $effectName;[[ $effectDescription =~ "disable" ]] && ftEcho -s "[年久失修,暂时关闭]" || echo $effectDescription
+            printf "%40s  " ${effectName//()/}
+            [[ "$effectDescriptionEnable" = "true" ]] && echo ${effectDescription} || ftEcho -s "[暂时关闭]"
         done
 }
 
@@ -924,6 +920,8 @@ adb()
 ftSetBashPs1ByGitBranch()
 {
     local ftEffect=根据git分支名,设定bash的PS1
+    local isEnable=true
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     local editType=$1
     local defaultPrefix=${rNameUser:-'xbash'}
@@ -1361,8 +1359,8 @@ p 0 0 part1" >${dirPathAnimationTraget}/${fileNameDesc}
 
 ftGjh()
 {
-    local ftEffect=生成国际化所需的xml文件_disable
-    local isEnable=false #年久失修，暂时关闭
+    local ftEffect=生成国际化所需的xml文件
+    local isEnable=false
 
     while true; do case "$1" in
     -h | --help) echo -e "\
@@ -1881,6 +1879,8 @@ ftGitLogShell()
 ftFind()
 {
     local ftEffect=find的简单封装
+    local isEnable=true
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     local nameList=(${2})
     local nameAll="${nameList}"
@@ -2108,7 +2108,6 @@ complete -W "-p -d" ftPdfPasswordClear
 ftPdfPasswordClear()
 {
     local ftEffect=pdf密码批量清除
-    #可用性校验
     local isEnable=true
 
     while true; do case "$1" in
