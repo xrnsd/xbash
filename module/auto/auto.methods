@@ -331,13 +331,11 @@ ftAutoBuildMultiBranchEnvSeparation()
 
         local branchArray=($(cat $filePathBranchList))
         if [[ -n "$branchArray" ]];then
-                    export branchArray
+                    export branchArray=(${branchArray[@]})
                     echo enable>${dirPathProcessEnableId}/0
                     for (( index = 0; index <${#branchArray[@]}; index++ )); do
                         filePathState="${dirPathProcessEnableId}/${index}"
-                        while [ ! -f "$filePathState" ]||[ "enable" != $(cat $filePathState) ]; do
-                                sleep 2
-                        done
+                        while [ ! -f "$filePathState" ]||[ "enable" != $(cat $filePathState) ]; do sleep 10 ;done
                         gnome-terminal  --title="任务:${index} : 编译${branchArray[$fileNamePID]}" -x bash -c "$filePathserialBuildTool $index $filePathBranchList"
                     done
         fi

@@ -1014,8 +1014,8 @@ ftKillApplicationByPackageName()
 
     #实现主体
     #adb连接状态检测
-    adb wait-for-device
-    local adbStatus=$(adb get-state)
+    ftEcho -sn "正在等待adb连接 ：" 
+    adb wait-for-device && ftEcho -s "已连接"
     [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
 
     while true; do case "$packageName" in
@@ -1085,7 +1085,8 @@ ftLogcatApplicationByTag()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #实现主体
     #adb连接状态检测
-    adb wait-for-device
+    ftEcho -sn "正在等待adb连接 ：" 
+    adb wait-for-device && ftEcho -s "已连接"
     local adbStatus=$(adb get-state)
     [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
 
@@ -1104,8 +1105,8 @@ ftLogcatApplicationByTag()
     elif [ -z "$tagContent" ];then
         adb logcat "${flagError}"
     else
-        [[ -z "$vContent" ]] && adb logcat "${flagError}" |grep "${tagContent}" && return
-        adb logcat "${flagError}" |grep "${tagContent}" |grep -v "${vContent}"
+        [[ -z "$vContent" ]] && adb logcat "${flagError}" |grep -i "${tagContent}" && return
+        adb logcat "${flagError}" |grep -i "${tagContent}" |grep -v "${vContent}"
     fi
 }
 
@@ -2295,8 +2296,8 @@ ftApkMergeOdex()
     # 回到原始目录
     if [[ "$isAutoPull" = "true" ]]; then
         #adb连接状态检测
-        adb wait-for-device
-        local adbStatus=$(adb get-state)
+        ftEcho -sn "正在等待adb连接 ：" 
+        adb wait-for-device && ftEcho -s "已连接"
         [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
 
         local dirPathLocal=$(pwd)
