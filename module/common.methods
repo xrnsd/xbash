@@ -2053,7 +2053,7 @@ ftGitCheckoutBtanch()
        ftEcho -e "未找到[$branchNameTag]对应的分支" && return
     fi
     local itemCount=${#branchList[@]}
-    local branchNameTraget=$branchList
+    for item in ${branchList[@]} ; do [ ! -z "$item" ] && branchNameTraget=$item && break ;done
     if (( $itemCount>1 ));then
         local index=0
         local indexNow=-1
