@@ -11,6 +11,7 @@ dirPathsExcludeListSys= \
     /sys \
     /.Trash-0 \
     /media \
+    /var/cache \
     /var/tmp \
     /var/log \
     /opt/longene/qq \
@@ -27,7 +28,8 @@ dirPathsExcludeListSys= \
     /usr/share/icons/gnome/icon-theme.cache \
     /opt/android_studio_preview/lib/ant/docs.zip \
     /usr/share/virtualbox/VBoxGuestAdditions.iso \
-    /usr/share/pyzy/db/open-phrase.db
+    /usr/share/pyzy/db/open-phrase.db \
+    /usr/share/man
 dirPathsExcludeListHomeBase= \
     AndroidStudioProjects \
     cmds \
@@ -112,6 +114,8 @@ dirPathsExcludeListHomeBase= \
     .local/share \
     .nvm \
     .npm \
+    .config/Code \
+    .config/Electron/Cache \
     .config/sublime-text-3 \
     .config/sogou-qimpanel \
     .config/google-chrome \
