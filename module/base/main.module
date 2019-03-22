@@ -5,7 +5,8 @@ shopt -s histappend    #多个终端情况下，共享history
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
 alias xcc='effect=进入原目录;cd $OLDPWD'
-alias xr="effect=更新xbash配置;export isReset=true;source ~/.bashrc;export isReset="
+alias xr='effect=更新xbash配置;_xr(){  [ ! -z ${1} ]&&export sdkVersionDefault=${1}||export sdkVersionDefault= ;\
+                                                                export isReset=true;source ~/.bashrc;export isReset=;};_xr $1'
 if [ -f $rFilePathXbashModuleCommon ];then
     #加载common
     source  $rFilePathXbashModuleCommon

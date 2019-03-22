@@ -161,7 +161,7 @@ ftEcho()
         -y )       echo;echo -en "${content}[y/n]"; break;;
         -ye )     echo -en "${content}[y/n]"; break;;
         -r )        echo;echo -en "${content}"; break;;
-       -ea )      for val in ${content[@]} ; do echo -e "\033[1;31m$val\033[0m"; done; break;;
+        -ea )      for val in ${content[@]} ; do echo -e "\033[1;31m$val\033[0m"; done; break;;
         -eax )   for val in ${content[@]} ; do echo -e "\033[1;31m$val\033[0m"; done; exit;;
     * )    echo $option ;break;; esac ;done
 }
@@ -1893,8 +1893,8 @@ ftFind()
               nameAll=${nameAll}" -o -name ${nameList[$i]}"
             done
     fi
-    [[ -n "$3" ]] && find $1 ! -type d -name $nameAll | xargs grep -e "$3" |grep -e "$3" && return
-    find $1 ! -type d -name $nameAll
+    [[ -n "$3" ]] && find $1 ! -type d -name ${nameAll[@]} | xargs grep -e "${3}" |grep -e "${3}" && return
+    find $1 ! -type d -name ${nameAll[@]}
 }
 
 ftGitAddPatch()
