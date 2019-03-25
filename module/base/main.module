@@ -51,6 +51,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
     fi
 
     alias xc='effect=xbash主入口[旧];ftMain'
+    alias xcg='effect=清空回收站;ftCleanGarbage'
     alias xb='effect=系统维护;ftMaintainSystem'
     alias xd='effect=MTK下载工具;ftMtkFlashTool'
     alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
@@ -66,6 +67,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
     fi
 
     if [ -d "$ANDROID_SDK" ];then
+        alias xradb='effect=重启adb服务;ftRestartAdb'
         alias xl='effect=过滤adb_logcat;ftLogcatApplicationByTag'
         alias xle='effect=过滤错误的log;ftLogcatApplicationByTag -e'
         alias xlp="effect=根据包名过滤log;ftLogcatApplicationByTag -p"
