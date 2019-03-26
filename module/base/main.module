@@ -5,8 +5,6 @@ shopt -s histappend    #多个终端情况下，共享history
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
 alias xcc='effect=进入原目录;cd $OLDPWD'
-alias xr='effect=更新xbash配置;_xr(){  [ ! -z ${1} ]&&export sdkVersionDefault=${1}||export sdkVersionDefault= ;\
-                                                                export isReset=true;source ~/.bashrc;export isReset=;};_xr $1'
 if [ -f $rFilePathXbashModuleCommon ];then
     #加载common
     source  $rFilePathXbashModuleCommon
@@ -29,7 +27,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
         bashHistorySize=$(awk 'END{print NR}' $filePathBashHistoryArchive)
 
         #历史扩容
-        filePathXbashDataBaseUser=${rDirPathXbashModuleUser}/${rNameUser}.database
+        filePathXbashDataBaseUser=${rDirPathXbashModuleUser}/${rUserName}.database
         if [[ -f $filePathXbashDataBaseUser ]]; then
             bashHistorySizeBase=$(ftIniGetValue  $filePathXbashDataBaseUser xbash bashHistoryThresholdSize)
         else
@@ -51,8 +49,9 @@ if [ -f $rFilePathXbashModuleCommon ];then
     fi
 
     alias xc='effect=xbash主入口[旧];ftMain'
-    alias xcg='effect=清空回收站;ftCleanGarbage'
     alias xb='effect=系统维护;ftMaintainSystem'
+    alias xcg='effect=清空回收站;ftCleanGarbage'
+    alias xr='effect=更新xbash配置;ftResetXbash'
     alias xd='effect=MTK下载工具;ftMtkFlashTool'
     alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
     alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
@@ -67,7 +66,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
     fi
 
     if [ -d "$ANDROID_SDK" ];then
-        alias xradb='effect=重启adb服务;ftRestartAdb'
+        alias xadb='effect=重启adb服务;ftRestartAdb'
         alias xl='effect=过滤adb_logcat;ftLogcatApplicationByTag'
         alias xle='effect=过滤错误的log;ftLogcatApplicationByTag -e'
         alias xlp="effect=根据包名过滤log;ftLogcatApplicationByTag -p"
@@ -81,8 +80,9 @@ if [ -f $rFilePathXbashModuleCommon ];then
     fi
 
     #命令选项快速适配
-    complete -W "--backup --restore --sd_finish -b -r -s" xb
     complete -F _ftMain xc
+    complete -W "-j -h -s" xr
+    complete -W "--backup --restore --sd_finish -b -r -s" xb
 else
     echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$rFilePathXbashModuleCommon]\033[0m"
 fi

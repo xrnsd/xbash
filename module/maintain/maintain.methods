@@ -149,7 +149,7 @@ ftSetBackupDevDir()
     #耦合校验
     ftInitDevicesList -s 8192M # 初始化设备列表[mXbashModuleDataDevicesList]
     local errorContent=
-    [ -z "$rDirPathXbash" ] && errorContent="${errorContent}\\n[默认用户名为空]rNameUser=$rNameUser"
+    [ -z "$rDirPathXbash" ] && errorContent="${errorContent}\\n[默认用户名为空]rUserName=$rUserName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[备份包数据库文件不存在]filePathIni=$filePathIni"
     [ -z "$versionName" ] && errorContent="${errorContent}\\n[备份包名为空]versionName=$versionName"
     [ -z "$mXbashModuleDataDevicesList" ] && errorContent="${errorContent}\\n[可用的备份包备份存储设备列表为空]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}"
@@ -192,9 +192,9 @@ ftSetBackupDevDir()
     done
 
     case "$editType" in
-    backup ) local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}/${versionName}
+    backup ) local dirPathStoreSource=${devTargetDir}/backup/os/${rUserName}/${versionName}
                     ;;
-    restore ) local dirPathStoreSource=${devTargetDir}/backup/os/${rNameUser}
+    restore ) local dirPathStoreSource=${devTargetDir}/backup/os/${rUserName}
                     [ ! -d $dirPathStoreSource ] && ftEcho -ex ${dirPathStoreSource}不存在,将退出 && return
                     ;;
     esac
@@ -699,7 +699,7 @@ ftBackUpDevScanning()
 
     for devDirPath in ${devList[@]}; do
 
-        local dirPathTarget=${devDirPath}/backup/os/${rNameUser}
+        local dirPathTarget=${devDirPath}/backup/os/${rUserName}
         local filePathversionNameTarget=${dirPathTarget}/${fileName}
         if [ "$dirPathTarget" != "$dirPathStore" ]&&[ -f "$filePathversionNameTarget" ];then
             while true; do

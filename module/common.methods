@@ -43,6 +43,52 @@ ftMain()
     done
 }
 
+complete -W "-h -j -s" ftResetXbash
+ftResetXbash()
+{
+    local ftEffect=更新xbash配置
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    以下[参数对]无先后顺序可任意组合
+#
+#   查看说明
+#    ftResetXbash -h 
+#
+#   更新xbash配置
+#    ftResetXbash
+#
+#   更新xbash配置,同时更新jdk配置
+#    ftResetXbash -j 
+#
+#   更新xbash配置,同时更新gcc配置
+#    ftResetXbash -c 
+#
+#   更新xbash配置,同时更新android sdk 默认版本为 xxx
+#    ftResetXbash -s xxx
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    export isResetJdk=
+    export isResetGcc=
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -j ) export isResetJdk=true
+          ;;
+        -c ) export isResetGcc=true
+          ;;
+        -s ) export sdkVersionDefault="${arg2}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    #实现主体
+    source $BASH_SOURCE
+}
+
 ftReadAllAlias()
 {
         local ftEffect=显示bash内建等命令封装说明_nodisplay
@@ -66,7 +112,7 @@ ftReadAllFt()
         local keyEnable="local isEnable="
         local effectDescription=
         local effectDescriptionEnable=
-        for effectName in $(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto |grep '^ft') ; do
+        for effectName in $(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto | grep '^ft' | sort) ; do
             effectDescription=$(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto|grep  -C 3 $effectName|grep "$key")
             [[ $effectDescription =~ "nodisplay" ]]&&continue
             effectDescription=${effectDescription//$key/}
@@ -111,7 +157,7 @@ ftTest()
     [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp && trap '[ -d $dirPathLocal ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
     ftTimeConsuming -i
-    $rFilePathXbashModuleTest ${argList[@]:1}
+    $rFilePathXbashModuleTest ${argList[@]:1} 
     ftTimeConsuming
     cd $dirPathLocal
     trap SIGINT
@@ -791,7 +837,7 @@ ftInitDevicesList()
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//m/}
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//k/}
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//b/}
-    [ -z "$rDirPathXbash" ] && errorContent="${errorContent}\\n[默认用户名]rNameUser=$rNameUser"
+    [ -z "$rDirPathXbash" ] && errorContent="${errorContent}\\n[默认用户名]rUserName=$rUserName"
     [ -z "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome"
     ( ! echo -n $devMinAvailableSpaceTemp | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[可用空间限制]devMinAvailableSpace=$devMinAvailableSpace"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftInitDevicesList -h && return
@@ -799,7 +845,7 @@ ftInitDevicesList()
     #实现主体
     local indexDevMount=0
     local indexDevName=0
-    local dirPathHome=$rDirPathUserHome #(${rDirPathUserHome/$rNameUser\//$rNameUser})
+    local dirPathHome=$rDirPathUserHome #(${rDirPathUserHome/$rUserName\//$rUserName})
     local sizeHome=$(ftDevAvailableSpace $dirPathHome)
     local devNameDirPathList=$(df -lh | awk '{print $1}')
     local devMountDirPathList=($(df -lh | awk '{print $6}'))
@@ -921,7 +967,7 @@ ftSetBashPs1ByGitBranch()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     local editType=$1
-    local defaultPrefix=${rNameUser:-'xbash'}
+    local defaultPrefix=${rUserName:-'xbash'}
     local defaultColorConfig=44
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
@@ -954,7 +1000,7 @@ ftCleanGarbage()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
-    [ "$(whoami)" != $rNameUser ]||[ "$(whoami)" = "root" ] && ftCleanGarbage -e && return
+    [ "$(whoami)" != $rUserName ]||[ "$(whoami)" = "root" ] && ftCleanGarbage -e && return
     #耦合校验
     ftInitDevicesList
     local valCount=0
@@ -1097,7 +1143,6 @@ ftLogcatApplicationByTag()
         * ) break;;esac;done
 
         local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
-        echo pid=$pid
         [[ -z "$vContent" ]] && adb logcat "${flagError}" |grep "${pid}"
         adb logcat "${flagError}" |grep "${pid}" #|grep -v "${vContent}"
     elif [ -z "$tagContent" ];then
@@ -1668,7 +1713,7 @@ ftMaintainSystem()
         backup )
                     local dirPathLocal=${PWD}
                     local filePathVersionInfo=$filePathVersionInfoVersion
-                    local infoVersionName=backup_${rNameUser}_$(date -d "today" +"%Y%m%d")
+                    local infoVersionName=backup_${rUserName}_$(date -d "today" +"%Y%m%d")
                     local fileNameVersion=${infoVersionName}.$(ftIniGetValue $filePathVersionInfoMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
                     # 进入根目录
                         cd /
