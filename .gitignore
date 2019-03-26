@@ -3,3 +3,4 @@ module/maintain/versionInfo.database
 config/user
 module/user
 module/git/multiBranch.module
+module/test.module

@@ -93,6 +93,10 @@ ftTest()
     * ) break;;esac;done
 
     #耦合校验
+    if [[ ! -f "$rFilePathXbashModuleTest" ]]&&[[ -f $rFilePathXbashModuleTestExpmale ]]; then
+       cp $rFilePathXbashModuleTestExpmale $rFilePathXbashModuleTest
+       echo $(echo $rFilePathXbashModuleTest | sed -e "s:${rDirPathXbash}/::g") >> ${rDirPathXbash}/.gitignore
+    fi
     local valCount=1
     local errorContent=
     [ ! -d "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome"
