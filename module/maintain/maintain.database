@@ -13,23 +13,31 @@ dirPathsExcludeListSys= \
     /media \
     /var/cache \
     /var/tmp \
+    /var/lib/docker \
     /var/log \
     /opt/longene/qq \
     /usr/share/help \
     /usr/lib/vmware/help \
     /usr/share/gnome/help \
+    /usr/local/share/OpenCV/samples \
+    /usr/lib/beyondcompare/help \
+    /usr/lib/python2.7/dist-packages/pygame/docs \
+    /usr/lib/python2.7/dist-packages/pygame/examples \
+    /usr/lib/python2.7/dist-packages/cherrypy/test \
+    /usr/share/matplotlib/sample_data \
+    /usr/local/share/OpenCV/samples \
+    /usr/lib/beyondcompare/help \
     /usr/share/doc \
     /usr/share/pixmaps \
     /usr/share/hplip/data \
+    /usr/share/sogou-qimpanel/recommendSkin/skin \
     /usr/lib/vmware/isoimages \
     /usr/share/icons/HighContrast/icon-theme.cache \
     /usr/share/icons/oxygen/icon-theme.cache \
     /usr/share/icons/Paper/.icon-theme.cache \
     /usr/share/icons/gnome/icon-theme.cache \
-    /opt/android_studio_preview/lib/ant/docs.zip \
     /usr/share/virtualbox/VBoxGuestAdditions.iso \
-    /usr/share/pyzy/db/open-phrase.db \
-    /usr/share/man
+    /usr/share/pyzy/db/open-phrase.db
 dirPathsExcludeListHomeBase= \
     AndroidStudioProjects \
     cmds \
@@ -122,5 +130,21 @@ dirPathsExcludeListHomeBase= \
     .config/menus \
     .electron \
     .AndroidStudio3.3 \
-    .AndroidStudio3.2
-
+    .AndroidStudio3.2 \
+    .config/ubuntu-tweak
+dirPathsExcludeAllListSys= \
+    /usr/lib/libreoffice/share/gallery \
+    /usr/share/code/resources/app/extensions/markdown \
+    /usr/share/playonlinux \
+    /usr/share/calibre/images \
+    /usr/share/xml/docbook/stylesheet/docbook-xsl \
+    /usr/share/backgrounds \
+    /usr/share/inkscape/tutorials \
+    /usr/lib/vmware/share/icons \
+    /usr/share/icons/Paper \
+    /usr/lib/firefox \
+    /usr/share/man \
+    /opt/android_studio_preview \
+    /opt/kingsoft \
+    /root/.gradle
+    

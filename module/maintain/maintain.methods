@@ -236,8 +236,9 @@ ftSetBackupType()
     # 备份类型
     local infoBackupType=cg
     ftEcho -b 请${ftEffect}
-    echo -e "[1]\t基础"
-    echo -e "[2]\t全部"
+    echo -e "[1]\t精简"
+    echo -e "[2]\t基础"
+    echo -e "[3]\t全部"
     echo
 
     while true; do
@@ -247,8 +248,9 @@ ftSetBackupType()
 
         [ ${#typeIndex} == 0 ] && typeIndex=1 #设定默认值
         case $typeIndex in
-            1)        infoBackupType=cg; break;;
-            2)        infoBackupType=bx; break;;
+            1)        infoBackupType=jj; break;;
+            2)        infoBackupType=cg; break;;
+            3)        infoBackupType=bx; break;;
             n | q) exit;;
             * )       ftEcho -e 错误的选择：$typeIndex ;echo "输入1,2 选择    输入n，q离开";break;;
     esac;done
@@ -259,6 +261,7 @@ ftSetBackupType()
     local dirsExclude
     local filePatheExclude=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo filePatheExclude)
     local excludeListSys=($(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo dirPathsExcludeListSys))
+    local excludeAllListSys=($(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo dirPathsExcludeAllListSys))
     local excludeListHomeRoot
     local excludeListHomeBase=($(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo dirPathsExcludeListHomeBase))
 
@@ -269,14 +272,17 @@ ftSetBackupType()
         ((index+=1))
     done
 
-    if [ $infoBackupType = "cg" ];then
-        dirsExclude=(${excludeListSys[@]} ${excludeListHomeBase[@]} ${excludeListHomeRoot[@]})
-    elif [ $infoBackupType = "bx" ];then
-        dirsExclude=(${excludeListSys[@]})
-    else
-        ftEcho -ex  你想金包还是银包呢
-        exit
-    fi
+    while true; do
+        case $infoBackupType in
+            jj)   dirsExclude=(${excludeListSys[@]} ${excludeListHomeBase[@]} ${excludeListHomeRoot[@]} ${excludeAllListSys[@]})
+                    break;;
+            cg)   dirsExclude=(${excludeListSys[@]} ${excludeListHomeBase[@]} ${excludeListHomeRoot[@]})
+                    break;;
+            bx)  dirsExclude=(${excludeListSys[@]})
+                    break;;
+            * )    ftEcho -ex  你想金包还是银包呢
+                    exit;;
+    esac;done
 
     ftEcho -sh 更新排除列表
     rm -rf $filePatheExclude > /dev/null
