@@ -50,11 +50,11 @@ ftEcho()
 
 ftInitGitConfig()
 {
-    if [ -z $(which git) ];then
+    if [[ -z $(which git) ]];then
         echo $userPasswdLocal | sudo -p '' -S apt-get install  git ||(ftEcho -e "git安装失败，请重新安装" ;exit)
     fi
 
-    if [ -z $(which git) ];then
+    if [[ -z $(which git) ]];then
         ftEcho -e "git没有安装，请手动安装"
         return
     fi
@@ -80,7 +80,7 @@ ftInitUserConfig()
     if [[ -f "$filePathXbashConfigExample" ]]&&[ ! -f $filePathXbashConfigNew ]; then
         cp $filePathXbashConfigExample $filePathXbashConfigNew
 
-        if [ ! -z "${userPasswdLocal}" ];then
+        if [ -n "${userPasswdLocal}" ];then
             local taguserPasswordBase="export\ userPassword="
             local taguserPasswordNew="export\ userPassword=$userPasswdLocal"
             sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败" 
@@ -88,28 +88,28 @@ ftInitUserConfig()
 
         local tagisUseCustomPS1Base="isUseCustomPS1="
         ftEcho -y "是否启用xbash定义bash的命令行前缀" "tagisUseCustomPS1New=" "tagisUseCustomPS1New=\"isUseCustomPS1=true\""
-        if [ ! -z "${tagisUseCustomPS1New}" ];then
+        if [ -n "${tagisUseCustomPS1New}" ];then
             sed -i "s:$tagisUseCustomPS1Base:$tagisUseCustomPS1New:g" $filePathXbashConfigNew||\
             exceptionContent="${exceptionContent}\n xbash定义bash的命令行前缀启用失败"
         fi
 
         local tagisUseCustomAndroidDevEnvConfigBase="isUseCustomAndroidDevEnvConfig="
         ftEcho -y "是否启用xbash定义的Android开发环境基础配置" "tagisUseCustomAndroidDevEnvConfigNew=" "tagisUseCustomAndroidDevEnvConfigNew=\"isUseCustomAndroidDevEnvConfig=true\""
-        if [ ! -z "${tagisUseCustomAndroidDevEnvConfigNew}" ];then
+        if [ -n "${tagisUseCustomAndroidDevEnvConfigNew}" ];then
             sed -i "s:$tagisUseCustomAndroidDevEnvConfigBase:$tagisUseCustomAndroidDevEnvConfigNew:g" $filePathXbashConfigNew||\
             exceptionContent="${exceptionContent}\n xbash定义的Android开发环境配置启用失败" 
         fi
 
         local tagisUseBuildCcacheBase="isUseBuildCcache="
         ftEcho -y "是否启用xbash定义的Android编译缓存配置" "tagisUseBuildCcacheNew=" "tagisUseBuildCcacheNew=\"isUseBuildCcache=true\""
-        if [ ! -z "${tagisUseBuildCcacheNew}" ];then
+        if [ -n "${tagisUseBuildCcacheNew}" ];then
             sed -i "s:$tagisUseBuildCcacheBase:$tagisUseBuildCcacheNew:g" $filePathXbashConfigNew||\
             exceptionContent="${exceptionContent}\n xbash定义的Android编译缓存配置启用失败" 
         fi
 
         local tagisUseDistccBase="isUseDistcc="
         ftEcho -y "是否启用xbash定义的Android分布式编译配置" "tagisUseDistccNew=" "tagisUseDistccNew=\"isUseDistcc=true\""
-        if [ ! -z "${tagisUseDistccNew}" ];then
+        if [ -n "${tagisUseDistccNew}" ];then
             sed -i "s:$tagisUseDistccBase:$tagisUseDistccNew:g" $filePathXbashConfigNew||\
             exceptionContent="${exceptionContent}\n xbash定义的Android分布式编译配置启用失败" 
         fi

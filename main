@@ -118,6 +118,7 @@ fi
 #---------------- 变量初始化  ----------------------------------
     [[ -z "$SUDO_USER" ]] && userName=$USER || userName=$SUDO_USER
     export dirPathHome=/home/${userName}
+    export filePathHomeBash=$BASH_SOURCE
     export dirPathHomeXbash=$(dirname $(readlink -f  $BASH_SOURCE))
     export dirNameXbash=$(basename $dirPathHomeXbash)
 
