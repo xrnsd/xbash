@@ -86,7 +86,8 @@ ftResetXbash()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
     #实现主体
-    source $BASH_SOURCE
+    # source ~/.bashrc
+    source $filePathHomeBash
 }
 
 ftReadAllAlias()
