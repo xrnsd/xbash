@@ -1402,7 +1402,7 @@ p 0 0 part1" >${dirPathAnimationTraget}/${fileNameDesc}
     done
 }
 
-ftGjh()
+ftGlobalization()
 {
     local ftEffect=生成国际化所需的xml文件
     local isEnable=false
@@ -1410,7 +1410,7 @@ ftGjh()
     while true; do case "$1" in
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#    ftGjh 无参数
+#    ftGlobalization 无参数
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -1421,7 +1421,7 @@ ftGjh()
     local errorContent=
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[默认用户的home目录]rDirPathUserHome=$rDirPathUserHome"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGjh -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGlobalization -h && return
 
     #实现主体
     local filePath=${rDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar

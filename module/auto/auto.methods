@@ -468,7 +468,7 @@ $(ftGitLogShell  -n 20 -c "%h  %s")" >> $filePathGitLogInfo
     fi
 }
 
-ftAutoUploadHighSpeed()
+ftAutoUpload()
 {
     local ftEffect=文件[夹]上传
     local isEnable=true
@@ -486,16 +486,16 @@ ftAutoUploadHighSpeed()
 #=========================================================" ;return;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#    ftAutoUploadHighSpeed 源存放目录 服务器地址
+#    ftAutoUpload 源存放目录 服务器地址
 #
-#    ftAutoUploadHighSpeed xxx 192.168.xxx.xxx
+#    ftAutoUpload xxx 192.168.xxx.xxx
 #========================================================="; return ;;
     * ) break;;esac;done
 
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
-     [[ -z $(which nmap) ]]|| [[ -z $(which sshpass) ]]|| [[ -z $(which pigz) ]]|| [[ -z $(which pv) ]] && ftAutoUploadHighSpeed --rely && return
+     [[ -z $(which nmap) ]]|| [[ -z $(which sshpass) ]]|| [[ -z $(which pigz) ]]|| [[ -z $(which pv) ]] && ftAutoUpload --rely && return
     #耦合校验
     local valCount=2
     local errorContent=
@@ -517,7 +517,7 @@ ftAutoUploadHighSpeed()
             [ -z "$dirPathPackage" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]目标路径获取失败"
         fi
     fi
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoUploadHighSpeed -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoUpload -h && return
 
     #实现主体
 
@@ -732,7 +732,7 @@ ftAutoPacket()
             [[ -n "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
 
             #上传服务器
-            [[ -n "$isUpload" ]] && ftAutoUploadHighSpeed $dirPathVersionSoftwareLocal 192.168.1.75
+            [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareLocal 192.168.1.75
 
     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
             local dirNamePackage="packages"
@@ -916,7 +916,7 @@ ftAutoPacket()
             [[ -n "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftware}/${dirPathVersionSoftwareVersion}
 
             #上传服务器
-            [[ -n "$isUpload" ]] && ftAutoUploadHighSpeed $dirPathVersionSoftwareVersion 192.168.1.188
+            [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareVersion 192.168.1.188
     else
             ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的配置\n请查看下面说明:"
             ftAutoPacket -h
