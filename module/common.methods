@@ -1433,7 +1433,7 @@ ftGjh()
 
 ftPowerManagement()
 {
-    local ftEffect=延时免密码关机重启
+    local ftEffect=延时免密码的做到关机重启注销
     local isEnable=true
 
     local edittype=$1
@@ -1444,8 +1444,11 @@ ftPowerManagement()
     while true; do case "$1" in
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#    ftPowerManagement 关机/重启 时间/秒
-#    ftPowerManagement shutdown/reboot 100
+#   下面操作不指定时间默认都为10秒
+#
+#    100秒后自动关机，
+#    ftPowerManagement shutdown 100
+#
 #    xs 时间/秒 #制定时间后关机,不带时间则默认十秒
 #    xss 时间/秒 #制定时间后重启,不带时间则默认十秒
 #========================================================="; return ;;
@@ -1480,6 +1483,15 @@ ftPowerManagement()
                     sleep 1
                 done
                 echo $userPassword | sudo   -p '' -S reboot
+                break;;
+        logout)
+                tput sc
+                for i in $(seq -w $timeLong -1 1) ; do
+                    tput rc;tput ed
+                    echo -ne "\033[1;31m将在${i}秒后注销，ctrl+c 取消\033[0m";
+                    sleep 1
+                done
+                /usr/bin/gnome-session-quit --logout --force
                 break;;
         * ) ftEcho -e 错误的选择：$sel
             echo "输入q，离开"

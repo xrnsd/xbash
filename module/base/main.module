@@ -105,7 +105,7 @@ if [[ -n $(which fuser) ]];then
 fi
 
 if [ -f /usr/bin/gnome-session-quit ] ;then
-     alias xsss='effect=注销系统;/usr/bin/gnome-session-quit --logout --force'
+     alias xsss='effect=注销系统;ftPowerManagement logout'
 fi
 
 if [[ -n $(which tr) ]];then
