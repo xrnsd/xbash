@@ -120,7 +120,10 @@ fi
 
 if [[ -n $(which find) ]];then
     alias xfind='effect=查找含特定字符串的文件;ftFind'
-    alias xfs='effect=查找大于xxM的文件;_xFindFileBySize(){ find . -type f -size +$1  -print0 | xargs -0 du -h | sort -nr ;};_xFindFileBySize $1'
+fi
+
+if [[ -n $(which du) ]];then
+    alias xfs='effect=查找最大的xx[默认10]个文件;ftDu'
 fi
 
 if [ -d "$ANDROID_SDK" ];then
