@@ -1775,7 +1775,8 @@ ftMaintainSystem()
                             hwCpu=$(ftIniGetValue  $filePathVersionInfo $infoVersionName hwCpu) \
                             hwMainboard=$(ftIniGetValue  $filePathVersionInfo $infoVersionName hwMainboard) \
                             swSystemVersion=$(ftIniGetValue  $filePathVersionInfo $infoVersionName swSystemVersion) \
-                            swSystemType=$(ftIniGetValue  $filePathVersionInfo $infoVersionName swSystemType)"
+                            swSystemType=$(ftIniGetValue  $filePathVersionInfo $infoVersionName swSystemType)" && \
+                    chmod 777 ${dirPathStore}/version.info
                     #把备份同步到不同设备上
                         # ftSynchronous -d "${mXbashModuleDataDevicesList[*]}" -s ".*\.tgz"
                     #清尾
