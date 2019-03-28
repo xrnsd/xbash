@@ -46,7 +46,7 @@ ftMain()
     done
 }
 
-complete -W "-h -j -s" ftResetXbash
+complete -W "-a --adb -h -j -s" ftResetXbash
 ftResetXbash()
 {
     local ftEffect=更新xbash配置
@@ -69,6 +69,10 @@ ftResetXbash()
 #   更新xbash配置,同时更新gcc配置
 #    ftResetXbash -c 
 #
+#   更新adb服务
+#    ftResetXbash -a
+#    ftResetXbash --adb
+#
 #   更新xbash配置,同时更新android sdk 默认版本为 xxx
 #    ftResetXbash -s xxx
 #========================================================="; return ;;
@@ -80,6 +84,9 @@ ftResetXbash()
     export isResetJdk=
     export isResetGcc=
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -a |--adb) ftRestartAdb
+               return
+          ;;
         -j ) export isResetJdk=true
           ;;
         -c ) export isResetGcc=true
@@ -102,7 +109,7 @@ ftReadAllAlias()
 
         local cmdName=
         local cmdContent=
-        cat $filePathXbashTragetBashrcBase|grep alias  | while read line; do
+        cat $filePathXbashTragetBashrcBase|grep alias | sort | while read line; do
                 cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
                 cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
                 [[ -n "$cmdContent" ]] && printf "%14s  " $cmdName;echo $cmdContent

@@ -68,7 +68,6 @@ if [ -f $rFilePathXbashModuleCommon ];then
     fi
 
     if [ -d "$ANDROID_SDK" ];then
-        alias xadb='effect=重启adb服务;ftRestartAdb'
         alias xl='effect=过滤logcat;ftLogcatApplicationByTag'
         alias xle='effect=过滤错误的logcat;ftLogcatApplicationByTag -e'
         alias xlp="effect=根据包名过滤logcat;ftLogcatApplicationByTag -p"
@@ -83,7 +82,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
 
     #命令选项快速适配
     complete -F _ftMain xc
-    complete -W "-j -h -s" xr
+    complete -W " -a --adb -j -h -s" xr
     complete -W "--backup --restore --sd_finish -b -r -s" xb
 else
     echo -e "\033[1;31mXbash函数加载失败[ToolsPath=$rFilePathXbashModuleCommon]\033[0m"
