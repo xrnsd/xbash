@@ -453,6 +453,7 @@ ftMaintainInfoNote()
 
     if [[ "$editType" = "add" ]]; then
         local fileNameVersionNote="${versionName}的相应说明"
+        local filePathVersionNote=/tmp/${fileNameVersionNote}
         if [ -n "$(pgrep -f gedit)" ];then
             while true; do echo && ftEcho -y gedit 已打开是否关闭
             read -n 1 sel
@@ -462,16 +463,16 @@ ftMaintainInfoNote()
                 * ) ftEcho -e 错误的选择：$sel && echo "输入n,q，离开" ; ;;
             esac ; done
         fi
-        if touch $fileNameVersionNote ; then
-            XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit $fileNameVersionNote
+        if touch $filePathVersionNote ; then
+            XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit $filePathVersionNote
         else
             ftEcho -ex "创建临时备注信息文件失败"
             return;
         fi
-        note=$(cat $fileNameVersionNote)
+        note=$(cat $filePathVersionNote)
         note=$(echo $note |sed s/[[:space:]]/_/g)
         ftIniSetValue $filePathIni $versionName backupPackageNote "${note:-"默认"}"
-        rm -rf $fileNameVersionNote
+        rm -rf $filePathVersionNote
     fi
 }
 
