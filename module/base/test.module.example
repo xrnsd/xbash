@@ -1,5 +1,6 @@
 #!/bin/bash
 #####-----------------------加载公用模块--------------------------#######
+[[ -f "$rFilePathXbashModuleBase" ]] && source $rFilePathXbashModuleBase
 [[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
 [[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
 # ==========================================================================

@@ -28,8 +28,10 @@ bash的简单扩展
     │     │    ├── serialBuildByBranchName.module  独立窗口串行多进程实现
     │     │    └── serialBuildDemo.module
     │     ├── base
-    │     │    ├── base.database  ---------------  xbash工具数据
+    │     │    ├── base.database  ---------------  工具数据
+    │     │    ├── base.methods  ----------------  框架的基础实现
     │     │    ├── bash_input.module  -----------  配置命令历史适配逻辑
+    │     │    ├── test.module.example  ---------  测试工具的模版
     │     │    └── main.module  -----------------  xbash主框架
     │     ├── maintain
     │     │    ├── maintain.methods  ------------  系统维护工具
@@ -38,8 +40,7 @@ bash的简单扩展
     │     │    ├── git_completion.methods  ------  git非自定义的bash扩展
     │     │    └── multiBranch.module.example  --  批量添加patch的工具的示例
     │     │
-    │     ├── test.module  ----------------------  xbash的测试工具
-    │     └── common.methods  -------------------  xbash自定义实现方法
+    │     └── common.methods  -------------------  公用实现
     │
     ├── init  -----------------  xbash安装初始化工具
     ├── main  -----------------  xbash主入口

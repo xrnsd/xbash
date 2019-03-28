@@ -6,6 +6,8 @@ alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
 alias xcc='effect=进入原目录;cd $OLDPWD'
 if [ -f $rFilePathXbashModuleCommon ];then
+    #加载base
+    source  $rFilePathXbashModuleBase
     #加载common
     source  $rFilePathXbashModuleCommon
     #加载auto
