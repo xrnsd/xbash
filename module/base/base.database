@@ -249,3 +249,6 @@ recordMeTag=请在给客户发送软件时,通知下面这位去添加软件版�
 
 [backupOrRestoreOutsInfo]
 excludeConfig=lz.macros
+
+[CleanGarbageInfo]
+list=/media/server/1.75/智能机软件

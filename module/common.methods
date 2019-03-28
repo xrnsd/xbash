@@ -1012,7 +1012,8 @@ ftCleanGarbage()
 
     #实现主体
     local dirPathLocal=$(pwd)
-    for dirDevPath in ${mXbashModuleDataDevicesList[*]}  ${rDirPathUserHome}; do
+    local baseList=($(ftIniGetValue $rFilePathXbashDataBase CleanGarbageInfo list))
+    for dirDevPath in ${baseList[*]} ${mXbashModuleDataDevicesList[*]}  ${rDirPathUserHome}; do
         if [ -d ${dirDevPath}/.Trash-1000 ];then
             dirDevPath=${dirDevPath}/.Trash-1000
         elif [ -d ${dirDevPath}/.local/share/Trash ];then
