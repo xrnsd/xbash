@@ -352,59 +352,6 @@ ftIniSetValue()
 ##                                                     ##
 #########################
 
-
-ftFileDirEdit()
-{
-    local ftEffect=路径合法性校验
-    local isEnable=true
-
-    local type=$1
-    local isCreate=$2
-    local path=$3
-
-    while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
-#    ftFileDirEdit [type] [isCreate] [path]
-#
-#    文件存在，创建，返回1
-#    ftFileDirEdit -f true xxxxx
-#
-#    文件夹存在，创建，返回1
-#    ftFileDirEdit -d true xxxxx
-#
-#    判断文件夹是否为空 。空 返回2 ，非空 返回3，非文件夹 返回4
-#    ftFileDirEdit -e false /home/xian-hp-u16/xbash
-#==============================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #耦合校验
-    local valCount=3
-    local errorContent=
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
-    [ -z "$type" ] && errorContent="${errorContent}\\n[操作参数]type=$type"
-    [ -z "$isCreate" ] && errorContent="${errorContent}\\n[是否新建]isCreate=$isCreate"
-    [ -z "$path" ] && errorContent="${errorContent}\\n[被操作的目录或路径]path=$path"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftFileDirEdit -h && return
-
-    #实现主体
-    while true; do case "$type" in
-        -e | -E )   [ ! -d $path ] && return 4
-                        [[ -z $(ls $path) ]] && return 2 ||return 3
-                        ;;
-         -f | -F )   [ -f $path ] && return 1
-                        [ $isCreate = "true" ] && touch $path && return 1 || return 0
-                        ;;
-        -d | -D)   [ -d $path ] && return 1
-                        [ $isCreate = "true" ] && mkdir -p $path && return 1 || return 0
-                        ;;
-        * )    ftEcho -e "函数[${ftEffect}]参数错误，请查看函数使用示例"
-                ftFileDirEdit -h
-        ;;esac;done
-}
-
 ftDevAvailableSpace()
 {
     local ftEffect=设备可用空间
@@ -1013,8 +960,7 @@ ftBootAnimation()
         dirPathAnimationSourceRes=$dirPathAnimation
         cd $dirPathAnimationSourceRes
 
-        ftFileDirEdit -e false $dirPathAnimationSourceRes
-        if [ $? -eq "2" ];then
+        if [[ -z $(ls $dirPathAnimationSourceRes) ]];then
             ftEcho -ex 空的动画资源，请确认[${dirPathAnimationSourceRes}]是否存在动画文件
         else
             filelist=$(ls $dirPathAnimationSourceRes)
@@ -1027,8 +973,7 @@ ftBootAnimation()
 
         dirPathAnimationTraget=/${rDirPathUserHome}/${dirNameAnimation}
 
-        ftFileDirEdit -e false $dirPathAnimationTraget
-        if [ -d $dirPathAnimationTraget ]||[ $? -eq   "3" ];then
+        if [ -d $dirPathAnimationTraget ]||[[ -n $(ls $dirPathAnimationTraget) ]] ;then
             while true; do
             ftEcho -y ${ftEffect}的目标文件[${dirPathAnimationTraget}]夹非空，是否删除重建
             read -n 1 sel
@@ -1246,8 +1191,7 @@ ftReduceFileList()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftReduceFileList -h && return
 
     #实现主体
-    ftFileDirEdit -e false $dirPathFileList
-    [ $? -eq "2" ] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
+    [[ -z $(ls $dirPathFileList) ]] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
 
     (( $percentage>50 )) && percentage=$((100 - $percentage)) && editType=surplus
     continueThreshold=$((100 / ${percentage} ))
@@ -1325,8 +1269,7 @@ ftReNameFile()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftReNameFile -h && return
 
     #实现主体
-    ftFileDirEdit -e false $dirPathFileList
-    [ $? -eq "2" ] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
+    [[ -z $(ls $dirPathFileList) ]] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
 
     local index=0
     local lengthFileNameBase=
