@@ -617,7 +617,8 @@ ftAutoPacket()
         -m )local isMove=true ;;
         -u )local isUpload=true ;;
         -r )local isReadMe=true ;;
-        -p )local isPacket=true ;;
+        -p )local isPacket=true 
+              local isReadMe=true ;;
         -c )local isCopy=true ;;
         -t )local isSpecial=true
              local  isPacket=true ;;
