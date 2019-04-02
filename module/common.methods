@@ -60,7 +60,7 @@ ftIniCreateFileOrTag()
     if [ -n "$(cat $filePathIni |grep  $contentTagName)" ];then
         echo -n "存在旧TAG，是否删除[y/n](回车默认y)"
         read -n 1 sel
-        [ ${#sel} == 0 ] && sel=y
+        [ -z "${sel}" ] && sel=y
         while true; do case "$sel" in
                 y | Y )echo
                     while [ -n "$(cat $filePathIni |grep  $contentTagName)" ]; do
@@ -1473,7 +1473,7 @@ ftMaintainSystem()
                         while true; do
                         ftEcho -y "是否重启 [回车重启]"
                         read -n 1 sel
-                        [ ${#sel} == 0 ] && sel=y
+                        [ -z "${sel}" ] && sel=y
                         case "$sel" in
                             y | Y )   ftPowerManagement reboot 5 ; break;;
                             n | q )  exit;;
@@ -1796,7 +1796,7 @@ ftGitCheckoutBtanch()
     while true; do
         echo -n "是否切换到,[y/n](回车默认y):  " ;ftEcho -sn "${branchNameTraget}  "
         read -n 1 sel
-        [ ${#sel} == 0 ] && sel=y
+        [ -z "${sel}" ] && sel=y
         case "$sel" in
             y | Y )echo 
                 if [ -n "$delayLong" ]; then

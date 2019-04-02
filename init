@@ -38,7 +38,7 @@ ftEcho()
         local cmdContentNew="${4}"
         echo -n "${titleContent}[y/n](回车默认y)"
         read -n 1 sel
-        [ ${#sel} == 0 ] && sel=y
+        [ -z "${sel}" ] && sel=y
         while true; do case "$sel" in
                 y | Y )  eval ${cmdContentNew};break;;
                 n | q )  eval ${cmdContent};break;;

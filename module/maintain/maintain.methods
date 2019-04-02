@@ -34,7 +34,7 @@ ftRestoreOperate()
     while true; do
     ftEcho -y "是否开始还原(回车默认y)"
     read -n 1 sel
-    [ ${#sel} == 0 ] && sel=y
+    [ -z "${sel}" ] && sel=y
     case "$sel" in
         y | Y )
             local fileName=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain fileName)
