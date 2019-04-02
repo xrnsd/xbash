@@ -84,6 +84,7 @@ ftResetXbash()
     #参数解析
     export isResetJdk=
     export isResetGcc=
+    export isResetXbash=true
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
         -a |--adb) ftRestartAdb
                return
@@ -99,6 +100,7 @@ ftResetXbash()
     #实现主体
     # source ~/.bashrc
     source $filePathHomeBash
+    export isResetXbash=
 }
 
 ftReadAllAlias()
