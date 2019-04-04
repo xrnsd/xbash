@@ -917,7 +917,7 @@ ftAutoPacket()
             [[ -n "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftware}/${dirPathVersionSoftwareVersion}
 
             #上传服务器
-            [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareVersion 192.168.1.188
+            [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareVersion 192.168.1.75
     else
             ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的配置\n请查看下面说明:"
             ftAutoPacket -h

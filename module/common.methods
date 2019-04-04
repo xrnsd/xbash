@@ -2078,3 +2078,56 @@ ftDu()
     echo $userPassword | sudo  -p '' -S  du -hsx * | sort -rh | head -${fileCount}
     cd $dirPathLocal
 }
+
+complete -W "-h -f" ftAdbPush
+ftAdbPush()
+{
+    local ftEffect=adbPush命令的简单封装
+    local isEnable=true
+
+    while true; do case "$1" in
+    --rely) echo -e "\
+#===================[   ${ftEffect}   ]的依赖说明=============
+#    ${ftEffect}依赖 Android SDK
+#========================================================="; return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftAdbPush -f 需要push的文件路径
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which adb) ]] && ftAdbPush --rely "adb" && return
+    #参数解析
+    local filePathSource=
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+        -f ) filePathSource="${arg2}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    #耦合校验
+    local errorContent=
+    [ ! -f "$filePathSource" ] && errorContent="${errorContent}\\n[文件找不到]filePathSource=$filePathSource"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAdbPush -h && return
+
+    #实现主体
+    #adb连接状态检测
+    ftEcho -sn "正在等待adb连接 ：" 
+    adb wait-for-device && ftEcho -s "已连接"
+    local adbStatus="$(adb get-state)"
+    [ "${adbStatus}" != "device" ] && ftEcho -e "adb连接状态[${adbStatus}]异常,请重新尝试" && return
+
+    local fileNameSource=$(basename $filePathSource)
+    local dirPathTarget=$(echo /system${filePathSource#*system} | sed -e "s:/$fileNameSource::g")
+
+    adb root&&adb remount&&\
+    adb push $filePathSource $dirPathTarget&& \
+    ftEcho -s "${fileNameSource} push finish"
+
+    ftEcho -y "是否重启(回车默认重启)" && \
+    read -n 1 sel && echo
+    if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then sleep 3&&adb reboot ; fi
+}
