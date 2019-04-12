@@ -393,7 +393,7 @@ ftBackupOs()
                         echo
                         case "$sel" in
                             y | Y )
-                                     rm -f $dirPathStore
+                                     rm -rf $dirPathStore
                                     break;;
                             n | q )  return ;;
                             * ) ftEcho -e 错误的选择：$sel
