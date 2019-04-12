@@ -27,7 +27,7 @@ ftIniCreateFileOrTag()
     local contentTagName
     local contentTagKeyValList
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
           -a )   editType=add                                   ;;
           -r )   editType=replace                               ;;
           -p )   filePathIni="$arg2"                            ;;
@@ -91,7 +91,7 @@ ftIniDeleteTag()
     local tagName
     local filePathIni
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -t )   tagName="${arg2}"        ;;
         -p )   filePathIni="${arg2}"     ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
@@ -142,7 +142,7 @@ ftIniAddItem()
     local itemContent
     local filePathIni
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -t )   tagName="${arg2}"        ;;
         -l )   itemContent="${arg2}"    ;;
         -p )   filePathIni="${arg2}"    ;;
@@ -199,7 +199,7 @@ ftIniDeleteItem()
     local itemName
     local filePathIni
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -t )   tagName="${arg2}"            ;;
         -i )   itemName="${arg2}"           ;;
         -p )   filePathIni="${arg2}"        ;;
@@ -324,7 +324,7 @@ ftIniSetValue()
     local keyName=$3
     local keyValue=$4
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -l )   keyValue="${arg2}"
                 isListValue=true
            ;;
@@ -478,7 +478,7 @@ ftInitDevicesList()
     #参数解析
     local devMinAvailableSpace=0  # 设备最小可用空间，小于则视为无效.单位M
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -s )   devMinAvailableSpace="${arg2:-'0'}"
                 devMinAvailableSpace=${devMinAvailableSpace,,}
            ;;
@@ -767,9 +767,10 @@ ftLogcatApplicationByTag()
     local flagError=
     local packageName=
     local isUserPackageName=
-    local arg ; local arg2; local arg3 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; 
-    ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} 
-    ((index=i+2)) ; eval value3=\${${index}} ; arg3=${value3} 
+    local arg ; local arg2; local arg3
+    local index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
+    ((index=i+1)) ; eval arg2=\${${index}}
+    ((index=i+2)) ; eval arg3=\${${index}}
     case "${arg}" in
         -p ) packageName="${arg2}"
                vContent="${arg3}"
@@ -1257,9 +1258,10 @@ ftReNameFile()
     local fileTagNew=
     local fileSuffixTagBase=
     local fileSuffixTagNew=
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ;
-        ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2}
-        ((index=i+2)) ; eval value3=\${${index}} ; arg3=${value3} 
+    local arg ; local arg2
+    local index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
+        ((index=i+1)) ; eval arg2=\${${index}}
+        ((index=i+2)) ; eval arg3=\${${index}}
         case "${arg}" in
             -d ) dirPathFileList="${arg2}"
               ;;
@@ -1359,7 +1361,7 @@ ftMaintainSystem()
     #参数解析
     local editType
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -s )   editType=sdFinish    ;;
         -b )   editType=backup     ;;
         -r )   editType=restore      ;;
@@ -1548,7 +1550,7 @@ ftGitLogShell()
     local branchLogItemCountDef=20
     local pathTarget
 
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a )  isAllBranchLog=true
                 pathTarget="${arg2}"
                 branchLogItemCount=0
@@ -1724,7 +1726,7 @@ ftGitCheckoutBtanch()
     local delayLong=
     local isAllBranchs=
     local branchNameTag=
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a ) isAllBranchs=true ;;
         -t ) branchNameTag="${arg2}" ;;
         -d ) delayLong="${arg2}" ;;
@@ -1840,7 +1842,7 @@ ftPdfPasswordClear()
     #参数解析
     local dirPathTarget
     local passwordNum
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -d ) dirPathTarget="${arg2}"    ;;
         -p ) passwordNum="${arg2}"  ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
@@ -1898,7 +1900,7 @@ ftApkSignature()
     [ -d "$ANDROID_BUILD_TOP" ]&& cd $ANDROID_BUILD_TOP
     #参数解析
     local filePathApk
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -f ) filePathApk="${arg2}"
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
@@ -1958,7 +1960,7 @@ ftApkMergeOdex()
     local filePathToolResign=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/re-sign.jar
     local filePathToolSmali=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/smali-2.2.6.jar
     local filePathToolBaksmali=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/baksmali-2.2.6.jar
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
+    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a ) fileNameApk="${arg2}"
                isAutoPull=true
           ;;
@@ -2107,9 +2109,10 @@ ftAdbPush()
     local filePathSource=
     local fileNameSource=
     local dirPathTarget=
-    local arg ; local arg2; local arg3 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; 
-    ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} 
-    ((index=i+2)) ; eval value3=\${${index}} ; arg3=${value3} 
+    local arg ; local arg2; local arg3
+    local index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
+    ((index=i+1)) ; eval arg2=\${${index}}
+    ((index=i+2)) ; eval arg3=\${${index}}
     case "${arg}" in
         -f ) filePathSource="${arg2}"
              fileNameSource=$(basename $filePathSource)
