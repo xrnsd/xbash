@@ -9,7 +9,7 @@ _ftMain()
                     -)
                             COMP_WORDS[1]="-h"
                             export COMP_WORDS=${COMP_WORDS[@]}; ;;
-                    *)  COMPREPLY=( $(compgen -W '-h -hb -hc --help test  -v -vvv -ft' -- $curr_arg ) ); ;;
+                    *)  COMPREPLY=( $(compgen -W '-h -hb -hc --help -t test  -v --version -ft' -- $curr_arg ) ); ;;
       esac
 }
 ftMain()
@@ -19,32 +19,31 @@ ftMain()
 
     while true; do
     case $1 in
-    -v | version )
+    -v | --version )
                 echo \"Xrnsd extensions to bash\" $rXbashVersion
                 break;;
-    test )
+    -t | test )
                 ftTest "$@"
                 break;;
-    -h | help )
+    -h | --help )
                 ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -ft   #对bash的扩展实现说明"
-                ftMain -ft ; echo
+                ftMain -ft
+                echo
                 ftMain -hb
-                return;;
+                break;;
     -hb )
                 ftEcho -s "bash内建命令和xbash扩展封装说明" ; 
                 echo -e "=========================================================\n命令                 说明\n========================================================="
                 ftReadAllAlias| column -t
-                return;;
+                break;;
     -ft )
                 ftEcho -s "对bash的扩展实现说明" ;
                 echo -e "=========================================================\n命令                                 说明\n========================================================="
                 ftReadAllFt | column -t
-                return;;
+                break;;
     *)
                 ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -ft   #对bash的扩展实现说明"
-            return;;
-    esac
-    done
+    return;; esac;done
 }
 
 complete -W "-a --adb -h -j -s" ftResetXbash
@@ -86,8 +85,7 @@ ftResetXbash()
     export isResetGcc=
     export isResetXbash=true
     local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -a |--adb) ftRestartAdb
-               return
+        -a |--adb) ftRestartAdb && return
           ;;
         -j ) export isResetJdk=true
           ;;

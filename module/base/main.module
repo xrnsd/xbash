@@ -55,6 +55,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
     alias xcg='effect=清空回收站;ftCleanGarbage;exit'
     alias xr='effect=更新xbash配置;ftResetXbash'
     alias xd='effect=MTK下载工具;ftMtkFlashTool'
+    alias xcb='effect=进入xbash目录;cd $dirPathHomeXbash'
     alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
     alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
     alias xSDK2AndroidVersion='effect=android版本查询;ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison'
