@@ -169,14 +169,13 @@ ftTest()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftTest -h && return
 
     #实现主体
-    local argList=($@)
     local dirPathLocal=$PWD
     local dirPathTemp=${rDirPathUserHome}/temp
 
     [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp && trap '[ -d $dirPathLocal ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
     ftTimeConsuming -i
-    $rFilePathXbashModuleTest ${argList[@]:1} 
+    shift&&$rFilePathXbashModuleTest "$@"
     ftTimeConsuming
     cd $dirPathLocal
     trap SIGINT
