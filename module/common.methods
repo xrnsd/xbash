@@ -1555,7 +1555,7 @@ ftGitLogShell()
                 pathTarget="${arg2}"
                 branchLogItemCount=0
                 ;;
-        -t )   branchLogFormat=${branchLogFormat:-'%s'}
+        -t )   branchLogFormat=${arg2:-'%s'}
                 isTagBranchLog=true
                 ;;
         -c )   branchLogFormat=${arg2}
@@ -1583,10 +1583,14 @@ ftGitLogShell()
         branchLogFormat=${branchLogFormat:-'%C(green)%<(9,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
         #git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"$branchLogFormat" -$branchLogItemCount
         git log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount
-    else
-        branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
-        git log --pretty=format:"$branchLogFormat" -$branchLogItemCount
+        return
     fi
+    if [ "${branchLogFormat}" = "%h" ];then
+        git log --pretty=format:"$branchLogFormat" -$branchLogItemCount | while read hashVal;do echo -n "${hashVal} " ;done ;echo
+        return
+    fi
+    branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
+    git log --pretty=format:"$branchLogFormat" -$branchLogItemCount
 }
 
 ftFind()
