@@ -77,7 +77,7 @@ ftResetXbash()
     export isResetJdk=
     export isResetGcc=
     export isResetXbash=true
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a |--adb) ftRestartAdb && return
           ;;
         -j ) export isResetJdk=true
@@ -104,8 +104,7 @@ ftReadAllAlias()
         #耦合校验
         [[ ! -f $filePathXbashTragetBashrcBase ]] && ftEcho -e "xbash配置不存在:$filePathXbashTragetBashrcBase" && return
 
-        local cmdName=
-        local cmdContent=
+        local cmdName cmdContent
 
         ftEcho -s "$ftEffect"
         echo -e "================================================\n命令           说明\n================================================"
@@ -125,8 +124,7 @@ ftReadAllFt()
 
         local key="local ftEffect="
         local keyEnable="local isEnable="
-        local effectDescription=
-        local effectDescriptionEnable=
+        local effectDescription effectDescriptionEnable
 
         ftEcho -s "$ftEffect"
         echo -e "=========================================================\n命令                                 说明\n========================================================="
@@ -166,15 +164,13 @@ ftTest()
        echo $userPassword | sudo -p '' -S chmod a+x $rFilePathXbashModuleTest
        echo $(echo $rFilePathXbashModuleTest | sed -e "s:${rDirPathXbash}/::g") >> ${rDirPathXbash}/.gitignore
     fi
-    local valCount=1
-    local errorContent=
+    local valCount=1 errorContent
     [ ! -d "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome"
     [ ! -f "$rFilePathXbashModuleTest" ] && errorContent="${errorContent}\\n[测试模块不存在]filePathXbashModuleTest=$rFilePathXbashModuleTest"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftTest -h && return
 
     #实现主体
-    local dirPathLocal=$PWD
-    local dirPathTemp=${rDirPathUserHome}/temp
+    local dirPathLocal=$PWD dirPathTemp=${rDirPathUserHome}/temp
 
     [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp && trap '[ -d $dirPathLocal ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
@@ -209,10 +205,8 @@ ftEcho()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
-    local content
-    local option=$1
+    local content option=$1 valList=$@
     option=${option:-'未制定显示信息'}
-    local valList=$@
     if [ ${#valList[@]} -eq 2 ];then
         content=$(echo $content |sed s/[[:space:]]//g)
     else
@@ -246,8 +240,7 @@ ftTimeConsuming()
 
     [ -z "$mTimingStart" ]||[ "$1" = "-i" ] && mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
 
-    local content=
-    local timeNow=$(date +%s -d $(date +"%H:%M:%S"))
+    local content timeNow=$(date +%s -d $(date +"%H:%M:%S"))
     local time3=$(((timeNow-mTimingStart)%60))
     local time5=$(((timeNow-mTimingStart)/3600))
     local time4=$((((timeNow-mTimingStart)-time5*3600)/60))
@@ -265,8 +258,7 @@ ftPath()
     local ftEffect=路径处理
     local isEnable=def
 
-    local dirPath=$1
-    local fileName=$2
+    local dirPath=$1 fileName=$2
     if [[ "$1" = "-s" ]]; then
         local isEchoExceptionInfo=true
         dirPath=$2
@@ -285,8 +277,7 @@ ftPath()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
-    local valCount=3
-    local errorContent=
+    local valCount=3 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -z "$dirPath" ] && errorContent="${errorContent}\\n[路径字串不能为空]dirPath=$dirPath"
     [ -n "$errorContent" ] && [ -z "$isEchoExceptionInfo" ] && return
@@ -303,8 +294,6 @@ ftVersionComparison()
     local ftEffect=版本号大小对比
     local isEnable=def
 
-    local isEnable=true
-
     while true; do case "$1" in
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
@@ -318,8 +307,7 @@ ftVersionComparison()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
-    local valCount=2
-    local errorContent=
+    local valCount=2 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftVersionComparison -h && return
 
