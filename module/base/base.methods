@@ -3,6 +3,7 @@ _ftMain()
 {
     local ftEffect=bash内建命令和xbash扩展封装对应的参数补全实现
     local isEnable=def
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     local curr_arg=${COMP_WORDS[COMP_CWORD]}
     case "${COMP_WORDS[1]}" in
@@ -16,9 +17,9 @@ ftMain()
 {
     local ftEffect=早期工具主入口
     local isEnable=def
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
-    while true; do
-    case $1 in
+    while true; do case $1 in
     -v | --version )
                 echo \"Xrnsd extensions to bash\" $rXbashVersion
                 break;;
@@ -26,24 +27,16 @@ ftMain()
                 ftTest "$@"
                 break;;
     -h | --help )
-                ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -ft   #对bash的扩展实现说明"
-                ftMain -ft
-                echo
-                ftMain -hb
+                ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash命令封装和xbash扩展封装的说明\n xc -ft   #xbash的扩展实现说明" && echo 
+                ftMain -ft && echo && ftMain -hb
                 break;;
     -hb )
-                ftEcho -s "bash内建命令和xbash扩展封装说明" ; 
-                echo -e "=========================================================\n命令                 说明\n========================================================="
-                ftReadAllAlias| column -t
+                ftReadAllAlias
                 break;;
     -ft )
-                ftEcho -s "对bash的扩展实现说明" ;
-                echo -e "=========================================================\n命令                                 说明\n========================================================="
-                ftReadAllFt | column -t
+                ftReadAllFt
                 break;;
-    *)
-                ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash内建命令和xbash扩展封装说明\n xc -ft   #对bash的扩展实现说明"
-    return;; esac;done
+    *) ftMain -h && return;; esac;done
 }
 
 complete -W "-a --adb -h -j -s" ftResetXbash
@@ -103,29 +96,40 @@ ftResetXbash()
 
 ftReadAllAlias()
 {
-        local ftEffect=显示bash内建等命令封装说明
+        local ftEffect=bash命令封装和xbash扩展封装的说明
         local isEnable=def
 
+        #可用性校验
+        [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+        #耦合校验
         [[ ! -f $filePathXbashTragetBashrcBase ]] && ftEcho -e "xbash配置不存在:$filePathXbashTragetBashrcBase" && return
 
         local cmdName=
         local cmdContent=
+
+        ftEcho -s "$ftEffect"
+        echo -e "================================================\n命令           说明\n================================================"
         cat $filePathXbashTragetBashrcBase|grep alias | sort | while read line; do
                 cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
                 cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
                 [[ -n "$cmdContent" ]] && printf "%14s  " $cmdName;echo $cmdContent
-        done
+        done | column -t
 }
 
 ftReadAllFt()
 {
-        local ftEffect=查看对bash的扩展实现说明
+        local ftEffect=xbash的扩展实现说明
         local isEnable=def #设为 def 时将不在说明中显示
+        #可用性校验
+        [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
         local key="local ftEffect="
         local keyEnable="local isEnable="
         local effectDescription=
         local effectDescriptionEnable=
+
+        ftEcho -s "$ftEffect"
+        echo -e "=========================================================\n命令                                 说明\n========================================================="
         for effectName in $(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto | grep '^ft' | sort) ; do
             effectDescription=$(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto|grep  -C 3 $effectName|grep "$key")
             effectDescription=${effectDescription//$key/}
@@ -139,7 +143,7 @@ ftReadAllFt()
 
             printf "%40s  " ${effectName//()/}
             [[ "$effectDescriptionEnable" = "true" ]] && echo ${effectDescription} || ftEcho -s "[暂时关闭]"
-        done
+        done | column -t
 }
 
 ftTest()
@@ -154,6 +158,8 @@ ftTest()
 #========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     if [[ ! -f "$rFilePathXbashModuleTest" ]]&&[[ -f $rFilePathXbashModuleTestExpmale ]]; then
        cp $rFilePathXbashModuleTestExpmale $rFilePathXbashModuleTest
@@ -199,7 +205,10 @@ ftEcho()
 #    ftEcho    -sn   内容    # 执行信息,不换行，对字符串的缩进敏感
 #========================================================="; return ;;
     * ) break;;esac;done
-    
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+
     local content
     local option=$1
     option=${option:-'未制定显示信息'}
@@ -231,6 +240,9 @@ ftTimeConsuming()
 {
     local ftEffect=脚本操作耗时记录
     local isEnable=def
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     [ -z "$mTimingStart" ]||[ "$1" = "-i" ] && mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
 
@@ -270,6 +282,8 @@ ftPath()
 #========================================================="; return ;;
     * ) break;;esac;done
 
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=3
     local errorContent=
@@ -302,7 +316,7 @@ ftVersionComparison()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #耦合校验
     local valCount=2
     local errorContent=

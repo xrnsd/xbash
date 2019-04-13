@@ -58,7 +58,7 @@ if [ -f $rFilePathXbashModuleCommon ];then
     alias xcb='effect=进入xbash目录;cd $dirPathHomeXbash'
     alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
     alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
-    alias xSDK2AndroidVersion='effect=android版本查询;ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison'
+    alias xs2av='effect=android版本查询;ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison'
 
     if [[ -n $(which git) ]];then
         [ -f "$rFilePathGitBash" ] && source $rFilePathGitBash || echo -e "\033[1;31mgit bash 配置文件:\n$rFilePathGitBash 不存在\033[0m"
@@ -145,6 +145,5 @@ if [ -d "$ANDROID_SDK" ];then
     alias xqsetting='effect=启动设置;adb shell am start -n com.android.settings/com.android.settings.Settings'
     alias xqcamera='effect=启动Camera2;adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
     alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
-    alias xqchanglogo='effect=启动隐藏动画;adb shell am start -n com.sprd.bootres/com.sprd.bootres.BootResSelectActivity'
     alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
 fi
