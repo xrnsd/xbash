@@ -161,6 +161,7 @@ ftTest()
     if [[ ! -f "$rFilePathXbashModuleTest" ]]&&[[ -f $rFilePathXbashModuleTestExpmale ]]; then
        cp $rFilePathXbashModuleTestExpmale $rFilePathXbashModuleTest
        echo $userPassword | sudo -p '' -S chmod a+x $rFilePathXbashModuleTest
+       [[ -z $(cat ${rDirPathXbash}/.gitignore |grep $rFileNameXbashModuleTestBase) ]] && \
        echo $(echo $rFilePathXbashModuleTest | sed -e "s:${rDirPathXbash}/::g") >> ${rDirPathXbash}/.gitignore
     fi
     local valCount=1 errorContent
@@ -238,25 +239,25 @@ ftTimeConsuming()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     #解参验耦
-    local contentName=本技能 index arg arg2
+    local contentName=本技能 index arg arg2 # arg3 # arg4
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
     case "${arg}" in
-        -r ) contentName="${arg2:-"本技能"}" 
+        -r ) contentName="${arg2:-"$contentName"}" 
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     [ -z "$mTimingStart" ]||[ "$1" = "-i" ] && mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
 
-    local content mTimingStart \
-            timeNow=$(date +%s -d $(date +"%H:%M:%S")) \
-            time3=$(((timeNow-mTimingStart)%60)) \
-            time5=$(((timeNow-mTimingStart)/3600)) \
-            time4=$((((timeNow-mTimingStart)-time5*3600)/60))
+    local content timeNow=$(date +%s -d $(date +"%H:%M:%S"))
+    local time3=$(((timeNow-mTimingStart)%60))
+    local time5=$(((timeNow-mTimingStart)/3600))
+    local time4=$((((timeNow-mTimingStart)-time5*3600)/60))
+    mTimingStart=
 
     (($time3==0)) && (($time4==0)) && (($time5==0)) && return
-    (($time5!=0)) && content="${content}${time5}时"
-    (($time4!=0)) && content="${content}${time4}分"
-    (($time3!=0)) && content="${content}${time3}秒"
-    ftEcho -s "${contentName}耗时${content}  !"
+    (($time5!=0)) && content="${content}${time5} 时"
+    (($time4!=0)) && content="${content}${time4} 分"
+    (($time3!=0)) && content="${content}${time3} 秒"
+    ftEcho -s "${contentName}耗时 ${content}!"
 }
 
 ftPath()
