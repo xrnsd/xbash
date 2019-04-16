@@ -134,8 +134,8 @@ shopt -s histappend    #多个终端情况下，共享history
     if [ ! -f "$filePathUserConfig" ];then
         filePathExpmaleConfig=${dirPathHomeXbashConfig}/expmale.config
         [ ! -f $filePathExpmaleConfig ] && echo -e "\033[1;31m创建用户${userName}独立配置失败,缺少模版:\n $filePathExpmaleConfig\033[0m" && return
-        mkdir $dirPathHomeXbashConfigBashrc > /dev/null
-        cp -rf $filePathExpmaleConfig $filePathUserConfig
+        echo -e "\033[1;33m初始化用户[${userName}]的xbash配置\n\033[0m"
+        ${dirPathHomeXbash}/init --userconfig
     fi
     source $filePathUserConfig
 
