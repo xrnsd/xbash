@@ -29,10 +29,10 @@ bash的简单扩展
     │     │    └── serialBuildDemo.module
     │     ├── base
     │     │    ├── base.database  ---------------  工具数据
-    │     │    ├── base.methods  ----------------  框架的基础实现
+    │     │    ├── base.module  -----------------  xbash主框架的基础实现
     │     │    ├── bash_input.module  -----------  配置命令历史适配逻辑
     │     │    ├── test.module.example  ---------  测试工具的模版
-    │     │    └── main.module  -----------------  xbash主框架
+    │     │    └── packaging.module  ------------  xbash对扩展和内置命令的封装
     │     ├── maintain
     │     │    ├── maintain.methods  ------------  系统维护工具
     │     │    └── maintain.database  -----------  xbash的系统维护模块配置
