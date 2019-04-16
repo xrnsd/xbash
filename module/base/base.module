@@ -102,13 +102,13 @@ ftReadAllAlias()
         #可用性校验
         [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
         #耦合校验
-        [[ ! -f $filePathXbashTragetBashrcBase ]] && ftEcho -e "xbash配置不存在:$filePathXbashTragetBashrcBase" && return
+        [[ ! -f $rFilePathXbashModuleBasePackaging ]] && ftEcho -e "xbash配置不存在:$rFilePathXbashModuleBasePackaging" && return
 
         local cmdName cmdContent
 
         ftEcho -s "$ftEffect"
         echo -e "================================================\n命令           说明\n================================================"
-        cat $filePathXbashTragetBashrcBase|grep alias | sort | while read line; do
+        cat $rFilePathXbashModuleBasePackaging|grep alias | sort | while read line; do
                 cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
                 cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
                 [[ -n "$cmdContent" ]] && printf "%14s  " $cmdName;echo $cmdContent
@@ -122,8 +122,7 @@ ftReadAllFt()
         #可用性校验
         [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
-        local key="local ftEffect="
-        local keyEnable="local isEnable="
+        local key="local ftEffect=" keyEnable="local isEnable="
         local effectDescription effectDescriptionEnable
 
         ftEcho -s "$ftEffect"
@@ -239,8 +238,7 @@ ftTimeConsuming()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     #解参验耦
-    local contentName=本技能
-    local valCount=1 errorContent index arg arg2 # arg3 # arg4
+    local contentName=本技能 index arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
     case "${arg}" in
         -r ) contentName="${arg2:-"本技能"}" 
@@ -248,11 +246,11 @@ ftTimeConsuming()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     [ -z "$mTimingStart" ]||[ "$1" = "-i" ] && mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
 
-    local content timeNow=$(date +%s -d $(date +"%H:%M:%S"))
-    local time3=$(((timeNow-mTimingStart)%60))
-    local time5=$(((timeNow-mTimingStart)/3600))
-    local time4=$((((timeNow-mTimingStart)-time5*3600)/60))
-    mTimingStart=
+    local content mTimingStart \
+            timeNow=$(date +%s -d $(date +"%H:%M:%S")) \
+            time3=$(((timeNow-mTimingStart)%60)) \
+            time5=$(((timeNow-mTimingStart)/3600)) \
+            time4=$((((timeNow-mTimingStart)-time5*3600)/60))
 
     (($time3==0)) && (($time4==0)) && (($time5==0)) && return
     (($time5!=0)) && content="${content}${time5}时"
@@ -325,3 +323,39 @@ ftVersionComparison()
     [[ "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" == "$1" ]] && echo "<=" && return
     [[ "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1" ]] && echo ">=" && return
 }
+
+#处理bash历史记录
+if [ "$(whoami)" != "root" ];then
+    filePathBashHistory=${dirPathHome}/.bash_history
+
+    #历史去重
+    filePathBashHistoryTemp=${filePathBashHistory}_temp
+    filePathBashHistoryArchive=${filePathBashHistory}_archive
+    filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
+    cat $filePathBashHistory >> $filePathBashHistoryArchive \
+    && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
+    && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
+
+    bashHistorySize=$(awk 'END{print NR}' $filePathBashHistoryArchive)
+
+    #历史扩容
+    filePathXbashDataBaseUser=${rDirPathXbashModuleUser}/${rUserName}.database
+    if [[ -f $filePathXbashDataBaseUser ]]; then
+        bashHistorySizeBase=$(ftIniGetValue  $filePathXbashDataBaseUser xbash bashHistoryThresholdSize)
+    else
+        bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryThresholdSize)
+        mkdir $rDirPathXbashModuleUser > /dev/null
+        ftIniCreateFileOrTag -r -p $filePathXbashDataBaseUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
+    fi
+
+    if (($bashHistorySize>$bashHistorySizeBase)); then
+        ((bashHistorySize=$bashHistorySize+$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryIncrementalSize)))
+        ftIniSetValue $filePathXbashDataBaseUser xbash bashHistoryThresholdSize $bashHistorySize
+    else
+        bashHistorySize=$bashHistorySizeBase
+    fi
+
+    export HISTSIZE=$bashHistorySize
+    export HISTFILESIZE=$bashHistorySize
+    cp -rf $filePathBashHistoryArchive $filePathBashHistory
+fi

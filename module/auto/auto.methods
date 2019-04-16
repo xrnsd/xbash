@@ -962,7 +962,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     ftAutoInitEnv
 
     #使用git 记录的修改记录
-    local gitCommitListOneDay=$(ftGitLogShell -t -n 30) gitCommitListBefore=$(ftGitLogShell -t -n 30)
+    local gitCommitListOneDay=$(ftGitLogShell -t "%s" -n 30) gitCommitListBefore=$(ftGitLogShell -t "%s" -n 30)
 
 # ===============================================
 # =================     修改记录    ==================

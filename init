@@ -86,8 +86,8 @@ ftInitUserConfig()
             sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败" 
         fi
 
-        local tagisUseCustomPS1Base="isUseCustomPS1="
-        ftEcho -y "是否启用xbash定义bash的命令行前缀" "tagisUseCustomPS1New=" "tagisUseCustomPS1New=\"isUseCustomPS1=true\""
+        local tagisUseCustomPS1Base="export\ isUseCustomPS1="
+        ftEcho -y "是否启用xbash定义bash的命令行前缀" "tagisUseCustomPS1New=" "tagisUseCustomPS1New=\"export\ isUseCustomPS1=true\""
         if [ -n "${tagisUseCustomPS1New}" ];then
             sed -i "s:$tagisUseCustomPS1Base:$tagisUseCustomPS1New:g" $filePathXbashConfigNew||\
             exceptionContent="${exceptionContent}\n xbash定义bash的命令行前缀启用失败"
