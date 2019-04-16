@@ -73,7 +73,7 @@ fi
 
     alias xc='effect=xbash主入口[旧];ftMain'
     alias xb='effect=系统维护;ftMaintainSystem'
-    alias xcg='effect=清空回收站;ftCleanGarbage -a -t'
+    alias xcg='effect=清空回收站;ftCleanGarbage -e -t'
     alias xr='effect=更新xbash配置;ftResetXbash'
     alias xd='effect=MTK下载工具;ftMtkFlashTool'
     alias xcb='effect=进入xbash目录;cd $dirPathHomeXbash'
