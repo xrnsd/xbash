@@ -4,10 +4,11 @@
 ##             框架通用实现               ##
 ##                                                 ##
 #########################
-_ftMain()
+_ftMainVal()
 {
     local ftEffect=bash内建命令和xbash扩展封装对应的参数补全实现
     local isEnable=def
+
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     local curr_arg=${COMP_WORDS[COMP_CWORD]}
@@ -22,6 +23,7 @@ ftMain()
 {
     local ftEffect=早期工具主入口
     local isEnable=def
+
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     while true; do case $1 in
@@ -123,7 +125,9 @@ ftReadAllAlias()
 ftReadAllFt()
 {
         local ftEffect=xbash的扩展实现说明
-        local isEnable=def #设为 def 时将不在说明中显示
+        local isEnable=def
+
+        #isEnable设为 def 时将不在说明中显示
         #可用性校验
         [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
@@ -132,7 +136,7 @@ ftReadAllFt()
 
         ftEcho -s "$ftEffect"
         echo -e "=========================================================\n命令                                 说明\n========================================================="
-        for effectName in $(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto | grep '^ft' | sort) ; do
+        for effectName in $(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto | grep '^ft'  |grep "()"| sort) ; do
             effectDescription=$(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto|grep  -C 3 $effectName|grep "$key")
             effectDescription=${effectDescription//$key/}
             effectDescription=${effectDescription// /}

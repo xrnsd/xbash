@@ -138,23 +138,23 @@ fi
     filePathUserConfig=${dirPathHomeXbashConfigUser}/${userName}.config
     if [ ! -f "$filePathUserConfig" ];then
         filePathExpmaleConfig=${dirPathHomeXbashConfig}/expmale.config
-        [ ! -f $filePathExpmaleConfig ] && echo -e "\033[1;31m创建用户${userName}独立配置失败,缺少模版:\n $filePathExpmaleConfig\033[0m" && return
+        [ ! -f $filePathExpmaleConfig ] && echo -e "\033[1;31m用户${userName}独立配置创建失败,缺少模版:\n $filePathExpmaleConfig\033[0m" && return
         echo -e "\033[1;33m初始化用户[${userName}]的xbash配置\n\033[0m"
         ${dirPathHomeXbash}/init --userconfig
     fi
     if [[ -f $filePathUserConfig ]];then source  $filePathUserConfig
     else echo -e "\033[1;31用户[${userName}]的xbash配置不存在:\n${filePathUserConfig}\033[0m" ;fi
 
-#---------------- 加载扩展  ------------------
+#---------------- 加载扩展块  ------------------
     #加载common
     if [[ -f $rFilePathXbashModuleCommon ]];then source  $rFilePathXbashModuleCommon
-    else echo -e "\033[1;31mXbash的框架和公用扩展加载失败\n${rFilePathXbashModuleCommon}\033[0m" ;return ;fi
+    else echo -e "\033[1;31mXbash的框架和公用扩展块加载失败\n${rFilePathXbashModuleCommon}\033[0m" ;return ;fi
     #加载auto
     if [[ -f $rFilePathXbashModuleAuto ]];then source  $rFilePathXbashModuleAuto
-    else echo -e "\033[1;31mXbash的Auto扩展加载失败\n${rFilePathXbashModuleAuto}\033[0m" ;fi
+    else echo -e "\033[1;31mXbash的Auto扩展块加载失败\n${rFilePathXbashModuleAuto}\033[0m" ;fi
     #加载base
     if [[ -f $rFilePathXbashModuleBaseModule ]];then source  $rFilePathXbashModuleBaseModule
-    else echo -e "\033[1;31mXbash的base扩展加载失败\n${rFilePathXbashModuleBaseModule}\033[0m" ;fi
+    else echo -e "\033[1;31mXbash的base扩展块加载失败\n${rFilePathXbashModuleBaseModule}\033[0m" ;fi
     #加载命令封装
     if [[ -f $rFilePathXbashModuleBasePackaging ]];then source  $rFilePathXbashModuleBasePackaging
     else echo -e "\033[1;31mXbash的命令封装加载失败\n${rFilePathXbashModuleBasePackaging}\033[0m" ;fi

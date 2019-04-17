@@ -94,6 +94,6 @@ if [[ -n $(which git) ]];then
 fi
 
 #命令选项快速适配
-complete -F _ftMain xc
+complete -F _ftMainVal xc
 complete -W " -a --adb -j -h -s" xr
 complete -W "--backup --restore --sd_finish -b -r -s" xb
