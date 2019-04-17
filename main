@@ -115,7 +115,7 @@ fi
 
 #added by wgx  
 #---------------- bash 配置  ----------------------------------
-shopt -s histappend    #多个终端情况下，共享history
+    shopt -s histappend    #多个终端情况下，共享history
 #added by wgx  xbash初始化
 #---------------- 初始化变量  ----------------------------------
     [[ -z "$SUDO_USER" ]] && userName=$USER || userName=$SUDO_USER
@@ -148,13 +148,13 @@ shopt -s histappend    #多个终端情况下，共享history
 #---------------- 加载扩展  ------------------
     #加载common
     if [[ -f $rFilePathXbashModuleCommon ]];then source  $rFilePathXbashModuleCommon
-    else echo -e "\033[1;31mXbash通用扩展加载失败\n${rFilePathXbashModuleCommon}\033[0m" ;return ;fi
-    #加载base
-    if [[ -f $rFilePathXbashModuleBaseModule ]];then source  $rFilePathXbashModuleBaseModule
-    else echo -e "\033[1;31mXbash框架加载失败\n${rFilePathXbashModuleBaseModule}\033[0m" ;return ;fi
+    else echo -e "\033[1;31mXbash的框架和公用扩展加载失败\n${rFilePathXbashModuleCommon}\033[0m" ;return ;fi
     #加载auto
     if [[ -f $rFilePathXbashModuleAuto ]];then source  $rFilePathXbashModuleAuto
     else echo -e "\033[1;31mXbash的Auto扩展加载失败\n${rFilePathXbashModuleAuto}\033[0m" ;fi
+    #加载base
+    if [[ -f $rFilePathXbashModuleBaseModule ]];then source  $rFilePathXbashModuleBaseModule
+    else echo -e "\033[1;31mXbash的base扩展加载失败\n${rFilePathXbashModuleBaseModule}\033[0m" ;fi
     #加载命令封装
     if [[ -f $rFilePathXbashModuleBasePackaging ]];then source  $rFilePathXbashModuleBasePackaging
     else echo -e "\033[1;31mXbash的命令封装加载失败\n${rFilePathXbashModuleBasePackaging}\033[0m" ;fi

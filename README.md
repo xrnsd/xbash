@@ -29,7 +29,7 @@ bash的简单扩展
     │     │    └── serialBuildDemo.module
     │     ├── base
     │     │    ├── base.database  ---------------  工具数据
-    │     │    ├── base.module  -----------------  xbash主框架的基础实现
+    │     │    ├── base.module  -----------------  xbash对bash命令历史的自定义处理
     │     │    ├── bash_input.module  -----------  配置命令历史适配逻辑
     │     │    ├── test.module.example  ---------  测试工具的模版
     │     │    └── packaging.module  ------------  xbash对扩展和内置命令的封装
@@ -40,7 +40,7 @@ bash的简单扩展
     │     │    ├── git_completion.methods  ------  git非自定义的bash扩展
     │     │    └── multiBranch.module.example  --  批量添加patch的工具的示例
     │     │
-    │     └── common.methods  -------------------  公用实现
+    │     └── common.methods  -------------------  框架和公用实现
     │
     ├── init  -----------------  xbash安装初始化工具
     ├── main  -----------------  xbash主入口
