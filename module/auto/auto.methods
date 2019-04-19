@@ -550,7 +550,7 @@ ftAutoPacket()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
+    -h | --help) ftClearTail $dirPathLocal ; echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    ftAutoPacket -y #免确认自动清理out/packet
 #    ftAutoPacket -u #上传到188服务器
@@ -770,7 +770,8 @@ ftAutoPacket()
 
                 if [[ -z "$dirPathUploadTraget" ]]; then
                     ftEcho -e "分支信息解析结果为空,请查看配置"
-                    return;
+                    ftClearTail $dirPathLocal
+                    return
                 else
                     dirPathVersionSoftwareVersion=${dirPathUploadTraget}
                 fi
@@ -793,7 +794,7 @@ ftAutoPacket()
                 # if  [[ -n "$AutoEnv_AndroidVersion" ]&&(($AutoEnv_deviceSdkVersion>22)); then
                 #         dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_AndroidVersion}
                 # fi
-                [[ -z "$dirPathGitBranchInfoGroup" ]] && ftEcho -e "分支信息解析结果为空,请查看配置" && return
+                [[ -z "$dirPathGitBranchInfoGroup" ]] && ftEcho -e "分支信息解析结果为空,请查看配置" && ftClearTail $dirPathLocal && return
                 dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirPathGitBranchInfoGroup}
 
                 local dirNameVeriosionBase=${AutoEnv_versionName}
@@ -851,7 +852,7 @@ ftAutoPacket()
                         local fileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}))
                         for file in ${fileList[@]}; do
                             local filePath=${dirPathOut}/${file}
-                            [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && return
+                            [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && ftClearTail $dirPathLocal && return
 
                              printf "%-2s %-30s\n" 复制 $file
                              cp -r -f  $filePath $dirPathPackage
@@ -860,13 +861,13 @@ ftAutoPacket()
                              # pv $filePath > ${dirPathPackage}/${file}
                         done
                     else
-                        ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage" && return
+                        ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage" && ftClearTail $dirPathLocal && return
                     fi
                     #otaPackages
                     if [[ -n "$otaFileList" ]]; then
                         mkdir -p $dirPathOtaPackage
                         for file in ${otaFileList[@]}; do
-                             [[ ! -f "$file" ]] && ftEcho -e "找不到 : ${file}" && return
+                             [[ ! -f "$file" ]] && ftEcho -e "找不到 : ${file}" && ftClearTail $dirPathLocal && return
 
                              printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
                              cp -r -f  $file $dirPathOtaPackage

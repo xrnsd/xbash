@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #处理bash历史记录
 if [ "$(whoami)" != "root" ];then
     filePathBashHistory=${dirPathHome}/.bash_history

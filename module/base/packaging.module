@@ -1,4 +1,7 @@
 #!/bin/bash
+#存放命令封装
+#存放xbash扩展封装
+
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
 alias xcc='effect=进入原目录;cd $OLDPWD'
@@ -20,10 +23,6 @@ if [[ -n $(which fuser) ]];then
      alias xkf='effect=解除文件或目录占用;fuser -m -k -i'
 fi
 
-if [ -f /usr/bin/gnome-session-quit ] ;then
-     alias xsss='effect=注销系统;ftPowerManagement logout'
-fi
-
 if [[ -n $(which tr) ]];then
     alias xX='effect=字符串转大写;_xX(){  echo "$1" | tr '[a-z]' '[A-Z]' ;};_xX $1'
     alias Xx='effect=字符串转小写;_Xx(){  echo "$1" | tr '[A-Z]' '[a-z]' ;};_Xx $1'
@@ -32,14 +31,6 @@ fi
 if [[ -n $(which todos) ]]&&[[ -n $(which fromdos) ]];then
     alias unix2dos=todos
     alias dos2unix=fromdos
-fi
-
-if [[ -n $(which find) ]];then
-    alias xfind='effect=查找含特定字符串的文件;ftFind'
-fi
-
-if [[ -n $(which du) ]];then
-    alias xfs='effect=查找最大的xx[默认10]个文件;ftDu'
 fi
 
 if [[ -n $(which fdupes) ]];then
@@ -54,11 +45,6 @@ if [ -d "$ANDROID_SDK" ];then
     alias xlp="effect=根据包名过滤logcat;ftLogcatApplicationByTag -p"
     alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
 
-    [[ -f $rFilePathXbashDataBase ]]&&packageNameList="$(ftIniGetValue $rFilePathXbashDataBase androidDevicePackages packageNameList)"
-    complete -W "${packageNameList[@]} launcher systemui" xlp
-    complete -W "${packageNameList[@]} launcher systemui 123456" xl
-    complete -W "${packageNameList[@]} launcher systemui monkey" xk
-
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
     alias xtp="effect=打印任务栈的栈顶信息;adb shell dumpsys activity top"
     alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
@@ -69,22 +55,32 @@ if [ -d "$ANDROID_SDK" ];then
     alias xqcamera='effect=启动Camera2;adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
     alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
     alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
+
+    [[ -f $rFilePathXbashDataBase ]]&&packageNameList="$(ftIniGetValue $rFilePathXbashDataBase androidDevicePackages packageNameList)"
+    complete -W "${packageNameList[@]} launcher systemui" xlp
+    complete -W "${packageNameList[@]} launcher systemui 123456" xl
+    complete -W "${packageNameList[@]} launcher systemui monkey" xk
 fi
 
-    alias xc='effect=xbash主入口[旧];ftMain'
-    alias xb='effect=系统维护;ftMaintainSystem'
-    alias xcg='effect=清空回收站;ftCleanGarbage -e -t'
-    alias xr='effect=更新xbash配置;ftResetXbash'
-    alias xd='effect=MTK下载工具;ftMtkFlashTool'
-    alias xcb='effect=进入xbash目录;cd $dirPathHomeXbash'
-    alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
-    alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
-    alias xs2av='effect=android版本查询;ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison'
+alias xc='effect=xbash主入口[旧];ftMain'
+alias xb='effect=系统维护;ftMaintainSystem'
+alias xr='effect=更新xbash配置;ftResetXbash'
+alias xd='effect=MTK下载工具;ftMtkFlashTool'
+alias xcg='effect=清空回收站;ftCleanGarbage -e -t'
+alias xfind='effect=查找含特定字符串的文件;ftFind'
+alias xfs='effect=查找最大的xx[默认10]个文件;ftDu'
+alias xcb='effect=进入xbash目录;cd $dirPathHomeXbash'
+alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
+alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
+alias xs2av='effect=android版本查询;ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison'
+
+if [ -f /usr/bin/gnome-session-quit ] ;then
+     alias xsss='effect=注销系统;ftPowerManagement logout'
+fi
 
 if [[ -n $(which git) ]];then
     # PS1显示分支信息
     [[ "$isUseCustomPS1" = "true" ]] && export PROMPT_COMMAND='ftSetBashPs1ByGitBranch;history -a'
-
     [ -f "$rFilePathGitBash" ] && source $rFilePathGitBash || echo -e "\033[1;31mgit bash 配置文件:\n$rFilePathGitBash 不存在\033[0m"
     alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
     alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'

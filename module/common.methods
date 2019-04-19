@@ -46,6 +46,16 @@ ftMain()
     *) ftMain -h && return;; esac;done
 }
 
+ftClearTail()
+{
+    local ftEffect=清尾
+    local isEnable=def
+
+    local dirPathLocal=$1
+    [[ -n $dirPathLocal ]] && cd $dirPathLocal
+    trap SIGINT
+}
+
 complete -W "-a --adb -h -j -s" ftResetXbash
 ftResetXbash()
 {
