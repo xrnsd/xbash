@@ -956,14 +956,13 @@ ftCleanGarbage()
     [[ "$(whoami)" != "$rUserName" ]]||[[ "$(whoami)" = "root" ]] && ftCleanGarbage --exception && return
     #解参验耦
     ftInitDevicesList
-    local isAutoExit sleepTime=0
-    local errorContent index arg arg2 # arg3 # arg4
+    local isAutoExit sleepTime
+    local errorContent index arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
-    #((index=i+2)) ; eval arg3=\${${index}} #; ((index=i+3)) ; eval arg4=\${${index}}
     case "${arg}" in
-        -e ) isAutoExit=true #"${arg2:-"exampleDef1"}" 
+        -e ) isAutoExit=true 
           ;;
-        -t ) sleepTime="${arg2:-"sleepTime"}" 
+        -t ) sleepTime="${arg2}"
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     [ -z "$mXbashModuleDataDevicesList" ] && errorContent="${errorContent}\\n[被清空回收站的设备的目录列表]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}"
@@ -973,12 +972,14 @@ ftCleanGarbage()
     local dirPathLocal=$(pwd)
     local baseList=($(ftIniGetValue $rFilePathXbashDataBase CleanGarbageInfo list))
 
-    tput sc
-    for i in $(seq -w $sleepTime -1 1) ; do
-        tput rc;tput ed
-        echo -ne "\033[1;31m将在${i}秒后开始清理，ctrl+c 取消\033[0m"
-        sleep 1
-    done
+    if [[ -n $sleepTime ]]; then
+        tput sc
+        for i in $(seq -w $sleepTime -1 1) ; do
+            tput rc;tput ed
+            echo -ne "\033[1;31m将在${i}秒后开始清理，ctrl+c 取消\033[0m"
+            sleep 1
+        done
+    fi
     for dirDevPath in ${baseList[*]} ${mXbashModuleDataDevicesList[*]}  ${rDirPathUserHome}; do
         if [ -d ${dirDevPath}/.Trash-1000 ];then
             dirDevPath=${dirDevPath}/.Trash-1000
