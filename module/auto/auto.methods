@@ -291,7 +291,7 @@ ftAutoBuildMultiBranchEnvSeparation()
     #环境校验
     [ -z "$ANDROID_BUILD_TOP" ] && ftAutoBuildMultiBranchEnvSeparation --env && return
     #解参验耦
-    local editType=${1,,} #转小写
+    local editType=${1,,}
     local filePathserialBuildTool=${rDirPathXbashModuleAuto}/serialBuildByBranchName.module
     local dirPathProcessEnableId=/tmp/ProcessEnableIds
     local requestEnvState=$(/bin/rm -rf $dirPathProcessEnableId&&mkdir $dirPathProcessEnableId)
@@ -590,7 +590,7 @@ ftAutoPacket()
 
     #实现主体
     local isClean isReadMe isUpload isPacket isMove isCopy isSpecial
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a ) isClean=true
               isReadMe=true
               isUpload=true
@@ -1144,9 +1144,7 @@ ftAutoUpdateSoftwareVersion()
     ftAutoInitEnv
     [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ] && ftAutoUpdateSoftwareVersion -e && return
     #解参验耦
-    local dirPathCode=$ANDROID_BUILD_TOP
-    [ -z "$ANDROID_BUILD_TOP" ] && ftAutoUpdateSoftwareVersion --env && return
-
+    local dirPathCode=$ANDROID_BUILD_TOP ; [ -z "$ANDROID_BUILD_TOP" ] && ftAutoUpdateSoftwareVersion --env && return
     local valCount=1 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
@@ -1264,7 +1262,6 @@ ftAutoTest()
                        rebootCount=${arg3:-'rebootCountDef'}  ;;
               -e)     eventCount=${arg2:-'eventCountDef'}                   ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
     local errorContent
     (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong"
     [[ -n $packageBlackNameList ]]&&[[ -n $packageNameList ]] && errorContent="${errorContent}\\n 包限制配置错误1"

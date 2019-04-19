@@ -94,7 +94,7 @@ ftResetXbash()
     export isResetJdk=
     export isResetGcc=
     export isResetXbash=true
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a |--adb) ftRestartAdb && return
           ;;
         -j ) export isResetJdk=true
@@ -258,7 +258,7 @@ ftTimeConsuming()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     #解参验耦
-    local contentName=本技能 index arg arg2 # arg3 # arg4
+    local contentName=本技能 index arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
     case "${arg}" in
         -r ) contentName="${arg2:-"$contentName"}" 
@@ -366,15 +366,13 @@ ftIniCreateFileOrTag()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePathIni editType contentTagName contentTagKeyValList
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
           -a )   editType=add                                   ;;
           -r )   editType=replace                               ;;
           -p )   filePathIni="$arg2"                            ;;
           -t )   contentTagName="$arg2"                 ;;
           -l )   contentTagKeyValList="${arg2[@]}" ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ -z "$filePathIni" ] && errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]"
     [ -z "$contentTagName" ] && errorContent="${errorContent}\\n[块名为空]contentTagName=$contentTagName"
     [ -z "$contentTagKeyValList" ] && errorContent="${errorContent}\\n[块对应的列表为空]contentTagKeyValList=$contentTagKeyValList"
@@ -427,12 +425,10 @@ ftIniDeleteTag()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local tagName filePathIni
-    local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -t )   tagName="${arg2}"        ;;
         -p )   filePathIni="${arg2}"     ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}}\\n[文件不存在]filePathIni=$filePathIni"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteTag -h && return
@@ -471,14 +467,11 @@ ftIniAddItem()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local tagName itemContent filePathIni
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -t )   tagName="${arg2}"        ;;
         -l )   itemContent="${arg2}"    ;;
         -p )   filePathIni="${arg2}"    ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-
-    #解参验耦
-    local errorContent
     [ -z "$itemContent" ] && errorContent="${errorContent}\\n[缺少必要参数]itemContent=$itemContent"
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
@@ -523,14 +516,11 @@ ftIniDeleteItem()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local tagName itemName filePathIni
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -t )   tagName="${arg2}"            ;;
         -i )   itemName="${arg2}"           ;;
         -p )   filePathIni="${arg2}"        ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-
-    #解参验耦
-    local errorContent
     [ -z "$itemName" ] && errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName"
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
@@ -580,8 +570,6 @@ ftIniGetValue()
             keyName=$4
             isReadSilence=true
     fi
-
-    #解参验耦
     local valCount=3 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[文件不存在]filePath=$filePath"
@@ -634,13 +622,11 @@ ftIniSetValue()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local isListValue filePath=$1 blockName=$2 keyName=$3 keyValue=$4
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -l )    keyValue="${arg2}"
                 isListValue=true
            ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
     else
         if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
@@ -777,14 +763,11 @@ ftInitDevicesList()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local devMinAvailableSpace=0  # 设备最小可用空间，小于则视为无效.单位M
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -s )   devMinAvailableSpace="${arg2:-'0'}"
                 devMinAvailableSpace=${devMinAvailableSpace,,}
            ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-
-    #解参验耦
-    local errorContent
     local devMinAvailableSpaceTemp=$devMinAvailableSpace
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//g/}
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//m/}
@@ -1300,8 +1283,6 @@ ftBootAnimation()
         #文件重命名
         index=0
         for file in $filelist ; do
-            # echo “filename: ${file%.*}”
-            # echo “extension: ${file##*.}”
             a=$((1000+$index))
             # 重命名图片，复制到part0
             fileNameLast=${a:1}.${file##*.}
@@ -1538,7 +1519,7 @@ ftReNameFile()
     #解参验耦
     local isAutoName isAddName dirPathFileList  fileNameAddPrefix fileNameAddSuffix fileTagBase fileTagNew fileSuffixTagBase fileSuffixTagNew 
     local fileNameLength=4
-    local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
         ((index=i+1)) ; eval arg2=\${${index}}
         ((index=i+2)) ; eval arg3=\${${index}}
         case "${arg}" in
@@ -1560,8 +1541,6 @@ ftReNameFile()
                     fileSuffixTagNew="${arg3}"
               ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
-    #解参验耦
-    local errorContent
     [ ! -d "$dirPathFileList" ]||[[ -z "$(ls $dirPathFileList)" ]] && errorContent="${errorContent}\\n[目标目录无效]$dirPathFileList"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftReNameFile -h && return
 
@@ -1636,13 +1615,11 @@ ftMaintainSystem()
     [[ -z $(which pigz) ]] && ftMaintainSystem --rely "pigz" && return
     #解参验耦
     local editType
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -s )   editType=sdFinish    ;;
         -b )   editType=backup     ;;
         -r )   editType=restore      ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     local filePathMaintain=${rDirPathXbashModuleMaintain}/${rFileNameXbashModuleMaintain}
     [ -z "$editType" ] && errorContent="${errorContent}\\n[你想做啥哩]editType=$editType"
     [ ! -f "$filePathMaintain" ] && errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain"
@@ -1818,8 +1795,7 @@ ftGitLogShell()
     [[ -n "$isAllBranchLog" ]]&&[ -z $(which gitk) ] && ftGitLogShell --rely && return
     #解参验耦
     local isAllBranchLog isTagBranchLog branchLogFormat isCustomBranchLog branchLogItemCount branchLogItemCountDef=20 pathTarget
-
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a )  isAllBranchLog=true
                 pathTarget="${arg2}"
                 branchLogItemCount=0
@@ -1834,8 +1810,6 @@ ftGitLogShell()
                 (( $#==3 ))&&(echo -n $3 | grep -q -e "^[0-9][0-9]*$")&&(($3>$branchLogItemCount)) && branchLogItemCount=$3
                 ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ -z "$branchLogItemCount" ]||(($branchLogItemCount<0)) && errorContent="${errorContent}\\n[示例2]branchLogItemCount=$branchLogItemCount"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitLogShell -h && return
 
@@ -1993,7 +1967,7 @@ ftGitCheckoutBtanch()
     [[ -z $(which git) ]] && ftGitCheckoutBtanch --rely "git" && return
     #解参验耦
     local delayLong isAllBranchs branchNameTag
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a ) isAllBranchs=true ;;
         -t ) branchNameTag="${arg2}" ;;
         -d ) delayLong="${arg2}" ;;
@@ -2002,8 +1976,6 @@ ftGitCheckoutBtanch()
         git branch
         return
     fi
-    #解参验耦
-    local errorContent
     [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
     [ -n "$delayLong" ]&&( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBtanch -h && return
@@ -2107,12 +2079,10 @@ ftPdfPasswordClear()
     [[ -z $(which qpdf) ]] && ftPdfPasswordClear --rely "qpdf" && return
     #解参验耦
     local dirPathTarget passwordNum
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local valCount=2 errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -d ) dirPathTarget="${arg2}"    ;;
         -p ) passwordNum="${arg2}"  ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
-    #解参验耦
-    local valCount=2 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -d "$dirPathTarget" ]&&[ ! -f "$dirPathTarget" ] && errorContent="${errorContent}\\n[啥玩意]dirPathTarget=$dirPathTarget"
     [ -z "$passwordNum" ] && errorContent="${errorContent}\\n[密码不见了，帮忙找找]"
@@ -2164,12 +2134,10 @@ ftApkSignature()
     [ -d "$ANDROID_BUILD_TOP" ]&& cd $ANDROID_BUILD_TOP
     #解参验耦
     local filePathApk
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local valCount=2 errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -f ) filePathApk="${arg2}"
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
-    #解参验耦
-    local valCount=2 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$JAVA_HOME" ] && errorContent="${errorContent}\\n[java环境未配置]缺失JAVA_HOME"
     [ ! -f "$toolFilePathSignapk" ] && errorContent="${errorContent}\\n[缺少有效的签名工具]${toolFilePathSignapk}不存在"
@@ -2219,7 +2187,7 @@ ftApkMergeOdex()
     local filePathToolResign=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/re-sign.jar
     local filePathToolSmali=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/smali-2.2.6.jar
     local filePathToolBaksmali=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/baksmali-2.2.6.jar
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a ) fileNameApk="${arg2}"
                isAutoPull=true
           ;;
@@ -2264,7 +2232,6 @@ ftApkMergeOdex()
             cp -rf -v ${dirPathTarget}/framework/arm/* ${dirPathTarget}/framework && ftEcho -s "复制 framework/arm/* 到 framework 完成"
         fi
     fi
-    #解参验耦
     local errorContent
     [ -z "$JAVA_HOME" ] && errorContent="${errorContent}\\n[java环境未配置]缺失JAVA_HOME"
     [ ! -f "$filePathToolSmali" ] && errorContent="${errorContent}\\n[找不到 filePathToolSmali=${filePathToolSmali}]"
@@ -2322,10 +2289,8 @@ ftDu()
     #依赖校验
     [[ -z $(which du) ]] && ftDu --rely "du" && return
     #解参验耦
-    local fileCount=${1:-'10'} dirPathLocal=$(pwd) dirPathTarget=${dirPathLocal}
+    local valCount=2 errorContent fileCount=${1:-'10'} dirPathLocal=$(pwd) dirPathTarget=${dirPathLocal}
     (( $#>1 )) && dirPathTarget=$1 && fileCount=${2:-'$fileCount'}
-    #解参验耦
-    local valCount=2 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [[ ! -d "$dirPathTarget" ]] && errorContent="${errorContent}\\n目录[${dirPathLocal}]不存在"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftDu -h && return
@@ -2362,7 +2327,7 @@ ftAdbPush()
     [[ -z $(which adb) ]] && ftAdbPush --rely "adb" && return
     #解参验耦
     local filePathSource fileNameSource dirPathTarget
-    local arg  arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
+    local errorContent arg  arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
     ((index=i+1)) ; eval arg2=\${${index}}
     ((index=i+2)) ; eval arg3=\${${index}}
     case "${arg}" in
@@ -2373,8 +2338,6 @@ ftAdbPush()
                  dirPathTarget=$(echo /system${filePathSource#*system} | sed -e "s:/$fileNameSource::g")
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
-    #解参验耦
-    local errorContent
     [ ! -f "$filePathSource" ] && errorContent="${errorContent}\\n[文件找不到]filePathSource=$filePathSource"
     [ -z "$dirPathTarget" ] && errorContent="${errorContent}\\n[目标路径不存在]dirPathTarget=$dirPathTarget"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAdbPush -h && return

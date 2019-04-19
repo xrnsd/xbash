@@ -16,18 +16,17 @@ ftRestoreOperate()
 
     #解参验耦
     local filePathIniMaintain tagNameMaintain dirPathRestoreTarget
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
             -pm )   filePathIniMaintain="${arg2}"           ;;
             -t )   tagNameMaintain="${arg2}"                 ;;
             -d )   dirPathRestoreTarget="${arg2}"           ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ ! -f "$filePathIniMaintain" ] && errorContent="${errorContent}\\n[工具数据库文件不存在]filePathIniMaintain=$filePathIniMaintain"
     [ ! -d "$dirPathRestoreTarget" ] && errorContent="${errorContent}\\n[还原的目标路径不存在]dirPathRestoreTarget=$dirPathRestoreTarget"
     [ -z "$tagNameMaintain" ] && errorContent="${errorContent}\\n[默认tag名为空]tagNameMaintain=$tagNameMaintain"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftRestoreOperate -h && return
 
+    #实现主体
     while true; do
     ftEcho -y "是否开始还原(回车默认y)"
     read -n 1 sel
@@ -62,18 +61,17 @@ ftRestoreChoiceSource()
 
     #解参验耦
     local filePathIni filePathIniMaintain tagNameMaintain
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
             -p )   filePathIni="${arg2}"                        ;;
             -pm )   filePathIniMaintain="${arg2}"       ;;
             -t )   tagNameMaintain="${arg2}"            ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[备份包数据库文件不存在]filePathIni=$filePathIni"
     [ ! -f "$filePathIniMaintain" ] && errorContent="${errorContent}\\n[工具数据库文件不存在]filePathIniMaintain=$filePathIniMaintain"
     [ -z "$tagNameMaintain" ] && errorContent="${errorContent}\\n[默认tag名为空]tagNameMaintain=$tagNameMaintain"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftRestoreChoiceSource -h && return
 
+    #实现主体
     local suffixName=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
     local dirPathStore=$(ftIniGetValue $filePathIniMaintain $tagNameMaintain dirPathStore)
     local filePathList=($(find ${dirPathStore} -name "*.${suffixName}"))
@@ -129,21 +127,20 @@ ftSetBackupDevDir()
 
     #解参验耦
     local editType filePathIni versionName
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
             -b )   editType=backup              ;;
             -r )   editType=restore              ;;
             -p )   filePathIni="${arg2}"        ;;
             -v )   versionName="${arg2}"    ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
     ftInitDevicesList -s 8192M # 初始化设备列表[mXbashModuleDataDevicesList]
-    local errorContent
     [ -z "$rDirPathXbash" ] && errorContent="${errorContent}\\n[默认用户名为空]rUserName=$rUserName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[备份包数据库文件不存在]filePathIni=$filePathIni"
     [ -z "$versionName" ] && errorContent="${errorContent}\\n[备份包名为空]versionName=$versionName"
     [ -z "$mXbashModuleDataDevicesList" ] && errorContent="${errorContent}\\n[可用的备份包备份存储设备列表为空]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSetBackupDevDir -h && return
 
+    #实现主体
     ftEcho -b 请${ftEffect}
 
     local devTarget devTargetDir devEffectiveSpace
@@ -204,18 +201,17 @@ ftSetBackupType()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePathIni versionName filePathIniMaintain
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
             -p )   filePathIni="${arg2}"                        ;;
             -pm )   filePathIniMaintain="${arg2}"      ;;
             -v )   versionName="${arg2}"                    ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[版本数据库不存在]filePathIni=$filePathIni"
     [ ! -f "$filePathIniMaintain" ] && errorContent="${errorContent}\\n[工具数据库不存在]filePathIniMaintain=$filePathIniMaintain"
     [ -z "$versionName" ] && errorContent="${errorContent}\\n[备份包名为空]versionName=$versionName"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSetBackupType -h && return
 
+    #实现主体
     # 备份类型
     local infoBackupType=cg
     ftEcho -b 请${ftEffect}
@@ -286,17 +282,16 @@ ftSetRestoreOverryList()
 
     #解参验耦
     local filePathIniMaintain tagNameMaintain
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
             -pm )   filePathIniMaintain="${arg2}"   ;;
             -t )   tagNameMaintain="${arg2}"         ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ ! -d "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[默认用户的home目录不存在]rDirPathUserHome=$rDirPathUserHome"
     [ ! -f "$filePathIniMaintain" ] && errorContent="${errorContent}\\n[工具数据库文件不存在]filePathIniMaintain=$filePathIniMaintain"
     [ -z "$tagNameMaintain" ] && errorContent="${errorContent}\\n[默认tag名为空]tagNameMaintain=$tagNameMaintain"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSetRestoreOverryList -h && return
 
+    #实现主体
     ftEcho -b 请${ftEffect}
     echo -e "[1]\t忽略home"
     echo -e "[2]\t不忽略"
@@ -337,18 +332,17 @@ ftBackupOs()
     * ) break;;esac;done
     #解参验耦
     local filePathIni versionName filePathIniMaintain
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
                   -p )   filePathIni="$arg2"                        ;;
                   -pm )   filePathIniMaintain="${arg2}"   ;;
                   -v )   versionName="$arg2"                    ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[信息路径为空]filePathIni=$filePathIni"
     [ ! -f "$filePathIniMaintain" ] && errorContent="${errorContent}\\n[工具数据库文件不存在]filePathIniMaintain=$filePathIniMaintain"
     [ -z "$versionName" ] && errorContent="${errorContent}\\n[版本号为空]versionName=$versionName"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBackupOs -h && return
 
+    #实现主体
     local fileNameVersion=$(ftIniGetValue $filePathIni  $versionName fileName)
     local dirPathStore=$(ftIniGetValue $filePathIni $versionName dirPathStore)
     local fileNameExclude=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo filePatheExclude)
@@ -412,19 +406,18 @@ ftMaintainInfoNote()
 
     #解参验耦
     local editType filePathIni versionName
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
                   -a )  editType=add                ;;
                   -r )   editType=read              ;;
                   -p )   filePathIni="$arg2"        ;;
                   -v )   versionName="$arg2"    ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ -z "$editType" ] && errorContent="${errorContent}\\n[不知道要干啥]editType=$editType"
     [ -z "$versionName" ] && errorContent="${errorContent}\\n[备份包名为空]versionName=$versionName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[信息路径为空]filePathIni=$filePathIni"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMaintainInfoNote -h && return
 
+    #实现主体
     if [[ "$editType" = "add" ]]; then
         local fileNameVersionNote="${versionName}的相应说明"
         local filePathVersionNote=/tmp/${fileNameVersionNote}
@@ -467,7 +460,7 @@ ftMD5()
 
     #解参验耦
     local editType filePathVersion filePathInfo
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
         -c )   filePathVersion="${arg2}"
                 editType=checkMd5
            ;;
@@ -477,13 +470,12 @@ ftMD5()
         -p )   filePathInfo="${arg2}"
            ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ -z "$editType" ] && errorContent="${errorContent}\\n[不知道要干啥]editType=$editType"
     [ ! -f "$filePathInfo" ]&&  errorContent="${errorContent}\\n[没有相关版本信息文件]filePathInfo=$filePathInfo"
     [ ! -f "$filePathVersion" ] && errorContent="${errorContent}\\n[目标文件不存在]filePathVersion=$filePathVersion"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMD5 -h && return
 
+    #实现主体
     local fileNameVersion=$(basename $filePathVersion) versionName=${fileNameVersion%.*}
 
     if [ "$editType" = "setMd5" ]; then
@@ -524,18 +516,17 @@ ftSystemEnv()
 
     #解参验耦
     local editType versionName filePathInfo
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
         -a) editType=add                    ;;
         -c) editType=check                  ;;
         -v) versionName="$arg2"     ;;
         -p) filePathInfo="$arg2"        ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ -z "$editType" ] && errorContent="${errorContent}\\n[操作参数为空]editType=$editType"
     [ ! -f "$filePathInfo" ]&&  errorContent="${errorContent}\\n[没有相关版本信息文件]filePathInfo=$filePathInfo"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSystemEnv -h && return
 
+    #实现主体
     local infoHwCpu=$(echo $userPassword | sudo  -p '' -S dmidecode |grep -i cpu|grep -i version|awk -F ':' '{print $2}'|sed s/[[:space:]]//g)
     local infoHwMainboard=$(echo $userPassword | sudo  -p '' -S dmidecode |grep Name |sed s/[[:space:]]//g)
     local infoHwMainboard=$(echo $infoHwMainboard |sed s/[[:space:]]//g)
@@ -646,7 +637,7 @@ ftBackUpDevScanning()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local devList fileName filePathIni versionName
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
         -p )   filePathIni="${arg2}"
            ;;
         -d )   devList="${arg2}"
@@ -655,13 +646,12 @@ ftBackUpDevScanning()
                 versionName=${fileName%.*}
            ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[版本数据库不存在]filePathIni=$filePathIni"
     [ -z "$fileName" ] && errorContent="${errorContent}\\n[目标备份包名为空]fileName=$fileName"
     [ -z "$devList" ] && errorContent="${errorContent}\\n[存放备份包的设备目录列表为空]devList=${devList[@]} "
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBackUpDevScanning -h && return
 
+    #实现主体
     local dirPathStore=$(ftIniGetValue $filePathIni $versionName dirPathStore)
 
     for devDirPath in ${devList[@]}; do
@@ -708,16 +698,15 @@ ftSynchronous()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local dirPathArray=$1 fileTypeList=$2
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
         -d )   dirPathArray="${arg2}"        ;;
         -s )   fileTypeList="${arg2}"           ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ -z "$fileTypeList" ] && errorContent="${errorContent}\\n[同步类型列表为空]fileTypeList=$fileTypeList"
     [ -z "$dirPathArray" ] && errorContent="${errorContent}\\n[同步设备目录列表为空]dirPathArray=${dirPathArray[@]}"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSynchronous -h && return
 
+    #实现主体
     while true; do
     ftEcho -y 是否开始同步
     read -n 1 sel
@@ -756,11 +745,9 @@ ftCleanUpInvalidRecords()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePathIni
-    local arg  arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}; case "${arg}" in
             -p )   filePathIni="${arg2}"    ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #解参验耦
-    local errorContent
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[备份包数据库文件不存在]filePathIni=$filePathIni"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCleanUpInvalidRecords -h && return
 
