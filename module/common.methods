@@ -1828,7 +1828,7 @@ ftGitLogShell()
         return
     fi
     if [ "${branchLogFormat}" = "%h" ];then
-        git log --pretty=format:"$branchLogFormat" -$branchLogItemCount | while read hashVal;do echo -n "${hashVal} " ;done ;echo
+        hashVal=($(git log --pretty=format:"$branchLogFormat" -$branchLogItemCount)) ; echo "${hashVal[@]} "
         return
     fi
     branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
