@@ -2316,6 +2316,8 @@ ftAdbPush()
 #===================[   ${ftEffect}   ]的使用示例==============
 #    以下[参数对]无先后顺序可任意组合
 #
+#    ftAdbPush -a #自动重启
+#    ftAdbPush -n #不重启
 #    ftAdbPush -f 需要push的文件路径
 #    ftAdbPush -f 需要push的文件路径 目标路径
 #========================================================="; return ;;
@@ -2326,11 +2328,25 @@ ftAdbPush()
     #依赖校验
     [[ -z $(which adb) ]] && ftAdbPush --rely "adb" && return
     #解参验耦
-    local filePathSource fileNameSource dirPathTarget
+    local filePathSource fileNameSource dirPathTarget isAutoReboot isTacitMode
     local errorContent arg  arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
     ((index=i+1)) ; eval arg2=\${${index}}
     ((index=i+2)) ; eval arg3=\${${index}}
     case "${arg}" in
+       -a  ) isAutoReboot=true
+            filePathSource="${arg2}"
+             fileNameSource=$(basename $filePathSource)
+             [[ -z $(echo $filePathSource |grep system) ]] && \
+                 dirPathTarget="${arg3}" || \
+                 dirPathTarget=$(echo /system${filePathSource#*system} | sed -e "s:/$fileNameSource::g")
+          ;;
+       -n  ) isTacitMode=true
+            filePathSource="${arg2}"
+             fileNameSource=$(basename $filePathSource)
+             [[ -z $(echo $filePathSource |grep system) ]] && \
+                 dirPathTarget="${arg3}" || \
+                 dirPathTarget=$(echo /system${filePathSource#*system} | sed -e "s:/$fileNameSource::g")
+          ;;
         -f ) filePathSource="${arg2}"
              fileNameSource=$(basename $filePathSource)
              [[ -z $(echo $filePathSource |grep system) ]] && \
@@ -2351,9 +2367,9 @@ ftAdbPush()
 
     adb root&&adb remount&&\
     adb push $filePathSource $dirPathTarget&& \
-    ftEcho -s "${fileNameSource} push finish"
-
-    ftEcho -y "是否重启(回车默认重启)" && \
-    read -n 1 sel && echo
-    if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then sleep 3&&adb reboot ; fi
+    ftEcho -s "${fileNameSource} push to [${dirPathTarget}] finish"
+    if [[ -z "$isTacitMode" ]]; then
+        [[ -z "$isAutoReboot" ]] &&ftEcho -y "是否重启(回车默认重启)" && read -n 1 sel && echo
+        if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then adb reboot ; fi
+    fi
 }
