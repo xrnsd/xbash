@@ -120,16 +120,16 @@ ftAutoInitEnv()
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
     #软件版本名
-    if [ $mnufacturers = "sprd" ];then
-            local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-            local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-            if [ -f $filePathDeviceInfoSettings ];then
-                local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-                versionName=${versionName//$keyVersion/}
-                versionName=${versionName//\");/}
-                versionName=$(echo $versionName |sed s/[[:space:]]//g)
-            fi
-   elif [[ $mnufacturers = "mtk" ]]; then
+    # if [ $mnufacturers = "sprd" ];then
+    #         local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
+    #         local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
+    #         if [ -f $filePathDeviceInfoSettings ];then
+    #             local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
+    #             versionName=${versionName//$keyVersion/}
+    #             versionName=${versionName//\");/}
+    #             versionName=$(echo $versionName |sed s/[[:space:]]//g)
+    #         fi
+   # elif [[ $mnufacturers = "mtk" ]]; then
             local filePathOutBuildProp=${dirPathOut}/system/build.prop
             if [ -f $filePathOutBuildProp ];then
                     local keyVersion="ro.build.display.id="
@@ -141,7 +141,7 @@ ftAutoInitEnv()
             elif [[ -n "$LZ_BUILD_VERSION" ]];then
                     local versionName=$LZ_BUILD_VERSION
             fi
-    fi
+    # fi
     [ -z "$versionName" ] && versionName=$(basename $ANDROID_PRODUCT_OUT)
 
     versionName=${versionName// /_}
