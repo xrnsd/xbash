@@ -1841,17 +1841,13 @@ ftFind()
     local isEnable=true
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
-    local nameList=(${2}) nameAll="${nameList}"
-
+    local nameList="${2}" nameAll
     [[ -z "$nameList" ]] && ftEcho -e "参数缺失，请确认" && return
-    if ((  ${#nameList[@]} > 1 )); then
-           local i=${#nameList[@]}
-            while (( $i > 1 )) ;do ((i-=1))
-              nameAll=${nameAll}" -o -name ${nameList[$i]}"
-            done
-    fi
-    [[ -n "$3" ]] && find $1 ! -type d -name ${nameAll[@]} | xargs grep -e "${3}" |grep -e "${3}" && return
-    find $1 ! -type d -name ${nameAll[@]}
+
+    nameAll=$(echo "${2}" | sed -e "s: :|:g")
+    (( $#==3 ))&&find "${1}" -regextype posix-extended -regex ".*\.(${nameAll})" | xargs grep -e "${3}" && return
+    # find $1 ! -type d -regextype posix-extended -regex ".*\.(${nameAll})"
+    find $1 -regextype posix-extended -regex ".*\.(${nameAll})"
 }
 
 ftGitAddPatch()
