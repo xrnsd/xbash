@@ -1841,13 +1841,44 @@ ftFind()
     local isEnable=true
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
-    local nameList="${2}" nameAll
-    [[ -z "$nameList" ]] && ftEcho -e "参数缺失，请确认" && return
+        while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#   ftFind -s 路径 后缀列表  文件名内容[可选]    #使用后缀搜索
+#   ftFind -s xx/xx \"java xml\" \"yyy\"
+#
+#   ftFind 路径 文件名 文件名内容[可选]     #使用文件名搜索，只支持单文件名
+#   ftFind xx/xx \"*.java\" \"yyy\"
+#========================================================="; return ;;
+    * ) break;;esac;done
 
-    nameAll=$(echo "${2}" | sed -e "s: :|:g")
-    (( $#==3 ))&&find "${1}" -regextype posix-extended -regex ".*\.(${nameAll})" | xargs grep -e "${3}" && return
-    # find $1 ! -type d -regextype posix-extended -regex ".*\.(${nameAll})"
-    find $1 -regextype posix-extended -regex ".*\.(${nameAll})"
+    #解参验耦
+    local index arg arg2 # arg3 # arg4
+    local isSuffix nameAll
+    local pathTarget="${1}" nameList="${2}" contentKey="${3}"
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    #((index=i+2)) ; eval arg3=\${${index}} #; ((index=i+3)) ; eval arg4=\${${index}}
+    case "${arg}" in
+        -s ) isSuffix=true
+              pathTarget="${2}"
+              nameList="${3}"
+              contentKey="${4}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    [[ -z "$nameList" ]] && ftEcho -e "参数缺失，请确认" && ftExample -h && return
+
+    if [[ -n "${isSuffix}" ]]; then
+        nameAll=$(echo "${nameList}" | sed -e "s: :|:g")
+        (( $#==4 ))&&find "${pathTarget}" -regextype posix-extended -regex ".*\.(${nameAll})" | xargs grep -e "${contentKey}" && return
+        find "${pathTarget}" -regextype posix-extended -regex ".*\.(${nameAll})"
+        return
+    fi
+
+    nameAll=$(echo "${nameAll[@]}" | sed -e "s: ::g")
+    (( $#==3 ))&&find "${pathTarget}" ! -type d -name ${nameAll} | xargs grep -e "${contentKey}" && return
+    find "${pathTarget}" ! -type d -name ${nameAll}
 }
 
 ftGitAddPatch()
