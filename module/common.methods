@@ -2341,12 +2341,9 @@ ftAdbPush()
 #========================================================="; return ;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
-#    以下[参数对]无先后顺序可任意组合
 #
-#    ftAdbPush -a #自动重启
-#    ftAdbPush -n #不重启
-#    ftAdbPush -f 需要push的文件路径
-#    ftAdbPush -f 需要push的文件路径 目标路径
+#    -a #自动重启 -n #不重启
+#    ftAdbPush -f/-a/n 需要push的文件路径 [目标路径]
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -2362,13 +2359,15 @@ ftAdbPush()
     case "${arg}" in
        -a  ) isAutoReboot=true
             filePathSource="${arg2}"
+            [[ ! -f "$filePathSource" ]]&&break
              fileNameSource=$(basename $filePathSource)
              [[ -z $(echo $filePathSource |grep system) ]] && \
                  dirPathTarget="${arg3}" || \
                  dirPathTarget=$(echo /system${filePathSource#*system} | sed -e "s:/$fileNameSource::g")
           ;;
-       -n  ) isTacitMode=true
+       -n  ) isTacitMode=true 
             filePathSource="${arg2}"
+            [[ ! -f "$filePathSource" ]]&&break
              fileNameSource=$(basename $filePathSource)
              [[ -z $(echo $filePathSource |grep system) ]] && \
                  dirPathTarget="${arg3}" || \
@@ -2376,6 +2375,7 @@ ftAdbPush()
           ;;
         -f ) filePathSource="${arg2}"
              fileNameSource=$(basename $filePathSource)
+            [[ ! -f "$filePathSource" ]]&&break
              [[ -z $(echo $filePathSource |grep system) ]] && \
                  dirPathTarget="${arg3}" || \
                  dirPathTarget=$(echo /system${filePathSource#*system} | sed -e "s:/$fileNameSource::g")
