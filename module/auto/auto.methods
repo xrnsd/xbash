@@ -9,7 +9,7 @@ ftAutoInitEnv()
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    ftAutoInitEnv 无参
-#    ftAutoInitEnv -bp #build.prop高级信息读取
+#    ftAutoInitEnv -bp #强制解析build.prop信息
 #========================================================="; return ;;
     --env ) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
@@ -36,66 +36,6 @@ ftAutoInitEnv()
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoInitEnv -h && return
 
     #实现主体
-    # build.prop高级信息读取
-    export AutoEnv_deviceModelName=
-    export AutoEnv_deviceSoftType=
-    export AutoEnv_deviceSoftVersion=
-    export AutoEnv_deviceSdkVersion=
-    export AutoEnv_AndroidVersion=
-
-    local keySoftType="ro.build.type=" keyModel="ro.product.model=" keySoftVersion="ro.build.display.id="
-    local keySDKVersion="ro.build.version.sdk=" filePathSystemBuildprop=${dirPathOut}/system/build.prop
-
-    if [ "$2" = "-mobile" ];then
-                adb wait-for-device
-                local adbStatus=$(adb get-state)
-                if [ "$adbStatus" = "device" ];then
-                    local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
-                    local deviceSoftType=$(adb shell cat /system/build.prop|grep "$keySoftType")
-                    local deviceSoftVersion=$(adb shell cat /system/build.prop|grep "$keySoftVersion")
-                    local deviceSdkVersion=$(adb shell cat /system/build.prop|grep "$keySDKVersion")
-                else
-                        ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
-                       return
-                fi
-    elif [ -f "$filePathSystemBuildprop" ];then
-                local deviceModelName=$(cat $filePathSystemBuildprop|grep "$keyModel")
-                local deviceSoftType=$(cat $filePathSystemBuildprop|grep "$keySoftType")
-                local deviceSoftVersion=$(cat $filePathSystemBuildprop|grep "$keySoftVersion")
-                local deviceSdkVersion=$(cat $filePathSystemBuildprop|grep "$keySDKVersion")
-    elif [ "$1" = "-bp" ];then
-               ftEcho -s "未找到 $filePathSystemBuildprop\n版本软件信息未获取"
-               return
-    fi
-
-    if [[ -n "$deviceSoftVersion" ]];then
-            deviceModelName=${deviceModelName//$keyModel/}
-            deviceModelName=${deviceModelName// /_}
-            deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
-            deviceModelName=${deviceModelName:-'null'}
-            export AutoEnv_deviceModelName=$deviceModelName
-
-            deviceSoftType=${deviceSoftType//$keySoftType/}
-            deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
-            deviceSoftType=${deviceSoftType:-'null'}
-            export AutoEnv_deviceSoftType=$deviceSoftType
-
-            deviceSoftVersion=${deviceSoftVersion//$keySoftVersion/}
-            deviceSoftVersion=$(echo $deviceSoftVersion |sed s/[[:space:]]//g)
-            deviceSoftVersion=${deviceSoftVersion:-'null'}
-            export AutoEnv_deviceSoftVersion=$deviceSoftVersion
-
-            deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
-            deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
-            deviceSdkVersion=${deviceSdkVersion:-'null'}
-            export AutoEnv_deviceSdkVersion=$deviceSdkVersion
-            local AndroidVersion=$(ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison $deviceSdkVersion)
-            export AutoEnv_AndroidVersion=$AndroidVersion
-    fi
-
-    [ "$editType" = "-bp" ] && return
-    # build.prop高级信息读取 end
-
     local dirPathLocal=$PWD
     cd $dirPathCode
 
@@ -108,7 +48,9 @@ ftAutoInitEnv()
                 [ $item = "mediatek" ] && local mnufacturers=mtk
             done
     fi
-    [[ -z "$mnufacturers" ]] && ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败"
+    export AutoEnv_mnufacturers=
+    [[ -z "$mnufacturers" ]] && ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败" || \
+    export AutoEnv_mnufacturers=$mnufacturers
 
     #device路径
     export AutoEnv_deviceDirPath=
@@ -116,37 +58,24 @@ ftAutoInitEnv()
 
     [[ -d "$dirPathDevice" ]] && export AutoEnv_deviceDirPath=$dirPathDevice
 
-    #分支名
-    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-
     #软件版本名
-    # if [ $mnufacturers = "sprd" ];then
-    #         local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    #         local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    #         if [ -f $filePathDeviceInfoSettings ];then
-    #             local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    #             versionName=${versionName//$keyVersion/}
-    #             versionName=${versionName//\");/}
-    #             versionName=$(echo $versionName |sed s/[[:space:]]//g)
-    #         fi
-   # elif [[ $mnufacturers = "mtk" ]]; then
-            local filePathOutBuildProp=${dirPathOut}/system/build.prop
-            if [ -f $filePathOutBuildProp ];then
-                    local keyVersion="ro.build.display.id="
-                    local versionName=$(cat $filePathOutBuildProp|grep $keyVersion)
-                    versionName=${versionName//$keyVersion/}
-                    if [[ -n "$LZ_BUILD_VERSION" ]]&&[[ "$versionName" != "$LZ_BUILD_VERSION" ]]; then
-                            ftEcho -e "环境与本地，软件版本不一致:\n本地:${versionName}\n环境:${LZ_BUILD_VERSION}"
-                    fi
-            elif [[ -n "$LZ_BUILD_VERSION" ]];then
-                    local versionName=$LZ_BUILD_VERSION
+    export AutoEnv_versionName=
+    local filePathOutBuildProp=${dirPathOut}/system/build.prop
+    if [ -f $filePathOutBuildProp ];then
+            local keyVersion="ro.build.display.id="
+            local versionName=$(cat $filePathOutBuildProp|grep $keyVersion)
+            versionName=${versionName//$keyVersion/}
+            if [[ -n "$LZ_BUILD_VERSION" ]]&&[[ "$versionName" != "$LZ_BUILD_VERSION" ]]; then
+                    ftEcho -e "环境与本地，软件版本不一致:\n本地:${versionName}\n环境:${LZ_BUILD_VERSION}"
             fi
-    # fi
+    elif [[ -n "$LZ_BUILD_VERSION" ]];then
+            local versionName=$LZ_BUILD_VERSION
+    fi
     [ -z "$versionName" ] && versionName=$(basename $ANDROID_PRODUCT_OUT)
-
     versionName=${versionName// /_}
     versionName=${versionName//
 /_}
+    [[ -n "$versionName" ]] && export AutoEnv_versionName=$versionName
 
     #软件编译类型
     if [ -d $dirPathOut ];then
@@ -195,19 +124,10 @@ ftAutoInitEnv()
                         fi
             fi
     fi
+    export AutoEnv_buildType=$buildType
 
     #git分支信息解析
    ftBranchNameResolution
-
-    export AutoEnv_buildType=
-    export AutoEnv_branchName=
-    export AutoEnv_versionName=
-    export AutoEnv_mnufacturers=
-
-    export AutoEnv_buildType=$buildType
-    export AutoEnv_branchName=$branchName
-    export AutoEnv_versionName=$versionName
-    export AutoEnv_mnufacturers=$mnufacturers
 
     cd $dirPathLocal
     trap SIGINT
@@ -297,6 +217,7 @@ ftBranchNameResolution()
                 export AutoEnv_screenScanDirection=
                 export AutoEnv_BandInfo=
                 export AutoEnv_FlashConfig=
+                export AutoEnv_branchName=
 
                 for item in ${arrayItems[@]} ; do
                         local key=${item%\(*}
@@ -313,8 +234,101 @@ ftBranchNameResolution()
                          [[ $key = "BAND" ]] && export AutoEnv_BandInfo=$val && continue
                          [[ $key = "FLASH" ]] && export AutoEnv_FlashConfig=$val && continue
                 done
+                [[ -n "$branchName" ]] && export AutoEnv_branchName=$branchName
         fi
     fi
+    cd $dirPathLocal
+}
+
+complete -W "-h --help" ftBuildPropResolution
+ftBuildPropResolution()
+{
+    local ftEffect=build.prop解析
+    local isEnable=true
+
+    while true; do case "$1" in
+    --rely) echo -e "\
+#===================[   ${ftEffect}   ]的依赖说明=============
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftBuildPropResolution -h
+#========================================================="; return ;;
+    --env ) echo -e "\
+#===================[   ${ftEffect}   ]的使用环境说明=============
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which git) ]] && ftBuildPropResolution --rely "git" && return
+    #解参验耦
+    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
+    if [ -z "$ANDROID_BUILD_TOP" ]\
+        ||[ -z "$ANDROID_PRODUCT_OUT" ];then
+        ftBuildPropResolution --env
+        return
+    fi
+    local valCount=0 errorContent
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBuildPropResolution -h && return
+
+    #实现主体
+    local dirPathLocal=$PWD
+    cd $dirPathCode
+
+    local keySoftType="ro.build.type=" keyModel="ro.product.model=" keySoftVersion="ro.build.display.id="
+    local keySDKVersion="ro.build.version.sdk=" filePathSystemBuildprop=${dirPathOut}/system/build.prop
+    local deviceModelName deviceSoftType deviceSoftVersion deviceSdkVersion
+
+    export AutoEnv_deviceModelName=
+    export AutoEnv_deviceSoftType=
+    export AutoEnv_deviceSoftVersion=
+    export AutoEnv_deviceSdkVersion=
+    export AutoEnv_AndroidVersion=
+
+    if [ -f "$filePathSystemBuildprop" ];then
+            deviceModelName=$(cat $filePathSystemBuildprop|grep "$keyModel")
+            deviceSoftType=$(cat $filePathSystemBuildprop|grep "$keySoftType")
+            deviceSoftVersion=$(cat $filePathSystemBuildprop|grep "$keySoftVersion")
+            deviceSdkVersion=$(cat $filePathSystemBuildprop|grep "$keySDKVersion")
+    elif [ "$editType" = "-bp" ];then
+            ftEcho -s "未找到 $filePathSystemBuildprop\n版本软件信息未获取"
+            return
+    fi
+
+    if [[ -n "$deviceSoftVersion" ]];then
+            deviceModelName=${deviceModelName//$keyModel/}
+            deviceModelName=${deviceModelName// /_}
+            deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
+            deviceModelName=${deviceModelName:-'null'}
+            export AutoEnv_deviceModelName=$deviceModelName
+
+            deviceSoftType=${deviceSoftType//$keySoftType/}
+            deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
+            deviceSoftType=${deviceSoftType:-'null'}
+            export AutoEnv_deviceSoftType=$deviceSoftType
+
+            deviceSoftVersion=${deviceSoftVersion//$keySoftVersion/}
+            deviceSoftVersion=$(echo $deviceSoftVersion |sed s/[[:space:]]//g)
+            deviceSoftVersion=${deviceSoftVersion:-'null'}
+            export AutoEnv_deviceSoftVersion=$deviceSoftVersion
+
+            deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
+            deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
+            deviceSdkVersion=${deviceSdkVersion:-'null'}
+            export AutoEnv_deviceSdkVersion=$deviceSdkVersion
+            local AndroidVersion=$(ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison $deviceSdkVersion)
+            export AutoEnv_AndroidVersion=$AndroidVersion
+    fi
+
     cd $dirPathLocal
 }
 
@@ -807,7 +821,7 @@ ftAutoPacket()
             fi
 
             if [[ -n "$AutoEnv_clientName" ]];then #解析git分支,初始化客户等相关信息
-                ftAutoInitEnv -bp
+                ftBuildPropResolution
 
                 local dirPathGitBranchInfoGroup dirPathVersionSoftwareVersion 
                 #版本路径 服务器根路径部分
