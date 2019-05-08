@@ -1146,8 +1146,10 @@ ftMtkFlashTool()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local toolDirPath=${rDirPathTools}/sp_flash_tool_v5.1612.00.100
+    local flashTool="$(ftIniGetValue $rFilePathXbashDataBase MtkFlashToolVersion versionName)"
+    local toolDirPath="${rDirPathTools}/${flashTool}"
     local errorContent
+    [ -z "$flashTool" ] && errorContent="${errorContent}\\n[mtk下载工具版本未知]flashTool=$flashTool"
     [ ! -d "$toolDirPath" ] && errorContent="${errorContent}\\n[mtk下载工具路径不存在]toolDirPath=$toolDirPath"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的出现错误:${errorContent}\\n" && return
 

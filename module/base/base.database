@@ -252,3 +252,6 @@ excludeConfig=lz.macros
 
 [CleanGarbageInfo]
 list=/media/server/1.75/智能机软件
+
+[MtkFlashToolVersion]
+versionName=sp_flash_tool_v5.1612.00.100
