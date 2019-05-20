@@ -1146,7 +1146,7 @@ ftMtkFlashTool()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local flashTool="$(ftIniGetValue $rFilePathXbashDataBase MtkFlashToolVersion versionName)"
+    local flashTool="$(ftIniGetValue $rFilePathXbashDataUser MtkFlashToolVersion versionName)"
     local toolDirPath="${rDirPathTools}/${flashTool}"
     local errorContent
     [ -z "$flashTool" ] && errorContent="${errorContent}\\n[mtk下载工具版本未知]flashTool=$flashTool"
@@ -1833,7 +1833,7 @@ ftGitLogShell()
         hashVal=($(git log --pretty=format:"$branchLogFormat" -$branchLogItemCount)) ; echo "${hashVal[@]} "
         return
     fi
-    branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(8,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
+    branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(13,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
     git log --pretty=format:"$branchLogFormat" -$branchLogItemCount
 }
 
