@@ -673,7 +673,12 @@ ftDevAvailableSpace()
      for size in ${devAvailableSIzeList[*]} ; do
             devMountDirPath=${devMountDirPathList[indexDevName]}
             if [[ "$devMountDirPath" = "$dirPathTraget" ]]; then
-                    if [[ $size == *G ]];then
+                    if [[ $size == *T ]];then
+                            size=${size//T/}
+                            size=${size%.*}
+                            ((size*=1024))
+                            ((size*=1024))
+                    elif [[ $size == *G ]];then
                             size=${size//G/}
                             size=${size%.*}
                             ((size*=1024))
