@@ -131,7 +131,12 @@ dirPathsExcludeListHomeBase= \
     .electron \
     .AndroidStudio3.3 \
     .AndroidStudio3.2 \
-    .config/ubuntu-tweak
+    .config/ubuntu-tweak \
+    .themes \
+    .android/avd \
+    .m2 \
+    .android/build-cache \
+    .android/cache
 dirPathsExcludeAllListSys= \
     /usr/lib/libreoffice/share/gallery \
     /usr/share/code/resources/app/extensions/markdown \
