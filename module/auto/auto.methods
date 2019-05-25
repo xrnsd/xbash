@@ -1107,23 +1107,23 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
             local filePathConfigHideNum=${dirPathCode}/vendor/lz/hideNum.config
-            if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
+            #if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
 
-                content=${content}${enterLine}"暗码清单：$(ftIniGetValue $filePathConfigHideNum 暗码清单 info)"
+                #content=${content}${enterLine}"暗码清单：$(ftIniGetValue $filePathConfigHideNum 暗码清单 info)"
                 # content=${content}${enterLine}"隐藏指令：$(ftIniGetValue $filePathConfigHideNum 隐藏 info)"
-                content=${content}${enterLine}"工厂测试：$(ftIniGetValue $filePathConfigHideNum 工厂测试 info)"
-                content=${content}${enterLine}"imei编辑：$(ftIniGetValue $filePathConfigHideNum imei编辑 info)"
-                content=${content}${enterLine}"imei显示：$(ftIniGetValue $filePathConfigHideNum imei显示 info)"
-                content=${content}${enterLine}"工程模式：$(ftIniGetValue $filePathConfigHideNum 工程模式 info)"
-                content=${content}${enterLine}"硬件信息查看：$(ftIniGetValue $filePathConfigHideNum 硬件信息查看 info)"
+                #content=${content}${enterLine}"工厂测试：$(ftIniGetValue $filePathConfigHideNum 工厂测试 info)"
+                #content=${content}${enterLine}"imei编辑：$(ftIniGetValue $filePathConfigHideNum imei编辑 info)"
+                #content=${content}${enterLine}"imei显示：$(ftIniGetValue $filePathConfigHideNum imei显示 info)"
+                #content=${content}${enterLine}"工程模式：$(ftIniGetValue $filePathConfigHideNum 工程模式 info)"
+                #content=${content}${enterLine}"硬件信息查看：$(ftIniGetValue $filePathConfigHideNum 硬件信息查看 info)"
                 #content=${content}${enterLine}"sn码显示：$(ftIniGetValue $filePathConfigHideNum sn码 info)"
-            else
-                content=${content}${enterLine}"隐藏指令："
-                content=${content}${enterLine}"imei编辑："
-                content=${content}${enterLine}"imei显示：*#06#"
-                content=${content}${enterLine}"测试模式：*#*#180#*#*"
-                content=${content}${enterLine}"imei单双切换："
-            fi
+            #else
+                #content=${content}${enterLine}"隐藏指令："
+                #content=${content}${enterLine}"imei编辑："
+                #content=${content}${enterLine}"imei显示：*#06#"
+                #content=${content}${enterLine}"测试模式：*#*#180#*#*"
+                #content=${content}${enterLine}"imei单双切换："
+            #fi
 
             #git log 列表
             echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate

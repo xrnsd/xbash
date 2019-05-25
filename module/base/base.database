@@ -244,7 +244,7 @@ dirPathPackage=/media/data/nfs
 dirPathPackageLocal=/media/server/1.55/nfs
 
 [projectSoftwareReadMeInfo]
-recordCreator=吴国献 [lz_wuguoxian@163.com]
+recordCreator=吴国献 [wugx@sxtech.com/15019962261]
 recordMeTag=请在给客户发送软件时,通知下面这位去添加软件版本修改的版本TAG,方便后期追溯
 
 [backupOrRestoreOutsInfo]
