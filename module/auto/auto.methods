@@ -168,13 +168,7 @@ ftBranchNameResolution()
         ftBranchNameResolution --env
         return
     fi
-    local valCount=0 errorContent #index arg arg2 # arg3 # arg4
-    # for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
-    # #((index=i+2)) ; eval arg3=\${${index}} #; ((index=i+3)) ; eval arg4=\${${index}}
-    # case "${arg}" in
-    #     -x ) example1="${arg2}" #"${arg2:-"exampleDef1"}" 
-    #       ;;
-    # * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    local valCount=0 errorContent
 
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
@@ -206,6 +200,7 @@ ftBranchNameResolution()
         IFS=")"
         local arrayItems=($branchName)
         IFS="$OLD_IFS"
+        export AutoEnv_branchName=$branchName
         if [ "$branchName" = "$arrayItems" ];then
                 ftEcho -e "分支名:${branchName} 不合法\n分支信息解析失败"
         else
@@ -217,7 +212,7 @@ ftBranchNameResolution()
                 export AutoEnv_screenScanDirection=
                 export AutoEnv_BandInfo=
                 export AutoEnv_FlashConfig=
-                export AutoEnv_branchName=
+                export AutoEnv_branchName=null
 
                 for item in ${arrayItems[@]} ; do
                         local key=${item%\(*}
