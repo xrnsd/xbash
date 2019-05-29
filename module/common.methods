@@ -2304,11 +2304,6 @@ ftDu()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
-#    ${ftEffect}依赖包 $2
-#    请尝试使用 sudo apt-get install $2 补全依赖
-#========================================================="; return ;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    以下[参数对]无先后顺序可任意组合
@@ -2320,8 +2315,6 @@ ftDu()
 
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #依赖校验
-    [[ -z $(which du) ]] && ftDu --rely "du" && return
     #解参验耦
     local valCount=2 errorContent fileCount=${1:-'10'} dirPathLocal=$(pwd) dirPathTarget=${dirPathLocal}
     (( $#>1 )) && dirPathTarget=$1 && fileCount=${2:-'$fileCount'}

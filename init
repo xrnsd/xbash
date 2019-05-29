@@ -164,11 +164,6 @@ ftInitXbash()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
-#    ${ftEffect}依赖包 $2
-#    请尝试使用 sudo apt-get install $2 补全依赖
-#========================================================="; return ;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #
