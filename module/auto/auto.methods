@@ -25,9 +25,27 @@ ftAutoInitEnv()
     local editType=$1
     if [ -z "$ANDROID_BUILD_TOP" ]\
         ||[ -z "$ANDROID_PRODUCT_OUT" ]\
-        ||[ -z "$TARGET_PRODUCT" ]\
-        ||[ -z "$TARGET_BUILD_VARIANT" ];then
-        ftAutoInitEnv --env
+        ||[ -z "$TARGET_PRODUCT" ];then
+        local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+        local dirPathLocal=$(pwd)
+        if [  -d "${dirPathLocal}/out" ] && [ -n "$branchName" ];then
+            export ANDROID_BUILD_TOP=$dirPathLocal
+            dirPathCode=$ANDROID_BUILD_TOP
+            dirPathOut=${ANDROID_BUILD_TOP}/out/target/product
+            if [[ -d $dirPathOut ]]; then
+                        while read item ;do
+                           if [[ -f ${dirPathOut}/${item}/system/build.prop ]]; then
+                                dirPathOut="${dirPathOut}/${item}"
+                                export TARGET_PRODUCT=full_${item}
+                                export ANDROID_PRODUCT_OUT=$dirPathOut
+                                ftAutoInitEnv $@
+                                return
+                           fi
+                        done < <(echo "$(ls $dirPathOut)")
+            fi
+        else
+            ftAutoInitEnv --env
+        fi
         return
     fi
     local valCount=2 errorContent
@@ -44,7 +62,15 @@ ftAutoInitEnv()
     if [ -d $dirPathVendor ];then
             dirList=$(ls $dirPathVendor)
             for item in $dirList ; do
-                [ $item = "sprd" ] && local mnufacturers=sprd && continue
+                if [ $item = "sprd" ];then
+                     local mnufacturers=sprd
+                    #device路径
+                    export AutoEnv_deviceDirPath=
+                    local dirPathDevice=$(find device/ -name "$(basename $ANDROID_PRODUCT_OUT)")
+                    [[ -d "$dirPathDevice" ]] && export AutoEnv_deviceDirPath=$dirPathDevice
+
+                     continue
+                fi
                 [ $item = "mediatek" ] && local mnufacturers=mtk
             done
     fi
@@ -52,11 +78,6 @@ ftAutoInitEnv()
     [[ -z "$mnufacturers" ]] && ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败" || \
     export AutoEnv_mnufacturers=$mnufacturers
 
-    #device路径
-    export AutoEnv_deviceDirPath=
-    local dirPathDevice=$(find device/ -name "$(basename $ANDROID_PRODUCT_OUT)")
-
-    [[ -d "$dirPathDevice" ]] && export AutoEnv_deviceDirPath=$dirPathDevice
 
     #软件版本名
     export AutoEnv_versionName=
@@ -88,8 +109,12 @@ ftAutoInitEnv()
                             buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
                             if [[ -n "$buildTypeFile" ]];then
                                 buildTypeFile=${buildTypeFile/$keybuildType/}
-                                if [[ -n "$buildType" ]]&&[ "$buildType" != "$buildTypeFile" ];then
-                                    ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
+                                if [[ -n "$buildType" ]];then
+                                    if [ "$buildType" != "$buildTypeFile" ];then
+                                        ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
+                                        buildType=$buildTypeFile
+                                    fi
+                                else
                                     buildType=$buildTypeFile
                                 fi
                             else
@@ -419,8 +444,14 @@ ftAutoBackupOrRestoreOuts()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
+    ftAutoInitEnv
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
     local editType=$1 filterString=$2 valCount=2 errorContent
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    if [ ! -d "$dirPathCode" ]||[  -z "$dirPathCode" ];then
+        errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
+    fi
+
     if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
         if [[ -f "ftAutoBackupOrRestoreOuts" ]];then
             ./ftAutoBackupOrRestoreOuts $editType
@@ -428,14 +459,11 @@ ftAutoBackupOrRestoreOuts()
         fi
         ftAutoBackupOrRestoreOuts --env && return
     fi
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoBackupOrRestoreOuts -h && return
 
     #实现主体
     cd $ANDROID_BUILD_TOP
     #分支名
-    ftAutoInitEnv
     local buildType=$AutoEnv_buildType versionName=$AutoEnv_versionName branchName="$AutoEnv_branchName"
 
     local dirNameCodeRootOuts=outs
@@ -631,6 +659,7 @@ ftAutoPacket()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
+    ftAutoInitEnv
     if [ -z "$ANDROID_BUILD_TOP" ]\
             ||[ -z "$TARGET_PRODUCT" ]\
             ||[ -z "$ANDROID_PRODUCT_OUT" ]\
@@ -669,7 +698,6 @@ ftAutoPacket()
             isPacket=true ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
-    ftAutoInitEnv
     local dirPathLocal=$dirPathCode dirNameVersionSoftware=packet buildType=$AutoEnv_buildType
     local dirPathVersionSoftware=${dirPathCode}/out/${dirNameVersionSoftware}
 
@@ -993,6 +1021,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftAutoCreateReadMeBySoftwareVersion --rely && return
     [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
     #解参验耦
+    ftAutoInitEnv
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT dirPathVersionSoftware=$1
     local filePathConfig=$rFilePathXbashDataBase
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
@@ -1011,7 +1040,6 @@ ftAutoCreateReadMeBySoftwareVersion()
 
     [ ! -d "$dirPathVersionSoftware" ] && mkdir $dirPathVersionSoftware
     cd $dirPathCode && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
-    ftAutoInitEnv
 
     #使用git 记录的修改记录
     local gitCommitListOneDay=$(ftGitLogShell -t "%s" -n 30) gitCommitListBefore=$(ftGitLogShell -t "%s" -n 30)
