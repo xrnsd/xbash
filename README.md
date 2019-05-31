@@ -51,4 +51,5 @@ bash的简单扩展
   2 软件包生成实现更新
   3 软件修改说明模板生成实现更新
   4 java配置更新
+  5 封装ninja命令加速mmm等模块编译命令[参照 https://note.qidong.name/2017/08/android-ninja/]
 ----------
