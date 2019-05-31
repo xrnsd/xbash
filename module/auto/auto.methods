@@ -430,6 +430,8 @@ ftAutoBackupOrRestoreOuts()
 #===================[   ${ftEffect}   ]的使用示例==============
 #    备份out
 #    ftAutoBackupOrRestoreOuts 无参
+#    ftAutoBackupOrRestoreOuts -t 备注
+#
 #    移动匹配out到当前项目
 #    ftAutoBackupOrRestoreOuts -m
 #    ftAutoBackupOrRestoreOuts -m xxx   #分支名包含xxx的out列表
@@ -446,15 +448,21 @@ ftAutoBackupOrRestoreOuts()
     #解参验耦
     ftAutoInitEnv
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
-    local editType=$1 filterString=$2 valCount=2 errorContent
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    local arg arg2 index errorContent 
+    local isMoveBack mTagContent filterString
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+        -t ) mTagContent="${arg2}"
+             ;;
+        -m )  isMoveBack=true
+                filterString="${arg2}"
+             ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
     if [ ! -d "$dirPathCode" ]||[  -z "$dirPathCode" ];then
         errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     fi
-
     if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
         if [[ -f "ftAutoBackupOrRestoreOuts" ]];then
-            ./ftAutoBackupOrRestoreOuts $editType
+            ./ftAutoBackupOrRestoreOuts $@
             return
         fi
         ftAutoBackupOrRestoreOuts --env && return
@@ -462,7 +470,7 @@ ftAutoBackupOrRestoreOuts()
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoBackupOrRestoreOuts -h && return
 
     #实现主体
-    cd $ANDROID_BUILD_TOP
+    cd $dirPathCode
     #分支名
     local buildType=$AutoEnv_buildType versionName=$AutoEnv_versionName branchName="$AutoEnv_branchName"
 
@@ -471,14 +479,15 @@ ftAutoBackupOrRestoreOuts()
     local dirPathCodeRootOuts=${dirPathCode%/*}/${dirNameCodeRootOuts}
     local versionInfoDateTime=$(date -d "today" +"%y%m%d[%H:%M]")
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----${versionInfoDateTime}
+    [[ -n "$mTagContent" ]]&&dirNameBranchVersion=${dirNameBranchVersion}_Tag[${mTagContent}]
     local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
 
     if [ ! -d "$dirPathCodeRootOuts" ];then
-        [[ "$editType" = "-m" ]] && ftEcho -e "${dirNameCodeRootOuts}为空" && return
+        [[ -n "$isMoveBack" ]] && ftEcho -e "${dirNameCodeRootOuts}为空" && return
         mkdir -p $dirPathCodeRootOuts
     fi
 
-    if [[ "$editType" = "-m" ]]; then
+    if [[ -n "$isMoveBack" ]]; then
         if [[ -d "$dirPathOut" ]]||[[ -d "$dirPathOutTop" ]]; then
             #lunch生成的out，视为无效
             local excludeConfigInfo=($(ftIniGetValue $rFilePathXbashDataBase backupOrRestoreOutsInfo excludeConfig))
@@ -496,9 +505,8 @@ ftAutoBackupOrRestoreOuts()
                 return
             fi
         fi
-        local branchName=$filterString
-        [[ -z "$filterString" ]] && branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
+        [[ -n "$filterString" ]] && branchName=$filterString
         local dirPathOutList=($(ls $dirPathCodeRootOuts|grep $branchName))
         [[ -z "$dirPathOutList" ]] && ftEcho -e "未找到\n分支[$branchName]对应的out" && return
 
