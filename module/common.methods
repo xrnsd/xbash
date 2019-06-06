@@ -101,6 +101,9 @@ ftResetXbash()
           ;;
         -c ) export isResetGcc=true
           ;;
+        -cj | -jc ) export isResetGcc=true
+                       export isResetJdk=true
+          ;;
         -s ) export sdkVersionDefault="${arg2}"
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
