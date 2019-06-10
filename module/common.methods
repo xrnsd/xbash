@@ -2403,3 +2403,39 @@ ftAdbPush()
         if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then adb reboot ; fi
     fi
 }
+
+complete -W "-h --help" ftUpdateSublimeSnippet
+ftUpdateSublimeSnippet()
+{
+    local ftEffect=更新SublimetSnippet
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    无参
+#    ftUpdateSublimeSnippet xxxx
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    [[ -z "$SUDO_USER" ]] && userName=$USER || userName=$SUDO_USER
+    local dirPathSublimeSnippet=/home/${userName}/.config/sublime-text-3/Packages/User \
+    dirPathConfigSource=/home/${userName}/xconfig/sublime_text/sublime-snippet
+
+    [ ! -d "$dirPathConfigSource" ] && errorContent="${errorContent}\\n[配置文件不存在]dirPathConfigSource=$dirPathConfigSource"
+    [ ! -d "$dirPathSublimeSnippet" ] && errorContent="${errorContent}\\n[配置文件存放位置不存在]dirPathSublimeSnippet=$dirPathSublimeSnippet"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftUpdateSublimeSnippet -h && return
+
+    #实现主体
+    local userName dirPathLocal=$(pwd) 
+    cd $dirPathSublimeSnippet
+
+        while read item ;do
+           ln -sf ${dirPathConfigSource}/${item}
+        done < <(echo "$(ls $dirPathConfigSource)")
+
+    cd $dirPathLocal
+}
