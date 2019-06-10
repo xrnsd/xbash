@@ -1027,9 +1027,9 @@ ftAutoCreateReadMeBySoftwareVersion()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftAutoCreateReadMeBySoftwareVersion --rely && return
-    [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
     #解参验耦
     ftAutoInitEnv
+    [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT dirPathVersionSoftware=$1
     local filePathConfig=$rFilePathXbashDataBase
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
@@ -1133,10 +1133,14 @@ ftAutoCreateReadMeBySoftwareVersion()
 
             #修改记录头部
             local enterLine="\n"
-            local content="当前版本：$versionName"${enterLine}
-            content=${content}${enterLine}"$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
             content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
+            content=${content}${enterLine}"当前版本：$versionName"
+            content=${content}${enterLine}"基础版本："
+            content=${content}${enterLine}
+            content=${content}${enterLine}"修改记录："
+
             local filePathConfigHideNum=${dirPathCode}/vendor/lz/hideNum.config
             #if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
 
@@ -1161,7 +1165,7 @@ ftAutoCreateReadMeBySoftwareVersion()
             seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
 
             # 合并头部和git log 列表
-            echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+            echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
 
             # 转化为windows下面文件格式
             unix2dos $filePathChangeListTemplate
