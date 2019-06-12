@@ -2441,3 +2441,68 @@ ftUpdateSublimeSnippet()
 
     cd $dirPathLocal
 }
+
+complete -W "-h --help --rely_install" ftOpenNemoTab
+ftOpenNemoTab()
+{
+    local ftEffect=在nemo中打开新标签
+    local isEnable=true
+
+    while true; do case "$1" in
+    --rely) echo -e "\
+#===================[   ${ftEffect}   ]的依赖说明=============
+#     请尝试使用下面方法补全依赖
+#     ftOpenNemoTab --rely_install
+#========================================================="; return ;;
+    --rely_install)
+        ftEcho -s "开始补全依赖"
+        sudo add-apt-repository ppa:webupd8team/nemo
+        sudo apt-get update
+        sudo apt-get install xclip wmctrl xdotool nemo nemo-fileroller
+        sudo apt-get install nemo-compare nemo-media-columns nemo-pastebin nemo-seahorse nemo-share
+        return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    自动补齐依赖
+#    ftOpenNemoTab --rely_install
+# 
+#    打开新标签
+#    ftOpenNemoTab -p 路径
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    if [[ -z $(which xclip) ]] || [[ -z $(which wmctrl) ]] || [[ -z $(which xdotool) ]] || [[ -z $(which nemo) ]] ;then
+        ftOpenNemoTab --rely ;return
+    fi
+    #解参验耦
+    local valCount=2 errorContent index arg arg2
+    local dirPathTarget
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    case "${arg}" in
+        -p ) dirPathTarget="${arg2}" 
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ ! -d "$dirPathTarget" ] && errorContent="${errorContent}\\n[示例1]dirPathTarget=$dirPathTarget"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftOpenNemoTab -h && return
+
+    #实现主体
+    if [ -z "$(wmctrl -xl | grep "nemo.Nemo")" ]; then
+        nemo "$dirPathTarget"
+    else
+        echo -n "$dirPathTarget" | xclip -i -sel clip
+        if wmctrl -xF -R nemo.Nemo ;then
+            xdotool key ctrl+t
+            sleep 0.2
+            xdotool key ctrl+l 
+            xdotool key ctrl+v
+            xdotool key enter Return
+        fi
+        echo -n "" | xclip -i -sel clip
+    fi
+}
