@@ -77,9 +77,11 @@ alias xfs='effect=查找最大的xx[默认10]个文件;ftDu'
 alias xhf='effect=xbash扩展说明查找;ftMain -h |grep -i '
 alias xcb='effect=进入xbash目录;cd $dirPathHomeXbash'
 alias xca='effect=快速切换到Aosp功能目录;ftCdAospDirectory '
+alias xcd='effect=快速切换到不同Aosp项目;ftCdAospProject -n'
 alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
 alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
-alias xcaf='effect=用文件管理器打开Aosp功能目录xbash主入口[旧];ftCdAospDirectory -fm '
+alias xcaf='effect=用文件管理器打开Aosp功能目录;ftCdAospDirectory -fm '
+alias xcdf='effect=用文件管理器切换到不同Aosp项目;ftCdAospProject -fm '
 alias xs2av='effect=android版本查询;ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison'
 
 
@@ -101,6 +103,7 @@ fi
 #命令选项快速适配
 complete -F _ftMainVal xc
 complete -W " -a --adb -j -h -s" xr
+complete -F _cdAospProject xcd
 complete -F _cdAospDirectory xca
 complete -F _cdAospDirectory xcaf
 complete -W "--backup --restore --sd_finish -b -r -s" xb
