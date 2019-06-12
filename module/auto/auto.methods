@@ -400,7 +400,7 @@ ftAutoBuildMultiBranchEnvSeparation()
                 while true; do echo && ftEcho -y gedit 已打开是否关闭
                 read -n 1 sel
                 case "$sel" in
-                    y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}') && break;;
+                    y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}') ; break;;
                     n | N |q | Q)    return;;
                     * ) ftEcho -e 错误的选择：$sel && echo "输入n,q，离开" ; ;;
                 esac ; done

@@ -1392,7 +1392,7 @@ ftPowerManagement()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local edittype=$1 timeLong=$2
+    local edittype=$1 timeLong=$2 filePathFlag=/tmp/xbashPowerManagementFlag
     timeLong=${timeLong:-$2}
     timeLong=${timeLong:-'10'}
     local errorContent
@@ -1405,6 +1405,7 @@ ftPowerManagement()
     while true; do
     case "$edittype" in
         shutdown )
+                touch $filePathFlag
                 tput sc
                 for i in $(seq -w $timeLong -1 1) ; do
                     tput rc;tput ed
@@ -1414,6 +1415,7 @@ ftPowerManagement()
                 echo $userPassword | sudo   -p '' -S shutdown -h now
                 break;;
         reboot)
+                touch $filePathFlag
                 tput sc
                 for i in $(seq -w $timeLong -1 1) ; do
                     tput rc;tput ed
@@ -1918,7 +1920,7 @@ ftGitAddPatch()
             while true; do echo && ftEcho -y gedit 已打开是否关闭
             read -n 1 sel
             case "$sel" in
-                y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}') && break;;
+                y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}') ; break;;
                 n | N |q | Q)    return;;
                 * ) ftEcho -e 错误的选择：$sel && echo "输入n,q，离开" ; ;;
             esac ; done
