@@ -1032,16 +1032,17 @@ ftAutoCreateReadMeBySoftwareVersion()
     [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT dirPathVersionSoftware=$1
     local filePathConfig=$rFilePathXbashDataBase
+    [[ -z "$dirPathVersionSoftware" ]]&&dirPathVersionSoftware=${dirPathOut}/${AutoEnv_versionName}
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
     local valCount=1 errorContent
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    #(( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
     [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[工程out目录不存在]filePathConfig=$filePathConfig"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCreateReadMeBySoftwareVersion -h && return
 
     #实现主体
-    local dirPathLocal=${PWD} fileNameReadMeTemplate=客户说明.txt fileNameChangeListTemplate=修改记录.txt
+    local dirPathLocal=${PWD} fileNameReadMeTemplate=客户说明.txt fileNameChangeListTemplate=版本说明.txt
     local filePathReadMeTemplate=${dirPathVersionSoftware}/${fileNameReadMeTemplate}
     local filePathChangeListTemplate=${dirPathVersionSoftware}/${fileNameChangeListTemplate}
     local versionName=$AutoEnv_versionName
@@ -1050,7 +1051,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     cd $dirPathCode && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
     #使用git 记录的修改记录
-    local gitCommitListOneDay=$(ftGitLogShell -t "%s" -n 30) gitCommitListBefore=$(ftGitLogShell -t "%s" -n 30)
+    local gitCommitListOneDay=$(ftGitLogShell -t "%h %s" -n 30) gitCommitListBefore=$(ftGitLogShell -t "%h %s" -n 30)
 
 # ===============================================
 # =================     修改记录    ==================
@@ -1171,6 +1172,7 @@ ftAutoCreateReadMeBySoftwareVersion()
             unix2dos $filePathChangeListTemplate
     fi
 
+    ftEcho -s "生成 ${filePathChangeListTemplate}"
     rm ${filePathChangeListTemplate}.temp
     cd $dirPathLocal
     trap  SIGINT
@@ -1351,4 +1353,66 @@ ftAutoTest()
         for pid in $(ps -ef |grep adb |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
         [[ -n $(adb shell ls ${dirPathDevicesTarget}/mtklog) ]] && ftEcho -s "正在导出mtklog,请稍等..." && adb pull ${dirPathDevicesTarget}/mtklog $dirPathLogMonkey
         mv $dirPathLogMonkey ${dirPathLogMonkey}_done
+}
+
+complete -W "-t -h --help" ftAutoAddGitTag
+ftAutoAddGitTag()
+{
+    local ftEffect=添加git的TAG
+    local isEnable=true
+
+    while true; do case "$1" in
+    --rely) echo -e "\
+#===================[   ${ftEffect}   ]的依赖说明=============
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoAddGitTag -t
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which git) ]] && ftExample --rely "git" && return
+    #解参验耦
+    local valCount=1 errorContent index arg arg2
+    local tagName noteContent
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    case "${arg}" in
+        -t ) tagName="${arg2}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    # (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$tagName" ] && errorContent="${errorContent}\\n[示例1]tagName=$tagName"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoAddGitTag -h && return
+
+    #实现主体
+    local fileNameVersionNote="${tagName}的相应说明"
+    local filePathVersionNote=/tmp/${fileNameVersionNote}
+    if [ -n "$(pgrep -f gedit)" ];then
+            while true; do echo && ftEcho -y gedit 已打开是否关闭
+            read -n 1 sel
+            case "$sel" in
+                y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}') ; break;;
+                n | N |q | Q)    return;;
+                * ) ftEcho -e 错误的选择：$sel && echo "输入n,q，离开" ; ;;
+            esac ; done
+    fi
+    if touch $filePathVersionNote ; then
+        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit $filePathVersionNote
+    else
+        ftEcho -ex "创建临时说明信息文件失败"
+        return;
+    fi
+
+    noteContent=$(cat $filePathVersionNote)
+    rm -rf $filePathVersionNote
+    [[ -z "$noteContent" ]] && ftEcho -e "空的备注信息，将使用commit名作为备注信息" && noteContent=$(ftGitLogShell -t "%s" -n 1)
+
+    git tag -a "$tagName" -m "${noteContent[@]}"
 }
