@@ -2506,3 +2506,102 @@ ftOpenNemoTab()
         echo -n "" | xclip -i -sel clip
     fi
 }
+
+_cdAospDirectory() 
+{
+    local ftEffect=快速进入Aosp功能目录参数补全实现
+    local isEnable=def
+
+    local curr_arg=${COMP_WORDS[COMP_CWORD]}
+    COMPREPLY=( $(compgen -W 'app out frameworks' ) )
+    case "${COMP_WORDS[1]}" in
+                    app)         COMPREPLY=( $(compgen -W 'settings launcher dialer factorytest' -- $curr_arg ) )
+                                  ;;
+                    out)  COMPREPLY=( $(compgen -W "product productObj system commonObj " -- $curr_arg ) )
+                                ;;
+                    frameworks)  COMPREPLY=( $(compgen -W 'base opt ' ) );
+                                case "${COMP_WORDS[2]}" in
+                                                base)  COMPREPLY=( $(compgen -W 'cmd core data packages services' ) );
+                                                            case "${COMP_WORDS[3]}" in
+                                                                            packages)  COMPREPLY=( $(compgen -W 'systemui settingsprovider' -- $curr_arg ) ); ;;
+                                                                            core)  COMPREPLY=( $(compgen -W 'java res' -- $curr_arg ) ); ;;
+                                                            esac
+                                                            ;;
+                                esac
+                                ;;
+                    *)  COMPREPLY=( $(compgen -W 'app out frameworks settings launcher dialer factorytest product productObj system commonObj base opt cmd core data packages services systemui settingsprovider java res' -- $curr_arg ) ); ;;
+      esac
+}
+complete -F _cdAospDirectory -A file ftCdAospDirectory
+ftCdAospDirectory()
+{
+    local ftEffect=快速进入Aosp功能目录
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    切换终端路径
+#    ftCdAospDirectory xxx xxx xxxx
+#
+#    在文件管理器中打开
+#    ftCdAospDirectory -fm xxx xxx xxxx
+#
+#    xxx 说明
+#    树位置代表参数自动适配顺序，函数行为以最后一个参数为准
+#    在最后一个参数不存在重复时，可以直接使用最后一个参数
+        ├──app
+        │   └── settings / launcher / dialer / factorytest
+        ├──frameworks
+        │   ├── base
+        │   │    ├── cmd / data / services
+        │   │    ├── packages
+        │   │    │     └── systemui / settingsprovider
+        │   │    └── core
+        │   │          └── res/ java
+        │   └── opt
+        └── out
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local valCount=1 errorContent index arg arg2  arg3  arg4
+    local isUserFileManager dirPathTarget
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    ((index=i+2)) ; eval arg3=\${${index}} ; ((index=i+3)) ; eval arg4=\${${index}}
+    case "${arg}" in
+        -fm ) isUserFileManager=true ;;
+        settings ) dirPathTarget="packages/apps/Settings" ;;
+        launcher ) dirPathTarget="packages/apps/Launcher3" ;;
+        dialer ) dirPathTarget="packages/apps/Dialer" ;;
+        factorytest ) dirPathTarget="packages/apps/Macfactorytest" ;;
+        base ) dirPathTarget="frameworks/base" ;;
+        opt ) dirPathTarget="frameworks/opt" ;;
+        cmd ) dirPathTarget="frameworks/base/cmds" ;;
+        core ) dirPathTarget="frameworks/base/core" ;;
+        java ) dirPathTarget="frameworks/base/core/java" ;;
+        res ) dirPathTarget="frameworks/base/core/res/res" ;;
+        data ) dirPathTarget="frameworks/base/data" ;;
+        packages ) dirPathTarget="frameworks/base/packages" ;;
+        systemui ) dirPathTarget="frameworks/base/packages/SystemUI" ;;
+        settingsprovider ) dirPathTarget="frameworks/base/packages/SettingsProvider" ;;
+        services ) dirPathTarget="frameworks/base/services" ;;
+        commonObj ) dirPathTarget="out/target/common/obj" ;;
+        product |system |productObj )
+                        local dirPathProduct="out/target/product"
+                        while read item ;do
+                           [[ -f "${dirPathProduct}/${item}/system.img" ]] && dirPathProduct=${dirPathProduct}/${item} && break
+                        done < <(echo "$(ls $dirPathProduct)")
+
+                        [[ "${arg}" = "system" ]] && dirPathTarget="${dirPathProduct}/system"
+                        [[ "${arg}" = "productObj" ]] && dirPathTarget="${dirPathProduct}/obj"
+                        [[ -z "$dirPathTarget" ]]  && dirPathTarget="${dirPathProduct}"
+        ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    [[ ! -d "$dirPathTarget" ]] && ftEcho -e "找不到${dirPathTarget}" && return
+    [[ -z "$isUserFileManager" ]] && cd $dirPathTarget && return
+    ftOpenNemoTab -p $(pwd)/${dirPathTarget}
+}
