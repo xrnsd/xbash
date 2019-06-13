@@ -1154,16 +1154,14 @@ ftMtkFlashTool()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local flashTool="$(ftIniGetValue $rFilePathXbashDataUser MtkFlashToolVersion versionName)"
-    local toolDirPath="${rDirPathTools}/${flashTool}"
+    local flashToolPath="$(ftIniGetValue $rFilePathXbashModuleDataBaseUser MtkSpFlashToolVersion toolsPath)"
     local errorContent
-    [ -z "$flashTool" ] && errorContent="${errorContent}\\n[mtk下载工具版本未知]flashTool=$flashTool"
-    [ ! -d "$toolDirPath" ] && errorContent="${errorContent}\\n[mtk下载工具路径不存在]toolDirPath=$toolDirPath"
+    [ ! -f "$flashToolPath" ] && errorContent="${errorContent}\\n[mtk下载工具不存在]flashToolPath=$flashToolPath"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的出现错误:${errorContent}\\n" && return
 
     #实现主体
     echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
-    sudo ${toolDirPath}/flash_tool
+    sudo $flashToolPath
 }
 
 complete -W "create new" ftBootAnimation
