@@ -21,6 +21,12 @@ if [ "$(whoami)" != "root" ];then
         bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryThresholdSize)
         mkdir $rDirPathXbashModuleUser > /dev/null
         ftIniCreateFileOrTag -r -p $filePathXbashDataBaseUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
+
+        #added ftMtkFlashTool database null config
+        ftIniCreateFileOrTag -a -p $filePathXbashDataBaseUser -t "MtkSpFlashToolVersion" -l "toolsPath="
+        #added ftCdAospProject database null config
+        ftIniCreateFileOrTag -a -p $filePathXbashDataBaseUser -t "AospProjectsInfo" -l "AospProjectNameList="
+        ftIniAddItem -p $filePathXbashDataBaseUser -t "AospProjectsInfo"  -l "AospProjectStoragePathList="
     fi
 
     if (($bashHistorySize>$bashHistorySizeBase)); then
