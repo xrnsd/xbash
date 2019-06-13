@@ -1279,7 +1279,7 @@ ftAutoTest()
     local filePathLogMonkey=${dirPathLogMonkey}/monkey.log
     local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
     local dirPathDevicesTarget="/storage/sdcard0"
-    local logcatFlag #="*:E" monkeyConfig
+    local monkeyConfig logcatFlag #="*:E"
 
     # monkey命令参数配置
         # monkeyConfig=${monkeyConfig}" --wait-dbg"
@@ -1306,7 +1306,7 @@ ftAutoTest()
         monkeyConfig=${monkeyConfig}" ${eventCount}"
 
     #adb状态确认
-        adb wait-for-device
+        ftEcho -s "等待设备连接" && adb wait-for-device && ftEcho -s "连接设备成功"
         local adbStatus=$(adb get-state)
         [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
     #环境清理
@@ -1320,33 +1320,34 @@ ftAutoTest()
         adb pull $filePathDeviceInfo $dirPathLogMonkey > /dev/null&& ftEcho -s "设备信息已保存到${dirPathLogMonkey}"
     #开始测试
         if (( $rebootCount==$rebootCountDef ));then
+                echo monkeyConfig=${monkeyConfig[@]}
                 adb logcat "$logcatFlag" > $filePathLogAdbLogcat &
                 adb shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
         else
                 while true; do
-                ftEcho -s "等待设备连接" && adb wait-for-device && ftEcho -s "连接设备成功"
-                [ "$(adb get-state)" != "device" ] && ftEcho -e "设备连接状态异常,请重新尝试" && break
-                tput sc ; while [[ -z $(adb shell ps |grep launcher) ]]; do
-                    tput rc;tput ed
-                    ftEcho -sn "等待launcer启动..."
-                    sleep 5
-                done ;echo
+                    ftEcho -s "等待设备连接" && adb wait-for-device && ftEcho -s "连接设备成功"
+                    [ "$(adb get-state)" != "device" ] && ftEcho -e "设备连接状态异常,请重新尝试" && break
+                    tput sc ; while [[ -z $(adb shell ps |grep launcher) ]]; do
+                        tput rc;tput ed
+                        ftEcho -sn "等待launcer启动..."
+                        sleep 5
+                    done ;echo
 
-                if (($rebootTimeLong!=$rebootTimeLongDef)); then
-                    timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
-                    timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
-                else
-                    adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
-                    adb shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
-                fi
+                    if (($rebootTimeLong!=$rebootTimeLongDef)); then
+                        timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
+                        timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+                    else
+                        adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
+                        adb shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
+                    fi
 
-                rebootCount=$((rebootCount - 1))
-                if (( $rebootCount>0 )); then
-                    ftEcho -s "开始设备重启"
-                    adb reboot
-                else
-                    break
-                fi
+                    rebootCount=$((rebootCount - 1))
+                    if (( $rebootCount>0 )); then
+                        ftEcho -s "开始设备重启"
+                        adb reboot
+                    else
+                        break
+                    fi
             done
         fi
     #扫尾
