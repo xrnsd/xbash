@@ -104,6 +104,7 @@ fi
 complete -F _ftMainVal xc
 complete -W " -a --adb -j -h -s" xr
 complete -F _cdAospProject xcd
+complete -F _cdAospProject xcdf
 complete -F _cdAospDirectory xca
 complete -F _cdAospDirectory xcaf
 complete -W "--backup --restore --sd_finish -b -r -s" xb
