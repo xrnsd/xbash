@@ -2463,8 +2463,8 @@ ftOpenNemoTab()
         ftEcho -s "开始补全依赖"
         sudo add-apt-repository ppa:webupd8team/nemo
         sudo apt-get update
-        sudo apt-get install xclip wmctrl xdotool nemo nemo-fileroller
-        sudo apt-get install nemo-compare nemo-media-columns nemo-pastebin nemo-seahorse nemo-share
+        sudo apt-get install -y xclip wmctrl xdotool nemo nemo-fileroller
+        sudo apt-get install -y nemo-compare nemo-media-columns nemo-pastebin nemo-seahorse nemo-share
         return ;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
@@ -2568,11 +2568,21 @@ ftCdAospDirectory()
         └── out
              └──  commonObj / product / productObj / system
 #========================================================="; return ;;
+    --env) echo -e "\
+#===================[   ${ftEffect}   ]的使用环境说明==============
+# 当前非有效AOSP目录，请确认
+# 可以尝试使用 ftCdAospProject 快速进入项目
+#========================================================="; return ;;
     * ) break;;esac;done
 
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
+    if [[ ! -d "alps" ]]&&[ ! -d "idh" ]; then
+        if [[ ! -d "build" ]] && [[ ! -d "frameworks" ]] && [[ ! -d "ndk" ]] && [[ ! -d "dalvik" ]] && [[ ! -d "vendor" ]];then
+            ftCdAospDirectory --env&& return
+        fi
+    fi
     local valCount=1 errorContent index arg arg2 arg3  arg4 argVal
     local isUserFileManager dirPathTarget
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
@@ -2598,6 +2608,8 @@ ftCdAospDirectory()
     if [[ ! -d "$dirPathTarget" ]];then
         if [[ -d "alps/${dirPathTarget}" ]];then
             dirPathTarget=alps/${dirPathTarget}
+        elif [[ -d "idh/${dirPathTarget}" ]];then
+            dirPathTarget=idh/${dirPathTarget}
         else
             ftEcho -e "找不到${dirPathTarget}" && return
     fi ;fi
