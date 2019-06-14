@@ -28,7 +28,16 @@ ftMain()
 
     while true; do case $1 in
     -v | --version )
-                echo \"Xrnsd extensions to bash\" $rXbashVersion
+                local dirPathLocal=$(pwd) flag="-v beta"
+                local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+
+                cd $rDirPathXbash
+                [[ "$branchNameNow" = "master" ]] && flag="-i beta"
+                local tagList=($(git tag |grep ${flag} ))
+                local length=${#tagList[@]}
+                ((length-=1))
+                echo -n \"Xrnsd extensions to bash\" && ftEcho -s " ${tagList[$length]}"
+                cd "${dirPathLocal}"
                 break;;
     -t | test )
                 ftTest "$@"
