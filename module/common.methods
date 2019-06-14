@@ -29,9 +29,8 @@ ftMain()
     while true; do case $1 in
     -v | --version )
                 local dirPathLocal=$(pwd) flag="-v beta"
-                local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-
                 cd $rDirPathXbash
+                local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
                 [[ "$branchNameNow" = "master" ]] && flag="-i beta"
                 local tagList=($(git tag |grep ${flag} ))
                 local length=${#tagList[@]}
