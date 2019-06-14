@@ -1558,12 +1558,13 @@ ftReNameFile()
     [[ -z $(ls $dirPathFileList) ]] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
 
     local index=0 fileName fileSuffixName itemNew
-    local fileList=($(ls $dirPathFileList))
     local dirNameFileListRename=RenameFiles
     local dirPathFileListRename=${dirPathFileList}/${dirNameFileListRename}
+    local dirPathLocal=$(pwd)
 
     [ -d $dirPathFileListRename ] && rm -rf $dirPathFileListRename
-    mkdir $dirPathFileListRename;cd $dirPathFileList
+    mkdir $dirPathFileListRename
+    cd "${dirPathFileList}"
 
     while read file ;do
         [ "$file" == "$dirNameFileListRename" ] && continue
@@ -1587,6 +1588,7 @@ ftReNameFile()
         cp -rf "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileName}.${fileSuffixName}
         ((index+=1))
     done < <(echo "$(ls $dirPathFileList)")
+    cd "${dirPathLocal}"
 }
 
 complete -W "-b -r -s" ftMaintainSystem
