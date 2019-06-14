@@ -2116,7 +2116,7 @@ ftPdfPasswordClear()
     [[ -z $(which qpdf) ]] && ftPdfPasswordClear --rely "qpdf" && return
     #解参验耦
     local dirPathTarget passwordNum
-    local valCount=2 errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local valCount=4 errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -d ) dirPathTarget="${arg2}"    ;;
         -p ) passwordNum="${arg2}"  ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
@@ -2126,22 +2126,26 @@ ftPdfPasswordClear()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPdfPasswordClear -h && return
 
     #实现主体
-    SAVEIFS=$IFS
-    IFS=$(echo -en "\n\b")
+    local  itemNew
+    while read item ;do
+        itemNew=$(echo ${item} |sed s/[[:space:]]/_/g)
+        [[ "${item}" != "${itemNew}" ]] && mv "${dirPathTarget}/${item}" "${dirPathTarget}/${itemNew}" && item="${itemNew}"
+        local dirPathTemp="${dirPathTarget}/${item}"
 
-    cd "${dirPathTarget}"
-    ls $1 | while read line ; do
-        local dirPathTemp="${dirPathTarget}/${line}"
         if [[ -d "$dirPathTemp" ]]; then
-            ftPdfPasswordClear -d "$dirPathTemp" -p "$passwordNum"
-        elif [[ -n $(echo $line |grep -i ".pdf") ]]; then
-            local dirPathTemp2="${dirPathTarget}/temp_${line}"
-            cp -rf $dirPathTemp $dirPathTemp2
-            qpdf --password='$passwordNum' --decrypt $dirPathTemp2 $dirPathTemp && ftEcho -sn "${dirPathTemp}";echo "  [密码已清除]"
-            rm "${dirPathTemp2}" > /dev/null
+            ftPdfPasswordClear -d "${dirPathTemp}" -p "${passwordNum}"
+
+        elif [[ -n $(echo $item |grep -i ".pdf") ]]; then
+            local filePath="${dirPathTemp}"
+            local filePathTemp="/tmp/temp_${item}"
+
+            cp "${filePath}" "${filePathTemp}"
+            [ ! -f "$filePath" ] && ftEcho -s "${filePath}  不存在" && continue
+            qpdf --password="${passwordNum}" --decrypt "${filePathTemp}" "${filePath}" && ftEcho -s "[密码已清除] ${item}" || ftEcho -e "[密码清除失败] ${item}"
+            rm "${filePathTemp}" > /dev/null
+
         fi
-    done
-    IFS=$SAVEIFS
+    done < <(echo "$(ls $dirPathTarget)")
 }
 
 complete -W "-f" ftApkSignature
