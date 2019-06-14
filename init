@@ -1,30 +1,11 @@
 #!/bin/bash
 #####-----------------------变量初始化-----------------------#########
 exceptionContent=
-# 获取xbash所在目录 获取用户名,用户名对应密码
-# 根据 config/example.config 新建 config/用户名.config，在.gitignore中插入记录
-# 根据 module/bashrc/example.bashrc 新建 module/bashrc用户名.bashrc ，在.gitignore中插入记录
-
-isFail=
+userPasswdLocal=
 diaNameLocal="xbash"
 dirPathLocal=$(cd "$(dirname "$0")";pwd)
-
 [[ -z "$SUDO_USER" ]] && userNameLocal=$USER || userNameLocal=$SUDO_USER
 dirPathHomeLocal=/home/${userNameLocal}
-
-userPasswdLocal=def_null
-status=1
-stty -echo
-while [[ status -ne "0" ]]; do
-    if [[ $userPasswdLocal != "def_null" ]]; then
-        echo -e "\033[1;31m密码错误,请重新输入\033[0m";
-    fi
-    echo -en "请输入用户[$userNameLocal]对应的密码:"
-    read -s userPasswdLocal
-    echo $userPasswdLocal | sudo -p '' -S echo 2> /dev/null
-    status=$?
-done||exceptionContent=" 用户信息配置初始化失败"
-stty echo
 #####-----------------------公共方法-----------------------#########
 ftEcho()
 {
@@ -38,7 +19,7 @@ ftEcho()
         local cmdContentNew="${4}"
         echo -n "${titleContent}[y/n](回车默认y)"
         read -n 1 sel
-        [ ${#sel} == 0 ] && sel=y
+        [ -z "${sel}" ] && sel=y
         while true; do case "$sel" in
                 y | Y )  eval ${cmdContentNew};break;;
                 n | q )  eval ${cmdContent};break;;
@@ -50,6 +31,9 @@ ftEcho()
 
 ftInitGitConfig()
 {
+    # 变量初始化
+    [[ -z "$userPasswdLocal" ]] && ftinitUserPassword
+
     if [[ -z $(which git) ]];then
         echo $userPasswdLocal | sudo -p '' -S apt-get install  git ||(ftEcho -e "git安装失败，请重新安装" ;exit)
     fi
@@ -71,6 +55,9 @@ ftInitGitConfig()
 
 ftInitUserConfig()
 {
+    # 变量初始化
+    [[ -z "$userPasswdLocal" ]] && ftinitUserPassword
+
     local dirPathXbashConfigBashrc=${dirPathLocal}/config
     local dirPathXbashConfigBashrcUser=${dirPathXbashConfigBashrc}/user
     local filePathXbashConfigExample=${dirPathXbashConfigBashrc}/expmale.config
@@ -86,8 +73,8 @@ ftInitUserConfig()
             sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败" 
         fi
 
-        local tagisUseCustomPS1Base="isUseCustomPS1="
-        ftEcho -y "是否启用xbash定义bash的命令行前缀" "tagisUseCustomPS1New=" "tagisUseCustomPS1New=\"isUseCustomPS1=true\""
+        local tagisUseCustomPS1Base="export\ isUseCustomPS1="
+        ftEcho -y "是否启用xbash定义bash的命令行前缀" "tagisUseCustomPS1New=" "tagisUseCustomPS1New=\"export\ isUseCustomPS1=true\""
         if [ -n "${tagisUseCustomPS1New}" ];then
             sed -i "s:$tagisUseCustomPS1Base:$tagisUseCustomPS1New:g" $filePathXbashConfigNew||\
             exceptionContent="${exceptionContent}\n xbash定义bash的命令行前缀启用失败"
@@ -154,19 +141,71 @@ ftInitInputrc()
     cd $dirPathLocal
 }
 
-#####-----------------------配置文件生成-----------------------#########
-# git config
-ftInitGitConfig
-# config
-ftInitUserConfig
-# module
-ftInitMoule
-#.inputrc
-ftInitInputrc
+ftinitUserPassword()
+{
+        userPasswdLocal=def_null
+        local status=1
+        stty -echo
+        while [[ status -ne "0" ]]; do
+            if [[ $userPasswdLocal != "def_null" ]]; then
+                echo -e "\033[1;31m密码错误,请重新输入\033[0m";
+            fi
+            echo -en "请输入用户[$userNameLocal]对应的密码:"
+            read -s userPasswdLocal
+            echo $userPasswdLocal | sudo -p '' -S echo 2> /dev/null
+            status=$?
+        done||exceptionContent=" 用户信息配置初始化失败"
+        stty echo
+}
 
-#####-----------------------初始化结果信息显示-----------------------#########
-if [[ -z "$exceptionContent" ]]; then
-    ftEcho -s "Xbash 初始化成功 "
-else
-    ftEcho -e "${exceptionContent}"
-fi
+ftInitXbash()
+{
+    local ftEffect=初始化xbash
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ./init                            #初始化xbash所有配置
+#    ./init --git                     #初始化xbash使用的git配置
+#    ./init --userconfig        #初始化xbash的用户配置
+#    ./init --module             #初始化xbash的module配置
+#    ./init --inputrc              #初始化xbash的命令历史查找配置
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    if [[ -z "$1" ]];then #初始化所有配置
+        # 变量初始化
+        [[ -z "$userPasswdLocal" ]] && ftinitUserPassword
+
+        #配置初始化
+        ftInitGitConfig
+        ftInitUserConfig
+        ftInitMoule
+        ftInitInputrc
+
+        #结果显示
+        [[ -z "$exceptionContent" ]] && ftEcho -s "Xbash 初始化成功 " || ftEcho -e "${exceptionContent}"
+        return
+    fi
+    #根据参数初始化
+    local index arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    case "${arg}" in
+        --git )ftInitGitConfig
+                return ;;
+        --userconfig )ftInitUserConfig
+                return ;;
+        --module )ftInitMoule
+                return ;;
+        --inputrc )ftInitInputrc
+                return ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+}
+
+#####-----------------------开始初始化-----------------------#########
+ftInitXbash $@

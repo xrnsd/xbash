@@ -1,0 +1,42 @@
+#!/bin/bash
+#处理bash历史记录
+if [ "$(whoami)" != "root" ];then
+    filePathBashHistory=${dirPathHome}/.bash_history
+
+    #历史去重
+    filePathBashHistoryTemp=${filePathBashHistory}_temp
+    filePathBashHistoryArchive=${filePathBashHistory}_archive
+    filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
+    cat $filePathBashHistory >> $filePathBashHistoryArchive \
+    && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
+    && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
+
+    bashHistorySize=$(awk 'END{print NR}' $filePathBashHistoryArchive)
+
+    #历史扩容
+    filePathXbashDataBaseUser=${rDirPathXbashModuleUser}/${rUserName}.database
+    if [[ -f $filePathXbashDataBaseUser ]]; then
+        bashHistorySizeBase=$(ftIniGetValue  $filePathXbashDataBaseUser xbash bashHistoryThresholdSize)
+    else
+        bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryThresholdSize)
+        mkdir $rDirPathXbashModuleUser > /dev/null
+        ftIniCreateFileOrTag -r -p $filePathXbashDataBaseUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
+
+        #added ftMtkFlashTool database null config
+        ftIniCreateFileOrTag -a -p $filePathXbashDataBaseUser -t "MtkSpFlashToolVersion" -l "toolsPath="
+        #added ftCdAospProject database null config
+        ftIniCreateFileOrTag -a -p $filePathXbashDataBaseUser -t "AospProjectsInfo" -l "AospProjectNameList="
+        ftIniAddItem -p $filePathXbashDataBaseUser -t "AospProjectsInfo"  -l "AospProjectStoragePathList="
+    fi
+
+    if (($bashHistorySize>$bashHistorySizeBase)); then
+        ((bashHistorySize=$bashHistorySize+$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryIncrementalSize)))
+        ftIniSetValue $filePathXbashDataBaseUser xbash bashHistoryThresholdSize $bashHistorySize
+    else
+        bashHistorySize=$bashHistorySizeBase
+    fi
+
+    export HISTSIZE=$bashHistorySize
+    export HISTFILESIZE=$bashHistorySize
+    cp -rf $filePathBashHistoryArchive $filePathBashHistory
+fi

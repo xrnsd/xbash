@@ -5,16 +5,11 @@ ftAutoInitEnv()
     local ftEffect=初始化xbash_Android_build相关所需的部分环境变量
     local isEnable=true
 
-    local dirPathCode=$ANDROID_BUILD_TOP
-    local dirPathOut=$ANDROID_PRODUCT_OUT
-    local buildType=$TARGET_BUILD_VARIANT
-    local editType=$1
-
     while true; do case "$1" in
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    ftAutoInitEnv 无参
-#    ftAutoInitEnv -bp #build.prop高级信息读取
+#    ftAutoInitEnv -bp #强制解析build.prop信息
 #========================================================="; return ;;
     --env ) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
@@ -25,84 +20,40 @@ ftAutoInitEnv()
 
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #耦合校验
+    #解参验耦
+    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT buildType=$TARGET_BUILD_VARIANT
+    local editType=$1
     if [ -z "$ANDROID_BUILD_TOP" ]\
         ||[ -z "$ANDROID_PRODUCT_OUT" ]\
-        ||[ -z "$TARGET_PRODUCT" ]\
-        ||[ -z "$TARGET_BUILD_VARIANT" ];then
-        ftAutoInitEnv --env
+        ||[ -z "$TARGET_PRODUCT" ];then
+        local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+        local dirPathLocal=$(pwd)
+        if [  -d "${dirPathLocal}/out" ] && [ -n "$branchName" ];then
+            export ANDROID_BUILD_TOP=$dirPathLocal
+            dirPathCode=$ANDROID_BUILD_TOP
+            dirPathOut=${ANDROID_BUILD_TOP}/out/target/product
+            if [[ -d $dirPathOut ]]; then
+                        while read item ;do
+                           if [[ -f ${dirPathOut}/${item}/system/build.prop ]]; then
+                                dirPathOut="${dirPathOut}/${item}"
+                                export TARGET_PRODUCT=full_${item}
+                                export ANDROID_PRODUCT_OUT=$dirPathOut
+                                ftAutoInitEnv $@
+                                return
+                           fi
+                        done < <(echo "$(ls $dirPathOut)")
+            fi
+        else
+            ftAutoInitEnv --env
+        fi
         return
     fi
-    local valCount=2
-    local errorContent=
+    local valCount=2 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoInitEnv -h && return
 
     #实现主体
-    # build.prop高级信息读取
-    export AutoEnv_deviceModelName=
-    export AutoEnv_deviceSoftType=
-    export AutoEnv_deviceSoftVersion=
-    export AutoEnv_deviceSdkVersion=
-    export AutoEnv_AndroidVersion=
-
-    local keySoftType="ro.build.type="
-    local keyModel="ro.product.model="
-    local keySoftVersion="ro.build.display.id="
-    local keySDKVersion="ro.build.version.sdk="
-    local filePathSystemBuildprop=${dirPathOut}/system/build.prop
-
-    if [ "$2" = "-mobile" ];then
-                adb wait-for-device
-                local adbStatus=$(adb get-state)
-                if [ "$adbStatus" = "device" ];then
-                    local deviceModelName=$(adb shell cat /system/build.prop|grep "$keyModel")
-                    local deviceSoftType=$(adb shell cat /system/build.prop|grep "$keySoftType")
-                    local deviceSoftVersion=$(adb shell cat /system/build.prop|grep "$keySoftVersion")
-                    local deviceSdkVersion=$(adb shell cat /system/build.prop|grep "$keySDKVersion")
-                else
-                        ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试"
-                       return
-                fi
-    elif [ -f "$filePathSystemBuildprop" ];then
-                local deviceModelName=$(cat $filePathSystemBuildprop|grep "$keyModel")
-                local deviceSoftType=$(cat $filePathSystemBuildprop|grep "$keySoftType")
-                local deviceSoftVersion=$(cat $filePathSystemBuildprop|grep "$keySoftVersion")
-                local deviceSdkVersion=$(cat $filePathSystemBuildprop|grep "$keySDKVersion")
-    elif [ "$1" = "-bp" ];then
-               ftEcho -s "未找到 $filePathSystemBuildprop\n版本软件信息未获取"
-               return
-    fi
-
-    if [[ -n "$deviceSoftVersion" ]];then
-            deviceModelName=${deviceModelName//$keyModel/}
-            deviceModelName=${deviceModelName// /_}
-            deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
-            deviceModelName=${deviceModelName:-'null'}
-            export AutoEnv_deviceModelName=$deviceModelName
-
-            deviceSoftType=${deviceSoftType//$keySoftType/}
-            deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
-            deviceSoftType=${deviceSoftType:-'null'}
-            export AutoEnv_deviceSoftType=$deviceSoftType
-
-            deviceSoftVersion=${deviceSoftVersion//$keySoftVersion/}
-            deviceSoftVersion=$(echo $deviceSoftVersion |sed s/[[:space:]]//g)
-            deviceSoftVersion=${deviceSoftVersion:-'null'}
-            export AutoEnv_deviceSoftVersion=$deviceSoftVersion
-
-            deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
-            deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
-            deviceSdkVersion=${deviceSdkVersion:-'null'}
-            export AutoEnv_deviceSdkVersion=$deviceSdkVersion
-            local AndroidVersion=$(ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison $deviceSdkVersion)
-            export AutoEnv_AndroidVersion=$AndroidVersion
-    fi
-
-    [ "$editType" = "-bp" ] && return
-    # build.prop高级信息读取 end
-
     local dirPathLocal=$PWD
     cd $dirPathCode
 
@@ -111,49 +62,41 @@ ftAutoInitEnv()
     if [ -d $dirPathVendor ];then
             dirList=$(ls $dirPathVendor)
             for item in $dirList ; do
-                [ $item = "sprd" ] && local mnufacturers=sprd && continue
+                if [ $item = "sprd" ];then
+                     local mnufacturers=sprd
+                    #device路径
+                    export AutoEnv_deviceDirPath=
+                    local dirPathDevice=$(find device/ -name "$(basename $ANDROID_PRODUCT_OUT)")
+                    [[ -d "$dirPathDevice" ]] && export AutoEnv_deviceDirPath=$dirPathDevice
+
+                     continue
+                fi
                 [ $item = "mediatek" ] && local mnufacturers=mtk
             done
     fi
-    [[ -z "$mnufacturers" ]] && ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败"
+    export AutoEnv_mnufacturers=
+    [[ -z "$mnufacturers" ]] && ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败" || \
+    export AutoEnv_mnufacturers=$mnufacturers
 
-    #device路径
-    export AutoEnv_deviceDirPath=
-    local dirPathDevice=$(find device/ -name "$(basename $ANDROID_PRODUCT_OUT)")
-
-    [[ -d "$dirPathDevice" ]] && export AutoEnv_deviceDirPath=$dirPathDevice
-
-    #分支名
-    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
     #软件版本名
-    if [ $mnufacturers = "sprd" ];then
-            local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-            local filePathDeviceInfoSettings=${dirPathCode}/packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-            if [ -f $filePathDeviceInfoSettings ];then
-                local versionName=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-                versionName=${versionName//$keyVersion/}
-                versionName=${versionName//\");/}
-                versionName=$(echo $versionName |sed s/[[:space:]]//g)
+    export AutoEnv_versionName=
+    local filePathOutBuildProp=${dirPathOut}/system/build.prop
+    if [ -f $filePathOutBuildProp ];then
+            local keyVersion="ro.build.display.id="
+            local versionName=$(cat $filePathOutBuildProp|grep $keyVersion)
+            versionName=${versionName//$keyVersion/}
+            if [[ -n "$LZ_BUILD_VERSION" ]]&&[[ "$versionName" != "$LZ_BUILD_VERSION" ]]; then
+                    ftEcho -e "环境与本地，软件版本不一致:\n本地:${versionName}\n环境:${LZ_BUILD_VERSION}"
             fi
-   elif [[ $mnufacturers = "mtk" ]]; then
-            local filePathOutBuildProp=${dirPathOut}/system/build.prop
-            if [ -f $filePathOutBuildProp ];then
-                    local keyVersion="ro.build.display.id="
-                    local versionName=$(cat $filePathOutBuildProp|grep $keyVersion)
-                    versionName=${versionName//$keyVersion/}
-                    if [[ -n "$LZ_BUILD_VERSION" ]]&&[[ "$versionName" != "$LZ_BUILD_VERSION" ]]; then
-                            ftEcho -e "环境与本地，软件版本不一致:\n本地:${versionName}\n环境:${LZ_BUILD_VERSION}"
-                    fi
-            elif [[ -n "$LZ_BUILD_VERSION" ]];then
-                    local versionName=$LZ_BUILD_VERSION
-            fi
+    elif [[ -n "$LZ_BUILD_VERSION" ]];then
+            local versionName=$LZ_BUILD_VERSION
     fi
     [ -z "$versionName" ] && versionName=$(basename $ANDROID_PRODUCT_OUT)
-
     versionName=${versionName// /_}
     versionName=${versionName//
 /_}
+    [[ -n "$versionName" ]] && export AutoEnv_versionName=$versionName
 
     #软件编译类型
     if [ -d $dirPathOut ];then
@@ -161,13 +104,17 @@ ftAutoInitEnv()
             local filePathPreviousBuildConfig=${dirPathOut}/previous_build_config.mk
             if [ -f $filePathBuildInfo ];then
                         local keybuildType="ro.build.type="
-                        local buildTypeFile=
+                        local buildTypeFile
                         if [ -f "$filePathBuildInfo" ];then
                             buildTypeFile=$(cat $filePathBuildInfo|grep $keybuildType)
                             if [[ -n "$buildTypeFile" ]];then
                                 buildTypeFile=${buildTypeFile/$keybuildType/}
-                                if [[ -n "$buildType" ]]&&[ "$buildType" != "$buildTypeFile" ];then
-                                    ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
+                                if [[ -n "$buildType" ]];then
+                                    if [ "$buildType" != "$buildTypeFile" ];then
+                                        ftEcho -e "环境与本地，编译类型不一致:\n本地:$buildTypeFile\n环境:$buildType"
+                                        buildType=$buildTypeFile
+                                    fi
+                                else
                                     buildType=$buildTypeFile
                                 fi
                             else
@@ -202,8 +149,60 @@ ftAutoInitEnv()
                         fi
             fi
     fi
+    export AutoEnv_buildType=$buildType
 
     #git分支信息解析
+   ftBranchNameResolution
+
+    cd $dirPathLocal
+    trap SIGINT
+}
+
+complete -W "-h --help" ftBranchNameResolution
+ftBranchNameResolution()
+{
+    local ftEffect=分支名解析
+    local isEnable=true
+
+    while true; do case "$1" in
+    --rely) echo -e "\
+#===================[   ${ftEffect}   ]的依赖说明=============
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftBranchNameResolution -h
+#========================================================="; return ;;
+    --env ) echo -e "\
+#===================[   ${ftEffect}   ]的使用环境说明=============
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which git) ]] && ftBranchNameResolution --rely "git" && return
+    #解参验耦
+    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
+    if [ -z "$ANDROID_BUILD_TOP" ]\
+        ||[ -z "$ANDROID_PRODUCT_OUT" ];then
+        ftBranchNameResolution --env
+        return
+    fi
+    local valCount=0 errorContent
+
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBranchNameResolution -h && return
+
+    #实现主体
+    local dirPathLocal=$PWD
+    cd $dirPathCode
+
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     local key="branchName="
     local filePathGitConfigInfoLocal=${dirPathOut}/git.info
@@ -226,6 +225,7 @@ ftAutoInitEnv()
         IFS=")"
         local arrayItems=($branchName)
         IFS="$OLD_IFS"
+        export AutoEnv_branchName=$branchName
         if [ "$branchName" = "$arrayItems" ];then
                 ftEcho -e "分支名:${branchName} 不合法\n分支信息解析失败"
         else
@@ -237,7 +237,7 @@ ftAutoInitEnv()
                 export AutoEnv_screenScanDirection=
                 export AutoEnv_BandInfo=
                 export AutoEnv_FlashConfig=
-
+                export AutoEnv_branchName=null
 
                 for item in ${arrayItems[@]} ; do
                         local key=${item%\(*}
@@ -254,21 +254,102 @@ ftAutoInitEnv()
                          [[ $key = "BAND" ]] && export AutoEnv_BandInfo=$val && continue
                          [[ $key = "FLASH" ]] && export AutoEnv_FlashConfig=$val && continue
                 done
+                [[ -n "$branchName" ]] && export AutoEnv_branchName=$branchName
         fi
     fi
+    cd $dirPathLocal
+}
 
-    export AutoEnv_buildType=
-    export AutoEnv_branchName=
-    export AutoEnv_versionName=
-    export AutoEnv_mnufacturers=
+complete -W "-h --help" ftBuildPropResolution
+ftBuildPropResolution()
+{
+    local ftEffect=build.prop解析
+    local isEnable=true
 
-    export AutoEnv_buildType=$buildType
-    export AutoEnv_branchName=$branchName
-    export AutoEnv_versionName=$versionName
-    export AutoEnv_mnufacturers=$mnufacturers
+    while true; do case "$1" in
+    --rely) echo -e "\
+#===================[   ${ftEffect}   ]的依赖说明=============
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftBuildPropResolution -h
+#========================================================="; return ;;
+    --env ) echo -e "\
+#===================[   ${ftEffect}   ]的使用环境说明=============
+# 环境未初始化
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which git) ]] && ftBuildPropResolution --rely "git" && return
+    #解参验耦
+    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
+    if [ -z "$ANDROID_BUILD_TOP" ]\
+        ||[ -z "$ANDROID_PRODUCT_OUT" ];then
+        ftBuildPropResolution --env
+        return
+    fi
+    local valCount=0 errorContent
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBuildPropResolution -h && return
+
+    #实现主体
+    local dirPathLocal=$PWD
+    cd $dirPathCode
+
+    local keySoftType="ro.build.type=" keyModel="ro.product.model=" keySoftVersion="ro.build.display.id="
+    local keySDKVersion="ro.build.version.sdk=" filePathSystemBuildprop=${dirPathOut}/system/build.prop
+    local deviceModelName deviceSoftType deviceSoftVersion deviceSdkVersion
+
+    export AutoEnv_deviceModelName=
+    export AutoEnv_deviceSoftType=
+    export AutoEnv_deviceSoftVersion=
+    export AutoEnv_deviceSdkVersion=
+    export AutoEnv_AndroidVersion=
+
+    if [ -f "$filePathSystemBuildprop" ];then
+            deviceModelName=$(cat $filePathSystemBuildprop|grep "$keyModel")
+            deviceSoftType=$(cat $filePathSystemBuildprop|grep "$keySoftType")
+            deviceSoftVersion=$(cat $filePathSystemBuildprop|grep "$keySoftVersion")
+            deviceSdkVersion=$(cat $filePathSystemBuildprop|grep "$keySDKVersion")
+    elif [ "$editType" = "-bp" ];then
+            ftEcho -s "未找到 $filePathSystemBuildprop\n版本软件信息未获取"
+            return
+    fi
+
+    if [[ -n "$deviceSoftVersion" ]];then
+            deviceModelName=${deviceModelName//$keyModel/}
+            deviceModelName=${deviceModelName// /_}
+            deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
+            deviceModelName=${deviceModelName:-'null'}
+            export AutoEnv_deviceModelName=$deviceModelName
+
+            deviceSoftType=${deviceSoftType//$keySoftType/}
+            deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
+            deviceSoftType=${deviceSoftType:-'null'}
+            export AutoEnv_deviceSoftType=$deviceSoftType
+
+            deviceSoftVersion=${deviceSoftVersion//$keySoftVersion/}
+            deviceSoftVersion=$(echo $deviceSoftVersion |sed s/[[:space:]]//g)
+            deviceSoftVersion=${deviceSoftVersion:-'null'}
+            export AutoEnv_deviceSoftVersion=$deviceSoftVersion
+
+            deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
+            deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
+            deviceSdkVersion=${deviceSdkVersion:-'null'}
+            export AutoEnv_deviceSdkVersion=$deviceSdkVersion
+            local AndroidVersion=$(ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison $deviceSdkVersion)
+            export AutoEnv_AndroidVersion=$AndroidVersion
+    fi
 
     cd $dirPathLocal
-    trap SIGINT
 }
 
 complete -W "-b -h" ftAutoBuildMultiBranchEnvSeparation
@@ -276,11 +357,6 @@ ftAutoBuildMultiBranchEnvSeparation()
 {
     local ftEffect=多分支串行编译[环境独立]/在多个终端间串行执行命令
     local isEnable=true
-
-    local editType=${1,,} #转小写
-    local filePathserialBuildTool=${rDirPathXbashModuleAuto}/serialBuildByBranchName.module
-    local dirPathProcessEnableId=/tmp/ProcessEnableIds
-    local requestEnvState=$(/bin/rm -rf $dirPathProcessEnableId&&mkdir $dirPathProcessEnableId)
 
     while true; do case "$editType" in
     -h | --help) echo -e "\
@@ -300,12 +376,14 @@ ftAutoBuildMultiBranchEnvSeparation()
 
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #耦合校验
+    #环境校验
     [ -z "$ANDROID_BUILD_TOP" ] && ftAutoBuildMultiBranchEnvSeparation --env && return
-
-    #耦合校验
-    local valCount=1
-    local errorContent=
+    #解参验耦
+    local editType=${1,,}
+    local filePathserialBuildTool=${rDirPathXbashModuleAuto}/serialBuildByBranchName.module
+    local dirPathProcessEnableId=/tmp/ProcessEnableIds
+    local requestEnvState=$(/bin/rm -rf $dirPathProcessEnableId&&mkdir $dirPathProcessEnableId)
+    local valCount=1 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -z "$editType" ] && errorContent="${errorContent}\\n[请指定操作]"
     [[ -n "$requestEnvState" ]] && errorContent="${errorContent}\\n[环境初始化异常,文件夹无法重置]requestEnvState=$requestEnvState" 
@@ -322,7 +400,7 @@ ftAutoBuildMultiBranchEnvSeparation()
                 while true; do echo && ftEcho -y gedit 已打开是否关闭
                 read -n 1 sel
                 case "$sel" in
-                    y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}') && break;;
+                    y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}') ; break;;
                     n | N |q | Q)    return;;
                     * ) ftEcho -e 错误的选择：$sel && echo "输入n,q，离开" ; ;;
                 esac ; done
@@ -347,16 +425,13 @@ ftAutoBackupOrRestoreOuts()
     local ftEffect=Android编译生成out相关自动维护
     local isEnable=true
 
-    local dirPathCode=$ANDROID_BUILD_TOP
-    local dirPathOut=$ANDROID_PRODUCT_OUT
-    local editType=$1
-    local filterString=$2
-
     while true; do case "$1" in
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    备份out
 #    ftAutoBackupOrRestoreOuts 无参
+#    ftAutoBackupOrRestoreOuts -t 备注
+#
 #    移动匹配out到当前项目
 #    ftAutoBackupOrRestoreOuts -m
 #    ftAutoBackupOrRestoreOuts -m xxx   #分支名包含xxx的out列表
@@ -370,35 +445,49 @@ ftAutoBackupOrRestoreOuts()
 
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #耦合校验
-    local valCount=2
-    local errorContent=
-    [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoBackupOrRestoreOuts --env && return
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
+    #解参验耦
+    ftAutoInitEnv
+    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
+    local arg arg2 index errorContent 
+    local isMoveBack mTagContent filterString
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+        -t ) mTagContent="${arg2}"
+             ;;
+        -m )  isMoveBack=true
+                filterString="${arg2}"
+             ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    if [ ! -d "$dirPathCode" ]||[  -z "$dirPathCode" ];then
+        errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
+    fi
+    if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
+        if [[ -f "ftAutoBackupOrRestoreOuts" ]];then
+            ./ftAutoBackupOrRestoreOuts $@
+            return
+        fi
+        ftAutoBackupOrRestoreOuts --env && return
+    fi
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoBackupOrRestoreOuts -h && return
 
     #实现主体
-    cd $ANDROID_BUILD_TOP
+    cd $dirPathCode
     #分支名
-    ftAutoInitEnv
-    local buildType=$AutoEnv_buildType
-    local versionName=$AutoEnv_versionName
-    local branchName="$AutoEnv_branchName"
+    local buildType=$AutoEnv_buildType versionName=$AutoEnv_versionName branchName="$AutoEnv_branchName"
 
     local dirNameCodeRootOuts=outs
     local dirPathOutTop=${dirPathCode}/out
     local dirPathCodeRootOuts=${dirPathCode%/*}/${dirNameCodeRootOuts}
     local versionInfoDateTime=$(date -d "today" +"%y%m%d[%H:%M]")
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----${versionInfoDateTime}
+    [[ -n "$mTagContent" ]]&&dirNameBranchVersion=${dirNameBranchVersion}_Tag[${mTagContent}]
     local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
 
     if [ ! -d "$dirPathCodeRootOuts" ];then
-        [[ "$editType" = "-m" ]] && ftEcho -e "${dirNameCodeRootOuts}为空" && return
+        [[ -n "$isMoveBack" ]] && ftEcho -e "${dirNameCodeRootOuts}为空" && return
         mkdir -p $dirPathCodeRootOuts
     fi
 
-    if [[ "$editType" = "-m" ]]; then
+    if [[ -n "$isMoveBack" ]]; then
         if [[ -d "$dirPathOut" ]]||[[ -d "$dirPathOutTop" ]]; then
             #lunch生成的out，视为无效
             local excludeConfigInfo=($(ftIniGetValue $rFilePathXbashDataBase backupOrRestoreOutsInfo excludeConfig))
@@ -416,9 +505,8 @@ ftAutoBackupOrRestoreOuts()
                 return
             fi
         fi
-        local branchName=$filterString
-        [[ -z "$filterString" ]] && branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
+        [[ -n "$filterString" ]] && branchName=$filterString
         local dirPathOutList=($(ls $dirPathCodeRootOuts|grep $branchName))
         [[ -z "$dirPathOutList" ]] && ftEcho -e "未找到\n分支[$branchName]对应的out" && return
 
@@ -473,10 +561,6 @@ ftAutoUpload()
     local ftEffect=文件[夹]上传
     local isEnable=true
 
-    #存放上传源的目录
-    local dirPathContentUploadSource=$1
-    local serverIp=$2
-
     while true; do case "$1" in
     --rely) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
@@ -496,9 +580,9 @@ ftAutoUpload()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
      [[ -z $(which nmap) ]]|| [[ -z $(which sshpass) ]]|| [[ -z $(which pigz) ]]|| [[ -z $(which pv) ]] && ftAutoUpload --rely && return
-    #耦合校验
-    local valCount=2
-    local errorContent=
+    #解参验耦
+    local dirPathContentUploadSource=$1 serverIp=$2
+    local valCount=2 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathContentUploadSource" ] && errorContent="${errorContent}\\n上传源存放目录不存在:dirPathContentUploadSource=$dirPathContentUploadSource"
     if [ -z "$serverIp" ];then
@@ -564,17 +648,8 @@ ftAutoPacket()
     local ftEffect=基于android的out生成版本软件包
     local isEnable=true
 
-    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' DEBUG
-    # trap 'printf "变量跟踪\e[33m %-7s \e[0m \e[31m %-90s \e[0m  \n" [$LINENO]: dirPathVersionSoftwareVersion=$dirPathVersionSoftwareVersion' ERR
-
-    local dirPathCode=$ANDROID_BUILD_TOP
-    local dirPathOut=$ANDROID_PRODUCT_OUT
-    local buildType=$TARGET_BUILD_VARIANT
-    local editType=$1
-    local filePathDataBase=$rFilePathXbashDataBase
-
     while true; do case "$1" in
-    -h | --help) echo -e "\
+    -h | --help) ftClearTail $dirPathLocal ; echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    ftAutoPacket -y #免确认自动清理out/packet
 #    ftAutoPacket -u #上传到188服务器
@@ -591,16 +666,22 @@ ftAutoPacket()
 
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #耦合校验
+    #解参验耦
+    ftAutoInitEnv
     if [ -z "$ANDROID_BUILD_TOP" ]\
             ||[ -z "$TARGET_PRODUCT" ]\
             ||[ -z "$ANDROID_PRODUCT_OUT" ]\
             ||[ -z "$TARGET_BUILD_VARIANT" ];then
+        if [[ -f "ftAutoPacket" ]];then
+            ./ftAutoPacket
+            return
+        fi
         ftAutoPacket --env
         return
     fi
-    local valCount=1
-    local errorContent=
+    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT buildType=$TARGET_BUILD_VARIANT
+    local editType=$1 filePathDataBase=$rFilePathXbashDataBase
+    local valCount=1 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
@@ -608,25 +689,24 @@ ftAutoPacket()
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoPacket -h && return
 
     #实现主体
-    local arg ; local arg2 ; local index ; for ((i=1;i<=$#;i++)) ; do eval value=\${${i}} ; arg=${value} ; ((index=i+1)) ; eval value2=\${${index}} ; arg2=${value2} ; case "${arg}" in
-        -a )local isClean=true
-             local isReadMe=true
-             local isUpload=true
-             local isPacket=true ;;
-        -y )local isClean=true ;;
-        -m )local isMove=true ;;
-        -u )local isUpload=true ;;
-        -r )local isReadMe=true ;;
-        -p )local isPacket=true ;;
-        -c )local isCopy=true ;;
-        -t )local isSpecial=true
-             local  isPacket=true ;;
+    local isClean isReadMe isUpload isPacket isMove isCopy isSpecial
+    local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+        -a ) isClean=true
+              isReadMe=true
+              isUpload=true
+              isPacket=true ;;
+        -y ) isClean=true ;;
+        -m ) isMove=true ;;
+        -u ) isUpload=true ;;
+        -r ) isReadMe=true ;;
+        -p ) isPacket=true 
+               isReadMe=true ;;
+        -c ) isCopy=true ;;
+        -t ) isSpecial=true
+            isPacket=true ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
-    ftAutoInitEnv
-    local dirPathLocal=$dirPathCode
-    local dirNameVersionSoftware=packet
-    local buildType=$AutoEnv_buildType
+    local dirPathLocal=$dirPathCode dirNameVersionSoftware=packet buildType=$AutoEnv_buildType
     local dirPathVersionSoftware=${dirPathCode}/out/${dirNameVersionSoftware}
 
     if [[ -d "$dirPathVersionSoftware" ]]; then
@@ -735,12 +815,9 @@ ftAutoPacket()
             [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareLocal 192.168.1.75
 
     elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-            local dirNamePackage="packages"
-            local dirNameOtaPackage="otaPackages"
-            local dirNamePackageDataBase="dataBase"
-            local deviceName=$(basename $ANDROID_PRODUCT_OUT)
+            local dirNamePackage="packages" dirNameOtaPackage="otaPackages" dirNamePackageDataBase="dataBase"
+            local deviceName=$(basename $ANDROID_PRODUCT_OUT) dataBaseFileList
 
-            local dataBaseFileList=
             if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
                 tagName="lzProjrctConfigSoftwareDataBaseFileLIst"
                 dataBaseFileList=($(ftIniGetValue $filePathDataBase $tagName $TARGET_PRODUCT))
@@ -775,15 +852,11 @@ ftAutoPacket()
             fi
 
             if [[ -n "$AutoEnv_clientName" ]];then #解析git分支,初始化客户等相关信息
-                ftAutoInitEnv -bp
+                ftBuildPropResolution
 
-                local dirPathGitBranchInfoGroup=
-                local dirPathVersionSoftwareVersion=
-
+                local dirPathGitBranchInfoGroup dirPathVersionSoftwareVersion 
                 #版本路径 服务器根路径部分
-                local dirPathUploadTraget=智能机软件
-
-                local tagName="lzProjrctConfigBranch2CtName"
+                local dirPathUploadTraget=智能机软件 tagName="lzProjrctConfigBranch2CtName"
                 local clientNameAll=$(ftIniGetValue $filePathDataBase $tagName $AutoEnv_clientName)
                 tagName="lzProjrctConfigBranch2PlatformName"
                 local platformName=$(ftIniGetValue $filePathDataBase $tagName $TARGET_PRODUCT)
@@ -796,7 +869,8 @@ ftAutoPacket()
 
                 if [[ -z "$dirPathUploadTraget" ]]; then
                     ftEcho -e "分支信息解析结果为空,请查看配置"
-                    return;
+                    ftClearTail $dirPathLocal
+                    return
                 else
                     dirPathVersionSoftwareVersion=${dirPathUploadTraget}
                 fi
@@ -819,7 +893,7 @@ ftAutoPacket()
                 # if  [[ -n "$AutoEnv_AndroidVersion" ]&&(($AutoEnv_deviceSdkVersion>22)); then
                 #         dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_AndroidVersion}
                 # fi
-                [[ -z "$dirPathGitBranchInfoGroup" ]] && ftEcho -e "分支信息解析结果为空,请查看配置" && return
+                [[ -z "$dirPathGitBranchInfoGroup" ]] && ftEcho -e "分支信息解析结果为空,请查看配置" && ftClearTail $dirPathLocal && return
                 dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirPathGitBranchInfoGroup}
 
                 local dirNameVeriosionBase=${AutoEnv_versionName}
@@ -877,7 +951,7 @@ ftAutoPacket()
                         local fileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}))
                         for file in ${fileList[@]}; do
                             local filePath=${dirPathOut}/${file}
-                            [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && return
+                            [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && ftClearTail $dirPathLocal && return
 
                              printf "%-2s %-30s\n" 复制 $file
                              cp -r -f  $filePath $dirPathPackage
@@ -886,13 +960,13 @@ ftAutoPacket()
                              # pv $filePath > ${dirPathPackage}/${file}
                         done
                     else
-                        ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage" && return
+                        ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage" && ftClearTail $dirPathLocal && return
                     fi
                     #otaPackages
                     if [[ -n "$otaFileList" ]]; then
                         mkdir -p $dirPathOtaPackage
                         for file in ${otaFileList[@]}; do
-                             [[ ! -f "$file" ]] && ftEcho -e "找不到 : ${file}" && return
+                             [[ ! -f "$file" ]] && ftEcho -e "找不到 : ${file}" && ftClearTail $dirPathLocal && return
 
                              printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
                              cp -r -f  $file $dirPathOtaPackage
@@ -916,7 +990,7 @@ ftAutoPacket()
             [[ -n "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftware}/${dirPathVersionSoftwareVersion}
 
             #上传服务器
-            [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareVersion 192.168.1.188
+            [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareVersion 192.168.1.75
     else
             ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的配置\n请查看下面说明:"
             ftAutoPacket -h
@@ -930,12 +1004,6 @@ ftAutoCreateReadMeBySoftwareVersion()
 {
     local ftEffect=创建软件版本相关修改记录和版本说明
     local isEnable=true
-
-    local dirPathCode=$ANDROID_BUILD_TOP
-    local dirPathOut=$ANDROID_PRODUCT_OUT
-    local dirPathVersionSoftware=$1
-    local filePathConfig=$rFilePathXbashDataBase
-    dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
 
     while true; do case "$1" in
     -h | --help) echo -e "\
@@ -959,31 +1027,31 @@ ftAutoCreateReadMeBySoftwareVersion()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftAutoCreateReadMeBySoftwareVersion --rely && return
+    #解参验耦
+    ftAutoInitEnv
     [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
-    #耦合校验
-    local valCount=1
-    local errorContent=
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT dirPathVersionSoftware=$1
+    local filePathConfig=$rFilePathXbashDataBase
+    [[ -z "$dirPathVersionSoftware" ]]&&dirPathVersionSoftware=${dirPathOut}/${AutoEnv_versionName}
+    dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
+    local valCount=1 errorContent
+    #(( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
     [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[工程out目录不存在]filePathConfig=$filePathConfig"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCreateReadMeBySoftwareVersion -h && return
 
     #实现主体
-    local dirPathLocal=${PWD}
-    local fileNameReadMeTemplate=客户说明.txt
-    local fileNameChangeListTemplate=修改记录.txt
+    local dirPathLocal=${PWD} fileNameReadMeTemplate=客户说明.txt fileNameChangeListTemplate=版本说明.txt
     local filePathReadMeTemplate=${dirPathVersionSoftware}/${fileNameReadMeTemplate}
     local filePathChangeListTemplate=${dirPathVersionSoftware}/${fileNameChangeListTemplate}
     local versionName=$AutoEnv_versionName
 
     [ ! -d "$dirPathVersionSoftware" ] && mkdir $dirPathVersionSoftware
     cd $dirPathCode && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
-    ftAutoInitEnv
 
     #使用git 记录的修改记录
-    local gitCommitListOneDay=$(ftGitLogShell -t -n 30)
-    local gitCommitListBefore=$(ftGitLogShell -t -n 30)
+    local gitCommitListOneDay=$(ftGitLogShell -t "%h %s" -n 30) gitCommitListBefore=$(ftGitLogShell -t "%h %s" -n 30)
 
 # ===============================================
 # =================     修改记录    ==================
@@ -1066,40 +1134,45 @@ ftAutoCreateReadMeBySoftwareVersion()
 
             #修改记录头部
             local enterLine="\n"
-            local content="当前版本：$versionName"${enterLine}
-            content=${content}${enterLine}"$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
             content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
-            local filePathConfigHideNum=${dirPathCode}/vendor/lz/hideNum.config
-            if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
+            content=${content}${enterLine}"当前版本：$versionName"
+            content=${content}${enterLine}"基础版本："
+            content=${content}${enterLine}
+            content=${content}${enterLine}"修改记录："
 
-                content=${content}${enterLine}"暗码清单：$(ftIniGetValue $filePathConfigHideNum 暗码清单 info)"
+            local filePathConfigHideNum=${dirPathCode}/vendor/lz/hideNum.config
+            #if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
+
+                #content=${content}${enterLine}"暗码清单：$(ftIniGetValue $filePathConfigHideNum 暗码清单 info)"
                 # content=${content}${enterLine}"隐藏指令：$(ftIniGetValue $filePathConfigHideNum 隐藏 info)"
-                content=${content}${enterLine}"工厂测试：$(ftIniGetValue $filePathConfigHideNum 工厂测试 info)"
-                content=${content}${enterLine}"imei编辑：$(ftIniGetValue $filePathConfigHideNum imei编辑 info)"
-                content=${content}${enterLine}"imei显示：$(ftIniGetValue $filePathConfigHideNum imei显示 info)"
-                content=${content}${enterLine}"工程模式：$(ftIniGetValue $filePathConfigHideNum 工程模式 info)"
-                content=${content}${enterLine}"硬件信息查看：$(ftIniGetValue $filePathConfigHideNum 硬件信息查看 info)"
+                #content=${content}${enterLine}"工厂测试：$(ftIniGetValue $filePathConfigHideNum 工厂测试 info)"
+                #content=${content}${enterLine}"imei编辑：$(ftIniGetValue $filePathConfigHideNum imei编辑 info)"
+                #content=${content}${enterLine}"imei显示：$(ftIniGetValue $filePathConfigHideNum imei显示 info)"
+                #content=${content}${enterLine}"工程模式：$(ftIniGetValue $filePathConfigHideNum 工程模式 info)"
+                #content=${content}${enterLine}"硬件信息查看：$(ftIniGetValue $filePathConfigHideNum 硬件信息查看 info)"
                 #content=${content}${enterLine}"sn码显示：$(ftIniGetValue $filePathConfigHideNum sn码 info)"
-            else
-                content=${content}${enterLine}"隐藏指令："
-                content=${content}${enterLine}"imei编辑："
-                content=${content}${enterLine}"imei显示：*#06#"
-                content=${content}${enterLine}"测试模式：*#*#180#*#*"
-                content=${content}${enterLine}"imei单双切换："
-            fi
+            #else
+                #content=${content}${enterLine}"隐藏指令："
+                #content=${content}${enterLine}"imei编辑："
+                #content=${content}${enterLine}"imei显示：*#06#"
+                #content=${content}${enterLine}"测试模式：*#*#180#*#*"
+                #content=${content}${enterLine}"imei单双切换："
+            #fi
 
             #git log 列表
             echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
             seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
 
             # 合并头部和git log 列表
-            echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+            echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
 
             # 转化为windows下面文件格式
             unix2dos $filePathChangeListTemplate
     fi
 
+    ftEcho -s "生成 ${filePathChangeListTemplate}"
     rm ${filePathChangeListTemplate}.temp
     cd $dirPathLocal
     trap  SIGINT
@@ -1109,10 +1182,6 @@ ftAutoLanguageUtil()
 {
     local ftEffect=语言缩写转化为中文
     local isEnable=true
-
-    local dirPathCode=$ANDROID_BUILD_TOP
-    local targetProduct=$TARGET_PRODUCT
-    local filePathDataBase=$rFilePathXbashDataBase
 
     while true; do case "$1" in
     -h | --help) echo -e "\
@@ -1128,11 +1197,11 @@ ftAutoLanguageUtil()
 
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #耦合校验
+    #环境校验
     [ ! -d "$dirPathCode" ]||[ -z "$targetProduct" ] && ftAutoLanguageUtil --env && return
-
-    local valCount=0
-    local errorContent=
+    #解参验耦
+    local dirPathCode=$ANDROID_BUILD_TOP targetProduct=$TARGET_PRODUCT filePathDataBase=$rFilePathXbashDataBase
+    local valCount=0 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[语言转化配置库不存在]filePathDataBase=$filePathDataBase"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoLanguageUtil -h && return
@@ -1151,112 +1220,6 @@ ftAutoLanguageUtil()
     local LanguageList=$(cat $filePathDeviceProductLocales|grep "$key"|grep -v "#PRODUCT_LOCALES := ")
     LanguageList=${LanguageList//$key/}
     ftLanguageUtil "${LanguageList[@]}"
-}
-
-ftAutoUpdateSoftwareVersion()
-{
-    local ftEffect=更新sprd7731c_N9的软件版本
-    local isEnable=false
-
-    local dirPathCode=$ANDROID_BUILD_TOP
-
-    while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
-#    ftAutoUpdateSoftwareVersion 无参
-#========================================================="; return ;;
-    -e | --exception) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
-#    ftAutoUpdateSoftwareVersion 仅可用于 SPRD > 7731C > N9 的项目
-#======================================================================="; return ;;
-    --env ) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
-# 环境未初始化
-# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    # 环境检测
-    ftAutoInitEnv
-    [[ $AutoEnv_mnufacturers != "sprd" ]]&&[ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ] && ftAutoUpdateSoftwareVersion -e && return
-
-    #耦合校验
-    [ -z "$ANDROID_BUILD_TOP" ] && ftAutoUpdateSoftwareVersion --env && return
-
-    local valCount=1
-    local errorContent=
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoUpdateSoftwareVersion -h && return
-
-    #实现主体
-    cd $ANDROID_BUILD_TOP
-    #分支名
-    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    #软件版本名
-    local keyVersion="findPreference(KEY_BUILD_NUMBER).setSummary(\""
-    local filePathDeviceInfoSettingsBase=packages/apps/Settings/src/com/android/settings/DeviceInfoSettings.java
-    local filePathDeviceInfoSettings=${dirPathCode}/${filePathDeviceInfoSettingsBase}
-    local versionNameSet=$(cat $filePathDeviceInfoSettings|grep $keyVersion)
-    versionNameSet=${versionNameSet/$keyVersion/}
-    versionNameSet=${versionNameSet/\");/}
-    versionNameSet=$(echo $versionNameSet |sed s/[[:space:]]//g)
-
-    local keyVersion2="R.string.build_number"
-    local filePathSystemVersionTestBase=packages/apps/ValidationTools/src/com/sprd/validationtools/itemstest/SystemVersionTest.java
-    local filePathSystemVersionTest=${dirPathCode}/${filePathSystemVersionTestBase}
-    local versionNameTest=$(cat $filePathSystemVersionTest |sed s/[[:space:]]//g|grep -C 1 "$keyVersion2")
-    versionNameTest=$(echo $versionNameTest |sed s/[[:space:]]//g)
-    versionNameTest=${versionNameTest//\"/}
-    versionNameTest=${versionNameTest//\\n/}
-    versionNameTest=${versionNameTest//+/}
-    versionNameTest=${versionNameTest//);/}
-    versionNameTest=${versionNameTest//linuxVersion.setText(getString(R.string.prop_version)getPropVersion()platformVersion.setText(getString(R.string.build_number)/}
-
-    # 更新版本号的日期段
-    local dateNew=$(date -d "today" +"%Y%m%d")
-
-    local dateOldSet=$(echo $versionNameSet | awk -F "_" '{print $NF}')
-    local versionNameSetNew=${versionNameSet//$dateOldSet/$dateNew}
-    local dateOldTest=$(echo $versionNameTest | awk -F "_" '{print $NF}')
-    local versionNameTestNew=${versionNameTest//$dateOldTest/$dateNew}
-
-    if [[ -n "$1" ]]&&[ "$1" = "-y" ];then
-                sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings&&
-                sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest&&
-                git add $filePathDeviceInfoSettingsBase $filePathSystemVersionTestBase&&
-                git commit -m "版本 ${versionNameTestNew}"
-                return
-    fi
-
-     while true; do
-        ftEcho -y "是否更新软件版本号"
-        read -n 1 sel
-        case "$sel" in
-            y | Y )
-                    sed -i "s:$versionNameSet:$versionNameSetNew:g" $filePathDeviceInfoSettings
-                    sed -i "s:$versionNameTest:$versionNameTestNew:g" $filePathSystemVersionTest
-                     while true; do
-                        ftEcho -y "是否提交修改"
-                        read -n 1 sel && echo
-                        case "$sel" in
-                            y | Y )
-                                ftEcho -s 提交开始，请稍等
-                                git add $filePathDeviceInfoSettingsBase $filePathSystemVersionTestBase&&git commit -m "版本 ${versionNameTestNew}"
-                                break;;
-                            n | q )    return;;
-                            * ) ftEcho -e 错误的选择：$sel
-                                echo "输入n，q，离开";;
-                            esac
-                            done
-                break;;
-            n | q )    exit;;
-            * ) ftEcho -e 错误的选择：$sel
-                 echo "输入n，q，离开";;
-        esac
-        done
 }
 
 complete -W "-rc -rt -e -p -h -d" ftAutoTest
@@ -1287,26 +1250,15 @@ ftAutoTest()
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
      [[ -z $(which adb) ]] && ftAutoTest --rely && return
-    #参数解析
+    #解参验耦
     local editType=$1
-
-    local eventCountDef=$(( 100 * 100 *100 ))
-    local rebootTimeLongDef=-1
-    local rebootCountDef=1
-
-    local eventCount=$eventCountDef
-    local rebootTimeLong=$rebootTimeLongDef
-    local rebootCount=$rebootCountDef
-    local dirPathLogRoot=~/log
-
-    local packageNameList
-    local packageBlackNameList
-    local packageWhiteNameList
-    local arg ; local arg2 ; local arg3 ; local index ; for ((i=1;i<=$#;i++)) ; do 
-        eval value=\${${i}} ; arg=${value}
-        ((index=i+1)) ;eval value2=\${${index}} ; arg2=${value2}
-        ((index=i+2)) ;eval value3=\${${index}} ; arg3=${value3}
-         case "${arg}" in
+    local eventCountDef=$(( 100 * 100 *100 )) rebootTimeLongDef=-1 rebootCountDef=1
+    local eventCount=$eventCountDef rebootTimeLong=$rebootTimeLongDef rebootCount=$rebootCountDef dirPathLogRoot=~/log
+    local packageNameList packageBlackNameList packageWhiteNameList
+    local arg  arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
+        ((index=i+1)) ;eval arg2=\${${index}}
+        ((index=i+2)) ;eval arg3=\${${index}}
+        case "${arg}" in
               -p)     packageNameList=${arg2}                            ;;
               -pb)   packageBlackNameList=${arg2}                   ;;
               -d)     dirPathLogRoot=${arg2:-'dirPathLogRoot'}          ;;
@@ -1314,8 +1266,7 @@ ftAutoTest()
                        rebootCount=${arg3:-'rebootCountDef'}  ;;
               -e)     eventCount=${arg2:-'eventCountDef'}                   ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
-    #耦合校验
-    local errorContent=
+    local errorContent
     (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong"
     [[ -n $packageBlackNameList ]]&&[[ -n $packageNameList ]] && errorContent="${errorContent}\\n 包限制配置错误1"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoTest -h && return
@@ -1328,8 +1279,7 @@ ftAutoTest()
     local filePathLogMonkey=${dirPathLogMonkey}/monkey.log
     local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
     local dirPathDevicesTarget="/storage/sdcard0"
-    local logcatFlag= #"*:E"
-    local monkeyConfig
+    local monkeyConfig logcatFlag #="*:E"
 
     # monkey命令参数配置
         # monkeyConfig=${monkeyConfig}" --wait-dbg"
@@ -1356,7 +1306,7 @@ ftAutoTest()
         monkeyConfig=${monkeyConfig}" ${eventCount}"
 
     #adb状态确认
-        adb wait-for-device
+        ftEcho -s "等待设备连接" && adb wait-for-device && ftEcho -s "连接设备成功"
         local adbStatus=$(adb get-state)
         [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
     #环境清理
@@ -1370,37 +1320,100 @@ ftAutoTest()
         adb pull $filePathDeviceInfo $dirPathLogMonkey > /dev/null&& ftEcho -s "设备信息已保存到${dirPathLogMonkey}"
     #开始测试
         if (( $rebootCount==$rebootCountDef ));then
+                echo monkeyConfig=${monkeyConfig[@]}
                 adb logcat "$logcatFlag" > $filePathLogAdbLogcat &
                 adb shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
         else
                 while true; do
-                ftEcho -s "等待设备连接" && adb wait-for-device && ftEcho -s "连接设备成功"
-                [ "$(adb get-state)" != "device" ] && ftEcho -e "设备连接状态异常,请重新尝试" && break
-                tput sc ; while [[ -z $(adb shell ps |grep launcher) ]]; do
-                    tput rc;tput ed
-                    ftEcho -sn "等待launcer启动..."
-                    sleep 5
-                done ;echo
+                    ftEcho -s "等待设备连接" && adb wait-for-device && ftEcho -s "连接设备成功"
+                    [ "$(adb get-state)" != "device" ] && ftEcho -e "设备连接状态异常,请重新尝试" && break
+                    tput sc ; while [[ -z $(adb shell ps |grep launcher) ]]; do
+                        tput rc;tput ed
+                        ftEcho -sn "等待launcer启动..."
+                        sleep 5
+                    done ;echo
 
-                if (($rebootTimeLong!=$rebootTimeLongDef)); then
-                    timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
-                    timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
-                else
-                    adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
-                    adb shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
-                fi
+                    if (($rebootTimeLong!=$rebootTimeLongDef)); then
+                        timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
+                        timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+                    else
+                        adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
+                        adb shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
+                    fi
 
-                rebootCount=$((rebootCount - 1))
-                if (( $rebootCount>0 )); then
-                    ftEcho -s "开始设备重启"
-                    adb reboot
-                else
-                    break
-                fi
+                    rebootCount=$((rebootCount - 1))
+                    if (( $rebootCount>0 )); then
+                        ftEcho -s "开始设备重启"
+                        adb reboot
+                    else
+                        break
+                    fi
             done
         fi
     #扫尾
         for pid in $(ps -ef |grep adb |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
         [[ -n $(adb shell ls ${dirPathDevicesTarget}/mtklog) ]] && ftEcho -s "正在导出mtklog,请稍等..." && adb pull ${dirPathDevicesTarget}/mtklog $dirPathLogMonkey
         mv $dirPathLogMonkey ${dirPathLogMonkey}_done
+}
+
+complete -W "-t -h --help" ftAutoAddGitTag
+ftAutoAddGitTag()
+{
+    local ftEffect=添加git的TAG
+    local isEnable=true
+
+    while true; do case "$1" in
+    --rely) echo -e "\
+#===================[   ${ftEffect}   ]的依赖说明=============
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoAddGitTag -t
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which git) ]] && ftExample --rely "git" && return
+    #解参验耦
+    local valCount=1 errorContent index arg arg2
+    local tagName noteContent
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    case "${arg}" in
+        -t ) tagName="${arg2}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    # (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$tagName" ] && errorContent="${errorContent}\\n[示例1]tagName=$tagName"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoAddGitTag -h && return
+
+    #实现主体
+    local fileNameVersionNote="${tagName}的相应说明"
+    local filePathVersionNote=/tmp/${fileNameVersionNote}
+    if [ -n "$(pgrep -f gedit)" ];then
+            while true; do echo && ftEcho -y gedit 已打开是否关闭
+            read -n 1 sel
+            case "$sel" in
+                y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}') ; break;;
+                n | N |q | Q)    return;;
+                * ) ftEcho -e 错误的选择：$sel && echo "输入n,q，离开" ; ;;
+            esac ; done
+    fi
+    if touch $filePathVersionNote ; then
+        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit $filePathVersionNote
+    else
+        ftEcho -ex "创建临时说明信息文件失败"
+        return;
+    fi
+
+    noteContent=$(cat $filePathVersionNote)
+    rm -rf $filePathVersionNote
+    [[ -z "$noteContent" ]] && ftEcho -e "空的备注信息，将使用commit名作为备注信息" && noteContent=$(ftGitLogShell -t "%s" -n 1)
+
+    git tag -a "$tagName" -m "${noteContent[@]}"
 }

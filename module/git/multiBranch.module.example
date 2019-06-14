@@ -10,6 +10,14 @@ git cherry-pick 5981ad7||return
 
 
 
+#添加多个commit
 
+# hashList=($(ftGitLogShell -c "%h" -n xx))
+# i=${#hashList[@]}
+# while (( $i>0 ))
+# do
+#   (( i-=1 ))
+#   git cherry-pick ${hashList[$i]}||return
+# done
 #####-----------------------固定部分------------------------------#########
 git push

@@ -4,7 +4,7 @@ bash的简单扩展
 ----------
     1.初始化
 ```sh
-    $ sudo chmod -R a+x module/ config/ init
+    $ sudo -k chmod -R a+x module/ config/ init
     $ ./init
 ```
     2. 查看说明详情
@@ -28,9 +28,11 @@ bash的简单扩展
     │     │    ├── serialBuildByBranchName.module  独立窗口串行多进程实现
     │     │    └── serialBuildDemo.module
     │     ├── base
-    │     │    ├── base.database  ---------------  xbash工具数据
+    │     │    ├── base.database  ---------------  工具数据
+    │     │    ├── base.module  -----------------  xbash对bash命令历史的自定义处理
     │     │    ├── bash_input.module  -----------  配置命令历史适配逻辑
-    │     │    └── main.module  -----------------  xbash主框架
+    │     │    ├── test.module.example  ---------  测试工具的模版
+    │     │    └── packaging.module  ------------  xbash对扩展和内置命令的封装
     │     ├── maintain
     │     │    ├── maintain.methods  ------------  系统维护工具
     │     │    └── maintain.database  -----------  xbash的系统维护模块配置
@@ -38,9 +40,14 @@ bash的简单扩展
     │     │    ├── git_completion.methods  ------  git非自定义的bash扩展
     │     │    └── multiBranch.module.example  --  批量添加patch的工具的示例
     │     │
-    │     ├── test.module  ----------------------  xbash的测试工具
-    │     └── common.methods  -------------------  xbash自定义实现方法
+    │     └── common.methods  -------------------  框架和公用实现
     │
     ├── init  -----------------  xbash安装初始化工具
     ├── main  -----------------  xbash主入口
     └── README.md
+
+3.待实现
+----------
+    1 同分支差异化，提交自动整理
+    2 封装ninja命令加速mmm等模块编译命令[参照 https://note.qidong.name/2017/08/android-ninja/]
+    3 与高低配置硬盘搭配使用的android git 仓库自动管理实现
