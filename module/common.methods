@@ -1557,7 +1557,7 @@ ftReNameFile()
     #实现主体
     [[ -z $(ls $dirPathFileList) ]] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
 
-    local index=0 fileName fileSuffixName
+    local index=0 fileName fileSuffixName itemNew
     local fileList=($(ls $dirPathFileList))
     local dirNameFileListRename=RenameFiles
     local dirPathFileListRename=${dirPathFileList}/${dirNameFileListRename}
@@ -1565,16 +1565,19 @@ ftReNameFile()
     [ -d $dirPathFileListRename ] && rm -rf $dirPathFileListRename
     mkdir $dirPathFileListRename;cd $dirPathFileList
 
-    for index in "${!fileList[@]}"; do
-       file="${fileList[$index]}"
+    while read file ;do
         [ "$file" == "$dirNameFileListRename" ] && continue
+        itemNew=$(echo ${file} |sed s/[[:space:]]/_/g)
+        [[ "${file}" != "${itemNew}" ]] && mv "${dirPathFileList}/${file}" "${dirPathFileList}/${itemNew}" && file="${itemNew}"
 
         fileName=${file%.*}
         fileSuffixName=${file##*.}
 
         if [[ -n "${isAutoName}" ]]; then
             fileName="$(printf "%0${fileNameLength}d" "$index")"
+            echo fileName222=$fileName
             cp -rf "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileName}.${fileSuffixName}
+            ((index+=1))
             continue
         fi
 
@@ -1582,8 +1585,8 @@ ftReNameFile()
         [[ -n "${fileTagBase}" ]] && fileName="$(echo $fileName |sed s/$fileTagBase/$fileTagNew/g)"
         [[ -n "${fileSuffixTagBase}" ]] && fileSuffixName="$(echo $fileSuffixName |sed s/$fileSuffixTagBase/$fileSuffixTagNew/g)"
         cp -rf "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileName}.${fileSuffixName}
-
-    done
+        ((index+=1))
+    done < <(echo "$(ls $dirPathFileList)")
 }
 
 complete -W "-b -r -s" ftMaintainSystem
