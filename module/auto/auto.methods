@@ -1429,3 +1429,92 @@ ftAutoAddGitTag()
 
     [[ -n "$noteContent" ]] && git tag -a "$tagName" -m "${noteContent[@]}"
 }
+
+complete -W "-h --help --rely_install" ftAutoCreateBranch
+ftAutoCreateBranch()
+{
+    local ftEffect=自动生成stxd老项目的分支
+    local isEnable=true
+
+    while true; do case "$1" in
+    --rely) echo -e "\
+#===================[   ${ftEffect}   ]的依赖说明=============
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get update
+            sudo apt-get install git
+            return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoCreateBranch  #无参数
+#========================================================="; return ;;
+    --env) echo -e "\
+#===================[   ${ftEffect}   ]的使用环境说明==============
+# 环境未初始化
+# 使用前,请先进入AOSP项目
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #环境校验
+    if [[ -z "$ANDROID_BUILD_TOP" ]];then
+        [[ -d "alps" ]]&&[[ -d ".git" ]]&&cd alps
+        ftAutoInitEnv > /dev/null
+    fi
+    local dirPathAospRoot=$(dirname $ANDROID_BUILD_TOP)
+    [[ ! -d "${dirPathAospRoot}" ]] && ftAutoCreateBranch --env && return
+    cd $dirPathAospRoot
+    #依赖校验
+    [[ -z $(which git) ]] && ftAutoCreateBranch --rely "git" && return
+    #解参验耦
+    local valCount=1 errorContent index arg arg2
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+
+    [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCreateBranch -h && return
+
+    #实现主体
+    local hashValBase=$(ftGitLogShell -t "%h" -n 1)
+    git reset > /dev/null
+    git add $(git status --porcelain |grep -v "alps/out" | sed s/??//g | sed -e "s: M ::g"|grep "alps/") > /dev/null
+    git status --porcelain
+
+    echo -n "请确认待commit修改列表,是否正确 [y/n] (回车默认y)"
+    read -n 1 sel ;[ -z "${sel}" ] && sel=y
+    while true; do case "$sel" in
+            y | Y )
+                local tarPackagAutoCreateName=0tempBranch tarPackagAutoCreateNameTemp=temp
+                ls | while read line;do
+                    [[ ! -d "$line" ]] && continue
+                    if [[  ${line//$tarPackagAutoCreateName} != $line ]]; then
+                        local dirPath=${line}
+                        local dirPath_old=${dirPath}_old
+                        [[ -d "$dirPath_old" ]] && dirPath_old=${dirPath_old}_old
+                        mv $dirPath $dirPath_old
+                    fi
+                done
+
+                ftEcho -s "开始添加临时commit"
+                git commit -m "temp" > /dev/null
+                local hashValTemp=$(ftGitLogShell -t "%h" -n 1)
+                git diff $hashValTemp $hashValBase --name-only | xargs tar -rf ${tarPackagAutoCreateName}.tar
+
+                mkdir $tarPackagAutoCreateNameTemp
+                tar -xvf ${tarPackagAutoCreateName}.tar -C ${tarPackagAutoCreateNameTemp}
+                mv ${tarPackagAutoCreateNameTemp}/alps ${tarPackagAutoCreateName}
+                rm -rf $tarPackagAutoCreateNameTemp ${tarPackagAutoCreateName}.tar
+                ftEcho -s "已生成临时分支: ${tarPackagAutoCreateName}"
+
+                break;;
+            n | q )  echo ;
+                return ;;
+            * ) ftEcho -e "错误的选择：$sel"
+                echo "输入n，q，离开";;
+    esac;done ;
+    git reset $hashValBase > /dev/null && ftEcho -s "已删除临时commit"
+}
