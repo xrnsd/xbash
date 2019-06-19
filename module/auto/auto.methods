@@ -1382,6 +1382,7 @@ ftAutoAddGitTag()
     #解参验耦
     local valCount=1 errorContent index arg arg2
     local tagName noteContent
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
     case "${arg}" in
         -t ) tagName="${arg2}"
@@ -1390,6 +1391,7 @@ ftAutoAddGitTag()
 
     # (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[示例1]tagName=$tagName"
+    [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoAddGitTag -h && return
 
     #实现主体
@@ -1411,9 +1413,19 @@ ftAutoAddGitTag()
         return;
     fi
 
-    noteContent=$(cat $filePathVersionNote)
-    rm -rf $filePathVersionNote
-    [[ -z "$noteContent" ]] && ftEcho -e "空的备注信息，将使用commit名作为备注信息" && noteContent=$(ftGitLogShell -t "%s" -n 1)
+    noteContent=$(cat $filePathVersionNote) ;rm -rf $filePathVersionNote
 
-    git tag -a "$tagName" -m "${noteContent[@]}"
+    if [[ -z "$noteContent" ]];then
+        echo -n "空的备注信息，是否使用commit名作为备注信息[y/n] (回车默认y)"
+        read -n 1 sel ;[ -z "${sel}" ] && sel=y
+        while true; do case "$sel" in
+                y | Y )echo
+                    noteContent=$(ftGitLogShell -t "%s" -n 1) ; break;;
+                n | q )  echo ;
+                    return ;;
+                * ) ftEcho -e "错误的选择：$sel"
+                    echo "输入n，q，离开";;
+    esac;done ; fi
+
+    [[ -n "$noteContent" ]] && git tag -a "$tagName" -m "${noteContent[@]}"
 }
