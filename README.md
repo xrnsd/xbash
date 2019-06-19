@@ -48,5 +48,4 @@ bash的简单扩展
 
 3.待实现
 ----------
-    1 同分支差异化，提交自动整理
     2 封装ninja命令加速mmm等模块编译命令[参照 https://note.qidong.name/2017/08/android-ninja/]

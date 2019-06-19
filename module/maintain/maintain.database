@@ -42,6 +42,7 @@ dirPathsExcludeListHomeBase= \
     AndroidStudioProjects \
     cmds \
     code \
+    code_hs \
     doc \
     download \
     floobits \
@@ -51,6 +52,7 @@ dirPathsExcludeListHomeBase= \
     log \
     temp \
     tools \
+    tools_hs \
     server \
     imgs \
     PlayOnLinux's virtual drives \
@@ -129,6 +131,9 @@ dirPathsExcludeListHomeBase= \
     .config/google-chrome \
     .config/menus \
     .electron \
+    .AndroidStudio3.6 \
+    .AndroidStudio3.5 \
+    .AndroidStudio3.4 \
     .AndroidStudio3.3 \
     .AndroidStudio3.2 \
     .config/ubuntu-tweak \
