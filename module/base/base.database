@@ -248,7 +248,9 @@ recordCreator=吴国献 [wugx@sxtech.com/15019962261]
 recordMeTag=请在给客户发送软件时,通知下面这位去添加软件版本修改的版本TAG,方便后期追溯
 
 [backupOrRestoreOutsInfo]
-excludeConfig=lz.macros
+excludeConfig=lz.macros \
+build_c_time.txt \
+build_c_date.txt
 
 [CleanGarbageInfo]
 list=/media/server/1.75/智能机软件

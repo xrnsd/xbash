@@ -496,7 +496,7 @@ ftAutoBackupOrRestoreOuts()
             local dirPathOutTopSize=${#dirPathOutTopInfo[@]}
             for item in ${excludeConfigInfo[@]} ; do
                     item=${dirPathOutTop}/${item}
-                    [[ ! -d "$item" ]]&&[[ ! -f "$item" ]] && excludeConfigSize=0 && break
+                    [[ ! -d "$item" ]]&&[[ ! -f "$item" ]] && ((excludeConfigSize-=1)) && break
             done
             if (( $excludeConfigSize == $dirPathOutTopSize )); then
                 rm -rf $dirPathOutTop
