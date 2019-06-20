@@ -1468,7 +1468,8 @@ ftAutoCreateBranch()
     fi
     local dirPathAospRoot=$(dirname $ANDROID_BUILD_TOP)
     [[ ! -d "${dirPathAospRoot}" ]] && ftAutoCreateBranch --env && return
-    cd $dirPathAospRoot
+    local dirPathLocal=$(pwd)
+    cd "${dirPathAospRoot}"
     #依赖校验
     [[ -z $(which git) ]] && ftAutoCreateBranch --rely "git" && return
     #解参验耦
@@ -1517,4 +1518,75 @@ ftAutoCreateBranch()
                 echo "输入n，q，离开";;
     esac;done ;
     git reset $hashValBase > /dev/null && ftEcho -s "已删除临时commit"
+    cd "${dirPathLocal}"
+}
+
+ftAutoLnOut()
+{
+    local ftEffect=自动链接out到其他硬盘
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAutoLnOut -p 存放out的设备路径
+#========================================================="; return ;;
+    --env) echo -e "\
+#===================[   ${ftEffect}   ]的使用环境说明==============
+# 环境未初始化
+# 使用前,请先进入AOSP项目
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #环境校验
+    if [[ -z "$ANDROID_BUILD_TOP" ]];then
+        [[ -d "alps" ]]&&[[ -d ".git" ]]&&cd alps
+        ftAutoInitEnv > /dev/null
+    fi
+    local dirPathAospRoot aospProjectName
+    dirPathAospRoot=$(dirname $ANDROID_BUILD_TOP)
+    aospProjectName=$(basename $dirPathAospRoot)
+    [[ ! -d "${dirPathAospRoot}" ]] && ftAutoCreateBranch --env && return
+    local dirPathLocal=$(pwd)
+    #解参验耦
+    local valCount=2 errorContent index arg arg2
+    local dirPathDev
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    case "${arg}" in
+        -p ) dirPathDev="${arg2}"
+            dirPathDev=$(ftPath ${dirPathDev})
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ ! -d "$dirPathDev" ] && errorContent="${errorContent}\\n[无法链接到目标路径]dirPathDev=$dirPathDev"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoLnOut -h && return
+
+    #实现主体
+    cd "${ANDROID_BUILD_TOP}"
+    [[ -L "out" ]] && rm out
+    if [[ -d "out" ]]; then
+        echo -en "out已存在,请选择操作 (回车默认1):\n1 备份 \n2 删除 \n任意其他键取消操作"
+        read -n 1 sel ;[ -z "${sel}" ] && sel=1;echo
+        while true; do case "$sel" in
+                1 )
+                    ftAutoBackupOrRestoreOuts
+                    break;;
+                2 )
+                    rm -rf out
+                    break;;
+                n | q )
+                    ftEcho -s "取消操作"
+                    return ;;
+        esac;done ;
+    fi
+
+    dirPathDev="${dirPathDev}/outs/${aospProjectName}"
+    [[ ! -d "${dirPathDev}" ]] && mkdir -p "${dirPathDev}"
+    [[ ! -d "${dirPathDev}" ]] && ftEcho -s "设备路径初始化失败,无法创建${dirPathDev}" && return
+    ln -s "${dirPathDev}" out && ftEcho -s "已创建指向[${dirPathDev}]的软链接"
+    cd "${dirPathLocal}"
 }
