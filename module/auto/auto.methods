@@ -1144,50 +1144,6 @@ ftAutoCreateReadMeBySoftwareVersion()
     trap  SIGINT
 }
 
-ftAutoLanguageUtil()
-{
-    local ftEffect=语言缩写转化为中文
-    local isEnable=true
-
-    while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
-#    ftAutoLanguageUtil 无参
-#========================================================="; return ;;
-    --env ) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
-# 环境未初始化
-# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #环境校验
-    [ ! -d "$dirPathCode" ]||[ -z "$targetProduct" ] && ftAutoLanguageUtil --env && return
-    #解参验耦
-    local dirPathCode=$ANDROID_BUILD_TOP targetProduct=$TARGET_PRODUCT filePathDataBase=$rFilePathXbashDataBase
-    local valCount=0 errorContent
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[语言转化配置库不存在]filePathDataBase=$filePathDataBase"
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoLanguageUtil -h && return
-
-    #实现主体
-    local filePathDeviceProductLocales=($(ftIniGetValue $filePathDataBase lzProjrctConfigProductLocales $targetProduct))
-    filePathDeviceProductLocales=${dirPathCode}/${filePathDeviceProductLocales}
-
-    if [[ ! -f "$filePathDeviceProductLocales" ]]; then
-        ftEcho -sn "语言转化配置文件不存在: "
-        ftEcho -e "$filePathDeviceProductLocales"
-        ftAutoLanguageUtil -h
-        return
-    fi
-    local key="PRODUCT_LOCALES := "
-    local LanguageList=$(cat $filePathDeviceProductLocales|grep "$key"|grep -v "#PRODUCT_LOCALES := ")
-    LanguageList=${LanguageList//$key/}
-    ftLanguageUtil "${LanguageList[@]}"
-}
-
 complete -W "-rc -rt -e -p -h -d" ftAutoTest
 ftAutoTest()
 {
