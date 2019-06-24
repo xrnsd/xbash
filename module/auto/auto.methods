@@ -39,6 +39,7 @@ ftAutoInitEnv()
                                 export TARGET_PRODUCT=full_${item}
                                 export ANDROID_PRODUCT_OUT=$dirPathOut
                                 ftAutoInitEnv $@
+                                export TARGET_BUILD_VARIANT=$AutoEnv_buildType
                                 return
                            fi
                         done < <(echo "$(ls $dirPathOut)")
@@ -152,7 +153,7 @@ ftAutoInitEnv()
     export AutoEnv_buildType=$buildType
 
     #git分支信息解析
-   ftBranchNameResolution
+   # ftBranchNameResolution
 
     cd $dirPathLocal
     trap SIGINT
@@ -162,7 +163,7 @@ complete -W "-h --help" ftBranchNameResolution
 ftBranchNameResolution()
 {
     local ftEffect=分支名解析
-    local isEnable=true
+    local isEnable=false
 
     while true; do case "$1" in
     --rely) echo -e "\
@@ -227,7 +228,7 @@ ftBranchNameResolution()
         IFS="$OLD_IFS"
         export AutoEnv_branchName=$branchName
         if [ "$branchName" = "$arrayItems" ];then
-                ftEcho -e "分支名:${branchName} 不合法\n分支信息解析失败"
+                ftEcho -e "分支信息解析失败 :${branchName}"
         else
                 export AutoEnv_clientName=
                 export AutoEnv_projrctName=
