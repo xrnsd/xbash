@@ -491,7 +491,7 @@ ftAutoBackupOrRestoreOuts()
     if [[ -n "$isMoveBack" ]]; then
         if [[ -d "$dirPathOut" ]]||[[ -d "$dirPathOutTop" ]]; then
             #lunch生成的out，视为无效
-            local excludeConfigInfo=($(ftIniGetValue $rFilePathXbashDBBase backupOrRestoreOutsInfo excludeConfig))
+            local excludeConfigInfo=($(ftIniGetValue $rFilePathXbashDBAuto backupOrRestoreOutsInfo excludeConfig))
             local excludeConfigSize=${#excludeConfigInfo[@]}
             local dirPathOutTopInfo=($(ls $dirPathOutTop))
             local dirPathOutTopSize=${#dirPathOutTopInfo[@]}
@@ -582,6 +582,7 @@ ftAutoUpload()
     #环境校验
      [[ -z $(which nmap) ]]|| [[ -z $(which sshpass) ]]|| [[ -z $(which pigz) ]]|| [[ -z $(which pv) ]] && ftAutoUpload --rely && return
     #解参验耦
+    local filePathConfig=$rFilePathXbashDBAuto
     local dirPathContentUploadSource=$1 serverIp=$2
     local valCount=2 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
@@ -593,9 +594,9 @@ ftAutoUpload()
             errorContent="${errorContent}\\n 目标服务器指向本机，请确认配置:serverIp=$serverIp"
         else
             local tagName=serverConfig_${serverIp}
-            local userName=$(ftIniGetValue $rFilePathXbashDBBase $tagName userName)
-            local userPassword=$(ftIniGetValue $rFilePathXbashDBBase $tagName userPassword)
-            local dirPathPackage=$(ftIniGetValue $rFilePathXbashDBBase $tagName dirPathPackage)
+            local userName=$(ftIniGetValue $filePathConfig $tagName userName)
+            local userPassword=$(ftIniGetValue $filePathConfig $tagName userPassword)
+            local dirPathPackage=$(ftIniGetValue $filePathConfig $tagName dirPathPackage)
 
             [ -z "$userName" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]用户名获取失败"
             [ -z "$userPassword" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]密码获取失败"
@@ -610,7 +611,7 @@ ftAutoUpload()
 
     local serverProtInfo="$(nmap $serverIp)"
     if [[ -z $(echo ${serverProtInfo[@]}|grep ssh) ]]&&[[ -n $(echo ${serverProtInfo[@]}|grep 445) ]]; then #使用smb协议
-        local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDBBase $tagName dirPathPackageLocal)
+        local dirPathServerLocalBase=$(ftIniGetValue $filePathConfig $tagName dirPathPackageLocal)
         if ! mountpoint -q $dirPathServerLocalBase; then
             ftEcho -e "当前目录未挂载服务器共享目录:\n${dirPathUploadLocal}" && return
         else
@@ -619,7 +620,7 @@ ftAutoUpload()
         fi
     else #使用ssh协议
         # 自动添加旧软件的TAG
-        local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDBBase $tagName dirPathPackageLocal)
+        local dirPathServerLocalBase=$(ftIniGetValue $filePathConfig $tagName dirPathPackageLocal)
         if [[ -n "$dirPathServerLocalBase" ]]; then
             local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
             if [[ -d $dirPathServerLocal ]]&&[[ -n "$ANDROID_BUILD_TOP" ]]; then
@@ -680,7 +681,9 @@ ftAutoPacket()
         return
     fi
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
-    local filePathDataBase=$rFilePathXbashDBBase filePathDataUser=$rFilePathXbashDBUser
+    local filePathDataBase=$rFilePathXbashDBBase \
+            filePathDataUser=$rFilePathXbashDBUser \
+            filePathDataAuto=$rFilePathXbashDBAuto
     local dirPathLocal=$dirPathCode \
             dirNameVersionSoftware=packet \
             buildType=$AutoEnv_buildType
@@ -782,7 +785,6 @@ ftAutoPacket()
                     local filePathSystemImage=${dirPathOut}/system.img
                     local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
                     local fileList=($(ftIniGetValue $filePathDataUser $tagName ${TARGET_PRODUCT}))
-                    [[ -z "$fileList" ]] && fileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}))
                     if [[ -z "$fileList" ]];then
                         ftEcho -e "未找到 [${TARGET_PRODUCT}] 对应的独立配置,将默认复制全部文件"
                         while read item ;do
@@ -796,7 +798,7 @@ ftAutoPacket()
                                 [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && ftClearTail $dirPathLocal && return
 
                                  printf "%-2s %-30s\n" 复制 $file
-                                 cp -r -f  $filePath $dirPathPackage
+                                 # cp -r -f  $filePath $dirPathPackage
                             done
                         else
                             ftEcho -e "packages创建失败"
@@ -812,8 +814,8 @@ ftAutoPacket()
                     local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
                     local apdbDirPathList=($(ftIniGetValue $filePathDataUser $tagName apdbDirPathList))
                     local mddbDirPathList=($(ftIniGetValue $filePathDataUser $tagName mddbDirPathList))
-                    [[ -z "$apdbDirPathList" ]] && apdbDirPathList=($(ftIniGetValue $filePathDataBase $tagName apdbDirPathList))
-                    [[ -z "$mddbDirPathList" ]] && mddbDirPathList=($(ftIniGetValue $filePathDataBase $tagName mddbDirPathList))
+                    echo apdbDirPathList=${apdbDirPathList[@]}
+                    echo mddbDirPathList=${mddbDirPathList[@]}
                     for item in ${apdbDirPathList[@]} ; do
                             item=$(ftPath $item)
                             local itemPathRoot=${dirPathOut}/${item}
@@ -872,6 +874,13 @@ ftAutoPacket()
                     #     ftEcho -e "OTA相关包未找到"
                     # fi
             fi
+            # 生成软件压缩包
+            ftEcho -s "创建 压缩packages"
+            local dirPathSoftwareTemp=$(pwd)
+            local fileNamePackage=$(basename ${dirPathVersionSoftwareVersion}).tgz
+            cd ${dirPathVersionSoftware}
+            tar cvf - ${dirNameVeriosionBase} | pigz > ${fileNamePackage}
+            cd ${dirPathSoftwareTemp}
 
             # 创建版本说明
             ftEcho -s "创建 ${dirNameVeriosionBase}的版本说明"
@@ -942,6 +951,10 @@ ftAutoPacket()
                     ftEcho -s 生成7731c使用的pac[${dirPathVersionSoftwareVersion}/${versionName}.pac]
                     cd $dirPathLocal && dirPathLocal=
             fi
+            # 生成软件压缩包
+            ftEcho -s "创建 压缩packages"
+            local fileNamePackage=$(basename ${dirPathVersionSoftwareVersion}).tgz
+            tar --use-compress-program=pigz -cvPf $fileNamePackage ${dirPathVersionSoftwareVersion}
 
             # 生成说明文件
             [[ -n "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
@@ -989,14 +1002,14 @@ ftAutoCreateReadMeBySoftwareVersion()
     ftAutoInitEnv
     [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT dirPathVersionSoftware=$1
-    local filePathConfig=$rFilePathXbashDBBase
+    local filePathConfig=$rFilePathXbashDBAuto
     [[ -z "$dirPathVersionSoftware" ]]&&dirPathVersionSoftware=${dirPathOut}/${AutoEnv_versionName}
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
     local valCount=1 errorContent
     #(( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
-    [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[工程out目录不存在]filePathConfig=$filePathConfig"
+    [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCreateReadMeBySoftwareVersion -h && return
 
     #实现主体
