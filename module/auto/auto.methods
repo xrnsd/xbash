@@ -670,8 +670,7 @@ ftAutoPacket()
     ftAutoInitEnv
     if [ -z "$ANDROID_BUILD_TOP" ]\
             ||[ -z "$TARGET_PRODUCT" ]\
-            ||[ -z "$ANDROID_PRODUCT_OUT" ]\
-            ||[ -z "$TARGET_BUILD_VARIANT" ];then
+            ||[ -z "$ANDROID_PRODUCT_OUT" ];then
         if [[ -f "ftAutoPacket" ]];then
             ./ftAutoPacket
             return
@@ -679,9 +678,13 @@ ftAutoPacket()
         ftAutoPacket --env
         return
     fi
-    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT buildType=$TARGET_BUILD_VARIANT
-    local editType=$1 filePathDataBase=$rFilePathXbashDataBase
-    local valCount=1 errorContent
+    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
+    local filePathDataBase=$rFilePathXbashDataBase filePathDataUser=$rFilePathXbashModuleDataBaseUser
+    local dirPathLocal=$dirPathCode \
+            dirNameVersionSoftware=packet \
+            buildType=$AutoEnv_buildType
+    local dirPathVersionSoftware=${dirPathCode}/out/${dirNameVersionSoftware}
+    local editType=$1 valCount=1 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
@@ -706,9 +709,6 @@ ftAutoPacket()
             isPacket=true ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
-    local dirPathLocal=$dirPathCode dirNameVersionSoftware=packet buildType=$AutoEnv_buildType
-    local dirPathVersionSoftware=${dirPathCode}/out/${dirNameVersionSoftware}
-
     if [[ -d "$dirPathVersionSoftware" ]]; then
             if [[ -n "$isClean" ]]; then
                 rm  -rf $dirPathVersionSoftware
@@ -718,12 +718,12 @@ ftAutoPacket()
                 ftEcho -s "发现软件包,移至xx_old"
             elif [[ -z "$isUpload" ]]; then
                   while true; do
-                        ftEcho -y "有旧的软件包  ${dirPathVersionSoftware}\n是否删除"
-                        read -n 1 sel
+                        ftEcho -y "有旧的软件包  ${dirPathVersionSoftware}\n是否删除(回车默认y)"
+                        read -n 1 sel ;[ -z "${sel}" ] && sel=y
                         case "$sel" in
                             y | Y ) rm  -rf $dirPathVersionSoftware
-                                       break;;
-                            n | q )    break ;;
+                                       break ;;
+                            n | q ) break ;;
                             * ) ftEcho -e 错误的选择：$sel
                                 echo "输入n，q，离开";;
                         esac
@@ -735,7 +735,150 @@ ftAutoPacket()
     [[ ! -d "$dirPathVersionSoftware" ]] && mkdir $dirPathVersionSoftware
     cd $dirPathVersionSoftware && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
-    if [[ $AutoEnv_mnufacturers = "sprd" ]]; then
+    if [[ $AutoEnv_mnufacturers = "mtk" ]]; then
+            local dirNamePackage="packages" dirNameOtaPackage="otaPackages" dirNamePackageDataBase="dataBase" \
+                    tagName="lzProjrctConfigSoftwarePackageFileLIst"
+            local deviceName=$(basename $ANDROID_PRODUCT_OUT)
+
+            #版本号特殊处理
+            local dirNameVeriosionBase=${AutoEnv_versionName}
+            #非user版本标记编译类型
+            [ "$AutoEnv_buildType" != "user" ] && dirNameVeriosionBase=${buildType}____${dirNameVeriosionBase}
+            #软件版本的日期与当前时间不一致就设定编译时间
+            arr=(${AutoEnv_versionName//_/ })
+            length=${#arr[@]}
+            ((length-=1))
+            local versionNameDate=${arr[$length]}
+            [[ $versionNameDate =~ "." ]] && versionNameDate=${versionNameDate%.*}
+            # system.img文件最新修改时间
+            if [[ -f "${dirPathOut}/system.img" ]]; then
+                    local key="最近更改："
+                    local fileChangeTime=$(stat ${dirPathOut}/system.img|grep $key|awk '{print $1}'|sed s/-//g)
+                    fileChangeTime=${fileChangeTime//$key/}
+                    fileChangeTime=${fileChangeTime:-$(date -d "today" +"%y%m%d")}
+            fi
+            if [[ -n "$fileChangeTime" ]]&&[ "$versionNameDate" != "${fileChangeTime}" ];then
+                export AutoEnv_SoftwareVersion_BuildTime=buildtime____${fileChangeTime}
+                 dirNameVeriosionBase=${dirNameVeriosionBase}____${AutoEnv_SoftwareVersion_BuildTime}
+            fi
+            if [[ -n "$isSpecial" ]]; then
+                ftEcho -r $"请输入版本: "${dirNameVeriosionBase}"\n相应的说明[回车默认为常规]:"
+                read tag
+                tag=${tag:-'常规'}
+                dirNameVeriosionBase=${tag}____${dirNameVeriosionBase}
+            fi
+
+            local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirNameVeriosionBase}
+
+            # 生成本地软件包
+            if [[ -n "$isPacket" ]]; then
+                    mkdir -p $dirPathVersionSoftwareVersion
+
+                    ftEcho -s "\n========================\n开始生成版本软件包:\n  ${dirNameVeriosionBase}\n路径:\n  ${dirPathVersionSoftwareVersion}\n========================\n"
+                    #packages
+                    ftEcho -s "创建packages"
+                    tagName="lzProjrctConfigSoftwarePackageFileLIst"
+                    local filePathSystemImage=${dirPathOut}/system.img
+                    local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
+                    local fileList=($(ftIniGetValue $filePathDataUser $tagName ${TARGET_PRODUCT}))
+                    [[ -z "$fileList" ]] && fileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}))
+                    if [[ -z "$fileList" ]];then
+                        ftEcho -e "未找到 [${TARGET_PRODUCT}] 对应的独立配置,将默认复制全部文件"
+                        while read item ;do
+                            [[ ! -f "${dirPathOut}/${item}" ]] && continue || fileList=(${fileList[@]} ${item})
+                        done < <(echo "$(ls ${dirPathOut})")
+                    fi
+                    if [[ -f "$filePathSystemImage" ]]; then
+                        if mkdir -p $dirPathPackage; then
+                            for file in ${fileList[@]}; do
+                                local filePath=${dirPathOut}/${file}
+                                [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && ftClearTail $dirPathLocal && return
+
+                                 printf "%-2s %-30s\n" 复制 $file
+                                 cp -r -f  $filePath $dirPathPackage
+                            done
+                        else
+                            ftEcho -e "packages创建失败"
+                        fi
+                    else
+                        ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage" && ftClearTail $dirPathLocal && return
+                    fi
+
+                    # database
+                    ftEcho -s "创建 database"
+                    tagName=lzProjrctConfigSoftwareDataBaseFileLIst
+                    local dataBaseFileList dataBaseFileListTemp
+                    local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
+                    local apdbDirPathList=($(ftIniGetValue $filePathDataUser $tagName apdbDirPathList))
+                    local mddbDirPathList=($(ftIniGetValue $filePathDataUser $tagName mddbDirPathList))
+                    [[ -z "$apdbDirPathList" ]] && apdbDirPathList=($(ftIniGetValue $filePathDataBase $tagName apdbDirPathList))
+                    [[ -z "$mddbDirPathList" ]] && mddbDirPathList=($(ftIniGetValue $filePathDataBase $tagName mddbDirPathList))
+                    for item in ${apdbDirPathList[@]} ; do
+                            item=$(ftPath $item)
+                            local itemPathRoot=${dirPathOut}/${item}
+                            [[ ! -d "${itemPathRoot}" ]] && ftEcho -e "未找到database的apdb的相关项 ${item}" && continue
+                            while read fileName ;do
+                                [[ -z $(echo "${fileName}"|grep '^APDB') ]]&&[[ -z $(echo "${fileName}"|grep '^_APDB') ]]&& continue
+                                local filePath=${item}/${fileName}
+                                [[ -f "${itemPathRoot}/${fileName}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
+                            done < <(echo "$(ls ${itemPathRoot})")
+                    done
+                    for item in ${mddbDirPathList[@]} ; do
+                            item=$(ftPath $item)
+                            local itemPathRoot=${dirPathOut}/${item}
+                            [[ ! -d "${itemPathRoot}" ]] && ftEcho -e "未找到database的mddb的相关项 ${item}" && continue
+                            while read fileName ;do
+                                local filePath=${item}/${fileName}
+                                [[ -f "${itemPathRoot}/${fileName}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
+                            done < <(echo "$(ls ${itemPathRoot})")
+                    done
+                    if [[ -n "$dataBaseFileList" ]];then
+                        if mkdir -p $dirPathPackageDataBase; then
+                            for filePath in ${dataBaseFileList[@]}; do
+                                 [[ ! -f "$filePath" ]] && filePath=${dirPathOut}/${filePath}
+                                 [[ ! -f "$filePath" ]] &&  ftEcho -e "找不到 : ${filePath}" && continue
+
+                                fileName=$(basename $filePath)
+                                printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
+                                 cp -r -f  $filePath $dirPathPackageDataBase
+                            done
+                        else
+                            ftEcho -e "database 创建失败,无法创建${dirPathPackageDataBase}"
+                        fi
+                    else
+                        ftEcho -e "database 创建失败"
+                    fi
+
+                    # #otaPackages
+                    # local dirPathOtaPackage=${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
+                    # local dirPathOta=${dirPathOut}/obj/PACKAGING/target_files_intermediates
+                    # if [[ -d "$dirPathOta" ]]; then
+                    #     local otaFileList=$(ls ${dirPathOta}/${TARGET_PRODUCT}-target_files-* |grep .zip)
+                    #     if [[ -n "$otaFileList" ]]; then
+                    #          if mkdir -p $dirPathOtaPackage; then
+                    #             ftEcho -s "创建 otaPackages"
+                    #             for file in ${otaFileList[@]}; do
+                    #                  [[ ! -f "$file" ]] && ftEcho -e "找不到 : ${file}" && ftClearTail $dirPathLocal && return
+
+                    #                  printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
+                    #                  cp -r -f  $file $dirPathOtaPackage
+                    #             done
+                    #         else
+                    #             ftEcho -e "otaPackages 创建失败"
+                    #         fi
+                    #     fi
+                    # else
+                    #     ftEcho -e "OTA相关包未找到"
+                    # fi
+            fi
+
+            # 创建版本说明
+            ftEcho -s "创建 ${dirNameVeriosionBase}的版本说明"
+            [[ -n "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
+
+            #上传服务器
+            [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareVersion 192.168.1.75
+    elif [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
                 ftEcho -ea " ${ftEffect} 缺少平台${AutoEnv_mnufacturers}的项目${TARGET_PRODUCT}的配置\
                 \n请查看下面说明:"
@@ -814,183 +957,6 @@ ftAutoPacket()
             #上传服务器
             [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareLocal 192.168.1.75
 
-    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-            local dirNamePackage="packages" dirNameOtaPackage="otaPackages" dirNamePackageDataBase="dataBase"
-            local deviceName=$(basename $ANDROID_PRODUCT_OUT) dataBaseFileList
-
-            if [ $deviceName = "m9_xinhaufei_r9_hd" ];then
-                tagName="lzProjrctConfigSoftwareDataBaseFileLIst"
-                dataBaseFileList=($(ftIniGetValue $filePathDataBase $tagName $TARGET_PRODUCT))
-            elif [ $deviceName = "keytak6580_weg_l" ];then
-                # local dirNameModems=$(ls ${dirPathOut}/obj/ETC/BPLGUInfoCustomAppSrcP_*|grep ":")
-                local dirPathDatabaseBpBase=${dirPathOut}/obj/ETC
-                local dirNameModems=$(ls ${dirPathDatabaseBpBase}/|grep "BPLGUInfoCustomAppSrcP_")
-                for dirName in ${dirNameModems[@]} ; do
-                    dirName=${dirName//:/}
-                    local dirPath=${dirPathDatabaseBpBase}/${dirName}
-                    for fileName in $(ls $dirPath) ; do
-                        local filePath=${dirPath}/${fileName}
-                        if [[ ! -f "$filePath" ]]; then
-                            ftEcho -e "文件${filePath}不存在"
-                        else
-                            dataBaseFileList=(${dataBaseFileList[@]} $filePath)
-                        fi
-                    done
-                done
-                dataBaseFileList=(${dataBaseFileList[@]} ${dirPathOut}/obj/CGEN/APDB_MT6580_S01_L1.MP6_W16.15)
-            elif [ $deviceName = "m9_qhd" ];then
-                tagName="lzProjrctConfigSoftwareDataBaseFileLIst"
-                dataBaseFileList=($(ftIniGetValue $filePathDataBase $tagName $TARGET_PRODUCT))
-            fi
-
-            # system.img文件最新修改时间
-            if [[ -f "${dirPathOut}/system.img" ]]; then
-                    local key="最近更改："
-                    local fileChangeTime=$(stat ${dirPathOut}/system.img|grep $key|awk '{print $1}'|sed s/-//g)
-                    fileChangeTime=${fileChangeTime//$key/}
-                    fileChangeTime=${fileChangeTime:-$(date -d "today" +"%y%m%d")}
-            fi
-
-            if [[ -n "$AutoEnv_clientName" ]];then #解析git分支,初始化客户等相关信息
-                ftBuildPropResolution
-
-                local dirPathGitBranchInfoGroup dirPathVersionSoftwareVersion 
-                #版本路径 服务器根路径部分
-                local dirPathUploadTraget=智能机软件 tagName="lzProjrctConfigBranch2CtName"
-                local clientNameAll=$(ftIniGetValue $filePathDataBase $tagName $AutoEnv_clientName)
-                tagName="lzProjrctConfigBranch2PlatformName"
-                local platformName=$(ftIniGetValue $filePathDataBase $tagName $TARGET_PRODUCT)
-                if [[ -n "$platformName" ]];then
-                     dirPathUploadTraget=${dirPathUploadTraget}/${platformName}/${clientNameAll:-'autoUpload'}
-                else
-                     dirPathUploadTraget=${dirPathUploadTraget}/autoUpload
-                fi
-
-
-                if [[ -z "$dirPathUploadTraget" ]]; then
-                    ftEcho -e "分支信息解析结果为空,请查看配置"
-                    ftClearTail $dirPathLocal
-                    return
-                else
-                    dirPathVersionSoftwareVersion=${dirPathUploadTraget}
-                fi
-
-                #版本路径 分支信息部分
-                [[ -n "$AutoEnv_motherboardName" ]] && dirPathGitBranchInfoGroup=${AutoEnv_motherboardName}
-                [[ -n "$AutoEnv_projrctName" ]] && dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_projrctName}
-                [[ -n "$AutoEnv_demandSignName" ]] && dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_demandSignName}
-
-                if [[ -n "$AutoEnv_deviceModelName" ]]; then
-                    dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_deviceModelName}
-
-                    [[ -n "$AutoEnv_BandInfo" ]] && dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_B${AutoEnv_BandInfo} #添加 modem 配置信息
-                    [[ -n "$AutoEnv_FlashConfig" ]] && dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}_${AutoEnv_FlashConfig} #添加 flash信息
-
-                else
-                    [[ -n "$AutoEnv_BandInfo" ]] && dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/B${AutoEnv_BandInfo} #添加 modem 配置信息
-                    [[ -n "$AutoEnv_FlashConfig" ]] && dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_FlashConfig} #添加 flash信息
-                fi
-                # if  [[ -n "$AutoEnv_AndroidVersion" ]&&(($AutoEnv_deviceSdkVersion>22)); then
-                #         dirPathGitBranchInfoGroup=${dirPathGitBranchInfoGroup}/${AutoEnv_AndroidVersion}
-                # fi
-                [[ -z "$dirPathGitBranchInfoGroup" ]] && ftEcho -e "分支信息解析结果为空,请查看配置" && ftClearTail $dirPathLocal && return
-                dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirPathGitBranchInfoGroup}
-
-                local dirNameVeriosionBase=${AutoEnv_versionName}
-                #非user版本标记编译类型
-                [ "$AutoEnv_buildType" != "user" ] && dirNameVeriosionBase=${buildType}____${dirNameVeriosionBase}
-                #软件版本的日期与当前时间不一致就设定编译时间
-                arr=(${AutoEnv_versionName//_/ })
-                length=${#arr[@]}
-                ((length-=1))
-                local versionNameDate=${arr[$length]}
-                [[ $versionNameDate =~ "." ]] && versionNameDate=${versionNameDate%.*}
-                if [[ -n "$fileChangeTime" ]]&&[ "$versionNameDate" != "${fileChangeTime}" ];then
-                    export AutoEnv_SoftwareVersion_BuildTime=buildtime____${fileChangeTime}
-                     dirNameVeriosionBase=${dirNameVeriosionBase}____${AutoEnv_SoftwareVersion_BuildTime}
-                fi
-
-                if [[ -n "$isSpecial" ]]; then
-                    ftEcho -r $"请输入版本: "${dirNameVeriosionBase}"\n相应的说明[回车默认为常规]:"
-                    read tag
-                    tag=${tag:-'常规'}
-                    dirNameVeriosionBase=${tag}____${dirNameVeriosionBase}
-                fi
-                dirPathVersionSoftwareVersion=${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
-
-            else
-                if [[ -n "$fileChangeTime" ]];then
-                    local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${fileChangeTime}____buildType[${buildType}]__versionName[${AutoEnv_versionName}]__$fileChangeTime
-                else
-                    local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/buildType[${buildType}]__versionName[${AutoEnv_versionName}]
-                fi
-            fi
-
-            [[ -n "AutoEnv_motherboardName" ]] && dirPathUploadTraget=${dirPathUploadTraget}/${AutoEnv_motherboardName}
-            local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
-            local dirPathOtaPackage=${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
-            local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
-            local dirPathOta=${dirPathOut}/obj/PACKAGING/target_files_intermediates
-            if [[ -d "$dirPathOta" ]]; then
-                local otaFileList=$(ls ${dirPathOta}/${TARGET_PRODUCT}-target_files-* |grep .zip)
-            else
-                ftEcho -e "OTA相关包未找到"
-            fi
-
-            # 生成本地软件包
-            if [[ -n "$isPacket" ]]; then
-                    mkdir -p $dirPathVersionSoftwareVersion
-
-                    ftEcho -s "\n========================\n开始生成版本软件包:\n  ${dirNameVeriosionBase}\n路径:\n  ${dirPathVersionSoftwareVersion}\n========================\n"
-                    #packages
-                    filePathSystemImage=${dirPathOut}/system.img
-                    if [[ -f "$filePathSystemImage" ]]; then
-                        mkdir -p $dirPathPackage
-                        # packages需要的文件列表
-                        tagName="lzProjrctConfigSoftwarePackageFileLIst"
-                        local fileList=($(ftIniGetValue $filePathDataBase $tagName ${TARGET_PRODUCT}))
-                        for file in ${fileList[@]}; do
-                            local filePath=${dirPathOut}/${file}
-                            [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && ftClearTail $dirPathLocal && return
-
-                             printf "%-2s %-30s\n" 复制 $file
-                             cp -r -f  $filePath $dirPathPackage
-                             # rsync --progress  $filePath $dirPathPackage
-                             # printf "\033[0;32;36m 复制 $file\n\033[0m"
-                             # pv $filePath > ${dirPathPackage}/${file}
-                        done
-                    else
-                        ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage" && ftClearTail $dirPathLocal && return
-                    fi
-                    #otaPackages
-                    if [[ -n "$otaFileList" ]]; then
-                        mkdir -p $dirPathOtaPackage
-                        for file in ${otaFileList[@]}; do
-                             [[ ! -f "$file" ]] && ftEcho -e "找不到 : ${file}" && ftClearTail $dirPathLocal && return
-
-                             printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
-                             cp -r -f  $file $dirPathOtaPackage
-                        done
-                    fi
-                    # database
-                    if [[ -n "$dataBaseFileList" ]];then
-                        mkdir -p $dirPathPackageDataBase
-                        for filePath in ${dataBaseFileList[@]}; do
-                             [[ ! -f "$filePath" ]] && filePath=${dirPathOut}/${filePath}
-                             [[ ! -f "$filePath" ]] &&  ftEcho -e "找不到 : ${filePath}" && continue
-
-                            fileName=$(basename $filePath)
-                            printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
-                             cp -r -f  $filePath $dirPathPackageDataBase
-                        done
-                    fi
-            fi
-
-            # 生成说明文件
-            [[ -n "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftware}/${dirPathVersionSoftwareVersion}
-
-            #上传服务器
-            [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareVersion 192.168.1.75
     else
             ftEcho -ea "${ftEffect} 没有平台${AutoEnv_mnufacturers}的配置\n请查看下面说明:"
             ftAutoPacket -h
@@ -1172,7 +1138,6 @@ ftAutoCreateReadMeBySoftwareVersion()
             unix2dos $filePathChangeListTemplate
     fi
 
-    ftEcho -s "生成 ${filePathChangeListTemplate}"
     rm ${filePathChangeListTemplate}.temp
     cd $dirPathLocal
     trap  SIGINT
