@@ -2516,7 +2516,9 @@ ftOpenNemoTab()
             xdotool windowfocus $windowId key ctrl+t
             sleep 0.7
             xdotool windowfocus $windowId key ctrl+l
+            sleep 0.2
             xdotool windowfocus $windowId key ctrl+v
+            sleep 0.1
             xdotool key enter Return
         fi
         echo -n "" | xclip -i -sel clip
