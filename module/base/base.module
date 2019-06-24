@@ -18,7 +18,7 @@ if [ "$(whoami)" != "root" ];then
     if [[ -f $filePathXbashDataBaseUser ]]; then
         bashHistorySizeBase=$(ftIniGetValue  $filePathXbashDataBaseUser xbash bashHistoryThresholdSize)
     else
-        bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryThresholdSize)
+        bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDBBase xbash bashHistoryThresholdSize)
         mkdir $rDirPathXbashModuleUser > /dev/null
         ftIniCreateFileOrTag -r -p $filePathXbashDataBaseUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
 
@@ -30,7 +30,7 @@ if [ "$(whoami)" != "root" ];then
     fi
 
     if (($bashHistorySize>$bashHistorySizeBase)); then
-        ((bashHistorySize=$bashHistorySize+$(ftIniGetValue  $rFilePathXbashDataBase xbash bashHistoryIncrementalSize)))
+        ((bashHistorySize=$bashHistorySize+$(ftIniGetValue  $rFilePathXbashDBBase xbash bashHistoryIncrementalSize)))
         ftIniSetValue $filePathXbashDataBaseUser xbash bashHistoryThresholdSize $bashHistorySize
     else
         bashHistorySize=$bashHistorySizeBase

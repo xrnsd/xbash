@@ -1,0 +1,28 @@
+#xbash
+
+[serverConfig_192.168.1.188]
+userName=server
+userPassword=123456
+dirPathPackage=/media/packages
+dirPathPackageLocal=/media/server/1.188
+
+[serverConfig_192.168.1.75]
+userName=lzsoft
+userPassword=123
+dirPathPackage=/media/server/1.75/智能机软件
+dirPathPackageLocal=/media/server/1.75/智能机软件
+
+[serverConfig_192.168.1.55]
+userName=wb1
+userPassword=x6b7n37g
+dirPathPackage=/media/data/nfs
+dirPathPackageLocal=/media/server/1.55/nfs
+
+[projectSoftwareReadMeInfo]
+recordCreator=吴国献 [wugx@sxtech.com/15019962261]
+recordMeTag=请在给客户发送软件时,通知下面这位去添加软件版本修改的版本TAG,方便后期追溯
+
+[backupOrRestoreOutsInfo]
+excludeConfig=lz.macros \
+build_c_time.txt \
+build_c_date.txt

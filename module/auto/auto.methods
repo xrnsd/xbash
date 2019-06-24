@@ -346,7 +346,7 @@ ftBuildPropResolution()
             deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
             deviceSdkVersion=${deviceSdkVersion:-'null'}
             export AutoEnv_deviceSdkVersion=$deviceSdkVersion
-            local AndroidVersion=$(ftIniGetValue $rFilePathXbashDataBase androidSDK2Verison $deviceSdkVersion)
+            local AndroidVersion=$(ftIniGetValue $rFilePathXbashDBBase androidSDK2Verison $deviceSdkVersion)
             export AutoEnv_AndroidVersion=$AndroidVersion
     fi
 
@@ -491,7 +491,7 @@ ftAutoBackupOrRestoreOuts()
     if [[ -n "$isMoveBack" ]]; then
         if [[ -d "$dirPathOut" ]]||[[ -d "$dirPathOutTop" ]]; then
             #lunch生成的out，视为无效
-            local excludeConfigInfo=($(ftIniGetValue $rFilePathXbashDataBase backupOrRestoreOutsInfo excludeConfig))
+            local excludeConfigInfo=($(ftIniGetValue $rFilePathXbashDBBase backupOrRestoreOutsInfo excludeConfig))
             local excludeConfigSize=${#excludeConfigInfo[@]}
             local dirPathOutTopInfo=($(ls $dirPathOutTop))
             local dirPathOutTopSize=${#dirPathOutTopInfo[@]}
@@ -593,9 +593,9 @@ ftAutoUpload()
             errorContent="${errorContent}\\n 目标服务器指向本机，请确认配置:serverIp=$serverIp"
         else
             local tagName=serverConfig_${serverIp}
-            local userName=$(ftIniGetValue $rFilePathXbashDataBase $tagName userName)
-            local userPassword=$(ftIniGetValue $rFilePathXbashDataBase $tagName userPassword)
-            local dirPathPackage=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackage)
+            local userName=$(ftIniGetValue $rFilePathXbashDBBase $tagName userName)
+            local userPassword=$(ftIniGetValue $rFilePathXbashDBBase $tagName userPassword)
+            local dirPathPackage=$(ftIniGetValue $rFilePathXbashDBBase $tagName dirPathPackage)
 
             [ -z "$userName" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]用户名获取失败"
             [ -z "$userPassword" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]密码获取失败"
@@ -610,7 +610,7 @@ ftAutoUpload()
 
     local serverProtInfo="$(nmap $serverIp)"
     if [[ -z $(echo ${serverProtInfo[@]}|grep ssh) ]]&&[[ -n $(echo ${serverProtInfo[@]}|grep 445) ]]; then #使用smb协议
-        local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
+        local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDBBase $tagName dirPathPackageLocal)
         if ! mountpoint -q $dirPathServerLocalBase; then
             ftEcho -e "当前目录未挂载服务器共享目录:\n${dirPathUploadLocal}" && return
         else
@@ -619,7 +619,7 @@ ftAutoUpload()
         fi
     else #使用ssh协议
         # 自动添加旧软件的TAG
-        local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDataBase $tagName dirPathPackageLocal)
+        local dirPathServerLocalBase=$(ftIniGetValue $rFilePathXbashDBBase $tagName dirPathPackageLocal)
         if [[ -n "$dirPathServerLocalBase" ]]; then
             local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
             if [[ -d $dirPathServerLocal ]]&&[[ -n "$ANDROID_BUILD_TOP" ]]; then
@@ -680,7 +680,7 @@ ftAutoPacket()
         return
     fi
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
-    local filePathDataBase=$rFilePathXbashDataBase filePathDataUser=$rFilePathXbashModuleDataBaseUser
+    local filePathDataBase=$rFilePathXbashDBBase filePathDataUser=$rFilePathXbashDBUser
     local dirPathLocal=$dirPathCode \
             dirNameVersionSoftware=packet \
             buildType=$AutoEnv_buildType
@@ -738,7 +738,7 @@ ftAutoPacket()
 
     if [[ $AutoEnv_mnufacturers = "mtk" ]]; then
             local dirNamePackage="packages" dirNameOtaPackage="otaPackages" dirNamePackageDataBase="dataBase" \
-                    tagName="lzProjrctConfigSoftwarePackageFileLIst"
+                    tagName="xbashAOSPConfigSoftwarePackageFileLIst"
             local deviceName=$(basename $ANDROID_PRODUCT_OUT)
 
             #版本号特殊处理
@@ -778,7 +778,7 @@ ftAutoPacket()
                     ftEcho -s "\n========================\n开始生成版本软件包:\n  ${dirNameVeriosionBase}\n路径:\n  ${dirPathVersionSoftwareVersion}\n========================\n"
                     #packages
                     ftEcho -s "创建packages"
-                    tagName="lzProjrctConfigSoftwarePackageFileLIst"
+                    tagName="xbashAOSPConfigSoftwarePackageFileLIst"
                     local filePathSystemImage=${dirPathOut}/system.img
                     local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
                     local fileList=($(ftIniGetValue $filePathDataUser $tagName ${TARGET_PRODUCT}))
@@ -807,7 +807,7 @@ ftAutoPacket()
 
                     # database
                     ftEcho -s "创建 database"
-                    tagName=lzProjrctConfigSoftwareDataBaseFileLIst
+                    tagName=xbashAOSPConfigSoftwareDataBaseFileLIst
                     local dataBaseFileList dataBaseFileListTemp
                     local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
                     local apdbDirPathList=($(ftIniGetValue $filePathDataUser $tagName apdbDirPathList))
@@ -907,17 +907,8 @@ ftAutoPacket()
             [[ -n "$buildType" ]]&&[ $buildType != "user" ] && versionName=${versionName}____${buildType}
 
             local dirPathVersionSoftwareLocal="智能机软件"
-            local tagName="lzProjrctConfigBranch2CtName"
-            local clientNameAll=$(ftIniGetValue $filePathDataBase $tagName $AutoEnv_clientName)
-            tagName="lzProjrctConfigBranch2PlatformName"
-            local platformName=$(ftIniGetValue $filePathDataBase $tagName $TARGET_PRODUCT)
-            if [[ -n "$platformName" ]];then
-                 dirPathVersionSoftwareLocal=${dirPathVersionSoftwareLocal}/${platformName}/${clientNameAll:-'autoUpload'}/${versionName}
-            else
-                 dirPathVersionSoftwareLocal=${dirPathVersionSoftwareLocal}/autoUpload/${versionName}
-            fi
 
-            dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirPathVersionSoftwareLocal}
+            dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${versionName}
             mkdir -p $dirPathVersionSoftwareVersion
 
             # 生成软件包
@@ -998,7 +989,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     ftAutoInitEnv
     [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT dirPathVersionSoftware=$1
-    local filePathConfig=$rFilePathXbashDataBase
+    local filePathConfig=$rFilePathXbashDBBase
     [[ -z "$dirPathVersionSoftware" ]]&&dirPathVersionSoftware=${dirPathOut}/${AutoEnv_versionName}
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
     local valCount=1 errorContent

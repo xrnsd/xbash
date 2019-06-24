@@ -12,7 +12,6 @@ packageNameList=com.android.systemui \
                 com.android.commands.monkey \
                 com.android.mms
 
-
 [androidSDK2Verison]
 28=Android9.0
 27=Android8.1
@@ -33,65 +32,6 @@ packageNameList=com.android.systemui \
 11=Android3.0
 10=Android2.3.3-2.3.7
 9=Android2.3-2.3.2
-
-#客户名
-[lzProjrctConfigBranch2CtName]
-XHF=新华菲
-DHX=东华新
-PMZ=鹏明珠
-DCHS=鼎城恒生
-CDHT=诚达恒泰
-TXD=腾信达
-
-#项目对应平台名
-[lzProjrctConfigBranch2PlatformName]
-keytak6580_weg_l=MTK6580
-full_keytak6580_weg_l=MTK6580
-sp7731c_1h10_32v4_oversea=SPRD7731C
-full_m9_qhd=MTK6580M
-
-#项目软件包packages文件名列表
-[lzProjrctConfigSoftwarePackageFileLIst]
-full_keytak6580_weg_l= \
-    boot.img \
-    cache.img \
-    lk.bin \
-    logo.bin \
-    MT6580_Android_scatter.txt \
-    ramdisk.img \
-    recovery.img \
-    secro.img \
-    system.img \
-    userdata.img \
-    preloader_keytak6580_weg_l.bin
-full_m9_qhd= \
-    boot.img \
-    cache.img \
-    lk.bin \
-    logo.bin \
-    MT6580_Android_scatter.txt \
-    recovery.img \
-    secro.img \
-    system.img \
-    userdata.img \
-    preloader_m9_qhd.bin
-
-#语言列表配置文件路径
-[lzProjrctConfigProductLocales]
-keytak6580_weg_l=device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
-full_keytak6580_weg_l=device/keytak/keytak6580_weg_l/full_keytak6580_weg_l.mk
-sp7731c_1h10_32v4_oversea=device/sprd/scx20/sp7731c_1h10_32v4/sp7731c_1h10_32v4_oversea.mk
-full_m9_qhd=device/kdragon/m9_qhd/full_m9_qhd.mk
-
-#项目软件包database文件名列表
-[lzProjrctConfigSoftwareDataBaseFileLIst]
-m9_xinhaufei_r9_hd= \
-    obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
-    obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n
-full_m9_qhd= \
-    obj/CGEN/APDB_MT6580_S01_alps-mp-m0.mp1_W16.50 \
-    obj/ETC/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n_intermediates/BPLGUInfoCustomAppSrcP_MT6580_S00_MOLY_WR8_W1449_MD_WG_MP_V59_P9_1_wg_n
-
 
 [androidKeyCode]
 KEYCODE_UNKNOWN=0
@@ -223,34 +163,6 @@ pl_PL sr_RS sk_SK sl_SI es_US sv_SE hi_IN uk_UA zh_HK \
 in_ID sw_TZ am_ET bn_IN he_IL iw_IL af_ZA rm_CH \
 my_ZG be_BY et_EE zu_ZA az_AZ hy_AM ka_GE lo_LA \
 mn_MN ne_NP kk_KZ si_LK
-
-
-[serverConfig_192.168.1.188]
-userName=server
-userPassword=123456
-dirPathPackage=/media/packages
-dirPathPackageLocal=/media/server/1.188
-
-[serverConfig_192.168.1.75]
-userName=lzsoft
-userPassword=123
-dirPathPackage=/media/server/1.75/智能机软件
-dirPathPackageLocal=/media/server/1.75/智能机软件
-
-[serverConfig_192.168.1.55]
-userName=wb1
-userPassword=x6b7n37g
-dirPathPackage=/media/data/nfs
-dirPathPackageLocal=/media/server/1.55/nfs
-
-[projectSoftwareReadMeInfo]
-recordCreator=吴国献 [wugx@sxtech.com/15019962261]
-recordMeTag=请在给客户发送软件时,通知下面这位去添加软件版本修改的版本TAG,方便后期追溯
-
-[backupOrRestoreOutsInfo]
-excludeConfig=lz.macros \
-build_c_time.txt \
-build_c_date.txt
 
 [CleanGarbageInfo]
 list=/media/server/1.75/智能机软件

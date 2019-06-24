@@ -1,8 +1,8 @@
 #!/bin/bash
 #########################
-##                                                 ##
+##                                              ##
 ##             框架通用实现             ##
-##                                                 ##
+##                                              ##
 #########################
 _ftMainVal()
 {
@@ -719,7 +719,7 @@ ftLanguageUtil()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local ftLanguageContent="${1}" filePathDataBase=$rFilePathXbashDataBase
+    local ftLanguageContent="${1}" filePathDataBase=$rFilePathXbashDBBase
     local errorContent
     [ -z "$ftLanguageContent" ] &&  errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
     [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[语言转化配置文件不存在]filePathDataBase=$filePathDataBase"
@@ -866,7 +866,7 @@ adb()
     local dirPathCode=$ANDROID_BUILD_TOP
     local filePathAdbNow=$(which adb)
     local filePathAdbLocal=/usr/bin/adb
-    local filePathDataBase=$rFilePathXbashDataBase
+    local filePathDataBase=$rFilePathXbashDBBase
 
     #环境校验
     # if [ -z "$filePathAdbNow" ]||[ ! -d "$ANDROID_SDK" ];then
@@ -969,7 +969,7 @@ ftCleanGarbage()
 
     #实现主体
     local dirPathLocal=$(pwd)
-    local baseList=($(ftIniGetValue $rFilePathXbashDataBase CleanGarbageInfo list))
+    local baseList=($(ftIniGetValue $rFilePathXbashDBBase CleanGarbageInfo list))
 
     if [[ -n $sleepTime ]]; then
         tput sc
@@ -1162,7 +1162,7 @@ ftMtkFlashTool()
     #可用性校验
     [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local flashToolPath="$(ftIniGetValue $rFilePathXbashModuleDataBaseUser MtkSpFlashToolVersion toolsPath)"
+    local flashToolPath="$(ftIniGetValue $rFilePathXbashDBUser MtkSpFlashToolVersion toolsPath)"
     local errorContent
     [ ! -f "$flashToolPath" ] && errorContent="${errorContent}\\n[mtk下载工具不存在]flashToolPath=$flashToolPath"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的出现错误:${errorContent}\\n" && return
@@ -2617,7 +2617,7 @@ ftCdAospDirectory()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
     #实现主体
-    [[ -z "$dirPathTarget" ]] && dirPathTarget=$(ftIniGetValue $rFilePathXbashDataBase ftCdAospDirectoryInfo ${argVal})
+    [[ -z "$dirPathTarget" ]] && dirPathTarget=$(ftIniGetValue $rFilePathXbashDBBase ftCdAospDirectoryInfo ${argVal})
     if [[ ! -d "$dirPathTarget" ]];then
         if [[ -d "alps/${dirPathTarget}" ]];then
             dirPathTarget=alps/${dirPathTarget}
@@ -2636,7 +2636,7 @@ _cdAospProject()
     local isEnable=def
 
     local curr_arg=${COMP_WORDS[COMP_CWORD]}
-    local mAospProjectNameList="$(ftIniGetValue $rFilePathXbashModuleDataBaseUser AospProjectsInfo AospProjectNameList)"
+    local mAospProjectNameList="$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList)"
     COMPREPLY=( $(compgen -W "${mAospProjectNameList}" -- $curr_arg ) )
 }
 complete -F _cdAospProject -A file ftCdAospProject
@@ -2661,7 +2661,7 @@ ftCdAospProject()
     #解参验耦
     local valCount=1 errorContent index arg arg2  arg3  arg4
     local isUserFileManager itemCount mAospProjectName mAospProjectNameList mAospProjectStoragePathEffective
-    local mAospProjectStoragePathList="$(ftIniGetValue $rFilePathXbashModuleDataBaseUser AospProjectsInfo AospProjectStoragePathList)"
+    local mAospProjectStoragePathList="$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectStoragePathList)"
 
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
     ((index=i+2)) ; eval arg3=\${${index}} ; ((index=i+3)) ; eval arg4=\${${index}}
