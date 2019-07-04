@@ -810,8 +810,8 @@ ftAutoPacket()
                     tagName=xbashAOSPConfigSoftwareDataBaseFileLIst
                     local dataBaseFileList dataBaseFileListTemp
                     local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
-                    local apdbDirPathList=($(ftIniGetValue $filePathDataUser $tagName apdbDirPathList))
-                    local mddbDirPathList=($(ftIniGetValue $filePathDataUser $tagName mddbDirPathList))
+                    local apdbDirPathList=($(ftIniGetValue $filePathDataAuto $tagName apdbDirPathList))
+                    local mddbDirPathList=($(ftIniGetValue $filePathDataAuto $tagName mddbDirPathList))
                     for item in ${apdbDirPathList[@]} ; do
                             item=$(ftPath $item)
                             local itemPathRoot=${dirPathOut}/${item}
@@ -874,26 +874,7 @@ ftAutoPacket()
             # 创建版本说明
             [[ -n "$isReadMe" ]] && ftEcho -s "创建 版本说明" && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
             ftEcho -y "是否更新版本说明 [回车更新]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
-            if [[ "${sel}" = "y" ]]; then
-                local isUpdate=true
-                if [ -n "$(pgrep -f gedit)" ];then
-                    while true; do echo && ftEcho -y gedit 已打开是否关闭
-                    read -n 1 sel
-                    case "$sel" in
-                        y | Y )
-                                    kill -9 $(ps -e|grep gedit |awk '{print $1}')
-                                    break;;
-                        n | N |q | Q)    isUpdate=null; break ;;
-                        * ) ftEcho -e 错误的选择：$sel && echo "输入 n,q，离开" ; ;;
-                    esac ; done
-                fi
-                if [[ "${isUpdate}" = "true" ]];then
-                    gedit $AutoEnv_filePathVersionReadme && while [ -n "$(pgrep -f gedit)" ] ; do sleep 2 ;done
-                else
-                    ftEcho -e 版本说明取消更新
-                fi
-            fi
-
+            [[ "${sel}" = "y" ]] && gedit -s $AutoEnv_filePathVersionReadme
 
             # 生成软件压缩包
             if [[ -n "$isBale" ]] ;then

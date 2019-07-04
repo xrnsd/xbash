@@ -26,3 +26,12 @@ recordMeTag=请在给客户发送软件时,通知下面这位去添加软件版�
 excludeConfig=lz.macros \
 build_c_time.txt \
 build_c_date.txt
+
+#项目软件包database文件名列表
+[xbashAOSPConfigSoftwareDataBaseFileLIst]
+apdbDirPathList= \
+    /obj/CODEGEN/cgen \
+    obj/CGEN
+mddbDirPathList= \
+    system/etc/mddb \
+    system/vendor/etc/mddb
