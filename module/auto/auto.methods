@@ -153,7 +153,7 @@ ftAutoInitEnv()
     export AutoEnv_buildType=$buildType
 
     #git分支信息解析
-   # ftBranchNameResolution
+   ftBranchNameResolution
 
     cd $dirPathLocal
     trap SIGINT
@@ -163,7 +163,7 @@ complete -W "-h --help" ftBranchNameResolution
 ftBranchNameResolution()
 {
     local ftEffect=分支名解析
-    local isEnable=false
+    local isEnable=true
 
     while true; do case "$1" in
     --rely) echo -e "\
@@ -228,7 +228,7 @@ ftBranchNameResolution()
         IFS="$OLD_IFS"
         export AutoEnv_branchName=$branchName
         if [ "$branchName" = "$arrayItems" ];then
-                ftEcho -e "分支信息解析失败 :${branchName}"
+                ftEcho -e "分支信息解析失败 :${branchName}" > /dev/null
         else
                 export AutoEnv_clientName=
                 export AutoEnv_projrctName=
@@ -696,21 +696,19 @@ ftAutoPacket()
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoPacket -h && return
 
     #实现主体
-    local isClean isReadMe isUpload isPacket isMove isCopy isSpecial
+    local isClean isReadMe isUpload isPacket isMove isCopy isSpecial isBale
     local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a ) isClean=true
               isReadMe=true
               isUpload=true
-              isPacket=true ;;
+              isPacket=true
+              isBale=true ;;
         -y ) isClean=true ;;
-        -m ) isMove=true ;;
         -u ) isUpload=true ;;
         -r ) isReadMe=true ;;
         -p ) isPacket=true 
-               isReadMe=true ;;
-        -c ) isCopy=true ;;
-        -t ) isSpecial=true
-            isPacket=true ;;
+              isReadMe=true
+              isBale=true ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
     if [[ -d "$dirPathVersionSoftware" ]]; then
@@ -747,7 +745,7 @@ ftAutoPacket()
             #版本号特殊处理
             local dirNameVeriosionBase=${AutoEnv_versionName}
             #非user版本标记编译类型
-            [ "$AutoEnv_buildType" != "user" ] && dirNameVeriosionBase=${buildType}____${dirNameVeriosionBase}
+            [ "$AutoEnv_buildType" != "user" ] && [[ -z "$(echo ${dirNameVeriosionBase} |grep ${AutoEnv_buildType})" ]]&& dirNameVeriosionBase=${buildType}____${dirNameVeriosionBase}
             #软件版本的日期与当前时间不一致就设定编译时间
             arr=(${AutoEnv_versionName//_/ })
             length=${#arr[@]}
@@ -763,7 +761,7 @@ ftAutoPacket()
             fi
             if [[ -n "$fileChangeTime" ]]&&[ "$versionNameDate" != "${fileChangeTime}" ];then
                 export AutoEnv_SoftwareVersion_BuildTime=buildtime____${fileChangeTime}
-                 dirNameVeriosionBase=${dirNameVeriosionBase}____${AutoEnv_SoftwareVersion_BuildTime}
+                 #dirNameVeriosionBase=${dirNameVeriosionBase}____${AutoEnv_SoftwareVersion_BuildTime}
             fi
             if [[ -n "$isSpecial" ]]; then
                 ftEcho -r $"请输入版本: "${dirNameVeriosionBase}"\n相应的说明[回车默认为常规]:"
@@ -778,9 +776,9 @@ ftAutoPacket()
             if [[ -n "$isPacket" ]]; then
                     mkdir -p $dirPathVersionSoftwareVersion
 
-                    ftEcho -s "\n========================\n开始生成版本软件包:\n  ${dirNameVeriosionBase}\n路径:\n  ${dirPathVersionSoftwareVersion}\n========================\n"
+                    ftEcho -s "\n========================\n包名: ${dirNameVeriosionBase}\n路径: ${dirPathVersionSoftwareVersion}\n========================\n"
                     #packages
-                    ftEcho -s "创建packages"
+                    ftEcho -s "创建 packages"
                     tagName="xbashAOSPConfigSoftwarePackageFileLIst"
                     local filePathSystemImage=${dirPathOut}/system.img
                     local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
@@ -798,7 +796,7 @@ ftAutoPacket()
                                 [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && ftClearTail $dirPathLocal && return
 
                                  printf "%-2s %-30s\n" 复制 $file
-                                 # cp -r -f  $filePath $dirPathPackage
+                                 cp -r -f  $filePath $dirPathPackage
                             done
                         else
                             ftEcho -e "packages创建失败"
@@ -814,8 +812,6 @@ ftAutoPacket()
                     local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
                     local apdbDirPathList=($(ftIniGetValue $filePathDataUser $tagName apdbDirPathList))
                     local mddbDirPathList=($(ftIniGetValue $filePathDataUser $tagName mddbDirPathList))
-                    echo apdbDirPathList=${apdbDirPathList[@]}
-                    echo mddbDirPathList=${mddbDirPathList[@]}
                     for item in ${apdbDirPathList[@]} ; do
                             item=$(ftPath $item)
                             local itemPathRoot=${dirPathOut}/${item}
@@ -874,17 +870,40 @@ ftAutoPacket()
                     #     ftEcho -e "OTA相关包未找到"
                     # fi
             fi
-            # 生成软件压缩包
-            ftEcho -s "创建 压缩packages"
-            local dirPathSoftwareTemp=$(pwd)
-            local fileNamePackage=$(basename ${dirPathVersionSoftwareVersion}).tgz
-            cd ${dirPathVersionSoftware}
-            tar cvf - ${dirNameVeriosionBase} | pigz > ${fileNamePackage}
-            cd ${dirPathSoftwareTemp}
 
             # 创建版本说明
-            ftEcho -s "创建 ${dirNameVeriosionBase}的版本说明"
-            [[ -n "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
+            [[ -n "$isReadMe" ]] && ftEcho -s "创建 版本说明" && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
+            ftEcho -y "是否更新版本说明 [回车更新]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
+            if [[ "${sel}" = "y" ]]; then
+                local isUpdate=true
+                if [ -n "$(pgrep -f gedit)" ];then
+                    while true; do echo && ftEcho -y gedit 已打开是否关闭
+                    read -n 1 sel
+                    case "$sel" in
+                        y | Y )
+                                    kill -9 $(ps -e|grep gedit |awk '{print $1}')
+                                    break;;
+                        n | N |q | Q)    isUpdate=null; break ;;
+                        * ) ftEcho -e 错误的选择：$sel && echo "输入 n,q，离开" ; ;;
+                    esac ; done
+                fi
+                if [[ "${isUpdate}" = "true" ]];then
+                    gedit $AutoEnv_filePathVersionReadme && while [ -n "$(pgrep -f gedit)" ] ; do sleep 2 ;done
+                else
+                    ftEcho -e 版本说明取消更新
+                fi
+            fi
+
+
+            # 生成软件压缩包
+            if [[ -n "$isBale" ]] ;then
+                ftEcho -s "创建 软件压缩包"
+                local dirPathSoftwareTemp=$(pwd)
+                local fileNamePackage=$(basename ${dirPathVersionSoftwareVersion}).tgz
+                cd ${dirPathVersionSoftware}
+                tar cvPf - ${dirNameVeriosionBase} | pigz -p $(grep 'processor' /proc/cpuinfo | sort -u | wc -l) > ${fileNamePackage}
+                cd ${dirPathSoftwareTemp}
+            fi
 
             #上传服务器
             [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareVersion 192.168.1.75
@@ -954,7 +973,7 @@ ftAutoPacket()
             # 生成软件压缩包
             ftEcho -s "创建 压缩packages"
             local fileNamePackage=$(basename ${dirPathVersionSoftwareVersion}).tgz
-            tar --use-compress-program=pigz -cvPf $fileNamePackage ${dirPathVersionSoftwareVersion}
+            tar --use-compress-program=pigz -xf $fileNamePackage ${dirPathVersionSoftwareVersion}
 
             # 生成说明文件
             [[ -n "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
@@ -1142,7 +1161,7 @@ ftAutoCreateReadMeBySoftwareVersion()
             # 转化为windows下面文件格式
             unix2dos $filePathChangeListTemplate
     fi
-
+    export AutoEnv_filePathVersionReadme=$filePathChangeListTemplate
     rm ${filePathChangeListTemplate}.temp
     cd $dirPathLocal
     trap  SIGINT
