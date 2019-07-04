@@ -1894,13 +1894,19 @@ ftFind()
 
     if [[ -n "${isSuffix}" ]]; then
         nameAll=$(echo "${nameList}" | sed -e "s: :|:g")
-        (( $#==4 ))&&find "${pathTarget}" -regextype posix-extended -regex ".*\.(${nameAll})" | xargs grep -e "${contentKey}" && return
+        # if [[ -n "${contentKey}" ]];then
+        #     find "${pathTarget}" -regextype posix-extended -regex ".*\.(${nameAll})" | xargs grep -e "${contentKey}"
+        #     return
+        # fi
         find "${pathTarget}" -regextype posix-extended -regex ".*\.(${nameAll})"
         return
     fi
 
-    nameAll=$(echo "${nameAll[@]}" | sed -e "s: ::g")
-    (( $#==3 ))&&find "${pathTarget}" ! -type d -name ${nameAll} | xargs grep -e "${contentKey}" && return
+    nameAll=$(echo "${nameList[@]}" | sed -e "s: ::g")
+    if [[ -n "${contentKey}" ]];then
+        find "${pathTarget}" ! -type d -name ${nameAll}| xargs grep -e "${contentKey}"
+        return
+    fi
     find "${pathTarget}" ! -type d -name ${nameAll}
 }
 
