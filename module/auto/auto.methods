@@ -397,16 +397,7 @@ ftAutoBuildMultiBranchEnvSeparation()
         local filePathBranchList=${dirPathProcessEnableId}/branch.list
         cd $dirPathCode
 
-        if [[ -n "$(pgrep -f gedit)" ]];then
-                while true; do echo && ftEcho -y gedit 已打开是否关闭
-                read -n 1 sel
-                case "$sel" in
-                    y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}') ; break;;
-                    n | N |q | Q)    return;;
-                    * ) ftEcho -e 错误的选择：$sel && echo "输入n,q，离开" ; ;;
-                esac ; done
-        fi
-        git branch > $filePathBranchList && gedit $filePathBranchList && while [[ -n "$(pgrep -f gedit)" ]] ; do echo 等待中 ;sleep 1 ;done
+        git branch > $filePathBranchList && gedit -s $filePathBranchList
 
         local branchArray=($(cat $filePathBranchList))
         if [[ -n "$branchArray" ]];then
@@ -1323,17 +1314,8 @@ ftAutoAddGitTag()
     #实现主体
     local fileNameVersionNote="${tagName}的相应说明"
     local filePathVersionNote=/tmp/${fileNameVersionNote}
-    if [ -n "$(pgrep -f gedit)" ];then
-            while true; do echo && ftEcho -y gedit 已打开是否关闭
-            read -n 1 sel
-            case "$sel" in
-                y | Y )    kill -9 $(ps -e|grep gedit |awk '{print $1}') ; break;;
-                n | N |q | Q)    return;;
-                * ) ftEcho -e 错误的选择：$sel && echo "输入n,q，离开" ; ;;
-            esac ; done
-    fi
     if touch $filePathVersionNote ; then
-        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit $filePathVersionNote
+        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathVersionNote
     else
         ftEcho -ex "创建临时说明信息文件失败"
         return;
@@ -1406,6 +1388,7 @@ ftAutoCreateBranch()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCreateBranch -h && return
 
     #实现主体
+    ftEcho -s "开始收集项目状态"
     local hashValBase=$(ftGitLogShell -t "%h" -n 1)
     git reset > /dev/null
     git add $(git status --porcelain |grep -v "alps/out" | sed s/??//g | sed -e "s: M ::g"|grep "alps/") > /dev/null
