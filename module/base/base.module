@@ -14,24 +14,20 @@ if [ "$(whoami)" != "root" ];then
     bashHistorySize=$(awk 'END{print NR}' $filePathBashHistoryArchive)
 
     #历史扩容
-    filePathXbashDataBaseUser=${rDirPathXbashModuleUser}/${rUserName}.database
-    if [[ -f $filePathXbashDataBaseUser ]]; then
-        bashHistorySizeBase=$(ftIniGetValue  $filePathXbashDataBaseUser xbash bashHistoryThresholdSize)
+    if [[ -f $rFilePathXbashDBUser ]]; then
+        bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDBUser xbash bashHistoryThresholdSize)
     else
+        # user database 初始化
+        [[ ! -d "${rDirPathXbashModuleUser}" ]] && mkdir $rDirPathXbashModuleUser > /dev/null
+        [[ -f "$rFilePathXbashDBUserExcepmale" ]] && cp ${rFilePathXbashDBUserExcepmale} ${rFilePathXbashDBUser} \
+        || echo -e "\033[1;31m用户独立配置初始化失败,模板不存在:\n${rFilePathXbashDBUserExcepmale}\033[0m"
         bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDBBase xbash bashHistoryThresholdSize)
-        mkdir $rDirPathXbashModuleUser > /dev/null
-        ftIniCreateFileOrTag -r -p $filePathXbashDataBaseUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
-
-        #added ftMtkFlashTool database null config
-        ftIniCreateFileOrTag -a -p $filePathXbashDataBaseUser -t "MtkSpFlashToolVersion" -l "toolsPath="
-        #added ftCdAospProject database null config
-        ftIniCreateFileOrTag -a -p $filePathXbashDataBaseUser -t "AospProjectsInfo" -l "AospProjectNameList="
-        ftIniAddItem -p $filePathXbashDataBaseUser -t "AospProjectsInfo"  -l "AospProjectStoragePathList="
+        ftIniCreateFileOrTag -a -p $rFilePathXbashDBUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
     fi
 
     if (($bashHistorySize>$bashHistorySizeBase)); then
         ((bashHistorySize=$bashHistorySize+$(ftIniGetValue  $rFilePathXbashDBBase xbash bashHistoryIncrementalSize)))
-        ftIniSetValue $filePathXbashDataBaseUser xbash bashHistoryThresholdSize $bashHistorySize
+        ftIniSetValue $rFilePathXbashDBUser xbash bashHistoryThresholdSize $bashHistorySize
     else
         bashHistorySize=$bashHistorySizeBase
     fi
