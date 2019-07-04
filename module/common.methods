@@ -2648,6 +2648,9 @@ ftCdAospProject()
     while true; do case "$1" in
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
+#    自动更新项目列表
+#    ftCdAospProject -u
+#
 #    切换终端路径
 #    ftCdAospProject -n 项目名
 #
@@ -2660,7 +2663,7 @@ ftCdAospProject()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local valCount=1 errorContent index arg arg2  arg3  arg4
-    local isUserFileManager itemCount mAospProjectName mAospProjectNameList mAospProjectStoragePathEffective
+    local isUserFileManager itemCount mAospProjectName mAospProjectStoragePathEffective
     local mAospProjectStoragePathList="$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectStoragePathList)"
 
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
@@ -2671,6 +2674,18 @@ ftCdAospProject()
          ;;
         -n ) mAospProjectName="${arg2}"
          ;;
+        -u | --update ) #更新数据库
+                local mAospProjectNameIgnoreList="$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameIgnoreList)"
+                local mAospProjectNameListUpdate
+                for path in ${mAospProjectStoragePathList[@]}; do
+                    while read projectName ;do
+                        [[ -n $(echo ${mAospProjectNameIgnoreList[@]} |grep ${projectName}) ]] && continue
+                        mAospProjectNameListUpdate=(${mAospProjectNameListUpdate[@]} ${projectName})
+                    done < <(echo "$(ls ${path})")
+                done
+                ftIniSetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList -l "${mAospProjectNameListUpdate[*]}"
+                complete -F _cdAospProject -A file ftCdAospProject
+                return;;
         settings ) dirPathTarget="packages/apps/Settings" ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     [ -z "$mAospProjectStoragePathList" ] && errorContent="${errorContent}\\n[Aosp项目存放路径列表为空]"

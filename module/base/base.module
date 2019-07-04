@@ -1,6 +1,6 @@
 #!/bin/bash
-#处理bash历史记录
 if [ "$(whoami)" != "root" ];then
+    #处理bash历史记录
     filePathBashHistory=${dirPathHome}/.bash_history
 
     #历史去重
