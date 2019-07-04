@@ -1,6 +1,14 @@
 #!/bin/bash
-if [ "$(whoami)" != "root" ];then
-    #处理bash历史记录
+ftBashHistory()
+{
+    local ftEffect=处理bash历史记录
+    local isEnable=true 
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    # 环境校验
+    [ "$(whoami)" == "root" ] && return
+
     filePathBashHistory=${dirPathHome}/.bash_history
 
     #历史去重
@@ -35,4 +43,28 @@ if [ "$(whoami)" != "root" ];then
     export HISTSIZE=$bashHistorySize
     export HISTFILESIZE=$bashHistorySize
     cp -rf $filePathBashHistoryArchive $filePathBashHistory
-fi
+}
+
+ftUserConfig()
+{
+    local ftEffect=校验用户配置和模板版本一致性
+    local isEnable=true
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+
+    local filePathUserConfigExpmale=${rDirPathXbashConfig}/expmale.config
+
+    [[ ! -f ${rFilePathXbashDBBase}  ]] && return
+    [[ ! -f ${rFilePathXbashDBUser}  ]] && return
+
+    local versionNumExcepmale=$(ftIniGetValue  $rFilePathXbashDBBase userConfigInfoVersion versionNum)
+    local versionNumUser=$(ftIniGetValue  $rFilePathXbashDBUser userConfigInfoVersion versionNum)
+
+    [[ -z "${versionNumUser}" ]] && ftEcho -e "建议更新用户配置到:${versionNumExcepmale}" && return
+    [[ -n "${versionNumExcepmale}" ]]&&[[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) = "<"  ]] && ftEcho -e "建议更新用户配置: ${versionNumExcepmale} > ${versionNumExcepmale}"
+}
+
+#处理bash历史记录
+ftBashHistory
+#校验用户配置和模板版本一致性
+ftUserConfig

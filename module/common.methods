@@ -625,7 +625,7 @@ ftIniSetValue()
 #===================[   ${ftEffect}   ]的使用示例==============
 #    ftIniSetValue [文件路径] [目标块TAG] [键名] [键对应的值]
 #    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup 1232
-#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l \"11 22 33 44\"  #写入数组
+#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l \"${xxx[*]}\"  #写入数组
 #========================================================="; return ;;
 * )break;; esac;done
 

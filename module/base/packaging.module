@@ -69,24 +69,22 @@ fi
 alias xc='effect=xbash主入口[旧];ftMain'
 alias xb='effect=系统维护;ftMaintainSystem'
 alias xr='effect=更新xbash配置;ftResetXbash'
-alias xsubl='subl $rDirPathXbash ${rDirPathUserHome}/xconfig'
 alias xd='effect=MTK下载工具;ftMtkFlashTool'
 alias xcg='effect=清空回收站;ftCleanGarbage -e -t'
 alias xfind='effect=查找含特定字符串的文件;ftFind'
 alias xfs='effect=查找最大的xx[默认10]个文件;ftDu'
 alias xhf='effect=xbash扩展说明查找;ftMain -h |grep -i '
 alias xcb='effect=进入xbash目录;cd $dirPathHomeXbash'
-alias xcf='effect=进入xconfig目录;cd ${rDirPathUserHome}/xconfig'
 alias xca='effect=快速切换到Aosp功能目录;ftCdAospDirectory '
 alias xcd='effect=快速切换到不同Aosp项目;ftCdAospProject -n'
+alias xsubl='subl $rDirPathXbash ${rDirPathUserHome}/xconfig'
+alias xcf='effect=进入xconfig目录;cd ${rDirPathUserHome}/xconfig'
 alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
 alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
 alias xcaf='effect=用文件管理器打开Aosp功能目录;ftCdAospDirectory -fm '
 alias xcdf='effect=用文件管理器切换到不同Aosp项目;ftCdAospProject -fm '
 alias xcdu='effect=快速更新Aosp项目列表配置;ftCdAospProject -u > /dev/null '
-
 alias xs2av='effect=android版本查询;ftIniGetValue $rFilePathXbashDBBase androidSDK2Verison'
-
 
 if [ -f /usr/bin/gnome-session-quit ] ;then
      alias xsss='effect=注销系统;ftPowerManagement logout'

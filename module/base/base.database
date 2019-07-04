@@ -3,6 +3,9 @@
 bashHistoryThresholdSize=3000
 bashHistoryIncrementalSize=1000
 
+[userConfigInfoVersion]
+versionNum=V0.66
+
 #开发用
 [androidDevicePackages]
 packageNameList=com.android.systemui \
