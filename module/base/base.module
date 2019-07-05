@@ -54,14 +54,18 @@ ftUserConfig()
 
     local filePathUserConfigExpmale=${rDirPathXbashConfig}/expmale.config
 
-    [[ ! -f ${rFilePathXbashDBBase}  ]] && return
-    [[ ! -f ${rFilePathXbashDBUser}  ]] && return
+    [[ ! -f ${filePathUserConfigExpmale}  ]] && return
+    [[ ! -f ${rFilePathXbashConfigUser}  ]] && return 
 
-    local versionNumExcepmale=$(ftIniGetValue  $rFilePathXbashDBBase userConfigInfoVersion versionNum)
-    local versionNumUser=$(ftIniGetValue  $rFilePathXbashDBUser userConfigInfoVersion versionNum)
+    local key="versionNum="
+    local versionNumExcepmale=$(cat $filePathUserConfigExpmale |grep $key)
+    local versionNumUser=$(cat $rFilePathXbashConfigUser |grep $key)
+
+    versionNumExcepmale=${versionNumExcepmale//$key/}
+    versionNumUser=${versionNumUser//$key/}
 
     [[ -z "${versionNumUser}" ]] && ftEcho -e "建议更新用户配置到:${versionNumExcepmale}" && return
-    [[ -n "${versionNumExcepmale}" ]]&&[[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) = "<"  ]] && ftEcho -e "建议更新用户配置: ${versionNumExcepmale} > ${versionNumExcepmale}"
+    [[ -n "${versionNumExcepmale}" ]]&&[[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) = "<"  ]] && ftEcho -e "建议更新用户配置: ${versionNumUser} > ${versionNumExcepmale}"
 }
 
 #处理bash历史记录
