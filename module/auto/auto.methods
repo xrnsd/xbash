@@ -865,16 +865,21 @@ ftAutoPacket()
             # 创建版本说明
             [[ -n "$isReadMe" ]] && ftEcho -s "创建 版本说明" && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
             ftEcho -y "是否更新版本说明 [回车更新]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
-            [[ "${sel}" = "y" ]] && gedit -s $AutoEnv_filePathVersionReadme
+            [[ "${sel}" = "y" ]] && gedit -s $AutoEnv_filePathVersionReadme $AutoEnv_filePathVersionChangeListTemplate
 
             # 生成软件压缩包
             if [[ -n "$isBale" ]] ;then
                 ftEcho -s "创建 软件压缩包"
                 local dirPathSoftwareTemp=$(pwd)
-                local fileNamePackage=$(basename ${dirPathVersionSoftwareVersion}).tgz
+                local fileNamePackage=${dirNameVeriosionBase}.tgz
+                # local fileNamePackage=$(basename ${dirPathVersionSoftwareVersion}).tgz
                 cd ${dirPathVersionSoftware}
                 tar cvPf - ${dirNameVeriosionBase} | pigz -p $(grep 'processor' /proc/cpuinfo | sort -u | wc -l) > ${fileNamePackage}
                 cd ${dirPathSoftwareTemp}
+
+                mkdir ${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
+                mv ${dirPathVersionSoftware}/${fileNamePackage} ${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
+                mv $AutoEnv_filePathVersionChangeListTemplate ${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
             fi
 
             #上传服务器
@@ -964,7 +969,7 @@ ftAutoPacket()
 
 ftAutoCreateReadMeBySoftwareVersion()
 {
-    local ftEffect=创建软件版本相关修改记录和版本说明
+    local ftEffect=创建软件版本相关客户说明和版本说明
     local isEnable=true
 
     while true; do case "$1" in
@@ -1006,7 +1011,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     #实现主体
     local dirPathLocal=${PWD} fileNameReadMeTemplate=客户说明.txt fileNameChangeListTemplate=版本说明.txt
     local filePathReadMeTemplate=${dirPathVersionSoftware}/${fileNameReadMeTemplate}
-    local filePathChangeListTemplate=${dirPathVersionSoftware}/${fileNameChangeListTemplate}
+    local filePathChangeListTemplate=$(dirname $dirPathVersionSoftware)/${fileNameChangeListTemplate}
     local versionName=$AutoEnv_versionName
 
     [ ! -d "$dirPathVersionSoftware" ] && mkdir $dirPathVersionSoftware
@@ -1015,9 +1020,6 @@ ftAutoCreateReadMeBySoftwareVersion()
     #使用git 记录的修改记录
     local gitCommitListOneDay=$(ftGitLogShell -t "%h %s" -n 30) gitCommitListBefore=$(ftGitLogShell -t "%h %s" -n 30)
 
-# ===============================================
-# =================     修改记录    ==================
-# ===============================================
     if [ $AutoEnv_mnufacturers = "sprd" ];then
             # 暗码清单,动画切换暗码
             local filePathPawInfo=${dirPathCode}/packages/apps/Dialer/src/com/android/dialer/SpecialCharSequenceMgr.java
@@ -1088,53 +1090,50 @@ ftAutoCreateReadMeBySoftwareVersion()
 
             # 合并头部和git log 列表
             echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+            rm ${filePathChangeListTemplate}.temp
 
             # 转化为windows下面文件格式
             unix2dos $filePathChangeListTemplate
 
+            export AutoEnv_filePathVersionChangeListTemplate=$filePathChangeListTemplate
+            # export AutoEnv_filePathVersionReadme=$filePathReadMeTemplate
+
    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
 
-            #修改记录头部
-            local enterLine="\n"
-            local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            #版本说明
+                #修改记录头部
+                local enterLine="\n"
+                local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+                content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+                content=${content}${enterLine}
+                content=${content}${enterLine}"当前版本：$versionName"
+                content=${content}${enterLine}"基础版本："
+                content=${content}${enterLine}
+                content=${content}${enterLine}"修改记录："
+                #git log 列表
+                echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
+                seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+                # 合并头部和git log 列表
+                echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+                rm ${filePathChangeListTemplate}.temp
+
+            #客户说明
+            content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
             content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
             content=${content}${enterLine}"当前版本：$versionName"
             content=${content}${enterLine}"基础版本："
             content=${content}${enterLine}
-            content=${content}${enterLine}"修改记录："
-
-            local filePathConfigHideNum=${dirPathCode}/vendor/lz/hideNum.config
-            #if [[ "$TARGET_PRODUCT" = "full_m9_qhd" ]]&&[[ -f "$filePathConfigHideNum" ]]; then
-
-                #content=${content}${enterLine}"暗码清单：$(ftIniGetValue $filePathConfigHideNum 暗码清单 info)"
-                # content=${content}${enterLine}"隐藏指令：$(ftIniGetValue $filePathConfigHideNum 隐藏 info)"
-                #content=${content}${enterLine}"工厂测试：$(ftIniGetValue $filePathConfigHideNum 工厂测试 info)"
-                #content=${content}${enterLine}"imei编辑：$(ftIniGetValue $filePathConfigHideNum imei编辑 info)"
-                #content=${content}${enterLine}"imei显示：$(ftIniGetValue $filePathConfigHideNum imei显示 info)"
-                #content=${content}${enterLine}"工程模式：$(ftIniGetValue $filePathConfigHideNum 工程模式 info)"
-                #content=${content}${enterLine}"硬件信息查看：$(ftIniGetValue $filePathConfigHideNum 硬件信息查看 info)"
-                #content=${content}${enterLine}"sn码显示：$(ftIniGetValue $filePathConfigHideNum sn码 info)"
-            #else
-                #content=${content}${enterLine}"隐藏指令："
-                #content=${content}${enterLine}"imei编辑："
-                #content=${content}${enterLine}"imei显示：*#06#"
-                #content=${content}${enterLine}"测试模式：*#*#180#*#*"
-                #content=${content}${enterLine}"imei单双切换："
-            #fi
-
-            #git log 列表
-            echo -e "﻿$gitCommitListBefore">$filePathChangeListTemplate
-            seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
-
-            # 合并头部和git log 列表
-            echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+            content=${content}${enterLine}"修改说明："
+            echo -e ${content}${enterLine}${enterLine} >$filePathReadMeTemplate
 
             # 转化为windows下面文件格式
             unix2dos $filePathChangeListTemplate
+            unix2dos $filePathReadMeTemplate
+
+            export AutoEnv_filePathVersionChangeListTemplate=$filePathChangeListTemplate
+            export AutoEnv_filePathVersionReadme=$filePathReadMeTemplate
     fi
-    export AutoEnv_filePathVersionReadme=$filePathChangeListTemplate
-    rm ${filePathChangeListTemplate}.temp
     cd $dirPathLocal
     trap  SIGINT
 }
