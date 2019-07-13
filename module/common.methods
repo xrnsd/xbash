@@ -51,6 +51,9 @@ ftMain()
     -ft )
                 ftReadAllFt
                 break;;
+    -sc )
+                sensors |grep °C | awk '{print $3}'|grep °C|awk '{sum+=$1} END {printf("CPU %s °C \n",sum/NR)}'
+                break;;
     *) ftMain -h && return;; esac;done
 }
 
@@ -175,7 +178,7 @@ ftReadAllFt()
 
 ftTest()
 {
-    local ftEffect=函数调试
+    local ftEffect=调试
     local isEnable=def
 
     while true; do case "$1" in
@@ -2236,8 +2239,8 @@ ftApkMergeOdex()
     #解参验耦
     local isAutoPull fileNameApk filePathApk filePathOdex dirPathFramework
     local filePathToolResign=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/re-sign.jar
-    local filePathToolSmali=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/smali-2.2.6.jar
-    local filePathToolBaksmali=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/baksmali-2.2.6.jar
+    local filePathToolSmali=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/smali-2.2.7.jar
+    local filePathToolBaksmali=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/baksmali-2.2.7.jar
     local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a ) fileNameApk="${arg2}"
                isAutoPull=true
@@ -2286,7 +2289,7 @@ ftApkMergeOdex()
     local errorContent
     [ -z "$JAVA_HOME" ] && errorContent="${errorContent}\\n[java环境未配置]缺失JAVA_HOME"
     [ ! -f "$filePathToolSmali" ] && errorContent="${errorContent}\\n[找不到 filePathToolSmali=${filePathToolSmali}]"
-    [ ! -f "$filePathToolResign" ] && errorContent="${errorContent}\\n[找不到 filePathToolResign=${filePathToolResign}]"
+    # [ ! -f "$filePathToolResign" ] && errorContent="${errorContent}\\n[找不到 filePathToolResign=${filePathToolResign}]"
     [ ! -f "$filePathToolBaksmali" ] && errorContent="${errorContent}\\n[找不到 filePathToolBaksmali=${filePathToolBaksmali}]"
 
     [ ! -f "$filePathApk" ] && errorContent="${errorContent}\\n[找不到 filePathApk=${filePathApk}]"

@@ -37,6 +37,10 @@ if [[ -n $(which fdupes) ]];then
     alias xfr='effect=查找重复文件;fdupes -Sr'
 fi
 
+if [[ -n $(which sensors) ]];then
+    alias xcct="effect=查看cpu温度;xc -sc"
+fi
+
 if [ -d "$ANDROID_SDK" ];then
     alias xp='effect=快速push;ftAdbPush -f '
     alias xpa='effect=快速push;ftAdbPush -a'
