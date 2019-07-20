@@ -12,36 +12,26 @@ else
     \033[0m"
 fi
 
-ftEcho -s "任务 ${fileNamePID} :开始执行"
-#####----------------------自定义部分--------------------------#######
+ftFail(){
+    local failInfo="${1}"
+    ftEcho -e "${failInfo}，回车退出" && read -n1 ddd  && exit
+}
 
-#初始化build环境
+#切换分支
 filePathBranchList=$2
 branchArray=($(cat $filePathBranchList))
-if [ -z "$branchArray" ];then
-    ftEcho -e "分支信息读取失败"
-    read -n1 ddd
-    exit;
-fi
+[ -z "$branchArray" ] && ftFail 分支信息读取失败
 branchName="${branchArray[$fileNamePID]}"
+[ -z "$branchName" ]&& ftFail 分支名读取失败
+git checkout "$branchName" || ftFail 分支切换失败
 
-git checkout "$branchName"&&
-git pull
-
-size=10
-while (($size>0)); do
-	echo db_no1
-	((size-=1))
-	sleep 10
-done
+ftEcho -s "任务 ${fileNamePID} :开始执行"
+#####----------------------自定义部分--------------------------#######
 
 
 
 #####-----------------------固定部分------------------------------#########
+cat ${rRirPathProcessEnableId}/${fileNamePID} > /dev/null
 ((fileNamePID=$fileNamePID+1))
-if (( ${#branchArray[@]}==$fileNamePID ));then
-    /bin/rm -f $rRirPathProcessEnableId
-else
-    echo enable > ${rRirPathProcessEnableId}/${fileNamePID}
-fi
+(( ${#branchArray[@]}==$fileNamePID )) && /bin/rm -f $rRirPathProcessEnableId
 exit
