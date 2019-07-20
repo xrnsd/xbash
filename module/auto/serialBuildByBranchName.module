@@ -27,12 +27,13 @@ branchName="${branchArray[$fileNamePID]}"
 
 git checkout "$branchName"&&
 git pull
-source build/envsetup.sh &&
-lunch full_m9_qhd-user&&
-ftAutoBackupOrRestoreOuts&&
-make -j6&&
-ftAutoPacket -a&&
-ftAutoBackupOrRestoreOuts
+
+size=10
+while (($size>0)); do
+	echo db_no1
+	((size-=1))
+	sleep 10
+done
 
 
 

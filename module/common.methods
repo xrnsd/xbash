@@ -356,11 +356,29 @@ ftVersionComparison()
     [[ "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1" ]] && echo ">=" && return
 }
 
-#########################
-##                                                 ##
-##             非框架通用实现          ##
-##                                                  ##
-#########################
+ftUserConfig()
+{
+    local ftEffect=校验用户配置和模板版本一致性
+    local isEnable=true
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+
+    local filePathUserConfigExpmale=${rDirPathXbashConfig}/expmale.config
+
+    [[ ! -f ${filePathUserConfigExpmale}  ]] && return
+    [[ ! -f ${rFilePathXbashConfigUser}  ]] && return 
+
+    local key="versionNum="
+    local versionNumExcepmale=$(cat $filePathUserConfigExpmale |grep $key)
+    local versionNumUser=$(cat $rFilePathXbashConfigUser |grep $key)
+
+    versionNumExcepmale=${versionNumExcepmale//$key/}
+    versionNumUser=${versionNumUser//$key/}
+
+    [[ -z "${versionNumUser}" ]] && ftEcho -e "建议更新用户配置到:${versionNumExcepmale}" && return
+    [[ -n "${versionNumExcepmale}" ]]&&[[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) = "<"  ]] && ftEcho -e "建议更新用户配置: ${versionNumUser} > ${versionNumExcepmale}"
+}
+
 ftIniCreateFileOrTag()
 {
     local ftEffect=创建ini文件,添加TAG
@@ -655,6 +673,57 @@ ftIniSetValue()
     [[ "$isListValue" = "true" ]] && return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath`
     keyValue=$(echo $keyValue |sed s/[[:space:]]//g)
     return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName*=.* $keyName=$keyValue g;}" $filePath`
+}
+
+#########################
+##                                                 ##
+##             非框架通用实现          ##
+##                                                  ##
+#########################
+ftBashHistory()
+{
+    local ftEffect=处理bash历史记录
+    local isEnable=true 
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    # 环境校验
+    [ "$(whoami)" == "root" ] && return
+
+    filePathBashHistory=${dirPathHome}/.bash_history
+
+    #历史去重
+    filePathBashHistoryTemp=${filePathBashHistory}_temp
+    filePathBashHistoryArchive=${filePathBashHistory}_archive
+    filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
+    cat $filePathBashHistory >> $filePathBashHistoryArchive \
+    && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
+    && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
+
+    bashHistorySize=$(awk 'END{print NR}' $filePathBashHistoryArchive)
+
+    #历史扩容
+    if [[ -f $rFilePathXbashDBUser ]]; then
+        bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDBUser xbash bashHistoryThresholdSize)
+    else
+        # user database 初始化
+        [[ ! -d "${rDirPathXbashModuleUser}" ]] && mkdir $rDirPathXbashModuleUser > /dev/null
+        [[ -f "$rFilePathXbashDBUserExcepmale" ]] && cp ${rFilePathXbashDBUserExcepmale} ${rFilePathXbashDBUser} \
+        || echo -e "\033[1;31m用户独立配置初始化失败,模板不存在:\n${rFilePathXbashDBUserExcepmale}\033[0m"
+        bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDBBase xbash bashHistoryThresholdSize)
+        ftIniCreateFileOrTag -a -p $rFilePathXbashDBUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
+    fi
+
+    if (($bashHistorySize>$bashHistorySizeBase)); then
+        ((bashHistorySize=$bashHistorySize+$(ftIniGetValue  $rFilePathXbashDBBase xbash bashHistoryIncrementalSize)))
+        ftIniSetValue $rFilePathXbashDBUser xbash bashHistoryThresholdSize $bashHistorySize
+    else
+        bashHistorySize=$bashHistorySizeBase
+    fi
+
+    export HISTSIZE=$bashHistorySize
+    export HISTFILESIZE=$bashHistorySize
+    cp -rf $filePathBashHistoryArchive $filePathBashHistory
 }
 
 ftDevAvailableSpace()
