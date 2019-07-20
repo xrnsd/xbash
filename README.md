@@ -46,8 +46,7 @@ bash的简单扩展
 
 3.待实现
 ----------
-    1 封装ninja命令加速mmm等模块编译命令[参照 https://note.qidong.name/2017/08/android-ninja/]
-    2 实现 odex 转 jar
+    1 实现 odex 转 jar
 
 4.待修复
 ----------
