@@ -25,7 +25,7 @@ bash的简单扩展
     │
     └── module  ---------------  脚本实现文件[具体功能]
           │
-          ├──common.methods  --------------------  框架和公用实现
+          ├── common.methods  -------------------  框架和公用实现
           ├── auto
           │    ├── auto.methods  ----------------  Auto的相关实现
           │    ├── packet_7731c.module  ---------  7731c的packet打包工具
@@ -41,8 +41,8 @@ bash的简单扩展
           │    ├── maintain.methods  ------------  系统维护工具
           │    └── maintain.database  -----------  xbash的系统维护模块配置
           └── git
-                ├── git_completion.methods  -----  git非自定义的bash扩展
-                └── multiBranch.module.example --  批量添加patch的工具的示例
+               ├── git_completion.methods  ------  git非自定义的bash扩展
+               └── multiBranch.module.example ---  批量添加patch的工具的示例
 
 3.待实现
 ----------

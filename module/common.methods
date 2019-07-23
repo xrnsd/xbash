@@ -2446,29 +2446,19 @@ ftAdbPush()
     ((index=i+1)) ; eval arg2=\${${index}}
     ((index=i+2)) ; eval arg3=\${${index}}
     case "${arg}" in
-       -a  ) isAutoReboot=true
+       -a | -n | -f )
+            if [[ "${arg}" = "-a" ]]; then
+                isAutoReboot=true
+            elif [[ "${arg}" = "-n" ]]; then
+                isTacitMode=true
+            fi
             filePathSource="${arg2}"
             [[ ! -f "$filePathSource" ]]&&break
-             fileNameSource=$(basename $filePathSource)
-             [[ -z $(echo $filePathSource |grep system) ]] && \
+            fileNameSource=$(basename $filePathSource)
+            [[ -z $(echo $filePathSource |grep system) ]] && \
                  dirPathTarget="${arg3}" || \
                  dirPathTarget=$(echo /system${filePathSource#*system} | sed -e "s:/$fileNameSource::g")
-          ;;
-       -n  ) isTacitMode=true 
-            filePathSource="${arg2}"
-            [[ ! -f "$filePathSource" ]]&&break
-             fileNameSource=$(basename $filePathSource)
-             [[ -z $(echo $filePathSource |grep system) ]] && \
-                 dirPathTarget="${arg3}" || \
-                 dirPathTarget=$(echo /system${filePathSource#*system} | sed -e "s:/$fileNameSource::g")
-          ;;
-        -f ) filePathSource="${arg2}"
-             fileNameSource=$(basename $filePathSource)
-            [[ ! -f "$filePathSource" ]]&&break
-             [[ -z $(echo $filePathSource |grep system) ]] && \
-                 dirPathTarget="${arg3}" || \
-                 dirPathTarget=$(echo /system${filePathSource#*system} | sed -e "s:/$fileNameSource::g")
-          ;;
+            ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     [ ! -f "$filePathSource" ] && errorContent="${errorContent}\\n[文件找不到]filePathSource=$filePathSource"
     [ -z "$dirPathTarget" ] && errorContent="${errorContent}\\n[目标路径不存在]dirPathTarget=$dirPathTarget"
