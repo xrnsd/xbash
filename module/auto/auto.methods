@@ -1402,7 +1402,7 @@ ftAutoCreateBranch()
     ftEcho -s "开始收集项目状态"
     local hashValBase=$(ftGitLogShell -t "%h" -n 1)
     git reset > /dev/null
-    git add $(git status --porcelain |grep -v "alps/out" | sed s/??//g | sed -e "s: M ::g"|grep "alps/") > /dev/null
+    git add $(git status --porcelain |grep -v "alps/out" | sed s/??//g| sed -e "s: T ::g"| sed -e "s: M ::g"|grep "alps/") > /dev/null
     git status --porcelain
 
     echo -n "请确认待commit修改列表,是否正确 [y/n] (回车默认y)"
