@@ -105,6 +105,7 @@ ftResetXbash()
     export isResetJdk=
     export isResetGcc=
     export isResetXbash=true
+    local dirPathCode dirPathLocal=$(pwd)
     local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a |--adb) ftRestartAdb && return
           ;;
@@ -112,8 +113,12 @@ ftResetXbash()
           ;;
         -c ) export isResetGcc=true
           ;;
-        -cj | -jc ) export isResetGcc=true
-                       export isResetJdk=true
+        -cj | -jc )
+                [ -d "${dirPathLocal}/alps" ] && dirPathCode=${dirPathLocal}/alps
+                [ -d "${dirPathLocal}/idh" ] && dirPathCode=${dirPathLocal}/idh
+                [ -n "${dirPathCode}" ] && cd $dirPathCode
+                export isResetGcc=true
+                export isResetJdk=true
           ;;
         -s ) export sdkVersionDefault="${arg2}"
           ;;
@@ -123,6 +128,7 @@ ftResetXbash()
     # source ~/.bashrc
     source $filePathHomeBash
     export isResetXbash=
+    cd ${dirPathLocal}
 }
 
 ftReadAllAlias()

@@ -52,7 +52,6 @@ dirPathsExcludeListHomeBase= \
     log \
     temp \
     tools \
-    tools_hs \
     server \
     imgs \
     PlayOnLinux's virtual drives \
