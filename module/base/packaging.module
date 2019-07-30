@@ -100,7 +100,8 @@ if [[ -n $(which git) ]];then
     [ -f "$rFilePathGitBash" ] && source $rFilePathGitBash || echo -e "\033[1;31mgit bash 配置文件:\n$rFilePathGitBash 不存在\033[0m"
     alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
     alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
-    alias xgat='effect=添加git的TAG;ftAutoAddGitTag -t '
+    alias xgat='effect=添加git的TAG;ftAutoEditGitTag -a '
+    alias xgdt='effect=删除git的TAG;ftAutoEditGitTag -d '
     alias xgft='effect=git的TAG标签内容过滤;ftGitTagGrep -f '
     alias xglh='effect=显示xx条commit的hash值;ftGitLogShell -c "%h" -n '
     alias xgbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a -t"
