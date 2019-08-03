@@ -1112,9 +1112,11 @@ ftAutoCreateReadMeBySoftwareVersion()
                 local enterLine="\n"
                 local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
                 content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+                content=${content}${enterLine}"项目负责人："
                 content=${content}${enterLine}
                 content=${content}${enterLine}"当前版本：$versionName"
                 content=${content}${enterLine}"基础版本："
+                content=${content}${enterLine}"分支名："
                 content=${content}${enterLine}
                 content=${content}${enterLine}"部分修改说明："
                 content=${content}${enterLine}
@@ -1422,7 +1424,7 @@ ftAutoCreateSxtdBranch()
     |grep "alps/") > /dev/null
     git status --porcelain
 
-    echo -n "请确认待commit修改列表,是否正确 [y/n] (回车默认y)"
+    ftEcho -y "请确认待commit修改列表,是否正确(回车默认y)"
     read -n 1 sel ;[ -z "${sel}" ] && sel=y
     while true; do case "$sel" in
             y | Y )
@@ -1445,8 +1447,8 @@ ftAutoCreateSxtdBranch()
                 mkdir $tarPackagAutoCreateNameTemp
                 tar -xvf ${tarPackagAutoCreateName}.tar -C ${tarPackagAutoCreateNameTemp}
 
-                [[ -z $(ls $tarPackagAutoCreateNameTemp) ]] && ftEcho -e "分支patch包生成失败,请确认是否有除[?/T/M/D]之外修改类型" \
-                && rm -rf ${tarPackagAutoCreateNameTemp} && return
+                [[ -z $(ls $tarPackagAutoCreateNameTemp) ]] && ftEcho -e "分支patch包生成失败,请确认是否有除[?/T/M/D]之外修改类型,或检查gitignore配置文件" \
+                && rm -rf ${tarPackagAutoCreateNameTemp} ${tarPackagAutoCreateName}.tar && return
 
                 mv ${tarPackagAutoCreateNameTemp}/alps ${tarPackagAutoCreateName}
                 rm -rf $tarPackagAutoCreateNameTemp ${tarPackagAutoCreateName}.tar

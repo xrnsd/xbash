@@ -42,7 +42,6 @@ dirPathsExcludeListHomeBase= \
     AndroidStudioProjects \
     cmds \
     code \
-    code_hs \
     doc \
     download \
     floobits \

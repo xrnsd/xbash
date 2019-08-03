@@ -48,7 +48,6 @@ if [ -d "$ANDROID_SDK" ];then
     alias xssd="effect=关闭设备;adb shell reboot"
     alias xsd="effect=关闭设备;adb shell reboot -p"
     alias xl='effect=过滤logcat;ftLogcatApplicationByTag'
-    alias xas='effect=读取系统属性;adb shell settings get system'
     alias xle='effect=过滤错误的logcat;ftLogcatApplicationByTag -e'
     alias xlp="effect=根据包名过滤logcat;ftLogcatApplicationByTag -p"
     alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
@@ -88,6 +87,7 @@ alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
 alias xcaf='effect=用文件管理器打开Aosp功能目录;ftCdAospDirectory -fm '
 alias xcdf='effect=用文件管理器切换到不同Aosp项目;ftCdAospProject -fm '
 alias xcdu='effect=快速更新Aosp项目列表配置;ftCdAospProject -u > /dev/null '
+alias xas='effect=打开Android_studio;${rDirPathTools}/android-studio/bin/studio.sh &'
 alias xs2av='effect=android版本查询;ftIniGetValue $rFilePathXbashDBBase androidSDK2Verison'
 
 if [ -f /usr/bin/gnome-session-quit ] ;then

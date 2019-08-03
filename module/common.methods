@@ -78,33 +78,21 @@ ftResetXbash()
 #===================[   ${ftEffect}   ]的使用示例==============
 #    以下[参数对]无先后顺序可任意组合
 #
-#   查看说明
-#    ftResetXbash -h 
-#
-#   更新xbash配置
+#    更新xbash默认配置
 #    ftResetXbash
 #
-#   更新xbash配置,同时更新jdk配置
-#    ftResetXbash -j 
+#    重启adb服务
+#    ftResetXbash -a/--adb
 #
-#   更新xbash配置,同时更新gcc配置
-#    ftResetXbash -c 
-#
-#   更新adb服务
-#    ftResetXbash -a
-#    ftResetXbash --adb
-#
-#   更新xbash配置,同时更新android sdk 默认版本为 xxx
-#    ftResetXbash -s xxx
+#    更新 jdk配置 / gcc配置 / jdk和gcc配置 / jdk和gcc和ccache配置
+#    ftResetXbash -j / -c / -jc / -jcc
 #========================================================="; return ;;
     * ) break;;esac;done
 
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    export isResetJdk=
-    export isResetGcc=
-    export isResetXbash=true
+    export isResetJdk= isResetGcc= isResetCcache= isResetXbash=true
     local dirPathCode dirPathLocal=$(pwd)
     local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a |--adb) ftRestartAdb && return
@@ -113,14 +101,14 @@ ftResetXbash()
           ;;
         -c ) export isResetGcc=true
           ;;
-        -cj | -jc )
+        -cj | -jc |-jcc)
                 [ -d "${dirPathLocal}/alps" ] && dirPathCode=${dirPathLocal}/alps
                 [ -d "${dirPathLocal}/idh" ] && dirPathCode=${dirPathLocal}/idh
                 [ -n "${dirPathCode}" ] && cd $dirPathCode
+
+                [[ -n "$isUseBuildCcache" ]] && [ "${arg}" = "-jcc" ] && export isResetCcache=true
                 export isResetGcc=true
                 export isResetJdk=true
-          ;;
-        -s ) export sdkVersionDefault="${arg2}"
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
