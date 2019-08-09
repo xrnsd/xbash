@@ -87,7 +87,8 @@ alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
 alias xcaf='effect=用文件管理器打开Aosp功能目录;ftCdAospDirectory -fm '
 alias xcdf='effect=用文件管理器切换到不同Aosp项目;ftCdAospProject -fm '
 alias xcdu='effect=快速更新Aosp项目列表配置;ftCdAospProject -u > /dev/null '
-alias xas='effect=打开Android_studio;${rDirPathTools}/android-studio/bin/studio.sh &'
+alias xas='effect=打开Android_studio;nohup ${rDirPathTools}/android-studio/bin/studio.sh & >/dev/null;exit'
+alias xep='effect=打开Eclipse;nohup ${rDirPathTools}/eclipse/eclipse & >/dev/null;exit'
 alias xs2av='effect=android版本查询;ftIniGetValue $rFilePathXbashDBBase androidSDK2Verison'
 
 if [ -f /usr/bin/gnome-session-quit ] ;then

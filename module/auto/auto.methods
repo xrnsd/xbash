@@ -1135,7 +1135,7 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}"当前版本：$versionName"
             content=${content}${enterLine}"基础版本："
             content=${content}${enterLine}
-            content=${content}${enterLine}"修改说明："
+            content=${content}${enterLine}"修改记录："
             echo -e ${content}${enterLine}${enterLine} >$filePathReadMeTemplate
 
             # 转化为windows下面文件格式
@@ -1170,6 +1170,7 @@ ftAutoTest()
 #    ftAutoTest -d /home/xxx/xxx    # log存放路径
 #    ftAutoTest -rc 3000    2000        #每3000s重启一次,重启2000次
 #    ftAutoTest -e 2000             #monkey事件数为2000
+#    ftAutoTest -t 2000             #2000ms延时
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -1181,7 +1182,7 @@ ftAutoTest()
     local editType=$1
     local eventCountDef=$(( 100 * 100 *100 )) rebootTimeLongDef=-1 rebootCountDef=1
     local eventCount=$eventCountDef rebootTimeLong=$rebootTimeLongDef rebootCount=$rebootCountDef dirPathLogRoot=~/log
-    local packageNameList packageBlackNameList packageWhiteNameList
+    local packageNameList packageBlackNameList packageWhiteNameList throttleLong
     local arg  arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
         ((index=i+1)) ;eval arg2=\${${index}}
         ((index=i+2)) ;eval arg3=\${${index}}
@@ -1192,6 +1193,7 @@ ftAutoTest()
               -rc)    rebootTimeLong=${arg2:-'rebootTimeLongDef'}
                        rebootCount=${arg3:-'rebootCountDef'}  ;;
               -e)     eventCount=${arg2:-'eventCountDef'}                   ;;
+              -t)     throttleLong=${arg2}                            ;;
     * ) [[ -z "${arg}" ]] &&  break ;; esac;done
     local errorContent
     (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong"
@@ -1209,7 +1211,7 @@ ftAutoTest()
     local monkeyConfig logcatFlag #="*:E"
 
     # monkey命令参数配置
-        # monkeyConfig=${monkeyConfig}" --wait-dbg"
+        [[ -n "$throttleLong" ]] && monkeyConfig=${monkeyConfig}" --throttle $throttleLong"
         monkeyConfig=${monkeyConfig}" --ignore-crashes --ignore-timeouts --ignore-security-exceptions"
         if [[ -n $packageBlackNameList ]]; then
             local fileNameBlack="monkey.blacklist"
