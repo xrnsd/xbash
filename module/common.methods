@@ -682,7 +682,7 @@ ftBashHistory()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     # 环境校验
-    [ "$(whoami)" == "root" ] && return
+    [ "$(whoami)" == "root" ] || [[ -z "$isUseXbashHistory" ]] && return
     #解参验耦
     local errorContent
     local bashHistorySize filePathBashHistory filePathBashHistoryArchive filePathBashHistoryArchiveTemp

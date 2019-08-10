@@ -80,6 +80,13 @@ ftInitUserConfig()
             exceptionContent="${exceptionContent}\n xbash定义bash的命令行前缀启用失败"
         fi
 
+        local tagisUseXbashHistoryBase="export\ isUseXbashHistory="
+        ftEcho -y "是否启用xbash定义的bash历史记录处理" "tagisUseXbashHistoryNew=" "tagisUseXbashHistoryNew=\"export\ isUseXbashHistory=true\""
+        if [ -n "${tagisUseXbashHistoryNew}" ];then
+            sed -i "s:$tagisUseXbashHistoryBase:$tagisUseXbashHistoryNew:g" $filePathXbashConfigNew && export isUseXbashHistory=true||\
+            exceptionContent="${exceptionContent}\n xbash定义的bash历史记录处理启用失败"
+        fi
+
         local tagisUseCustomAndroidDevEnvConfigBase="isUseCustomAndroidDevEnvConfig="
         ftEcho -y "是否启用xbash定义的Android开发环境基础配置" "tagisUseCustomAndroidDevEnvConfigNew=" "tagisUseCustomAndroidDevEnvConfigNew=\"isUseCustomAndroidDevEnvConfig=true\""
         if [ -n "${tagisUseCustomAndroidDevEnvConfigNew}" ];then
@@ -131,13 +138,16 @@ ftInitInputrc()
     local filePathXbashModuleBashrcInputrc=${dirPathLocal}/module/base/bash_input.module
     local filePathHomeLocalConfigInputrc=${dirPathHomeLocal}/${fileNameXbashModuleBashrcInputrcTraget}
     local dirPathLocal=$(pwd)
-    if [[ -f "$filePathXbashModuleBashrcInputrc" ]]; then
-        cd $dirPathHomeLocal
-        [[ -f "$filePathHomeLocalConfigInputrc" ]]&&[ $(readlink -f  $filePathHomeLocalConfigInputrc) != $filePathXbashModuleBashrcInputrc ] && mv ${filePathHomeLocalConfigInputrc} ${filePathHomeLocalConfigInputrc}_backup
-        ln -s $filePathXbashModuleBashrcInputrc $fileNameXbashModuleBashrcInputrcTraget
-    else
-        exceptionContent="${exceptionContent}\n xbash配置的命令历史适配逻辑初始化失败"
-    fi
+
+    [ -z "${isUseXbashHistory}" ] && return
+    [[ !  -f "$filePathXbashModuleBashrcInputrc" ]] && exceptionContent="${exceptionContent}\n xbash配置的命令历史适配逻辑初始化失败" && return
+
+    cd $dirPathHomeLocal
+
+    [[ -f "$filePathHomeLocalConfigInputrc" ]]&&[ $(readlink -f  $filePathHomeLocalConfigInputrc) != $filePathXbashModuleBashrcInputrc ] &&\
+        mv ${filePathHomeLocalConfigInputrc} ${filePathHomeLocalConfigInputrc}_backup
+    ln -s $filePathXbashModuleBashrcInputrc $fileNameXbashModuleBashrcInputrcTraget
+
     cd $dirPathLocal
 }
 
