@@ -64,7 +64,7 @@ ftInitUserConfig()
     local filePathXbashConfigNew=${dirPathXbashConfigBashrcUser}/${userNameLocal}.config
 
     [ ! -d "$dirPathXbashConfigBashrcUser" ] && mkdir $dirPathXbashConfigBashrcUser
-    if [[ -f "$filePathXbashConfigExample" ]]&&[ ! -f $filePathXbashConfigNew ]; then
+    if [[ -f "$filePathXbashConfigExample" ]] && [ ! -f $filePathXbashConfigNew ]; then
         cp $filePathXbashConfigExample $filePathXbashConfigNew
 
         if [ -n "${userPasswdLocal}" ];then
@@ -120,11 +120,11 @@ ftInitMoule()
     local filePathXbashModuleUser=${dirPathXbashModuleUser}/${userNameLocal}.module
     local dirPathLocal=$(pwd)
 
-    [ ! -d "$dirPathXbashModuleUser" ]&& mkdir -p $dirPathXbashModuleUser
-    [ ! -f "$filePathXbashModuleUser" ]&&echo "#! /bin/bash" > $filePathXbashModuleUser
+    [ ! -d "$dirPathXbashModuleUser" ] && mkdir -p $dirPathXbashModuleUser
+    [ ! -f "$filePathXbashModuleUser" ] && echo "#! /bin/bash" > $filePathXbashModuleUser
     if [ -f "$filePathXbashModuleBashrcNew" ]; then
         cd $dirPathHomeLocal
-        [[ -f "$filePathHomeLocalBashrc" ]]&&[ $(readlink -f  $filePathHomeLocalBashrc) != $filePathXbashModuleBashrcNew ] && mv ${filePathHomeLocalBashrc} ${filePathHomeLocalBashrc}_backup
+        [[ -f "$filePathHomeLocalBashrc" ]] && [ $(readlink -f  $filePathHomeLocalBashrc) != $filePathXbashModuleBashrcNew ] && mv ${filePathHomeLocalBashrc} ${filePathHomeLocalBashrc}_backup
         ln -s $filePathXbashModuleBashrcNew .bashrc || exceptionContent="${exceptionContent}\n xbash生效初始化失败"
     else
         exceptionContent="${exceptionContent}\n xbash生效初始化失败,文件不存在:${filePathXbashModuleBashrcNew}"
@@ -144,7 +144,7 @@ ftInitInputrc()
 
     cd $dirPathHomeLocal
 
-    [[ -f "$filePathHomeLocalConfigInputrc" ]]&&[ $(readlink -f  $filePathHomeLocalConfigInputrc) != $filePathXbashModuleBashrcInputrc ] &&\
+    [[ -f "$filePathHomeLocalConfigInputrc" ]] && [ $(readlink -f  $filePathHomeLocalConfigInputrc) != $filePathXbashModuleBashrcInputrc ] &&\
         mv ${filePathHomeLocalConfigInputrc} ${filePathHomeLocalConfigInputrc}_backup
     ln -s $filePathXbashModuleBashrcInputrc $fileNameXbashModuleBashrcInputrcTraget
 

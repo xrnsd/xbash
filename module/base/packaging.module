@@ -28,7 +28,7 @@ if [[ -n $(which tr) ]];then
     alias Xx='effect=字符串转小写;_Xx(){  echo "$1" | tr '[A-Z]' '[a-z]' ;};_Xx $1'
 fi
 
-if [[ -n $(which todos) ]]&&[[ -n $(which fromdos) ]];then
+if [[ -n $(which todos) ]] && [[ -n $(which fromdos) ]];then
     alias unix2dos=todos
     alias dos2unix=fromdos
 fi
@@ -63,7 +63,7 @@ if [ -d "$ANDROID_SDK" ];then
     alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
     alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
 
-    [[ -f $rFilePathXbashDBBase ]]&&packageNameList="$(ftIniGetValue $rFilePathXbashDBBase androidDevicePackages packageNameList)"
+    [[ -f $rFilePathXbashDBBase ]] && packageNameList="$(ftIniGetValue $rFilePathXbashDBBase androidDevicePackages packageNameList)"
     complete -W "${packageNameList[@]} launcher systemui" xlp
     complete -W "${packageNameList[@]} launcher systemui 123456" xl
     complete -W "${packageNameList[@]} launcher systemui monkey" xk

@@ -163,7 +163,7 @@ ftReadAllFt()
             effectDescriptionEnable=${effectDescriptionEnable//$keyEnable/}
             effectDescriptionEnable=${effectDescriptionEnable// /}
 
-            [[ "$effectDescriptionEnable" = "def" ]]&&continue
+            [[ "$effectDescriptionEnable" = "def" ]] && continue
 
             printf "%40s  " ${effectName//()/}
             [[ "$effectDescriptionEnable" = "true" ]] && echo ${effectDescription} || ftEcho -s "[暂时关闭]"
@@ -185,7 +185,7 @@ ftTest()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    if [[ ! -f "$rFilePathXbashModuleTest" ]]&&[[ -f $rFilePathXbashModuleTestExpmale ]]; then
+    if [[ ! -f "$rFilePathXbashModuleTest" ]] && [[ -f $rFilePathXbashModuleTestExpmale ]]; then
        cp $rFilePathXbashModuleTestExpmale $rFilePathXbashModuleTest
        echo $userPassword | sudo -p '' -S chmod a+x $rFilePathXbashModuleTest
        [[ -z $(cat ${rDirPathXbash}/.gitignore |grep $rFileNameXbashModuleTestBase) ]] && \
@@ -199,7 +199,7 @@ ftTest()
     #实现主体
     local dirPathLocal=$PWD dirPathTemp=${rDirPathUserHome}/.cache
 
-    [[ ! -f ${dirPathLocal}/Makefile ]]&&[[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp && trap '[ -d $dirPathLocal ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
+    [[ ! -f ${dirPathLocal}/Makefile ]] && [[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp && trap '[ -d $dirPathLocal ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
     ftTimeConsuming -i
     shift&&$rFilePathXbashModuleTest "$@"
@@ -370,7 +370,7 @@ ftUserConfig()
     versionNumUser=${versionNumUser//$key/}
 
     [[ -z "${versionNumUser}" ]] && ftEcho -e "建议更新用户配置到:${versionNumExcepmale}" && return
-    [[ -n "${versionNumExcepmale}" ]]&&[[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) = "<"  ]] && ftEcho -e "建议更新用户配置: ${versionNumUser} > ${versionNumExcepmale}"
+    [[ -n "${versionNumExcepmale}" ]] && [[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) = "<"  ]] && ftEcho -e "建议更新用户配置: ${versionNumUser} > ${versionNumExcepmale}"
 }
 
 ftIniCreateFileOrTag()
@@ -389,7 +389,7 @@ ftIniCreateFileOrTag()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePathIni editType contentTagName contentTagKeyValList
     local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
@@ -398,7 +398,7 @@ ftIniCreateFileOrTag()
           -p )   filePathIni="$arg2"                            ;;
           -t )   contentTagName="$arg2"                 ;;
           -l )   contentTagKeyValList="${arg2[@]}" ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
     [ -z "$filePathIni" ] && errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]"
     [ -z "$contentTagName" ] && errorContent="${errorContent}\\n[块名为空]contentTagName=$contentTagName"
     [ -z "$contentTagKeyValList" ] && errorContent="${errorContent}\\n[块对应的列表为空]contentTagKeyValList=$contentTagKeyValList"
@@ -448,13 +448,13 @@ ftIniDeleteTag()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local tagName filePathIni
     local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -t )   tagName="${arg2}"        ;;
         -p )   filePathIni="${arg2}"     ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}}\\n[文件不存在]filePathIni=$filePathIni"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteTag -h && return
@@ -490,14 +490,14 @@ ftIniAddItem()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local tagName itemContent filePathIni
     local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -t )   tagName="${arg2}"        ;;
         -l )   itemContent="${arg2}"    ;;
         -p )   filePathIni="${arg2}"    ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
     [ -z "$itemContent" ] && errorContent="${errorContent}\\n[缺少必要参数]itemContent=$itemContent"
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
@@ -539,14 +539,14 @@ ftIniDeleteItem()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local tagName itemName filePathIni
     local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -t )   tagName="${arg2}"            ;;
         -i )   itemName="${arg2}"           ;;
         -p )   filePathIni="${arg2}"        ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
     [ -z "$itemName" ] && errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName"
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
@@ -587,7 +587,7 @@ ftIniGetValue()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePath=$1 blockName=$2 keyName=$3 isReadSilence
     if [[ "$filePath" = "-f" ]]; then
@@ -608,7 +608,7 @@ ftIniGetValue()
         elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName" ; fi
     fi
     if [ -n "$errorContent" ];then
-            [[ -z "$isReadSilence" ]]&&return
+            [[ -z "$isReadSilence" ]] && return
             ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
             ftIniGetValue -h
             return
@@ -645,21 +645,21 @@ ftIniSetValue()
 * )break;; esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local isListValue filePath=$1 blockName=$2 keyName=$3 keyValue=$4
     local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -l )    keyValue="${arg2}"
                 isListValue=true
            ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
     else
         if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
         elif [ -z "$(cat $filePath|grep $blockName)" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
         if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
         elif [ -z "$(cat $filePath|grep $keyName)" ];then    errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName" ; fi
-        [ -z "$keyValue" ] &&  errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
+        [ -z "$keyValue" ] && errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
     fi
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h && return
 
@@ -730,7 +730,7 @@ ftDevAvailableSpace()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local dirPathTraget=$1 isReturn=$2
     local valCount=1 errorContent
@@ -779,11 +779,11 @@ ftLanguageUtil()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local ftLanguageContent="${1}" filePathDataBase=$rFilePathXbashDBBase
     local errorContent
-    [ -z "$ftLanguageContent" ] &&  errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
+    [ -z "$ftLanguageContent" ] && errorContent="${errorContent}\\n[语言信息为空]ftLanguageContent=$ftLanguageContent" ;
     [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[语言转化配置文件不存在]filePathDataBase=$filePathDataBase"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLanguageUtil -h && return
 
@@ -811,7 +811,7 @@ ftLanguageUtil()
                 returnVal="${returnVal} ${tragetList[index]}"
                 ((orderIndex+=1))
                 break;
-            elif [[ $base =~ "/" ]]&&[[ $base =~ $lc ]]; then
+            elif [[ $base =~ "/" ]] && [[ $base =~ $lc ]]; then
                 returnVal="${returnVal} [${lc}]>${tragetList[index]}>[${base}]"
                 title=${lc}可能存在多种结果
             elif((${#sourceList[@]}==$(($index + 1)) ));then
@@ -838,14 +838,14 @@ ftInitDevicesList()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local devMinAvailableSpace=0  # 设备最小可用空间，小于则视为无效.单位M
     local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -s )   devMinAvailableSpace="${arg2:-'0'}"
                 devMinAvailableSpace=${devMinAvailableSpace,,}
            ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
     local devMinAvailableSpaceTemp=$devMinAvailableSpace
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//g/}
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//m/}
@@ -879,7 +879,7 @@ ftInitDevicesList()
     #开始记录设备文件
     for dir in ${devNameDirPathList[*]} ;do
             devMountDirPath=${devMountDirPathList[indexDevName]}
-            if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
+            if [[ $dir =~ "/dev/" ]] && [[ $devMountDirPath != "/" ]];then
                     sizeTemp=$(ftDevAvailableSpace $devMountDirPath)
                     [[ -z "sizeTemp" ]] && continue
                     # 确定目录已挂载,设备可用空间大小符合限制
@@ -937,7 +937,7 @@ adb()
     if [[ -f "$filePathAdbNow" ]]; then
         local dirPathLocal=$(pwd)
         local  filePathAdb=${dirPathCode}/out/host/linux-x86/bin/adb
-        if [[ "$dirPathLocal" = "$dirPathCode" ]]&&[[ -f "$filePathAdb" ]]; then
+        if [[ "$dirPathLocal" = "$dirPathCode" ]] && [[ -f "$filePathAdb" ]]; then
             if [[ "$filePathAdbNow" != "$filePathAdb" ]]; then
                 local pid=$(lsof -i:5037  |grep adb |awk '{print $2}')
                 [[ -f "$filePathAdbLocal" ]] && echo $userPassword | sudo -p '' -S mv $filePathAdbLocal ${filePathAdbLocal}2
@@ -982,7 +982,7 @@ ftSetBashPs1ByGitBranch()
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
     [ "$(whoami)" = "root" ] && defaultPrefix="root" && defaultColorConfig=42
-    if [ -n "$branchName" ]&&[ "$editType" != "-b" ];then
+    if [ -n "$branchName" ] && [ "$editType" != "-b" ];then
         local ps1=$(pwd)${branchName}
         (( ${#ps1}>$COLUMNS/2-11 )) && branchName="\nbranchName→ ${branchName}: " || branchName="branchName→ ${branchName}: "
         export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]${branchName}\[\033[0m\]"
@@ -1012,7 +1012,7 @@ ftCleanGarbage()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [[ "$(whoami)" != "$rUserName" ]]||[[ "$(whoami)" = "root" ]] && ftCleanGarbage --exception && return
     #解参验耦
@@ -1076,7 +1076,7 @@ ftKillApplicationByPackageName()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local packageName=$1
     local valCount=1 errorContent
@@ -1134,7 +1134,7 @@ ftLogcatApplicationByTag()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local tagContent=$1 vContent=$2 flagError packageName isUserPackageName
     local arg arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
@@ -1159,7 +1159,7 @@ ftLogcatApplicationByTag()
     local adbStatus="$(adb get-state)"
     [ "${adbStatus}" != "device" ] && ftEcho -e "adb连接状态[${adbStatus}]异常,请重新尝试" && return
 
-    [ -z "flagError" ]&&adb logcat -c
+    [ -z "flagError" ] && adb logcat -c
     if [[ "$isUserPackageName" = "true" ]]; then
         while true; do case "$packageName" in
             systemui)   packageName="com.android.systemui"  ;break;;
@@ -1191,7 +1191,7 @@ ftRestartAdb()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local valCount=0 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -1222,7 +1222,7 @@ ftMtkFlashTool()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local flashToolPath="$(ftIniGetValue $rFilePathXbashDBUser MtkSpFlashToolVersion toolsPath)"
     local errorContent
@@ -1255,7 +1255,7 @@ ftBootAnimation()
     * ) break;; esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local editType=$1 dirPathAnimation=$2 dirPathBase=$(pwd)
     local valCount=2 errorContent
@@ -1356,7 +1356,7 @@ ftBootAnimation()
         for loop in $(ls -1 | tr ' '  '#') ; do mv  "$(echo $loop | sed 's/#/ /g' )"  "$(echo $loop |sed 's/#//g')"  2> /dev/null ;done
 
         local file1=${filelist[0]} file1=${file1##*.}
-        [ $file1 != "jpg" ]&&[ $file1 != "png" ] && ftEcho -e 特殊格式[${file1}]动画资源文件，生成包大小可能异常
+        [ $file1 != "jpg" ] && [ $file1 != "png" ] && ftEcho -e 特殊格式[${file1}]动画资源文件，生成包大小可能异常
 
         #文件重命名
         index=0
@@ -1423,7 +1423,7 @@ ftGlobalization()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local valCount=0 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -1458,7 +1458,7 @@ ftPowerManagement()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local edittype=$1 timeLong=$2 filePathFlag=/tmp/xbashPowerManagementFlag
     timeLong=${timeLong:-$2}
@@ -1523,7 +1523,7 @@ ftReduceFileList()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     if (( $#==2 ));then
         local percentage=$1 dirPathFileList=$2
@@ -1595,7 +1595,7 @@ ftReNameFile()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local isAutoName isAddName dirPathFileList  fileNameAddPrefix fileNameAddSuffix fileTagBase fileTagNew fileSuffixTagBase fileSuffixTagNew 
     local fileNameLength=4
@@ -1694,7 +1694,7 @@ ftMaintainSystem()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [ "$(whoami)" != "root" ] && ftMaintainSystem --env && return
     [[ -z $(which pigz) ]] && ftMaintainSystem --rely "pigz" && return
@@ -1704,7 +1704,7 @@ ftMaintainSystem()
         -s )   editType=sdFinish    ;;
         -b )   editType=backup     ;;
         -r )   editType=restore      ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
     local filePathMaintain=${rDirPathXbashModuleMaintain}/${rFileNameXbashModuleMaintain}
     [ -z "$editType" ] && errorContent="${errorContent}\\n[你想做啥哩]editType=$editType"
     [ ! -f "$filePathMaintain" ] && errorContent="${errorContent}\\n[维护脚本不存在]filePathMaintain=$filePathMaintain"
@@ -1832,7 +1832,7 @@ ftMaintainSystem()
                     devPathList=
                     for dir in ${devNameDirPathList[*]} ; do
                             devMountDirPath=${devMountDirPathList[indexDevName]}
-                            if [[ $dir =~ "/dev/" ]]&&[[ $devMountDirPath != "/" ]];then
+                            if [[ $dir =~ "/dev/" ]] && [[ $devMountDirPath != "/" ]];then
                                    printf " \e[33m %-2s \e[0m %-15s \n" [$indexDev] $dir
                                    devPathList[$indexDev]=$dir
                                    ((indexDev+=1))
@@ -1874,10 +1874,10 @@ ftGitLogShell()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [[ -z $(which git) ]] && ftGitLogShell --rely && return
-    [[ -n "$isAllBranchLog" ]]&&[ -z $(which gitk) ] && ftGitLogShell --rely && return
+    [[ -n "$isAllBranchLog" ]] && [ -z $(which gitk) ] && ftGitLogShell --rely && return
     #解参验耦
     local isAllBranchLog isTagBranchLog branchLogFormat isCustomBranchLog branchLogItemCount branchLogItemCountDef=20 pathTarget
     local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
@@ -1894,7 +1894,7 @@ ftGitLogShell()
         -n )  branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
                 (( $#==3 ))&&(echo -n $3 | grep -q -e "^[0-9][0-9]*$")&&(($3>$branchLogItemCount)) && branchLogItemCount=$3
                 ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
     [ -z "$branchLogItemCount" ]||(($branchLogItemCount<0)) && errorContent="${errorContent}\\n[示例2]branchLogItemCount=$branchLogItemCount"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitLogShell -h && return
 
@@ -1906,7 +1906,7 @@ ftGitLogShell()
     [[ -n "$isAllBranchLog" ]] && gitk --all "${pathTarget}" && return
     [[ -n "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return
 
-    if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]]&&[ "$isCustomBranchLog" != "true" ];then
+    if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]] && [ "$isCustomBranchLog" != "true" ];then
         branchLogFormat=${branchLogFormat:-'%C(green)%<(9,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
         #git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"$branchLogFormat" -$branchLogItemCount
         git log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount
@@ -1986,12 +1986,12 @@ ftGitAddPatch()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local branchTag=$1 filePathBranchList=branch.list
     local filePathAddPatchTool=${rDirPathXbashModule}/git/multiBranch.module
-    local filePathFailInfo="/home/wgx/.cache/ftGitAddPatch.log" ; [ -f "$filePathFailInfo" ]&&rm $filePathFailInfo
-    [ ! -f "$filePathAddPatchTool" ]&&[ -f "${filePathAddPatchTool}.example" ] &&\
+    local filePathFailInfo="/home/wgx/.cache/ftGitAddPatch.log" ; [ -f "$filePathFailInfo" ] && rm $filePathFailInfo
+    [ ! -f "$filePathAddPatchTool" ] && [ -f "${filePathAddPatchTool}.example" ] &&\
         ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
 
     #实现主体
@@ -2071,7 +2071,7 @@ ftGitCheckoutBtanch()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
     [[ -z $(which git) ]] && ftGitCheckoutBtanch --rely "git" && return
     #解参验耦
@@ -2086,7 +2086,7 @@ ftGitCheckoutBtanch()
         return
     fi
     [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
-    [ -n "$delayLong" ]&&( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
+    [ -n "$delayLong" ] && ( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBtanch -h && return
 
     #实现主体
@@ -2109,7 +2109,7 @@ ftGitCheckoutBtanch()
     fi
 
     if [[ -z "${branchList[@]}" ]];then
-       [[ $branchNameNow =~ "$branchNameTag" ]] &&  ftEcho -s "只有当前分支包含TAG，无需切换" && return
+       [[ $branchNameNow =~ "$branchNameTag" ]] && ftEcho -s "只有当前分支包含TAG，无需切换" && return
        ftEcho -e "未找到[$branchNameTag]对应的分支" && return
     fi
     local itemCount=${#branchList[@]}
@@ -2193,7 +2193,7 @@ ftPdfPasswordClear()
         -p ) passwordNum="${arg2}"  ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
-    [ ! -d "$dirPathTarget" ]&&[ ! -f "$dirPathTarget" ] && errorContent="${errorContent}\\n[啥玩意]dirPathTarget=$dirPathTarget"
+    [ ! -d "$dirPathTarget" ] && [ ! -f "$dirPathTarget" ] && errorContent="${errorContent}\\n[啥玩意]dirPathTarget=$dirPathTarget"
     [ -z "$passwordNum" ] && errorContent="${errorContent}\\n[密码不见了，帮忙找找]"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPdfPasswordClear -h && return
 
@@ -2244,7 +2244,7 @@ ftApkSignature()
     #环境校验
     local toolFilePathSignapk=out/host/linux-x86/framework/signapk.jar
     [ ! -f "$toolFilePathSignapk" ] && [ ! -d "$ANDROID_BUILD_TOP" ] && ftApkSignature --env && return
-    [ -d "$ANDROID_BUILD_TOP" ]&& cd $ANDROID_BUILD_TOP
+    [ -d "$ANDROID_BUILD_TOP" ] && cd $ANDROID_BUILD_TOP
     #解参验耦
     local filePathApk
     local valCount=2 errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
@@ -2327,7 +2327,7 @@ ftApkMergeOdex()
 
         [[ "$fileNameApk" == *.apk* ]] && fileNameApk=$(echo $fileNameApk| sed -e "s:.apk::g")
         local dirPathDevices=system/app/${fileNameApk}
-        [[ -n $(adb shell ls system/priv-app|grep $fileNameApk) ]]&&dirPathDevices=system/priv-app/${fileNameApk}
+        [[ -n $(adb shell ls system/priv-app|grep $fileNameApk) ]] && dirPathDevices=system/priv-app/${fileNameApk}
 
         filePathApk=${dirPathTarget}/${fileNameApk}/${fileNameApk}.apk
         filePathOdex=${dirPathTarget}/${fileNameApk}/oat/arm/${fileNameApk}.odex
@@ -2443,7 +2443,7 @@ ftAdbPush()
                 isTacitMode=true
             fi
             filePathSource="${arg2}"
-            [[ ! -f "$filePathSource" ]]&&break
+            [[ ! -f "$filePathSource" ]] && break
             fileNameSource=$(basename $filePathSource)
             [[ -z $(echo $filePathSource |grep system) ]] && \
                  dirPathTarget="${arg3}" || \
@@ -2640,7 +2640,7 @@ ftCdAospDirectory()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    if [[ ! -d "alps" ]]&&[ ! -d "idh" ]; then
+    if [[ ! -d "alps" ]] && [ ! -d "idh" ]; then
         if [[ ! -d "build" ]] && [[ ! -d "frameworks" ]] && [[ ! -d "ndk" ]] && [[ ! -d "dalvik" ]] && [[ ! -d "vendor" ]];then
             ftCdAospDirectory --env&& return
         fi

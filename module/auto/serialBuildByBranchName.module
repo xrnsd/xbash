@@ -22,7 +22,7 @@ filePathBranchList=$2
 branchArray=($(cat $filePathBranchList))
 [ -z "$branchArray" ] && ftFail 分支信息读取失败
 branchName="${branchArray[$fileNamePID]}"
-[ -z "$branchName" ]&& ftFail 分支名读取失败
+[ -z "$branchName" ] && ftFail 分支名读取失败
 git checkout "$branchName" || ftFail 分支切换失败
 
 ftEcho -s "任务 ${fileNamePID} :开始执行"

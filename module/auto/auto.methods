@@ -19,7 +19,7 @@ ftAutoInitEnv()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT buildType=$TARGET_BUILD_VARIANT
     local editType=$1
@@ -88,7 +88,7 @@ ftAutoInitEnv()
             local keyVersion="ro.build.display.id="
             local versionName=$(cat $filePathOutBuildProp|grep $keyVersion)
             versionName=${versionName//$keyVersion/}
-            if [[ -n "$LZ_BUILD_VERSION" ]]&&[[ "$versionName" != "$LZ_BUILD_VERSION" ]]; then
+            if [[ -n "$LZ_BUILD_VERSION" ]] && [[ "$versionName" != "$LZ_BUILD_VERSION" ]]; then
                     ftEcho -e "环境与本地，软件版本不一致:\n本地:${versionName}\n环境:${LZ_BUILD_VERSION}"
             fi
     elif [[ -n "$LZ_BUILD_VERSION" ]];then
@@ -377,7 +377,7 @@ ftAutoBuildMultiBranchEnvSeparation()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [ -z "$ANDROID_BUILD_TOP" ] && ftAutoInitEnv
     [ -z "$ANDROID_BUILD_TOP" ] && ftAutoBuildMultiBranchEnvSeparation --env && return
@@ -443,7 +443,7 @@ ftAutoBackupOrRestoreOuts()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     ftAutoInitEnv
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
@@ -478,7 +478,7 @@ ftAutoBackupOrRestoreOuts()
     local dirPathCodeRootOuts=${dirPathCode%/*}/${dirNameCodeRootOuts}
     local versionInfoDateTime=$(date -d "today" +"%y%m%d[%H:%M]")
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----${versionInfoDateTime}
-    [[ -n "$mTagContent" ]]&&dirNameBranchVersion=${dirNameBranchVersion}_Tag[${mTagContent}]
+    [[ -n "$mTagContent" ]] && dirNameBranchVersion=${dirNameBranchVersion}_Tag[${mTagContent}]
     local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
 
     if [ ! -d "$dirPathCodeRootOuts" ];then
@@ -495,7 +495,7 @@ ftAutoBackupOrRestoreOuts()
             local dirPathOutTopSize=${#dirPathOutTopInfo[@]}
             for item in ${excludeConfigInfo[@]} ; do
                     item=${dirPathOutTop}/${item}
-                    [[ ! -d "$item" ]]&&[[ ! -f "$item" ]] && ((excludeConfigSize-=1)) && break
+                    [[ ! -d "$item" ]] && [[ ! -f "$item" ]] && ((excludeConfigSize-=1)) && break
             done
             if (( $excludeConfigSize == $dirPathOutTopSize )); then
                 rm -rf $dirPathOutTop
@@ -548,7 +548,7 @@ ftAutoBackupOrRestoreOuts()
 $dirNameBranchVersion
 ======================================================================================================
 $(ftGitLogShell  -n 20 -c "%h  %s")" >> $filePathGitLogInfo
-        mv ${dirPathOutTop}/ $dirPathOutBranchVersion&&
+        mv ${dirPathOutTop}/ $dirPathOutBranchVersion &&
         ftEcho -s "移动 $dirPathOutTop \n到  ${dirPathCodeRootOuts}/${dirNameBranchVersion}"
     else
         ftEcho -ex 存在相同out
@@ -564,7 +564,7 @@ ftAutoUpload()
     --rely) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明=============
 #    依赖缺失,请使用下面命令安装
-#    sudo add-apt-repository ppa:pi-rho/security&&sudo apt-get update
+#    sudo add-apt-repository ppa:pi-rho/security && sudo apt-get update
 #    sudo apt-get install sshpass pigz pv nmap
 #=========================================================" ;return;;
     -h | --help) echo -e "\
@@ -576,7 +576,7 @@ ftAutoUpload()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
      [[ -z $(which nmap) ]]|| [[ -z $(which sshpass) ]]|| [[ -z $(which pigz) ]]|| [[ -z $(which pv) ]] && ftAutoUpload --rely && return
     #解参验耦
@@ -608,7 +608,7 @@ ftAutoUpload()
     ftEcho -s "\n========================\n开始上传文件:\n  ${dirPathContentUploadSource}\n服务器路径:\n  ${serverIp}$dirPathPackage\n========================\n"
 
     local serverProtInfo="$(nmap $serverIp)"
-    if [[ -z $(echo ${serverProtInfo[@]}|grep ssh) ]]&&[[ -n $(echo ${serverProtInfo[@]}|grep 445) ]]; then #使用smb协议
+    if [[ -z $(echo ${serverProtInfo[@]}|grep ssh) ]] && [[ -n $(echo ${serverProtInfo[@]}|grep 445) ]]; then #使用smb协议
         local dirPathServerLocalBase=$(ftIniGetValue $filePathConfig $tagName dirPathPackageLocal)
         if ! mountpoint -q $dirPathServerLocalBase; then
             ftEcho -e "当前目录未挂载服务器共享目录:\n${dirPathUploadLocal}" && return
@@ -621,7 +621,7 @@ ftAutoUpload()
         local dirPathServerLocalBase=$(ftIniGetValue $filePathConfig $tagName dirPathPackageLocal)
         if [[ -n "$dirPathServerLocalBase" ]]; then
             local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
-            if [[ -d $dirPathServerLocal ]]&&[[ -n "$ANDROID_BUILD_TOP" ]]; then
+            if [[ -d $dirPathServerLocal ]] && [[ -n "$ANDROID_BUILD_TOP" ]]; then
                     local versionPath=$(dirname $dirPathServerLocal)
                     local versionName=$(basename $dirPathServerLocal)
 
@@ -665,7 +665,7 @@ ftAutoPacket()
     * ) break;; esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     ftAutoInitEnv
     if [ -z "$ANDROID_BUILD_TOP" ]\
@@ -743,7 +743,7 @@ ftAutoPacket()
             #版本号特殊处理
             local dirNameVeriosionBase=${AutoEnv_versionName}
             #非user版本标记编译类型
-            [ "$AutoEnv_buildType" != "user" ] && [[ -z "$(echo ${dirNameVeriosionBase} |grep ${AutoEnv_buildType})" ]]&& dirNameVeriosionBase=${buildType}____${dirNameVeriosionBase}
+            [ "$AutoEnv_buildType" != "user" ] && [[ -z "$(echo ${dirNameVeriosionBase} |grep ${AutoEnv_buildType})" ]] && dirNameVeriosionBase=${buildType}____${dirNameVeriosionBase}
             #软件版本的日期与当前时间不一致就设定编译时间
             arr=(${AutoEnv_versionName//_/ })
             length=${#arr[@]}
@@ -757,7 +757,7 @@ ftAutoPacket()
                     fileChangeTime=${fileChangeTime//$key/}
                     fileChangeTime=${fileChangeTime:-$(date -d "today" +"%y%m%d")}
             fi
-            if [[ -n "$fileChangeTime" ]]&&[ "$versionNameDate" != "${fileChangeTime}" ];then
+            if [[ -n "$fileChangeTime" ]] && [ "$versionNameDate" != "${fileChangeTime}" ];then
                 export AutoEnv_SoftwareVersion_BuildTime=buildtime____${fileChangeTime}
                  #dirNameVeriosionBase=${dirNameVeriosionBase}____${AutoEnv_SoftwareVersion_BuildTime}
             fi
@@ -815,7 +815,7 @@ ftAutoPacket()
                             local itemPathRoot=${dirPathOut}/${item}
                             [[ ! -d "${itemPathRoot}" ]] && ftEcho -e "未找到database的apdb的相关项 ${item}" && continue
                             while read fileName ;do
-                                [[ -z $(echo "${fileName}"|grep '^APDB') ]]&&[[ -z $(echo "${fileName}"|grep '^_APDB') ]]&& continue
+                                [[ -z $(echo "${fileName}"|grep '^APDB') ]] && [[ -z $(echo "${fileName}"|grep '^_APDB') ]] && continue
                                 local filePath=${item}/${fileName}
                                 [[ -f "${itemPathRoot}/${fileName}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
                             done < <(echo "$(ls ${itemPathRoot})")
@@ -833,7 +833,7 @@ ftAutoPacket()
                         if mkdir -p $dirPathPackageDataBase; then
                             for filePath in ${dataBaseFileList[@]}; do
                                  [[ ! -f "$filePath" ]] && filePath=${dirPathOut}/${filePath}
-                                 [[ ! -f "$filePath" ]] &&  ftEcho -e "找不到 : ${filePath}" && continue
+                                 [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && continue
 
                                 fileName=$(basename $filePath)
                                 printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
@@ -916,7 +916,7 @@ ftAutoPacket()
                     return
             fi
 
-            [[ -n "$buildType" ]]&&[ $buildType != "user" ] && versionName=${versionName}____${buildType}
+            [[ -n "$buildType" ]] && [ $buildType != "user" ] && versionName=${versionName}____${buildType}
 
             local dirPathVersionSoftwareLocal="智能机软件"
 
@@ -926,7 +926,7 @@ ftAutoPacket()
             # 生成软件包
             if [[ -n "$isPacket" ]]; then
                    ftEcho -s "开始生成 ${versionName}.pac\n"
-                    cd $dirPathVersionSoftwareVersion  && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
+                    cd $dirPathVersionSoftwareVersion && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
                     /usr/bin/perl $filePathPacketScript \
                         $versionName.pac \
@@ -998,7 +998,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftAutoCreateReadMeBySoftwareVersion --rely && return
     #解参验耦
@@ -1006,7 +1006,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT dirPathVersionSoftware=$1
     local filePathConfig=$rFilePathXbashDBAuto
-    [[ -z "$dirPathVersionSoftware" ]]&&dirPathVersionSoftware=${dirPathOut}/${AutoEnv_versionName}
+    [[ -z "$dirPathVersionSoftware" ]] && dirPathVersionSoftware=${dirPathOut}/${AutoEnv_versionName}
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
     local valCount=1 errorContent
     #(( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -1175,7 +1175,7 @@ ftAutoTest()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ]&&  ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
      [[ -z $(which adb) ]] && ftAutoTest --rely && return
     #解参验耦
@@ -1194,10 +1194,10 @@ ftAutoTest()
                        rebootCount=${arg3:-'rebootCountDef'}  ;;
               -e)     eventCount=${arg2:-'eventCountDef'}                   ;;
               -t)     throttleLong=${arg2}                            ;;
-    * ) [[ -z "${arg}" ]] &&  break ;; esac;done
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
     local errorContent
     (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong"
-    [[ -n $packageBlackNameList ]]&&[[ -n $packageNameList ]] && errorContent="${errorContent}\\n 包限制配置错误1"
+    [[ -n $packageBlackNameList ]] && [[ -n $packageNameList ]] && errorContent="${errorContent}\\n 包限制配置错误1"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoTest -h && return
 
     #实现主体
@@ -1399,7 +1399,7 @@ ftAutoCreateSxtdBranch()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     if [[ -z "$ANDROID_BUILD_TOP" ]];then
-        [[ -d "alps" ]]&&[[ -d ".git" ]]&&cd alps
+        [[ -d "alps" ]] && [[ -d ".git" ]] && cd alps
         ftAutoInitEnv > /dev/null
     fi
     local dirPathAospRoot=$(dirname $ANDROID_BUILD_TOP)
@@ -1450,7 +1450,7 @@ ftAutoCreateSxtdBranch()
                 tar -xvf ${tarPackagAutoCreateName}.tar -C ${tarPackagAutoCreateNameTemp}
 
                 [[ -z $(ls $tarPackagAutoCreateNameTemp) ]] && ftEcho -e "分支patch包生成失败,请确认是否有除[?/T/M/D]之外修改类型,或检查gitignore配置文件" \
-                && rm -rf ${tarPackagAutoCreateNameTemp} ${tarPackagAutoCreateName}.tar && return
+               && rm -rf ${tarPackagAutoCreateNameTemp} ${tarPackagAutoCreateName}.tar && return
 
                 mv ${tarPackagAutoCreateNameTemp}/alps ${tarPackagAutoCreateName}
                 rm -rf $tarPackagAutoCreateNameTemp ${tarPackagAutoCreateName}.tar
@@ -1488,7 +1488,7 @@ ftAutoLnOut()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     if [[ -z "$ANDROID_BUILD_TOP" ]];then
-        [[ -d "alps" ]]&&[[ -d ".git" ]]&&cd alps
+        [[ -d "alps" ]] && [[ -d ".git" ]] && cd alps
         ftAutoInitEnv > /dev/null
     fi
     local dirPathAospRoot aospProjectName
