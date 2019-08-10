@@ -1,9 +1,6 @@
 #ini
 #文件由ftIniCreateFileOrTag自动创建，请避免手动编辑造成解析失败
 
-[xbash]
-bashHistoryThresholdSize=3000
-
 [MtkSpFlashToolVersion]
 toolsPath=
 

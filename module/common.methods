@@ -683,41 +683,37 @@ ftBashHistory()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     # 环境校验
     [ "$(whoami)" == "root" ] && return
+    #解参验耦
+    local errorContent
+    local bashHistorySize filePathBashHistory filePathBashHistoryArchive filePathBashHistoryArchiveTemp
+    [ ! -d $dirPathHome ]  && errorContent="${errorContent}\\n[迷路中，请稍等]dirPathHome=$，dirPathHome"
+    [ ! -f $filePathBashHistory ] && errorContent="${errorContent}\\n[历史记录为空]"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteItem -h && return
 
     filePathBashHistory=${dirPathHome}/.bash_history
-
-    #历史去重
-    filePathBashHistoryTemp=${filePathBashHistory}_temp
     filePathBashHistoryArchive=${filePathBashHistory}_archive
     filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
-    cat $filePathBashHistory >> $filePathBashHistoryArchive \
-    && sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
-    && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
 
-    bashHistorySize=$(awk 'END{print NR}' $filePathBashHistoryArchive)
+    #备份历史记录
+    [ -f $filePathBashHistory ] && cat $filePathBashHistory >> $filePathBashHistoryArchive
+    #历史去重
+    sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
+    && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
 
     #历史扩容
     if [[ -f $rFilePathXbashDBUser ]]; then
-        bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDBUser xbash bashHistoryThresholdSize)
+        bashHistorySize=$(ftIniGetValue  $rFilePathXbashDBUser xbash bashHistoryThresholdSize)
     else
         # user database 初始化
         [[ ! -d "${rDirPathXbashModuleUser}" ]] && mkdir $rDirPathXbashModuleUser > /dev/null
         [[ -f "$rFilePathXbashDBUserExcepmale" ]] && cp ${rFilePathXbashDBUserExcepmale} ${rFilePathXbashDBUser} \
         || echo -e "\033[1;31m用户独立配置初始化失败,模板不存在:\n${rFilePathXbashDBUserExcepmale}\033[0m"
-        bashHistorySizeBase=$(ftIniGetValue  $rFilePathXbashDBBase xbash bashHistoryThresholdSize)
+        bashHistorySize=$(ftIniGetValue  $rFilePathXbashDBBase xbash bashHistoryThresholdSize)
         ftIniCreateFileOrTag -a -p $rFilePathXbashDBUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
-    fi
-
-    if (($bashHistorySize>$bashHistorySizeBase)); then
-        ((bashHistorySize=$bashHistorySize+$(ftIniGetValue  $rFilePathXbashDBBase xbash bashHistoryIncrementalSize)))
-        ftIniSetValue $rFilePathXbashDBUser xbash bashHistoryThresholdSize $bashHistorySize
-    else
-        bashHistorySize=$bashHistorySizeBase
     fi
 
     export HISTSIZE=$bashHistorySize
     export HISTFILESIZE=$bashHistorySize
-    cp -rf $filePathBashHistoryArchive $filePathBashHistory
 }
 
 ftDevAvailableSpace()
