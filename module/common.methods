@@ -677,20 +677,31 @@ ftIniSetValue()
 ftBashHistory()
 {
     local ftEffect=处理bash历史记录
-    local isEnable=true 
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#   #显示bash命令历史存储路径
+#    ftBashHistory -p
+#========================================================="; return ;;
+    * ) break;;esac;done
 
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     # 环境校验
     [ "$(whoami)" == "root" ] || [[ -z "$isUseXbashHistory" ]] && return
     #解参验耦
-    local errorContent
-    local bashHistorySize filePathBashHistory filePathBashHistoryArchive filePathBashHistoryArchiveTemp
+    local filePathBashHistory=${dirPathHome}/.bash_history
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+        -p )    echo ${filePathBashHistory} ;return
+           ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    local bashHistorySize filePathBashHistoryArchive filePathBashHistoryArchiveTemp
     [ ! -d $dirPathHome ]  && errorContent="${errorContent}\\n[迷路中，请稍等]dirPathHome=$，dirPathHome"
     [ ! -f $filePathBashHistory ] && errorContent="${errorContent}\\n[历史记录为空]"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteItem -h && return
 
-    filePathBashHistory=${dirPathHome}/.bash_history
     filePathBashHistoryArchive=${filePathBashHistory}_archive
     filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
 

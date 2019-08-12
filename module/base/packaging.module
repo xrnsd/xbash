@@ -12,7 +12,7 @@ if [[ -n $(which cat) ]];then
                       cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.brand=" && \
                       cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.name=" && \
                       cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.device=" '
-    alias xbh='effect=bash命令历史查询;cat $filePathBashHistory |grep'
+    alias xbh='effect=bash命令历史查询;cat $(ftBashHistory -p) |grep'
 fi
 
 if [[ -n $(which du) ]];then
