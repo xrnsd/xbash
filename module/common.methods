@@ -98,10 +98,13 @@ ftResetXbash()
         -a |--adb) ftRestartAdb && return
           ;;
         -j ) export isResetJdk=true
+            [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return
           ;;
         -c ) export isResetGcc=true
+            [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return
           ;;
         -cj | -jc |-jcc)
+                [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return
                 [ -d "${dirPathLocal}/alps" ] && dirPathCode=${dirPathLocal}/alps
                 [ -d "${dirPathLocal}/idh" ] && dirPathCode=${dirPathLocal}/idh
                 [ -n "${dirPathCode}" ] && cd $dirPathCode

@@ -87,8 +87,8 @@ ftInitUserConfig()
             exceptionContent="${exceptionContent}\n xbash定义的bash历史记录处理启用失败"
         fi
 
-        local tagisUseCustomAndroidDevEnvConfigBase="isUseCustomAndroidDevEnvConfig="
-        ftEcho -y "是否启用xbash定义的Android开发环境基础配置" "tagisUseCustomAndroidDevEnvConfigNew=" "tagisUseCustomAndroidDevEnvConfigNew=\"isUseCustomAndroidDevEnvConfig=true\""
+        local tagisUseCustomAndroidDevEnvConfigBase="export\ isUseCustomAndroidDevEnvConfig="
+        ftEcho -y "是否启用xbash定义的Android开发环境基础配置" "tagisUseCustomAndroidDevEnvConfigNew=" "tagisUseCustomAndroidDevEnvConfigNew=\"export\ isUseCustomAndroidDevEnvConfig=true\""
         if [ -n "${tagisUseCustomAndroidDevEnvConfigNew}" ];then
             sed -i "s:$tagisUseCustomAndroidDevEnvConfigBase:$tagisUseCustomAndroidDevEnvConfigNew:g" $filePathXbashConfigNew||\
             exceptionContent="${exceptionContent}\n xbash定义的Android开发环境配置启用失败" 
@@ -101,12 +101,12 @@ ftInitUserConfig()
             exceptionContent="${exceptionContent}\n xbash定义的Android编译缓存配置启用失败" 
         fi
 
-        local tagisUseDistccBase="isUseDistcc="
-        ftEcho -y "是否启用xbash定义的Android分布式编译配置" "tagisUseDistccNew=" "tagisUseDistccNew=\"isUseDistcc=true\""
-        if [ -n "${tagisUseDistccNew}" ];then
-            sed -i "s:$tagisUseDistccBase:$tagisUseDistccNew:g" $filePathXbashConfigNew||\
-            exceptionContent="${exceptionContent}\n xbash定义的Android分布式编译配置启用失败" 
-        fi
+        # local tagisUseDistccBase="isUseDistcc="
+        # ftEcho -y "是否启用xbash定义的Android分布式编译配置" "tagisUseDistccNew=" "tagisUseDistccNew=\"isUseDistcc=true\""
+        # if [ -n "${tagisUseDistccNew}" ];then
+        #     sed -i "s:$tagisUseDistccBase:$tagisUseDistccNew:g" $filePathXbashConfigNew||\
+        #     exceptionContent="${exceptionContent}\n xbash定义的Android分布式编译配置启用失败" 
+        # fi
     else
         exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败"
     fi
