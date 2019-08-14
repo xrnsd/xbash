@@ -736,8 +736,6 @@ ftAutoPacket()
     cd $dirPathVersionSoftware && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
     if [[ $AutoEnv_mnufacturers = "mtk" ]]; then
-            local dirNamePackage="packages" dirNameOtaPackage="otaPackages" dirNamePackageDataBase="dataBase" \
-                    tagName="xbashAOSPConfigSoftwarePackageFileLIst"
             local deviceName=$(basename $ANDROID_PRODUCT_OUT)
 
             #版本号特殊处理
@@ -777,7 +775,8 @@ ftAutoPacket()
                     ftEcho -s "\n========================\n包名: ${dirNameVeriosionBase}\n路径: ${dirPathVersionSoftwareVersion}\n========================\n"
                     #packages
                     ftEcho -s "创建 packages"
-                    tagName="xbashAOSPConfigSoftwarePackageFileLIst"
+                    local tagName="xbashAOSPConfigSoftwarePackageFileLIst"
+                    local dirNamePackage="packages"
                     local filePathSystemImage=${dirPathOut}/system.img
                     local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
                     local fileList=($(ftIniGetValue $filePathDataUser $tagName ${TARGET_PRODUCT}))
@@ -806,6 +805,7 @@ ftAutoPacket()
                     # database
                     ftEcho -s "创建 database"
                     tagName=xbashAOSPConfigSoftwareDataBaseFileLIst
+                    local dirNamePackageDataBase="dataBase"
                     local dataBaseFileList dataBaseFileListTemp
                     local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
                     local apdbDirPathList=($(ftIniGetValue $filePathDataAuto $tagName apdbDirPathList))
@@ -847,6 +847,7 @@ ftAutoPacket()
                     fi
 
                     # #otaPackages
+                    # local dirNameOtaPackage="otaPackages"
                     # local dirPathOtaPackage=${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
                     # local dirPathOta=${dirPathOut}/obj/PACKAGING/target_files_intermediates
                     # if [[ -d "$dirPathOta" ]]; then
@@ -867,6 +868,25 @@ ftAutoPacket()
                     # else
                     #     ftEcho -e "OTA相关包未找到"
                     # fi
+
+                    #tools
+                    tagName="xbashAOSPConfigMTKSoftwareDownloadToool"
+                    local dirNamePackageTools="tools"
+                    local dirPathPackageTools=${dirPathVersionSoftwareVersion}/${dirNamePackageTools}
+                    local filePathTools=($(ftIniGetValue $filePathDataUser $tagName filePath))
+                    if [[ -n "${filePathTools}" ]]; then
+                        ftEcho -s "创建 tools"
+
+                        [[ ! -d $dirPathPackageTools ]] && mkdir -p $dirPathPackageTools
+                        for filePath in ${filePathTools[@]}; do
+                            [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && ftClearTail $dirPathLocal \
+                            && export isPacketMtkSoftwareDownloadTools=false && return
+
+                             printf "%-2s %-30s\n" 复制 $filePath
+                             cp -r -f  $filePath $dirPathPackageTools
+                        done
+                        export isPacketMtkSoftwareDownloadTools=true
+                    fi
             fi
 
             # 创建版本说明
@@ -1135,6 +1155,11 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}"当前版本：$versionName"
             content=${content}${enterLine}"基础版本："
             content=${content}${enterLine}
+            if [[ ${isPacketMtkSoftwareDownloadTools} = "true" ]]; then
+                content=${content}${enterLine}"TOOLS目录存放MTK软件下载工具和驱动：$versionName"
+                content=${content}${enterLine}"基础版本："
+                content=${content}${enterLine}
+            fi
             content=${content}${enterLine}"修改记录："
             echo -e ${content}${enterLine}${enterLine} >$filePathReadMeTemplate
 
