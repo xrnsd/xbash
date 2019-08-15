@@ -1873,13 +1873,18 @@ ftGitLogShell()
 
     while true; do case "$1" in
      --rely) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+#===================[   ${ftEffect}   ]的依赖说明=============
 #    ${ftEffect}依赖包
 #    请尝试使用 sudo apt-get install git git-core git-gui git-doc 补全依赖
+#========================================================="; return;;
+     --env) echo -e "\
+#===================[   ${ftEffect}   ]的环境说明=============
+#    当前目录没有有效的GIT仓库
 #========================================================="; return;;
     -h | --help) echo -e "\
 #===================[   ${ftEffect}   ]的使用示例==============
 #    ftGitLogShell -a  # 全部分支log
+#    ftGitLogShell -at  # 查看分支树
 #    ftGitLogShell -a  路径 # 指定路径下的全部分支log
 #    ftGitLogShell -n 数量
 #    ftGitLogShell -t Tag名  #只输出包含tag的git log
@@ -1892,12 +1897,15 @@ ftGitLogShell()
     #环境校验
     [[ -z $(which git) ]] && ftGitLogShell --rely && return
     [[ -n "$isAllBranchLog" ]] && [ -z $(which gitk) ] && ftGitLogShell --rely && return
+    [[ -z $(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') ]] && ftGitLogShell --env && return
     #解参验耦
     local isAllBranchLog isTagBranchLog branchLogFormat isCustomBranchLog branchLogItemCount branchLogItemCountDef=20 pathTarget
     local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
         -a )  isAllBranchLog=true
                 pathTarget="${arg2}"
                 branchLogItemCount=0
+                ;;
+        -at )  gitk --simplify-by-decoration --all && return
                 ;;
         -t )   branchLogFormat=${arg2:-'%s'}
                 isTagBranchLog=true
