@@ -174,8 +174,8 @@ ftInitXbash()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #
 #    ./init                            #初始化xbash所有配置
 #    ./init --git                     #初始化xbash使用的git配置

@@ -6,13 +6,13 @@ ftAutoInitEnv()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftAutoInitEnv 无参
 #    ftAutoInitEnv -bp #强制解析build.prop信息
 #========================================================="; return ;;
-    --env ) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #========================================================="; return ;;
@@ -167,18 +167,18 @@ ftBranchNameResolution()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #
 #    ftBranchNameResolution -h
 #========================================================="; return ;;
-    --env ) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #========================================================="; return ;;
@@ -269,18 +269,18 @@ ftBuildPropResolution()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #
 #    ftBuildPropResolution -h
 #========================================================="; return ;;
-    --env ) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #========================================================="; return ;;
@@ -361,16 +361,16 @@ ftAutoBuildMultiBranchEnvSeparation()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    查看帮助
 #    ftAutoBuildMultiBranchEnvSeparation -h
 #
 #    根据分支列表进行串行编译
 #    ftAutoBuildMultiBranchEnvSeparation -b
 #========================================================="; return ;;
-    --env ) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #========================================================="; return ;;
@@ -425,8 +425,8 @@ ftAutoBackupOrRestoreOuts()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    备份out
 #    ftAutoBackupOrRestoreOuts 无参
 #    ftAutoBackupOrRestoreOuts -t 备注
@@ -435,8 +435,8 @@ ftAutoBackupOrRestoreOuts()
 #    ftAutoBackupOrRestoreOuts -m
 #    ftAutoBackupOrRestoreOuts -m xxx   #分支名包含xxx的out列表
 #========================================================="; return ;;
-    --env ) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #========================================================="; return ;;
@@ -561,14 +561,14 @@ ftAutoUpload()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 #    依赖缺失,请使用下面命令安装
 #    sudo add-apt-repository ppa:pi-rho/security && sudo apt-get update
 #    sudo apt-get install sshpass pigz pv nmap
 #=========================================================" ;return;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftAutoUpload 源存放目录 服务器地址
 #
 #    ftAutoUpload xxx 192.168.xxx.xxx
@@ -649,16 +649,16 @@ ftAutoPacket()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftClearTail $dirPathLocal ; echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftClearTail $dirPathLocal ; ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftAutoPacket -y #免确认自动清理out/packet
 #    ftAutoPacket -u #上传到188服务器
 #    ftAutoPacket -r #添加说明
 #    ftAutoPacket -p #打包
 #    ftAutoPacket -a #默认启动全部流程
 #========================================================="; return ;;
-    --env ) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #========================================================="; return ;;
@@ -1000,17 +1000,17 @@ ftAutoCreateReadMeBySoftwareVersion()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftAutoCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
 #    ftAutoCreateReadMeBySoftwareVersion out/pac
 #========================================================="; return ;;
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 #    工具依赖包 unix2dos #sudo apt-get install tofrodos
 #========================================================="; return;;
-    --env ) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #
@@ -1155,11 +1155,11 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}"当前版本：$versionName"
             content=${content}${enterLine}"基础版本："
             content=${content}${enterLine}
+            content=${content}${enterLine}"说明："
             if [[ ${isPacketMtkSoftwareDownloadTools} = "true" ]]; then
-                content=${content}${enterLine}"TOOLS目录存放MTK软件下载工具和驱动：$versionName"
-                content=${content}${enterLine}"基础版本："
-                content=${content}${enterLine}
+                content=${content}${enterLine}"01 TOOLS目录存放MTK软件下载工具和驱动"
             fi
+            content=${content}${enterLine}
             content=${content}${enterLine}"修改记录："
             echo -e ${content}${enterLine}${enterLine} >$filePathReadMeTemplate
 
@@ -1181,12 +1181,12 @@ ftAutoTest()
     local isEnable=true
 
     while true; do case "$1" in
-     --rely) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+     --rely) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 #    adb当前无法正常使用， 请确认 Android SDK 配置是否正确
 #========================================================="; return;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    #-xx 为独立参数类型标识,不可拆分
 #    #参数之间没有先后约束
 #
@@ -1317,13 +1317,13 @@ ftAutoEditGitTag()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #
 #    添加标签
 #    ftAutoEditGitTag -a 标签名 标签名对应的commitid
@@ -1398,8 +1398,8 @@ ftAutoCreateSxtdBranch()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
@@ -1408,13 +1408,13 @@ ftAutoCreateSxtdBranch()
             sudo apt-get update
             sudo apt-get install git
             return ;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #
 #    ftAutoCreateSxtdBranch  #无参数
 #========================================================="; return ;;
-    --env) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明==============
+    --env) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#==========================================================
 # 环境未初始化
 # 使用前,请先进入AOSP项目
 #========================================================="; return ;;
@@ -1497,13 +1497,13 @@ ftAutoLnOut()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #
 #    ftAutoLnOut -p 存放out的设备路径
 #========================================================="; return ;;
-    --env) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明==============
+    --env) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#==========================================================
 # 环境未初始化
 # 使用前,请先进入AOSP项目
 #========================================================="; return ;;

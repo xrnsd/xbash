@@ -74,8 +74,8 @@ ftResetXbash()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
 #    更新xbash默认配置
@@ -179,8 +179,8 @@ ftTest()
     local isEnable=def
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftTest 任意参数
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -217,8 +217,8 @@ ftEcho()
     local isEnable=def
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftEcho            内容    # 直接显示内容
 #    ftEcho    -b     内容    # 标题，不换行，对字符串的缩进敏感
 #    ftEcho    -bh   内容    # 标题，换行，对字符串的缩进敏感
@@ -296,8 +296,8 @@ ftPath()
     local isEnable=def
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftPath 路径       #去掉最后的斜杠
 #    ftPath 路径 文件  #正确拼接路径
 #    ftPath -s 路径 文件  #正确拼接路径，显示错误提示
@@ -330,8 +330,8 @@ ftVersionComparison()
     local isEnable=def
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftVersionComparison -h    #查看帮助
 #
 #    只能比对xx.xx格式的版本号
@@ -382,8 +382,8 @@ ftIniCreateFileOrTag()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    添加内容
 #    ftIniCreateFileOrTag  -a -p 文件路径 -t 块名 -l 块对应的键值对列表
 #    覆盖文件
@@ -444,8 +444,8 @@ ftIniDeleteTag()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftIniDeleteTag -p ini文件路径 -t TAG块名
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -486,8 +486,8 @@ ftIniAddItem()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftIniAddItem -p ini文件路径 -t TAG块名  -l 块对应的键值对列表
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -535,8 +535,8 @@ ftIniDeleteItem()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftIniDeleteItem -p ini文件路径 -t TAG块名 -i item名
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -577,8 +577,8 @@ ftIniGetValue()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    #默认不输出异常信息
 #    ftIniGetValue 文件路径 目标块TAG 键名
 #    value=\$(ftIniGetValue 文件路径 目标块TAG 键名)
@@ -639,8 +639,8 @@ ftIniSetValue()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftIniSetValue [文件路径] [目标块TAG] [键名] [键对应的值]
 #    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup 1232
 #    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l \"${xxx[*]}\"  #写入数组
@@ -683,8 +683,8 @@ ftBashHistory()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #   #显示bash命令历史存储路径
 #    ftBashHistory -p
 #========================================================="; return ;;
@@ -736,8 +736,8 @@ ftDevAvailableSpace()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftDevAvailableSpace [dirPathTraget] [[isReturn]]
 #    ftDevAvailableSpace /media/test
 #========================================================="; return ;;
@@ -785,8 +785,8 @@ ftLanguageUtil()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftLanguageUtil "ar_IL bn_BD my_MM zh_CN"
 #    ftLanguageUtil "阿拉伯语 孟加拉语 缅甸语 简体中文"
 #========================================================="; return ;;
@@ -844,8 +844,8 @@ ftInitDevicesList()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftInitDevicesList [可用空间/单位默认为MB]
 #    ftInitDevicesList 4096M
 #========================================================="; return ;;
@@ -1011,12 +1011,12 @@ ftCleanGarbage()
     local isEnable=true
 
     while true; do case "$1" in
-     --exception) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+     --exception) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 #    禁止在高权限下运行,转化普通用户后，再次尝试
 #=========================================================" ;return;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    自动退出
 #    ftCleanGarbage -e
 #
@@ -1082,8 +1082,8 @@ ftKillApplicationByPackageName()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftKillApplicationByPackageName [packageName]
 #    ftKillApplicationByPackageName com.android.settings
 #========================================================="; return ;;
@@ -1127,8 +1127,8 @@ ftLogcatApplicationByTag()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #     打印所有log
 #    ftLogcatApplicationByTag
 #
@@ -1198,8 +1198,8 @@ ftRestartAdb()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftRestartAdb [无参]
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -1229,8 +1229,8 @@ ftMtkFlashTool()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftMtkFlashTool 无参
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -1255,8 +1255,8 @@ ftBootAnimation()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    请进入动画资源目录后执行xc bootanim xxx
 #    ftBootAnimation [edittype] [path]
 #
@@ -1430,8 +1430,8 @@ ftGlobalization()
     local isEnable=false
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftGlobalization 无参数
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -1459,8 +1459,8 @@ ftPowerManagement()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #   下面操作不指定时间默认都为10秒
 #
 #    100秒后自动关机，
@@ -1528,8 +1528,8 @@ ftReduceFileList()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 # 
 #    ftReduceFileList 保留的百分比 目录
 #    ftReduceFileList 60 /home/xxxx/temp  #由于水平有限，实现对60%和50%之类的比例不敏感
@@ -1589,8 +1589,8 @@ ftReNameFile()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #   使用固定长度的文件名，后缀名不变
 #       ftReNameFile -d 目录 -l 修改后的文件长度
 #
@@ -1682,17 +1682,17 @@ ftMaintainSystem()
     local isEnable=true
 
     while true; do case "$1" in
-    --env) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+    --env) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================
 #    当前用户权限过低，请转换为root 用户后重新运行
 #========================================================="; return;;
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftMaintainSystem 操作类型
 #    ftMaintainSystem -s / --sd_finish #整理磁盘
 #    ftMaintainSystem -b / --backup #备份系统
@@ -1872,17 +1872,17 @@ ftGitLogShell()
     local isEnable=true
 
     while true; do case "$1" in
-     --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
+     --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #    ${ftEffect}依赖包
 #    请尝试使用 sudo apt-get install git git-core git-gui git-doc 补全依赖
 #========================================================="; return;;
-     --env) echo -e "\
-#===================[   ${ftEffect}   ]的环境说明=============
+     --env) ftEcho -sn "${ftEffect} " ; echo 的环境说明 ; echo -e "\
+#=========================================================
 #    当前目录没有有效的GIT仓库
 #========================================================="; return;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftGitLogShell -a  # 全部分支log
 #    ftGitLogShell -at  # 查看分支树
 #    ftGitLogShell -a  路径 # 指定路径下的全部分支log
@@ -1949,8 +1949,8 @@ ftFind()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
         while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #
 #   ftFind -s 路径 后缀列表  文件名内容[可选]    #使用后缀搜索
 #   ftFind -s xx/xx \"java xml\" \"yyy\"
@@ -2000,8 +2000,8 @@ ftGitAddPatch()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftGitAddPatch 无参
 #    ftGitAddPatch 分支TAG   #只操作名称中有TAG的分支
 #========================================================="; return ;;
@@ -2069,8 +2069,8 @@ ftGitCheckoutBtanch()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例===============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#==========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
 #    在本地仓库中查切分支
@@ -2085,8 +2085,8 @@ ftGitCheckoutBtanch()
 #    在本地仓库中查切含 xxxx 的分支,延时yyyy秒后切换
 #    ftGitCheckoutBtanch -t xxxx -d yyyy
 #========================================================="; return ;;
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
@@ -2193,13 +2193,13 @@ ftPdfPasswordClear()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftPdfPasswordClear -d 目录或路径 -p 密码
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -2249,12 +2249,12 @@ ftApkSignature()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    ftApkSignature -f xxx.apk
 #========================================================="; return ;;
-    --env) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明==============
+    --env) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#==========================================================
 # 环境未初始化
 # 使用前,请先初始化
 # source build/envsetup.sh && lunuch xxxxx
@@ -2299,13 +2299,13 @@ ftApkMergeOdex()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    指定app名称，插上手机，执行pull和合并操作
 #    ftApkMergeOdex -a xxxx
 #    直接指定已存在包路径，执行合并操作
@@ -2405,8 +2405,8 @@ ftDu()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
 #    ftDu 文件数量
@@ -2436,12 +2436,12 @@ ftAdbPush()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #    ${ftEffect}依赖 Android SDK
 #========================================================="; return ;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #
 #    -a #自动重启 -n #不重启
 #    ftAdbPush -f/-a/n 需要push的文件路径 [目标路径]
@@ -2499,8 +2499,8 @@ ftUpdateSublimeSnippet()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    无参
 #    ftUpdateSublimeSnippet xxxx
 #========================================================="; return ;;
@@ -2535,8 +2535,8 @@ ftOpenNemoTab()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #     请尝试使用下面方法补全依赖
 #     ftOpenNemoTab --rely_install
 #========================================================="; return ;;
@@ -2547,8 +2547,8 @@ ftOpenNemoTab()
         sudo apt-get install -y xclip wmctrl xdotool nemo nemo-fileroller
         sudo apt-get install -y nemo-compare nemo-media-columns nemo-pastebin nemo-seahorse nemo-share
         return ;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #
 #    自动补齐依赖
 #    ftOpenNemoTab --rely_install
@@ -2628,8 +2628,8 @@ ftCdAospDirectory()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    切换终端路径
 #    ftCdAospDirectory xxx xxx xxxx
 #
@@ -2652,8 +2652,8 @@ ftCdAospDirectory()
         └── out
              └──  commonObj / product / productObj / system
 #========================================================="; return ;;
-    --env) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明==============
+    --env) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#==========================================================
 # 当前非有效AOSP目录，请确认
 # 可以尝试使用 ftCdAospProject 快速进入项目
 #========================================================="; return ;;
@@ -2717,8 +2717,8 @@ ftCdAospProject()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #    自动更新项目列表
 #    ftCdAospProject -u
 #
@@ -2802,8 +2802,8 @@ ftGitTagGrep()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) echo -e "\
-#===================[   ${ftEffect}   ]的依赖说明=============
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
@@ -2812,14 +2812,14 @@ ftGitTagGrep()
             sudo apt-get update
             sudo apt-get install git
             return ;;
-    -h | --help) echo -e "\
-#===================[   ${ftEffect}   ]的使用示例==============
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
 #
 #    在所有标签注释中查找指定字符串
 #    ftGitTagGrep -f 查找的字符串
 #========================================================="; return ;;
-    --env) echo -e "\
-#===================[   ${ftEffect}   ]的使用环境说明==============
+    --env) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#==========================================================
 # 当前目录无有效GIT仓库
 #========================================================="; return ;;
     * ) break;;esac;done
