@@ -39,6 +39,7 @@ fi
 
 if [[ -n $(which sensors) ]];then
     alias xcct="effect=查看cpu温度;xc -sc"
+    alias xccct="effect=查看cpu各个核心温度;xc -scc"
 fi
 
 if [ -d "$ANDROID_SDK" ];then

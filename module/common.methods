@@ -54,6 +54,9 @@ ftMain()
     -sc )
                 sensors |grep °C | awk '{print $3}'|grep °C|awk '{sum+=$1} END {printf("CPU %s °C \n",sum/NR)}'
                 break;;
+    -scc )
+                sensors |grep °C | awk '{print $3}'|grep °C
+                break;;
     *) ftMain -h && return;; esac;done
 }
 
@@ -423,7 +426,7 @@ ftIniCreateFileOrTag()
     fi
 
     if [ -n "$(cat $filePathIni |grep  $contentTagName)" ];then
-        echo -n "存在旧TAG，是否删除[y/n](回车默认y)"
+        ftEcho -y "存在旧TAG，是否删除(回车默认y)"
         read -n 1 sel
         [ -z "${sel}" ] && sel=y
         while true; do case "$sel" in
@@ -1215,6 +1218,7 @@ ftRestartAdb()
             ftRestartAdb -h
             return
     fi
+    #实现主体
     echo $userPassword | sudo  -p '' -S adb kill-server >/dev/null
     echo "server kill ......"
     sleep 2
@@ -2170,7 +2174,7 @@ ftGitCheckoutBtanch()
     fi
 
     while true; do
-        echo -n "是否切换到,[y/n](回车默认y):  " ;ftEcho -sn "${branchNameTraget}  "
+        ftEcho -y "是否切换到(回车默认y):  " ;ftEcho -sn "${branchNameTraget}  "
         read -n 1 sel
         [ -z "${sel}" ] && sel=y
         case "$sel" in

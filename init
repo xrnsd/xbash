@@ -17,7 +17,7 @@ ftEcho()
         local titleContent="${2}"
         local cmdContent="${3}"
         local cmdContentNew="${4}"
-        echo -n "${titleContent}[y/n](回车默认y)"
+        ftEcho -y "${titleContent}(回车默认y)"
         read -n 1 sel
         [ -z "${sel}" ] && sel=y
         while true; do case "$sel" in
