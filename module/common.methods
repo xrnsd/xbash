@@ -1887,6 +1887,7 @@ ftGitLogShell()
 #    ftGitLogShell -at  # 查看分支树
 #    ftGitLogShell -a  路径 # 指定路径下的全部分支log
 #    ftGitLogShell -n 数量
+#    ftGitLogShell -nn 数量 # 不高亮显示
 #    ftGitLogShell -t Tag名  #只输出包含tag的git log
 #    ftGitLogShell -c \"格式字串\" #自定义格式输出
 #========================================================="; return ;;
@@ -1915,6 +1916,10 @@ ftGitLogShell()
                 ;;
         -n )  branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
                 (( $#==3 ))&&(echo -n $3 | grep -q -e "^[0-9][0-9]*$")&&(($3>$branchLogItemCount)) && branchLogItemCount=$3
+                ;;
+        -nn )  branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
+                (( $#==3 ))&&(echo -n $3 | grep -q -e "^[0-9][0-9]*$")&&(($3>$branchLogItemCount)) && branchLogItemCount=$3
+                branchLogFormat="%<(21 ,trunc)%ai  %<(10,trunc)%an %h %s  %d"
                 ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     [ -z "$branchLogItemCount" ]||(($branchLogItemCount<0)) && errorContent="${errorContent}\\n[示例2]branchLogItemCount=$branchLogItemCount"
