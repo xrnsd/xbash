@@ -2,4 +2,6 @@
 #处理bash历史记录
 ftBashHistory
 #校验用户配置和模板版本一致性
-ftUserConfig
+ftCheckUserConfig
+#校验用户数据库和模板版本一致性
+ftCheckUserDatabase

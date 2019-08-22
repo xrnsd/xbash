@@ -356,7 +356,7 @@ ftVersionComparison()
     [[ "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1" ]] && echo ">=" && return
 }
 
-ftUserConfig()
+ftCheckUserConfig()
 {
     local ftEffect=校验用户配置和模板版本一致性
     local isEnable=true
@@ -377,6 +377,31 @@ ftUserConfig()
 
     [[ -z "${versionNumUser}" ]] && ftEcho -e "建议更新用户配置到:${versionNumExcepmale}" && return
     [[ -n "${versionNumExcepmale}" ]] && [[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) = "<"  ]] && ftEcho -e "建议更新用户配置: ${versionNumUser} > ${versionNumExcepmale}"
+}
+
+ftCheckUserDatabase()
+{
+    local ftEffect=校验用户数据库和模板版本一致性
+    local isEnable=true
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+
+    [[ ! -f ${rFilePathXbashDBUserExcepmale}  ]] && return
+    [[ ! -f ${rFilePathXbashDBUser}  ]] && return 
+
+    local  tag=informationInThisDb key="versionNum"
+    local versionNumExcepmale=$(ftIniGetValue $rFilePathXbashDBUserExcepmale $tag $key)
+    local versionNumUser=$(ftIniGetValue $rFilePathXbashDBUser $tag $key)
+
+    if [[ -z "${versionNumUser}" ]];then
+        ftEcho -e "建议更新用户数据库配置到:${versionNumExcepmale}"
+        echo -n "更新模板"; ftEcho -s "：$rFilePathXbashDBUserExcepmale" 
+    elif [[ -n "${versionNumExcepmale}" ]];then
+        local val=$(ftVersionComparison $versionNumUser $versionNumExcepmale)
+        [[ ${val} = "<"  ]] && ftEcho -e "建议更新用户数据库配置: ${versionNumUser} > ${versionNumExcepmale}" \
+                                   && echo -n "更新模板" && ftEcho -s "：$rFilePathXbashDBUserExcepmale" 
+        [[ ${val} = ">"  ]] && ftEcho -e "建议更新用户数据库配置版本不一致，建议查看" && return
+    fi
 }
 
 ftIniCreateFileOrTag()
@@ -725,8 +750,6 @@ ftBashHistory()
         [[ ! -d "${rDirPathXbashModuleUser}" ]] && mkdir $rDirPathXbashModuleUser > /dev/null
         [[ -f "$rFilePathXbashDBUserExcepmale" ]] && cp ${rFilePathXbashDBUserExcepmale} ${rFilePathXbashDBUser} \
         || echo -e "\033[1;31m用户独立配置初始化失败,模板不存在:\n${rFilePathXbashDBUserExcepmale}\033[0m"
-        bashHistorySize=$(ftIniGetValue  $rFilePathXbashDBBase xbash bashHistoryThresholdSize)
-        ftIniCreateFileOrTag -a -p $rFilePathXbashDBUser -t "xbash" -l "bashHistoryThresholdSize=${bashHistorySizeBase}"
     fi
 
     export HISTSIZE=$bashHistorySize
