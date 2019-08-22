@@ -489,7 +489,7 @@ ftAutoBackupOrRestoreOuts()
     if [[ -n "$isMoveBack" ]]; then
         if [[ -d "$dirPathOut" ]]||[[ -d "$dirPathOutTop" ]]; then
             #lunch生成的out，视为无效
-            local excludeConfigInfo=($(ftIniGetValue $rFilePathXbashDBAuto backupOrRestoreOutsInfo excludeConfig))
+            local excludeConfigInfo=($(ftIniGetValue $rFilePathXbashDBUser backupOrRestoreOutsInfo excludeConfig))
             local excludeConfigSize=${#excludeConfigInfo[@]}
             local dirPathOutTopInfo=($(ls $dirPathOutTop))
             local dirPathOutTopSize=${#dirPathOutTopInfo[@]}
@@ -558,7 +558,7 @@ $(ftGitLogShell  -n 20 -c "%h  %s")" >> $filePathGitLogInfo
 ftAutoUpload()
 {
     local ftEffect=文件[夹]上传
-    local isEnable=true
+    local isEnable=false
 
     while true; do case "$1" in
     --rely) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
@@ -580,7 +580,7 @@ ftAutoUpload()
     #环境校验
      [[ -z $(which nmap) ]]|| [[ -z $(which sshpass) ]]|| [[ -z $(which pigz) ]]|| [[ -z $(which pv) ]] && ftAutoUpload --rely && return
     #解参验耦
-    local filePathConfig=$rFilePathXbashDBAuto
+    local filePathConfig=$rFilePathXbashDBUser
     local dirPathContentUploadSource=$1 serverIp=$2
     local valCount=2 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
@@ -680,8 +680,7 @@ ftAutoPacket()
     fi
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
     local filePathDataBase=$rFilePathXbashDBBase \
-            filePathDataUser=$rFilePathXbashDBUser \
-            filePathDataAuto=$rFilePathXbashDBAuto
+            filePathDataUser=$rFilePathXbashDBUser
     local dirPathLocal=$dirPathCode \
             dirNameVersionSoftware=packet \
             buildType=$AutoEnv_buildType
@@ -808,8 +807,8 @@ ftAutoPacket()
                     local dirNamePackageDataBase="dataBase"
                     local dataBaseFileList dataBaseFileListTemp
                     local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
-                    local apdbDirPathList=($(ftIniGetValue $filePathDataAuto $tagName apdbDirPathList))
-                    local mddbDirPathList=($(ftIniGetValue $filePathDataAuto $tagName mddbDirPathList))
+                    local apdbDirPathList=($(ftIniGetValue $filePathDataUser $tagName apdbDirPathList))
+                    local mddbDirPathList=($(ftIniGetValue $filePathDataUser $tagName mddbDirPathList))
                     for item in ${apdbDirPathList[@]} ; do
                             item=$(ftPath $item)
                             local itemPathRoot=${dirPathOut}/${item}
@@ -1025,7 +1024,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     ftAutoInitEnv
     [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT dirPathVersionSoftware=$1
-    local filePathConfig=$rFilePathXbashDBAuto
+    local filePathConfig=$rFilePathXbashDBUser
     [[ -z "$dirPathVersionSoftware" ]] && dirPathVersionSoftware=${dirPathOut}/${AutoEnv_versionName}
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
     local valCount=1 errorContent
@@ -1102,7 +1101,7 @@ ftAutoCreateReadMeBySoftwareVersion()
             local enterLine="\n"
             local content="当前版本：$versionName"${enterLine}
             content=${content}${enterLine}"说明：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
-            content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+            content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig softwareVersionReadMeInfo projectManager)"
             content=${content}${enterLine}
             content=${content}${enterLine}"摄像头类型：$cameraTypeInfo"
             content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFrontDefault/$cameraSizeBackDefault"
@@ -1129,27 +1128,26 @@ ftAutoCreateReadMeBySoftwareVersion()
    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
 
             #版本说明
-                #修改记录头部
-                local enterLine="\n"
-                local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
-                content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
-                content=${content}${enterLine}"项目负责人："
-                content=${content}${enterLine}
-                content=${content}${enterLine}"当前版本：$versionName"
-                content=${content}${enterLine}"基础版本："
-                [[ -n "${branchNameNow}" ]] &&\
-                content=${content}${enterLine}"分支名[真实]：${branchNameNow} [ $(ftGitLogShell -n 1 -c "%h") ]" ||\
-                content=${content}${enterLine}"分支名："
-                content=${content}${enterLine}
-                content=${content}${enterLine}"说明："
-                content=${content}${enterLine}
-                content=${content}${enterLine}"修改记录："
-                #git log 列表
-                echo -e "﻿$gitCommitList">$filePathChangeListTemplate
-                seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
-                # 合并头部和git log 列表
-                echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
-                rm ${filePathChangeListTemplate}.temp
+            local enterLine="\n"
+            local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+            content=${content}${enterLine}"项目负责人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo projectManager)"
+            content=${content}${enterLine}
+            content=${content}${enterLine}"当前版本：$versionName"
+            content=${content}${enterLine}"基础版本："
+            [[ -n "${branchNameNow}" ]] &&\
+            content=${content}${enterLine}"分支名[真实]：${branchNameNow} [ $(ftGitLogShell -n 1 -c "%h") ]" ||\
+            content=${content}${enterLine}"分支名："
+            content=${content}${enterLine}
+            content=${content}${enterLine}"说明："
+            content=${content}${enterLine}
+            content=${content}${enterLine}"修改记录："
+            #git log 列表
+            echo -e "﻿$gitCommitList">$filePathChangeListTemplate
+            seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+            # 合并头部和git log 列表
+            echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+            rm ${filePathChangeListTemplate}.temp
 
             #客户说明
             content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"

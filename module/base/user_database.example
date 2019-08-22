@@ -1,9 +1,29 @@
 #ini
-#文件由ftIniCreateFileOrTag自动创建，请避免手动编辑造成解析失败
+[informationInThisDb]
+versionNum=v0.1.0
 
-[MtkSpFlashToolVersion]
-toolsPath=
+# [serverConfig_192.168.1.55]
+# userName=wb1
+# userPassword=x6b7n37g
+# dirPathPackage=/media/data/nfs
+# dirPathPackageLocal=/media/server/1.55/nfs
 
+#自动维护out用,有这些也视为空out
+[backupOrRestoreOutsInfo]
+excludeConfig=lz.macros \
+build_c_time.txt \
+build_c_date.txt
+
+#项目软件包database文件名列表
+[xbashAOSPConfigSoftwareDataBaseFileLIst]
+apdbDirPathList= \
+    /obj/CODEGEN/cgen \
+    obj/CGEN
+mddbDirPathList= \
+    system/etc/mddb \
+    system/vendor/etc/mddb
+
+#不同AOSP项目之间快速切换
 [AospProjectsInfo]
 AospProjectNameList=
 AospProjectStoragePathList=
@@ -12,4 +32,16 @@ AospProjectStoragePathList=
 [xbashAOSPConfigBranch2PlatformName]
 
 #项目软件包packages文件名列表
+# TARGET_PRODUCT=xx\
+# yy2
 [xbashAOSPConfigSoftwarePackageFileLIst]
+
+#mtk下载工具配置
+[MtkSpFlashToolVersion]
+toolsPath=
+
+[projectSoftwareReadMeInfo]
+recordCreator=吴国献 [wugx@sxtech.com]
+recordMeTag=为方便后期追溯,对应git_commit已添加以版本号为名的标签.其中的标签注释内容为版本号具体修改的说明,请知悉.
+projectManager=刘小章刘国茂
+
