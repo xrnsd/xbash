@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.0
+versionNum=v0.1.1
 
 # [serverConfig_192.168.1.55]
 # userName=wb1
@@ -27,9 +27,18 @@ mddbDirPathList= \
 [AospProjectsInfo]
 AospProjectNameList=
 AospProjectStoragePathList=
+AospProjectNameIgnoreList=
 
 #项目对应平台名
 [xbashAOSPConfigBranch2PlatformName]
+keytak6580_weg_l=MTK6580
+full_keytak6580_weg_l=MTK6580
+sp7731c_1h10_32v4_oversea=SPRD7731C
+full_m9_qhd=MTK6580M
+
+#项目软件包的下载工具包
+[xbashAOSPConfigMTKSoftwareDownloadToool]
+filePath=
 
 #项目软件包packages文件名列表
 # TARGET_PRODUCT=xx\
