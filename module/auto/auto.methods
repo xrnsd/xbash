@@ -795,7 +795,7 @@ ftAutoPacket()
                                  cp -r -f  $filePath $dirPathPackage
                             done
                         else
-                            ftEcho -e "packages创建失败"
+                            ftEcho -e "packages创建失败" && ftClearTail $dirPathLocal && return
                         fi
                     else
                         ftEcho -e "软件包不完整,请确认\n不存在  $filePathSystemImage" && ftClearTail $dirPathLocal && return
@@ -839,10 +839,10 @@ ftAutoPacket()
                                  cp -r -f  $filePath $dirPathPackageDataBase
                             done
                         else
-                            ftEcho -e "database 创建失败,无法创建${dirPathPackageDataBase}"
+                            ftEcho -e "database 创建失败,无法创建${dirPathPackageDataBase}"  && ftClearTail $dirPathLocal && return
                         fi
                     else
-                        ftEcho -e "database 创建失败"
+                        ftEcho -e "database 创建失败" && ftClearTail $dirPathLocal && return
                     fi
 
                     # #otaPackages
@@ -885,6 +885,8 @@ ftAutoPacket()
                              cp -r -f  $filePath $dirPathPackageTools
                         done
                         export isPacketMtkSoftwareDownloadTools=true
+                    else
+                        ftEcho -e "tools包配置错误,软件包可能不完整"
                     fi
             fi
 

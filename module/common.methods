@@ -2891,3 +2891,109 @@ ftGitTagGrep()
     rm -rf $dirPathTempTag
     cd $dirPathLocal
 }
+
+complete -W "-h --help --rely_install" ftGitPatch
+ftGitPatch()
+{
+    local ftEffect=git的Path相关操作的封装
+    local isEnable=false
+
+    while true; do case "$1" in
+    --rely) echo -e "\
+#===================[   ${ftEffect}   ]的依赖说明=============
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install git
+            return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    以下[参数对]无先后顺序可任意组合
+#
+#       自动补全方法依赖的工具
+#    ftGitPatch -rely_install
+#
+#       基于修改创建patch包
+#    ftGitPatch -c  patch包名
+#
+#       基于commit_id创建patch
+#    ftGitPatch -ch 新hash值 旧hash值 -n patch包名
+#
+#       基于commit_id创建多patch
+#    ftGitPatch -cmh 截止的hash值 patch生成路径
+#
+#       应用patch
+#    ftGitPatch -a patch路径
+#========================================================="; return ;;
+    --env) echo -e "\
+#===================[   ${ftEffect}   ]的使用环境说明==============
+# 当前目录无有效GIT仓库
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which git) ]] && ftGitPatch --rely "git" && return
+    #解参验耦
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local valCount=3 errorContent index arg arg2 arg3 #arg4
+    local isByChange isByHash isApplayPatch isByHashAndMore
+    local commitIdNew commitIdOld filePathPatchSource patchNameTarget dirPathPatchTarget
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    ((index=i+2)) ; eval arg3=\${${index}}  #; ((index=i+3)) ; eval arg4=\${${index}}
+    case "${arg}" in
+        -n ) patchNameTarget="${arg2}"
+          ;;
+        -a ) isApplayPatch=true
+              filePathPatchSource="${arg2}"
+          ;;
+        -c ) isByChange=true
+              patchNameTarget="${arg2}"
+          ;;
+        -ch ) isByHash=true
+                commitIdNew="${arg2}"
+                commitIdOld="${arg3}"
+          ;;
+        -cmh ) isByHashAndMore=true
+                commitIdOld="${arg2}"
+                dirPathPatchTarget="${arg3}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    [ -z "$branchNameNow" ] && ftGitPatch --env && return
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPatch -h && return
+
+    #实现主体
+    local dirPathLocal=$(pwd)
+    local dirPathGitRoot=$(git rev-parse --show-toplevel)
+    [[ ! -d ${dirPathGitRoot} ]] && ftEcho -e "找不到仓库的根目录\\ndirPathGitRoot=$dirPathGitRoot" && return
+    cd ${dirPathGitRoot}
+
+    [[ -n "isApplayPatch" ]] && if [[ -f $filePathPatchSource ]]; then
+        git am $filePathPatchSource
+        return
+    # elif [[ -d $filePathPatchSource  ]]; then
+    else ftEcho -e "patch添加失败，无效路径：${filePathPatchSource}" && return
+    fi
+
+    [[ -n "isByChange" ]] && if [[ -n "${patchNameTarget}" ]]; then
+        git diff-tree -r --no-commit-id --name-only ${patchNameTarget} | xargs tar -rf ${patchNameTarget}.tar
+        return
+    else ftEcho -e "patch生成失败，无效包名：${patchNameTarget}" && return ;fi
+
+    [[ -n "isByHash" ]] && if [[ -n "${commitIdNew}" ]] && [[ -n "${commitIdOld}" ]] && [[ -n "${patchNameTarget}" ]]; then
+        git diff ${commitIdNew} ${commitIdOld} --name-only | xargs tar -rf ${patchNameTarget}.tar
+        return
+    else ftEcho -e "patch生成失败" && return ;fi
+
+    [[ -n "isByHashAndMore" ]] && if [[ -n "${commitIdOld}" ]] && [[ -n "${dirPathPatchTarget}" ]]; then
+        git format-patch -s ${commitIdOld} -o ${dirPathPatchTarget}
+        return
+    else ftEcho -e "patch生成失败" && return ;fi
+
+    cd ${dirPathLocal}
+}
