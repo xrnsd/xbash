@@ -1235,7 +1235,7 @@ ftAutoTest()
     local dirPathLogMonkey=${dirPathLogMonkeyBase}/${dirNameLogMonkey}
     local filePathLogMonkey=${dirPathLogMonkey}/monkey.log
     local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
-    local dirPathDevicesTarget="/storage/sdcard0"
+    local dirPathDevicesTarget="/sdcard"
     local monkeyConfig logcatFlag #="*:E"
 
     # monkey命令参数配置
@@ -1244,9 +1244,10 @@ ftAutoTest()
         if [[ -n $packageBlackNameList ]]; then
             local fileNameBlack="monkey.blacklist"
             local filePathBlack="${rDirPathUserHome}/temp/${fileNameBlack}"
+            local filePathBlackDevices="${dirPathDevicesTarget}/${fileNameBlack}"
             rm -rf $filePathBlack
             for packageName in ${packageBlackNameList[@]} ; do echo package:${packageName} >> $filePathBlack ;done
-            adb push $filePathBlack $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-blacklist-file ${filePathBlack}"
+            adb push $filePathBlack $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-blacklist-file ${filePathBlackDevices}"
 
         elif [[ -n $packageNameList ]]; then
             if ((${#packageNameList[@]}>1)); then
