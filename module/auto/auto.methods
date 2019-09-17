@@ -1229,9 +1229,12 @@ ftAutoTest()
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoTest -h && return
 
     #实现主体
+    local deviceIdDefault=0123456789ABCDEF
+    local deviceIdTarget=$(date -d "today" +"%y%m%d%H%M%S")
+    local deviceId=$deviceIdDefault
     local filePathDeviceInfo=/system/build.prop
     local dirPathLogMonkeyBase=${dirPathLogRoot}/monkey
-    local dirNameLogMonkey=$(date -d "today" +"%y%m%d%H%M%S")
+    local dirNameLogMonkey=$deviceIdTarget
     local dirPathLogMonkey=${dirPathLogMonkeyBase}/${dirNameLogMonkey}
     local filePathLogMonkey=${dirPathLogMonkey}/monkey.log
     local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
@@ -1264,45 +1267,48 @@ ftAutoTest()
         monkeyConfig=${monkeyConfig}" ${eventCount}"
 
     #adb状态确认
-        ftEcho -s "等待设备连接" && adb wait-for-device && ftEcho -s "连接设备成功"
-        local adbStatus=$(adb get-state)
+        ftEcho -s "等待设备连接:" && adb -s $deviceId wait-for-device \
+        && adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial" \
+        && ftEcho -s "请重新插拔usb设备" && deviceId=$deviceIdTarget \
+        && adb -s $deviceId wait-for-device && ftEcho -s "连接设备成功"
+        local adbStatus=$(adb -s $deviceId get-state)
         [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
     #环境清理
         for folder in $(ls $dirPathLogMonkeyBase); do  [[ ! $folder =~ "done" ]] && rm -rf ${dirPathLogMonkeyBase}/${folder} ;done
         [[ ! -d $dirPathLogMonkey ]] && mkdir -p $dirPathLogMonkey
-        adb logcat -c
+        adb -s $deviceId logcat -c
     #无效进程清理
-        for pid in $(ps -ef |grep adb |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
+        for pid in $(ps -ef |grep adb -s $deviceId |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
         ftKillApplicationByPackageName monkey > /dev/null
     #记录设备信息
-        adb pull $filePathDeviceInfo $dirPathLogMonkey > /dev/null&& ftEcho -s "设备信息已保存到${dirPathLogMonkey}"
+        adb -s $deviceId pull $filePathDeviceInfo $dirPathLogMonkey > /dev/null&& ftEcho -s "设备信息已保存到${dirPathLogMonkey}"
     #开始测试
         if (( $rebootCount==$rebootCountDef ));then
                 echo monkeyConfig=${monkeyConfig[@]}
-                adb logcat "$logcatFlag" > $filePathLogAdbLogcat &
-                adb shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
+                adb -s $deviceId logcat "$logcatFlag" > $filePathLogAdbLogcat &
+                adb -s $deviceId shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
         else
                 while true; do
-                    ftEcho -s "等待设备连接" && adb wait-for-device && ftEcho -s "连接设备成功"
-                    [ "$(adb get-state)" != "device" ] && ftEcho -e "设备连接状态异常,请重新尝试" && break
-                    tput sc ; while [[ -z $(adb shell ps |grep launcher) ]]; do
+                    ftEcho -s "等待设备连接" && adb -s $deviceId wait-for-device && ftEcho -s "连接设备成功"
+                    [ "$(adb -s $deviceId get-state)" != "device" ] && ftEcho -e "设备连接状态异常,请重新尝试" && break
+                    tput sc ; while [[ -z $(adb -s $deviceId shell ps |grep launcher) ]]; do
                         tput rc;tput ed
                         ftEcho -sn "等待launcer启动..."
                         sleep 5
                     done ;echo
 
                     if (($rebootTimeLong!=$rebootTimeLongDef)); then
-                        timeout $rebootTimeLong adb shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
-                        timeout $rebootTimeLong adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
+                        timeout $rebootTimeLong adb -s $deviceId shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
+                        timeout $rebootTimeLong adb -s $deviceId logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
                     else
-                        adb logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
-                        adb shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
+                        adb -s $deviceId logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
+                        adb -s $deviceId shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
                     fi
 
                     rebootCount=$((rebootCount - 1))
                     if (( $rebootCount>0 )); then
                         ftEcho -s "开始设备重启"
-                        adb reboot
+                        adb -s $deviceId reboot
                     else
                         break
                     fi
@@ -1310,7 +1316,7 @@ ftAutoTest()
         fi
     #扫尾
         for pid in $(ps -ef |grep adb |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
-        [[ -n $(adb shell ls ${dirPathDevicesTarget}/mtklog) ]] && ftEcho -s "正在导出mtklog,请稍等..." && adb pull ${dirPathDevicesTarget}/mtklog $dirPathLogMonkey
+        [[ -n $(adb -s $deviceId shell ls ${dirPathDevicesTarget}/mtklog) ]] && ftEcho -s "正在导出mtklog,请稍等..." && adb -s $deviceId pull ${dirPathDevicesTarget}/mtklog $dirPathLogMonkey
         mv $dirPathLogMonkey ${dirPathLogMonkey}_done
 }
 
