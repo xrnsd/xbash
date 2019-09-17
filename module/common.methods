@@ -203,7 +203,7 @@ ftTest()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftTest -h && return
 
     #实现主体
-    local dirPathLocal=$PWD dirPathTemp=${rDirPathUserHome}/.cache
+    local dirPathLocal=$PWD dirPathTemp=${rDirPathUserHome}/.temp
 
     [[ ! -f ${dirPathLocal}/Makefile ]] && [[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp && trap '[ -d $dirPathLocal ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
@@ -2798,7 +2798,7 @@ ftCdAospProject()
     #实现主体
     local mAospProjectStoragePathEffectiveList pathAll
     for path in ${mAospProjectStoragePathList[@]}; do
-        pathAll=${path}/${mAospProjectName}
+        pathAll=${path}/${mAospProjectName}/alps
         [[ -d "$pathAll" ]] && mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $pathAll")
     done
     [ -z "$mAospProjectStoragePathEffectiveList" ] && ftEcho -e "找不到${mAospProjectName}对应的Aosp项目有效存放路径" && return
