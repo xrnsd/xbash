@@ -558,7 +558,7 @@ $(ftGitLogShell  -n 20 -c "%h  %s")" >> $filePathGitLogInfo
 ftAutoUpload()
 {
     local ftEffect=文件[夹]上传
-    local isEnable=false
+    local isEnable=true
 
     while true; do case "$1" in
     --rely) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
@@ -608,10 +608,17 @@ ftAutoUpload()
     ftEcho -s "\n========================\n开始上传文件:\n  ${dirPathContentUploadSource}\n服务器路径:\n  ${serverIp}$dirPathPackage\n========================\n"
 
     local serverProtInfo="$(nmap $serverIp)"
-    if [[ -z $(echo ${serverProtInfo[@]}|grep ssh) ]] && [[ -n $(echo ${serverProtInfo[@]}|grep 445) ]]; then #使用smb协议
+    if true||[[ -z $(echo ${serverProtInfo[@]}|grep ssh) ]] && [[ -n $(echo ${serverProtInfo[@]}|grep 445) ]]; then #使用smb协议
         local dirPathServerLocalBase=$(ftIniGetValue $filePathConfig $tagName dirPathPackageLocal)
         if ! mountpoint -q $dirPathServerLocalBase; then
-            ftEcho -e "当前目录未挂载服务器共享目录:\n${dirPathUploadLocal}" && return
+            #ftEcho -e "当前目录未挂载服务器共享目录:\n${dirPathUploadLocal}" && return
+            ftEcho -s "未挂载SMB服务器共享目录到本地,将使用SMB协议在线传输"
+            local targetName=$(basename $dirPathContentUploadSource)
+            local dirPathServer=${dirPathPackage}/${targetName}
+            smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
+                mkdir ${dirPathServer}
+                put $dirPathContentUploadSource ${dirPathServer}
+EOF
         else
             local key="智能机软件"
             cp -r -b -S _old -v $key $(echo $dirPathServerLocalBase | sed -e "s:/$key::g")
@@ -636,7 +643,9 @@ ftAutoUpload()
             fi
         fi
         local packageSize=$(du -sk $dirPathContentUploadSource | cut -f1)k
-        tar -cv  ${dirPathContentUploadSource%%/*}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
+        # tar -cv  ${dirPathContentUploadSource%%/*}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
+        tar -cv  ${dirPathContentUploadSource}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
+
     fi
 
     ftEcho -s "上传结束"
@@ -846,27 +855,15 @@ ftAutoPacket()
                     fi
 
                     # #otaPackages
-                    # local dirNameOtaPackage="otaPackages"
-                    # local dirPathOtaPackage=${dirPathVersionSoftwareVersion}/${dirNameOtaPackage}
-                    # local dirPathOta=${dirPathOut}/obj/PACKAGING/target_files_intermediates
-                    # if [[ -d "$dirPathOta" ]]; then
-                    #     local otaFileList=$(ls ${dirPathOta}/${TARGET_PRODUCT}-target_files-* |grep .zip)
-                    #     if [[ -n "$otaFileList" ]]; then
-                    #          if mkdir -p $dirPathOtaPackage; then
-                    #             ftEcho -s "创建 otaPackages"
-                    #             for file in ${otaFileList[@]}; do
-                    #                  [[ ! -f "$file" ]] && ftEcho -e "找不到 : ${file}" && ftClearTail $dirPathLocal && return
-
-                    #                  printf "%-2s %-30s\n" 复制 $(echo $file | sed "s ${dirPathOut}/  ")
-                    #                  cp -r -f  $file $dirPathOtaPackage
-                    #             done
-                    #         else
-                    #             ftEcho -e "otaPackages 创建失败"
-                    #         fi
-                    #     fi
-                    # else
-                    #     ftEcho -e "OTA相关包未找到"
-                    # fi
+                    local fileNameOtaPackage="target_files-package.zip"
+                    local filePathOtaPackage=${dirPathPackage}/${fileNameOtaPackage}
+                    local fileSizeMini=104857600 #100*1024*1024
+                    local fileSize=$(stat -c "%s" $filePathOtaPackage)
+                    if (( $fileSizeMini < $fileSize )); then
+                        ftEcho -s "otaPackages"
+                        printf "%-2s %-30s\n" 移动 $fileNameOtaPackage
+                        mv ${filePathOtaPackage} ${dirPathVersionSoftware}
+                    fi 
 
                     #tools
                     tagName="xbashAOSPConfigMTKSoftwareDownloadToool"
@@ -905,9 +902,12 @@ ftAutoPacket()
                 tar cvPf - ${dirNameVeriosionBase} | pigz -p $(grep 'processor' /proc/cpuinfo | sort -u | wc -l) > ${fileNamePackage}
                 cd ${dirPathSoftwareTemp}
 
-                mkdir ${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
-                mv ${dirPathVersionSoftware}/${fileNamePackage} ${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
-                mv $AutoEnv_filePathVersionChangeListTemplate ${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
+                local dirPathVersionSoftwareVersionNow=${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
+                mkdir $dirPathVersionSoftwareVersionNow
+                mv ${dirPathVersionSoftware}/${fileNamePackage} $dirPathVersionSoftwareVersionNow
+                mv $AutoEnv_filePathVersionChangeListTemplate $dirPathVersionSoftwareVersionNow
+                [ -f ${dirPathVersionSoftware}/${fileNameOtaPackage} ] && \
+                mv ${dirPathVersionSoftware}/${fileNameOtaPackage} $dirPathVersionSoftwareVersionNow
             fi
 
             #上传服务器
