@@ -160,6 +160,9 @@ fi
     #加载命令封装
     if [[ -f $rFilePathXbashModuleBasePackaging ]];then source  $rFilePathXbashModuleBasePackaging
     else echo -e "\033[1;31mXbash的命令封装加载失败\n${rFilePathXbashModuleBasePackaging}\033[0m" ;fi
+    #加载git
+    if [[ -f $rFilePathXbashModuleGit ]];then source  $rFilePathXbashModuleGit
+    else echo -e "\033[1;31mXbash的git扩展块加载失败\n${rFilePathXbashModuleGit}\033[0m" ;fi
     #加载user自定义扩展
     if [ ! -f $rFilePathXbashModuleUser ]; then
         [ ! -d $rDirPathXbashModuleUser ] && mkdir $rDirPathXbashModuleUser

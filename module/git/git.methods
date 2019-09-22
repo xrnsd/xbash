@@ -1,0 +1,545 @@
+#!/bin/bash
+
+ftSetBashPs1ByGitBranch()
+{
+    local ftEffect=根据git分支名,设定bash的PS1
+    local isEnable=true
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+
+    local editType=$1 defaultPrefix=${rUserName:-'xbash'} defaultColorConfig=44
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+
+    [ "$(whoami)" = "root" ] && defaultPrefix="root" && defaultColorConfig=42
+    if [ -n "$branchName" ] && [ "$editType" != "-b" ];then
+        local ps1=$(pwd)${branchName}
+        (( ${#ps1}>$COLUMNS/2-11 )) && branchName="\nbranchName→ ${branchName}: " || branchName="branchName→ ${branchName}: "
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]${branchName}\[\033[0m\]"
+    else
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
+    fi
+}
+
+ftGitLogShell()
+{
+    local ftEffect=git的log特定格式显示
+    local isEnable=true
+
+    while true; do case "$1" in
+     --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
+#    ${ftEffect}依赖包
+#    请尝试使用 sudo apt-get install git git-core git-gui git-doc 补全依赖
+#========================================================="; return;;
+     --env) ftEcho -sn "${ftEffect} " ; echo 的环境说明 ; echo -e "\
+#=========================================================
+#    当前目录没有有效的GIT仓库
+#========================================================="; return;;
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
+#    ftGitLogShell -a  # 全部分支log
+#    ftGitLogShell -at  # 查看分支树
+#    ftGitLogShell -a  路径 # 指定路径下的全部分支log
+#    ftGitLogShell -n 数量
+#    ftGitLogShell -nn 数量 # 不高亮显示
+#    ftGitLogShell -t Tag名  #只输出包含tag的git log
+#    ftGitLogShell -c \"格式字串\" #自定义格式输出
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #环境校验
+    [[ -z $(which git) ]] && ftGitLogShell --rely && return
+    [[ -n "$isAllBranchLog" ]] && [ -z $(which gitk) ] && ftGitLogShell --rely && return
+    [[ -z $(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') ]] && ftGitLogShell --env && return
+    #解参验耦
+    local isAllBranchLog isTagBranchLog branchLogFormat isCustomBranchLog branchLogItemCount branchLogItemCountDef=20 pathTarget
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+        -a )  isAllBranchLog=true
+                pathTarget="${arg2}"
+                branchLogItemCount=0
+                ;;
+        -at )  gitk --simplify-by-decoration --all && return
+                ;;
+        -t )   branchLogFormat=${arg2:-'%s'}
+                isTagBranchLog=true
+                ;;
+        -c )   branchLogFormat=${arg2}
+                isCustomBranchLog=true
+                ;;
+        -n )  branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
+                (( $#==3 ))&&(echo -n $3 | grep -q -e "^[0-9][0-9]*$")&&(($3>$branchLogItemCount)) && branchLogItemCount=$3
+                ;;
+        -nn )  branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
+                (( $#==3 ))&&(echo -n $3 | grep -q -e "^[0-9][0-9]*$")&&(($3>$branchLogItemCount)) && branchLogItemCount=$3
+                branchLogFormat="%<(21 ,trunc)%ai  %<(10,trunc)%an %h %s  %d"
+                ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    [ -z "$branchLogItemCount" ]||(($branchLogItemCount<0)) && errorContent="${errorContent}\\n[示例2]branchLogItemCount=$branchLogItemCount"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitLogShell -h && return
+
+    #实现主体
+    local gitVersionMin="2.6.0" gitVersionNow=$(git --version)
+    gitVersionNow=${gitVersionNow//git version/}
+    gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
+
+    [[ -n "$isAllBranchLog" ]] && gitk --all "${pathTarget}" && return
+    [[ -n "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return
+
+    if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]] && [ "$isCustomBranchLog" != "true" ];then
+        branchLogFormat=${branchLogFormat:-'%C(green)%<(9,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
+        #git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"$branchLogFormat" -$branchLogItemCount
+        git log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount
+        return
+    fi
+    if [ "${branchLogFormat}" = "%h" ];then
+        hashVal=($(git log --pretty=format:"$branchLogFormat" -$branchLogItemCount)) ; echo "${hashVal[@]} "
+        return
+    fi
+    branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(13,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
+    git log --pretty=format:"$branchLogFormat" -$branchLogItemCount
+}
+
+ftGitPatchAdd2Branches()
+{
+    local ftEffect=添加gitPatch[多分支]
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
+#    ftGitPatchAdd2Branches 无参
+#    ftGitPatchAdd2Branches 分支TAG   #只操作名称中有TAG的分支
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local branchTag=$1 filePathBranchList=branch.list
+    local filePathAddPatchTool=${rDirPathXbashModule}/git/multiBranch.module
+    local filePathFailInfo="/home/wgx/.cache/ftGitPatchAdd2Branches.log" ; [ -f "$filePathFailInfo" ] && rm $filePathFailInfo
+    [ ! -f "$filePathAddPatchTool" ] && [ -f "${filePathAddPatchTool}.example" ] &&\
+        ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
+
+    #实现主体
+    if [[ -z $branchTag ]]; then
+        git branch > $filePathBranchList
+    else
+        local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+        local branchList=($(git branch|grep -i "$branchTag" | sed -e "s:*::g"))
+        for (( i = 0; i < ${#branchList[*]}; i++ )); do [[ "${branchList[$i]}" = "${branchNameNow}" ]] && unset branchList[$i] && break ;done
+
+        if [[ -n "$isAllBranchs" ]];then
+            local key="remotes/origin/"
+            local branchListServer=($(git branch -a|grep -i "$branchTag" |grep -v "$branchNameNow" |grep -v "remotes/origin/HEAD -> origin/master" |grep "$key"))
+            for (( i = 0; i < ${#branchListServer[@]}; i++ )); do
+                branchListServer[$i]=$(echo ${branchListServer[$i]} | sed -e "s:$key::g")
+            done
+            branchList=(${branchList[@]} ${branchListServer[@]} ${branchNameNow}) #合并本地和仓库分支
+            branchList=($(echo ${branchList[@]} | sed 's/ /\n/g'|sort |uniq)) #去重
+        fi
+        rm -f $filePathBranchList > /dev/null
+        for item in ${branchList[@]} ; do echo "${item}" >> $filePathBranchList ;done
+    fi
+    gedit -s $filePathBranchList
+
+    content=$(cat $filePathBranchList)
+    if [ -n "$content" ];then
+            ftEcho -b 将操作下面所有分支
+            local index=0
+            cat $filePathBranchList | while read line ; do echo $line && ((index+=1)) ; done
+            while true; do echo
+                    ftEcho -y 是否开始
+                    read -n 1 select
+                    [ ${#select} == 0 ] && select=y
+                    case "$select" in
+                        y | Y )     [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return
+                                        cat $filePathBranchList | while read branchName ; do
+                                                $filePathAddPatchTool $branchName $filePathFailInfo
+                                        done
+                                        git reset --hard
+                                       break;;
+                        n  |q )    break;;
+                        * ) ftEcho -e 错误的选择：$sel
+                             echo "输入q，离开" ;;
+                    esac
+            done
+    fi
+    rm -f $filePathBranchList
+}
+
+ftGitCheckoutBtanch()
+{
+    local ftEffect=快速切换分支
+    local isEnable=true
+
+    while true; do case "$1" in
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#==========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    在本地仓库中查切分支
+#    ftGitCheckoutBtanch
+#
+#    在本地仓库中查切含 xxxx 的分支
+#    ftGitCheckoutBtanch -t xxxx
+#
+#    在本地+远程仓库中查切含 xxxx 的分支
+#    ftGitCheckoutBtanch -a -t xxxx
+#
+#    在本地仓库中查切含 xxxx 的分支,延时yyyy秒后切换
+#    ftGitCheckoutBtanch -t xxxx -d yyyy
+#========================================================="; return ;;
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which git) ]] && ftGitCheckoutBtanch --rely "git" && return
+    #解参验耦
+    local delayLong isAllBranchs branchNameTag
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+        -a ) isAllBranchs=true ;;
+        -t ) branchNameTag="${arg2}" ;;
+        -d ) delayLong="${arg2}" ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    if [[ -z "$branchNameTag" ]]; then
+        git branch
+        return
+    fi
+    [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
+    [ -n "$delayLong" ] && ( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBtanch -h && return
+
+    #实现主体
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local branchList=($(git branch|grep -i "$branchNameTag" | sed -e "s:*::g"))
+    for (( i = 0; i < ${#branchList[*]}; i++ )); do [[ "${branchList[$i]}" = "${branchNameNow}" ]] && unset branchList[$i] && break ;done
+
+    if [[ -n "$isAllBranchs" ]];then
+        local key="remotes/origin/"
+        local branchListServer=($(git branch -a|grep -i "$branchNameTag" \
+                                                                         |grep -v "remotes/origin/HEAD -> origin/master" \
+                                                                         |grep "$key" \
+                                                                         | sed -e "s:*::g"))
+        for (( i = 0; i < ${#branchListServer[*]}; i++ )); do [[ "${branchListServer[$i]}" = "${branchNameNow}" ]] && \
+        unset branchListServer[$i] && break ;done
+
+        for (( i = 0; i < ${#branchListServer[@]}; i++ )); do branchListServer[$i]=${branchListServer[$i]##*$key} ; done
+        branchList=(${branchList[@]} ${branchListServer[@]}) #合并本地和仓库分支
+        branchList=($(echo ${branchList[@]} | sed 's/ /\n/g'|sort |uniq)) #去重
+    fi
+
+    if [[ -z "${branchList[@]}" ]];then
+       [[ $branchNameNow =~ "$branchNameTag" ]] && ftEcho -s "只有当前分支包含TAG，无需切换" && return
+       ftEcho -e "未找到[$branchNameTag]对应的分支" && return
+    fi
+    local itemCount=${#branchList[@]}
+    for item in ${branchList[@]} ; do [ ! -z "$item" ] && branchNameTraget=$item && break ;done
+    if (( $itemCount>1 ));then
+        local index=0 indexNow=-1
+        local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
+        branchNameTag=${branchNameTag^^}
+        for item in $(git branch|grep -i "$branchNameTag" ) ; do
+            [[  ! ${item^^} =~ "$branchNameTag"  ]] && indexNow=$((index)) && break
+            ((index+=1))
+        done ; index=0
+        for item in ${branchList[@]} ; do
+            echo -n "[" ; ftEcho -sn "$(printf "%${length}d" $index)" ; echo -n "]"  ; printf "   %-4s\n" $item
+            if (( $index == $indexNow-1 )) || (( $index == $itemCount-1 && $indexNow!=-1 ));then
+                    ftEcho -sn "$(printf "%${length}s" "-" | sed -e "s: :-:g")" && ftEcho -sn "->" && ftEcho -s "$(printf "   %-4s\n" $branchNameNow)"
+                    indexNow=-1
+            fi
+            ((index+=1))
+        done
+        ftEcho -r  "请输入对应的序号(回车默认0):"
+        read -n $length tIndex && echo
+        #设定默认值
+        [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
+        (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
+        index=0;for item in ${branchList[@]} ; do
+            [ -z "$item" ] && continue
+            (( $index == $tIndex )) && branchNameTraget=$item && break
+            ((index+=1))
+        done
+    fi
+
+    while true; do
+        ftEcho -y "是否切换到(回车默认y):  " ;ftEcho -sn "${branchNameTraget}  "
+        read -n 1 sel
+        [ -z "${sel}" ] && sel=y
+        case "$sel" in
+            y | Y )echo 
+                if [ -n "$delayLong" ]; then
+                    tput sc
+                    for i in $(seq -w $delayLong -1 1) ; do
+                        tput rc;tput ed
+                        echo -ne "\033[1;31m将在${i}秒后切换分支，ctrl+c 取消\033[0m"
+                        sleep 1
+                    done
+                fi && git checkout "$branchNameTraget"
+                break;;
+            n | q )  echo
+                return;;
+            * ) ftEcho -e 错误的选择：$sel
+                echo "输入n，q，离开";;
+    esac;done
+}
+
+complete -W "-h --help --rely_install" ftGitPatch
+ftGitPatch()
+{
+    local ftEffect=git的Path相关操作的封装
+    local isEnable=false
+
+    while true; do case "$1" in
+    --rely) ftEcho -s  "[ ${ftEffect} ]的依赖说明 ";echo -e "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install git
+            return ;;
+    -h | --help) ftEcho -s  "[ ${ftEffect} ]的使用示例 ";echo -e "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#       自动补全方法依赖的工具
+#    ftGitPatch -rely_install
+#
+#       基于修改创建patch包
+#    ftGitPatch -c  patch包名
+#
+#       基于commit_id创建patch
+#    ftGitPatch -ch 新hash值 旧hash值 -n patch包名
+#
+#       基于commit_id创建多patch
+#    ftGitPatch -cmh 截止的hash值 patch生成路径
+#
+#       应用patch
+#    ftGitPatch -a patch路径
+#========================================================="; return ;;
+    --env)ftEcho -s  "[ ${ftEffect} ]的使用环境说明 ";echo -e "\
+#=========================================================
+# 当前目录无有效GIT仓库
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which git) ]] && ftGitPatch --rely "git" && return
+    #解参验耦
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local valCount=3 errorContent index arg arg2 arg3 #arg4
+    local isByChange isByHash isApplayPatch isByHashAndMore
+    local commitIdNew commitIdOld filePathPatchSource patchNameTarget dirPathPatchTarget
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    ((index=i+2)) ; eval arg3=\${${index}}  #; ((index=i+3)) ; eval arg4=\${${index}}
+    case "${arg}" in
+        -n ) patchNameTarget="${arg2}"
+          ;;
+        -a ) isApplayPatch=true
+              filePathPatchSource="${arg2}"
+          ;;
+        -c ) isByChange=true
+              patchNameTarget="${arg2}"
+          ;;
+        -ch ) isByHash=true
+                commitIdNew="${arg2}"
+                commitIdOld="${arg3}"
+          ;;
+        -cmh ) isByHashAndMore=true
+                commitIdOld="${arg2}"
+                dirPathPatchTarget="${arg3}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    [ -z "$branchNameNow" ] && ftGitPatch --env && return
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPatch -h && return
+
+    #实现主体
+    local dirPathLocal=$(pwd)
+    local dirPathGitRoot=$(git rev-parse --show-toplevel)
+    [[ ! -d ${dirPathGitRoot} ]] && ftEcho -e "找不到仓库的根目录\\ndirPathGitRoot=$dirPathGitRoot" && return
+    cd ${dirPathGitRoot}
+
+    [[ -n "isApplayPatch" ]] && if [[ -f $filePathPatchSource ]]; then
+        git am $filePathPatchSource
+        return
+    # elif [[ -d $filePathPatchSource  ]]; then
+    else ftEcho -e "patch添加失败，无效路径：${filePathPatchSource}" && return
+    fi
+
+    [[ -n "isByChange" ]] && if [[ -n "${patchNameTarget}" ]]; then
+        git diff-tree -r --no-commit-id --name-only ${patchNameTarget} | xargs tar -rf ${patchNameTarget}.tar
+        return
+    else ftEcho -e "patch生成失败，无效包名：${patchNameTarget}" && return ;fi
+
+    [[ -n "isByHash" ]] && if [[ -n "${commitIdNew}" ]] && [[ -n "${commitIdOld}" ]] && [[ -n "${patchNameTarget}" ]]; then
+        git diff ${commitIdNew} ${commitIdOld} --name-only | xargs tar -rf ${patchNameTarget}.tar
+        return
+    else ftEcho -e "patch生成失败" && return ;fi
+
+    [[ -n "isByHashAndMore" ]] && if [[ -n "${commitIdOld}" ]] && [[ -n "${dirPathPatchTarget}" ]]; then
+        git format-patch -s ${commitIdOld} -o ${dirPathPatchTarget}
+        return
+    else ftEcho -e "patch生成失败" && return ;fi
+
+    cd ${dirPathLocal}
+}
+
+complete -W "-h --help --rely_install -f" ftGitTagGrep
+ftGitTagGrep()
+{
+    local ftEffect=git的TAG标签内容过滤
+    local isEnable=true
+
+    while true; do case "$1" in
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get update
+            sudo apt-get install git
+            return ;;
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
+#
+#    在所有标签注释中查找指定字符串
+#    ftGitTagGrep -f 查找的字符串
+#========================================================="; return ;;
+    --env) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#==========================================================
+# 当前目录无有效GIT仓库
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which git) ]] && ftGitTagGrep --rely "git" && return
+    #环境校验
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    [[ -z "${branchNameNow}" ]] && ftGitTagGrep --env && return
+    #解参验耦
+    local valCount=2 errorContent index arg arg2
+    local strKeyContent
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    case "${arg}" in
+        -f ) strKeyContent="${arg2}" 
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "$strKeyContent" ] && errorContent="${errorContent}\\n[想要的有点多,这个给不了]"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagGrep -h && return
+
+    #实现主体
+    local tagNameList=$(git tag)
+    local dirPathLocal=$(pwd)
+    local dirPathTempTag=/tmp/xbashTagContents
+
+    [ -d "$dirPathTempTag" ] && rm -rf $dirPathTempTag
+    mkdir $dirPathTempTag
+    for tagName in ${tagNameList[*]}; do
+        git show -q $tagName > ${dirPathTempTag}/${tagName}
+    done
+    cd $dirPathTempTag
+    find ./ ! -type d -name "*" | xargs grep "${strKeyContent}"
+    rm -rf $dirPathTempTag
+    cd $dirPathLocal
+}
+
+complete -W "-t -h --help" ftGitTag
+ftGitTag()
+{
+    local ftEffect=GIT的TAG常见操作
+    local isEnable=true
+
+    while true; do case "$1" in
+    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
+#
+#    添加标签
+#    ftGitTag -a 标签名 标签名对应的commitid
+#
+#    删除标签
+#    ftGitTag -d 标签名
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which git) ]] && ftExample --rely "git" && return
+    #解参验耦
+    local valCount=1 errorContent index arg arg2 arg3
+    local tagName noteContent commitId isDeleteTag
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
+    ((index=i+1)) ; eval arg2=\${${index}}
+    ((index=i+2)) ; eval arg3=\${${index}}
+    case "${arg}" in
+        -a ) tagName="${arg2}"
+            commitId="${arg3}"
+            [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
+          ;;
+        -d ) tagName="${arg2}"
+              isDeleteTag=true
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    [ -z "$tagName" ] && errorContent="${errorContent}\\n[示例1]tagName=$tagName"
+    [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTag -h && return
+
+    #实现主体
+    if [[ -n "$isDeleteTag" ]];then
+        git tag -d $tagName && git push origin :refs/tags/${tagName}
+        return
+    fi
+
+    local fileNameVersionNote="${tagName}的相应说明"
+    local filePathVersionNote=/tmp/${fileNameVersionNote}
+    if touch $filePathVersionNote ; then
+        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathVersionNote
+    else
+        ftEcho -ex "创建临时说明信息文件失败"
+        return;
+    fi
+
+    noteContent="$(cat $filePathVersionNote)" ;rm -rf $filePathVersionNote
+
+    if [[ -z "$noteContent" ]];then
+        ftEcho -y "空的备注信息，是否使用commit名作为备注信息 (回车默认y)"
+        read -n 1 sel ;[ -z "${sel}" ] && sel=y
+        while true; do case "$sel" in
+                y | Y )echo
+                    noteContent=$(ftGitLogShell -t "%s" -n 1) ; break;;
+                n | q )  echo ;
+                    return ;;
+                * ) ftEcho -e "错误的选择：$sel"
+                    echo "输入n，q，离开";;
+    esac;done ; fi
+
+    [[ -z "$noteContent" ]] && ftEcho -e 标签添加失败,缺少备注 && return
+    git tag -a "$tagName" -m "${noteContent[@]}" "$commitId"
+}

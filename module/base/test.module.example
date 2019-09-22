@@ -2,4 +2,5 @@
 #####-----------------------加载公用模块--------------------------#######
 [[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
 [[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
+[[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
 # ==========================================================================
