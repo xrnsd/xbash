@@ -50,6 +50,11 @@ ftInitGitConfig()
         echo -en "请输入git邮箱或联系方式:"
         read gitemailUrl&&git config --global user.email "$gitemailUrl"
         ftEcho -s "已自动初始化gitconfig,需要修改的请查看$filePathGitConfig"
+
+        #切换到独立分支
+        local brachName="${userNameLocal}_$(date -d "today" +"%y%m%d%H%M%S")"
+        brachName=$(echo $brachName |sed s/[[:space:]]//g)
+        git checkout ${brachName}
     fi||exceptionContent="${exceptionContent}\n git配置初始化失败"
 }
 
@@ -191,7 +196,7 @@ ftInitXbash()
     if [[ -z "$1" ]];then #初始化所有配置
         # 变量初始化
         [[ -z "$userPasswdLocal" ]] && ftinitUserPassword
-
+ 
         #配置初始化
         ftInitGitConfig
         ftInitUserConfig
