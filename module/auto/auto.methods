@@ -858,12 +858,14 @@ ftAutoPacket()
                     local fileNameOtaPackage="target_files-package.zip"
                     local filePathOtaPackage=${dirPathPackage}/${fileNameOtaPackage}
                     local fileSizeMini=104857600 #100*1024*1024
-                    local fileSize=$(stat -c "%s" $filePathOtaPackage)
-                    if (( $fileSizeMini < $fileSize )); then
-                        ftEcho -s "otaPackages"
-                        printf "%-2s %-30s\n" 移动 $fileNameOtaPackage
-                        mv ${filePathOtaPackage} ${dirPathVersionSoftware}
-                    fi 
+                    if [[ -f ${filePathOtaPackage} ]]; then
+                        local fileSize=$(stat -c "%s" $filePathOtaPackage)
+                        if (( $fileSizeMini < $fileSize )); then
+                            ftEcho -s "otaPackages"
+                            printf "%-2s %-30s\n" 移动 $fileNameOtaPackage
+                            mv ${filePathOtaPackage} ${dirPathVersionSoftware}
+                        fi
+                    fi
 
                     #tools
                     tagName="xbashAOSPConfigMTKSoftwareDownloadToool"
