@@ -1162,7 +1162,7 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}
             content=${content}${enterLine}"说明："
             if [[ ${isPacketMtkSoftwareDownloadTools} = "true" ]]; then
-                content=${content}${enterLine}"01 TOOLS目录存放MTK软件下载工具和驱动"
+                content=${content}${enterLine}"01 tools目录存放MTK软件下载工具和工具使用说明书"
             fi
             content=${content}${enterLine}
             content=${content}${enterLine}"修改记录："

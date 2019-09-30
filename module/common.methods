@@ -2534,3 +2534,57 @@ ftCdAospProject()
     [[ -z "$isUserFileManager" ]] && cd $mAospProjectStoragePathEffective && return
     ftOpenNemoTab -p $mAospProjectStoragePathEffective
 }
+
+complete -W "-h --help --rely_install" ftCheckCcache
+ftCheckCcache()
+{
+    local ftEffect=ccache空间溢出校验
+    local isEnable=$isUseBuildCcache
+
+    while true; do case "$1" in
+    --rely) echo -e "\
+#===================[   ${ftEffect}   ]的依赖说明=============
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install ccache
+            return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    以下[参数对]无先后顺序可任意组合
+#
+#    补全依赖
+#    ftCheckCcache --rely_install
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && return #&& ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which ccache) ]] && ftCheckCcache --rely "ccache" && return
+    #解参验耦
+    local valCount=0 errorContent 
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCheckCcache -h && return
+
+    #实现主体
+    local keyCacheSizeNow="cache size"
+    local keyCacheSizeMax="max cache size"
+    local cacheSizeNow=$(ccache -s |grep "$keyCacheSizeNow"| awk '{print $3}' | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
+    local cacheSizeMax=$(ccache -s |grep "$keyCacheSizeMax" | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
+
+    [[ -z "${cacheSizeNow}" ]] \
+    || (( $(echo "$cacheSizeNow <= 0"|bc) == 1 )) \
+    || (( $(echo "$cacheSizeMax == 1"|bc) == 1 )) && return
+    local proportionSize="0$(echo "scale=5; $cacheSizeNow / $cacheSizeMax" | bc)"
+    local remainingSize="$(echo "scale=5; $cacheSizeMax - $cacheSizeNow" | bc)"
+    local proportionThresholdSize=0.855
+    local remainingThresholdSize=10.0 #10GB/基本满足单次新工程的缓存空间要求
+
+    if (( $(echo "$proportionThresholdSize < ${proportionSize}"|bc) == 1 )) \
+        ||(( $(echo "$remainingSize < ${remainingThresholdSize}"|bc) == 1 )) ;then 
+        ftEcho -e "ccache 剩余空间有限,即将溢出,请及时处理"
+    fi
+}
