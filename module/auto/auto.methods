@@ -1195,6 +1195,8 @@ ftAutoTest()
 #    #-xx 为独立参数类型标识,不可拆分
 #    #参数之间没有先后约束
 #
+#    ftAutoTest -r #重置环境变量
+#    ftAutoTest -s 设备ID #指定设备id , 和-r同时使用时将-r放前面
 #    ftAutoTest -p "com.xx com.yy.zz" #只测试的包名
 #    ftAutoTest -pb "com.xx com.yy.zz" #禁止测试的包名
 #    ftAutoTest -d /home/xxx/xxx    # log存放路径
@@ -1212,11 +1214,13 @@ ftAutoTest()
     local editType=$1
     local eventCountDef=$(( 100 * 100 *100 )) rebootTimeLongDef=-1 rebootCountDef=1
     local eventCount=$eventCountDef rebootTimeLong=$rebootTimeLongDef rebootCount=$rebootCountDef dirPathLogRoot=~/log
-    local packageNameList packageBlackNameList packageWhiteNameList throttleLong
+    local packageNameList packageBlackNameList packageWhiteNameList throttleLong deviceIdTargetForce
     local arg  arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
         ((index=i+1)) ;eval arg2=\${${index}}
         ((index=i+2)) ;eval arg3=\${${index}}
         case "${arg}" in
+              -r)     export   autoTestDeviceId=                          ;;
+              -s)     deviceIdTargetForce=${arg2}; export autoTestDeviceId= ;;
               -p)     packageNameList=${arg2}                            ;;
               -pb)   packageBlackNameList=${arg2}                   ;;
               -d)     dirPathLogRoot=${arg2:-'dirPathLogRoot'}          ;;
@@ -1231,9 +1235,6 @@ ftAutoTest()
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoTest -h && return
 
     #实现主体
-    local deviceIdDefault=0123456789ABCDEF
-    local deviceIdTarget=$(date -d "today" +"%y%m%d%H%M%S")
-    local deviceId=$deviceIdDefault
     local filePathDeviceInfo=/system/build.prop
     local dirPathLogMonkeyBase=${dirPathLogRoot}/monkey
     local dirNameLogMonkey=$deviceIdTarget
@@ -1269,10 +1270,31 @@ ftAutoTest()
         monkeyConfig=${monkeyConfig}" ${eventCount}"
 
     #adb状态确认
-        ftEcho -s "等待设备连接:" && adb -s $deviceId wait-for-device \
-        && adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial" \
-        && ftEcho -s "请重新插拔usb设备" && deviceId=$deviceIdTarget \
-        && adb -s $deviceId wait-for-device && ftEcho -s "连接设备成功"
+        local deviceIdDefault=0123456789ABCDEF
+        local deviceIdTarget=$(date -d "today" +"%y%m%d%H%M%S")
+        local deviceIdErrorMore="error: more than one device/emulator" deviceIdErrorNone="error: no devices/emulators found"
+
+        if [[ -z "${autoTestDeviceId}" ]];then
+                local deviceId=$(adb get-serialno)
+                if [ -n $(echo ${deviceId} |grep "${deviceIdErrorMore}") ];then
+                    [ -z $(adb devices |grep "${deviceIdDefault}") ] && ftEcho -e "无法指定测试设备,请使用指定配置" && ftAutoTest -h && return
+                    deviceId=${deviceIdDefault}
+                fi
+                ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
+                [[ -n "${deviceIdTargetForce}" ]] && deviceIdTarget=$deviceIdTargetForce
+                if [[ "${deviceId}" != "${deviceIdTarget}" ]]; then
+                    adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial" \
+                    && ftEcho -sn "请重新插拔usb设备>" \
+                    && deviceId=$deviceIdTarget
+                fi
+                export autoTestDeviceId=$deviceId
+        else
+            [ -z $(adb devices |grep "${autoTestDeviceId}") ] && ftEcho -e "测试设备[${autoTestDeviceId}],可能重启请确认原因" && return
+        fi
+        local deviceId=$autoTestDeviceId
+        adb -s $deviceId wait-for-device
+        ftEcho -s "连接设备成功"
+
         local adbStatus=$(adb -s $deviceId get-state)
         [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
     #环境清理
