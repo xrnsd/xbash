@@ -1901,6 +1901,7 @@ ftFind()
     case "${arg}" in
         -s ) isSuffix=true
               pathTarget="${2}"
+              # [[ "${pathTarget}" = "./" ]] && pathTarget=$(pwd)
               nameList="${3}"
               contentKey="${4}"
           ;;
@@ -1910,11 +1911,11 @@ ftFind()
 
     if [[ -n "${isSuffix}" ]]; then
         nameAll=$(echo "${nameList}" | sed -e "s: :|:g")
-        # if [[ -n "${contentKey}" ]];then
-        #     find "${pathTarget}" -regextype posix-extended -regex ".*\.(${nameAll})" | xargs grep -e "${contentKey}"
-        #     return
-        # fi
-        find "${pathTarget}" -regextype posix-extended -regex ".*\.(${nameAll})"
+        if [[ -n "${contentKey}" ]];then
+            find "${pathTarget}" -regextype posix-extended -regex ".*\.(${nameAll})" | xargs grep -e "${contentKey}"
+            return
+        fi
+        find "${pathTarget}" -regextype "posix-extended" -regex ".*\.(${nameAll})"
         return
     fi
 
