@@ -95,18 +95,22 @@ ftResetXbash()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    export isResetJdk= isResetGcc= isResetCcache= isResetXbash=true
+    export isResetJdk= isResetGcc= isResetCcache= isResetXbash=true targetSdkVersionForce=
     local dirPathCode dirPathLocal=$(pwd)
-    local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; ((index=i+1)) ; eval arg2=\${${index}}
+    case "${arg}" in
         -a |--adb) ftRestartAdb && return
           ;;
         -j ) export isResetJdk=true
+            targetSdkVersionForce="${arg2}"
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return
           ;;
         -c ) export isResetGcc=true
+            targetSdkVersionForce="${arg2}"
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return
           ;;
         -cj | -jc |-jcc)
+                [[ -n "${arg2}" ]] && export targetSdkVersionForce="${arg2}"
                 [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return
                 [ -d "${dirPathLocal}/alps" ] && dirPathCode=${dirPathLocal}/alps
                 [ -d "${dirPathLocal}/idh" ] && dirPathCode=${dirPathLocal}/idh
