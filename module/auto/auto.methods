@@ -854,16 +854,19 @@ ftAutoPacket()
                         ftEcho -e "database 创建失败" && ftClearTail $dirPathLocal && return
                     fi
 
-                    # #otaPackages
+                    # otaPackages
                     local fileNameOtaPackage="target_files-package.zip"
+                    local dirNamePackageOtaPackages="otaPackages"
+                    local dirPathPackageOtaPackages=${dirPathVersionSoftwareVersion}/${dirNamePackageOtaPackages}
                     local filePathOtaPackage=${dirPathPackage}/${fileNameOtaPackage}
                     local fileSizeMini=104857600 #100*1024*1024
                     if [[ -f ${filePathOtaPackage} ]]; then
                         local fileSize=$(stat -c "%s" $filePathOtaPackage)
                         if (( $fileSizeMini < $fileSize )); then
-                            ftEcho -s "otaPackages"
+                            ftEcho -s "创建 otaPackages"
                             printf "%-2s %-30s\n" 移动 $fileNameOtaPackage
-                            mv ${filePathOtaPackage} ${dirPathVersionSoftware}
+                            [[ ! -d "$dirPathPackageOtaPackages" ]] && mkdir -p $dirPathPackageOtaPackages
+                            mv ${filePathOtaPackage} ${dirPathPackageOtaPackages}
                         fi
                     fi
 
@@ -1162,7 +1165,7 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}
             content=${content}${enterLine}"说明："
             if [[ ${isPacketMtkSoftwareDownloadTools} = "true" ]]; then
-                content=${content}${enterLine}"01 tools目录存放MTK软件下载工具和工具使用说明书"
+                content=${content}${enterLine}"\t01 tools目录存放MTK系统软件[固件]下载工具和工具使用说明书"
             fi
             content=${content}${enterLine}
             content=${content}${enterLine}"修改记录："
