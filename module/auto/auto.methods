@@ -1290,40 +1290,39 @@ ftAutoTest()
         local deviceCount=${#deviceIdList[@]}
         if (( $deviceCount <=0 ));then
             ftEcho -sn "等待设备连接>" && adb wait-for-device
+            deviceId=$(adb get-serialno)
         elif (( $deviceCount ==1 ));then
             deviceId=$(adb get-serialno)
             ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
-        fi
-        if [[ -z "${autoTestDeviceId}" ]];then
-                if (( $deviceCount >1 ));then
-                    if [[ -z $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]] ;then
-                        ftEcho -s "存在多个设备,请选择"
-                        local index=0
-                        for deviceId in ${deviceIdList[@]} ; do
-                            printf "%-4s %-4s\n" [$index] $deviceId
-                            ((index+=1))
-                        done
+        else
+            if [[ -z $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]] ;then
+                ftEcho -s "存在多个设备,请选择"
+                local index=0
+                for deviceId in ${deviceIdList[@]} ; do
+                    printf "%-4s %-4s\n" [$index] $deviceId
+                    ((index+=1))
+                done
 
-                        local num=$deviceCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
-                        ftEcho -r  "请输入对应的序号(回车默认0):"
-                        read -n $length tIndex &&echo
-                        #设定默认值
-                        [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
-                        (( $deviceCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
-                        deviceId=${deviceIdList[$tIndex]}
-                        ftEcho -sn "等待设备连接>"
-                    else # 对默认deviceID进行修改
-                        ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
-                        [[ -n "${deviceIdTargetForce}" ]] && deviceIdTarget=$deviceIdTargetForce
-                        if [[ "${deviceId}" != "${deviceIdTarget}" ]]; then
-                            adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial" \
-                            && ftEcho -sn "请重新插拔usb设备>" \
-                            && deviceId=$deviceIdTarget
-                        fi
-                    fi
+                local num=$deviceCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
+                ftEcho -r  "请输入对应的序号(回车默认0):"
+                read -n $length tIndex &&echo
+                #设定默认值
+                [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
+                (( $deviceCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
+                deviceId=${deviceIdList[$tIndex]}
+                ftEcho -sn "等待设备连接>"
+            else # 对默认deviceID进行修改
+                ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
+                [[ -n "${deviceIdTargetForce}" ]] && deviceIdTarget=$deviceIdTargetForce
+                if [[ "${deviceId}" != "${deviceIdTarget}" ]]; then
+                    adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial" \
+                    && ftEcho -sn "请重新插拔usb设备>" \
+                    && deviceId=$deviceIdTarget
                 fi
-                export autoTestDeviceId=$deviceId
+            fi
         fi
+        [[ -z "${autoTestDeviceId}" ]] && export autoTestDeviceId=$deviceId
+        [[ -z $(echo ${deviceIdList[@]} |grep $autoTestDeviceId ) ]] && export autoTestDeviceId=$deviceId
         local deviceId=$autoTestDeviceId
         adb -s $deviceId wait-for-device
         ftEcho -s "连接设备成功"
@@ -1340,7 +1339,7 @@ ftAutoTest()
     #记录设备信息
         adb -s $deviceId pull $filePathDeviceInfo $dirPathLogMonkey > /dev/null&& ftEcho -s "设备信息已保存到${dirPathLogMonkey}"
     #开始测试
-        local filePathDeviceMonkeyFlag=/sdcrad/monkey_test_${deviceIdTarget} #确认设备进行过monkey测试
+        local filePathDeviceMonkeyFlag=/sdcrad/monkey_test_${deviceIdTarget} #设备进行过monkey测试的标示文件
         adb -s $deviceId shell touch $filePathDeviceMonkeyFlag
         adb -s $deviceId logcat "$logcatFlag" > $filePathLogAdbLogcat &
         adb -s $deviceId shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
