@@ -1199,13 +1199,24 @@ ftAutoTest()
 #    #参数之间没有先后约束
 #
 #    ftAutoTest -r #重置环境变量
-#    ftAutoTest -s 设备ID #指定设备id , 和-r同时使用时将-r放前面
-#    ftAutoTest -p "com.xx com.yy.zz" #只测试的包名
-#    ftAutoTest -pb "com.xx com.yy.zz" #禁止测试的包名
-#    ftAutoTest -d /home/xxx/xxx    # log存放路径
-#    ftAutoTest -rc 3000    2000        #每3000s重启一次,重启2000次
-#    ftAutoTest -e 2000             #monkey事件数为2000
-#    ftAutoTest -t 2000             #2000ms延时
+#
+#    指定设备id , 和-r同时使用时将-r放前面
+#    ftAutoTest -s 设备ID
+#
+#    测试白名单,允许多个包名,和黑名单互斥
+#    ftAutoTest -p "com.xx com.yy.zz"
+#
+#    测试黑名单,允许多个包名,和白名单互斥
+#    ftAutoTest -pb "com.xx com.yy.zz"
+#
+#    log存放路径
+#    ftAutoTest -d /home/xxx/xxx
+#
+#    monkey事件数
+#    ftAutoTest -e 2000
+#
+#    延时[ms]
+#    ftAutoTest -t 2000
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -1215,8 +1226,8 @@ ftAutoTest()
      [[ -z $(which adb) ]] && ftAutoTest --rely && return
     #解参验耦
     local editType=$1
-    local eventCountDef=$(( 100 * 100 *100 )) rebootTimeLongDef=-1 rebootCountDef=1
-    local eventCount=$eventCountDef rebootTimeLong=$rebootTimeLongDef rebootCount=$rebootCountDef dirPathLogRoot=~/log
+    local eventCountDef=$(( 100 * 100 *100 ))
+    local eventCount=$eventCountDef dirPathLogRoot=~/log
     local packageNameList packageBlackNameList packageWhiteNameList throttleLong deviceIdTargetForce
     local arg  arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
         ((index=i+1)) ;eval arg2=\${${index}}
@@ -1227,13 +1238,10 @@ ftAutoTest()
               -p)     packageNameList=${arg2}                            ;;
               -pb)   packageBlackNameList=${arg2}                   ;;
               -d)     dirPathLogRoot=${arg2:-'dirPathLogRoot'}          ;;
-              -rc)    rebootTimeLong=${arg2:-'rebootTimeLongDef'}
-                       rebootCount=${arg3:-'rebootCountDef'}  ;;
-              -e)     eventCount=${arg2:-'eventCountDef'}                   ;;
               -t)     throttleLong=${arg2}                            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     local errorContent
-    (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong"
+    # (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong"
     [[ -n $packageBlackNameList ]] && [[ -n $packageNameList ]] && errorContent="${errorContent}\\n 包限制配置错误1"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoTest -h && return
 
@@ -1274,25 +1282,47 @@ ftAutoTest()
 
     #adb状态确认
         local deviceIdDefault=0123456789ABCDEF
+        local deviceId=${deviceIdDefault}
         local deviceIdTarget=$(date -d "today" +"%y%m%d%H%M%S")
         local deviceIdErrorMore="error: more than one device/emulator" deviceIdErrorNone="error: no devices/emulators found"
 
+        local deviceIdList=($(adb devices |grep -v "List of devices attached" |awk '{print $1}'))
+        local deviceCount=${#deviceIdList[@]}
+        if (( $deviceCount <=0 ));then
+            ftEcho -sn "等待设备连接>" && adb wait-for-device
+        elif (( $deviceCount ==1 ));then
+            deviceId=$(adb get-serialno)
+            ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
+        fi
         if [[ -z "${autoTestDeviceId}" ]];then
-                local deviceId=$(adb get-serialno)
-                if [ -n $(echo ${deviceId} |grep "${deviceIdErrorMore}") ];then
-                    [ -z $(adb devices |grep "${deviceIdDefault}") ] && ftEcho -e "无法指定测试设备,请使用指定配置" && ftAutoTest -h && return
-                    deviceId=${deviceIdDefault}
-                fi
-                ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
-                [[ -n "${deviceIdTargetForce}" ]] && deviceIdTarget=$deviceIdTargetForce
-                if [[ "${deviceId}" != "${deviceIdTarget}" ]]; then
-                    adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial" \
-                    && ftEcho -sn "请重新插拔usb设备>" \
-                    && deviceId=$deviceIdTarget
+                if (( $deviceCount >1 ));then
+                    if [[ -z $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]] ;then
+                        ftEcho -s "存在多个设备,请选择"
+                        local index=0
+                        for deviceId in ${deviceIdList[@]} ; do
+                            printf "%-4s %-4s\n" [$index] $deviceId
+                            ((index+=1))
+                        done
+
+                        local num=$deviceCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
+                        ftEcho -r  "请输入对应的序号(回车默认0):"
+                        read -n $length tIndex &&echo
+                        #设定默认值
+                        [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
+                        (( $deviceCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
+                        deviceId=${deviceIdList[$tIndex]}
+                        ftEcho -sn "等待设备连接>"
+                    else # 对默认deviceID进行修改
+                        ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
+                        [[ -n "${deviceIdTargetForce}" ]] && deviceIdTarget=$deviceIdTargetForce
+                        if [[ "${deviceId}" != "${deviceIdTarget}" ]]; then
+                            adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial" \
+                            && ftEcho -sn "请重新插拔usb设备>" \
+                            && deviceId=$deviceIdTarget
+                        fi
+                    fi
                 fi
                 export autoTestDeviceId=$deviceId
-        else
-            [ -z $(adb devices |grep "${autoTestDeviceId}") ] && ftEcho -e "测试设备[${autoTestDeviceId}],可能重启请确认原因" && return
         fi
         local deviceId=$autoTestDeviceId
         adb -s $deviceId wait-for-device
@@ -1310,41 +1340,45 @@ ftAutoTest()
     #记录设备信息
         adb -s $deviceId pull $filePathDeviceInfo $dirPathLogMonkey > /dev/null&& ftEcho -s "设备信息已保存到${dirPathLogMonkey}"
     #开始测试
-        if (( $rebootCount==$rebootCountDef ));then
-                echo monkeyConfig=${monkeyConfig[@]}
-                adb -s $deviceId logcat "$logcatFlag" > $filePathLogAdbLogcat &
-                adb -s $deviceId shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
+        local filePathDeviceMonkeyFlag=/sdcrad/monkey_test_${deviceIdTarget} #确认设备进行过monkey测试
+        adb -s $deviceId shell touch $filePathDeviceMonkeyFlag
+        adb -s $deviceId logcat "$logcatFlag" > $filePathLogAdbLogcat &
+        adb -s $deviceId shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
+        local isMonkeyTestSucess=$( [[ -n "$(grep -n '// Monkey finished' $filePathLogMonkey | tail -n 1)" ]]&&echo true|| echo false )
+    #测试状态确认
+        local isPulllog=false
+        if [[ "${isMonkeyTestSucess}" = "true" ]];then
+            ftEcho -sn "monkey测试>完成"
+            isPulllog=true
         else
-                while true; do
-                    ftEcho -s "等待设备连接" && adb -s $deviceId wait-for-device && ftEcho -s "连接设备成功"
-                    [ "$(adb -s $deviceId get-state)" != "device" ] && ftEcho -e "设备连接状态异常,请重新尝试" && break
-                    tput sc ; while [[ -z $(adb -s $deviceId shell ps |grep launcher) ]]; do
-                        tput rc;tput ed
-                        ftEcho -sn "等待launcer启动..."
-                        sleep 5
-                    done ;echo
+            ftEcho -sn "monkey测试>"; ftEcho -en "异常结束"
+            sleep 5
 
-                    if (($rebootTimeLong!=$rebootTimeLongDef)); then
-                        timeout $rebootTimeLong adb -s $deviceId shell monkey "$monkeyConfig" 2>&1 >> $filePathLogMonkey &
-                        timeout $rebootTimeLong adb -s $deviceId logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat
-                    else
-                        adb -s $deviceId logcat "$logcatFlag" |tee -a $filePathLogAdbLogcat &
-                        adb -s $deviceId shell monkey "$monkeyConfig" 2>&1 |tee $filePathLogMonkey
-                    fi
+            local deviceIdList=($(adb devices |grep -v "List of devices attached" |awk '{print $1}'))
+            if [[ -n $(adb devices|grep $deviceId) ]]; then
+                ftEcho -s ">设备usb连接不稳定>建议重新测试"
+                isPulllog=true
+            else
+                ftEcho -sn ">设备连接已断开"
+                local timeLong=4
+                tput sc
+                for i in $(seq -w $timeLong -1 1) ; do
+                    tput rc;tput ed
+                    ftEcho -sn ">将在${i}秒后开始重新连接设备"
+                    sleep 1
+                done
 
-                    rebootCount=$((rebootCount - 1))
-                    if (( $rebootCount>0 )); then
-                        ftEcho -s "开始设备重启"
-                        adb -s $deviceId reboot
-                    else
-                        break
-                    fi
-            done
+                [[ -z $(adb devices|grep $deviceIdDefault) ]] && ftEcho -sn ">" && ftEcho -e "设备连接失败,请确认原因" && return
+                [[ -z $(adb -s $deviceIdDefault shell ls $filePathDeviceMonkeyFlag) ]] && ftEcho -sn ">" && ftEcho -s "连接到新设备,建议重新测试" && return
+
+                ftEcho -sn ">" && ftEcho -e "设备在测试过程中已重启"
+                isPulllog=true;
+            fi
         fi
-    #扫尾
-        for pid in $(ps -ef |grep adb |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
-        [[ -n $(adb -s $deviceId shell ls ${dirPathDevicesTarget}/mtklog) ]] && ftEcho -s "正在导出mtklog,请稍等..." && adb -s $deviceId pull ${dirPathDevicesTarget}/mtklog $dirPathLogMonkey
-        mv $dirPathLogMonkey ${dirPathLogMonkey}_done
+        # 测试log处理
+        [[ "${isPulllog}" = "true" ]] && [[ -n $(adb -s $deviceId shell ls ${dirPathDevicesTarget}/mtklog) ]] \
+            && ftEcho -s "正在导出mtklog,请稍等..." && adb -s $deviceId pull ${dirPathDevicesTarget}/mtklog $dirPathLogMonkey
+        [[ "${isMonkeyTestSucess}" = "true" ]] && mv $dirPathLogMonkey ${dirPathLogMonkey}_done
 }
 
 complete -W "-h --help --rely_install" ftAutoCreateSxtdOldProjectBranch
