@@ -53,6 +53,8 @@ if [ -d "$ANDROID_SDK" ];then
     alias xlp="effect=根据包名过滤logcat;ftLogcatApplicationByTag -p"
     alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
 
+    alias xpml='effect=干掉设备对应包名的进程;ftMtkLog -p /home/enjoy/log'
+
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
     alias xtp="effect=打印任务栈的栈顶信息;adb shell dumpsys activity top"
     alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
