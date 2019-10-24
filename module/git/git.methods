@@ -326,6 +326,9 @@ ftGitPatch()
 #
 #       应用patch
 #    ftGitPatch -a patch路径
+#
+#       cherry-pick patch
+#    ftGitPatch -ah hashID
 #========================================================="; return ;;
     --env)ftEcho -s  "[ ${ftEffect} ]的使用环境说明 ";echo -e "\
 #=========================================================
