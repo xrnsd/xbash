@@ -2405,6 +2405,7 @@ ftCdAospDirectory()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
+    [[ -n "${ANDROID_BUILD_TOP}" ]] && cd $ANDROID_BUILD_TOP || \
     if [[ ! -d "alps" ]] && [ ! -d "idh" ]; then
         if [[ ! -d "build" ]] && [[ ! -d "frameworks" ]] && [[ ! -d "ndk" ]] && [[ ! -d "dalvik" ]] && [[ ! -d "vendor" ]];then
             ftCdAospDirectory --env&& return
@@ -2440,7 +2441,11 @@ ftCdAospDirectory()
         else
             ftEcho -e "找不到${dirPathTarget}" && return
     fi ;fi
-    [[ -z "$isUserFileManager" ]] && cd $dirPathTarget && return
+    if [[ -z "$isUserFileManager" ]];then
+        local dirPathLocal=$(pwd)
+        cd $dirPathTarget && [[ -z "${ANDROID_BUILD_TOP}" ]] && export ANDROID_BUILD_TOP=$dirPathLocal
+        return
+    fi
     ftOpenNemoTab -p $(pwd)/${dirPathTarget}
 }
 
@@ -2746,6 +2751,7 @@ ftMtkLog()
         [[ -n "${fileNameEnd}" ]] && split --verbose -b $fileSizeBaseMillionByte "$filePathLog" -d -a 4 --additional-suffix=.${fileNameEnd} $fileNameBase
         ftEcho -s "${fileName} 分割完成"
         cd $dirPathLocal
+        return
     fi
 
     #分析log,分割log,待实现
