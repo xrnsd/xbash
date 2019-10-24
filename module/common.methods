@@ -1113,10 +1113,9 @@ ftKillApplicationByPackageName()
 
     #实现主体
     #adb连接状态检测
-    ftEcho -sn "正在等待adb连接 ：" 
-    adb wait-for-device && ftEcho -s "已连接"
-    local adbStatus="$(adb get-state)"
-    [ "${adbStatus}" != "device" ] && ftEcho -e "adb连接状态[${adbStatus}]异常,请重新尝试" && return
+    ftAdbContect
+    [[ -z "${autoTestDeviceId}" ]] && return
+    local deviceId=${autoTestDeviceId}
 
     while true; do case "$packageName" in
         systemui)   packageName="com.android.systemui"  ;break;;
@@ -1125,11 +1124,11 @@ ftKillApplicationByPackageName()
     * ) break;;esac;done
 
     if [[ -n "$(adb shell ps | grep $packageName | awk '{print $2}')" ]]; then
-        adb root > /dev/null
-        adb remount > /dev/null
-        adb shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
-        for pid in $(adb shell ps | grep $packageName | awk '{print $2}'); do adb shell kill $pid&& ftEcho -s "kill pid ${pid}"  ;done
-    elif [[ -z "$(adb shell pm list packages|grep $packageName)" ]]; then
+        adb -s $deviceId root > /dev/null
+        adb -s $deviceId remount > /dev/null
+        adb -s $deviceId shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
+        for pid in $(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}'); do adb -s $deviceId shell kill $pid&& ftEcho -s "kill pid ${pid}"  ;done
+    elif [[ -z "$(adb -s $deviceId shell pm list packages|grep $packageName)" ]]; then
          ftEcho -e "包名[${packageName}]不存在，请确认"
     fi
 }
@@ -1181,12 +1180,11 @@ ftLogcatApplicationByTag()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #实现主体
     #adb连接状态检测
-    ftEcho -sn "正在等待adb连接 ：" 
-    adb wait-for-device && ftEcho -s "已连接"
-    local adbStatus="$(adb get-state)"
-    [ "${adbStatus}" != "device" ] && ftEcho -e "adb连接状态[${adbStatus}]异常,请重新尝试" && return
+    ftAdbContect
+    [[ -z "${autoTestDeviceId}" ]] && return
+    local deviceId=${autoTestDeviceId}
 
-    [ -z "flagError" ] && adb logcat -c
+    [ -z "flagError" ] && adb -s $deviceId logcat -c
     if [[ "$isUserPackageName" = "true" ]]; then
         while true; do case "$packageName" in
             systemui)   packageName="com.android.systemui"  ;break;;
@@ -1194,14 +1192,14 @@ ftLogcatApplicationByTag()
             launcher3) packageName="com.android.launcher3"  ;break;;
         * ) break;;esac;done
 
-        local pid=$(adb shell ps | grep $packageName | awk '{print $2}')
-        [[ -z "$vContent" ]] && adb logcat "${flagError}" |grep "${pid}"
-        adb logcat "${flagError}" |grep "${pid}" #|grep -v "${vContent}"
+        local pid=$(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}')
+        [[ -z "$vContent" ]] && adb -s $deviceId logcat "${flagError}" |grep "${pid}"
+        adb -s $deviceId logcat "${flagError}" |grep "${pid}" #|grep -v "${vContent}"
     elif [ -z "$tagContent" ];then
-        adb logcat "${flagError}"
+        adb -s $deviceId logcat "${flagError}"
     else
         [[ -z "$vContent" ]] && adb logcat "${flagError}" |grep -i "${tagContent}" && return
-        adb logcat "${flagError}" |grep -i "${tagContent}" |grep -v "${vContent}"
+        adb -s $deviceId logcat "${flagError}" |grep -i "${tagContent}" |grep -v "${vContent}"
     fi
 }
 
@@ -2084,10 +2082,9 @@ ftApkMergeOdex()
     if [[ "$isAutoPull" = "true" ]]; then
         [[ -z "${fileNameApk}" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误,未指定app名\\n请查看下面说明:" && ftApkMergeOdex -h && return
 
-        ftEcho -sn "正在等待adb连接 ：" 
-        adb wait-for-device && ftEcho -s "已连接"
-        local adbStatus="$(adb get-state)"
-        [ "${adbStatus}" != "device" ] && ftEcho -e "adb连接状态[${adbStatus}]异常,请重新尝试" && return
+        ftAdbContect
+        [[ -z "${autoTestDeviceId}" ]] && return
+        local deviceId=${autoTestDeviceId}
 
         local dirPathLocal=$(pwd) dirPathTarget=/tmp/mergeOdex
         [[ ! -d "$dirPathTarget" ]] && mkdir $dirPathTarget
@@ -2096,7 +2093,7 @@ ftApkMergeOdex()
 
         [[ "$fileNameApk" == *.apk* ]] && fileNameApk=$(echo $fileNameApk| sed -e "s:.apk::g")
         local dirPathDevices=system/app/${fileNameApk}
-        [[ -n $(adb shell ls system/priv-app|grep $fileNameApk) ]] && dirPathDevices=system/priv-app/${fileNameApk}
+        [[ -n $(adb -s $deviceId shell ls system/priv-app|grep $fileNameApk) ]] && dirPathDevices=system/priv-app/${fileNameApk}
 
         filePathApk=${dirPathTarget}/${fileNameApk}/${fileNameApk}.apk
         filePathOdex=${dirPathTarget}/${fileNameApk}/oat/arm/${fileNameApk}.odex
@@ -2109,8 +2106,8 @@ ftApkMergeOdex()
              rm -rf $dirPathFramework && sel= ; else ftEcho -s "将使用旧framework" && sel=n ;fi
         fi
         if [ -z "${sel}" ]; then
-            adb pull $dirPathDevices ${dirPathTarget}&& ftEcho -s "pull ${fileNameApk} 完成"
-            adb pull system/framework/  ${dirPathTarget}&& ftEcho -s "pull framework 完成"
+            adb -s $deviceId pull $dirPathDevices ${dirPathTarget}&& ftEcho -s "pull ${fileNameApk} 完成"
+            adb -s $deviceId pull system/framework/  ${dirPathTarget}&& ftEcho -s "pull framework 完成"
             cp -rf -v ${dirPathTarget}/framework/arm/* ${dirPathTarget}/framework && ftEcho -s "复制 framework/arm/* 到 framework 完成"
         fi
     fi
@@ -2225,17 +2222,16 @@ ftAdbPush()
 
     #实现主体
     #adb连接状态检测
-    ftEcho -sn "正在等待adb连接 ：" 
-    adb wait-for-device && ftEcho -s "已连接"
-    local adbStatus="$(adb get-state)"
-    [ "${adbStatus}" != "device" ] && ftEcho -e "adb连接状态[${adbStatus}]异常,请重新尝试" && return
+    ftAdbContect
+    [[ -z "${autoTestDeviceId}" ]] && return
+    local deviceId=${autoTestDeviceId}
 
-    adb root&&adb remount&&\
-    adb push $filePathSource $dirPathTarget&& \
+    adb -s $deviceId root&&adb -s $deviceId remount&&\
+    adb -s $deviceId push $filePathSource $dirPathTarget&& \
     ftEcho -s "${fileNameSource} push to [${dirPathTarget}] finish"
     if [[ -z "$isTacitMode" ]]; then
         [[ -z "$isAutoReboot" ]] &&ftEcho -y "是否重启(回车默认重启)" && read -n 1 sel && echo
-        if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then adb reboot ; fi
+        if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then adb -s $deviceId reboot ; fi
     fi
 }
 
@@ -2640,12 +2636,12 @@ ftMtkLog()
     [[ -z $(which adb) ]] && ftEcho -e "依赖Android的SDK中的adb,请确认是否可用" && return
     #解参验耦
     local valCount=2 errorContent index arg arg2
-    local isPull isCheck isSeparation isClean deviceId
+    local isPull isCheck isSeparation isClean deviceIdLocal
     local filePathLog dirPathLog dirPathLogStorge
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
     case "${arg}" in
         -cs) isClean=true ; ;;
-        -s ) deviceId="${arg2}"
+        -s ) deviceIdLocal="${arg2}"
              ;;
         -p ) isPull=true
              [ -d "${arg2}" ] && dirPathLogStorge="${arg2}"
@@ -2668,15 +2664,11 @@ ftMtkLog()
     #实现主体
     if [ "$isPull" = "true" ] || [ "$isClean" = "true" ];then
         #adb连接状态检测
-        # if [[ -z "${deviceId}" ]]; then
-        #     local deviceIdList=($(adb devices |grep -v "List of devices attached" |awk '{print $1}'))
-        #     local deviceCount=${#deviceIdList[@]}
-
-        # fi
-        ftEcho -sn "正在等待adb连接 ：" 
-        adb wait-for-device && ftEcho -s "已连接"
-        local adbStatus="$(adb get-state)"
-        [ "${adbStatus}" != "device" ] && ftEcho -e "adb连接状态[${adbStatus}]异常,请重新尝试" && return
+        if [[ -n "${deviceIdLocal}" ]];then
+            ftAdbContect
+            [[ -z "${autoTestDeviceId}" ]] && return
+            local deviceId=${autoTestDeviceId}
+        fi
 
         if [ "$isPull" = "true" ];then
             local dirNameMtkLog=mtklog
@@ -2685,10 +2677,10 @@ ftMtkLog()
             local dirPathLogStorgeAll=$(ftPath $dirPathLogStorge)/${dirNameMtkLog}
             local dirPathLogStorgeAllBackup=${dirPathLogStorgeAll}_backup_$(date -d "today" +"%y%m%d%H%M%S")
 
-            if [[ -n $(adb shell "[ -d $dirPathLogDevice ]&&echo exit") ]]; then
+            if [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDevice ]&&echo exit") ]]; then
                 [ -d "$dirPathLogStorgeAll" ] && ftEcho -s "存在旧的mtklog,已备份到${dirPathLogStorgeAllBackup}" \
                 && mv ${dirPathLogStorgeAll} ${dirPathLogStorgeAllBackup}
-                adb pull ${dirPathLogDevice} ${dirPathLogStorge} && adb pull ${dirPathBuildpropDevice} ${dirPathLogStorge}
+                adb -s $deviceId pull ${dirPathLogDevice} ${dirPathLogStorge} && adb -s $deviceId pull ${dirPathBuildpropDevice} ${dirPathLogStorge}
             else
                 ftEcho -e "设备不存在${dirNameMtkLog},请确认设备的${dirNameMtkLog}是否存在[${dirPathLogDevice}]"
             fi
@@ -2698,8 +2690,8 @@ ftMtkLog()
         if [ "$isClean" = "true" ];then
             local packageNameMtkLog="com.mediatek.mtklogger"
             local dirPathLogDevice=/sdcard/mtklog
-            [ -n "$(adb shell ps |grep $packageNameMtkLog)" ] && ftKillApplicationByPackageName $packageNameMtkLog
-            adb shell rm -rf ${dirPathLogDevice}
+            [ -n "$(adb -s $deviceId shell ps |grep $packageNameMtkLog)" ] && ftKillApplicationByPackageName $packageNameMtkLog
+            adb -s $deviceId shell rm -rf ${dirPathLogDevice}
             return
         fi
     fi

@@ -1255,6 +1255,12 @@ ftAutoTest()
     local dirPathDevicesTarget="/sdcard"
     local monkeyConfig logcatFlag #="*:E"
 
+    #adb状态确认
+        ftAdbContect
+        [[ -z "${autoTestDeviceId}" ]] && return
+        local deviceId=${autoTestDeviceId}
+        ftEcho -s "开始对设备 : [$deviceId] 进行测试"
+
     # monkey命令参数配置
         [[ -n "$throttleLong" ]] && monkeyConfig=${monkeyConfig}" --throttle $throttleLong"
         monkeyConfig=${monkeyConfig}" --ignore-crashes --ignore-timeouts --ignore-security-exceptions"
@@ -1264,7 +1270,7 @@ ftAutoTest()
             local filePathBlackDevices="${dirPathDevicesTarget}/${fileNameBlack}"
             rm -rf $filePathBlack
             for packageName in ${packageBlackNameList[@]} ; do echo package:${packageName} >> $filePathBlack ;done
-            adb push $filePathBlack $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-blacklist-file ${filePathBlackDevices}"
+            adb -s $deviceId push $filePathBlack $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-blacklist-file ${filePathBlackDevices}"
 
         elif [[ -n $packageNameList ]]; then
             if ((${#packageNameList[@]}>1)); then
@@ -1272,63 +1278,13 @@ ftAutoTest()
                 local filePathWhite="${rDirPathUserHome}/temp/${fileNameWhite}"
                 rm -rf $filePathWhite
                 for packageName in ${packageWhiteNameList[@]} ; do echo package:${packageName} >> $filePathWhite ;done
-                adb push $filePathWhite $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhite}"
+                adb -s $deviceId push $filePathWhite $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhite}"
             else
                 monkeyConfig=${monkeyConfig}" -p ${packageNameList}"
             fi
         fi
         monkeyConfig=${monkeyConfig}" -v -v -v"
         monkeyConfig=${monkeyConfig}" ${eventCount}"
-
-    #adb状态确认
-        local deviceIdDefault=0123456789ABCDEF
-        local deviceId=${deviceIdDefault}
-        local deviceIdTarget=$(date -d "today" +"%y%m%d%H%M%S")
-        local deviceIdErrorMore="error: more than one device/emulator" deviceIdErrorNone="error: no devices/emulators found"
-
-        local deviceIdList=($(adb devices |grep -v "List of devices attached" |awk '{print $1}'))
-        local deviceCount=${#deviceIdList[@]}
-        if (( $deviceCount <=0 ));then
-            ftEcho -sn "等待设备连接>" && adb wait-for-device
-            deviceId=$(adb get-serialno)
-        elif (( $deviceCount ==1 ));then
-            deviceId=$(adb get-serialno)
-            ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
-        else
-            if [[ -z $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]] ;then
-                ftEcho -s "存在多个设备,请选择"
-                local index=0
-                for deviceId in ${deviceIdList[@]} ; do
-                    printf "%-4s %-4s\n" [$index] $deviceId
-                    ((index+=1))
-                done
-
-                local num=$deviceCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
-                ftEcho -r  "请输入对应的序号(回车默认0):"
-                read -n $length tIndex &&echo
-                #设定默认值
-                [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
-                (( $deviceCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
-                deviceId=${deviceIdList[$tIndex]}
-                ftEcho -sn "等待设备连接>"
-            else # 对默认deviceID进行修改
-                ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
-                [[ -n "${deviceIdTargetForce}" ]] && deviceIdTarget=$deviceIdTargetForce
-                if [[ "${deviceId}" != "${deviceIdTarget}" ]]; then
-                    adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial" \
-                    && ftEcho -sn "请重新插拔usb设备>" \
-                    && deviceId=$deviceIdTarget
-                fi
-            fi
-        fi
-        [[ -z "${autoTestDeviceId}" ]] && export autoTestDeviceId=$deviceId
-        [[ -z $(echo ${deviceIdList[@]} |grep $autoTestDeviceId ) ]] && export autoTestDeviceId=$deviceId
-        local deviceId=$autoTestDeviceId
-        adb -s $deviceId wait-for-device
-        ftEcho -s "连接设备成功"
-
-        local adbStatus=$(adb -s $deviceId get-state)
-        [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return
     #环境清理
         for folder in $(ls $dirPathLogMonkeyBase); do  [[ ! $folder =~ "done" ]] && rm -rf ${dirPathLogMonkeyBase}/${folder} ;done
         [[ ! -d $dirPathLogMonkey ]] && mkdir -p $dirPathLogMonkey
