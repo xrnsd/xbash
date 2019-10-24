@@ -2686,7 +2686,10 @@ ftMtkLog()
             if [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDevice ]&&echo exit") ]]; then
                 [ -d "$dirPathLogStorgeAll" ] && ftEcho -s "存在旧的mtklog,已备份到${dirPathLogStorgeAllBackup}" \
                 && mv ${dirPathLogStorgeAll} ${dirPathLogStorgeAllBackup}
-                adb -s $deviceId pull ${dirPathLogDevice} ${dirPathLogStorge} && adb -s $deviceId pull ${dirPathBuildpropDevice} ${dirPathLogStorge}
+
+                ftEcho -s "正在导出mtklog 到 ${dirPathLogStorge}" && \
+                adb -s $deviceId pull ${dirPathLogDevice} ${dirPathLogStorge} && \
+                adb -s $deviceId pull ${dirPathBuildpropDevice} ${dirPathLogStorge}
 
                 ftEcho -y "是否对设备的mtklog添加已导出标示(回车默认y)"
                 read -n 1 sel
@@ -2703,6 +2706,17 @@ ftMtkLog()
             else
                 ftEcho -e "设备不存在${dirNameMtkLog},请确认设备的${dirNameMtkLog}是否存在[${dirPathLogDevice}]"
             fi
+
+            local dirPathLogDeviceAEE=/data/aee_exp
+            [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDeviceAEE ]&&echo exit") ]] && \
+            ftEcho -s "正在导出 aee_exp log 到 ${dirPathLogStorge}" && \
+            adb -s $deviceId pull ${dirPathLogDeviceAEE} ${dirPathLogStorge}
+
+            local dirPathLogDeviceANR=/data/anr
+            [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDeviceANR ]&&echo exit") ]] && \
+            ftEcho -s "正在导出 anr log 到 ${dirPathLogStorge}" && \
+            adb -s $deviceId pull ${dirPathLogDeviceANR} ${dirPathLogStorge}
+
             return
         fi
 
