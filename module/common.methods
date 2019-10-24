@@ -2592,7 +2592,7 @@ ftCheckCcache()
     fi
 }
 
-complete -W "-h --help --rely_install" ftMtkLog
+complete -W "-h --help --rely_install -s -sp -c -p -cs" ftMtkLog
 ftMtkLog()
 {
     local ftEffect=MTK的log相关操作封装
@@ -2619,6 +2619,8 @@ ftMtkLog()
 #
 #    分割log文件
 #    ftMtkLog -sp  log文件路径
+#    ftMtkLog -sp  log文件路径 分割的大小[MB],默认为2
+#    ftMtkLog -sp  /xx/xx.log 3M
 #
 #    停止mtk的log抓取,清理设备log文件
 #    ftMtkLog -cs
@@ -2635,10 +2637,11 @@ ftMtkLog()
     #依赖校验
     [[ -z $(which adb) ]] && ftEcho -e "依赖Android的SDK中的adb,请确认是否可用" && return
     #解参验耦
-    local valCount=2 errorContent index arg arg2
+    local valCount=3 errorContent index arg arg2 arg3 #arg4
     local isPull isCheck isSeparation isClean deviceIdLocal
-    local filePathLog dirPathLog dirPathLogStorge
+    local filePathLog dirPathLog dirPathLogStorge fileSizeBaseMillionByte
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    ((index=i+2)) ; eval arg3=\${${index}} #; ((index=i+3)) ; eval arg4=\${${index}}
     case "${arg}" in
         -cs) isClean=true ; ;;
         -s ) deviceIdLocal="${arg2}"
@@ -2652,6 +2655,8 @@ ftMtkLog()
              ;;
         -sp ) isSeparation=true
              [ -f "${arg2}" ] && filePathLog="${arg2}"
+             fileSizeBaseMillionByte="${arg3}"
+             fileSizeBaseMillionByte=${fileSizeBaseMillionByte:-'2M'}
              ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
@@ -2709,9 +2714,28 @@ ftMtkLog()
             return
         fi
     fi
+    #分割log
+    if [ "$isSeparation" = "true" ];then
+        [[ ! -f "${filePathLog}" ]] && ftEcho -e "找不到分割的文件: ${filePathLog}" && return
+
+        local fileName=$(basename $filePathLog)
+        local dirPathLog=$(dirname $filePathLog)
+        local fileNameBase=${fileName%.*}
+        local fileNameEnd=${fileName##*.}
+        local fileSizeBaseByte=2097152
+        local filePathLogSize=$(stat -c "%s" $filePathLog) #B
+        local dirPathLocal=$(pwd)
+
+        cd $dirPathLog
+        [[ "${fileNameBase}" = "${fileNameEnd}" ]] || [[ -z "${fileNameEnd}" ]] && fileNameEnd="log"
+        (( $filePathLogSize <= $fileSizeBaseByte )) && ftEcho -s "${fileName} 文件无需分割" && return
+        [[ -n "${fileNameEnd}" ]] && split --verbose -b $fileSizeBaseMillionByte "$filePathLog" -d -a 4 --additional-suffix=.${fileNameEnd} $fileNameBase
+        ftEcho -s "${fileName} 分割完成"
+        cd $dirPathLocal
+    fi
+
     #分析log,分割log,待实现
     [ "$isCheck" = "true" ] && ftEcho -s "log分析功能未完成,喝个茶等一下" && return
-    [ "$isSeparation" = "true" ] && ftEcho -s "log分割功能未完成,喝个茶等一下" && return
 }
 
 complete -W "-h --help" ftAdbContect
