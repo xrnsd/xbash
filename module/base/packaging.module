@@ -37,6 +37,10 @@ if [[ -n $(which fdupes) ]];then
     alias xfr='effect=查找重复文件;fdupes -Sr'
 fi
 
+if [[ -n $(which pigz) ]];then
+    alias xtgz='effect=快速生成压缩;ftPigz -c'
+fi
+
 if [[ -n $(which sensors) ]];then
     alias xcct="effect=查看cpu温度;xc -sc"
     alias xccct="effect=查看cpu各个核心温度;xc -scc"

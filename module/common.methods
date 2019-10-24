@@ -2858,3 +2858,48 @@ ftAdbContect()
     # [[ -z "${autoTestDeviceId}" ]] && export autoTestDeviceId=$deviceId
     # [[ -z $(echo ${deviceIdList[@]} |grep $autoTestDeviceId ) ]] && export autoTestDeviceId=$deviceId
 }
+
+complete -W "-h --help --rely_install -c" ftPigz
+ftPigz()
+{
+    local ftEffect=pigz压缩的相关封装
+    local isEnable=true
+
+    while true; do case "$1" in
+    --rely) echo -e "\
+#===================[   ${ftEffect}   ]的依赖说明=============
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftPigz -c 文件路径/目录
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #依赖校验
+    [[ -z $(which pigz) ]] && ftPigz --rely "pigz" && return
+    #解参验耦
+    local valCount=2 errorContent index arg arg2
+    local contentTarget filrPathTarget dirPathTarget dirPathLocal=$(pwd)
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    case "${arg}" in
+        -c ) contentTarget="${arg2}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [[ ! -d "${contentTarget}" ]]&&[[ ! -f "${contentTarget}" ]] && errorContent="${errorContent}\\n[文件或目录不存在]:${contentTarget}"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPigz -h && return
+
+    #实现主体
+    filrPathTarget=${contentTarget}.tgz
+    dirPathTarget=$(dirname $contentTarget)
+    cd $dirPathTarget
+    tar --use-compress-program=pigz -cvPf $filrPathTarget ${contentTarget}
+    cd $dirPathLocal
+}
