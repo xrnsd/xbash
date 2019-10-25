@@ -1302,6 +1302,7 @@ ftAutoTest()
         local isMonkeyTestSucess=$( [[ -n "$(grep -n '// Monkey finished' $filePathLogMonkey | tail -n 1)" ]]&&echo true|| echo false )
     #测试状态确认
         local isPulllog=false
+        local deviceIdDefault=0123456789ABCDEF
         if [[ "${isMonkeyTestSucess}" = "true" ]];then
             ftEcho -sn "monkey测试>完成"
             isPulllog=true

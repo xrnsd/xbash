@@ -2765,12 +2765,11 @@ ftAdbContect()
     local isEnable=true
 
     while true; do case "$1" in
-#     -h | --help) echo -e "\
-# #===================[   ${ftEffect}   ]的使用示例==============
-# #    以下[参数对]无先后顺序可任意组合
-# #
-# #    ftAdbContect -h 
-# #========================================================="; return ;;
+    -h | --help) echo -e "\
+#===================[   ${ftEffect}   ]的使用示例==============
+#
+#    ftAdbContect 无参
+#========================================================="; return ;;
     --env) echo -e "\
 #===================[   ${ftEffect}   ]的使用环境说明==============
 #
@@ -2784,13 +2783,7 @@ ftAdbContect()
     [[ -z $(which adb) ]] && ftAdbContect --env && return
     [[ ! -d ${ANDROID_SDK} ]] && ftAdbContect --env && return
     #解参验耦
-    local valCount=0 errorContent index arg arg2 # arg3 # arg4
-    # for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
-    # case "${arg}" in
-    #     -x ) example1="${arg2}" #"${arg2:-"exampleDef1"}" 
-    #       ;;
-    # * ) [[ -z "${arg}" ]] && break  ;; esac;done
-
+    local valCount=0 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAdbContect -h && return
 
@@ -2799,28 +2792,28 @@ ftAdbContect()
     local deviceId=${deviceIdDefault}
     local deviceIdTarget=$(date -d "today" +"%y%m%d%H%M%S")
     local deviceIdList=($(adb devices |grep -v "List of devices attached" |awk '{print $1}'))
+    local deviceIdListUniq=($(echo "${deviceIdList[@]}"  | sed 's/ /\n/g' |sort |uniq))
     local deviceCount=${#deviceIdList[@]}
+    local deviceCountUniq=${#deviceIdListUniq[@]}
     local deviceIdold=$autoTestDeviceId
 
-    if [[ -n "${deviceIdold}" ]]; then
-        ftEcho -y "存在旧的设备ID,是否更新(回车默认y)"
-        read -n 1 sel
-        [ -z "${sel}" ] && sel=y
-        while true; do case "$sel" in
-                y | Y ) break; ;;
-                n | q ) return ; ;;
-                * ) ftEcho -e "错误的选择：$sel"
-                    echo "输入n，q，离开";;
-        esac;done ;
-    fi
-    export autoTestDeviceId=
-    if (( $deviceCount <=0 ));then
+    (( $deviceCount != $deviceCountUniq )) && ftEcho -s "存在多个同ID设备,请手动移除多余设备" && return
+
+    if (( $deviceCount <=1 ));then
         ftEcho -sn "等待设备连接>" && adb wait-for-device
         deviceId=$(adb get-serialno)
-    elif (( $deviceCount ==1 ));then
-        deviceId=$(adb get-serialno)
-        ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
     else
+        if [[ -n "${deviceIdold}" ]]; then
+            ftEcho -y "存在旧的设备ID,是否更新(回车默认y)"
+            read -n 1 sel
+            [ -z "${sel}" ] && sel=y
+            while true; do case "$sel" in
+                    y | Y ) export autoTestDeviceId=; break; ;;
+                    n | q ) return ; ;;
+                    * ) ftEcho -e "错误的选择：$sel"
+                        echo "输入n，q，离开";;
+            esac;done ;
+        fi
         if [[ -z $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]] ;then
             ftEcho -s "存在多个设备,请选择"
             local index=0
@@ -2839,12 +2832,10 @@ ftAdbContect()
             ftEcho -sn "等待设备连接>"
         else # 对默认deviceID进行修改
             ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
-            [[ -n "${deviceIdTargetForce}" ]] && deviceIdTarget=$deviceIdTargetForce
-            if [[ "${deviceId}" != "${deviceIdTarget}" ]]; then
-                adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial" \
+            [[ "${deviceId}" != "${deviceIdTarget}" ]] \
+                && adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial" \
                 && ftEcho -sn "请重新插拔usb设备>" \
                 && deviceId=$deviceIdTarget
-            fi
         fi
     fi
 
@@ -2855,8 +2846,6 @@ ftAdbContect()
 
     export autoTestDeviceId=$deviceId
     [[ -n "${deviceIdold}" ]]&&[[ "${deviceId}" != "${autoTestDeviceId}" ]] && echo -en "设备ID更新:" && ftEcho -s "${autoTestDeviceId} > ${deviceId}"
-    # [[ -z "${autoTestDeviceId}" ]] && export autoTestDeviceId=$deviceId
-    # [[ -z $(echo ${deviceIdList[@]} |grep $autoTestDeviceId ) ]] && export autoTestDeviceId=$deviceId
 }
 
 complete -W "-h --help --rely_install -c" ftPigz
