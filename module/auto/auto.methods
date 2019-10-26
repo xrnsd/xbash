@@ -1333,7 +1333,7 @@ ftAutoTest()
         fi
         # 测试log处理
         [[ "${isPulllog}" = "true" ]] && [[ -n $(adb -s $deviceId shell ls ${dirPathDevicesTarget}/mtklog) ]] \
-            && ftEcho -s "正在导出mtklog,请稍等..." && adb -s $deviceId pull ${dirPathDevicesTarget}/mtklog $dirPathLogMonkey
+            && ftEcho -s "正在导出mtklog,请稍等..." && ftKillApplicationByPackageName com.mediatek.mtklogger && adb -s $deviceId pull ${dirPathDevicesTarget}/mtklog $dirPathLogMonkey
         [[ "${isMonkeyTestSucess}" = "true" ]] && mv $dirPathLogMonkey ${dirPathLogMonkey}_done
 }
 
