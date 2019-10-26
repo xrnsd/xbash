@@ -218,49 +218,41 @@ ftTest()
     trap SIGINT
 }
 
-complete -W "-h --help --rely_install" ftGitUpdateVersion
+complete -W " --rely_install" ftGitUpdateVersion
 ftGitUpdateVersion()
 {
     local ftEffect=xbash自动更新
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) ftEcho -s  "[ ${ftEffect} ]的依赖说明 ";echo -e "\
-#=========================================================
-#    缺失依赖： ${2}
-#    补全依赖： ${3}
-#========================================================="; return ;;
     --rely_install)
-            ftEcho -s "开始补全依赖"
             sudo apt-get install git
             return ;;
-    -h | --help) ftEcho -s  "[ ${ftEffect} ]的使用示例 ";echo -e "\
-#=========================================================
-#
-#    ftGitUpdateVersion 无参
-#========================================================="; return ;;
-    --env) ftEcho -s  "[ ${ftEffect} ]的使用环境说明 ";echo -e "\
-#=========================================================
-# 当前目录无有效GIT仓库
-#========================================================="; return ;;
     * ) break;;esac;done
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && return
     #依赖校验
-    [[ -z $(which git) ]] && ftGitUpdateVersion --rely "git" "sudo apt-get install git" && return
+    [[ -z $(which git) ]] && ftGitUpdateVersion --rely_install && return
     #解参验耦
-    local valCount=0 errorContent
+    local dirPathLocal=$(pwd)
+    local checkUpdateDateNow=$(date -d "today" +"%Y%m%d")
+    local tagName=xbashUpdateVersionConfig
+    local keyName=checkUpdateDate
+    local checkUpdateDateOld=$(ftIniGetValue $rFilePathXbashDBUser $tagName $keyName)
+    [[ -z "${checkUpdateDateOld}" ]] && ftIniCreateFileOrTag  -a -p $rFilePathXbashDBUser -t $tagName -l "${keyName}=${checkUpdateDateNow}" || \
+    [[ "${checkUpdateDateOld}" = "${checkUpdateDateNow}" ]] && return
+    [[ -n "${rDirPathXbash}" ]] && cd $rDirPathXbash
+
     local branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    [ -z "$branchNameLocal" ] && ftGitPatch --env && return
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitUpdateVersion -h && return
+    [ -z "$branchNameLocal" ] && return
 
     #实现主体
     local branchNameMaster="master"
     [ "$branchNameLocal" = "$branchNameMaster" ] && return
-    git pull --rebase > /dev/null
-    exit
+    echo "$(git pull > /dev/null &)" > /dev/null 
+    cd "${dirPathLocal}"
+    ftIniSetValue $rFilePathXbashDBUser $tagName $keyName $checkUpdateDateNow
 }
 
 ftEcho()
