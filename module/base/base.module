@@ -8,4 +8,4 @@ ftCheckUserDatabase
 #校验ccache是否有足够的剩余空间
 ftCheckCcache
 #自动更新
-ftGitUpdateVersion #> /dev/null
+ftGitUpdateVersion

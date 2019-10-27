@@ -2681,7 +2681,7 @@ ftMtkLog()
     #解参验耦
     local valCount=3 errorContent index arg arg2 arg3 #arg4
     local isPull isCheck isSeparation isClean deviceIdLocal
-    local filePathLog dirPathLog dirPathLogStorge fileSizeBaseMillionByte
+    local filePathLog pathLog dirPathLogStorge fileSizeBaseMillionByte
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
     ((index=i+2)) ; eval arg3=\${${index}} #; ((index=i+3)) ; eval arg4=\${${index}}
     case "${arg}" in
@@ -2692,8 +2692,7 @@ ftMtkLog()
              [ -d "${arg2}" ] && dirPathLogStorge="${arg2}"
              ;;
         -c ) isCheck=true
-             [ -d "${arg2}" ] && dirPathLog="${arg2}"
-             [ -f "${arg2}" ] && filePathLog="${arg2}"
+              pathLog="${arg2}"
              ;;
         -sp ) isSeparation=true
              [ -f "${arg2}" ] && filePathLog="${arg2}"
@@ -2704,7 +2703,7 @@ ftMtkLog()
 
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ "$isPull" = "true" ] && [ -z "${dirPathLogStorge}" ] && errorContent="${errorContent}\\n无法导出log,不知道放哪里"
-    [ "$isCheck" = "true" ] && [ -z "${dirPathLog}" ] && [ -z "${filePathLog}" ] && errorContent="${errorContent}\\n无法分析,没有目标log"
+    [ "$isCheck" = "true" ] && [ ! -d "${pathLog}" ] && [ ! -f "${pathLog}" ] && errorContent="${errorContent}\\n无法分析,没有目标log"
     [ "$isSeparation" = "true" ] && [ -z "${filePathLog}" ] && errorContent="${errorContent}\\n无法分割,没有目标log"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMtkLog -h && return
 
@@ -2792,7 +2791,13 @@ ftMtkLog()
     fi
 
     #分析log,分割log,待实现
-    [ "$isCheck" = "true" ] && ftEcho -s "log分析功能未完成,喝个茶等一下" && return
+    if [ "$isCheck" = "true" ];then
+       local key="AndroidRuntime"
+        grep -rsn "${key}" $pathLog | while read line;do
+            [[ -z "$lengthReplace" ]] && lengthReplace=$(expr index "$line" $key) && (( lengthReplace-=1 ))
+            echo ${line:$lengthReplace} 
+        done
+    fi
 }
 
 complete -W "-h --help" ftAdbContect
