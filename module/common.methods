@@ -2710,7 +2710,7 @@ ftMtkLog()
     #实现主体
     if [ "$isPull" = "true" ] || [ "$isClean" = "true" ];then
         #adb连接状态检测
-        if [[ -n "${deviceIdLocal}" ]];then
+        if [[ -z "${deviceIdLocal}" ]];then
             ftAdbContect
             [[ -z "${autoTestDeviceId}" ]] && return
             local deviceId=${autoTestDeviceId}
@@ -2725,7 +2725,7 @@ ftMtkLog()
             local dirPathLogStorgeAllBackup=${dirPathLogStorgeAll}_backup_${editFlag}
 
             if [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDevice ]&&echo exit") ]]; then
-                [ -d "$dirPathLogStorgeAll" ] && ftEcho -s "存在旧的mtklog,已备份到${dirPathLogStorgeAllBackup}" \
+                [ -d "$dirPathLogStorgeAll" ] && ftEcho -s "存在旧的mtklog,已备份到 ${dirPathLogStorgeAllBackup}" \
                 && mv ${dirPathLogStorgeAll} ${dirPathLogStorgeAllBackup}
 
                 ftEcho -s "正在导出mtklog 到 ${dirPathLogStorge}" && \
@@ -2769,6 +2769,7 @@ ftMtkLog()
             return
         fi
     fi
+
     #分割log
     if [ "$isSeparation" = "true" ];then
         [[ ! -f "${filePathLog}" ]] && ftEcho -e "找不到分割的文件: ${filePathLog}" && return
@@ -2790,12 +2791,45 @@ ftMtkLog()
         return
     fi
 
-    #分析log,分割log,待实现
+    #分析log
     if [ "$isCheck" = "true" ];then
-       local key="AndroidRuntime"
-        grep -rsn "${key}" $pathLog | while read line;do
-            [[ -z "$lengthReplace" ]] && lengthReplace=$(expr index "$line" $key) && (( lengthReplace-=1 ))
-            echo ${line:$lengthReplace} 
+        local key="AndroidRuntime"
+        local pathLogTemp=/tmp/log.tmp \
+                 index=0 checkIndex=10 \
+                 replaceVal="" \
+                 fileNameCheck="ck"
+        local lengthReplace
+        local filePathListCheck=($(find $pathLog -name "*.${fileNameCheck}" -type f))
+
+        if [[ -n "${filePathListCheck[@]}" ]];then
+            ftEcho -y "存在旧的分析文件,是否开始重新分析(回车默认y)"
+            read -n 1 sel && echo
+            [ -z "${sel}" ] && sel=y
+            [[ "$sel" != "y" ]] && return
+            for index in "${!filePathListCheck[@]}"; do
+               rm -v ${filePathListCheck[$index]}
+            done && echo
+        fi
+
+        ftEcho -s "开始分析: ${pathLog},请稍等"
+        grep -rsl "${key}" $pathLog | while read filePath;do
+            [[ ${filePath##*.} = ${fileNameCheck} ]] && break
+
+            echo "" > $pathLogTemp && \
+            grep -rs "${key}" $filePath | grep -v "PID:" | while read line;do
+                (( $checkIndex <= $index ))||[[ -z "${lengthReplace}" ]] && lengthReplace=$(expr index "${line}" ${key}) && (( lengthReplace-=5 )) && index=0
+                 echo ${line:$lengthReplace} >> $pathLogTemp
+                ((index+=1))
+            done
+
+            local filePathCheck=${filePath}.${fileNameCheck}
+            local fileNameCheckAll=$(basename ${filePathCheck})
+            cat $pathLogTemp \
+            | sort -rn \
+            | uniq -c \
+            | sort -u \
+            > ${filePathCheck} && \
+            ftEcho -s "生成分析文件:${fileNameCheckAll}"
         done
     fi
 }
