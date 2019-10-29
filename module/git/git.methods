@@ -547,8 +547,8 @@ ftGitTag()
     git tag -a "$tagName" -m "${noteContent[@]}" "$commitId"
 }
 
-complete -W "-h --help --rely_install" gitGitPushForce_SXTD
-gitGitPushForce_SXTD()
+complete -W "-h --help --rely_install" ftGitPushForce_SXTD
+ftGitPushForce_SXTD()
 {
     local ftEffect=模拟SXTD的git服务器环境下git的push_force功能
     local isEnable=true
@@ -566,7 +566,7 @@ gitGitPushForce_SXTD()
     -h | --help) ftEcho -s  "[ ${ftEffect} ]的使用示例 ";echo -e "\
 #=========================================================
 #
-#    gitGitPushForce_SXTD 无参
+#    ftGitPushForce_SXTD 无参
 #========================================================="; return ;;
     --env) ftEcho -s  "[ ${ftEffect} ]的使用环境说明 ";echo -e "\
 #=========================================================
@@ -577,16 +577,16 @@ gitGitPushForce_SXTD()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
-    [[ -z $(which git) ]] && gitGitPushForce_SXTD --rely "git" "sudo apt-get install git" && return
+    [[ -z $(which git) ]] && ftGitPushForce_SXTD --rely "git" "sudo apt-get install git" && return
     #解参验耦
     local valCount=0 errorContent
     local branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    [ -z "$branchNameLocal" ] && ftGitPatch --env && return
+    [ -z "${branchNameLocal}" ] && ftGitPatch --env && return
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && gitGitPushForce_SXTD -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPushForce_SXTD -h && return
 
     #实现主体
-    git push origin --delete "branchNameLocal" \
-    && git push origin --set-upstream "branchNameLocal" \
+    git push origin --delete "${branchNameLocal}" \
+    && git push origin --set-upstream "${branchNameLocal}" \
     || ftEcho -s "分支[ ${branchNameLocal} ]push force 失败"
 }
