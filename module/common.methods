@@ -231,7 +231,8 @@ ftGitUpdateVersion()
     * ) break;;esac;done
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && return
+    [[ -n "$isAutoUpdate" ]] && isEnable=$isAutoUpdate
+    [[ "$isEnable" != "true" ]] && return
     #依赖校验
     [[ -z $(which git) ]] && ftGitUpdateVersion --rely_install && return
     #解参验耦
@@ -244,12 +245,10 @@ ftGitUpdateVersion()
     [[ "${checkUpdateDateOld}" = "${checkUpdateDateNow}" ]] && return
     [[ -n "${rDirPathXbash}" ]] && cd $rDirPathXbash
 
-    local branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    [ -z "$branchNameLocal" ] && return
-
-    #实现主体
     local branchNameMaster="master"
-    [ "$branchNameLocal" = "$branchNameMaster" ] && return
+    local branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    #实现主体
+    [ -z "$branchNameLocal" ] || [ "$branchNameLocal" = "$branchNameMaster" ] && cd "${dirPathLocal}" && return
     echo "$(git pull > /dev/null &)" > /dev/null 
     cd "${dirPathLocal}"
     ftIniSetValue $rFilePathXbashDBUser $tagName $keyName $checkUpdateDateNow
