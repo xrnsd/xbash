@@ -1307,8 +1307,9 @@ ftAutoTest()
             ftEcho -sn "monkey测试>完成"
             isPulllog=true
         else
+            sleep 1
             ftEcho -sn "monkey测试>"; ftEcho -en "异常结束"
-            sleep 5
+            sleep 4
 
             local deviceIdList=($(adb devices |grep -v "List of devices attached" |awk '{print $1}'))
             if [[ -n $(adb devices|grep $deviceId) ]]; then
@@ -1332,8 +1333,9 @@ ftAutoTest()
             fi
         fi
         # 测试log处理
-        [[ "${isPulllog}" = "true" ]] && [[ -n $(adb -s $deviceId shell ls ${dirPathDevicesTarget}/mtklog) ]] \
-            && ftEcho -s "正在导出mtklog,请稍等..." && ftKillApplicationByPackageName com.mediatek.mtklogger && adb -s $deviceId pull ${dirPathDevicesTarget}/mtklog $dirPathLogMonkey
+        [[ "${isPulllog}" = "true" ]] && [[ -n $(adb -s $deviceId shell ls ${dirPathDevicesTarget}/mtklog) ]] && \
+        ftEcho -s "正在停止抓取mtklog" && ftKillApplicationByPackageName com.mediatek.mtklogger && \
+        ftMtkLog -p $dirPathLogMonkey
         [[ "${isMonkeyTestSucess}" = "true" ]] && mv $dirPathLogMonkey ${dirPathLogMonkey}_done
 }
 

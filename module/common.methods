@@ -2736,12 +2736,10 @@ ftMtkLog()
                 [ -z "${sel}" ] && sel=y
                 while true; do case "$sel" in
                         y | Y )
-                        local pullFlag=pull_${editFlag}
-                        adb -s $deviceId shell mv ${dirPathLogDevice} ${dirPathLogDevice}_${pullFlag}
-                        break ; ;;
-                        n | q ) break ; ;;
-                        * ) ftEcho -e "错误的选择：$sel"
-                            echo "输入n，q，离开";;
+                            local pullFlag=pull_${editFlag}
+                            adb -s $deviceId shell mv ${dirPathLogDevice} ${dirPathLogDevice}_${pullFlag}
+                            break ; ;;
+                        * ) break ; ;;
                 esac;done
             else
                 ftEcho -e "设备不存在${dirNameMtkLog},请确认设备的${dirNameMtkLog}是否存在[${dirPathLogDevice}]"

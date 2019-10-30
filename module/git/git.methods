@@ -93,7 +93,8 @@ ftGitLogShell()
         return
     fi
     if [ "${branchLogFormat}" = "%h" ];then
-        hashVal=($(git log --pretty=format:"$branchLogFormat" -$branchLogItemCount)) ; echo "${hashVal[@]} "
+        hashVal=($(git log --pretty=format:"$branchLogFormat" -$branchLogItemCount))
+        echo "${hashVal[@]} "
         return
     fi
     branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(13,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
@@ -577,7 +578,7 @@ ftGitPushForce_SXTD()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
-    [[ -z $(which git) ]] && ftGitPushForce_SXTD --rely "git" "sudo apt-get install git" && return
+    [[ -z $(which git) ]] && ftGitPushForce_SXTD --rely "git" "ftGitPushForce_SXTD --rely_install" && return
     #解参验耦
     local valCount=0 errorContent
     local branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
