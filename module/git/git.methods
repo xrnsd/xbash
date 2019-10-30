@@ -16,7 +16,8 @@ ftSetBashPs1ByGitBranch()
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     if [ -n "$branchName" ] && [ "$editType" != "-b" ];then
         local ps1=$(pwd)${branchName}
-        (( ${#ps1}>$COLUMNS/2-11 )) && branchName="\nbranchName→ ${branchName}: " || branchName="branchName→ ${branchName}: "
+        branchName="branchName→ ${branchName}: "
+        [[ -n "${COLUMNS}" ]] && (( ${#ps1}>$COLUMNS/2-11 )) && branchName="\nbranchName→ ${branchName}: "
         export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]${branchName}\[\033[0m\]"
     fi
 }
