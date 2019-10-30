@@ -157,6 +157,9 @@ fi
     #加载git
     if [[ -f $rFilePathXbashModuleGit ]];then source  $rFilePathXbashModuleGit
     else echo -e "\033[1;31mXbash的git扩展块加载失败\n${rFilePathXbashModuleGit}\033[0m" ;fi
+    #加载git,非自定义的bash扩展
+    if [[ -f $rFilePathGitBash ]];then source  $rFilePathGitBash
+    else echo -e "\033[1;31m非Xbash自定义的git扩展块加载失败\n${rFilePathGitBash}\033[0m" ;fi
     #加载base[执行校验，命令历史处理等部分流程]
     if [[ -f $rFilePathXbashModuleBaseModule ]];then source  $rFilePathXbashModuleBaseModule
     else echo -e "\033[1;31mXbash的base扩展块加载失败\n${rFilePathXbashModuleBaseModule}\033[0m" ;fi

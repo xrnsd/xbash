@@ -109,9 +109,6 @@ if [ -f /usr/bin/gnome-session-quit ] ;then
 fi
 
 if [[ -n $(which git) ]];then
-    # PS1显示分支信息
-    [[ "$isUseCustomPS1" = "true" ]] && export PROMPT_COMMAND='ftSetBashPs1ByGitBranch;history -a'
-    [ -f "$rFilePathGitBash" ] && source $rFilePathGitBash || echo -e "\033[1;31mgit bash 配置文件:\n$rFilePathGitBash 不存在\033[0m"
     alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
     alias xglbt='effect=查看本地仓库分支树;ftGitLogShell -at'
     alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'

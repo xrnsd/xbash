@@ -1,4 +1,6 @@
 #!/bin/bash
+#PS1自定义显示+分支信息
+ftSetBashPs1ByGitBranch
 #处理bash历史记录
 ftBashHistory
 #校验用户配置和模板版本一致性

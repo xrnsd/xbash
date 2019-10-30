@@ -224,17 +224,11 @@ ftGitUpdateVersion()
     local ftEffect=xbash自动更新
     local isEnable=true
 
-    while true; do case "$1" in
-    --rely_install)
-            sudo apt-get install git
-            return ;;
-    * ) break;;esac;done
-
     #可用性校验
     [[ -n "$isAutoUpdate" ]] && isEnable=$isAutoUpdate
     [[ "$isEnable" != "true" ]] && return
     #依赖校验
-    [[ -z $(which git) ]] && ftGitUpdateVersion --rely_install && return
+    [[ -z $(which git) ]] && return
     #解参验耦
     local dirPathLocal=$(pwd)
     local checkUpdateDateNow=$(date -d "today" +"%Y%m%d")

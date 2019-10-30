@@ -6,40 +6,16 @@ diaNameLocal="xbash"
 dirPathLocal=$(cd "$(dirname "$0")";pwd)
 [[ -z "$SUDO_USER" ]] && userNameLocal=$USER || userNameLocal=$SUDO_USER
 dirPathHomeLocal=/home/${userNameLocal}
-#####-----------------------公共方法-----------------------#########
-ftEcho()
-{
-    if [ "$1" = "-s" ];then
-        echo -e "\033[1;33m${2}\033[0m"
-    elif [ "$1" = "-e" ];then
-        echo -e "\033[1;31m${2}\033[0m"
-    elif [ "$1" = "-y" ];then
-        local titleContent="${2}"
-        local cmdContent="${3}"
-        local cmdContentNew="${4}"
-        ftEcho -y "${titleContent}(回车默认y)"
-        read -n 1 sel
-        [ -z "${sel}" ] && sel=y
-        while true; do case "$sel" in
-                y | Y )  eval ${cmdContentNew};break;;
-                n | q )  eval ${cmdContent};break;;
-                * ) echo "错误的选择：${sel},输入n，q，离开";;
-        esac;done
-        echo
-    fi
-}
 
+#####-----------------------公共方法-----------------------#########
 ftInitGitConfig()
 {
     # 变量初始化
     [[ -z "$userPasswdLocal" ]] && ftinitUserPassword
 
     if [[ -z $(which git) ]];then
-        echo $userPasswdLocal | sudo -p '' -S apt-get install  git ||(ftEcho -e "git安装失败，请重新安装" ;exit)
-    fi
-
-    if [[ -z $(which git) ]];then
-        ftEcho -e "git没有安装，请手动安装"
+        ftInitEcho -e "git没有安装，请手动安装"
+        exceptionContent="${exceptionContent}\n git配置初始化失败"
         return
     fi
 
@@ -49,7 +25,7 @@ ftInitGitConfig()
         read gitName&&git config --global user.name "$gitName"
         echo -en "请输入git邮箱或联系方式:"
         read gitemailUrl&&git config --global user.email "$gitemailUrl"
-        ftEcho -s "已自动初始化gitconfig,需要修改的请查看$filePathGitConfig"
+        ftInitEcho -s "已自动初始化gitconfig,需要修改的请查看$filePathGitConfig"
 
         #切换到独立分支
         local brachName="${userNameLocal}_$(date -d "today" +"%y%m%d%H%M%S")"
@@ -69,7 +45,7 @@ ftInitUserConfig()
     local filePathXbashConfigNew=${dirPathXbashConfigBashrcUser}/${userNameLocal}.config
 
     [ ! -d "$dirPathXbashConfigBashrcUser" ] && mkdir $dirPathXbashConfigBashrcUser
-    if [[ -f "$filePathXbashConfigExample" ]] && [ ! -f $filePathXbashConfigNew ]; then
+    if [[ -f "$filePathXbashConfigExample" ]]; then
         cp $filePathXbashConfigExample $filePathXbashConfigNew
 
         if [ -n "${userPasswdLocal}" ];then
@@ -78,47 +54,71 @@ ftInitUserConfig()
             sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败" 
         fi
 
-        local tagisAutoUpdateBase="export\ isAutoUpdate="
-        ftEcho -y "是否启用xbash自动更新[非master下]" "tagisAutoUpdateNew=" "tagisAutoUpdateNew=\"export\ isAutoUpdate=true\""
+        local tagisAutoUpdateBase="export\ isAutoUpdate=" \
+        tagisAutoUpdateNew="export\ isAutoUpdate=true"
         if [ -n "${tagisAutoUpdateNew}" ];then
-            sed -i "s:$tagisAutoUpdateBase:$tagisAutoUpdateNew:g" $filePathXbashConfigNew||\
-            exceptionContent="${exceptionContent}\n xbash自动更新启用失败"
+            ftInitEcho -y "是否启用xbash自动更新(回车默认y)"
+            read -n 1 sel ; [ -z "${sel}" ] && sel=y
+            if [[ "${sel}" = "y" ]];then
+                sed -i "s:$tagisAutoUpdateBase:$tagisAutoUpdateNew:g" $filePathXbashConfigNew||\
+                exceptionContent="${exceptionContent}\n xbash自动更新启用失败"
+            fi
         fi
-
-        local tagisUseCustomPS1Base="export\ isUseCustomPS1="
-        ftEcho -y "是否启用xbash定义bash的命令行前缀" "tagisUseCustomPS1New=" "tagisUseCustomPS1New=\"export\ isUseCustomPS1=true\""
+        
+        local tagisUseCustomPS1Base="export\ isUseCustomPS1=" \
+        tagisUseCustomPS1New="export\ isUseCustomPS1=true"
         if [ -n "${tagisUseCustomPS1New}" ];then
-            sed -i "s:$tagisUseCustomPS1Base:$tagisUseCustomPS1New:g" $filePathXbashConfigNew||\
-            exceptionContent="${exceptionContent}\n xbash定义bash的命令行前缀启用失败"
+            ftInitEcho -y "是否启用xbash定义bash的命令行前缀(回车默认y)"
+            read -n 1 sel ; [ -z "${sel}" ] && sel=y
+            if [[ "${sel}" = "y" ]];then
+                sed -i "s:$tagisUseCustomPS1Base:$tagisUseCustomPS1New:g" $filePathXbashConfigNew||\
+                exceptionContent="${exceptionContent}\n 启用xbash定义bash的命令行前缀失败"
+            fi
         fi
-
-        local tagisUseXbashHistoryBase="export\ isUseXbashHistory="
-        ftEcho -y "是否启用xbash定义的bash历史记录处理" "tagisUseXbashHistoryNew=" "tagisUseXbashHistoryNew=\"export\ isUseXbashHistory=true\""
+        
+        local tagisUseXbashHistoryBase="export\ isUseXbashHistory=" \
+        tagisUseXbashHistoryNew="export\ isUseXbashHistory=true"
         if [ -n "${tagisUseXbashHistoryNew}" ];then
-            sed -i "s:$tagisUseXbashHistoryBase:$tagisUseXbashHistoryNew:g" $filePathXbashConfigNew && export isUseXbashHistory=true||\
-            exceptionContent="${exceptionContent}\n xbash定义的bash历史记录处理启用失败"
+            ftInitEcho -y "是否启用xbash定义的bash历史记录处理(回车默认y)"
+            read -n 1 sel ; [ -z "${sel}" ] && sel=y
+            if [[ "${sel}" = "y" ]];then
+                sed -i "s:$tagisUseXbashHistoryBase:$tagisUseXbashHistoryNew:g" $filePathXbashConfigNew||\
+                exceptionContent="${exceptionContent}\n xbash定义的bash历史记录处理启用失败"
+            fi
         fi
-
-        local tagisUseCustomAndroidDevEnvConfigBase="export\ isUseCustomAndroidDevEnvConfig="
-        ftEcho -y "是否启用xbash定义的Android开发环境基础配置" "tagisUseCustomAndroidDevEnvConfigNew=" "tagisUseCustomAndroidDevEnvConfigNew=\"export\ isUseCustomAndroidDevEnvConfig=true\""
+        
+        local tagisUseCustomAndroidDevEnvConfigBase="export\ isUseCustomAndroidDevEnvConfig=" \
+        tagisUseCustomAndroidDevEnvConfigNew="export\ isUseCustomAndroidDevEnvConfig=true"
         if [ -n "${tagisUseCustomAndroidDevEnvConfigNew}" ];then
-            sed -i "s:$tagisUseCustomAndroidDevEnvConfigBase:$tagisUseCustomAndroidDevEnvConfigNew:g" $filePathXbashConfigNew||\
-            exceptionContent="${exceptionContent}\n xbash定义的Android开发环境配置启用失败" 
+            ftInitEcho -y "是否启用xbash定义的Android开发环境基础配置(回车默认y)"
+            read -n 1 sel ; [ -z "${sel}" ] && sel=y
+            if [[ "${sel}" = "y" ]];then
+                sed -i "s:$tagisUseCustomAndroidDevEnvConfigBase:$tagisUseCustomAndroidDevEnvConfigNew:g" $filePathXbashConfigNew||\
+                exceptionContent="${exceptionContent}\n xbash定义的Android开发环境基础配置启用失败"
+            fi
         fi
-
-        local tagisUseBuildCcacheBase="isUseBuildCcache="
-        ftEcho -y "是否启用xbash定义的Android编译缓存配置" "tagisUseBuildCcacheNew=" "tagisUseBuildCcacheNew=\"isUseBuildCcache=true\""
+        
+        local tagisUseBuildCcacheBase="export\ isUseBuildCcache=" \
+        tagisUseBuildCcacheNew="export\ isUseBuildCcache=true"
         if [ -n "${tagisUseBuildCcacheNew}" ];then
-            sed -i "s:$tagisUseBuildCcacheBase:$tagisUseBuildCcacheNew:g" $filePathXbashConfigNew||\
-            exceptionContent="${exceptionContent}\n xbash定义的Android编译缓存配置启用失败" 
+            ftInitEcho -y "是否启用xbash定义的Android编译缓存配置(回车默认y)"
+            read -n 1 sel ; [ -z "${sel}" ] && sel=y
+            if [[ "${sel}" = "y" ]];then
+                sed -i "s:$tagisUseBuildCcacheBase:$tagisUseBuildCcacheNew:g" $filePathXbashConfigNew||\
+                exceptionContent="${exceptionContent}\n xbash定义的Android编译缓存配置启用失败"
+            fi
         fi
 
-        # local tagisUseDistccBase="isUseDistcc="
-        # ftEcho -y "是否启用xbash定义的Android分布式编译配置" "tagisUseDistccNew=" "tagisUseDistccNew=\"isUseDistcc=true\""
-        # if [ -n "${tagisUseDistccNew}" ];then
-        #     sed -i "s:$tagisUseDistccBase:$tagisUseDistccNew:g" $filePathXbashConfigNew||\
-        #     exceptionContent="${exceptionContent}\n xbash定义的Android分布式编译配置启用失败" 
-        # fi
+       # local tagisUseDistccBase="export\ isUseDistcc=" \
+       # tagisUseDistccNew="export\ isUseDistcc=true"
+       # if [ -n "${tagisUseDistccNew}" ];then
+       #     ftInitEcho -y "是否启用xbash定义的Android分布式编译配置(回车默认y)"
+       #     read -n 1 sel ; [ -z "${sel}" ] && sel=y
+       #     if [[ "${sel}" = "y" ]];then
+       #         sed -i "s:$tagisUseDistccBase:$tagisUseDistccNew:g" $filePathXbashConfigNew||\
+       #         exceptionContent="${exceptionContent}\n xbash定义的Android分布式编译配置启用失败"
+       #     fi
+       # fi
     else
         exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败"
     fi
@@ -137,7 +137,7 @@ ftInitMoule()
     if [ -f "$filePathXbashModuleBashrcNew" ]; then
         cd $dirPathHomeLocal
         [[ -f "$filePathHomeLocalBashrc" ]] && [ $(readlink -f  $filePathHomeLocalBashrc) != $filePathXbashModuleBashrcNew ] && mv ${filePathHomeLocalBashrc} ${filePathHomeLocalBashrc}_backup
-        ln -s $filePathXbashModuleBashrcNew .bashrc || exceptionContent="${exceptionContent}\n xbash生效初始化失败"
+        ln -sf $filePathXbashModuleBashrcNew .bashrc || exceptionContent="${exceptionContent}\n xbash生效初始化失败"
     else
         exceptionContent="${exceptionContent}\n xbash生效初始化失败,文件不存在:${filePathXbashModuleBashrcNew}"
     fi
@@ -180,13 +180,44 @@ ftinitUserPassword()
         stty echo
 }
 
+ftInitEcho()
+{
+    local ftEffect=工具信息提示
+
+    while true; do case "$1" in
+    -h | --help) ftInitEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================
+#    ftInitEcho    -e     内容    # 错误信息显示，对字符串的缩进敏感
+#    ftInitEcho    -y     内容    # 特定信息显示,y/n，对字符串的缩进敏感
+#    ftInitEcho    -s     内容    # 执行信息，对字符串的缩进敏感
+#    ftInitEcho    -sn   内容    # 执行信息,不换行，对字符串的缩进敏感
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    local content option=$1 valList=$@
+    option=${option:-'未制定显示信息'}
+    if [ ${#valList[@]} -eq 2 ];then
+        content=$(echo $content |sed s/[[:space:]]//g)
+    else
+        #除第一个参数外的所有参数列表，可正常打印数组
+        content="${valList[@]/$option/}"
+        content=${content/ /}
+    fi
+    while true; do case $option in
+        -e )      echo -e "\033[1;31m$content\033[0m"; break;;
+        -s )       echo -e "\033[1;33m$content\033[0m"; break;;
+        -sn )     echo -en "\033[1;33m$content\033[0m"; break;;
+        -y )       echo;echo -en "${content}[y/n]"; break;;
+    * )    echo $option ;break;; esac ;done
+}
+
 ftInitXbash()
 {
     local ftEffect=初始化xbash
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    -h | --help) ftInitEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
 #=========================================================
 #
 #    ./init                            #初始化xbash所有配置
@@ -198,7 +229,7 @@ ftInitXbash()
     * ) break;;esac;done
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftInitEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     if [[ -z "$1" ]];then #初始化所有配置
         # 变量初始化
@@ -211,7 +242,8 @@ ftInitXbash()
         ftInitInputrc
 
         #结果显示
-        [[ -z "$exceptionContent" ]] && ftEcho -s "Xbash 初始化成功 " || ftEcho -e "${exceptionContent}"
+        echo
+        [[ -z "$exceptionContent" ]] && ftInitEcho -s "Xbash 初始化成功 " ||ftInitEcho -e "Xbash 初始化失败"
         return
     fi
     #根据参数初始化
