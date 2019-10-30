@@ -2857,6 +2857,8 @@ ftAdbContect()
     #依赖校验
     [[ -z $(which adb) ]] && ftAdbContect --env && return
     [[ ! -d ${ANDROID_SDK} ]] && ftAdbContect --env && return
+    #环境性校验
+    [[ -n "$ANDROID_BUILD_TOP" ]] && ftEcho -s "当前终端已初始化Android编译环境,此功能不可用" && return
     #解参验耦
     local valCount=0 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -2872,7 +2874,7 @@ ftAdbContect()
     local deviceCountUniq=${#deviceIdListUniq[@]}
     local deviceIdold=$autoTestDeviceId
 
-    (( $deviceCount != $deviceCountUniq )) && ftEcho -s "存在多个同ID设备,请手动移除多余设备" && return
+    (( $deviceCount != $deviceCountUniq )) && ftEcho -s "存在多个同ID设备,请手动移除设备"&& adb devices && return
 
     if (( $deviceCount <=1 ));then
         ftEcho -sn "等待设备连接>" && adb wait-for-device
