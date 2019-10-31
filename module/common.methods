@@ -1214,7 +1214,7 @@ ftLogcatApplicationByTag()
     [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
 
-    [ -z "flagError" ] && adb -s $deviceId logcat -c
+    [ -z "${flagError}" ] && adb -s $deviceId logcat -c
     if [[ "$isUserPackageName" = "true" ]]; then
         while true; do case "$packageName" in
             systemui)   packageName="com.android.systemui"  ;break;;
@@ -2755,7 +2755,7 @@ ftMtkLog()
         if [ "$isClean" = "true" ];then
             local packageNameMtkLog="com.mediatek.mtklogger"
             local dirPathLogDevice=/sdcard/mtklog
-            [ -n "$(adb -s $deviceId shell ps |grep $packageNameMtkLog)" ] && ftKillApplicationByPackageName $packageNameMtkLog
+            [ -n "$(adb -s $deviceId shell ps |grep $packageNameMtkLog)" ] && ftKillApplicationByPackageName $packageNameMtkLog > /dev/null
             adb -s $deviceId shell rm -rf ${dirPathLogDevice}
             return
         fi
