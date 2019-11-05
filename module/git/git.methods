@@ -480,7 +480,7 @@ ftGitTag()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local valCount=1 errorContent index arg arg2 arg3
-    local tagName noteContent commitId isDeleteTag
+    local tagName noteContent commitId isDeleteTag isModifyDescription
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
     ((index=i+1)) ; eval arg2=\${${index}}
@@ -495,8 +495,11 @@ ftGitTag()
     -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #
-#    添加标签
+#    添加版本标签
 #    ftGitTag -a 标签名 标签名对应的commitid
+#
+#    添加修改说明标签
+#    ftGitTag -m 标签名对应的commitid
 #
 #    删除标签
 #    ftGitTag -d 标签名
@@ -505,6 +508,12 @@ ftGitTag()
         -a ) tagName="${arg2}"
             commitId="${arg3}"
             [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
+          ;;
+        -m ) commitId="${arg2}"
+            [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
+            (( ${#commitId} > 7 )) && commitId=${commitId:0:7}
+            tagName="MD_${commitId}"
+            isModifyDescription=true
           ;;
         -d ) tagName="${arg2}"
               isDeleteTag=true
