@@ -2635,8 +2635,8 @@ ftCheckCcache()
     fi
 }
 
-complete -W "-h --help --rely_install -s -sp -c -p -cs" ftMtkLog
-ftMtkLog()
+complete -W "--help --stop --clearn -h -s -sp -c -p" ftMtkLog
+ftMtkLog() 
 {
     local ftEffect=MTK的log相关操作封装
     local isEnable=true
@@ -2645,7 +2645,7 @@ ftMtkLog()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local valCount=3 errorContent index arg arg2 arg3 #arg4
-    local isPull isCheck isSeparation isClean deviceIdLocal
+    local isPull isCheck isSeparation isClearn isStop deviceIdLocal
     local filePathLog pathLog dirPathLogStorge fileSizeBaseMillionByte
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
     ((index=i+2)) ; eval arg3=\${${index}} #; ((index=i+3)) ; eval arg4=\${${index}}
@@ -2674,8 +2674,11 @@ ftMtkLog()
 #    ftMtkLog -sp  log文件路径 分割的大小[MB],默认为2
 #    ftMtkLog -sp  /xx/xx.log 3M
 #
-#    停止mtk的log抓取,清理设备log文件
-#    ftMtkLog -cs
+#    停止mtk的log抓取
+#    ftMtkLog --stop
+#
+#    清理设备log文件
+#    ftMtkLog --clearn
 #========================================================="; return ;;
     --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
@@ -2683,7 +2686,8 @@ ftMtkLog()
 # 使用前,请先初始化[xxxxxxxxx]
 #========================================================="; return ;;
         # 变量参数解析部分==============
-        -cs) isClean=true ; ;;
+        --clearn) isClearn=true ; ;;
+        --stop) isStop=true ; ;;
         -s ) deviceIdLocal="${arg2}"
              ;;
         -p ) isPull=true
@@ -2709,65 +2713,69 @@ ftMtkLog()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMtkLog -h && return
 
     #实现主体
-    if [ "$isPull" = "true" ] || [ "$isClean" = "true" ];then
+    if [ "$isPull" = "true" ] \
+        || [ "$isClearn" = "true" ] \
+        || [ "$isStop" = "true" ];then
         #adb连接状态检测
         if [[ -z "${deviceIdLocal}" ]];then
             ftAdbContect
             [[ -z "${autoTestDeviceId}" ]] && return
             local deviceId=${autoTestDeviceId}
         fi
-
-        if [ "$isPull" = "true" ];then
-            local dirNameMtkLog=mtklog
-            local dirPathLogDevice=/sdcard/mtklog
-            local dirPathBuildpropDevice=/system/build.prop
-            local dirPathLogStorgeAll=$(ftPath $dirPathLogStorge)/${dirNameMtkLog}
-            local editFlag=$(date -d "today" +"%y%m%d%H%M%S")
-            local dirPathLogStorgeAllBackup=${dirPathLogStorgeAll}_backup_${editFlag}
-
-            if [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDevice ]&&echo exit") ]]; then
-                [ -d "$dirPathLogStorgeAll" ] && ftEcho -s "存在旧的mtklog,已备份到 ${dirPathLogStorgeAllBackup}" \
-                && mv ${dirPathLogStorgeAll} ${dirPathLogStorgeAllBackup}
-
-                ftEcho -s "正在导出mtklog 到 ${dirPathLogStorge}" && \
-                adb -s $deviceId pull ${dirPathLogDevice} ${dirPathLogStorge} && \
-                adb -s $deviceId pull ${dirPathBuildpropDevice} ${dirPathLogStorge}
-
-                ftEcho -y "是否对设备的mtklog添加已导出标示(回车默认y)"
-                read -n 1 sel
-                [ -z "${sel}" ] && sel=y
-                while true; do case "$sel" in
-                        y | Y )
-                            local pullFlag=pull_${editFlag}
-                            adb -s $deviceId shell mv ${dirPathLogDevice} ${dirPathLogDevice}_${pullFlag}
-                            break ; ;;
-                        * ) break ; ;;
-                esac;done
-            else
-                ftEcho -e "设备不存在${dirNameMtkLog},请确认设备的${dirNameMtkLog}是否存在[${dirPathLogDevice}]"
-            fi
-
-            local dirPathLogDeviceAEE=/data/aee_exp
-            [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDeviceAEE ]&&echo exit") ]] && \
-            ftEcho -s "正在导出 aee_exp log 到 ${dirPathLogStorge}" && \
-            adb -s $deviceId pull ${dirPathLogDeviceAEE} ${dirPathLogStorge}
-
-            local dirPathLogDeviceANR=/data/anr
-            [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDeviceANR ]&&echo exit") ]] && \
-            ftEcho -s "正在导出 anr log 到 ${dirPathLogStorge}" && \
-            adb -s $deviceId pull ${dirPathLogDeviceANR} ${dirPathLogStorge}
-
-            return
-        fi
-
-        if [ "$isClean" = "true" ];then
-            local packageNameMtkLog="com.mediatek.mtklogger"
-            local dirPathLogDevice=/sdcard/mtklog
-            [ -n "$(adb -s $deviceId shell ps |grep $packageNameMtkLog)" ] && ftKillApplicationByPackageName $packageNameMtkLog > /dev/null
-            adb -s $deviceId shell rm -rf ${dirPathLogDevice}
-            return
-        fi
     fi
+
+    if [ "$isPull" = "true" ];then
+        local dirNameMtkLog=mtklog
+        local dirPathLogDevice=/sdcard/mtklog
+        local dirPathBuildpropDevice=/system/build.prop
+        local dirPathLogStorgeAll=$(ftPath $dirPathLogStorge)/${dirNameMtkLog}
+        local editFlag=$(date -d "today" +"%y%m%d%H%M%S")
+        local dirPathLogStorgeAllBackup=${dirPathLogStorgeAll}_backup_${editFlag}
+
+        if [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDevice ]&&echo exit") ]]; then
+            [ -d "$dirPathLogStorgeAll" ] && ftEcho -s "存在旧的mtklog,已备份到 ${dirPathLogStorgeAllBackup}" \
+            && mv ${dirPathLogStorgeAll} ${dirPathLogStorgeAllBackup}
+
+            ftEcho -s "正在导出mtklog 到 ${dirPathLogStorge}" && \
+            adb -s $deviceId pull ${dirPathLogDevice} ${dirPathLogStorge} && \
+            adb -s $deviceId pull ${dirPathBuildpropDevice} ${dirPathLogStorge}
+
+            ftEcho -y "是否对设备的mtklog添加已导出标示(回车默认y)"
+            read -n 1 sel
+            [ -z "${sel}" ] && sel=y
+            while true; do case "$sel" in
+                    y | Y )
+                        local pullFlag=pull_${editFlag}
+                        adb -s $deviceId shell mv ${dirPathLogDevice} ${dirPathLogDevice}_${pullFlag}
+                        break ; ;;
+                    * ) break ; ;;
+            esac;done
+        else
+            ftEcho -e "设备不存在${dirNameMtkLog},请确认设备的${dirNameMtkLog}是否存在[${dirPathLogDevice}]"
+        fi
+
+        local dirNameOtherLog=other_log
+        dirPathLogStorge=${dirPathLogStorge}/${dirNameOtherLog}
+        [[ ! -d ${dirPathLogStorge} ]] && mkdir -p ${dirPathLogStorge}
+
+        local dirPathLogDeviceAEE=/data/aee_exp
+        [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDeviceAEE ]&&echo exit") ]] && \
+        ftEcho -s "正在导出 aee_exp log 到 ${dirPathLogStorge}" && \
+        adb -s $deviceId pull ${dirPathLogDeviceAEE} ${dirPathLogStorge}
+
+        local dirPathLogDeviceANR=/data/anr
+        [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDeviceANR ]&&echo exit") ]] && \
+        ftEcho -s "正在导出 anr log 到 ${dirPathLogStorge}" && \
+        adb -s $deviceId pull ${dirPathLogDeviceANR} ${dirPathLogStorge}
+
+    fi
+
+    # 停止mtklog
+    [ "$isStop" = "true" ] && ftEcho -s "正在停止抓取mtklog" && ftKillApplicationByPackageName "com.mediatek.mtklogger" > /dev/null
+
+    # 清理mtklog
+    [ "$isClearn" = "true" ] && [[ -n $(adb -s $deviceId shell ls ${dirPathDevicesTarget}/mtklog) ]] && \
+    ftEcho -s "正在清理mtklog" && adb -s $deviceId shell rm -rf /sdcard/mtklog
 
     #分割log
     if [ "$isSeparation" = "true" ];then
@@ -2787,7 +2795,6 @@ ftMtkLog()
         [[ -n "${fileNameEnd}" ]] && split --verbose -b $fileSizeBaseMillionByte "$filePathLog" -d -a 4 --additional-suffix=.${fileNameEnd} $fileNameBase
         ftEcho -s "${fileName} 分割完成"
         cd $dirPathLocal
-        return
     fi
 
     #分析log

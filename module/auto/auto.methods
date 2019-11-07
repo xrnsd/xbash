@@ -1274,9 +1274,10 @@ ftAutoTest()
             if ((${#packageNameList[@]}>1)); then
                 local fileNameWhite="monkey.whitelist"
                 local filePathWhite="${rDirPathUserHome}/temp/${fileNameWhite}"
+                local filePathWhiteDevices="${dirPathDevicesTarget}/${fileNameWhite}"
                 rm -rf $filePathWhite
                 for packageName in ${packageWhiteNameList[@]} ; do echo package:${packageName} >> $filePathWhite ;done
-                adb -s $deviceId push $filePathWhite $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhite}"
+                adb -s $deviceId push $filePathWhite $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhiteDevices}"
             else
                 monkeyConfig=${monkeyConfig}" -p ${packageNameList}"
             fi
@@ -1330,10 +1331,9 @@ ftAutoTest()
                 isPulllog=true;
             fi
         fi
+
         # 测试log处理
-        [[ "${isPulllog}" = "true" ]] && [[ -n $(adb -s $deviceId shell ls ${dirPathDevicesTarget}/mtklog) ]] && \
-        ftEcho -s "正在停止抓取mtklog" && ftKillApplicationByPackageName com.mediatek.mtklogger && \
-        ftMtkLog -p $dirPathLogMonkey
+        [[ "${isPulllog}" = "true" ]] && ftMtkLog --stop --clearn -p $dirPathLogMonkey
         [[ "${isMonkeyTestSucess}" = "true" ]] && mv $dirPathLogMonkey ${dirPathLogMonkey}_done
 }
 
