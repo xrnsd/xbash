@@ -6,12 +6,12 @@ ftAutoInitEnv()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    ftAutoInitEnv 无参
 #    ftAutoInitEnv -bp #强制解析build.prop信息
 #========================================================="; return ;;
-    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+    --env ) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -167,17 +167,17 @@ ftBranchNameResolution()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #
 #    ftBranchNameResolution -h
 #========================================================="; return ;;
-    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+    --env ) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -269,17 +269,17 @@ ftBuildPropResolution()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #
 #    ftBuildPropResolution -h
 #========================================================="; return ;;
-    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+    --env ) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -361,7 +361,7 @@ ftAutoBuildMultiBranchEnvSeparation()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    查看帮助
 #    ftAutoBuildMultiBranchEnvSeparation -h
@@ -369,7 +369,7 @@ ftAutoBuildMultiBranchEnvSeparation()
 #    根据分支列表进行串行编译
 #    ftAutoBuildMultiBranchEnvSeparation -b
 #========================================================="; return ;;
-    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+    --env ) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -424,8 +424,16 @@ ftAutoBackupOrRestoreOuts()
     local ftEffect=Android编译生成out相关自动维护
     local isEnable=true
 
-    while true; do case "$1" in
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    ftAutoInitEnv
+    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
+    local arg arg2 index errorContent 
+    local isMoveBack mTagContent filterString
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+        # 说明参数解析部分==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    备份out
 #    ftAutoBackupOrRestoreOuts 无参
@@ -435,21 +443,12 @@ ftAutoBackupOrRestoreOuts()
 #    ftAutoBackupOrRestoreOuts -m
 #    ftAutoBackupOrRestoreOuts -m xxx   #分支名包含xxx的out列表
 #========================================================="; return ;;
-    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+    --env ) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #解参验耦
-    ftAutoInitEnv
-    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
-    local arg arg2 index errorContent 
-    local isMoveBack mTagContent filterString
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+        # 变量参数解析部分==============
         -t ) mTagContent="${arg2}"
              ;;
         -m )  isMoveBack=true
@@ -561,13 +560,13 @@ ftAutoUpload()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+    --rely) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 #    依赖缺失,请使用下面命令安装
 #    sudo add-apt-repository ppa:pi-rho/security && sudo apt-get update
 #    sudo apt-get install sshpass pigz pv nmap
-#=========================================================" ;return;;
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#========================================================="; return ;;
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    ftAutoUpload 源存放目录 服务器地址
 #
@@ -657,8 +656,13 @@ ftAutoPacket()
     local ftEffect=基于android的out生成版本软件包
     local isEnable=true
 
-    while true; do case "$1" in
-    -h | --help) ftClearTail $dirPathLocal ; ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local isClean isReadMe isUpload isPacket isMove isCopy isSpecial isBale
+    local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+        # 说明参数解析部分==============
+        -h | --help) ftClearTail $dirPathLocal ;ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    ftAutoPacket -y #免确认自动清理out/packet
 #    ftAutoPacket -u #上传到188服务器
@@ -666,15 +670,24 @@ ftAutoPacket()
 #    ftAutoPacket -p #打包
 #    ftAutoPacket -a #默认启动全部流程
 #========================================================="; return ;;
-    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+    --env ) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #========================================================="; return ;;
-    * ) break;; esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+        # 变量参数解析部分==============
+        -a ) isClean=true
+              isReadMe=true
+              isUpload=true
+              isPacket=true
+              isBale=true ;;
+        -y ) isClean=true ;;
+        -u ) isUpload=true ;;
+        -r ) isReadMe=true ;;
+        -p ) isPacket=true 
+              isReadMe=true
+              isBale=true ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #解参验耦
     ftAutoInitEnv
     if [ -z "$ANDROID_BUILD_TOP" ]\
@@ -702,21 +715,6 @@ ftAutoPacket()
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoPacket -h && return
 
     #实现主体
-    local isClean isReadMe isUpload isPacket isMove isCopy isSpecial isBale
-    local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
-        -a ) isClean=true
-              isReadMe=true
-              isUpload=true
-              isPacket=true
-              isBale=true ;;
-        -y ) isClean=true ;;
-        -u ) isUpload=true ;;
-        -r ) isReadMe=true ;;
-        -p ) isPacket=true 
-              isReadMe=true
-              isBale=true ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
-
     if [[ -d "$dirPathVersionSoftware" ]]; then
             if [[ -n "$isClean" ]]; then
                 rm  -rf $dirPathVersionSoftware
@@ -895,7 +893,7 @@ ftAutoPacket()
             # 创建版本说明
             [[ -n "$isReadMe" ]] && ftEcho -s "创建 版本说明" && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
             ftEcho -y "是否更新版本说明 [回车更新]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
-            [[ "${sel}" = "y" ]] && gedit -s $AutoEnv_filePathVersionReadme $AutoEnv_filePathVersionChangeListTemplate
+            [[ "${sel}" = "y" ]] && gedit -s $AutoEnv_filePathVersionChangeListTemplate $AutoEnv_filePathVersionReadme
 
             # 生成软件压缩包
             if [[ -n "$isBale" ]] ;then
@@ -1006,16 +1004,16 @@ ftAutoCreateReadMeBySoftwareVersion()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    ftAutoCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
 #    ftAutoCreateReadMeBySoftwareVersion out/pac
 #========================================================="; return ;;
-    --rely) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+    --rely) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 #    工具依赖包 unix2dos #sudo apt-get install tofrodos
-#========================================================="; return;;
-    --env ) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#========================================================="; return ;;
+    --env ) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 # 环境未初始化
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
@@ -1188,12 +1186,23 @@ ftAutoTest()
     local ftEffect=AndroidMonkey测试
     local isEnable=true
 
-    while true; do case "$1" in
-     --rely) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local editType=$1
+    local eventCountDef=$(( 100 * 100 *100 ))
+    local eventCount=$eventCountDef dirPathLogRoot=~/log
+    local packageNameList packageBlackNameList packageWhiteNameList throttleLong deviceIdTargetForce
+    local arg  arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
+        ((index=i+1)) ;eval arg2=\${${index}}
+        ((index=i+2)) ;eval arg3=\${${index}}
+        case "${arg}" in
+        # 说明参数解析部分==============
+     --rely) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 #    adb当前无法正常使用， 请确认 Android SDK 配置是否正确
-#========================================================="; return;;
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#========================================================="; return ;;
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    #-xx 为独立参数类型标识,不可拆分
 #    #参数之间没有先后约束
@@ -1218,28 +1227,17 @@ ftAutoTest()
 #    延时[ms]
 #    ftAutoTest -t 2000
 #========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+        # 变量参数解析部分==============
+        -r)     export   autoTestDeviceId=                          ;;
+        -s)     deviceIdTargetForce=${arg2}; export autoTestDeviceId= ;;
+        -p)     packageNameList=${arg2}                            ;;
+        -pb)   packageBlackNameList=${arg2}                   ;;
+        -d)     dirPathLogRoot=${arg2:-'dirPathLogRoot'}          ;;
+        -t)     throttleLong=${arg2}                            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
     #环境校验
      [[ -z $(which adb) ]] && ftAutoTest --rely && return
-    #解参验耦
-    local editType=$1
-    local eventCountDef=$(( 100 * 100 *100 ))
-    local eventCount=$eventCountDef dirPathLogRoot=~/log
-    local packageNameList packageBlackNameList packageWhiteNameList throttleLong deviceIdTargetForce
-    local arg  arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
-        ((index=i+1)) ;eval arg2=\${${index}}
-        ((index=i+2)) ;eval arg3=\${${index}}
-        case "${arg}" in
-              -r)     export   autoTestDeviceId=                          ;;
-              -s)     deviceIdTargetForce=${arg2}; export autoTestDeviceId= ;;
-              -p)     packageNameList=${arg2}                            ;;
-              -pb)   packageBlackNameList=${arg2}                   ;;
-              -d)     dirPathLogRoot=${arg2:-'dirPathLogRoot'}          ;;
-              -t)     throttleLong=${arg2}                            ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    #参数校验
     local errorContent
     # (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong"
     [[ -n $packageBlackNameList ]] && [[ -n $packageNameList ]] && errorContent="${errorContent}\\n 包限制配置错误1"
@@ -1346,7 +1344,7 @@ ftAutoCreateSxtdOldProjectBranch()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
@@ -1356,12 +1354,12 @@ ftAutoCreateSxtdOldProjectBranch()
             sudo apt-get update
             sudo apt-get install git
             return ;;
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #
 #    ftAutoCreateSxtdOldProjectBranch  #无参数
 #========================================================="; return ;;
-    --env) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #==========================================================
 # 环境未初始化
 # 使用前,请先进入AOSP项目
@@ -1444,21 +1442,29 @@ ftAutoLnOut()
     local ftEffect=自动链接out到其他硬盘
     local isEnable=true
 
-    while true; do case "$1" in
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local valCount=2 errorContent index arg arg2
+    local dirPathDev
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    case "${arg}" in
+        # 说明参数解析部分==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #
 #    ftAutoLnOut -p 存放out的设备路径
 #========================================================="; return ;;
-    --env) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #==========================================================
 # 环境未初始化
 # 使用前,请先进入AOSP项目
 #========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+        # 变量参数解析部分==============
+        -p ) dirPathDev="${arg2}"
+            dirPathDev=$(ftPath ${dirPathDev})
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #环境校验
     if [[ -z "$ANDROID_BUILD_TOP" ]];then
         [[ -d "alps" ]] && [[ -d ".git" ]] && cd alps
@@ -1468,17 +1474,8 @@ ftAutoLnOut()
     dirPathAospRoot=$(dirname $ANDROID_BUILD_TOP)
     aospProjectName=$(basename $dirPathAospRoot)
     [[ ! -d "${dirPathAospRoot}" ]] && ftAutoCreateSxtdOldProjectBranch --env && return
+    #参数校验
     local dirPathLocal=$(pwd)
-    #解参验耦
-    local valCount=2 errorContent index arg arg2
-    local dirPathDev
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
-    case "${arg}" in
-        -p ) dirPathDev="${arg2}"
-            dirPathDev=$(ftPath ${dirPathDev})
-          ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
-
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -d "$dirPathDev" ] && errorContent="${errorContent}\\n[无法链接到目标路径]dirPathDev=$dirPathDev"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoLnOut -h && return

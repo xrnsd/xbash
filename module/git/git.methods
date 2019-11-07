@@ -14,11 +14,12 @@ ftSetBashPs1ByGitBranch()
     [ "$(whoami)" = "root" ] && defaultPrefix="root" && defaultColorConfig=42
 
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local branchNameAll
     if [ -n "$branchName" ] && [ "$editType" != "-b" ];then
         local ps1=$(pwd)${branchName}
-        branchName="branchName→ ${branchName}: "
-        [[ -n "${COLUMNS}" ]] && (( ${#ps1}>$COLUMNS/2-11 )) && branchName="\nbranchName→ ${branchName}: "
-        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]${branchName}\[\033[0m\]"
+        branchNameAll="branchName→ ${branchName}: "
+        [[ -n "${COLUMNS}" ]] && (( ${#ps1}>$COLUMNS/2-11 )) && branchNameAll="\nbranchName→ ${branchName}: "
+        export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]${branchNameAll}\[\033[0m\]"
     fi
 }
 
@@ -27,17 +28,22 @@ ftGitLogShell()
     local ftEffect=git的log特定格式显示
     local isEnable=true
 
-    while true; do case "$1" in
-     --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local isAllBranchLog isTagBranchLog branchLogFormat isCustomBranchLog branchLogItemCount branchLogItemCountDef=20 pathTarget
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+        # 说明参数解析部分==============
+     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    ${ftEffect}依赖包
 #    请尝试使用 sudo apt-get install git git-core git-gui git-doc 补全依赖
-#========================================================="; return;;
-     --env) ftEcho -sn "${ftEffect} " ; echo 的环境说明 ; echo -e "\
+#=========================================================" ;return ;;
+     --env) ftEcho -rc "${ftEffect}" "的环境说明" "\
 #=========================================================
 #    当前目录没有有效的GIT仓库
-#========================================================="; return;;
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+#=========================================================" ;return ;;
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    ftGitLogShell -a  # 全部分支log
 #    ftGitLogShell -at  # 查看分支树
@@ -46,18 +52,8 @@ ftGitLogShell()
 #    ftGitLogShell -nn 数量 # 不高亮显示
 #    ftGitLogShell -t Tag名  #只输出包含tag的git log
 #    ftGitLogShell -c \"格式字串\" #自定义格式输出
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #环境校验
-    [[ -z $(which git) ]] && ftGitLogShell --rely && return
-    [[ -n "$isAllBranchLog" ]] && [ -z $(which gitk) ] && ftGitLogShell --rely && return
-    [[ -z $(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') ]] && ftGitLogShell --env && return
-    #解参验耦
-    local isAllBranchLog isTagBranchLog branchLogFormat isCustomBranchLog branchLogItemCount branchLogItemCountDef=20 pathTarget
-    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+#=========================================================" ;return ;;
+        # 变量参数解析部分==============
         -a )  isAllBranchLog=true
                 pathTarget="${arg2}"
                 branchLogItemCount=0
@@ -78,6 +74,10 @@ ftGitLogShell()
                 branchLogFormat="%<(21 ,trunc)%ai  %<(10,trunc)%an %h %s  %d"
                 ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
+    #参耦校验
+    [[ -z $(which git) ]] && ftGitLogShell --rely && return
+    [[ -n "$isAllBranchLog" ]] && [ -z $(which gitk) ] && ftGitLogShell --rely && return
+    [[ -z $(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') ]] && ftGitLogShell --env && return
     [ -z "$branchLogItemCount" ]||(($branchLogItemCount<0)) && errorContent="${errorContent}\\n[示例2]branchLogItemCount=$branchLogItemCount"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitLogShell -h && return
 
@@ -110,11 +110,11 @@ ftGitPatchAdd2Branches()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    ftGitPatchAdd2Branches 无参
 #    ftGitPatchAdd2Branches 分支TAG   #只操作名称中有TAG的分支
-#========================================================="; return ;;
+#=========================================================" ;return ;;
     * ) break;;esac;done
 
     #可用性校验
@@ -178,8 +178,13 @@ ftGitCheckoutBtanch()
     local ftEffect=快速切换分支
     local isEnable=true
 
-    while true; do case "$1" in
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local delayLong isAllBranchs branchNameTag
+    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+        # 说明参数解析部分==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #==========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
@@ -194,21 +199,13 @@ ftGitCheckoutBtanch()
 #
 #    在本地仓库中查切含 xxxx 的分支,延时yyyy秒后切换
 #    ftGitCheckoutBtanch -t xxxx -d yyyy
-#========================================================="; return ;;
-    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+#=========================================================" ;return ;;
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #依赖校验
-    [[ -z $(which git) ]] && ftGitCheckoutBtanch --rely "git" && return
-    #解参验耦
-    local delayLong isAllBranchs branchNameTag
-    local errorContent arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+#=========================================================" ;return ;;
+        # 变量参数解析部分==============
         -a ) isAllBranchs=true ;;
         -t ) branchNameTag="${arg2}" ;;
         -d ) delayLong="${arg2}" ;;
@@ -217,6 +214,9 @@ ftGitCheckoutBtanch()
         git branch
         return
     fi
+    #依赖校验
+    [[ -z $(which git) ]] && ftGitCheckoutBtanch --rely "git" && return
+    #参数校验
     [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
     [ -n "$delayLong" ] && ( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBtanch -h && return
@@ -302,17 +302,27 @@ ftGitPatch()
     local ftEffect=git的Patch相关操作的封装
     local isEnable=false
 
-    while true; do case "$1" in
-    --rely) ftEcho -s  "[ ${ftEffect} ]的依赖说明 ";echo -e "\
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local valCount=3 errorContent index arg arg2 arg3 #arg4
+    local isByChange isByHash isApplayPatch isByHashAndMore
+    local commitIdNew commitIdOld filePathPatchSource patchNameTarget dirPathPatchTarget
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    ((index=i+2)) ; eval arg3=\${${index}}  #; ((index=i+3)) ; eval arg4=\${${index}}
+    case "${arg}" in
+        # 说明参数解析部分==============
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
-#========================================================="; return ;;
+#=========================================================" ;return ;;
     --rely_install)
             ftEcho -s "开始补全依赖"
             sudo apt-get install git
             return ;;
-    -h | --help) ftEcho -s  "[ ${ftEffect} ]的使用示例 ";echo -e "\
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
@@ -333,25 +343,12 @@ ftGitPatch()
 #
 #       cherry-pick patch
 #    ftGitPatch -ah hashID
-#========================================================="; return ;;
-    --env)ftEcho -s  "[ ${ftEffect} ]的使用环境说明 ";echo -e "\
+#=========================================================" ;return ;;
+    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 # 当前目录无有效GIT仓库
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #依赖校验
-    [[ -z $(which git) ]] && ftGitPatch --rely "git" && return
-    #解参验耦
-    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    local valCount=3 errorContent index arg arg2 arg3 #arg4
-    local isByChange isByHash isApplayPatch isByHashAndMore
-    local commitIdNew commitIdOld filePathPatchSource patchNameTarget dirPathPatchTarget
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
-    ((index=i+2)) ; eval arg3=\${${index}}  #; ((index=i+3)) ; eval arg4=\${${index}}
-    case "${arg}" in
+#=========================================================" ;return ;;
+        # 变量参数解析部分==============
         -n ) patchNameTarget="${arg2}"
           ;;
         -a ) isApplayPatch=true
@@ -370,6 +367,9 @@ ftGitPatch()
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
+    #依赖校验
+    [[ -z $(which git) ]] && ftGitPatch --rely "git" && return
+    #参数校验
     [ -z "$branchNameNow" ] && ftGitPatch --env && return
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPatch -h && return
@@ -411,45 +411,45 @@ ftGitTagGrep()
     local ftEffect=git的TAG标签内容过滤
     local isEnable=true
 
-    while true; do case "$1" in
-    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local valCount=2 errorContent index arg arg2
+    local strKeyContent
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    case "${arg}" in
+        # 说明参数解析部分==============
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
-#========================================================="; return ;;
+#=========================================================" ;return ;;
     --rely_install)
             ftEcho -s "开始补全依赖"
             sudo apt-get update
             sudo apt-get install git
             return ;;
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #
 #    在所有标签注释中查找指定字符串
 #    ftGitTagGrep -f 查找的字符串
-#========================================================="; return ;;
-    --env) ftEcho -sn "${ftEffect} " ; echo 的使用环境说明 ; echo -e "\
+#=========================================================" ;return ;;
+    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #==========================================================
 # 当前目录无有效GIT仓库
-#========================================================="; return ;;
-    * ) break;;esac;done
+#=========================================================" ;return ;;
+        # 变量参数解析部分==============
+        -f ) strKeyContent="${arg2}" 
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
-    #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
     [[ -z $(which git) ]] && ftGitTagGrep --rely "git" && return
     #环境校验
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     [[ -z "${branchNameNow}" ]] && ftGitTagGrep --env && return
-    #解参验耦
-    local valCount=2 errorContent index arg arg2
-    local strKeyContent
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
-    case "${arg}" in
-        -f ) strKeyContent="${arg2}" 
-          ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
-
+    #参数校验
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "$strKeyContent" ] && errorContent="${errorContent}\\n[想要的有点多,这个给不了]"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagGrep -h && return
@@ -476,28 +476,9 @@ ftGitTag()
     local ftEffect=GIT的TAG常见操作
     local isEnable=true
 
-    while true; do case "$1" in
-    --rely) ftEcho -sn "${ftEffect} " ; echo 的依赖说明 ; echo -e "\
-#=========================================================
-#    ${ftEffect}依赖包 $2
-#    请尝试使用 sudo apt-get install $2 补全依赖
-#========================================================="; return ;;
-    -h | --help) ftEcho -sn "${ftEffect} " ; echo 的使用示例 ; echo -e "\
-#=========================================================
-#
-#    添加标签
-#    ftGitTag -a 标签名 标签名对应的commitid
-#
-#    删除标签
-#    ftGitTag -d 标签名
-#========================================================="; return ;;
-    * ) break;;esac;done
-
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #依赖校验
-    [[ -z $(which git) ]] && ftExample --rely "git" && return
-    #解参验耦
+    #参数解析
     local valCount=1 errorContent index arg arg2 arg3
     local tagName noteContent commitId isDeleteTag
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
@@ -505,6 +486,22 @@ ftGitTag()
     ((index=i+1)) ; eval arg2=\${${index}}
     ((index=i+2)) ; eval arg3=\${${index}}
     case "${arg}" in
+        # 说明参数解析部分==============
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#=========================================================" ;return ;;
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#
+#    添加标签
+#    ftGitTag -a 标签名 标签名对应的commitid
+#
+#    删除标签
+#    ftGitTag -d 标签名
+#=========================================================" ;return ;;
+        # 变量参数解析部分==============
         -a ) tagName="${arg2}"
             commitId="${arg3}"
             [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
@@ -513,7 +510,9 @@ ftGitTag()
               isDeleteTag=true
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
-
+    #依赖校验
+    [[ -z $(which git) ]] && ftExample --rely "git" && return
+    #参数校验
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[示例1]tagName=$tagName"
     [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTag -h && return
@@ -558,24 +557,24 @@ ftGitPushForce_SXTD()
     local isEnable=true
 
     while true; do case "$1" in
-    --rely) ftEcho -s  "[ ${ftEffect} ]的依赖说明 ";echo -e "\
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    缺失依赖： ${2}
 #    补全依赖： ${3} 
-#========================================================="; return ;;
+#=========================================================" ;return ;;
     --rely_install)
             ftEcho -s "开始补全依赖"
             sudo apt-get install git
             return ;;
-    -h | --help) ftEcho -s  "[ ${ftEffect} ]的使用示例 ";echo -e "\
+    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #
 #    ftGitPushForce_SXTD 无参
-#========================================================="; return ;;
-    --env) ftEcho -s  "[ ${ftEffect} ]的使用环境说明 ";echo -e "\
+#=========================================================" ;return ;;
+    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
 # 当前目录无有效GIT仓库
-#========================================================="; return ;;
+#=========================================================" ;return ;;
     * ) break;;esac;done
 
     #可用性校验
