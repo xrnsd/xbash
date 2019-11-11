@@ -86,6 +86,7 @@ ftResetXbash()
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#    ftResetXbash可简化为xr
 #    以下[参数对]无先后顺序可任意组合
 #
 #    更新xbash默认配置
@@ -187,6 +188,8 @@ ftTest()
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#    ftTest 可简化为xc test
+#    
 #    ftTest 任意参数
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -1067,7 +1070,7 @@ ftCleanGarbage()
     -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    自动退出
-#    ftCleanGarbage -e
+#    ftCleanGarbage -e  # 可简化为xcg
 #
 #    延时清理
 #    ftCleanGarbage -t 时间
@@ -1124,6 +1127,8 @@ ftKillApplicationByPackageName()
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#    ftKillApplicationByPackageName 可简化为 xk
+#
 #    ftKillApplicationByPackageName [packageName]
 #    ftKillApplicationByPackageName com.android.settings
 #========================================================="; return ;;
@@ -1176,6 +1181,8 @@ ftLogcatApplicationByTag()
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#    ftKillApplicationByPackageName 可简化为 xlp
+#
 #     打印所有log
 #    ftLogcatApplicationByTag
 #
@@ -1237,6 +1244,8 @@ ftRestartAdb()
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#    ftRestartAdb 可简化为 xr -a
+#
 #    ftRestartAdb [无参]
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -1269,6 +1278,8 @@ ftMtkFlashTool()
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#    ftMtkFlashTool 可简化为 xd
+#
 #    ftMtkFlashTool 无参
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -1513,11 +1524,13 @@ ftPowerManagement()
 #=========================================================
 #   下面操作不指定时间默认都为10秒
 #
-#    100秒后自动关机，
-#    ftPowerManagement shutdown 100
+#    延时免密码关机，
+#    ftPowerManagement shutdown 时长[秒]  #ftPowerManagement shutdown 可简化为 xs 
+#    xs 时长[秒]
 #
-#    xs 时间/秒 #制定时间后关机,不带时间则默认十秒
-#    xss 时间/秒 #制定时间后重启,不带时间则默认十秒
+#    延时免密码重启
+#    ftPowerManagement reboot 时长[秒]  #ftPowerManagement reboot 可简化为 xss
+#    xss 时长[秒]
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -1748,6 +1761,8 @@ ftMaintainSystem()
 #========================================================="; return ;;
     -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#    ftMaintainSystem 可简化为 xb
+#
 #    ftMaintainSystem 操作类型
 #    ftMaintainSystem -s / --sd_finish #整理磁盘
 #    ftMaintainSystem -b / --backup #备份系统
@@ -1932,6 +1947,7 @@ ftFind()
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#    ftFind 可简化为 xFind
 #
 #   ftFind -s 路径 后缀列表  文件名内容[可选]    #使用后缀搜索
 #   ftFind -s xx/xx \"java xml\" \"yyy\"
@@ -2232,9 +2248,14 @@ ftAdbPush()
 #========================================================="; return ;;
     -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#   自动push,用户选择操作
+#   ftAdbPush -f 文件路径  # 可简化为: xp 文件路径
 #
-#    -a #自动重启 -n #不重启
-#    ftAdbPush -f/-a/n 需要push的文件路径 [目标路径]
+#   push完,自动重启
+#   ftAdbPush -a 文件路径  # 可简化为: xpa 文件路径
+#
+#   push完,不重启
+#   ftAdbPush -n 文件路径  # 可简化为: xpn 文件路径
 #========================================================="; return ;;
        # 变量参数解析部分==============
        -a | -n | -f )
@@ -2426,6 +2447,8 @@ ftCdAospDirectory()
     # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#    ftCdAospDirectory 可简化为 xca
+#
 #    切换终端路径
 #    ftCdAospDirectory xxx xxx xxxx
 #
@@ -2515,6 +2538,8 @@ ftCdAospProject()
     # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#    ftCdAospProject 可简化为 xcd
+#
 #    自动更新项目列表
 #    ftCdAospProject -u
 #
@@ -2645,7 +2670,7 @@ ftMtkLog()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local valCount=3 errorContent index arg arg2 arg3 #arg4
-    local isPull isCheck isSeparation isClearn isStop deviceIdLocal
+    local isPull isCheck isSeparation isClearn isStop isPullMini deviceIdLocal
     local filePathLog pathLog dirPathLogStorge fileSizeBaseMillionByte
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
     ((index=i+2)) ; eval arg3=\${${index}} #; ((index=i+3)) ; eval arg4=\${${index}}
@@ -2664,7 +2689,10 @@ ftMtkLog()
 #    ftMtkLog -s 设备ID
 #
 #    导出log文件
-#    ftMtkLog -p  log存放路径
+#    ftMtkLog -p  log存放路径  # 可简化为 xpml
+#
+#    导出精简版log文件
+#    ftMtkLog -pm  log存放路径
 #
 #    分析log
 #    ftMtkLog -c log文件路径或log目录
@@ -2691,6 +2719,10 @@ ftMtkLog()
         -s ) deviceIdLocal="${arg2}"
              ;;
         -p ) isPull=true
+             [ -d "${arg2}" ] && dirPathLogStorge="${arg2}"
+             ;;
+        -pm ) isPull=true
+             isPullMini=true
              [ -d "${arg2}" ] && dirPathLogStorge="${arg2}"
              ;;
         -c ) isCheck=true
@@ -2728,34 +2760,65 @@ ftMtkLog()
         local dirNameMtkLog=mtklog
         local dirPathLogDevice=/sdcard/mtklog
         local dirPathBuildpropDevice=/system/build.prop
-        local dirPathLogStorgeAll=$(ftPath $dirPathLogStorge)/${dirNameMtkLog}
         local editFlag=$(date -d "today" +"%y%m%d%H%M%S")
-        local dirPathLogStorgeAllBackup=${dirPathLogStorgeAll}_backup_${editFlag}
+        local dirPathLogStorgeAll=$(ftPath $dirPathLogStorge)/${dirNameMtkLog}/${editFlag}_${deviceId}
 
         if [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDevice ]&&echo exit") ]]; then
-            [ -d "$dirPathLogStorgeAll" ] && ftEcho -s "存在旧的mtklog,已备份到 ${dirPathLogStorgeAllBackup}" \
-            && mv ${dirPathLogStorgeAll} ${dirPathLogStorgeAllBackup}
 
-            ftEcho -s "正在导出mtklog 到 ${dirPathLogStorge}" && \
-            adb -s $deviceId pull ${dirPathLogDevice} ${dirPathLogStorge} && \
-            adb -s $deviceId pull ${dirPathBuildpropDevice} ${dirPathLogStorge}
-
-            ftEcho -y "是否对设备的mtklog添加已导出标示(回车默认y)"
+            ftEcho -y "是否存在测试设备编号,没有请按除y之外的任意键跳过"
             read -n 1 sel
-            [ -z "${sel}" ] && sel=y
+            [ -z "${sel}" ] && sel=n
             while true; do case "$sel" in
                     y | Y )
-                        local pullFlag=pull_${editFlag}
-                        adb -s $deviceId shell mv ${dirPathLogDevice} ${dirPathLogDevice}_${pullFlag}
+                        read -n deviceTestId
+                        dirPathLogStorgeAll=$(ftPath $dirPathLogStorge)/${dirNameMtkLog}/${editFlag}_${deviceTestId}
                         break ; ;;
                     * ) break ; ;;
             esac;done
+            [[ ! -d "${dirPathLogStorgeAll}" ]] && mkdir -p ${dirPathLogStorgeAll}
+
+            # 全部mtklog
+            if [[ -z "${isPullMini}" ]]; then
+
+                ftEcho -s "正在导出mtklog 到 ${dirPathLogStorge}"
+
+                adb -s $deviceId shell ls ${dirPathLogDevice} | while read dirNameLog;do
+                    dirNameLog=$(echo $dirNameLog |sed s/[[:space:]]//g)
+                    dirPathLog=${dirPathLogStorgeAll}/${dirNameLog}
+                    [[ ! -d "${dirPathLog}" ]]&&[[ -n $(adb -s $deviceId shell "[ -d $${dirPathLogDevice}/${dirNameLog} ]&&echo exit") ]] && \
+                    mkdir -p $dirPathLog
+                    adb -s $deviceId pull ${dirPathLogDevice}/${dirNameLog} ${dirPathLog}
+                done
+
+                ftEcho -y "是否对设备的mtklog添加已导出标示(回车默认y)"
+                read -n 1 sel
+                [ -z "${sel}" ] && sel=y
+                while true; do case "$sel" in
+                        y | Y )
+                            local pullFlag=pull_${editFlag}
+                            adb -s $deviceId shell mv ${dirPathLogDevice} ${dirPathLogDevice}_${pullFlag}
+                            break ; ;;
+                        * ) break ; ;;
+                esac;done
+
+            # 部分 mtklog
+            else
+                local dirPathLog
+                ftEcho -s "正在导出部分mtklog 到 ${dirPathLogStorge}"
+                adb -s $deviceId pull ${dirPathLogDevice}/aee_exp ${dirPathLogStorgeAll}/aee_exp
+                adb -s $deviceId shell ls ${dirPathLogDevice}/mobilelog | while read dirNameLog;do
+                    dirPathLog=${dirPathLogStorgeAll}/mobilelog/$(echo $dirNameLog |sed s/[[:space:]]//g)
+                    [[ ! -d "${dirPathLog}" ]] && mkdir -p $dirPathLog
+                    adb -s $deviceId pull ${dirPathLogDevice}/mobilelog/${dirNameLog}/crash_log ${dirPathLog}
+                done
+                adb -s $deviceId pull ${dirPathBuildpropDevice} ${dirPathLogStorgeAll}
+            fi
         else
             ftEcho -e "设备不存在${dirNameMtkLog},请确认设备的${dirNameMtkLog}是否存在[${dirPathLogDevice}]"
         fi
 
         local dirNameOtherLog=other_log
-        dirPathLogStorge=${dirPathLogStorge}/${dirNameOtherLog}
+        dirPathLogStorge=${dirPathLogStorgeAll}/${dirNameOtherLog}
         [[ ! -d ${dirPathLogStorge} ]] && mkdir -p ${dirPathLogStorge}
 
         local dirPathLogDeviceAEE=/data/aee_exp
@@ -2799,7 +2862,6 @@ ftMtkLog()
 
     #分析log
     if [ "$isCheck" = "true" ];then
-        local key="AndroidRuntime"
         local pathLogTemp=/tmp/log.tmp \
                  index=0 checkIndex=10 \
                  replaceVal="" \
@@ -2818,14 +2880,28 @@ ftMtkLog()
         fi
 
         ftEcho -s "开始分析: ${pathLog},请稍等"
-        grep -rsl "${key}" $pathLog | while read filePath;do
+        local dirNameCheckLog="LogSummary"
+        local dirPathCheckLog=${pathLog}/${dirNameCheckLog}
+        [[ ! -d $dirPathCheckLog ]] && mkdir -p $dirPathCheckLog
+        local key="AndroidRuntime" \
+                Key2="AEE/DEBUG"
+        grep -Ersl "${key}|${Key2}" $pathLog | while read filePath;do
             [[ ${filePath##*.} = ${fileNameCheck} ]] && break
+            # [[ $(basename $filePath) = "crash_log" ]] && continue
+            echo filePath=${filePath}
 
-            echo "" > $pathLogTemp && \
+            echo "" > $pathLogTemp
             grep -rs "${key}" $filePath | grep -v "PID:" | while read line;do
                 (( $checkIndex <= $index ))||[[ -z "${lengthReplace}" ]] && lengthReplace=$(expr index "${line}" ${key}) && (( lengthReplace-=5 )) && index=0
                  echo ${line:$lengthReplace} >> $pathLogTemp
                 ((index+=1))
+            done
+
+            # lengthReplace=0
+            grep -rs "${Key2}" $filePath | grep -v "PID:" | while read line;do
+                # (( $checkIndex <= $index ))||[[ -z "${lengthReplace}" ]] && lengthReplace=$(expr index "${line}" ${Key2}) && (( lengthReplace-=5 )) && index=0
+                 echo ${line} >> $pathLogTemp
+                # ((index+=1))
             done
 
             local filePathCheck=${filePath}.${fileNameCheck}
@@ -2835,7 +2911,8 @@ ftMtkLog()
             | uniq -c \
             | sort -u \
             > ${filePathCheck} && \
-            ftEcho -s "生成分析文件:${fileNameCheckAll}"
+            mv $filePathCheck ${dirPathCheckLog}/${fileNameCheckAll} && \
+            ftEcho -s "生成分析文件:${fileNameCheckAll} 到${dirPathCheckLog}"
         done
     fi
 }
@@ -2882,6 +2959,7 @@ ftAdbContect()
     local deviceIdold=$autoTestDeviceId
 
     (( $deviceCount != $deviceCountUniq )) && ftEcho -s "存在多个同ID设备,请手动移除设备"&& adb devices && return
+    export autoTestDeviceCounts=$deviceCount
 
     if (( $deviceCount <=1 ));then
         ftEcho -sn "等待设备连接>" && adb wait-for-device
@@ -2955,7 +3033,7 @@ ftPigz()
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
-#    ftPigz -c 文件路径/目录
+#    ftPigz -c 文件路径/目录  # 可简化为 xtgz 路径
 #========================================================="; return ;;
     # 变量参数解析部分==============
     -c ) contentTarget="${arg2}"
