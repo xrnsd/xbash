@@ -2976,14 +2976,18 @@ ftAdbContect()
     else
         if [[ -n "${deviceIdold}" ]]; then
             ftEcho -y "存在旧的设备ID,是否更新(回车默认y)"
-            read -n 1 sel
-            [ -z "${sel}" ] && sel=y
+            read -n 1 sel && [ -z "${sel}" ] && sel=y
             while true; do case "$sel" in
                     y | Y ) export autoTestDeviceId=; break; ;;
                     n | q ) return ; ;;
                     * ) ftEcho -e "错误的选择：$sel"
                         echo "输入n，q，离开";;
             esac;done ;
+        fi
+        if [[ -n ${isUseWifi} ]]; then
+            ftEcho -y "需要断开其他wifi调试连接是否继续" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
+            [[ "${sel}" != "y" ]] && return
+            adb disconnect
         fi
         if [[ -z $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]] ;then
             ftEcho -s "存在多个设备,请选择"
@@ -3001,12 +3005,13 @@ ftAdbContect()
             (( $deviceCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
             deviceId=${deviceIdList[$tIndex]}
             ftEcho -sn "等待设备连接>"
-        else # 对默认deviceID进行修改
+
+        elif [[ "${deviceId}" != "${deviceIdTarget}" ]];then # 对默认deviceID进行修改
             ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
-            [[ "${deviceId}" != "${deviceIdTarget}" ]] \
-                && adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial" \
-                && ftEcho -sn "请重新插拔usb设备>" \
-                && deviceId=$deviceIdTarget
+            adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial"
+            ftEcho -sn "请重新插拔usb设备>"
+            deviceId=$deviceIdTarget
+
         fi
     fi
 
@@ -3019,7 +3024,7 @@ ftAdbContect()
     [[ -n "${deviceIdold}" ]]&&[[ "${deviceId}" != "${autoTestDeviceId}" ]] && echo -en "设备ID更新:" && ftEcho -s "${autoTestDeviceId} > ${deviceId}"
 
     if [[ -n ${isUseWifi} ]]; then
-        local ipAddressList portNum\
+        local ipAddressList portNum \
                  ipAddressInfoList=($(adb shell ifconfig wlan0 |grep inet)) \
                  key="addr:"
 
@@ -3030,13 +3035,11 @@ ftAdbContect()
             ipAddressList=(${ipAddressList[@]} ${ip})
         done
         ipConunt=${#ipAddressList[@]}
-        echo "ddd=${ipAddressList[@]}"
         [[ -z ${ipConunt[@]} ]]||(( $ipConunt==0 )) && ftEcho -e "无法获取设备wifi相关IP地址,请确认设备是否连接wifi" && return
 
         ftEcho -sn "请设定wifi调试端口号(5555-5585)(回车默认5555):"
-        read -n 4 portNum ;[ -z "${portNum}" ] && \
-        portNum=5555 && \
-        adb -s ${deviceId} tcpip ${portNum}
+        read -n 4 portNum ;[ -z "${portNum}" ] && portNum=5555
+        adb -s ${deviceId} tcpip ${portNum} 
         for ipAddress in ${ipAddressList[*]}; do
             adb -s $deviceId connect ${ipAddress}:${portNum}
         done
