@@ -2972,8 +2972,11 @@ ftAdbContect()
     export autoTestDeviceCounts=$deviceCount
 
     if (( $deviceCount <=1 ));then
-        ftEcho -sn "等待设备连接>" && adb wait-for-device
+        ftEcho -sn "等待设备连接>"
         deviceId=$(adb get-serialno)
+    elif [[ -n "${deviceIdold}" ]]&&[ -n $(echo ${deviceIdList[@]} |grep $autoTestDeviceId ) ]]; then
+        ftEcho -sn "等待设备连接>"
+        deviceId=$deviceIdold
     else
         if [[ -n "${deviceIdold}" ]]; then
             ftEcho -y "存在旧的设备ID,是否更新(回车默认y)"
