@@ -768,15 +768,10 @@ ftAutoPacket()
             [[ $versionNameDate =~ "." ]] && versionNameDate=${versionNameDate%.*}
             # system.img文件最新修改时间
             if [[ -f "${dirPathOut}/system.img" ]]; then
-                    local key="最近更改："
-                    local fileChangeTime=$(stat ${dirPathOut}/system.img|grep $key|awk '{print $1}'|sed s/-//g)
-                    fileChangeTime=${fileChangeTime//$key/}
-                    fileChangeTime=${fileChangeTime:-$(date -d "today" +"%y%m%d")}
+                    local fileChangeTime=$(stat -c "%y" ${dirPathOut}/system.img|awk '{print $1}'|sed s/-//g)
+                    [[ -n "$fileChangeTime" ]] && [ "$versionNameDate" != "${fileChangeTime}" ] && export AutoEnv_SoftwareVersion_BuildTime=buildtime____${fileChangeTime}
             fi
-            if [[ -n "$fileChangeTime" ]] && [ "$versionNameDate" != "${fileChangeTime}" ];then
-                export AutoEnv_SoftwareVersion_BuildTime=buildtime____${fileChangeTime}
-                 #dirNameVeriosionBase=${dirNameVeriosionBase}____${AutoEnv_SoftwareVersion_BuildTime}
-            fi
+
             if [[ -n "$isSpecial" ]]; then
                 ftEcho -r $"请输入版本: "${dirNameVeriosionBase}"\n相应的说明[回车默认为常规]:"
                 read tag
