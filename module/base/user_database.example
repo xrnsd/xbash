@@ -1,6 +1,10 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.1
+versionNum=v0.1.2
+
+# [serverConfigDef]
+# softwareServerIp=
+# softwareStoreDirName=
 
 # [serverConfig_192.168.1.55]
 # userName=wb1

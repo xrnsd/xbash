@@ -556,7 +556,7 @@ $(ftGitLogShell  -n 20 -c "%h  %s")" >> $filePathGitLogInfo
 
 ftAutoUpload()
 {
-    local ftEffect=文件[夹]上传
+    local ftEffect=文件[夹]上传服务器
     local isEnable=true
 
     while true; do case "$1" in
@@ -570,7 +570,7 @@ ftAutoUpload()
 #=========================================================
 #    ftAutoUpload 源存放目录 服务器地址
 #
-#    ftAutoUpload xxx 192.168.xxx.xxx
+#    ftAutoUpload xxx xxx.xxx.xxx.xxx
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -593,27 +593,28 @@ ftAutoUpload()
             local tagName=serverConfig_${serverIp}
             local userName=$(ftIniGetValue $filePathConfig $tagName userName)
             local userPassword=$(ftIniGetValue $filePathConfig $tagName userPassword)
-            local dirPathPackage=$(ftIniGetValue $filePathConfig $tagName dirPathPackage)
+            local dirPathServerStore=$(ftIniGetValue $filePathConfig $tagName dirPathServerStore)
+            local dirNameServerStore=$(ftIniGetValue $filePathConfig serverConfigDef softwareStoreDirName)
 
             [ -z "$userName" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]用户名获取失败"
             [ -z "$userPassword" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]密码获取失败"
-            [ -z "$dirPathPackage" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]目标路径获取失败"
+            [ -z "$dirPathServerStore" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]目标路径获取失败"
         fi
     fi
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoUpload -h && return
 
     #实现主体
 
-    ftEcho -s "\n========================\n开始上传文件:\n  ${dirPathContentUploadSource}\n服务器路径:\n  ${serverIp}$dirPathPackage\n========================\n"
+    ftEcho -s "\n========================\n开始上传文件:\n  ${dirPathContentUploadSource}\n服务器路径:\n  ${serverIp}$dirPathServerStore\n========================\n"
 
     local serverProtInfo="$(nmap $serverIp)"
-    if true||[[ -z $(echo ${serverProtInfo[@]}|grep ssh) ]] && [[ -n $(echo ${serverProtInfo[@]}|grep 445) ]]; then #使用smb协议
+    if [[ -z $(echo ${serverProtInfo[@]}|grep ssh) ]] && [[ -n $(echo ${serverProtInfo[@]}|grep 445) ]]; then #使用smb协议
         local dirPathServerLocalBase=$(ftIniGetValue $filePathConfig $tagName dirPathPackageLocal)
         if ! mountpoint -q $dirPathServerLocalBase; then
             #ftEcho -e "当前目录未挂载服务器共享目录:\n${dirPathUploadLocal}" && return
             ftEcho -s "未挂载SMB服务器共享目录到本地,将使用SMB协议在线传输"
             local targetName=$(basename $dirPathContentUploadSource)
-            local dirPathServer=${dirPathPackage}/${targetName}
+            local dirPathServer=${dirNameServerStore}/${targetName}
             smbclient //${serverIp}/${dirPathMoule}  -U $userName%$pasword<< EOF
                 mkdir ${dirPathServer}
                 put $dirPathContentUploadSource ${dirPathServer}
@@ -641,9 +642,20 @@ EOF
                     done
             fi
         fi
+
+        local dirPathLocal=$(pwd)
         local packageSize=$(du -sk $dirPathContentUploadSource | cut -f1)k
-        # tar -cv  ${dirPathContentUploadSource%%/*}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
-        tar -cv  ${dirPathContentUploadSource}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathPackage"
+        local dirNameContentUploadSource=$(basename $dirPathContentUploadSource)
+        dirPathContentUploadSource=$(dirname $dirPathContentUploadSource)
+
+        cd $dirPathContentUploadSource
+        mkdir ${dirNameServerStore}
+        mv ${dirPathContentUploadSource}/${dirNameContentUploadSource} ${dirPathContentUploadSource}/${dirNameServerStore}
+        # tar -cv  ${dirPathContentUploadSource%%/*}| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC $dirPathServerStore"
+        tar -cv  ${dirNameServerStore}/| pv --size $packageSize -p --timer --rate --bytes| pigz -1|sshpass -p $userPassword ssh $userName@$serverIp "gzip -d |tar -xPC ${dirPathServerStore}"
+
+        mv ${dirNameServerStore}/${dirNameContentUploadSource} ${dirNameContentUploadSource} && rm -rf ${dirNameServerStore}
+        cd $dirPathLocal
 
     fi
 
@@ -665,7 +677,7 @@ ftAutoPacket()
         -h | --help) ftClearTail $dirPathLocal ;ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    ftAutoPacket -y #免确认自动清理out/packet
-#    ftAutoPacket -u #上传到188服务器
+#    ftAutoPacket -u #上传到服务器
 #    ftAutoPacket -r #添加说明
 #    ftAutoPacket -p #打包
 #    ftAutoPacket -a #默认启动全部流程
@@ -898,9 +910,11 @@ ftAutoPacket()
             fi
 
             # 创建版本说明
-            [[ -n "$isReadMe" ]] && ftEcho -s "创建 版本说明" && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
-            ftEcho -y "是否更新版本说明 [回车更新]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
-            [[ "${sel}" = "y" ]] && gedit -s $AutoEnv_filePathVersionChangeListTemplate $AutoEnv_filePathVersionReadme
+            if [[ -n "$isReadMe" ]]; then
+                 ftEcho -s "创建 版本说明" && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
+                ftEcho -y "是否更新版本说明 [回车更新]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
+                [[ "${sel}" = "y" ]] && gedit -s $AutoEnv_filePathVersionChangeListTemplate $AutoEnv_filePathVersionReadme
+             fi
 
             # 生成软件压缩包
             if [[ -n "$isBale" ]] ;then
@@ -921,7 +935,10 @@ ftAutoPacket()
             fi
 
             #上传服务器
-            [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareVersion 192.168.1.75
+            if [[ -n "$isUpload" ]]; then
+                local serverIpAdress=$(ftIniGetValue $filePathDataUser serverConfigDef softwareServerIp)
+                ftAutoUpload ${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase} ${serverIpAdress:-'10.168.1.253'}
+            fi
     elif [[ $AutoEnv_mnufacturers = "sprd" ]]; then
             if [ "$TARGET_PRODUCT" != "sp7731c_1h10_32v4_oversea" ];then
                 ftEcho -ea " ${ftEffect} 缺少平台${AutoEnv_mnufacturers}的项目${TARGET_PRODUCT}的配置\
