@@ -777,6 +777,7 @@ ftAutoPacket()
             # 生成本地软件包
             if [[ -n "$isPacket" ]]; then
                     mkdir -p $dirPathVersionSoftwareVersion
+                    local fileSizeCheckMax=536870912 #512*1024*1024
 
                     ftEcho -s "\n========================\n包名: ${dirNameVeriosionBase}\n路径: ${dirPathVersionSoftwareVersion}\n========================\n"
                     #packages
@@ -797,9 +798,15 @@ ftAutoPacket()
                             for file in ${fileList[@]}; do
                                 local filePath=${dirPathOut}/${file}
                                 [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && ftClearTail $dirPathLocal && return
-
-                                 printf "%-2s %-30s\n" 复制 $file
-                                 cp -r -f  $filePath $dirPathPackage
+                                local fileSize=$(stat -c "%s" $filePath)
+                                if (( $fileSize >= $fileSizeCheckMax )) \
+                                    && [[ "${file}" != "system.img" ]]; then
+                                            ftEcho -yn "${file}文件过大,是否放弃(回车默认y)" ; read -n 1 sel
+                                            [ -z "${sel}" ] && sel=y
+                                            [[ "${sel}" != "y" ]] && echo && ftEcho -e "放弃 ${file}"&& continue
+                                fi
+                                printf "%-2s %-30s\n" 复制 $file
+                                cp -r -f  $filePath $dirPathPackage
                             done
                         else
                             ftEcho -e "packages创建失败" && ftClearTail $dirPathLocal && return

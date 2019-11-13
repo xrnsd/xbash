@@ -295,6 +295,7 @@ ftEcho()
         -b )       echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
         -bh )    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
         -y )       echo;echo -en "${content}[y/n]"; break;;
+        -yn )     echo -en "${content}[y/n]"; break;;
         -ye )     echo -en "${content}[y/n]"; break;;
         -r )        echo;echo -en "${content}"; break;;
         -ea )      for val in ${content[@]} ; do echo -e "\033[1;31m$val\033[0m"; done; break;;
