@@ -429,9 +429,8 @@ ftAutoBackupOrRestoreOuts()
     #参数解析
     ftAutoInitEnv
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
-    local arg arg2 index errorContent 
     local isMoveBack mTagContent filterString
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local arg arg2 errorContent ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
@@ -672,7 +671,7 @@ ftAutoPacket()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
     local isClean isReadMe isUpload isPacket isMove isCopy isSpecial isBale
-    local arg arg2 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}} ; case "${arg}" in
+    local arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftClearTail $dirPathLocal ;ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
@@ -1212,9 +1211,7 @@ ftAutoTest()
     local eventCountDef=$(( 100 * 100 *100 ))
     local eventCount=$eventCountDef dirPathLogRoot=~/log
     local packageNameList packageBlackNameList packageWhiteNameList throttleLong deviceIdTargetForce
-    local arg  arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}}
-        ((index=i+1)) ;eval arg2=\${${index}}
-        ((index=i+2)) ;eval arg3=\${${index}}
+    local arg  arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ;eval arg2=\${$((i+1))}
         case "${arg}" in
         # 说明参数解析部分==============
      --rely) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
@@ -1399,9 +1396,8 @@ ftAutoCreateSxtdOldProjectBranch()
     #依赖校验
     [[ -z $(which git) ]] && ftAutoCreateSxtdOldProjectBranch --rely "git" && return
     #解参验耦
-    local valCount=1 errorContent index arg arg2
+    local valCount=1 errorContent
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-
     [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCreateSxtdOldProjectBranch -h && return
 
@@ -1464,10 +1460,8 @@ ftAutoLnOut()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
-    local valCount=2 errorContent index arg arg2
     local dirPathDev
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
-    case "${arg}" in
+    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================

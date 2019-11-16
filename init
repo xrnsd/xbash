@@ -248,7 +248,7 @@ ftInitXbash()
     fi
     #根据参数初始化
     local index arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; ((index=i+1)) ; eval arg2=\${${index}}
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         --git )ftInitGitConfig
                 return ;;
