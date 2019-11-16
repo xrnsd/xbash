@@ -2237,10 +2237,8 @@ ftAdbPush()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
-    local filePathSource fileNameSource dirPathTarget isAutoReboot isTacitMode
-    local errorContent arg  arg2 arg3 index ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
-    ((index=i+1)) ; eval arg2=\${${index}}
-    ((index=i+2)) ; eval arg3=\${${index}}
+    local filePathSourceList fileNameSource isAutoReboot isTacitMode
+    local errorContent arg  ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
     case "${arg}" in
     # 说明参数解析部分==============
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -2249,35 +2247,32 @@ ftAdbPush()
 #========================================================="; return ;;
     -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#   注意：-f 参数必须在最后使用
+#
 #   自动push,用户选择操作
 #   ftAdbPush -f 文件路径  # 可简化为: xp 文件路径
 #
 #   push完,自动重启
-#   ftAdbPush -a 文件路径  # 可简化为: xpa 文件路径
+#   ftAdbPush -a -f 文件路径  # 可简化为: xpa 文件路径
 #
 #   push完,不重启
-#   ftAdbPush -n 文件路径  # 可简化为: xpn 文件路径
+#   ftAdbPush -n -f 文件路径  # 可简化为: xpn 文件路径
 #========================================================="; return ;;
        # 变量参数解析部分==============
-       -a | -n | -f )
-            if [[ "${arg}" = "-a" ]]; then
-                isAutoReboot=true
-            elif [[ "${arg}" = "-n" ]]; then
-                isTacitMode=true
-            fi
-            filePathSource="${arg2}"
-            [[ ! -f "$filePathSource" ]] && break
-            fileNameSource=$(basename $filePathSource)
-            [[ -z $(echo $filePathSource |grep system) ]] && \
-                 dirPathTarget="${arg3}" || \
-                 dirPathTarget=$(echo /system${filePathSource#*system} | sed -e "s:/$fileNameSource::g")
+       -a ) isAutoReboot=true
+            ;;
+       -n ) isTacitMode=true
+            ;;
+       -f )
+            local valIndex=$i
+            while (( $valIndex>=0 )) ;do (( valIndex-=1 )) && shift ;done
+            filePathSourceList=($@)
             ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #依赖校验
     [[ -z $(which adb) ]] && ftAdbPush --rely "adb" && return
     #参数校验
-    [ ! -f "$filePathSource" ] && errorContent="${errorContent}\\n[文件找不到]filePathSource=$filePathSource"
-    [ -z "$dirPathTarget" ] && errorContent="${errorContent}\\n[目标路径不存在]dirPathTarget=$dirPathTarget"
+    [ -z "$filePathSourceList" ] && errorContent="${errorContent}\\n[push的源路径不存在]filePathSourceList=$filePathSourceList"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAdbPush -h && return
 
     #实现主体
@@ -2285,10 +2280,19 @@ ftAdbPush()
     ftAdbContect
     [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
+    adb -s $deviceId root&&adb -s $deviceId remount || ( ftEcho -e "提权失败" && return )
 
-    adb -s $deviceId root&&adb -s $deviceId remount&&\
-    adb -s $deviceId push $filePathSource $dirPathTarget&& \
-    ftEcho -s "${fileNameSource} push to [${dirPathTarget}] finish"
+    for filePath in ${filePathSourceList[@]}; do
+            [[ ! -f "$filePath" ]] && ftEcho -e "找不到:${filePath}" && continue
+            if [[ -n $(echo $filePath |grep system) ]] ;then
+                fileNameSource=$(basename $filePath)
+                dirPathTarget=$(echo /system${filePath#*system} | sed -e "s:/$fileNameSource::g")
+                echo "push ${filePath} > ${dirPathTarget}"
+                adb -s $deviceId push $filePath $dirPathTarget &&  ftEcho -s "${fileNameSource} push to [${dirPathTarget}] finish"
+            else
+                ftEcho -en "无法自动解析:";echo "${filePath}"
+            fi
+    done
     if [[ -z "$isTacitMode" ]]; then
         [[ -z "$isAutoReboot" ]] &&ftEcho -y "是否重启(回车默认重启)" && read -n 1 sel && echo
         if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then adb -s $deviceId reboot ; fi
