@@ -2968,11 +2968,13 @@ ftAdbContect()
     local deviceCountUniq=${#deviceIdListUniq[@]}
     local deviceIdold=$autoTestDeviceId
 
-    (( $deviceCount != $deviceCountUniq )) && ftEcho -s "存在多个同ID设备,请手动移除设备"&& adb devices && return
+    (( $deviceCount != 0 )) && (( $deviceCountUniq != 0 ))  && (( $deviceCount != $deviceCountUniq )) && \
+        ftEcho -s "存在多个同ID设备,请手动移除设备"&& adb devices && return
     export autoTestDeviceCounts=$deviceCount
 
     if (( $deviceCount <=1 ));then
         ftEcho -sn "等待设备连接>"
+        adb wait-for-device
         deviceId=$(adb get-serialno)
     elif [[ -n "${deviceIdold}" ]]&&[ -n $(echo ${deviceIdList[@]} |grep $autoTestDeviceId ) ]]; then
         ftEcho -sn "等待设备连接>"
