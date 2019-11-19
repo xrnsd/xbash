@@ -417,7 +417,11 @@ ftCheckUserConfig()
     versionNumUser=${versionNumUser//$key/}
 
     [[ -z "${versionNumUser}" ]] && ftEcho -e "建议更新用户配置到:${versionNumExcepmale}" && return
-    [[ -n "${versionNumExcepmale}" ]] && [[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) = "<"  ]] && ftEcho -e "建议更新用户配置: ${versionNumUser} > ${versionNumExcepmale}"
+    [[ -z "${versionNumExcepmale}" ]] || [[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) != "<"  ]] && return
+
+    ftEcho -e "建议更新用户配置: ${versionNumUser} > ${versionNumExcepmale}"
+    echo -n "更新文件" ; ftEcho -s "：$rFilePathXbashConfigUser"
+    echo -n "更新模板" ; ftEcho -s "：$filePathUserConfigExpmale"
 }
 
 ftCheckUserDatabase()
@@ -439,8 +443,12 @@ ftCheckUserDatabase()
         echo -n "更新模板"; ftEcho -s "：$rFilePathXbashDBUserExcepmale" 
     elif [[ -n "${versionNumExcepmale}" ]];then
         local val=$(ftVersionComparison $versionNumUser $versionNumExcepmale)
-        [[ ${val} = "<"  ]] && ftEcho -e "建议更新用户数据库配置: ${versionNumUser} > ${versionNumExcepmale}" \
-                                   && echo -n "更新模板" && ftEcho -s "：$rFilePathXbashDBUserExcepmale" 
+        if [[ ${val} = "<"  ]];then
+            ftEcho -e "建议更新用户数据库配置: ${versionNumUser} > ${versionNumExcepmale}"
+            echo -n "更新文件" ; ftEcho -s "：$rFilePathXbashDBUser"
+            echo -n "更新模板" && ftEcho -s "：$rFilePathXbashDBUserExcepmale" 
+            return
+        fi
         [[ ${val} = ">"  ]] && ftEcho -e "建议更新用户数据库配置版本不一致，建议查看" && return
     fi
 }
