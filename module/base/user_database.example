@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.2
+versionNum=v0.1.2.1
 
 # [serverConfigDef]
 # softwareServerIp=
@@ -40,7 +40,7 @@ full_keytak6580_weg_l=MTK6580
 sp7731c_1h10_32v4_oversea=SPRD7731C
 full_m9_qhd=MTK6580M
 
-#项目软件包的下载工具包
+#项目软件包的下载工具包[客户用]
 [xbashAOSPConfigMTKSoftwareDownloadToool]
 filePath=
 

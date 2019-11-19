@@ -1,4 +1,8 @@
 #!/bin/bash
+#########################
+##                                              ##
+##               测试模块                ##
+##                                              ##
 #####-----------------------加载公用模块--------------------------#######
 [[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
 [[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto

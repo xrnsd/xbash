@@ -84,7 +84,7 @@ ftResetXbash()
     local arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftResetXbash可简化为xr
 #    以下[参数对]无先后顺序可任意组合
@@ -186,7 +186,7 @@ ftTest()
     local isEnable=def
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftTest 可简化为xc test
 #    
@@ -256,20 +256,20 @@ ftEcho()
     local isEnable=def
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftEcho            内容    # 直接显示内容
-#    ftEcho    -b     内容    # 标题，不换行，对字符串的缩进敏感
+#    ftEcho          内容    # 直接显示内容
+#    ftEcho    -b    内容    # 标题，不换行，对字符串的缩进敏感
 #    ftEcho    -bh   内容    # 标题，换行，对字符串的缩进敏感
-#    ftEcho    -e     内容    # 错误信息显示，对字符串的缩进敏感
-#    ftEcho    -en     内容    # 错误信息显示，对字符串的缩进敏感
+#    ftEcho    -e    内容    # 错误信息显示，对字符串的缩进敏感
+#    ftEcho    -en   内容    # 错误信息显示，对字符串的缩进敏感
 #    ftEcho    -ex   内容    # 错误信息显示，显示完退出，对字符串的缩进敏感
-#    ftEcho    -ea   内容    # 错误信息多行显示，对字符串的缩进不敏感,包含内置数组会显示不正常
-#    ftEcho    -eax 内容    # 错误信息多行显示，对字符串的缩进不敏感,包含内置数组会显示不正常，显示完退出
-#    ftEcho    -y     内容    # 特定信息显示,y/n，对字符串的缩进敏感
-#    ftEcho    -s     内容    # 执行信息，对字符串的缩进敏感
-#    ftEcho    -sn   内容    # 执行信息,不换行，对字符串的缩进敏感
-#    ftEcho    -rc    内容    #xbash函数的说明显示,对字符串的缩进敏感
+#    ftEcho    -ea   内容    # 错误信息多行显示，对字符串的缩进不敏感，包含内置数组会显示不正常
+#    ftEcho    -eax  内容    # 错误信息多行显示，对字符串的缩进不敏感，包含内置数组会显示不正常，显示完退出
+#    ftEcho    -y    内容    # 特定信息显示，y/n，对字符串的缩进敏感
+#    ftEcho    -s    内容    # 执行信息，对字符串的缩进敏感
+#    ftEcho    -sn   内容    # 执行信息，不换行，对字符串的缩进敏感
+#    ftEcho    -rc   内容    # xbash函数的说明显示，对字符串的缩进敏感
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -340,7 +340,7 @@ ftPath()
     local isEnable=def
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftPath 路径       #去掉最后的斜杠
 #    ftPath 路径 文件  #正确拼接路径
@@ -374,7 +374,7 @@ ftVersionComparison()
     local isEnable=def
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftVersionComparison -h    #查看帮助
 #
@@ -456,7 +456,7 @@ ftIniCreateFileOrTag()
     local filePathIni editType contentTagName contentTagKeyValList
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    添加内容
 #    ftIniCreateFileOrTag  -a -p 文件路径 -t 块名 -l 块对应的键值对列表
@@ -518,7 +518,7 @@ ftIniDeleteTag()
     local tagName filePathIni
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftIniDeleteTag -p ini文件路径 -t TAG块名
 #========================================================="; return ;;
@@ -560,7 +560,7 @@ ftIniAddItem()
     local tagName itemContent filePathIni
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftIniAddItem -p ini文件路径 -t TAG块名  -l 块对应的键值对列表
 #========================================================="; return ;;
@@ -609,7 +609,7 @@ ftIniDeleteItem()
     local tagName itemName filePathIni
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftIniDeleteItem -p ini文件路径 -t TAG块名 -i item名
 #========================================================="; return ;;
@@ -646,7 +646,7 @@ ftIniGetValue()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    #默认不输出异常信息
 #    ftIniGetValue 文件路径 目标块TAG 键名
@@ -713,7 +713,7 @@ ftIniSetValue()
     local isListValue filePath=$1 blockName=$2 keyName=$3 keyValue=$4
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftIniSetValue [文件路径] [目标块TAG] [键名] [键对应的值]
 #    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup 1232
@@ -758,7 +758,7 @@ ftBashHistory()
     local filePathBashHistory=${dirPathHome}/.bash_history
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #   #显示bash命令历史存储路径
 #    ftBashHistory -p
@@ -801,7 +801,7 @@ ftDevAvailableSpace()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftDevAvailableSpace [dirPathTraget] [[isReturn]]
 #    ftDevAvailableSpace /media/test
@@ -850,7 +850,7 @@ ftLanguageUtil()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftLanguageUtil "ar_IL bn_BD my_MM zh_CN"
 #    ftLanguageUtil "阿拉伯语 孟加拉语 缅甸语 简体中文"
@@ -914,7 +914,7 @@ ftInitDevicesList()
     local devMinAvailableSpace=0  # 设备最小可用空间，小于则视为无效.单位M
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftInitDevicesList [可用空间/单位默认为MB]
 #    ftInitDevicesList 4096M
@@ -1062,11 +1062,11 @@ ftCleanGarbage()
     local isAutoExit sleepTime
     local errorContent arg arg2 ;for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-     --exception) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+     --exception) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
 #    禁止在高权限下运行,转化普通用户后，再次尝试
 #========================================================="; return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    自动退出
 #    ftCleanGarbage -e  # 可简化为xcg
@@ -1124,7 +1124,7 @@ ftKillApplicationByPackageName()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftKillApplicationByPackageName 可简化为 xk
 #
@@ -1175,7 +1175,7 @@ ftLogcatApplicationByTag()
     local tagContent=$1 vContent=$2 flagError packageName isUserPackageName
     local arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftKillApplicationByPackageName 可简化为 xlp
 #
@@ -1238,7 +1238,7 @@ ftRestartAdb()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftRestartAdb 可简化为 xr -a
 #
@@ -1272,7 +1272,7 @@ ftMtkFlashTool()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftMtkFlashTool 可简化为 xd
 #
@@ -1300,7 +1300,7 @@ ftBootAnimation()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    请进入动画资源目录后执行xc bootanim xxx
 #    ftBootAnimation [edittype] [path]
@@ -1486,7 +1486,7 @@ ftGlobalization()
 
     # 说明参数解析部分
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftGlobalization 无参数
 #========================================================="; return ;;
@@ -1516,7 +1516,7 @@ ftPowerManagement()
 
     # 说明参数解析部分
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #   下面操作不指定时间默认都为10秒
 #
@@ -1588,7 +1588,7 @@ ftReduceFileList()
 
     # 说明参数解析部分
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 # 
 #    ftReduceFileList 保留的百分比 目录
@@ -1655,7 +1655,7 @@ ftReNameFile()
     local fileNameLength=4
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #   使用固定长度的文件名，后缀名不变
 #       ftReNameFile -d 目录 -l 修改后的文件长度
@@ -1743,7 +1743,7 @@ ftMaintainSystem()
     local editType
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+    --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
 #    当前用户权限过低，请转换为root 用户后重新运行
 #========================================================="; return ;;
@@ -1752,7 +1752,7 @@ ftMaintainSystem()
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftMaintainSystem 可简化为 xb
 #
@@ -1936,7 +1936,7 @@ ftFind()
     local arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftFind 可简化为 xFind
 #
@@ -1958,6 +1958,7 @@ ftFind()
     [[ -z "$nameList" ]] && ftEcho -e "参数缺失，请确认" && ftExample -h && return
 
     if [[ -n "${isSuffix}" ]]; then
+        (( $#<=3 )) && find "${pathTarget}" -name "${nameList}" && return
         nameAll=$(echo "${nameList}" | sed -e "s: :|:g")
         if [[ -n "${contentKey}" ]];then
             find "${pathTarget}" -regextype posix-extended -regex ".*\.(${nameAll})" | xargs grep -e "${contentKey}"
@@ -1992,7 +1993,7 @@ ftPdfPasswordClear()
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftPdfPasswordClear -d 目录或路径 -p 密码
 #========================================================="; return ;;
@@ -2043,11 +2044,11 @@ ftApkSignature()
     local filePathApk
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftApkSignature -f xxx.apk
 #========================================================="; return ;;
-       --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+       --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #==========================================================
 # 环境未初始化
 # 使用前,请先初始化
@@ -2101,7 +2102,7 @@ ftApkMergeOdex()
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    指定app名称，插上手机，执行pull和合并操作
 #    ftApkMergeOdex -a xxxx
@@ -2194,7 +2195,7 @@ ftDu()
 
     # 说明参数解析部分
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
@@ -2235,7 +2236,7 @@ ftAdbPush()
 #=========================================================
 #    ${ftEffect}依赖 Android SDK
 #========================================================="; return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #   注意：-f 参数必须在最后使用
 #
@@ -2297,7 +2298,7 @@ ftUpdateSublimeSnippet()
 
     # 说明参数解析部分
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    无参
 #    ftUpdateSublimeSnippet xxxx
@@ -2350,7 +2351,7 @@ ftOpenNemoTab()
         sudo apt-get install -y xclip wmctrl xdotool nemo nemo-fileroller
         sudo apt-get install -y nemo-compare nemo-media-columns nemo-pastebin nemo-seahorse nemo-share
         return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #
 #    自动补齐依赖
@@ -2437,7 +2438,7 @@ ftCdAospDirectory()
     local valCount=1 errorContent arg arg2 arg3  arg4 argVal ; for ((i=1;i<=$#;i++)) ; do
     eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; eval arg4=\${$((i+3))} ; case "${arg}" in
     # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftCdAospDirectory 可简化为 xca
 #
@@ -2463,7 +2464,7 @@ ftCdAospDirectory()
         └── out
              └──  commonObj / product / productObj / system
 #========================================================="; return ;;
-    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+    --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #==========================================================
 # 当前非有效AOSP目录，请确认
 # 可以尝试使用 ftCdAospProject 快速进入项目
@@ -2528,7 +2529,7 @@ ftCdAospProject()
     eval arg3=\${$((i+2))} ; eval arg4=\${$((i+3))}
     case "${arg}" in
     # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftCdAospProject 可简化为 xcd
 #
@@ -2614,7 +2615,7 @@ ftCheckCcache()
             ftEcho -s "开始补全依赖"
             sudo apt-get install ccache
             return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
@@ -2670,7 +2671,7 @@ ftMtkLog()
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
@@ -2697,7 +2698,7 @@ ftMtkLog()
 #    清理设备log文件
 #    ftMtkLog --clearn
 #========================================================="; return ;;
-    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+    --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
 # 环境未初始化
 # 使用前,请先初始化[xxxxxxxxx]
@@ -2918,7 +2919,7 @@ ftAdbContect()
     local isUseWifi
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分 ==============
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #
 #    ftAdbContect 无参
@@ -2926,7 +2927,7 @@ ftAdbContect()
 #    使用wifi调试
 #    ftAdbContect -w / --wifi
 #========================================================="; return ;;
-    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+    --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
 #
 # 依赖Android的SDK中的adb,请确认是否可用
@@ -3055,7 +3056,7 @@ ftPigz()
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #========================================================="; return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
@@ -3094,7 +3095,7 @@ ftDex2Jar()
     local dirPathToolResign=${DIR_PATH_ANDROID_DECOMPILE}/dex2jar-2.0
     local arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #
 #    指定dex路径

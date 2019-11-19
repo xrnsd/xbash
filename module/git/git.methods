@@ -1,5 +1,9 @@
 #!/bin/bash
-
+#########################
+##                                              ##
+##       git常用功能的封装          ##
+##                                              ##
+#########################
 ftSetBashPs1ByGitBranch()
 {
     local ftEffect=根据git分支名,设定bash的PS1
@@ -43,7 +47,7 @@ ftGitLogShell()
 #=========================================================
 #    当前目录没有有效的GIT仓库
 #=========================================================" ;return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftGitLogShell -a  # 全部分支log
 #    ftGitLogShell -at  # 查看分支树
@@ -110,7 +114,7 @@ ftGitPatchAdd2Branches()
     local isEnable=true
 
     while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftGitPatchAdd2Branches 无参
 #    ftGitPatchAdd2Branches 分支TAG   #只操作名称中有TAG的分支
@@ -184,7 +188,7 @@ ftGitCheckoutBtanch()
     local delayLong isAllBranchs branchNameTag
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #==========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
@@ -319,7 +323,7 @@ ftGitPatch()
             ftEcho -s "开始补全依赖"
             sudo apt-get install git
             return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
@@ -341,7 +345,7 @@ ftGitPatch()
 #       cherry-pick patch
 #    ftGitPatch -ah hashID
 #=========================================================" ;return ;;
-    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+    --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
 # 当前目录无有效GIT仓库
 #=========================================================" ;return ;;
@@ -424,13 +428,13 @@ ftGitTagGrep()
             sudo apt-get update
             sudo apt-get install git
             return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #
 #    在所有标签注释中查找指定字符串
 #    ftGitTagGrep -f 查找的字符串
 #=========================================================" ;return ;;
-    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+    --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #==========================================================
 # 当前目录无有效GIT仓库
 #=========================================================" ;return ;;
@@ -483,7 +487,7 @@ ftGitTag()
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 sudo apt-get install $2 补全依赖
 #=========================================================" ;return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #
 #    添加版本标签
@@ -566,16 +570,16 @@ ftGitPushForce_SXTD()
             ftEcho -s "开始补全依赖"
             sudo apt-get install git
             return ;;
-    -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #
 #    ftGitPushForce_SXTD 无参
 #=========================================================" ;return ;;
-    --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+    --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
 # 当前目录无有效GIT仓库
 #=========================================================" ;return ;;
-    --env_warning) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+    --env_warning) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
 # 主分支下无法模拟force
 #=========================================================" ;return ;;

@@ -11,7 +11,7 @@ ftRestoreOperate()
     local filePathIniMaintain tagNameMaintain dirPathRestoreTarget
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftRestoreOperate -pm 工具数据库路径 -t 默认tag名 -d 还原的目标路径
 #========================================================="; return ;;
@@ -56,7 +56,7 @@ ftRestoreChoiceSource()
     local filePathIni filePathIniMaintain tagNameMaintain
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftRestoreChoiceSource -p 版本数据库路径 -pm 工具数据库路径 -t 默认tag名
 #========================================================="; return ;;
@@ -118,7 +118,7 @@ ftSetBackupDevDir()
     local editType filePathIni versionName
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #   选择存储备份包的设备路径
 #    ftSetBackupDevDir -b -p 版本数据库路径 -v 版本号
@@ -195,7 +195,7 @@ ftSetBackupType()
     local filePathIni versionName filePathIniMaintain
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftSetBackupType -p 版本数据库路径 -v 版本名 -pm 工具数据库
 #========================================================="; return ;;
@@ -276,7 +276,7 @@ ftSetRestoreOverryList()
     local filePathIniMaintain tagNameMaintain
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftSetRestoreOverryList -pm 工具数据库路径 -t 默认tag名
 #========================================================="; return ;;
@@ -318,7 +318,7 @@ ftBackupOs()
     local filePathIni versionName filePathIniMaintain
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftBackupOs -p 数据库路径
 #========================================================="; return ;;
@@ -401,7 +401,7 @@ ftMaintainInfoNote()
     local editType filePathIni versionName
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #           ftMaintainInfoNote -a -p 版本数据库路径 -v 版本号
 #========================================================="; return ;;
@@ -442,7 +442,7 @@ ftMD5()
     local editType filePathVersion filePathInfo
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #   根据备份包的MD5校验是否修改
 #    ftMD5 -p MD5信息保存路径 -c 备份包路径
@@ -498,7 +498,7 @@ ftSystemEnv()
     local editType versionName filePathInfo
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #   记录备份包的系统软硬件信息
 #    ftSystemEnv -a -v 版本号 -p 版本号对应信息存储路径
@@ -624,7 +624,7 @@ ftBackUpDevScanning()
     local devList fileName filePathIni versionName
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #       ftBackUpDevScanning -p 版本数据库路径 -f 备份包文件名 -d 需要同步的设备路径列表
 #========================================================="; return ;;
@@ -684,7 +684,7 @@ ftSynchronous()
     local dirPathArray=$1 fileTypeList=$2
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftSynchronous -d \"设备路径列表\" -s \"文件后缀通配列表\"
 #    ftSynchronous -d \"/media/data_xx /media/data_xx\" -s \".*\.info\|.*\.tgz\|.*\.notes\|.*\.md5s\|.*\.info\"
@@ -732,7 +732,7 @@ ftCleanUpInvalidRecords()
     local filePathIni
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftCleanUpInvalidRecords -p 版本数据库路径
 #========================================================="; return ;;

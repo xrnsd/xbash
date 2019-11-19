@@ -160,9 +160,6 @@ fi
     #加载git,非自定义的bash扩展
     if [[ -f $rFilePathGitBash ]];then source  $rFilePathGitBash
     else echo -e "\033[1;31m非Xbash自定义的git扩展块加载失败\n${rFilePathGitBash}\033[0m" ;fi
-    #加载base[执行校验，命令历史处理等部分流程]
-    if [[ -f $rFilePathXbashModuleBaseModule ]];then source  $rFilePathXbashModuleBaseModule
-    else echo -e "\033[1;31mXbash的base扩展块加载失败\n${rFilePathXbashModuleBaseModule}\033[0m" ;fi
     #加载命令封装
     if [[ -f $rFilePathXbashModuleBasePackaging ]];then source  $rFilePathXbashModuleBasePackaging
     else echo -e "\033[1;31mXbash的命令封装加载失败\n${rFilePathXbashModuleBasePackaging}\033[0m" ;fi
@@ -175,3 +172,17 @@ fi
     else echo -e "\033[1;31mXbash的用户独立模块创建失败:\n${rFilePathXbashModuleUser}\033[0m" ;fi
     #加载input
     [ -f $rFilePathXbashModuleInput ] && [ "$rFilePathXbashModuleInput" != "$(readlink -f ~/.inputrc)" ] && rm -rf ~/.inputrc && ln -sf $rFilePathXbashModuleInput ~/.inputrc
+
+#---------------- 启用部分xbash功能  ------------------
+    #PS1自定义显示+分支信息
+    ftSetBashPs1ByGitBranch
+    #处理bash历史记录
+    ftBashHistory
+    #校验用户配置和模板版本一致性
+    ftCheckUserConfig
+    #校验用户数据库和模板版本一致性
+    ftCheckUserDatabase
+    #校验ccache是否有足够的剩余空间
+    ftCheckCcache
+    #自动更新
+    ftGitUpdateVersion
