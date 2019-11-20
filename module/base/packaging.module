@@ -48,8 +48,8 @@ fi
 
 if [ -d "$ANDROID_SDK" ];then
     alias xp='effect=快速push;ftAdbPush -f '
-    alias xpa='effect=快速push;ftAdbPush -a'
-    alias xpn='effect=快速push;ftAdbPush -n '
+    alias xpa='effect=快速push;ftAdbPush -a -f'
+    alias xpn='effect=快速push;ftAdbPush -n -f'
     alias xssd="effect=关闭设备;adb shell reboot"
     alias xsd="effect=关闭设备;adb shell reboot -p"
     alias xl='effect=过滤logcat;ftLogcatApplicationByTag'

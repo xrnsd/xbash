@@ -433,6 +433,7 @@ ftGitTagGrep()
 #
 #    在所有标签注释中查找指定字符串
 #    ftGitTagGrep -f 查找的字符串
+#    可简化 [ftGitTagGrep -f] 为 [xgft] ,其他参数不变
 #=========================================================" ;return ;;
     --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #==========================================================
@@ -490,14 +491,19 @@ ftGitTag()
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #
-#    添加版本标签
+#    添加版本标签:
+#    ftGitTag -a 标签名 # 使用最新commitid
 #    ftGitTag -a 标签名 标签名对应的commitid
+#    可简化 [ftGitTag -a] 为 [xgat] ,其他参数不变
 #
-#    添加修改说明标签
-#    ftGitTag -m 标签名对应的commitid
+#    添加修改说明标签[非软件版本TAG]:
+#    ftGitTag -m  # 使用最新commitid
+#    ftGitTag -m 标签名 对应的commitid
+#    可简化 [ftGitTag -m] 为 [xgmt] ,其他参数不变
 #
-#    删除标签
+#    删除标签:
 #    ftGitTag -d 标签名
+#    可简化 [ftGitTag -d] 为 [xgdt] ,其他参数不变
 #=========================================================" ;return ;;
         # 变量参数解析部分==============
         -a ) tagName="${arg2}"

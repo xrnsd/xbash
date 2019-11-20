@@ -86,7 +86,7 @@ ftResetXbash()
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftResetXbash可简化为xr
+#    可简化 [ftResetXbash] 为 [xr] ,其他参数不变
 #    以下[参数对]无先后顺序可任意组合
 #
 #    更新xbash默认配置
@@ -188,8 +188,7 @@ ftTest()
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftTest 可简化为xc test
-#    
+#
 #    ftTest 任意参数
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -1077,7 +1076,8 @@ ftCleanGarbage()
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    自动退出
-#    ftCleanGarbage -e  # 可简化为xcg
+#    ftCleanGarbage -e
+#    可简化 [ftCleanGarbage -e] 为 [xcg]
 #
 #    延时清理
 #    ftCleanGarbage -t 时间
@@ -1134,10 +1134,12 @@ ftKillApplicationByPackageName()
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftKillApplicationByPackageName 可简化为 xk
+#    ftKillApplicationByPackageName
 #
 #    ftKillApplicationByPackageName [packageName]
 #    ftKillApplicationByPackageName com.android.settings
+#
+#    可简化 [ftKillApplicationByPackageName] 为 [xk] ,其他参数不变
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -1185,7 +1187,6 @@ ftLogcatApplicationByTag()
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftKillApplicationByPackageName 可简化为 xlp
 #
 #     打印所有log
 #    ftLogcatApplicationByTag
@@ -1199,9 +1200,11 @@ ftLogcatApplicationByTag()
 #     打印包含123456 不包含777  的log
 #    ftLogcatApplicationByTag 123456 7777
 #
-#     打印包含123456 不包含777  的错误 log
-#    ftLogcatApplicationByTag -e123456 7777
+#    可简化 [ftLogcatApplicationByTag] 为 [xl] ,其他参数不变
 #
+#     打印包含123456 不包含777  的错误 log
+#    ftLogcatApplicationByTag -e 123456 7777
+#    可简化 [ftLogcatApplicationByTag -e] 为 [xle] ,其他参数不变
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -p ) packageName="${arg2}"
@@ -1529,12 +1532,12 @@ ftPowerManagement()
 #   下面操作不指定时间默认都为10秒
 #
 #    延时免密码关机，
-#    ftPowerManagement shutdown 时长[秒]  #ftPowerManagement shutdown 可简化为 xs 
-#    xs 时长[秒]
+#    ftPowerManagement shutdown 时长[秒]
+#    可简化 [ftPowerManagement shutdown] 为 [xs] ,其他参数不变
 #
 #    延时免密码重启
-#    ftPowerManagement reboot 时长[秒]  #ftPowerManagement reboot 可简化为 xss
-#    xss 时长[秒]
+#    ftPowerManagement reboot 时长[秒]
+#    可简化 [ftPowerManagement reboot] 为 [xss] ,其他参数不变
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -1762,12 +1765,14 @@ ftMaintainSystem()
 #========================================================="; return ;;
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftMaintainSystem 可简化为 xb
+#    ftMaintainSystem
 #
 #    ftMaintainSystem 操作类型
 #    ftMaintainSystem -s / --sd_finish #整理磁盘
 #    ftMaintainSystem -b / --backup #备份系统
 #    ftMaintainSystem -r / --restore #还原备份
+#
+#    可简化 [ftMaintainSystem] 为 [xb] ,其他参数不变
 #========================================================="; return ;;
     -c)
     local dirPathLocal=$2 dirPathStore=$3
@@ -1946,13 +1951,14 @@ ftFind()
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftFind 可简化为 xFind
 #
 #   ftFind -s 路径 后缀列表  文件名内容[可选]    #使用后缀搜索
 #   ftFind -s xx/xx \"java xml\" \"yyy\"
 #
 #   ftFind 路径 文件名 文件名内容[可选]     #使用文件名搜索，只支持单文件名
 #   ftFind xx/xx \"*.java\" \"yyy\"
+#
+#    可简化 [ftFind] 为 [xFind] ,其他参数不变
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -s ) isSuffix=true
@@ -2249,13 +2255,16 @@ ftAdbPush()
 #   注意：-f 参数必须在最后使用
 #
 #   自动push,用户选择操作
-#   ftAdbPush -f 文件路径  # 可简化为: xp 文件路径
+#   ftAdbPush -f 文件路径
+#    可简化 [ftAdbPush -f] 为 [xp] ,其他参数不变
 #
 #   push完,自动重启
-#   ftAdbPush -a -f 文件路径  # 可简化为: xpa 文件路径
+#   ftAdbPush -a -f 文件路径
+#    可简化 [ftAdbPush -a -f] 为 [xpa] ,其他参数不变
 #
 #   push完,不重启
-#   ftAdbPush -n -f 文件路径  # 可简化为: xpn 文件路径
+#   ftAdbPush -n -f 文件路径
+#    可简化 [ftAdbPush -n -f] 为 [xpn] ,其他参数不变
 #========================================================="; return ;;
        # 变量参数解析部分==============
        -a ) isAutoReboot=true
@@ -2279,7 +2288,8 @@ ftAdbPush()
     ftAdbContect
     [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
-    adb -s $deviceId root&&adb -s $deviceId remount || ( ftEcho -e "提权失败" && return )
+    adb -s $deviceId root || ( ftEcho -e "提权失败" && return )
+    adb -s $deviceId remount || ( ftEcho -e "提权失败" && return )
 
     for filePath in ${filePathSourceList[@]}; do
             [[ ! -f "$filePath" ]] && ftEcho -e "找不到:${filePath}" && continue
@@ -2448,13 +2458,13 @@ ftCdAospDirectory()
     # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftCdAospDirectory 可简化为 xca
-#
 #    切换终端路径
 #    ftCdAospDirectory xxx xxx xxxx
 #
 #    在文件管理器中打开
 #    ftCdAospDirectory -fm xxx xxx xxxx
+#
+#    可简化 [ftCdAospDirectory] 为 [xca] ,其他参数不变
 #
 #    xxx 说明
 #    树位置代表参数自动适配顺序，函数行为以最后一个参数为准
@@ -2539,7 +2549,6 @@ ftCdAospProject()
     # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftCdAospProject 可简化为 xcd
 #
 #    自动更新项目列表
 #    ftCdAospProject -u
@@ -2549,6 +2558,8 @@ ftCdAospProject()
 #
 #    在文件管理器中打开
 #    ftCdAospProject -fm 项目名
+#
+#    可简化 [ftCdAospProject] 为 [xcd] ,其他参数不变
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -fm ) isUserFileManager=true
@@ -2687,10 +2698,11 @@ ftMtkLog()
 #    ftMtkLog -s 设备ID
 #
 #    导出log文件
-#    ftMtkLog -p  log存放路径  # 可简化为 xpml
+#    ftMtkLog -p  log存放路径
 #
 #    导出精简版log文件
 #    ftMtkLog -pm  log存放路径
+#    可简化 [ftMtkLog -p  log存放路径] 为 [xpml] ,其他参数不变
 #
 #    分析log
 #    ftMtkLog -c log文件路径或log目录
@@ -3068,7 +3080,8 @@ ftPigz()
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
-#    ftPigz -c 文件路径/目录  # 可简化为 xtgz 路径
+#    ftPigz -c 文件路径/目录
+#    可简化 [ftPigz -c] 为 [xtgz] ,其他参数不变
 #========================================================="; return ;;
     # 变量参数解析部分==============
     -c ) contentTarget="${arg2}"
