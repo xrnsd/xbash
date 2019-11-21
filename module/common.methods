@@ -1668,7 +1668,7 @@ ftReNameFile()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
-    local isAutoName isAddName dirPathFileList  fileNameAddPrefix fileNameAddSuffix fileTagBase fileTagNew fileSuffixTagBase fileSuffixTagNew 
+    local isAutoName isAddName dirPathFileList  fileNameAddPrefix fileNameAddSuffix fileTagBase fileTagNew fileSuffixTagBase fileSuffixTagNew startNumber
     local fileNameLength=4
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; case "${arg}" in
         # 说明参数解析部分==============
@@ -1676,6 +1676,9 @@ ftReNameFile()
 #=========================================================
 #   使用固定长度的文件名，后缀名不变
 #       ftReNameFile -d 目录 -l 修改后的文件长度
+#
+#   使用固定长度的文件名，后缀名不变,从xx开始计数
+#       ftReNameFile -d 目录 -l 修改后的文件长度 -s xx
 #
 #   文件名加前缀
 #        ftReNameFile -d 目录 -ap 前缀
@@ -1694,6 +1697,8 @@ ftReNameFile()
           ;;
         -l ) isAutoName=true
             fileNameLength="${arg2}"
+          ;;
+        -s ) startNumber="${arg2}"
           ;;
         -ap ) isAddName=true
                 fileNameAddPrefix="${arg2}"
@@ -1723,6 +1728,7 @@ ftReNameFile()
     mkdir $dirPathFileListRename
     cd "${dirPathFileList}"
 
+    [[ -n "${startNumber}" ]] && index=$startNumber
     while read file ;do
         [ "$file" == "$dirNameFileListRename" ] && continue
         itemNew=$(echo ${file} |sed s/[[:space:]]/_/g)
@@ -1733,7 +1739,6 @@ ftReNameFile()
 
         if [[ -n "${isAutoName}" ]]; then
             fileName="$(printf "%0${fileNameLength}d" "$index")"
-            echo fileName222=$fileName
             cp -rf "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileName}.${fileSuffixName}
             ((index+=1))
             continue
@@ -2318,7 +2323,7 @@ ftAdbPush()
     done
     if [[ -z "$isTacitMode" ]]; then
         [[ -z "$isAutoReboot" ]] &&ftEcho -y "是否重启(回车默认重启)" && read -n 1 sel && echo
-        if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then adb -s $deviceId reboot ; fi
+        if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then adb -s $deviceId reboot && ftEcho -s "已重启设备:${deviceId} "; fi
     fi
 }
 
