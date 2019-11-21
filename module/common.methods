@@ -42,7 +42,7 @@ ftMain()
                 ftTest "$@"
                 break;;
     -h | --help )
-                ftEcho -s " xc -h    #查看所有说明\n xc -hb   #bash命令封装和xbash扩展封装的说明\n xc -ft   #xbash的扩展实现说明" && 
+                ftEcho -s "xc -h    #查看所有说明\nxc -hb   #bash命令封装和xbash扩展封装的说明\nxc -ft   #xbash的扩展实现说明" && 
                 echo && ftMain -ft && echo && ftMain -hb
                 break;;
     -hb )
@@ -140,13 +140,16 @@ ftReadAllAlias()
         [[ ! -f $rFilePathXbashModuleBasePackaging ]] && ftEcho -e "xbash配置不存在:$rFilePathXbashModuleBasePackaging" && return
 
         local cmdName cmdContent
+        local intervalSize=24
 
         ftEcho -s "$ftEffect"
-        echo -e "================================================\n命令           说明\n================================================"
+        echo -e "========================================================="
+        printf "%s  %${intervalSize}s \n" 命令 说明
+        echo -e "========================================================"
         cat $rFilePathXbashModuleBasePackaging|grep alias | sort | while read line; do
                 cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
                 cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
-                [[ -n "$cmdContent" ]] && printf "%14s  " $cmdName;echo $cmdContent
+                [[ -n "$cmdContent" ]] && printf "%${intervalSize}s  %s\n" ${cmdName} ${cmdContent}
         done | column -t
 }
 
@@ -161,9 +164,12 @@ ftReadAllFt()
 
         local key="local ftEffect=" keyEnable="local isEnable="
         local effectDescription effectDescriptionEnable
+        local intervalSize=40
 
         ftEcho -s "$ftEffect"
-        echo -e "=========================================================\n命令                                 说明\n========================================================="
+        echo -e "========================================================="
+        printf "%s%${intervalSize}s" 命令 说明 && ftEcho -s " [ 查看对应命令的具体说明: 命令 -h ]"
+        echo -e "========================================================"
         for effectName in $(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto  $rFilePathXbashModuleGit| grep '^ft'  |grep "()"| sort) ; do
             effectDescription=$(cat $rFilePathXbashModuleCommon $rFilePathXbashModuleAuto $rFilePathXbashModuleGit|grep  -C 3 $effectName|grep "$key")
             effectDescription=${effectDescription//$key/}
@@ -175,7 +181,7 @@ ftReadAllFt()
 
             [[ "$effectDescriptionEnable" = "def" ]] && continue
 
-            printf "%40s  " ${effectName//()/}
+            printf "%${intervalSize}s  " ${effectName//()/}
             [[ "$effectDescriptionEnable" = "true" ]] && echo ${effectDescription} || ftEcho -s "[暂时关闭]"
         done | column -t
 }
@@ -1765,12 +1771,18 @@ ftMaintainSystem()
 #========================================================="; return ;;
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftMaintainSystem
 #
-#    ftMaintainSystem 操作类型
-#    ftMaintainSystem -s / --sd_finish #整理磁盘
-#    ftMaintainSystem -b / --backup #备份系统
-#    ftMaintainSystem -r / --restore #还原备份
+#    整理磁盘:
+#    ftMaintainSystem -s
+#    ftMaintainSystem --sd_finish
+#
+#    备份系统:
+#    ftMaintainSystem -b
+#    ftMaintainSystem --backup
+#
+#    还原备份:
+#    ftMaintainSystem -r
+#    ftMaintainSystem --restore
 #
 #    可简化 [ftMaintainSystem] 为 [xb] ,其他参数不变
 #========================================================="; return ;;
@@ -1952,13 +1964,15 @@ ftFind()
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #
-#   ftFind -s 路径 后缀列表  文件名内容[可选]    #使用后缀搜索
+#   使用后缀搜索
+#   ftFind -s 路径 后缀列表  文件名内容[可选]
 #   ftFind -s xx/xx \"java xml\" \"yyy\"
 #
-#   ftFind 路径 文件名 文件名内容[可选]     #使用文件名搜索，只支持单文件名
+#   使用文件名搜索，只支持单文件名
+#   ftFind 路径 文件名 文件名内容[可选]     
 #   ftFind xx/xx \"*.java\" \"yyy\"
 #
-#    可简化 [ftFind] 为 [xFind] ,其他参数不变
+#    可简化 [ftFind -s] 为 [xFind] ,其他参数不变
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -s ) isSuffix=true

@@ -7,7 +7,7 @@ bash的简单扩展
     $ sudo -k chmod -R a+x module/ config/ init
     $ ./init
 ```
-    2. 查看说明详情
+    2. 查看使用说明
 ```sh
     $ xc -h
 ```
@@ -64,3 +64,4 @@ bash的简单扩展
 ----------
     01 adb多设备连接处理,设备数量处理概率失败
     02 自动push概率无法重启
+    03 自动push提权失败无法返回
