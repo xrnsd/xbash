@@ -2686,7 +2686,7 @@ ftCheckCcache()
     local remainingThresholdSize=10.0 #10GB/基本满足单次新工程的缓存空间要求
 
     if (( $(echo "$proportionThresholdSize < ${proportionSize}"|bc) == 1 )) \
-        ||(( $(echo "$remainingSize < ${remainingThresholdSize}"|bc) == 1 )) ;then 
+        &&(( $(echo "$remainingSize < ${remainingThresholdSize}"|bc) == 1 )) ;then 
         ftEcho -e "ccache 剩余空间有限,即将溢出,请及时处理"
     fi
 }

@@ -89,7 +89,6 @@ alias xhf='effect=xbash扩展说明查找;ftMain -h |grep -i '
 alias xcb='effect=进入xbash目录;cd $dirPathHomeXbash'
 alias xca='effect=快速切换到Aosp功能目录;ftCdAospDirectory '
 alias xcd='effect=快速切换到不同Aosp项目;ftCdAospProject -n'
-alias xsubl='subl $rDirPathXbash ${rDirPathUserHome}/xconfig'
 alias xcf='effect=进入xconfig目录;cd ${rDirPathUserHome}/xconfig'
 alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
 alias xs='effect=无密码关机[默认10s];ftPowerManagement shutdown'
@@ -134,8 +133,10 @@ if [[ -n ftCdAospDirectory ]];then
 fi
 
 if [[ -n $(which subl) ]];then
+    alias xsubl='subl $rDirPathXbash ${rDirPathUserHome}/xconfig'
     alias xubpwm='effect=快速进入launcher;subl $(find frameworks/ -name "PhoneWindowManager.java")'
     alias xubsettings='effect=快速进入launcher;subl $(find frameworks/base/core -name "Settings.java")'
+    alias xubl='effect=快速进入launcher;subl $(find frameworks/base/core -name "Settings.java")'
 fi
 
 #命令选项快速适配
