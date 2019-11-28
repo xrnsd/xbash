@@ -283,7 +283,7 @@ ftGitCheckoutBtanch()
         read -n 1 sel
         [ -z "${sel}" ] && sel=y
         case "$sel" in
-            y | Y )echo 
+            y | Y ) echo
                 if [ -n "$delayLong" ]; then
                     tput sc
                     for i in $(seq -w $delayLong -1 1) ; do
@@ -372,7 +372,7 @@ ftGitPatch()
     [[ -z $(which git) ]] && ftGitPatch --rely "git" && return
     #参数校验
     [ -z "$branchNameNow" ] && ftGitPatch --env && return
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPatch -h && return
 
     #实现主体
@@ -440,7 +440,7 @@ ftGitTagGrep()
 # 当前目录无有效GIT仓库
 #=========================================================" ;return ;;
         # 变量参数解析部分==============
-        -f ) strKeyContent="${arg2}" 
+        -f ) strKeyContent="${arg2}"
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
@@ -450,7 +450,7 @@ ftGitTagGrep()
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     [[ -z "${branchNameNow}" ]] && ftGitTagGrep --env && return
     #参数校验
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -z "$strKeyContent" ] && errorContent="${errorContent}\\n[想要的有点多,这个给不了]"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagGrep -h && return
 
@@ -570,7 +570,7 @@ ftGitPushForce_SXTD()
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    缺失依赖： ${2}
-#    补全依赖： ${3} 
+#    补全依赖： ${3}
 #=========================================================" ;return ;;
     --rely_install)
             ftEcho -s "开始补全依赖"

@@ -201,7 +201,7 @@ ftBranchNameResolution()
     fi
     local valCount=0 errorContent
 
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBranchNameResolution -h && return
 
@@ -302,7 +302,7 @@ ftBuildPropResolution()
         return
     fi
     local valCount=0 errorContent
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBuildPropResolution -h && return
 
@@ -394,7 +394,7 @@ ftAutoBuildMultiBranchEnvSeparation()
     local valCount=1 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -z "$editType" ] && errorContent="${errorContent}\\n[请指定操作]"
-    [[ -n "$requestEnvState" ]] && errorContent="${errorContent}\\n[环境初始化异常,文件夹无法重置]requestEnvState=$requestEnvState" 
+    [[ -n "$requestEnvState" ]] && errorContent="${errorContent}\\n[环境初始化异常,文件夹无法重置]requestEnvState=$requestEnvState"
     [ ! -f "$filePathserialBuildTool" ] && errorContent="${errorContent}\\n[串行编译工具不存在]filePathserialBuildTool=$filePathserialBuildTool"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoBuildMultiBranchEnvSeparation -h && return
 
@@ -699,7 +699,7 @@ ftAutoPacket()
         -y ) isClean=true ;;
         -u ) isUpload=true ;;
         -r ) isReadMe=true ;;
-        -p ) isPacket=true 
+        -p ) isPacket=true
               isReadMe=true
               isBale=true ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
@@ -723,7 +723,7 @@ ftAutoPacket()
             buildType=$AutoEnv_buildType
     local dirPathVersionSoftware=${dirPathCode}/out/${dirNameVersionSoftware}
     local editType=$1 valCount=1 errorContent
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
     [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase"
@@ -1055,7 +1055,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     [[ -z "$dirPathVersionSoftware" ]] && dirPathVersionSoftware=${dirPathOut}/${AutoEnv_versionName}
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
     local valCount=1 errorContent
-    #(( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    #(( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
     [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
@@ -1493,7 +1493,7 @@ ftAutoLnOut()
     [[ ! -d "${dirPathAospRoot}" ]] && ftAutoCreateSxtdOldProjectBranch --env && return
     #参数校验
     local dirPathLocal=$(pwd)
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathDev" ] && errorContent="${errorContent}\\n[无法链接到目标路径]dirPathDev=$dirPathDev"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoLnOut -h && return
 

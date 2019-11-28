@@ -51,7 +51,7 @@ ftInitUserConfig()
         if [ -n "${userPasswdLocal}" ];then
             local taguserPasswordBase="export\ userPassword="
             local taguserPasswordNew="export\ userPassword=$userPasswdLocal"
-            sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败" 
+            sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败"
         fi
 
         local tagisAutoUpdateBase="export\ isAutoUpdate=" \
@@ -64,7 +64,7 @@ ftInitUserConfig()
                 exceptionContent="${exceptionContent}\n xbash自动更新启用失败"
             fi
         fi
-        
+
         local tagisUseCustomPS1Base="export\ isUseCustomPS1=" \
         tagisUseCustomPS1New="export\ isUseCustomPS1=true"
         if [ -n "${tagisUseCustomPS1New}" ];then
@@ -75,7 +75,7 @@ ftInitUserConfig()
                 exceptionContent="${exceptionContent}\n 启用xbash定义bash的命令行前缀失败"
             fi
         fi
-        
+
         local tagisUseXbashHistoryBase="export\ isUseXbashHistory=" \
         tagisUseXbashHistoryNew="export\ isUseXbashHistory=true"
         if [ -n "${tagisUseXbashHistoryNew}" ];then
@@ -86,7 +86,7 @@ ftInitUserConfig()
                 exceptionContent="${exceptionContent}\n xbash定义的bash历史记录处理启用失败"
             fi
         fi
-        
+
         local tagisUseCustomAndroidDevEnvConfigBase="export\ isUseCustomAndroidDevEnvConfig=" \
         tagisUseCustomAndroidDevEnvConfigNew="export\ isUseCustomAndroidDevEnvConfig=true"
         if [ -n "${tagisUseCustomAndroidDevEnvConfigNew}" ];then
@@ -97,7 +97,7 @@ ftInitUserConfig()
                 exceptionContent="${exceptionContent}\n xbash定义的Android开发环境基础配置启用失败"
             fi
         fi
-        
+
         local tagisUseBuildCcacheBase="export\ isUseBuildCcache=" \
         tagisUseBuildCcacheNew="export\ isUseBuildCcache=true"
         if [ -n "${tagisUseBuildCcacheNew}" ];then
