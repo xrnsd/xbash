@@ -50,6 +50,7 @@ if [ -d "$ANDROID_SDK" ];then
     alias xp='effect=快速push;ftAdbPush -f '
     alias xpa='effect=快速push;ftAdbPush -a -f'
     alias xpn='effect=快速push;ftAdbPush -n -f'
+    alias xpc='effect=开启新终端,快速push;ftAdbPush -c -f'
     alias xssd="effect=关闭设备;adb shell reboot"
     alias xsd="effect=关闭设备;adb shell reboot -p"
     alias xl='effect=过滤logcat;ftLogcatApplicationByTag'
@@ -133,7 +134,8 @@ if [[ -n ftCdAospDirectory ]];then
 fi
 
 if [[ -n $(which subl) ]];then
-    alias xsubl='subl $rDirPathXbash ${rDirPathUserHome}/xconfig'
+    alias xsubl='effect=使用sublime_text打开xbash和xconfig ; subl $rDirPathXbash ${rDirPathUserHome}/xconfig'
+    alias xspwd='effect=使用sublime_text打开本目录;subl $(pwd)'
     alias xubpwm='effect=快速进入launcher;subl $(find frameworks/ -name "PhoneWindowManager.java")'
     alias xubsettings='effect=快速进入launcher;subl $(find frameworks/base/core -name "Settings.java")'
     alias xubl='effect=快速进入launcher;subl $(find frameworks/base/core -name "Settings.java")'

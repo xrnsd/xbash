@@ -1160,8 +1160,7 @@ ftKillApplicationByPackageName()
 
     #实现主体
     #adb连接状态检测
-    ftAdbContect
-    [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
 
     while true; do case "$packageName" in
@@ -1226,8 +1225,7 @@ ftLogcatApplicationByTag()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #实现主体
     #adb连接状态检测
-    ftAdbContect
-    [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
 
     [ -z "${flagError}" ] && adb -s $deviceId logcat -c
@@ -2273,6 +2271,10 @@ ftAdbPush()
 #=========================================================
 #   注意：-f 参数必须在最后使用
 #
+#   开启新终端,进行操作
+#   ftAdbPush -c
+#    可简化 [ftAdbPush -c -f] 为 [xpc] ,其他参数不变
+#
 #   自动push,用户选择操作
 #   ftAdbPush -f 文件路径
 #    可简化 [ftAdbPush -f] 为 [xp] ,其他参数不变
@@ -2286,6 +2288,12 @@ ftAdbPush()
 #    可简化 [ftAdbPush -n -f] 为 [xpn] ,其他参数不变
 #========================================================="; return ;;
        # 变量参数解析部分==============
+       -c ) shift ;local valList=(${@})
+             [[ ! -f "${rFilePathXbashModuleBaseAdbPush}" ]] && \
+             ftEcho -s "脚本不存在:${rFilePathXbashModuleBaseAdbPush}" && return
+             gnome-terminal -x bash -c "$rFilePathXbashModuleBaseAdbPush ${valList[*]}"
+             return
+            ;;
        -a ) isAutoReboot=true
             ;;
        -n ) isTacitMode=true
@@ -2304,8 +2312,7 @@ ftAdbPush()
 
     #实现主体
     #adb连接状态检测
-    ftAdbContect
-    [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
     adb -s $deviceId root || ( ftEcho -e "提权失败" && return )
     adb -s $deviceId remount || ( ftEcho -e "提权失败" && return )
@@ -2815,8 +2822,7 @@ ftMtkLog()
                 adb -s $deviceId shell ls ${dirPathLogDevice} | while read dirNameLog;do
                     dirNameLog=$(echo $dirNameLog |sed s/[[:space:]]//g)
                     dirPathLog=${dirPathLogStorgeAll}/${dirNameLog}
-                    [[ ! -d "${dirPathLog}" ]]&&[[ -n $(adb -s $deviceId shell "[ -d $${dirPathLogDevice}/${dirNameLog} ]&&echo exit") ]] && \
-                    mkdir -p $dirPathLog
+                    [[ ! -d "${dirPathLog}" ]] && mkdir -p ${dirPathLog}
                     adb -s $deviceId pull ${dirPathLogDevice}/${dirNameLog} ${dirPathLog}
                 done
 

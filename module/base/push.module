@@ -1,0 +1,66 @@
+#!/bin/bash
+# adb自动push的独立终端实现 
+#####-----------------------加载部分模块,便于调试--------------------------#######
+[[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
+[[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
+[[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
+# ==========================================================================
+ftAdbPushByTerminal()
+{
+    local ftEffect=adbPush命令的简单封装[打开独立终端执行]
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local filePathSourceList fileNameSource isAutoReboot isTacitMode
+    local errorContent arg  ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
+    case "${arg}" in
+       # 变量参数解析部分==============
+       -a ) isAutoReboot=true
+            ;;
+       -n ) isTacitMode=true
+            ;;
+       -f )
+            local valIndex=$i
+            while (( $valIndex>=0 )) ;do (( valIndex-=1 )) && shift ;done
+            filePathSourceList=($@)
+            ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    #依赖校验
+    [[ -z $(which adb) ]] && ftAdbPushByTerminal --rely "adb" && return
+    #参数校验
+    [ -z "$filePathSourceList" ] && errorContent="${errorContent}\\n[push的源路径不存在]filePathSourceList=$filePathSourceList"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAdbPushByTerminal -h && return
+
+    #实现主体
+    if [[ "$isUseConsole" = "true" ]]; then
+            gnome-terminal -x bash -c "${filePathSourceList[@]}"
+            return;
+    fi
+    #adb连接状态检测
+    ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
+    local deviceId=${autoTestDeviceId}
+    adb -s $deviceId root || ( ftEcho -e "提权失败" && return )
+    adb -s $deviceId remount || ( ftEcho -e "提权失败" && return )
+
+    for filePath in ${filePathSourceList[@]}; do
+            [[ ! -f "$filePath" ]] && ftEcho -e "找不到:${filePath}" && continue
+            if [[ -n $(echo $filePath |grep system) ]] ;then
+                fileNameSource=$(basename $filePath)
+                dirPathTarget=$(echo /system${filePath#*system} | sed -e "s:/$fileNameSource::g")
+                echo "push ${filePath} > ${dirPathTarget}"
+                adb -s $deviceId push $filePath $dirPathTarget && \
+                ftEcho -s "${fileNameSource} push to [${dirPathTarget}] finish"
+            else
+                ftEcho -en "无法自动解析:";echo "${filePath}"
+            fi
+    done
+    if [[ -z "$isTacitMode" ]]; then
+        [[ -z "$isAutoReboot" ]] &&ftEcho -y "是否重启(回车默认重启)" && read -n 1 sel && echo
+        if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then adb -s $deviceId reboot && ftEcho -s "已重启设备:${deviceId} "; fi
+    fi
+}
+
+ftAdbPushByTerminal $@
+sleep 1;exit
