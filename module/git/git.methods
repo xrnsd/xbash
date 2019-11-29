@@ -1,9 +1,5 @@
 #!/bin/bash
-#########################
-##                                              ##
-##       git常用功能的封装          ##
-##                                              ##
-#########################
+#  git常用功能的封装
 ftSetBashPs1ByGitBranch()
 {
     local ftEffect=根据git分支名,设定bash的PS1

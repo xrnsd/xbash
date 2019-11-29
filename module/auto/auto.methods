@@ -1,9 +1,5 @@
 #!/bin/bash
-#########################
-##                                              ##
-##   AOSP项目相关方法实现   ##
-##                                              ##
-#########################
+#  AOSP项目相关方法实现
 ftAutoInitEnv()
 {
     local ftEffect=初始化xbash_Android_build相关所需的部分环境变量

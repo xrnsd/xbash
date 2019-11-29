@@ -1,11 +1,7 @@
 #!/bin/bash
-#########################
-##                                              ##
-##               测试模块                ##
-##                                              ##
+#  测试模块
 #####-----------------------加载部分模块,便于调试--------------------------#######
 [[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
 [[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
 [[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
 # ==========================================================================
-ftMain -sc

@@ -47,10 +47,12 @@ if [[ -n $(which sensors) ]];then
 fi
 
 if [ -d "$ANDROID_SDK" ];then
-    alias xp='effect=快速push;ftAdbPush -f '
-    alias xpa='effect=快速push;ftAdbPush -a -f'
-    alias xpn='effect=快速push;ftAdbPush -n -f'
-    alias xpc='effect=开启新终端,快速push;ftAdbPush -c -f'
+    alias xp='effect=使用adb快速push[询问是否重启];ftAdbPush -f '
+    alias xpa='effect=使用adb快速push[自动重启];ftAdbPush -a -f'
+    alias xpn='effect=使用adb快速push[仅push];ftAdbPush -n -f'
+    alias xpc='effect=使用adb快速push[新终端中执行,询问是否重启];ftAdbPush -c -f'
+    alias xpca='effect=使用adb快速push[新终端中执行,自动重启];ftAdbPush -c -a -f'
+    alias xpcn='effect=使用adb快速push[新终端中执行,仅push];ftAdbPush -c -n -f'
     alias xssd="effect=关闭设备;adb shell reboot"
     alias xsd="effect=关闭设备;adb shell reboot -p"
     alias xl='effect=过滤logcat;ftLogcatApplicationByTag'
