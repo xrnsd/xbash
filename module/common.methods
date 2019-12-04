@@ -2682,8 +2682,22 @@ ftCheckCcache()
     #实现主体
     local keyCacheSizeNow="cache size"
     local keyCacheSizeMax="max cache size"
+    local UnitMb="Mbytes" UnitGb="Gbytes"
     local cacheSizeNow=$(ccache -s |grep "$keyCacheSizeNow"| awk '{print $3}' | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
+    local cacheSizeNowUnit=$(ccache -s |grep "$keyCacheSizeNow"| awk '{print $4}')
     local cacheSizeMax=$(ccache -s |grep "$keyCacheSizeMax" | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
+    local cacheSizeMaxUnit=$(ccache -s |grep "$keyCacheSizeMax"| awk '{print $4}')
+
+
+    if [[ -n $(echo $cacheSizeMaxUnit |grep $UnitMb) ]];then
+        ftEcho -e "ccache 空间有限,请及时使用ccache -M xxG处理"
+        return
+    elif (( $(echo "$cacheSizeMax < 20"|bc) == 1 )) ;then
+        ftEcho -e "ccache 空间有限,请及时使用ccache -M xxG处理"
+        return
+    fi
+
+    [[ -n $(echo $cacheSizeNow |grep $UnitMb) ]] && cacheSizeNow=$(($cacheSizeNow/1024))
 
     [[ -z "${cacheSizeNow}" ]] \
     || (( $(echo "$cacheSizeNow <= 0"|bc) == 1 )) \
