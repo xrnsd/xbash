@@ -38,7 +38,19 @@ ftAdbPushByTerminal()
             gnome-terminal -x bash -c "${filePathSourceList[@]}"
             return;
     fi
+    # 环境清理
+    if [[ -n "${ANDROID_BUILD_TOP}" ]];then
+        local newList=($(env))
+        local vallist
+        for item in ${newList[@]}; do
+            [[ $item != ANDROID_* ]] && continue
+            [[ $item == ANDROID_SDK* ]] && continue
+            vallist=($(echo "${item}"| sed 's?=? ?g'))
+            unset $vallist
+        done
+    fi
     #adb连接状态检测
+    echo ddddd=$(pwd)
     ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
     adb -s $deviceId root || ( ftEcho -e "提权失败" && return )
@@ -62,5 +74,5 @@ ftAdbPushByTerminal()
     fi
 }
 
-ftAdbPushByTerminal $@
-sleep 1;exit
+ftAdbPushByTerminal $@ && echo "push完成,ctrl+c快速退出"
+sleep 10;exit
