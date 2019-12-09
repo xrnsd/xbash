@@ -1235,14 +1235,13 @@ ftLogcatApplicationByTag()
             launcher) packageName="com.android.launcher3"  ;break;;
             launcher3) packageName="com.android.launcher3"  ;break;;
         * ) break;;esac;done
-
         local pid=$(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}')
         [[ -z "$vContent" ]] && adb -s $deviceId logcat "${flagError}" |grep "${pid}"
         adb -s $deviceId logcat "${flagError}" |grep "${pid}" #|grep -v "${vContent}"
     elif [ -z "$tagContent" ];then
         adb -s $deviceId logcat "${flagError}"
     else
-        [[ -z "$vContent" ]] && adb logcat "${flagError}" |grep -i "${tagContent}" && return
+        [[ -z "$vContent" ]] && adb -s $deviceId logcat "${flagError}" |grep -i "${tagContent}" && return
         adb -s $deviceId logcat "${flagError}" |grep -i "${tagContent}" |grep -v "${vContent}"
     fi
 }
@@ -1986,7 +1985,7 @@ ftFind()
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
-    [[ -z "$nameList" ]] && ftEcho -e "参数缺失，请确认" && ftExample -h && return
+    [[ -z "$nameList" ]] && ftEcho -e "参数缺失，请确认" && ftFind -h && return
 
     if [[ -n "${isSuffix}" ]]; then
         (( $#<=3 )) && find "${pathTarget}" -name "${nameList}" && return
@@ -3024,7 +3023,7 @@ ftAdbContect()
         ftEcho -sn "等待设备连接>"
         adb wait-for-device
         deviceId=$(adb get-serialno)
-    elif [[ -n "${deviceIdold}" ]]&&[ -n $(echo ${deviceIdList[@]} |grep $autoTestDeviceId ) ]]; then
+    elif [[ -n "${deviceIdold}" ]]&&[[ -n $(echo ${deviceIdList[@]} |grep $autoTestDeviceId ) ]]; then
         ftEcho -sn "等待设备连接>"
         deviceId=$deviceIdold
     else
@@ -3043,6 +3042,7 @@ ftAdbContect()
             [[ "${sel}" != "y" ]] && return
             adb disconnect
         fi
+
         if [[ -z $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]] ;then
             ftEcho -s "存在多个设备,请选择"
             local index=0
@@ -3062,9 +3062,12 @@ ftAdbContect()
 
         elif [[ "${deviceId}" != "${deviceIdTarget}" ]];then # 对默认deviceID进行修改
             ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
-            adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial"
-            ftEcho -sn "请重新插拔usb设备>"
-            deviceId=$deviceIdTarget
+            if adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial"; then
+                ftEcho -sn "请重新插拔usb设备>"
+                deviceId=$deviceIdTarget
+            else
+                ftEcho -en "更新deviceId失败,缺少必要权限,将使用默认ID" ; ftEcho -sn ">"
+            fi
 
         fi
     fi
