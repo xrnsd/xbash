@@ -245,7 +245,7 @@ ftGitCheckoutBtanch()
        ftEcho -e "未找到[$branchNameTag]对应的分支" && return
     fi
     local itemCount=${#branchList[@]}
-    for item in ${branchList[@]} ; do [ ! -z "$item" ] && branchNameTraget=$item && break ;done
+    for item in ${branchList[@]} ; do [ -n "$item" ] && branchNameTraget=$item && break ;done
     if (( $itemCount>1 ));then
         local index=0 indexNow=-1
         local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
@@ -517,7 +517,7 @@ ftGitTag()
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #依赖校验
-    [[ -z $(which git) ]] && ftExample --rely "git" && return
+    [[ -z $(which git) ]] && ftGitTag --rely "git" && return
     #参数校验
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[示例1]tagName=$tagName"
     [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"

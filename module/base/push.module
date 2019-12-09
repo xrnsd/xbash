@@ -50,7 +50,6 @@ ftAdbPushByTerminal()
         done
     fi
     #adb连接状态检测
-    echo ddddd=$(pwd)
     ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
     adb -s $deviceId root || ( ftEcho -e "提权失败" && return )
