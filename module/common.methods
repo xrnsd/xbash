@@ -2966,7 +2966,7 @@ ftMtkLog()
     fi
 }
 
-complete -W "-h --help" ftAdbContect
+complete -W "-h --help -w --wifi -u" ftAdbContect
 ftAdbContect()
 {
     local ftEffect=adb多设备连接处理
@@ -2975,7 +2975,7 @@ ftAdbContect()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local isUseWifi
+    local isUseWifi isUpdateDeviceId
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -2985,6 +2985,9 @@ ftAdbContect()
 #
 #    使用wifi调试
 #    ftAdbContect -w / --wifi
+#
+#    更新adb的设备ID
+#    ftAdbContect -u
 #========================================================="; return ;;
     --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
@@ -2993,6 +2996,8 @@ ftAdbContect()
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -w | --wifi ) isUseWifi=true
+          ;;
+        -u ) isUpdateDeviceId=true
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
@@ -3043,7 +3048,7 @@ ftAdbContect()
             adb disconnect
         fi
 
-        if [[ -z $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]] ;then
+        if [[ -n "$isUpdateDeviceId" ]] || [[ -z $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]] ;then
             ftEcho -s "存在多个设备,请选择"
             local index=0
             for deviceId in ${deviceIdList[@]} ; do
@@ -3060,7 +3065,8 @@ ftAdbContect()
             deviceId=${deviceIdList[$tIndex]}
             ftEcho -sn "等待设备连接>"
 
-        elif [[ "${deviceId}" != "${deviceIdTarget}" ]];then # 对默认deviceID进行修改
+        elif [[ -n $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]]\
+                &&[[ "${deviceId}" != "${deviceIdTarget}" ]];then # 对默认deviceID进行修改
             ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
             if adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial"; then
                 ftEcho -sn "请重新插拔usb设备>"
