@@ -1198,9 +1198,9 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}
             content=${content}${enterLine}"说明："
             if [[ ${isPacketMtkSoftwareDownloadTools} = "true" ]]; then
-                content=${content}${enterLine}"\t01 tools目录存放MTK系统软件[固件]下载工具和工具使用说明书"
+                content=${content}${enterLine}"\t01 $(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo softwareDescriptionMtk)"
             fi
-            content=${content}${enterLine}"\t01 "
+            content=${content}${enterLine}"\t02 "
             content=${content}${enterLine}
             content=${content}${enterLine}"修改记录："
             content=${content}${enterLine}"\t01 "
