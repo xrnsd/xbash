@@ -3197,3 +3197,67 @@ ftDex2Jar()
                                                       -o ${filePathJar} \
     && ftEcho -s "生成${filePathJar}"
 }
+
+ftMD5()
+{
+    local ftEffect=记录和校验文件的MD5
+
+    #参数解析
+    local editType filePathVersion filePathInfo
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+        # 说明参数解析部分==============
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+#=========================================================
+#   获取文件的MD5
+#    ftMD5 -a 文件路径
+#
+#   获取文件的MD5,校验文件是否一致
+#    ftMD5 -p MD5信息保存路径 -c 文件路径
+#
+#   保存文件的MD5信息
+#    ftMD5 -p MD5信息保存路径 -s 文件路径
+#========================================================="; return ;;
+        # 变量参数解析部分==============
+        -a )   filePathVersion="${arg2}"
+                export ftMD5Info=
+                ftEcho -s "文件 : ${fileNameVersion} MD5信息正在生成，请稍等"
+                export ftMD5Info=$(md5sum $filePathVersion | awk '{print $1}')
+                ftEcho -s "文件 : ${fileNameVersion} MD5信息已生成"
+                return;;
+        -c )   filePathVersion="${arg2}"
+                editType=checkMd5
+           ;;
+        -s )   filePathVersion="${arg2}"
+                editType=setMd5
+           ;;
+        -p )   filePathInfo="${arg2}"
+           ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    #参耦校验
+    [ -z "$editType" ] && errorContent="${errorContent}\\n[不知道要干啥]editType=$editType"
+    [ ! -f "$filePathInfo" ] && errorContent="${errorContent}\\n[没有相关版本信息文件]filePathInfo=$filePathInfo"
+    [ ! -f "$filePathVersion" ] && errorContent="${errorContent}\\n[目标文件不存在]filePathVersion=$filePathVersion"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMD5 -h && return
+
+    #实现主体
+    local fileNameVersion=$(basename $filePathVersion)
+    local versionName=${fileNameVersion%.*}
+
+    while true; do case "${editType}" in
+        setMd5 )
+                    ftEcho -s "文件 : ${fileNameVersion} MD5信息正在生成，请稍等"
+                    local md5Code=$(md5sum $filePathVersion | awk '{print $1}')
+                    ftIniSetValue $filePathInfo $versionName MD5 $md5Code
+                    ftEcho -s "文件 : ${fileNameVersion} MD5信息已生成"
+                    return;;
+        checkMd5 )
+                    ftEcho -bh "文件 : ${versionName} MD5检验开始"
+                    local Md5Code=$(ftIniGetValue $filePathInfo $versionName MD5)
+                    [[ -z "$Md5Code" ]] && ftEcho -e "文件 : ${versionName}  原始MD5未找到" && exit
+                    local Md5CodeNow=$(md5sum $filePathVersion | awk '{print $1}')
+                    [ "$Md5CodeNow"x != "$Md5Code"x ] && ftEcho -e "文件 : ${versionName} MD5检验失败" && exit
+
+                    ftEcho -s "文件 : ${versionName} MD5检验成功"
+                    return;;
+    * ) break;;esac;done
+}
