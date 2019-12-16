@@ -472,11 +472,10 @@ ftAutoBackupOrRestoreOuts()
     local buildType=$AutoEnv_buildType versionName=$AutoEnv_versionName branchName="$AutoEnv_branchName"
 
     local dirNameCodeRootOuts=outs
-    # local dirPathOutTop=${dirPathCode}/out
-    # local dirPathCodeRootOuts=${dirPathCode%/*}/${dirNameCodeRootOuts}
     local dirPathOutTop=${dirPathCode}/out
     dirPathOutTop=$(readlink -f ${dirPathOutTop})
-    local dirPathCodeRootOuts=$(dirname ${dirPathOutTop})/${dirNameCodeRootOuts}
+    local dirPathCodeRootOuts=$(dirname ${dirPathOutTop})
+    dirPathCodeRootOuts=$(dirname ${dirPathCodeRootOuts})/${dirNameCodeRootOuts}
     local versionInfoDateTime=$(date -d "today" +"%y%m%d[%H:%M]")
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----${versionInfoDateTime}
     [[ -n "$mTagContent" ]] && dirNameBranchVersion=${dirNameBranchVersion}_Tag[${mTagContent}]
