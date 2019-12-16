@@ -926,8 +926,6 @@ ftAutoPacket()
                 local versionPacketMd5Now="${versionPacketMd5Base}${ftMD5Info}"
                 sed -i "s:$versionPacketMd5Base:$versionPacketMd5Now:g" $AutoEnv_filePathReleaseNotes \
                 || ftEcho -e "版本说明中的MD5信息写入失败"
-                sed -i "s:$versionPacketMd5Base:$versionPacketMd5Now:g" $AutoEnv_filePathCustomerDescription \
-                || ftEcho -e "客户说明中的MD5信息写入失败"
 
                 #修改版本包目录结构
                 local dirPathVersionSoftwareVersionNow=${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
@@ -1174,6 +1172,8 @@ ftAutoCreateReadMeBySoftwareVersion()
             [[ -n "${branchNameNow}" ]] &&\
             content=${content}${enterLine}"分支名[真实]：${branchNameNow} [ $(ftGitLogShell -n 1 -c "%h") ]" ||\
             content=${content}${enterLine}"分支名："
+            content=${content}${enterLine}"分支名[目录]：alps"
+            content=${content}${enterLine}"客户名："
             content=${content}${enterLine}
             content=${content}${enterLine}"说明："
             content=${content}${enterLine}"\t01 "
@@ -1194,7 +1194,6 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}
             content=${content}${enterLine}"当前版本：$versionName"
             content=${content}${enterLine}"基础版本："
-            content=${content}${enterLine}"版本MD5："
             content=${content}${enterLine}
             content=${content}${enterLine}"说明："
             if [[ ${isPacketMtkSoftwareDownloadTools} = "true" ]]; then
