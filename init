@@ -19,6 +19,9 @@ ftInitGitConfig()
         return
     fi
 
+    filePathGitIgnore=${dirPathLocal}/.gitignore
+    [ ! -f "$filePathGitIgnore" ] && touch $filePathGitIgnore
+
     filePathGitConfig=/home/${userNameLocal}/.gitconfig
     if [ ! -f "$filePathGitConfig" ];then
         echo -en "请输入git用户名:"

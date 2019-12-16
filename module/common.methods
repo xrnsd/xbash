@@ -404,7 +404,7 @@ ftVersionComparison()
 
 ftCheckUserConfig()
 {
-    local ftEffect=校验用户配置和模板版本一致性
+    local ftEffect=校验用户配置和模版版本一致性
     local isEnable=true
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
@@ -426,12 +426,12 @@ ftCheckUserConfig()
 
     ftEcho -e "建议更新用户配置: ${versionNumUser} > ${versionNumExcepmale}"
     echo -n "更新文件" ; ftEcho -s "：$rFilePathXbashConfigUser"
-    echo -n "更新模板" ; ftEcho -s "：$filePathUserConfigExpmale"
+    echo -n "更新模版" ; ftEcho -s "：$filePathUserConfigExpmale"
 }
 
 ftCheckUserDatabase()
 {
-    local ftEffect=校验用户数据库和模板版本一致性
+    local ftEffect=校验用户数据库和模版版本一致性
     local isEnable=true
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
@@ -445,13 +445,13 @@ ftCheckUserDatabase()
 
     if [[ -z "${versionNumUser}" ]];then
         ftEcho -e "建议更新用户数据库配置到:${versionNumExcepmale}"
-        echo -n "更新模板"; ftEcho -s "：$rFilePathXbashDBUserExcepmale"
+        echo -n "更新模版"; ftEcho -s "：$rFilePathXbashDBUserExcepmale"
     elif [[ -n "${versionNumExcepmale}" ]];then
         local val=$(ftVersionComparison $versionNumUser $versionNumExcepmale)
         if [[ ${val} = "<"  ]];then
             ftEcho -e "建议更新用户数据库配置: ${versionNumUser} > ${versionNumExcepmale}"
             echo -n "更新文件" ; ftEcho -s "：$rFilePathXbashDBUser"
-            echo -n "更新模板" && ftEcho -s "：$rFilePathXbashDBUserExcepmale"
+            echo -n "更新模版" && ftEcho -s "：$rFilePathXbashDBUserExcepmale"
             return
         fi
         [[ ${val} = ">"  ]] && ftEcho -e "建议更新用户数据库配置版本不一致，建议查看" && return
@@ -801,7 +801,7 @@ ftBashHistory()
         # user database 初始化
         [[ ! -d "${rDirPathXbashModuleUser}" ]] && mkdir $rDirPathXbashModuleUser > /dev/null
         [[ -f "$rFilePathXbashDBUserExcepmale" ]] && cp ${rFilePathXbashDBUserExcepmale} ${rFilePathXbashDBUser} \
-        || echo -e "\033[1;31m用户独立配置初始化失败,模板不存在:\n${rFilePathXbashDBUserExcepmale}\033[0m"
+        || echo -e "\033[1;31m用户独立配置初始化失败,模版不存在:\n${rFilePathXbashDBUserExcepmale}\033[0m"
     fi
 
     export HISTSIZE=$bashHistorySize
@@ -3219,11 +3219,8 @@ ftMD5()
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -a )   filePathVersion="${arg2}"
-                export ftMD5Info=
-                ftEcho -s "文件 : ${fileNameVersion} MD5信息正在生成，请稍等"
-                export ftMD5Info=$(md5sum $filePathVersion | awk '{print $1}')
-                ftEcho -s "文件 : ${fileNameVersion} MD5信息已生成"
-                return;;
+                editType=onlyCreate
+           ;;
         -c )   filePathVersion="${arg2}"
                 editType=checkMd5
            ;;
@@ -3235,7 +3232,7 @@ ftMD5()
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     #参耦校验
     [ -z "$editType" ] && errorContent="${errorContent}\\n[不知道要干啥]editType=$editType"
-    [ ! -f "$filePathInfo" ] && errorContent="${errorContent}\\n[没有相关版本信息文件]filePathInfo=$filePathInfo"
+    [ "${editType}" != "onlyCreate" ] && [ ! -f "$filePathInfo" ] && errorContent="${errorContent}\\n[没有相关版本信息文件]filePathInfo=$filePathInfo"
     [ ! -f "$filePathVersion" ] && errorContent="${errorContent}\\n[目标文件不存在]filePathVersion=$filePathVersion"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftMD5 -h && return
 
@@ -3244,6 +3241,11 @@ ftMD5()
     local versionName=${fileNameVersion%.*}
 
     while true; do case "${editType}" in
+        onlyCreate )
+                    export ftMD5Info=
+                    ftEcho -s "生成文件:[$(basename ${filePathVersion})]的MD5"
+                    export ftMD5Info=$(md5sum $filePathVersion | awk '{print $1}')
+                    return;;
         setMd5 )
                     ftEcho -s "文件 : ${fileNameVersion} MD5信息正在生成，请稍等"
                     local md5Code=$(md5sum $filePathVersion | awk '{print $1}')

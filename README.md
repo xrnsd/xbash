@@ -36,6 +36,11 @@ bash的简单扩展
           │    ├── bash_input.module  -----------  配置命令历史适配逻辑
           │    ├── test.module.example  ---------  测试工具的模版
           │    └── packaging.module  ------------  xbash对扩展和内置命令的封装
+          │
+          ├── example     -----------------------  用于存放模版,该模块无需在main中初始化
+          │    ├── test.module.example  ---------  测试工具的模版
+          │    ├── multiBranch.module.example ---  添加gitPatch[多分支]的模版
+          │    └── user_database.example  -------  xbash的用户数据库的模版
           ├── maintain
           │    ├── maintain.methods  ------------  系统维护工具
           │    └── maintain.database  -----------  xbash的系统维护模块配置
@@ -58,8 +63,6 @@ bash的简单扩展
       1 分支创建,修改,切换,查询,删除
       2 分支信息同步:如何避免跨分支同步和自动记录并可追踪,分支树信息存放到单独分支便于信息同步
       3 同步时避免无效的操作生效
-    03 添加模块自动初始化的实现
-    04 模板位置统一移到模块位置,同时更新init实现
 
 5.待修复
 ----------

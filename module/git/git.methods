@@ -121,7 +121,7 @@ ftGitPatchAdd2Branches()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local branchTag=$1 filePathBranchList=branch.list
-    local filePathAddPatchTool=${rDirPathXbashModule}/git/multiBranch.module
+    local filePathAddPatchTool=$rFilePathXbashModuleGitAddPatchTool
     local filePathFailInfo="/home/wgx/.cache/ftGitPatchAdd2Branches.log" ; [ -f "$filePathFailInfo" ] && rm $filePathFailInfo
     [ ! -f "$filePathAddPatchTool" ] && [ -f "${filePathAddPatchTool}.example" ] &&\
         ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
