@@ -260,6 +260,9 @@ ftEcho()
     local ftEffect=工具信息提示
     local isEnable=def
 
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -277,9 +280,6 @@ ftEcho()
 #    ftEcho    -rc   内容    # xbash函数的说明显示，对字符串的缩进敏感
 #========================================================="; return ;;
     * ) break;;esac;done
-
-    #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     local content option=$1 valList=$@
     option=${option:-'未制定显示信息'}
@@ -316,7 +316,6 @@ ftTimeConsuming()
 
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-
     #解参验耦
     local contentName=本技能 arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
@@ -2338,6 +2337,8 @@ ftUpdateSublimeSnippet()
     local ftEffect=更新SublimetSnippet
     local isEnable=true
 
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     # 说明参数解析部分
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -2347,8 +2348,6 @@ ftUpdateSublimeSnippet()
 #========================================================="; return ;;
     * ) break;;esac;done
 
-    #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     [[ -z "$SUDO_USER" ]] && userName=$USER || userName=$SUDO_USER
     local dirPathSublimeSnippet=/home/${userName}/.config/sublime-text-3/Packages/User \
@@ -2648,6 +2647,8 @@ ftCheckCcache()
     local ftEffect=ccache空间溢出校验
     local isEnable=$isUseBuildCcache
 
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && return #&& ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     # 说明参数解析部分
     while true; do case "$1" in
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -2668,8 +2669,6 @@ ftCheckCcache()
 #========================================================="; return ;;
     * ) break;;esac;done
 
-    #可用性校验
-    [[ "$isEnable" != "true" ]] && return #&& ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
     [[ -z $(which ccache) ]] && ftCheckCcache --rely "ccache" && return
     #解参验耦

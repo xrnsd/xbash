@@ -5,6 +5,9 @@ ftAutoInitEnv()
     local ftEffect=初始化xbash_Android_build相关所需的部分环境变量
     local isEnable=true
 
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -17,9 +20,6 @@ ftAutoInitEnv()
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #========================================================="; return ;;
     * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT buildType=$TARGET_BUILD_VARIANT
     local editType=$1
@@ -166,6 +166,9 @@ ftBranchNameResolution()
     local ftEffect=分支名解析
     local isEnable=true
 
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
     while true; do case "$1" in
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -184,8 +187,6 @@ ftBranchNameResolution()
 #========================================================="; return ;;
     * ) break;;esac;done
 
-    #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
     [[ -z $(which git) ]] && ftBranchNameResolution --rely "git" && return
     #解参验耦
@@ -268,6 +269,9 @@ ftBuildPropResolution()
     local ftEffect=build.prop解析
     local isEnable=true
 
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
     while true; do case "$1" in
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -286,8 +290,6 @@ ftBuildPropResolution()
 #========================================================="; return ;;
     * ) break;;esac;done
 
-    #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #依赖校验
     [[ -z $(which git) ]] && ftBuildPropResolution --rely "git" && return
     #解参验耦
@@ -360,6 +362,9 @@ ftAutoBuildMultiBranchEnvSeparation()
     local ftEffect=多分支串行编译[环境独立]/在多个终端间串行执行命令
     local isEnable=true
 
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -376,8 +381,6 @@ ftAutoBuildMultiBranchEnvSeparation()
 #========================================================="; return ;;
     * ) break;;esac;done
 
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [ -z "$ANDROID_BUILD_TOP" ] && ftAutoInitEnv
     [ -z "$ANDROID_BUILD_TOP" ] && ftAutoBuildMultiBranchEnvSeparation --env && return
@@ -454,9 +457,6 @@ ftAutoBackupOrRestoreOuts()
                 filterString="${arg2}"
              ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
-    if [ ! -d "$dirPathCode" ]||[  -z "$dirPathCode" ];then
-        errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
-    fi
     if [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ];then
         if [[ -f "ftAutoBackupOrRestoreOuts" ]];then
             ./ftAutoBackupOrRestoreOuts $@
@@ -464,6 +464,7 @@ ftAutoBackupOrRestoreOuts()
         fi
         ftAutoBackupOrRestoreOuts --env && return
     fi
+    [ ! -d "$dirPathCode" ]||[  -z "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoBackupOrRestoreOuts -h && return
 
     #实现主体
@@ -560,6 +561,9 @@ ftAutoUpload()
     local ftEffect=文件[夹]上传服务器
     local isEnable=true
 
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
     while true; do case "$1" in
     --rely) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
@@ -575,8 +579,6 @@ ftAutoUpload()
 #========================================================="; return ;;
     * ) break;;esac;done
 
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
      [[ -z $(which nmap) ]]|| [[ -z $(which sshpass) ]]|| [[ -z $(which pigz) ]]|| [[ -z $(which pv) ]] && ftAutoUpload --rely && return
     #解参验耦
@@ -1033,6 +1035,9 @@ ftAutoCreateReadMeBySoftwareVersion()
     local ftEffect=创建软件版本相关客户说明和版本说明
     local isEnable=true
 
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -1051,8 +1056,6 @@ ftAutoCreateReadMeBySoftwareVersion()
 #========================================================="; return ;;
     * ) break;;esac;done
 
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftAutoCreateReadMeBySoftwareVersion --rely && return
     #解参验耦
@@ -1171,9 +1174,9 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}"当前版本：$versionName"
             content=${content}${enterLine}"基础版本："
             content=${content}${enterLine}"版本MD5："
-            [[ -n "${branchNameNow}" ]] &&\
-            content=${content}${enterLine}"分支名[真实]：${branchNameNow} [ $(ftGitLogShell -n 1 -c "%h") ]" ||\
-            content=${content}${enterLine}"分支名："
+            [[ -n "${branchNameNow}" ]] && content=${content}${enterLine}"版本CommitHash：$(ftGitLogShell -n 1 -c "%h") "
+            [[ -n "${branchNameNow}" ]] && content=${content}${enterLine}"分支名[真实]：${branchNameNow}"
+            [[ -z "${branchNameNow}" ]] && content=${content}${enterLine}"分支名："
             content=${content}${enterLine}"分支名[目录]：alps"
             content=${content}${enterLine}"客户名："
             content=${content}${enterLine}
@@ -1290,87 +1293,87 @@ ftAutoTest()
     local monkeyConfig logcatFlag #="*:E"
 
     #adb状态确认
-        ftAdbContect -u
-        [[ -z "${autoTestDeviceId}" ]] && return
-        local deviceId=${autoTestDeviceId}
-        ftEcho -s "开始对设备 : [$deviceId] 进行测试"
+    ftAdbContect -u
+    [[ -z "${autoTestDeviceId}" ]] && return
+    local deviceId=${autoTestDeviceId}
+    ftEcho -s "开始对设备 : [$deviceId] 进行测试"
 
     # monkey命令参数配置
-        [[ -n "$throttleLong" ]] && monkeyConfig=${monkeyConfig}" --throttle $throttleLong"
-        monkeyConfig=${monkeyConfig}" --ignore-crashes --ignore-timeouts --ignore-security-exceptions"
-        if [[ -n $packageBlackNameList ]]; then
-            local fileNameBlack="monkey.blacklist"
-            local filePathBlack="${rDirPathUserHome}/temp/${fileNameBlack}"
-            local filePathBlackDevices="${dirPathDevicesTarget}/${fileNameBlack}"
-            rm -rf $filePathBlack
-            for packageName in ${packageBlackNameList[@]} ; do echo package:${packageName} >> $filePathBlack ;done
-            adb -s $deviceId push $filePathBlack $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-blacklist-file ${filePathBlackDevices}"
+    [[ -n "$throttleLong" ]] && monkeyConfig=${monkeyConfig}" --throttle $throttleLong"
+    monkeyConfig=${monkeyConfig}" --ignore-crashes --ignore-timeouts --ignore-security-exceptions"
+    if [[ -n $packageBlackNameList ]]; then
+        local fileNameBlack="monkey.blacklist"
+        local filePathBlack="${rDirPathUserHome}/temp/${fileNameBlack}"
+        local filePathBlackDevices="${dirPathDevicesTarget}/${fileNameBlack}"
+        rm -rf $filePathBlack
+        for packageName in ${packageBlackNameList[@]} ; do echo package:${packageName} >> $filePathBlack ;done
+        adb -s $deviceId push $filePathBlack $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-blacklist-file ${filePathBlackDevices}"
 
-        elif [[ -n $packageNameList ]]; then
-            if ((${#packageNameList[@]}>1)); then
-                local fileNameWhite="monkey.whitelist"
-                local filePathWhite="${rDirPathUserHome}/temp/${fileNameWhite}"
-                local filePathWhiteDevices="${dirPathDevicesTarget}/${fileNameWhite}"
-                rm -rf $filePathWhite
-                for packageName in ${packageWhiteNameList[@]} ; do echo package:${packageName} >> $filePathWhite ;done
-                adb -s $deviceId push $filePathWhite $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhiteDevices}"
-            else
-                monkeyConfig=${monkeyConfig}" -p ${packageNameList}"
-            fi
+    elif [[ -n $packageNameList ]]; then
+        if ((${#packageNameList[@]}>1)); then
+            local fileNameWhite="monkey.whitelist"
+            local filePathWhite="${rDirPathUserHome}/temp/${fileNameWhite}"
+            local filePathWhiteDevices="${dirPathDevicesTarget}/${fileNameWhite}"
+            rm -rf $filePathWhite
+            for packageName in ${packageWhiteNameList[@]} ; do echo package:${packageName} >> $filePathWhite ;done
+            adb -s $deviceId push $filePathWhite $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhiteDevices}"
+        else
+            monkeyConfig=${monkeyConfig}" -p ${packageNameList}"
         fi
-        monkeyConfig=${monkeyConfig}" -v -v -v"
-        monkeyConfig=${monkeyConfig}" ${eventCount}"
+    fi
+    monkeyConfig=${monkeyConfig}" -v -v -v"
+    monkeyConfig=${monkeyConfig}" ${eventCount}"
     #环境清理
-        for folder in $(ls $dirPathLogMonkeyBase); do  [[ ! $folder =~ "done" ]] && rm -rf ${dirPathLogMonkeyBase}/${folder} ;done
-        [[ ! -d $dirPathLogMonkey ]] && mkdir -p $dirPathLogMonkey
-        adb -s $deviceId logcat -c
+    for folder in $(ls $dirPathLogMonkeyBase); do  [[ ! $folder =~ "done" ]] && rm -rf ${dirPathLogMonkeyBase}/${folder} ;done
+    [[ ! -d $dirPathLogMonkey ]] && mkdir -p $dirPathLogMonkey
+    adb -s $deviceId logcat -c
     #无效进程清理
-        for pid in $(ps -ef |grep adb -s $deviceId |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
-        ftKillApplicationByPackageName monkey > /dev/null
+    for pid in $(ps -ef |grep adb -s $deviceId |grep logcat |awk '{print $2}'); do kill -9 $pid  ;done
+    ftKillApplicationByPackageName monkey > /dev/null
     #记录设备信息
-        adb -s $deviceId pull $filePathDeviceInfo $dirPathLogMonkey > /dev/null&& ftEcho -s "设备信息已保存到${dirPathLogMonkey}"
+    adb -s $deviceId pull $filePathDeviceInfo $dirPathLogMonkey > /dev/null&& ftEcho -s "设备信息已保存到${dirPathLogMonkey}"
     #开始测试
-        local filePathDeviceMonkeyFlag=/sdcrad/monkey_test_${deviceIdTarget} #设备进行过monkey测试的标示文件
-        adb -s $deviceId shell touch $filePathDeviceMonkeyFlag
-        adb -s $deviceId logcat "$logcatFlag" > $filePathLogAdbLogcat &
-        adb -s $deviceId shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
-        local isMonkeyTestSucess=$( [[ -n "$(grep -n '// Monkey finished' $filePathLogMonkey | tail -n 1)" ]]&&echo true|| echo false )
+    local filePathDeviceMonkeyFlag=/sdcrad/monkey_test_${deviceIdTarget} #设备进行过monkey测试的标示文件
+    adb -s $deviceId shell touch $filePathDeviceMonkeyFlag
+    adb -s $deviceId logcat "$logcatFlag" > $filePathLogAdbLogcat &
+    adb -s $deviceId shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
+    local isMonkeyTestSucess=$( [[ -n "$(grep -n '// Monkey finished' $filePathLogMonkey | tail -n 1)" ]]&&echo true|| echo false )
     #测试状态确认
-        local isPulllog=false
-        local deviceIdDefault=0123456789ABCDEF
-        if [[ "${isMonkeyTestSucess}" = "true" ]];then
-            ftEcho -sn "monkey测试>完成"
+    local isPulllog=false
+    local deviceIdDefault=0123456789ABCDEF
+    if [[ "${isMonkeyTestSucess}" = "true" ]];then
+        ftEcho -sn "monkey测试>完成"
+        isPulllog=true
+    else
+        sleep 1
+        ftEcho -sn "monkey测试>"; ftEcho -en "异常结束"
+        sleep 4
+
+        local deviceIdList=($(adb devices |grep -v "List of devices attached" |awk '{print $1}'))
+        if [[ -n $(adb devices|grep $deviceId) ]]; then
+            ftEcho -s ">设备usb连接不稳定>建议重新测试"
             isPulllog=true
         else
-            sleep 1
-            ftEcho -sn "monkey测试>"; ftEcho -en "异常结束"
-            sleep 4
+            ftEcho -sn ">设备连接已断开"
+            local timeLong=4
+            tput sc
+            for i in $(seq -w $timeLong -1 1) ; do
+                tput rc;tput ed
+                ftEcho -sn ">将在${i}秒后开始重新连接设备"
+                sleep 1
+            done
 
-            local deviceIdList=($(adb devices |grep -v "List of devices attached" |awk '{print $1}'))
-            if [[ -n $(adb devices|grep $deviceId) ]]; then
-                ftEcho -s ">设备usb连接不稳定>建议重新测试"
-                isPulllog=true
-            else
-                ftEcho -sn ">设备连接已断开"
-                local timeLong=4
-                tput sc
-                for i in $(seq -w $timeLong -1 1) ; do
-                    tput rc;tput ed
-                    ftEcho -sn ">将在${i}秒后开始重新连接设备"
-                    sleep 1
-                done
+            [[ -z $(adb devices|grep $deviceIdDefault) ]] && ftEcho -sn ">" && ftEcho -e "设备连接失败,请确认原因" && return
+            [[ -z $(adb -s $deviceIdDefault shell ls $filePathDeviceMonkeyFlag) ]] && ftEcho -sn ">" && ftEcho -s "连接到新设备,建议重新测试" && return
 
-                [[ -z $(adb devices|grep $deviceIdDefault) ]] && ftEcho -sn ">" && ftEcho -e "设备连接失败,请确认原因" && return
-                [[ -z $(adb -s $deviceIdDefault shell ls $filePathDeviceMonkeyFlag) ]] && ftEcho -sn ">" && ftEcho -s "连接到新设备,建议重新测试" && return
-
-                ftEcho -sn ">" && ftEcho -e "设备在测试过程中已重启"
-                isPulllog=true;
-            fi
+            ftEcho -sn ">" && ftEcho -e "设备在测试过程中已重启"
+            isPulllog=true;
         fi
+    fi
 
-        # 测试log处理
-        [[ "${isPulllog}" = "true" ]] && ftMtkLog --stop --clearn -p $dirPathLogMonkey
-        [[ "${isMonkeyTestSucess}" = "true" ]] && mv $dirPathLogMonkey ${dirPathLogMonkey}_done
+    # 测试log处理
+    [[ "${isPulllog}" = "true" ]] && ftMtkLog --stop --clearn -p $dirPathLogMonkey
+    [[ "${isMonkeyTestSucess}" = "true" ]] && mv $dirPathLogMonkey ${dirPathLogMonkey}_done
 }
 
 complete -W "-h --help --rely_install" ftAutoCreateSxtdOldProjectBranch
@@ -1379,6 +1382,9 @@ ftAutoCreateSxtdOldProjectBranch()
     local ftEffect=自动生成sxtd老项目的文件夹分支
     local isEnable=true
 
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
     while true; do case "$1" in
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -1402,8 +1408,6 @@ ftAutoCreateSxtdOldProjectBranch()
 #========================================================="; return ;;
     * ) break;;esac;done
 
-    #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #环境校验
     if [[ -z "$ANDROID_BUILD_TOP" ]];then
         [[ -d "alps" ]] && [[ -d ".git" ]] && cd alps
