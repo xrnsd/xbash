@@ -473,8 +473,13 @@ ftIniCreateFileOrTag()
 #=========================================================
 #    添加内容
 #    ftIniCreateFileOrTag  -a -p 文件路径 -t 块名 -l 块对应的键值对列表
+#    ftIniCreateFileOrTag  -a -p aa/bb/cc.dd -t EEE -l \"xxx=yyy aaa=bbb\"
+#    ftIniCreateFileOrTag  -a -p aa/bb/cc.dd -t EEE -l \"#item xxx xxx=yyy #item aaa aaa=bbb\"
+#
 #    覆盖文件
 #    ftIniCreateFileOrTag  -r -p 文件路径 -t 块名 -l 块对应的键值对列表
+#    ftIniCreateFileOrTag  -r -p aa/bb/cc.dd -t EEE -l \"xxx=yyy aaa=bbb\"
+#    ftIniCreateFileOrTag  -r -p aa/bb/cc.dd -t EEE -l \"#item xxx xxx=yyy #item aaa aaa=bbb\"
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -a )   editType=add                                   ;;
@@ -494,7 +499,12 @@ ftIniCreateFileOrTag()
     #added TAG
     content=${enterLine}"[$contentTagName]"
     #add List
-    for item in ${contentTagKeyValList[*]} ; do content=${content}${enterLine}"$item" ;done
+    for item in ${contentTagKeyValList[*]} ; do
+        # [[ ${item} != *=* ]] 处理item带空格时正常拼接
+        # [[ ${item:0:1} != "#" ]] 处理注释时正常添加换行
+        [[ ${item} != *=* ]] && [[ ${item:0:1} != "#" ]] && content=${content}" $item" && continue
+        content=${content}${enterLine}"$item"
+    done
     content=${content}${enterLine}
 
     if [[ ! -f "$filePathIni" ]]||[ "$editType" = "replace" ]; then
