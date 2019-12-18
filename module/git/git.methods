@@ -47,7 +47,10 @@ ftGitLogShell()
 #=========================================================" ;return ;;
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftGitLogShell -a  # 全部分支log
+#    全部分支log
+#    ftGitLogShell -a
+#    ftGitLogShell -a 目录/文件
+#
 #    ftGitLogShell -at  # 查看分支树
 #    ftGitLogShell -a  路径 # 指定路径下的全部分支log
 #    ftGitLogShell -n 数量
@@ -606,4 +609,258 @@ ftGitPushForce_SXTD()
     git push origin --delete "${branchNameLocal}" \
     && git push origin --set-upstream "${branchNameLocal}" \
     || ftEcho -s "分支[ ${branchNameLocal} ]push force 失败"
+}
+
+complete -W "-h --help --rely_install" ftGitSxtdProjectBranchV1
+ftGitSxtdProjectBranchV1()
+{
+    local ftEffect=以目录隔离同平台不同项目的相关实现[sxtd老项目]
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    while true; do case "$1" in
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+    --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get update
+            sudo apt-get install git
+            return ;;
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+#=========================================================
+#
+#    ftGitSxtdProjectBranchV1  #无参数
+#========================================================="; return ;;
+    --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
+#==========================================================
+# 环境未初始化
+# 使用前,请先进入AOSP项目
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #环境校验
+    if [[ -z "$ANDROID_BUILD_TOP" ]];then
+        [[ -d "alps" ]] && [[ -d ".git" ]] && cd alps
+        ftAutoInitEnv > /dev/null
+    fi
+    local dirPathAospRoot=$(dirname $ANDROID_BUILD_TOP)
+    [[ ! -d "${dirPathAospRoot}" ]] && ftGitSxtdProjectBranchV1 --env && return
+    local dirPathLocal=$(pwd)
+    cd "${dirPathAospRoot}"
+    #依赖校验
+    [[ -z $(which git) ]] && ftGitSxtdProjectBranchV1 --rely "git" && return
+    #解参验耦
+    local valCount=1 errorContent
+    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSxtdProjectBranchV1 -h && return
+
+    #实现主体
+    ftEcho -s "开始收集项目状态"
+    local hashValBase=$(ftGitLogShell -t "%h" -n 1)
+    git reset > /dev/null
+    git add -A $(git status --porcelain |grep -v "alps/out" | sed s/??//g\
+    | sed -e "s: T ::g"\
+    | sed -e "s: M ::g"\
+    | sed -e "s: D ::g"\
+    |grep "alps/") > /dev/null
+    git status --porcelain
+
+    ftEcho -y "请确认待commit修改列表,是否正确(回车默认y)"
+    read -n 1 sel ;[ -z "${sel}" ] && sel=y
+    while true; do case "$sel" in
+            y | Y )
+                local tarPackagAutoCreateName=0tempBranch tarPackagAutoCreateNameTemp=temp
+                ls | while read line;do
+                    [[ ! -d "$line" ]] && continue
+                    if [[  ${line//$tarPackagAutoCreateName} != $line ]]; then
+                        local dirPath=${line}
+                        local dirPath_old=${dirPath}_old
+                        [[ -d "$dirPath_old" ]] && dirPath_old=${dirPath_old}_old
+                        mv $dirPath $dirPath_old
+                    fi
+                done
+
+                ftEcho -s "开始添加临时commit"
+                git commit -m "temp" > /dev/null
+                local hashValTemp=$(ftGitLogShell -t "%h" -n 1)
+                git diff $hashValTemp $hashValBase --name-only | xargs tar -rf ${tarPackagAutoCreateName}.tar
+
+                mkdir $tarPackagAutoCreateNameTemp
+                tar -xvf ${tarPackagAutoCreateName}.tar -C ${tarPackagAutoCreateNameTemp}
+
+                [[ -z $(ls $tarPackagAutoCreateNameTemp) ]] && ftEcho -e "分支patch包生成失败,请确认是否有除[?/T/M/D]之外修改类型,或检查gitignore配置文件" \
+               && rm -rf ${tarPackagAutoCreateNameTemp} ${tarPackagAutoCreateName}.tar && return
+
+                mv ${tarPackagAutoCreateNameTemp}/alps ${tarPackagAutoCreateName}
+                rm -rf $tarPackagAutoCreateNameTemp ${tarPackagAutoCreateName}.tar
+                ftEcho -s "已生成临时分支: ${tarPackagAutoCreateName}"
+
+                break;;
+            n | q )  echo ;
+                return ;;
+            * ) ftEcho -e "错误的选择：$sel"
+                echo "输入n，q，离开";;
+    esac;done ;
+    git reset $hashValBase > /dev/null #&& ftEcho -s "已删除临时commit"
+    cd "${dirPathLocal}"
+}
+
+complete -W "-h --help --rely_install -c -r -d" ftGitSxtdProjectBranchV2
+ftGitSxtdProjectBranchV2()
+{
+    local ftEffect=以分支隔离同平台不同项目的相关实现[sxtd新项目]
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local isCreateBranch isReName isDelete
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 ftGitSxtdProjectBranchV2 --rely_install 补全依赖
+#========================================================="; return ;;
+        --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install git
+            return ;;
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#   ftGitSxtdProjectBranchV2 -c   #创建分支
+#   ftGitSxtdProjectBranchV2 -r   #重命名分支
+#   ftGitSxtdProjectBranchV2 -d   #删除分支
+#========================================================="; return ;;
+        --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+#=========================================================
+# 当前目录无有效GIT仓库
+#========================================================="; return ;;
+
+        # 变量参数解析部分 ==============
+        -c )  isCreateBranch=true
+            ;;
+        -r )  isReName=true
+            ;;
+        -d )  isDelete=true
+            ;;
+    * ) break;;esac;done
+
+    #依赖校验
+    [[ -z $(which git) ]] && ftGitSxtdProjectBranchV2 --rely "git" && return
+    #环境校验
+    local branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    [ -z "${branchNameLocal}" ] && ftGitSxtdProjectBranchV2 --env && return
+    #参数校验
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSxtdProjectBranchV2 -h && return
+
+    local mFilePathSxtdProjectBranchV2="${dirPathHome}/.cache/projectDescriptionTemp.ini"
+    local mBranchList=(
+        $(git branch -a|grep -v "* ${branchNameLocal}" |grep -v "remotes/origin") \
+        $(git branch -a |grep "remotes/origin"|grep -v "remotes/origin/HEAD -> " | sed -e "s:remotes/origin/::g" ) \
+        ${branchNameLocal})
+    mBranchList=($(echo "${mBranchList[@]}"  | sed 's/ /\n/g' |sort |uniq)) #去重
+
+    if [[ $isReName = "true" ]]; then
+        local TagName="分支信息描述" mKeyIniBranchNameBase="原分支名" mKeyIniBranchNameNew="新分支名"
+
+        echo -e "#ini\n" > $mFilePathSxtdProjectBranchV2
+        echo "[分支列表,仅用于复制]" >> $mFilePathSxtdProjectBranchV2
+        for index in "${!mBranchList[@]}"; do echo "${mBranchList[$index]}" >> $mFilePathSxtdProjectBranchV2 ;done
+        ftIniCreateFileOrTag  -a -p $mFilePathSxtdProjectBranchV2 -t $TagName -l "${mKeyIniBranchNameBase}= ${mKeyIniBranchNameNew}= "
+
+        gedit -s $mFilePathSxtdProjectBranchV2
+        local mBranchNameBase=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameBase)
+                mBranchNameNew=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameNew)
+        [ -z "${mBranchNameBase}" ] && ftEcho -e "缺失原分支名,请确认是否输入" && return
+        [ -z "${mBranchNameNew}" ] && ftEcho -e "缺失新分支名,请确认是否输入" && return
+
+        git branch -m "${mBranchNameBase}" "${mBranchNameNew}" || return
+        ftEcho -s "${mBranchNameBase} \n本地修改为 \n${mBranchNameNew}"
+
+        ftEcho -y "是否同时重命名服务器分支(回车默认y)"
+        read -n 1 sel ; [ -z "${sel}" ] && sel=y ; while true; do case "$sel" in
+            y | Y )
+                git push origin --delete "${mBranchNameBase}" && git push origin "${mBranchNameNew}" || ftEcho -e "远程操作失败"
+                break;;
+            n | q ) exit ;;
+            * ) ftEcho -e "错误的选择：$sel"
+                echo "输入n，q，离开";;
+        esac;done
+
+        rm $mFilePathSxtdProjectBranchV2
+        return
+    fi
+
+    if [[ $isDelete = "true" ]]; then
+        local TagName="分支信息描述" mKeyIniBranchNameDelete="待删除分支名"
+
+        echo -e "#ini\n" > $mFilePathSxtdProjectBranchV2
+        echo "[分支列表,仅用于复制]" >> $mFilePathSxtdProjectBranchV2
+        for index in "${!mBranchList[@]}"; do echo "${mBranchList[$index]}" >> $mFilePathSxtdProjectBranchV2 ;done
+        ftIniCreateFileOrTag  -a -p $mFilePathSxtdProjectBranchV2 -t $TagName -l "${mKeyIniBranchNameDelete}= "
+
+        gedit -s $mFilePathSxtdProjectBranchV2 > /dev/null
+        local mBranchNameDelete=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameDelete)
+        [ -z "${mBranchNameDelete}" ] && ftEcho -e "缺失待删除分支名,请确认是否输入" && return
+
+        git branch -D "${mBranchNameDelete}" || return
+
+        ftEcho -y "是否同时删除对应服务器分支(回车默认y)"
+        read -n 1 sel ; [ -z "${sel}" ] && sel=y ; while true; do case "$sel" in
+            y | Y )
+                git push origin --delete "${mBranchNameDelete}"|| ftEcho -e "远程操作失败"
+                break;;
+            n | q ) exit ;;
+            * ) ftEcho -e "错误的选择：$sel"
+                echo "输入n，q，离开";;
+        esac;done
+
+        rm $mFilePathSxtdProjectBranchV2
+        return
+    fi
+
+    if [[ $isCreateBranch = "true" ]]; then
+        local TagName="项目描述" mKeyIniClientName="客户名"  mKeyIniProjrctName="项目名"  mKeyIniMotherBoardName="主板名"  mKeyIniDemandSignName="项目的其他特性描述"
+        local mKeyBranchClientName="CT" mKeyBranchProjrctName="PJ" mKeyBranchMotherBoardName="MBML" mKeyBranchDemandSignName="DM"
+
+        ftIniCreateFileOrTag  -r -p $mFilePathSxtdProjectBranchV2 -t $TagName -l \
+        "${mKeyIniMotherBoardName}= \
+        ${mKeyIniProjrctName}= \
+        #客户名请使用全拼和驼峰命名法 \
+        ${mKeyIniClientName}= \
+        #不同特性之间用下划线分割 \
+        ${mKeyIniDemandSignName}="
+        [[ ! -f "$mFilePathSxtdProjectBranchV2" ]] && ftEcho -e "${TagName}文件创建失败" && return
+        gedit -s $mFilePathSxtdProjectBranchV2
+
+        local mMotherBoardName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniMotherBoardName) \
+                mProjrctName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniProjrctName) \
+                mClientName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniClientName) \
+                mDemandSignName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniDemandSignName)
+        [[ -z "$mMotherBoardName" ]] && ftEcho -e "缺失项目主板名信息,请确认是否输入" && return
+        [[ -z "$mProjrctName" ]] && ftEcho -e "缺失项目名信息,请确认是否输入" && return
+        [[ -z "$mClientName" ]] && ftEcho -e "缺失项目客户名信息,请确认是否输入" && return
+        mDemandSignName=${mDemandSignName:-'ZhongXing'}
+        local mBranchName="${mKeyBranchMotherBoardName}(${mMotherBoardName})"
+        mBranchName="${mBranchName}_${mKeyBranchProjrctName}(${mProjrctName})"
+        mBranchName="${mBranchName}_${mKeyBranchClientName}(${mClientName})"
+        mBranchName="${mBranchName}_${mKeyBranchDemandSignName}(${mDemandSignName})"
+
+        for branch in ${mBranchList[@]}; do [[ "$branch" = "$mBranchName" ]] && ftEcho -s "分支[${mBranchName}]已存在"&& return ; done
+        git branch "${mBranchName}" && ftEcho -s "分支[${mBranchName}]创建成功"
+        rm $mFilePathSxtdProjectBranchV2
+        return
+    fi
 }
