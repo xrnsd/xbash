@@ -13,10 +13,10 @@ _ftMainVal()
 
     local curr_arg=${COMP_WORDS[COMP_CWORD]}
     case "${COMP_WORDS[1]}" in
-                    -)
-                            COMP_WORDS[1]="-h"
-                            export COMP_WORDS=${COMP_WORDS[@]}; ;;
-                    *)  COMPREPLY=( $(compgen -W '-h -hb -hc --help -t test  -v --version -ft' -- $curr_arg ) ); ;;
+        -)
+                COMP_WORDS[1]="-h"
+                export COMP_WORDS=${COMP_WORDS[@]}; ;;
+        *)  COMPREPLY=( $(compgen -W '-h -hb -hc --help -t test  -v --version -ft' -- $curr_arg ) ); ;;
       esac
 }
 ftMain()
@@ -110,15 +110,15 @@ ftResetXbash()
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return
           ;;
         -cj | -jc |-jcc)
-                [[ -n "${arg2}" ]] && export targetSdkVersionForce="${arg2}"
-                [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return
-                [ -d "${dirPathLocal}/alps" ] && dirPathCode=${dirPathLocal}/alps
-                [ -d "${dirPathLocal}/idh" ] && dirPathCode=${dirPathLocal}/idh
-                [ -n "${dirPathCode}" ] && cd $dirPathCode
+            [[ -n "${arg2}" ]] && export targetSdkVersionForce="${arg2}"
+            [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return
+            [ -d "${dirPathLocal}/alps" ] && dirPathCode=${dirPathLocal}/alps
+            [ -d "${dirPathLocal}/idh" ] && dirPathCode=${dirPathLocal}/idh
+            [ -n "${dirPathCode}" ] && cd $dirPathCode
 
-                [[ -n "$isUseBuildCcache" ]] && [ "${arg}" = "-jcc" ] && export isResetCcache=true
-                export isResetGcc=true
-                export isResetJdk=true
+            [[ -n "$isUseBuildCcache" ]] && [ "${arg}" = "-jcc" ] && export isResetCcache=true
+            export isResetGcc=true
+            export isResetJdk=true
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
@@ -691,10 +691,10 @@ ftIniGetValue()
         elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName" ; fi
     fi
     if [ -n "$errorContent" ];then
-            [[ -z "$isReadSilence" ]] && return
-            ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-            ftIniGetValue -h
-            return
+        [[ -z "$isReadSilence" ]] && return
+        ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+        ftIniGetValue -h
+        return
     fi
 
     #实现主体
@@ -834,24 +834,24 @@ ftDevAvailableSpace()
      local indexDevName=0
      local devMountDirPath
      for size in ${devAvailableSIzeList[*]} ; do
-            devMountDirPath=${devMountDirPathList[indexDevName]}
-            if [[ "$devMountDirPath" = "$dirPathTraget" ]]; then
-                    if [[ $size == *T ]];then
-                            size=${size//T/}
-                            size=${size%.*}
-                            ((size*=1024))
-                            ((size*=1024))
-                    elif [[ $size == *G ]];then
-                            size=${size//G/}
-                            size=${size%.*}
-                            ((size*=1024))
-                    else
-                            size=${size//M/}
-                    fi
-                    echo $size|awk ' {print int ($0)} '
-                    break
+        devMountDirPath=${devMountDirPathList[indexDevName]}
+        if [[ "$devMountDirPath" = "$dirPathTraget" ]]; then
+            if [[ $size == *T ]];then
+                size=${size//T/}
+                size=${size%.*}
+                ((size*=1024))
+                ((size*=1024))
+            elif [[ $size == *G ]];then
+                size=${size//G/}
+                size=${size%.*}
+                ((size*=1024))
+            else
+                size=${size//M/}
             fi
-            ((indexDevName+=1))
+            echo $size|awk ' {print int ($0)} '
+            break
+        fi
+        ((indexDevName+=1))
     done
 }
 
@@ -954,32 +954,32 @@ ftInitDevicesList()
 
     devMinAvailableSpace=${devMinAvailableSpace//b/}
     if [[ $devMinAvailableSpace =~ "g" ]];then
-            devMinAvailableSpace=${devMinAvailableSpace//g/}
-            (( devMinAvailableSpace*=1024 ))
+        devMinAvailableSpace=${devMinAvailableSpace//g/}
+        (( devMinAvailableSpace*=1024 ))
     elif [[ $devMinAvailableSpace =~ "m" ]];then
-            devMinAvailableSpace=${devMinAvailableSpace//m/}
+        devMinAvailableSpace=${devMinAvailableSpace//m/}
     elif [[ $devMinAvailableSpace =~ "k" ]];then
-            devMinAvailableSpace=${devMinAvailableSpace//k/}
-            ((devMinAvailableSpace/=1024))
+        devMinAvailableSpace=${devMinAvailableSpace//k/}
+        ((devMinAvailableSpace/=1024))
     fi
 
     unset mXbashModuleDataDevicesList
     [ -n "$sizeHome" ] && (( $sizeHome>=$devMinAvailableSpace )) && mXbashModuleDataDevicesList=$dirPathHome && indexDevMount=1
     #开始记录设备文件
     for dir in ${devNameDirPathList[*]} ;do
-            devMountDirPath=${devMountDirPathList[indexDevName]}
-            if [[ $dir =~ "/dev/" ]] && [[ $devMountDirPath != "/" ]];then
-                    sizeTemp=$(ftDevAvailableSpace $devMountDirPath)
-                    [[ -z "sizeTemp" ]] && continue
-                    # 确定目录已挂载,设备可用空间大小符合限制
-                    if (( $devMinAvailableSpace==0 ))||(( $sizeTemp>$devMinAvailableSpace )); then
-                        if mountpoint -q $devMountDirPath;then
-                            mXbashModuleDataDevicesList[$indexDevMount]=$devMountDirPath
-                            ((indexDevMount+=1))
-                        fi
-                    fi
+        devMountDirPath=${devMountDirPathList[indexDevName]}
+        if [[ $dir =~ "/dev/" ]] && [[ $devMountDirPath != "/" ]];then
+            sizeTemp=$(ftDevAvailableSpace $devMountDirPath)
+            [[ -z "sizeTemp" ]] && continue
+            # 确定目录已挂载,设备可用空间大小符合限制
+            if (( $devMinAvailableSpace==0 ))||(( $sizeTemp>$devMinAvailableSpace )); then
+                if mountpoint -q $devMountDirPath;then
+                    mXbashModuleDataDevicesList[$indexDevMount]=$devMountDirPath
+                    ((indexDevMount+=1))
+                fi
             fi
-            ((indexDevName+=1))
+        fi
+        ((indexDevName+=1))
     done
     export mXbashModuleDataDevicesList #=${mXbashModuleDataDevicesList[*]}
 }
@@ -1265,9 +1265,9 @@ ftRestartAdb()
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -z "$userPassword" ] && errorContent="${errorContent}\\n[默认用户密码]userPassword=$userPassword"
     if [ -n "$errorContent" ];then
-            ftEcho -eax "$errorContent \\n请查看下面说明:"
-            ftRestartAdb -h
-            return
+        ftEcho -eax "$errorContent \\n请查看下面说明:"
+        ftRestartAdb -h
+        return
     fi
     #实现主体
     echo $userPassword | sudo  -p '' -S adb kill-server >/dev/null
@@ -1514,11 +1514,8 @@ ftGlobalization()
 
     #实现主体
     local filePath=${rDirPathUserHome}/tools/xls2values/androidi18nBuilder.jar
-    if [ -f $filePath ];then
-        $filePath
-    else
-        ftEcho -e "[${ftEffect}]找不到[$filePath]"
-    fi
+    [ ! -f $filePath ] && ftEcho -e "[${ftEffect}]找不到[$filePath]" && return
+    $filePath
 }
 
 ftPowerManagement()
@@ -1558,34 +1555,34 @@ ftPowerManagement()
     while true; do
     case "$edittype" in
         shutdown )
-                touch $filePathFlag
-                tput sc
-                for i in $(seq -w $timeLong -1 1) ; do
-                    tput rc;tput ed
-                    echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
-                    sleep 1
-                done
-                echo $userPassword | sudo   -p '' -S shutdown -h now
-                break;;
+            touch $filePathFlag
+            tput sc
+            for i in $(seq -w $timeLong -1 1) ; do
+                tput rc;tput ed
+                echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
+                sleep 1
+            done
+            echo $userPassword | sudo   -p '' -S shutdown -h now
+            break;;
         reboot)
-                touch $filePathFlag
-                tput sc
-                for i in $(seq -w $timeLong -1 1) ; do
-                    tput rc;tput ed
-                    echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
-                    sleep 1
-                done
-                echo $userPassword | sudo   -p '' -S reboot
-                break;;
+            touch $filePathFlag
+            tput sc
+            for i in $(seq -w $timeLong -1 1) ; do
+                tput rc;tput ed
+                echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
+                sleep 1
+            done
+            echo $userPassword | sudo   -p '' -S reboot
+            break;;
         logout)
-                tput sc
-                for i in $(seq -w $timeLong -1 1) ; do
-                    tput rc;tput ed
-                    echo -ne "\033[1;31m将在${i}秒后注销，ctrl+c 取消\033[0m";
-                    sleep 1
-                done
-                /usr/bin/gnome-session-quit --logout --force
-                break;;
+            tput sc
+            for i in $(seq -w $timeLong -1 1) ; do
+                tput rc;tput ed
+                echo -ne "\033[1;31m将在${i}秒后注销，ctrl+c 取消\033[0m";
+                sleep 1
+            done
+            /usr/bin/gnome-session-quit --logout --force
+            break;;
         * ) ftEcho -e 错误的选择：$sel
             echo "输入q，离开"
             break;;
@@ -2360,11 +2357,9 @@ ftUpdateSublimeSnippet()
     #实现主体
     local userName dirPathLocal=$(pwd)
     cd $dirPathSublimeSnippet
-
-        while read item ;do
-           ln -sf ${dirPathConfigSource}/${item}
-        done < <(echo "$(ls $dirPathConfigSource)")
-
+    while read item ;do
+       ln -sf ${dirPathConfigSource}/${item}
+    done < <(echo "$(ls $dirPathConfigSource)")
     cd $dirPathLocal
 }
 
@@ -2701,8 +2696,7 @@ ftCheckCcache()
     || (( $(echo "$cacheSizeMax == 1"|bc) == 1 )) && return
     local proportionSize="0$(echo "scale=5; $cacheSizeNow / $cacheSizeMax" | bc)"
     local remainingSize="$(echo "scale=5; $cacheSizeMax - $cacheSizeNow" | bc)"
-    local proportionThresholdSize=0.855
-    local remainingThresholdSize=10.0 #10GB/基本满足单次新工程的缓存空间要求
+    local proportionThresholdSize=0.855 remainingThresholdSize=10.0 #10GB/基本满足单次新工程的缓存空间要求
 
     if (( $(echo "$proportionThresholdSize < ${proportionSize}"|bc) == 1 )) \
         &&(( $(echo "$remainingSize < ${remainingThresholdSize}"|bc) == 1 )) ;then
