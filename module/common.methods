@@ -2666,6 +2666,7 @@ ftCheckCcache()
 
     #依赖校验
     [[ -z $(which ccache) ]] && ftCheckCcache --rely "ccache" && return
+    [[ ! -d ${CCACHE_DEV_DIR} ]] && return
     #解参验耦
     local valCount=0 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
