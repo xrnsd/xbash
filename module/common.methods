@@ -229,7 +229,7 @@ complete -W " --rely_install" ftGitUpdateVersion
 ftGitUpdateVersion()
 {
     local ftEffect=xbash自动更新
-    local isEnable=true
+    local isEnable=false
 
     #可用性校验
     [[ -n "$isAutoUpdate" ]] && isEnable=$isAutoUpdate
@@ -396,7 +396,7 @@ ftCheckUserConfig()
     local isEnable=true
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-
+    #实现主体
     local filePathUserConfigExpmale=${rDirPathXbashConfig}/expmale.config
 
     [[ ! -f ${filePathUserConfigExpmale}  ]] && return
@@ -423,7 +423,7 @@ ftCheckUserDatabase()
     local isEnable=true
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-
+    #实现主体
     [[ ! -f ${rFilePathXbashDBUserExcepmale}  ]] && return
     [[ ! -f ${rFilePathXbashDBUser}  ]] && return
 
@@ -656,7 +656,13 @@ ftIniGetValue()
     local ftEffect=在ini文件对应TAG中读取指定item
     local isEnable=true
 
-    while true; do case "$1" in
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local filePath=$1 blockName=$2 keyName=$3 isReadSilence
+    local valCount=3 errorContent
+    for ((i=1;i<=$#;i++)) ; do case "$1" in
+        # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    #默认不输出异常信息
@@ -667,49 +673,35 @@ ftIniGetValue()
 #    #输出异常信息
 #    ftIniGetValue -f [文件路径] [目标块TAG] [键名]
 #========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #解参验耦
-    local filePath=$1 blockName=$2 keyName=$3 isReadSilence
-    if [[ "$filePath" = "-f" ]]; then
-            filePath=$2
+        # 变量参数解析部分 ==============
+        -f ) filePath=$2
             blockName=$3
             keyName=$4
             isReadSilence=true
-    fi
-    local valCount=3 errorContent
+            ;;
+    * ) break;;esac;done
+
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[文件不存在]filePath=$filePath"
     else
-        testBockName=$(cat $filePath|grep $blockName)
-        testKeyName=$(cat $filePath|grep $keyName)
-        if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
-        elif [ -z "$testBockName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
-        if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]keyName=$keyName"
-        elif [ -z "$testKeyName" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName" ; fi
+        [ -z "${blockName}" ] && errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
+        [ -z "$(cat $filePath|grep $blockName)" ] && errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName"
+        [ -z "$keyName" ] && errorContent="${errorContent}\\n[目标块TAG为空]keyName=$keyName"
+        [ -z "$(cat $filePath|grep $keyName)" ] && errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName"
     fi
-    if [ -n "$errorContent" ];then
-        [[ -z "$isReadSilence" ]] && return
-        ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
-        ftIniGetValue -h
-        return
-    fi
+    [ -n "$errorContent" ] && ftEcho -ea "$errorContent \\n请查看下面说明:" && ftIniGetValue -h && return
 
     #实现主体
     local begin_block=0 end_block=0
-
     cat $filePath | while read line ; do
         [ "X$line" = "X[$blockName]" ] && begin_block=1 && continue
+        (( $begin_block!=1 )) && continue
 
-        if (( $begin_block==1 ));then
-            (( $(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')==1 )) && break
-            (( $(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')==1 )) && continue
+        (( $(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')==1 )) && break
+        (( $(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')==1 )) && continue
 
-            key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
-            [ "X$keyName" = "X$key" ] && echo $(echo $line | awk -F= '{gsub("\t","",$2); print $2}') && break
-        fi
+        key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
+        [ "X$keyName" = "X$key" ] && echo $(echo $line | awk -F= '{gsub("\t","",$2); print $2}') && break
     done
 }
 
@@ -1264,11 +1256,8 @@ ftRestartAdb()
     local valCount=0 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -z "$userPassword" ] && errorContent="${errorContent}\\n[默认用户密码]userPassword=$userPassword"
-    if [ -n "$errorContent" ];then
-        ftEcho -eax "$errorContent \\n请查看下面说明:"
-        ftRestartAdb -h
-        return
-    fi
+    [ -n "$errorContent" ] && ftEcho -eax "$errorContent \\n请查看下面说明:" && ftRestartAdb -h && return
+
     #实现主体
     echo $userPassword | sudo  -p '' -S adb kill-server >/dev/null
     ftEcho -s "server kill ......"

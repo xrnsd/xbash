@@ -909,7 +909,7 @@ ftAutoPacket()
 
             # 创建版本说明/客户说明
             if [[ -n "$isReadMe" ]]; then
-                ftEcho -s "创建版本说明相关文档" && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
+                ftEcho -s "创建 版本说明相关文档" && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
                 ftEcho -y "是否更新版本说明 [回车更新]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
                 [[ "${sel}" = "y" ]] && gedit -s $AutoEnv_filePathReleaseNotes $AutoEnv_filePathCustomerDescription || echo
              fi
@@ -939,7 +939,7 @@ ftAutoPacket()
                 [ -f ${dirPathVersionSoftware}/${fileNameOtaPackage} ] && \
                 mv ${dirPathVersionSoftware}/${fileNameOtaPackage} $dirPathVersionSoftwareVersionNow
 
-                ftEcho -s "软件打包成功"
+                ftEcho -s "软件打包结束"
             fi
 
             #上传服务器
