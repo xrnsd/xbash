@@ -689,7 +689,7 @@ ftIniGetValue()
         [ -z "$keyName" ] && errorContent="${errorContent}\\n[目标块TAG为空]keyName=$keyName"
         [ -z "$(cat $filePath|grep $keyName)" ] && errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName"
     fi
-    [ -n "$errorContent" ] && ftEcho -ea "$errorContent \\n请查看下面说明:" && ftIniGetValue -h && return
+    [ -n "${isReadSilence}" ]&&[ -n "$errorContent" ] && ftEcho -ea "$errorContent \\n请查看下面说明:" && ftIniGetValue -h && return
 
     #实现主体
     local begin_block=0 end_block=0
