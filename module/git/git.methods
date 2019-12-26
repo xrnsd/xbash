@@ -471,7 +471,7 @@ ftGitTagGrep()
     cd $dirPathLocal
 }
 
-complete -W "-t -h --help" ftGitTag
+complete -W "-t -h --help -a -m -b" ftGitTag
 ftGitTag()
 {
     local ftEffect=GIT的TAG常见操作
@@ -480,7 +480,7 @@ ftGitTag()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #参数解析
-    local tagName noteContent commitId isDeleteTag isModifyDescription
+    local tagName noteContent commitId isDeleteTag isModifyDescription isBranchDescription
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     local valCount=1 errorContent arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; case "${arg}" in
         # 说明参数解析部分==============
@@ -493,14 +493,19 @@ ftGitTag()
 #=========================================================
 #
 #    添加版本标签:
-#    ftGitTag -a 标签名 # 使用最新commitid
-#    ftGitTag -a 标签名 标签名对应的commitid
+#    ftGitTag -a 标签名
+#    ftGitTag -a 标签名 对应的commitid
 #    可简化 [ftGitTag -a] 为 [xgat] ,其他参数不变
 #
-#    添加修改说明标签[非软件版本TAG]:
-#    ftGitTag -m  # 使用最新commitid
+#    添加修改说明标签
+#    ftGitTag -m 标签名
 #    ftGitTag -m 标签名 对应的commitid
 #    可简化 [ftGitTag -m] 为 [xgmt] ,其他参数不变
+#
+#    添加分支说明标签,存在独立的分支信息描述文件时可用
+#    ftGitTag -b 标签名
+#    ftGitTag -b 标签名 对应的commitid
+#    可简化 [ftGitTag -m] 为 [xgbt] ,其他参数不变
 #
 #    删除标签:
 #    ftGitTag -d 标签名
@@ -510,16 +515,24 @@ ftGitTag()
         -a ) tagName="${arg2}"
             commitId="${arg3}"
             [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
-          ;;
-        -m ) commitId="${arg2}"
+            ;;
+        -m ) tagName="${arg2}"
+            commitId="${arg3}"
             [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
             (( ${#commitId} > 7 )) && commitId=${commitId:0:7}
-            tagName="MD_${commitId}"
+            tagName="ModifyDescription_${commitId}"
             isModifyDescription=true
-          ;;
+            ;;
+        -b ) tagName="${arg2}"
+            commitId="${arg3}"
+            [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
+            (( ${#commitId} > 7 )) && commitId=${commitId:0:7}
+            tagName="BranchDescription_${tagName}"
+            isBranchDescription=true
+            ;;
         -d ) tagName="${arg2}"
               isDeleteTag=true
-          ;;
+            ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #依赖校验
     [[ -z $(which git) ]] && ftGitTag --rely "git" && return
