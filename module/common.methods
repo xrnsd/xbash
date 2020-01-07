@@ -1597,6 +1597,7 @@ ftReduceFileList()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
+    local index=0
     if (( $#==2 ));then
         local percentage=$1 dirPathFileList=$2
     elif (( $#==1 ));then
@@ -1616,27 +1617,27 @@ ftReduceFileList()
     #实现主体
     [[ -z $(ls $dirPathFileList) ]] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
 
-    (( $percentage>50 )) && percentage=$((100 - $percentage)) && editType=surplus
-    continueThreshold=$((100 / ${percentage} ))
+    percentage=$((100 - $percentage))
+    local filelist=$(ls $dirPathFileList)
+    local fileCount=$(ls -l $dirPathFileList| grep "^-" | wc -l)
+    local continueThreshold=$(( $percentage * $fileCount ))
+    local fileCountDel=$(( $continueThreshold / 100 ))
+    local indexFlag=$(( $fileCount*100 / $continueThreshold ))
+
+    ftEcho -s "总数:${fileCount}\n待删除数:${fileCountDel}\n每${indexFlag}个文件中去掉一个"
+    ftEcho -y "是否删除文件(回车默认删除)" && read -n 1 sel && echo ; [ -z "${sel}" ] && sel=y
+    [[ "${sel}" != "y" ]] && ftEcho -s "取消操作" && return
 
     local dirNameFileListBase=${dirPathFileList##*/}
     local dirNameFileListBackup=${dirNameFileListBase}_bakup
     local dirPathFileListBackup=${dirPathFileList%/*}/${dirNameFileListBackup}
-    if [ ! -d $dirPathFileListBackup ];then
-        mkdir $dirPathFileListBackup
-        cp -rf ${dirPathFileList}/*  $dirPathFileListBackup
-    fi
+    [ ! -d $dirPathFileListBackup ] && mkdir $dirPathFileListBackup && cp -rf ${dirPathFileList}/*  $dirPathFileListBackup
 
-    fileList=$(ls $dirPathFileList)
-    index=0
-    for file in $fileList ; do
+    echo "${filelist[@]}" | while read fileName;do
         ((index+=1))
-        if (( $(expr $index % $continueThreshold)== 0 ));then
-            [ $editType = "surplus" ] && continue
-        elif [ $editType = "del" ];then
-            continue;
-        fi
-        rm -f ${dirPathFileList}/$file
+        (( $index != $indexFlag )) && continue
+        rm -f -v "${dirPathFileList}/${fileName}"
+        index=0
     done
 }
 
