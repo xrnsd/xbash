@@ -76,6 +76,8 @@ if [ -d "$ANDROID_SDK" ];then
     alias xqmtklog='effect=启动MtkLog; adb shell am start -n com.mediatek.mtklogger/com.mediatek.mtklogger.MainActivity'
     alias xqengineermode='effect=启动工程模式; adb shell am start -n com.mediatek.engineermode/.EngineerMode'
 
+    alias xgetevent='effect=打印输入设备事件节点清单; adb shell  -- getevent -p'
+
     [[ -f $rFilePathXbashDBBase ]] && packageNameList="$(ftIniGetValue $rFilePathXbashDBBase androidDevicePackages packageNameList)"
     complete -W "${packageNameList[@]} launcher systemui" xlp
     complete -W "${packageNameList[@]} launcher systemui 123456" xl

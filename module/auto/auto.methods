@@ -836,7 +836,7 @@ ftAutoPacket()
                     for item in ${apdbDirPathList[@]} ; do
                             item=$(ftPath $item)
                             local itemPathRoot=${dirPathOut}/${item}
-                            [[ ! -d "${itemPathRoot}" ]] && ftEcho -e "未找到database的apdb的相关项 ${item}" && continue
+                            [[ ! -d "${itemPathRoot}" ]] && ftEcho -e "未找到database的apdb的相关项: ${item}" && continue
                             while read fileName ;do
                                 [[ -z $(echo "${fileName}"|grep '^APDB') ]] && [[ -z $(echo "${fileName}"|grep '^_APDB') ]] && continue
                                 local filePath=${item}/${fileName}
@@ -846,7 +846,7 @@ ftAutoPacket()
                     for item in ${mddbDirPathList[@]} ; do
                             item=$(ftPath $item)
                             local itemPathRoot=${dirPathOut}/${item}
-                            [[ ! -d "${itemPathRoot}" ]] && ftEcho -e "未找到database的mddb的相关项 ${item}" && continue
+                            [[ ! -d "${itemPathRoot}" ]] && ftEcho -e "未找到database的mddb的相关项: ${item}" && continue
                             while read fileName ;do
                                 local filePath=${item}/${fileName}
                                 [[ -f "${itemPathRoot}/${fileName}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
