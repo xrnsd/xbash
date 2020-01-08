@@ -2137,8 +2137,7 @@ ftApkMergeOdex()
     if [[ "$isAutoPull" = "true" ]]; then
         [[ -z "${fileNameApk}" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误,未指定app名\\n请查看下面说明:" && ftApkMergeOdex -h && return
 
-        ftAdbContect
-        [[ -z "${autoTestDeviceId}" ]] && return
+        ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
         local deviceId=${autoTestDeviceId}
 
         local dirPathLocal=$(pwd) dirPathTarget=/tmp/mergeOdex
@@ -2779,8 +2778,7 @@ ftMtkLog()
         || [ "$isStop" = "true" ];then
         #adb连接状态检测
         if [[ -z "${deviceIdLocal}" ]];then
-            ftAdbContect
-            [[ -z "${autoTestDeviceId}" ]] && return
+            ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
             local deviceId=${autoTestDeviceId}
         fi
     fi
@@ -2990,7 +2988,7 @@ ftAdbContect()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAdbContect -h && return
     [[ -z $(which adb) ]] && ftAdbContect --env && return
     [[ ! -d ${ANDROID_SDK} ]] && ftAdbContect --env && return
-    #环境性校验
+    #环境校验
     [[ -n "$ANDROID_BUILD_TOP" ]] && ftEcho -s "当前终端已初始化Android编译环境,此功能不可用" \
     && export autoTestDeviceId= && return
 
@@ -3172,7 +3170,7 @@ ftDex2Jar()
         -o ) filePathJar="${arg2}" ; ;;
         -f ) filePathDex="${arg2}" ; ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
-    #预处理
+    #耦合校验
     local errorContent
     [[ ! -f "$filePathDex" ]] && errorContent="${errorContent}\\n找不到dex文件:${filePathDex}"
     [[ ! -d "$dirPathToolResign" ]] && errorContent="${errorContent}\\n找不到dex2jar工具:${dirPathToolResign}"

@@ -1293,8 +1293,7 @@ ftAutoTest()
     local monkeyConfig logcatFlag #="*:E"
 
     #adb状态确认
-    ftAdbContect -u
-    [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbContect -u ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
     ftEcho -s "开始对设备 : [$deviceId] 进行测试"
 
