@@ -1150,7 +1150,7 @@ ftKillApplicationByPackageName()
 
     #实现主体
     #adb连接状态检测
-    ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbContect -e ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
 
     while true; do case "$packageName" in
@@ -1160,8 +1160,6 @@ ftKillApplicationByPackageName()
     * ) break;;esac;done
 
     if [[ -n "$(adb shell ps | grep $packageName | awk '{print $2}')" ]]; then
-        adb -s $deviceId root > /dev/null
-        adb -s $deviceId remount > /dev/null
         adb -s $deviceId shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
         for pid in $(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}'); do adb -s $deviceId shell kill $pid&& ftEcho -s "kill pid ${pid}"  ;done
     elif [[ -z "$(adb -s $deviceId shell pm list packages|grep $packageName)" ]]; then
@@ -2296,10 +2294,8 @@ ftAdbPush()
 
     #实现主体
     #adb连接状态检测
-    ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbContect -e ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
-    adb -s $deviceId root || ( ftEcho -e "提权失败" && return )
-    adb -s $deviceId remount || ( ftEcho -e "提权失败" && return )
 
     for filePath in ${filePathSourceList[@]}; do
             [[ ! -f "$filePath" ]] && ftEcho -e "找不到:${filePath}" && continue
@@ -2958,7 +2954,7 @@ ftAdbContect()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local isUseWifi isUpdateDeviceId
+    local isUseWifi isUpdateDeviceId isElevation
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -2971,6 +2967,9 @@ ftAdbContect()
 #
 #    更新adb的设备ID
 #    ftAdbContect -u
+#
+#    更新adb的设备ID , 提高adb的设备的权限许可
+#    ftAdbContect -e
 #========================================================="; return ;;
     --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
@@ -2981,6 +2980,8 @@ ftAdbContect()
         -w | --wifi ) isUseWifi=true
           ;;
         -u ) isUpdateDeviceId=true
+          ;;
+        -e ) isElevation=true
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
@@ -3092,6 +3093,13 @@ ftAdbContect()
         for ipAddress in ${ipAddressList[*]}; do
             adb -s $deviceId connect ${ipAddress}:${portNum}
         done
+    fi
+
+    # 自动提权
+    if [[ -n "${isElevation}" ]]; then
+        adb -s $deviceId disable-verity
+        adb -s $deviceId root || ( ftEcho -e "提权失败" && return )
+        adb -s $deviceId remount || ( ftEcho -e "提权失败" && return )
     fi
 }
 
