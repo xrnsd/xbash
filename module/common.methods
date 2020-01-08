@@ -3070,18 +3070,21 @@ ftAdbContect()
     [[ -n "${deviceIdold}" ]]&&[[ "${deviceId}" != "${autoTestDeviceId}" ]] && echo -en "设备ID更新:" && ftEcho -s "${autoTestDeviceId} > ${deviceId}"
 
     if [[ -n ${isUseWifi} ]]; then
+        ftEcho -y "请确认设备是否连接wifi(回车确认)" && read -n 1 sel && echo ; [ -z "${sel}" ] && sel=y ; [[ $sel != "y" ]] && return
         local ipAddressList portNum \
                  ipAddressInfoList=($(adb shell ifconfig wlan0 |grep inet)) \
                  key="addr:"
-
-        for ip in ${ipAddressInfoList[@]}; do
-            [[ "${ip}" != ${key}* ]] && continue
-            ip=${ip//$key/}
-            [[ -z "${ip}" ]] && continue
-            ipAddressList=(${ipAddressList[@]} ${ip})
-        done
-        ipConunt=${#ipAddressList[@]}
-        [[ -z ${ipConunt[@]} ]]||(( $ipConunt==0 )) && ftEcho -e "无法获取设备wifi相关IP地址,请确认设备是否连接wifi" && return
+        if [[ -n "${ipAddressInfoList}" ]]; then
+            for ip in ${ipAddressInfoList[@]}; do
+                [[ "${ip}" != ${key}* ]] && continue
+                ip=${ip//$key/}
+                [[ -z "${ip}" ]] && continue
+                ipAddressList=(${ipAddressList[@]} ${ip})
+            done
+        else
+             ipAddressList=($(adb shell ifconfig wlan0 |grep -v "wlan0: No such device"| awk '{print $3}'))
+        fi
+        [[ -z ${ipAddressList[@]} ]]||(( ${#ipAddressList[@]}==0 )) && ftEcho -e "无法获取设备wifi相关IP地址" && return
 
         ftEcho -sn "请设定wifi调试端口号(5555-5585)(回车默认5555):"
         read -n 4 portNum ;[ -z "${portNum}" ] && portNum=5555
