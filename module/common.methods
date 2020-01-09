@@ -3095,9 +3095,17 @@ ftAdbContect()
 
     # 自动提权
     if [[ -n "${isElevation}" ]]; then
-        adb -s $deviceId disable-verity
-        adb -s $deviceId root || ( ftEcho -e "提权失败" && return )
-        adb -s $deviceId remount || ( ftEcho -e "提权失败" && return )
+        local keyAdbVersion="Android Debug Bridge version "
+        local adbVersionCode=$(adb version |grep "${keyAdbVersion}" | sed -e "s:$keyAdbVersion::g")
+        local result=$(ftVersionComparison $adbVersionCode "1.0.32") resultFlag=">"
+
+        [[ ${result} == *$resultFlag* ]] && adb -s $deviceId disable-verity
+        result=$(adb -s $deviceId root) ; resultFlag="cannot"
+        [[ ${result} == *$resultFlag* ]] && ftEcho -en "提权失败:" && echo ${result} && return
+        result=$(adb -s $deviceId remount) ; resultFlag="failed"
+        [[ ${result} == *$resultFlag* ]] && ftEcho -en "提权失败:" && echo ${result} && return
+
+        ftEcho -s "ADB提权成功"
     fi
 }
 
