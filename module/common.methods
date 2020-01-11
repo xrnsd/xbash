@@ -2576,9 +2576,11 @@ ftCdAospProject()
                 for path in ${mAospProjectStoragePathList[@]}; do
                     while read projectName ;do
                         [[ -n $(echo ${mAospProjectNameIgnoreList[@]} |grep ${projectName}) ]] && continue
+                        [[ ! -d "${path}/${projectName}" ]] && continue
                         mAospProjectNameListUpdate=(${mAospProjectNameListUpdate[@]} ${projectName})
                     done < <(echo "$(ls ${path})")
                 done
+                mAospProjectNameListUpdate=($(echo ${mAospProjectNameListUpdate[@]} | sed 's/ /\n/g'|sort |uniq))
                 ftIniSetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList -l "${mAospProjectNameListUpdate[*]}"
                 complete -F _cdAospProject -A file ftCdAospProject
                 ftEcho -s "Aosp项目列表更新完成"
