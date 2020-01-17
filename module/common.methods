@@ -99,7 +99,7 @@ ftResetXbash()
 #    ftResetXbash -j / -c / -jc / -jcc
 #========================================================="; return ;;
         # 变量参数解析部分==============
-        -a |--adb) ftRestartAdb && return
+        -a |--adb) ftAdbContect -r && return
           ;;
         -j ) export isResetJdk=true
             targetSdkVersionForce="${arg2}"
@@ -1022,7 +1022,7 @@ adb()
             if [[ "$filePathAdbNow" != "$filePathAdb" ]]; then
                 local pid=$(lsof -i:5037  |grep adb |awk '{print $2}')
                 [[ -f "$filePathAdbLocal" ]] && echo $userPassword | sudo -p '' -S mv $filePathAdbLocal ${filePathAdbLocal}2
-                ftRestartAdb
+                ftAdbContect -r
             fi
         fi
     else
@@ -1034,7 +1034,7 @@ adb()
                 [[ ! -f "$filePath" ]] && ftEcho -e "Android SDK 配置 失败，文件不存在：$filePath" && return
                 echo $userPassword | sudo  -p ''  -S ln -s  ${ANDROID_SDK}/platform-tools/adb $filePathAdbLocal
             fi
-            ftRestartAdb
+            ftAdbContect -r
         fi
         filePathAdbNow=$filePathAdbLocal
     fi
@@ -1232,37 +1232,6 @@ ftLogcatApplicationByTag()
         [[ -z "$vContent" ]] && adb -s $deviceId logcat "${flagError}" |grep -i "${tagContent}" && return
         adb -s $deviceId logcat "${flagError}" |grep -i "${tagContent}" |grep -v "${vContent}"
     fi
-}
-
-ftRestartAdb()
-{
-    local ftEffect=重启adbSever
-    local isEnable=true
-
-    while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
-#=========================================================
-#    ftRestartAdb 可简化为 xr -a
-#
-#    ftRestartAdb [无参]
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-    #解参验耦
-    local valCount=0 errorContent
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ -z "$userPassword" ] && errorContent="${errorContent}\\n[默认用户密码]userPassword=$userPassword"
-    [ -n "$errorContent" ] && ftEcho -eax "$errorContent \\n请查看下面说明:" && ftRestartAdb -h && return
-
-    #实现主体
-    echo $userPassword | sudo  -p '' -S adb kill-server >/dev/null
-    ftEcho -s "server kill ......"
-    sleep 2
-    echo $userPassword | sudo  -p '' -S adb start-server >/dev/null
-    ftEcho -s "server start ......"
-    adb devices
 }
 
 ftMtkFlashTool()
@@ -2948,7 +2917,7 @@ ftMtkLog()
 complete -W "-h --help -w --wifi -u" ftAdbContect
 ftAdbContect()
 {
-    local ftEffect=adb多设备连接处理
+    local ftEffect=adb连接处理
     local isEnable=true
 
     #可用性校验
@@ -2961,6 +2930,9 @@ ftAdbContect()
 #=========================================================
 #
 #    ftAdbContect 无参
+#
+#    重启adb服务
+#    ftAdbContect -r
 #
 #    使用wifi调试
 #    ftAdbContect -w / --wifi
@@ -2977,6 +2949,15 @@ ftAdbContect()
 # 依赖Android的SDK中的adb,请确认是否可用
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
+        -r)
+            echo $userPassword | sudo  -p '' -S adb kill-server >/dev/null
+            ftEcho -s "server kill ......"
+            sleep 2
+            echo $userPassword | sudo  -p '' -S adb start-server >/dev/null
+            ftEcho -s "server start ......"
+            adb devices
+            return
+          ;;
         -w | --wifi ) isUseWifi=true
           ;;
         -u ) isUpdateDeviceId=true
