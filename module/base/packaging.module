@@ -42,8 +42,8 @@ if [[ -n $(which pigz) ]];then
 fi
 
 if [[ -n $(which sensors) ]];then
-    alias xcct="effect=查看cpu温度;xc -sc"
-    alias xccct="effect=查看cpu各个核心温度;xc -scc"
+    alias xcct="effect=查看cpu温度;xbash -sc"
+    alias xccct="effect=查看cpu各个核心温度;xbash -scc"
 fi
 
 if [ -d "$ANDROID_SDK" ];then
@@ -84,7 +84,7 @@ if [ -d "$ANDROID_SDK" ];then
     complete -W "${packageNameList[@]} launcher systemui monkey" xk
 fi
 
-alias xc='effect=xbash主入口[旧];ftMain'
+alias xbash='effect=xbash主入口[旧];ftMain'
 alias xb='effect=系统维护;ftMaintainSystem'
 alias xr='effect=更新xbash配置;ftResetXbash'
 alias xd='effect=MTK下载工具;ftMtkFlashTool'

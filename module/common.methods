@@ -42,7 +42,7 @@ ftMain()
                 ftTest "$@"
                 break;;
     -h | --help )
-                ftEcho -s "xc -h    #查看所有说明\nxc -hb   #bash命令封装和xbash扩展封装的说明\nxc -ft   #xbash的扩展实现说明" && 
+                ftEcho -s "xbash -h    #查看所有说明\nxbash -hb   #bash命令封装和xbash扩展封装的说明\nxbash -ft   #xbash的扩展实现说明" && 
                 echo && ftMain -ft && echo && ftMain -hb
                 break;;
     -hb )
