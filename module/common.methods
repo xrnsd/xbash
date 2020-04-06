@@ -998,7 +998,7 @@ _adb()
                                 ;;
                     logcat)  COMPREPLY=( $(compgen -W ' \"*:E\"  ' -- $curr_arg ) )
                                 ;;
-                    *)  COMPREPLY=( $(compgen -W 'push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot disable-verity' -- $curr_arg ) ); ;;
+                    *)  COMPREPLY=( $(compgen -W 'push pull sync shell emu logcat forward jdwp install uninstall bugreport backup restore help version wait-for-device start-server kill-server get-state get-serialno get-devpath status-window remount root usb reboot disable-verity disconnect tcpip' -- $curr_arg ) ); ;;
       esac
 }
 complete -F _adb -A file adb
@@ -3069,7 +3069,7 @@ ftAdbContect()
         [[ -z ${ipAddressList[@]} ]]||(( ${#ipAddressList[@]}==0 )) && ftEcho -e "无法获取设备wifi相关IP地址" && return
 
         ftEcho -sn "请设定wifi调试端口号(5555-5585)(回车默认5555):"
-        read -n 4 portNum ;[ -z "${portNum}" ] && portNum=5555
+        read -n 4 portNum && echo ;[ -z "${portNum}" ] && portNum=5555
         adb -s ${deviceId} tcpip ${portNum}
         for ipAddress in ${ipAddressList[*]}; do
             adb -s $deviceId connect ${ipAddress}:${portNum}
