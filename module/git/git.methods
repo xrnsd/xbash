@@ -97,7 +97,7 @@ ftGitLogShell()
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]] && [ "$isCustomBranchLog" != "true" ];then
         branchLogFormat=${branchLogFormat:-'%C(green)%<(9,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
         #git log --date=format-local:'%y%m%d-%H:%M:%S' --pretty=format:"$branchLogFormat" -$branchLogItemCount
-        git log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount
+        git log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount 
         return
     fi
     if [ "${branchLogFormat}" = "%h" ];then
@@ -876,4 +876,83 @@ ftGitSxtdProjectBranchV2()
         rm $mFilePathSxtdProjectBranchV2
         return
     fi
+}
+
+ftGitCreateAppVersionReadMeBySoftwareVersion()
+{
+    local ftEffect=创建APP软件版本说明模板并添加为Git的TAG
+    local isEnable=true
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #参数解析
+    local versionName isAutoAddTag
+    filePathChangeListTemplate=/tmp/版本说明.txt
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+        # 说明参数解析部分==============
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+#=========================================================
+#
+#    ftGitCreateAppVersionReadMeBySoftwareVersion -a -v 版本号
+#========================================================="; return ;;
+    --rely) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
+#=========================================================
+#    工具依赖包 unix2dos # sudo apt-get install tofrodos
+#========================================================="; return ;;
+        # 变量参数解析部分==============
+        -v )   versionName="$arg2" ;;
+        -a )   isAutoAddTAg="true" ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    #环境校验
+    [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitCreateAppVersionReadMeBySoftwareVersion --rely && return
+    local filePathConfig=$rFilePathXbashDBUser
+
+    #实现主体
+    #使用git仓库相关记录
+    local gitCommitList commitId
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    rm -rf $filePathChangeListTemplate
+
+    #版本说明
+    local enterLine="\n"
+    local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+    content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+    content=${content}${enterLine}
+    content=${content}${enterLine}"当前版本：$versionName"
+    content=${content}${enterLine}"基础版本："
+    if [[ -n "${branchNameNow}" ]]; then
+        gitCommitList=$(ftGitLogShell -nn 10)
+        commitId=$(ftGitLogShell -t "%h" -n 1)
+        content=${content}${enterLine}"版本CommitHash：${commitId} "
+        content=${content}${enterLine}"分支名：${branchNameNow}"
+        if [[ "${branchNameNow}" != "master" ]]; then
+            content=${content}${enterLine}"父分支名："
+        fi
+    else
+        content=${content}${enterLine}"分支名："
+    fi
+    content=${content}${enterLine}"客户名："
+    content=${content}${enterLine}
+    content=${content}${enterLine}"说明："
+    content=${content}${enterLine}"\t01 "
+    content=${content}${enterLine}
+    content=${content}${enterLine}"修改记录："
+    content=${content}${enterLine}"\t01 "
+    content=${content}${enterLine}
+    #git log 列表
+    [[ -n "${gitCommitList}" ]] && echo -e "﻿$gitCommitList">$filePathChangeListTemplate
+    seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+    # 合并头部和git log 列表
+     if [[ -n "${branchNameNow}" ]]; then
+        echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathChangeListTemplate
+        if [[ -n "${isAutoAddTag}" ]]; then
+            local noteContent="$(cat $filePathChangeListTemplate)" ;rm -rf $filePathChangeListTemplate
+            git tag -a "$versionName" -m "${noteContent[@]}" "$commitId"
+        fi
+    else
+        echo -e ${content} | cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathVersionNote
+    fi
+    rm ${filePathChangeListTemplate}.temp
 }
