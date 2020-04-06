@@ -1174,9 +1174,15 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}"当前版本：$versionName"
             content=${content}${enterLine}"基础版本："
             content=${content}${enterLine}"版本MD5："
-            [[ -n "${branchNameNow}" ]] && content=${content}${enterLine}"版本CommitHash：$(ftGitLogShell -n 1 -c "%h") "
-            [[ -n "${branchNameNow}" ]] && content=${content}${enterLine}"分支名[真实]：${branchNameNow}"
-            [[ -z "${branchNameNow}" ]] && content=${content}${enterLine}"分支名："
+            if [[ -n "${branchNameNow}" ]]; then
+                content=${content}${enterLine}"版本CommitHash：$(ftGitLogShell -n 1 -c "%h") "
+                content=${content}${enterLine}"分支名[真实]：${branchNameNow}"
+                if [[ "${branchNameNow}" != "master" ]]; then
+                    content=${content}${enterLine}"父分支名[真实]："
+                fi
+            else
+                content=${content}${enterLine}"分支名："
+            fi
             content=${content}${enterLine}"分支名[目录]：alps"
             content=${content}${enterLine}"客户名："
             content=${content}${enterLine}
