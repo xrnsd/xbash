@@ -6,7 +6,7 @@ ftSetBashPs1ByGitBranch()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     [[ "$isUseCustomPS1" != "true" ]] && return
 
     local editType=$1 defaultPrefix=${rUserName:-'xbash'} defaultColorConfig=44
@@ -31,7 +31,7 @@ ftGitLogShell()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local isAllBranchLog isTagBranchLog branchLogFormat isCustomBranchLog branchLogItemCount branchLogItemCountDef=20 pathTarget
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -123,11 +123,12 @@ ftGitPatchAdd2Branches()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
-    local branchTag=$1 filePathBranchList=branch.list
-    local filePathAddPatchTool=$rFilePathXbashModuleGitAddPatchTool
+    local branchTag=$1 filePathBranchList=待打补丁的分支列表 filePathCommitList=patch的hash值列表
+    local filePathAddPatchTool=$rFilePathXbashModuleGitAddPatchToolExample
     local filePathFailInfo="/home/wgx/.cache/ftGitPatchAdd2Branches.log" ; [ -f "$filePathFailInfo" ] && rm $filePathFailInfo
+    [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return
     [ ! -f "$filePathAddPatchTool" ] && [ -f "${filePathAddPatchTool}.example" ] &&\
         ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
 
@@ -151,31 +152,40 @@ ftGitPatchAdd2Branches()
         rm -f $filePathBranchList > /dev/null
         for item in ${branchList[@]} ; do echo "${item}" >> $filePathBranchList ;done
     fi
-    gedit -s $filePathBranchList
 
-    content=$(cat $filePathBranchList)
-    if [ -n "$content" ];then
-            ftEcho -b 将操作下面所有分支
-            local index=0
-            cat $filePathBranchList | while read line ; do echo $line && ((index+=1)) ; done
-            while true; do echo
-                    ftEcho -y 是否开始
-                    read -n 1 select
-                    [ ${#select} == 0 ] && select=y
-                    case "$select" in
-                        y | Y )     [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return
-                                        cat $filePathBranchList | while read branchName ; do
-                                                $filePathAddPatchTool $branchName $filePathFailInfo
-                                        done
-                                        git reset --hard
-                                       break;;
-                        n  |q )    break;;
-                        * ) ftEcho -e 错误的选择：$sel
-                             echo "输入q，离开" ;;
-                    esac
-            done
-    fi
-    rm -f $filePathBranchList
+    XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathBranchList $filePathCommitList
+    local branchList=($(cat $filePathBranchList)) hashList=($(cat $filePathCommitList))
+    # rm -f $filePathBranchList $filePathCommitList
+     [ -z "$branchList" ] && ftEcho -e "${filePathBranchList} 为空" && return
+     [ -z "$hashList" ] && ftEcho -e "${filePathCommitList} 为空" && return
+
+     echo $(echo ${branchList[*]})
+
+    # echo ${branchList[*]} | while read branchName ; do
+    #             # git checkout   "$branchName"||return
+    #             # git pull
+    #             # git cherry-pick 5981ad7||return
+
+    #             # #添加多个commit
+    #             # i=${#hashList[@]}
+    #             # while (( $i>0 ))
+    #             # do
+    #             #   (( i-=1 ))
+    #             #   git cherry-pick ${hashList[$i]}||return
+    #             # done
+    #             # git push
+
+
+    #             echo "branchName:${branchName}  =============================="
+    #             i=${#hashList[@]}
+    #             while (( $i>0 ))
+    #             do
+    #               (( i-=1 ))
+    #               echo "git cherry-pick ${hashList[$i]}"
+    #             done
+    #     done
+        
+        # git reset --hard
 }
 
 ftGitCheckoutBtanch()
@@ -184,7 +194,7 @@ ftGitCheckoutBtanch()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local delayLong isAllBranchs branchNameTag
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -280,7 +290,8 @@ ftGitCheckoutBtanch()
     fi
 
     while true; do
-        ftEcho -y "是否切换到(回车默认y):  " ;ftEcho -sn "${branchNameTraget}  "
+        echo -n "目标分支: ";ftEcho -sn "${branchNameTraget}  "
+        ftEcho -y "是否切换(回车默认y):  "
         read -n 1 sel
         [ -z "${sel}" ] && sel=y
         case "$sel" in
@@ -308,7 +319,7 @@ ftGitPatch()
     local isEnable=false
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     local isByChange isByHash isApplayPatch isByHashAndMore
@@ -414,7 +425,7 @@ ftGitTagGrep()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local strKeyContent
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -478,7 +489,7 @@ ftGitTag()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local tagName noteContent commitId isDeleteTag isModifyDescription isBranchDescription
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
@@ -581,7 +592,7 @@ ftGitPushForce_SXTD()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     while true; do case "$1" in
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -631,7 +642,7 @@ ftGitSxtdProjectBranchV1()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     while true; do case "$1" in
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -731,7 +742,7 @@ ftGitSxtdProjectBranchV2()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local isCreateBranch isReName isDelete
     local valCount=1 errorContent arg arg2
@@ -793,7 +804,7 @@ ftGitSxtdProjectBranchV2()
         for index in "${!mBranchList[@]}"; do echo "${mBranchList[$index]}" >> $mFilePathSxtdProjectBranchV2 ;done
         ftIniCreateFileOrTag  -a -p $mFilePathSxtdProjectBranchV2 -t $TagName -l "${mKeyIniBranchNameBase}= ${mKeyIniBranchNameNew}= "
 
-        gedit -s $mFilePathSxtdProjectBranchV2
+        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $mFilePathSxtdProjectBranchV2
         local mBranchNameBase=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameBase)
                 mBranchNameNew=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameNew)
         [ -z "${mBranchNameBase}" ] && ftEcho -e "缺失原分支名,请确认是否输入" && return
@@ -824,7 +835,7 @@ ftGitSxtdProjectBranchV2()
         for index in "${!mBranchList[@]}"; do echo "${mBranchList[$index]}" >> $mFilePathSxtdProjectBranchV2 ;done
         ftIniCreateFileOrTag  -a -p $mFilePathSxtdProjectBranchV2 -t $TagName -l "${mKeyIniBranchNameDelete}= "
 
-        gedit -s $mFilePathSxtdProjectBranchV2 > /dev/null
+        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $mFilePathSxtdProjectBranchV2 > /dev/null
         local mBranchNameDelete=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameDelete)
         [ -z "${mBranchNameDelete}" ] && ftEcho -e "缺失待删除分支名,请确认是否输入" && return
 
@@ -856,7 +867,7 @@ ftGitSxtdProjectBranchV2()
         #不同特性之间用下划线分割 \
         ${mKeyIniDemandSignName}="
         [[ ! -f "$mFilePathSxtdProjectBranchV2" ]] && ftEcho -e "${TagName}文件创建失败" && return
-        gedit -s $mFilePathSxtdProjectBranchV2
+        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $mFilePathSxtdProjectBranchV2
 
         local mMotherBoardName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniMotherBoardName) \
                 mProjrctName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniProjrctName) \
@@ -884,7 +895,7 @@ ftGitCreateAppVersionReadMeBySoftwareVersion()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local versionName isAutoAddTag
     filePathChangeListTemplate=/tmp/版本说明.txt
