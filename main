@@ -116,6 +116,7 @@ fi
 #added by wgx : xbash初始化
 #---------------- bash 配置 ----------------------------------
     shopt -s histappend    #多个终端情况下，共享history
+
 #---------------- 初始化变量 ----------------------------------
     [[ -z "$SUDO_USER" ]] && userName=$USER || userName=$SUDO_USER
     export filePathHomeBash=$BASH_SOURCE

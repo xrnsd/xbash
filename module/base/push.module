@@ -11,7 +11,7 @@ ftAdbPushByTerminal()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathSourceList fileNameSource isAutoReboot isTacitMode
     local errorContent arg  ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}

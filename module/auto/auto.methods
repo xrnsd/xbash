@@ -6,7 +6,7 @@ ftAutoInitEnv()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -167,7 +167,7 @@ ftBranchNameResolution()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     while true; do case "$1" in
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -270,7 +270,7 @@ ftBuildPropResolution()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     while true; do case "$1" in
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -363,7 +363,7 @@ ftAutoBuildMultiBranchEnvSeparation()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -407,7 +407,7 @@ ftAutoBuildMultiBranchEnvSeparation()
         local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
         git branch|grep -v "${branchNameNow}" | sed -e "s:*::g" > $filePathBranchList
         echo "${branchNameNow}" >> $filePathBranchList
-        gedit -s $filePathBranchList
+        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathBranchList
         local branchArray=($(cat $filePathBranchList))
         if [[ -n "$branchArray" ]];then
                     export branchArray=(${branchArray[@]})
@@ -428,7 +428,7 @@ ftAutoBackupOrRestoreOuts()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     ftAutoInitEnv
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
@@ -562,7 +562,7 @@ ftAutoUpload()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     while true; do case "$1" in
     --rely) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
@@ -672,7 +672,7 @@ ftAutoPacket()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local isClean isReadMe isUpload isPacket isMove isCopy isSpecial isBale
     local arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -911,7 +911,7 @@ ftAutoPacket()
             if [[ -n "$isReadMe" ]]; then
                 ftEcho -s "创建 版本说明相关文档" && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
                 ftEcho -y "是否更新版本说明 [回车更新]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
-                [[ "${sel}" = "y" ]] && gedit -s $AutoEnv_filePathReleaseNotes $AutoEnv_filePathCustomerDescription || echo
+                [[ "${sel}" = "y" ]] &&  XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $AutoEnv_filePathReleaseNotes $AutoEnv_filePathCustomerDescription || echo
              fi
 
             # 生成软件压缩包,添加MD5信息,整理包结构
@@ -1036,7 +1036,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -1234,7 +1234,7 @@ ftAutoTest()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local editType=$1
     local eventCountDef=$(( 100 * 100 *100 ))
@@ -1387,7 +1387,7 @@ ftAutoLnOut()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local dirPathDev
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in

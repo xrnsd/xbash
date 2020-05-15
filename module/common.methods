@@ -9,7 +9,7 @@ _ftMainVal()
     local ftEffect=bash内建命令和xbash扩展封装对应的参数补全实现
     local isEnable=def
 
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
 
     local curr_arg=${COMP_WORDS[COMP_CWORD]}
     case "${COMP_WORDS[1]}" in
@@ -24,7 +24,7 @@ ftMain()
     local ftEffect=早期工具主入口
     local isEnable=def
 
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
 
     while true; do case $1 in
     -v | --version )
@@ -77,7 +77,7 @@ ftResetXbash()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     export isResetJdk= isResetGcc= isResetCcache= isResetXbash=true targetSdkVersionForce=
     local dirPathCode dirPathLocal=$(pwd)
@@ -135,7 +135,7 @@ ftReadAllAlias()
         local isEnable=def
 
         #可用性校验
-        [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+        [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
         #解参验耦
         [[ ! -f $rFilePathXbashModuleBasePackaging ]] && ftEcho -e "xbash配置不存在:$rFilePathXbashModuleBasePackaging" && return
 
@@ -160,7 +160,7 @@ ftReadAllFt()
 
         #isEnable设为 def 时将不在说明中显示
         #可用性校验
-        [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+        [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
 
         local key="local ftEffect=" keyEnable="local isEnable="
         local effectDescription effectDescriptionEnable
@@ -200,7 +200,7 @@ ftTest()
     * ) break;;esac;done
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     if [[ ! -f "$rFilePathXbashModuleTest" ]] && [[ -f $rFilePathXbashModuleTestExpmale ]]; then
        cp $rFilePathXbashModuleTestExpmale $rFilePathXbashModuleTest
@@ -261,7 +261,7 @@ ftEcho()
     local isEnable=def
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -315,7 +315,7 @@ ftTimeConsuming()
     local isEnable=def
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local contentName=本技能 arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
@@ -377,7 +377,7 @@ ftVersionComparison()
     * ) break;;esac;done
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local valCount=2 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
@@ -395,7 +395,7 @@ ftCheckUserConfig()
     local ftEffect=校验用户配置和模版版本一致性
     local isEnable=true
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #实现主体
     local filePathUserConfigExpmale=${rDirPathXbashConfig}/expmale.config
 
@@ -422,7 +422,7 @@ ftCheckUserDatabase()
     local ftEffect=校验用户数据库和模版版本一致性
     local isEnable=true
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #实现主体
     [[ ! -f ${rFilePathXbashDBUserExcepmale}  ]] && return
     [[ ! -f ${rFilePathXbashDBUser}  ]] && return
@@ -452,7 +452,7 @@ ftIniCreateFileOrTag()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathIni editType contentTagName contentTagKeyValList
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -524,7 +524,7 @@ ftIniDeleteTag()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local tagName filePathIni
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -566,7 +566,7 @@ ftIniAddItem()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local tagName itemContent filePathIni
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -615,7 +615,7 @@ ftIniDeleteItem()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local tagName itemName filePathIni
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -657,7 +657,7 @@ ftIniGetValue()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local filePath=$1 blockName=$2 keyName=$3 isReadSilence
     local valCount=3 errorContent
@@ -711,7 +711,7 @@ ftIniSetValue()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local isListValue filePath=$1 blockName=$2 keyName=$3 keyValue=$4
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -754,7 +754,7 @@ ftBashHistory()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     # 环境校验
     [ "$(whoami)" == "root" ] || [[ -z "$isUseXbashHistory" ]] && return
     #参数解析
@@ -812,7 +812,7 @@ ftDevAvailableSpace()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local dirPathTraget=$1 isReturn=$2
     local valCount=1 errorContent
@@ -861,7 +861,7 @@ ftLanguageUtil()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local ftLanguageContent="${1}" filePathDataBase=$rFilePathXbashDBBase
     local errorContent
@@ -912,7 +912,7 @@ ftInitDevicesList()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local devMinAvailableSpace=0  # 设备最小可用空间，小于则视为无效.单位M
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -1059,7 +1059,7 @@ ftCleanGarbage()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     ftInitDevicesList
     local isAutoExit sleepTime
@@ -1140,7 +1140,7 @@ ftKillApplicationByPackageName()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local packageName=$1
     local valCount=1 errorContent
@@ -1173,7 +1173,7 @@ ftLogcatApplicationByTag()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local tagContent=$1 vContent=$2 flagError packageName isUserPackageName
     local arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; case "${arg}" in
@@ -1249,7 +1249,7 @@ ftMtkFlashTool()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local flashToolPath="$(ftIniGetValue $rFilePathXbashDBUser MtkSpFlashToolVersion toolsPath)"
     local errorContent
@@ -1282,7 +1282,7 @@ ftBootAnimation()
     * ) break;; esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local editType=$1 dirPathAnimation=$2 dirPathBase=$(pwd)
     local valCount=2 errorContent
@@ -1461,7 +1461,7 @@ ftGlobalization()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local valCount=0 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
@@ -1496,7 +1496,7 @@ ftPowerManagement()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local edittype=$1 timeLong=$2 filePathFlag=/tmp/xbashPowerManagementFlag
     timeLong=${timeLong:-$2}
@@ -1562,7 +1562,7 @@ ftReduceFileList()
     * ) break;;esac;done
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local index=0
     if (( $#==2 ));then
@@ -1615,7 +1615,7 @@ ftReNameFile()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local isAutoName isAddName dirPathFileList  fileNameAddPrefix fileNameAddSuffix fileTagBase fileTagNew fileSuffixTagBase fileSuffixTagNew startNumber
     local fileNameLength=4
@@ -1709,7 +1709,7 @@ ftMaintainSystem()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local editType
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -1907,7 +1907,7 @@ ftFind()
 {
     local ftEffect=find的简单封装
     local isEnable=true
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
 
     #参数解析
     local isSuffix nameAll
@@ -1965,7 +1965,7 @@ ftPdfPasswordClear()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local dirPathTarget passwordNum
     local valCount=4 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -2021,7 +2021,7 @@ ftApkSignature()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathApk
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -2071,7 +2071,7 @@ ftApkMergeOdex()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local isAutoPull fileNameApk filePathApk filePathOdex dirPathFramework
     local filePathToolResign=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/re-sign.jar
@@ -2186,7 +2186,7 @@ ftDu()
     * ) break;;esac;done
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local valCount=2 errorContent fileCount=${1:-'10'} dirPathLocal=$(pwd) dirPathTarget=${dirPathLocal}
     (( $#>1 )) && dirPathTarget=$1 && fileCount=${2:-'$fileCount'}
@@ -2207,7 +2207,7 @@ ftAdbPush()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathSourceList fileNameSource isAutoReboot isTacitMode
     local errorContent arg  ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
@@ -2289,7 +2289,7 @@ ftUpdateSublimeSnippet()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     # 说明参数解析部分
     while true; do case "$1" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -2324,7 +2324,7 @@ ftOpenNemoTab()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local dirPathTarget
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -2415,7 +2415,7 @@ ftCdAospDirectory()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     [[ -n "${ANDROID_BUILD_TOP}" ]] && cd $ANDROID_BUILD_TOP || \
     if [[ ! -d "alps" ]] && [ ! -d "idh" ]; then
@@ -2509,7 +2509,7 @@ ftCdAospProject()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local valCount=1 errorContent arg arg2  arg3  arg4
     local isUserFileManager itemCount mAospProjectName mAospProjectStoragePathEffective
@@ -2599,7 +2599,7 @@ ftCheckCcache()
     local isEnable=$isUseBuildCcache
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && return #&& ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && return #&& ftEcho -s "${ftEffect} 已停用，请确认" && return
     # 说明参数解析部分
     while true; do case "$1" in
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -2668,7 +2668,7 @@ ftMtkLog()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local isPull isCheck isSeparation isClearn isStop isPullMini deviceIdLocal
     local filePathLog pathLog dirPathLogStorge fileSizeBaseMillionByte
@@ -2921,7 +2921,7 @@ ftAdbContect()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local isUseWifi isUpdateDeviceId isElevation
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -3099,7 +3099,7 @@ ftPigz()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local contentTarget filrPathTarget dirPathTarget dirPathLocal=$(pwd)
     local valCount=2 errorContent arg arg2 ;for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -3143,7 +3143,7 @@ ftDex2Jar()
     local isEnable=true
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathDex filePathJar
     local dirPathToolResign=${DIR_PATH_ANDROID_DECOMPILE}/dex2jar-2.0

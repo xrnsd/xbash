@@ -128,6 +128,8 @@ if [[ -n $(which git) ]];then
     alias xglh='effect=显示xx条commit的hash值;ftGitLogShell -c "%h" -n '
     alias xgbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a -t"
     alias xgbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch -t"
+    alias xbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a -t"
+    alias xbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch -t"
 fi
 
 if [[ -n ftCdAospDirectory ]];then
@@ -145,6 +147,10 @@ if [[ -n $(which subl) ]];then
     alias xubpwm='effect=快速进入launcher;subl $(find frameworks/ -name "PhoneWindowManager.java")'
     alias xubsettings='effect=快速进入launcher;subl $(find frameworks/base/core -name "Settings.java")'
     alias xubl='effect=快速进入launcher;subl $(find frameworks/base/core -name "Settings.java")'
+fi
+
+if [[ -n $(which keytool) ]];then
+    alias xkey='effect=查看秘钥文件的信息;keytool -exportcert -list -v -keystore '
 fi
 
 #命令选项快速适配

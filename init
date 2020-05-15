@@ -232,7 +232,7 @@ ftInitXbash()
     * ) break;;esac;done
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftInitEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" = "false" ]] && ftInitEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     if [[ -z "$1" ]];then #初始化所有配置
         # 变量初始化
