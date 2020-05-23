@@ -1447,3 +1447,50 @@ ftAutoLnOut()
     ln -s "${dirPathDev}" out && ftEcho -s "已创建指向[${dirPathDev}]的软链接"
     cd "${dirPathLocal}"
 }
+
+complete -W "-h --help" ftFindAospBuildOuts
+ftFindAospBuildOuts()
+{
+    local ftEffect=快速查找所有AOSP工程项目的out备份outs
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local example1
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftFindAospBuildOuts xxxx
+#========================================================="; return ;;
+    * ) break;;esac;done
+
+    #参数校验
+    [ ! -f "${rFilePathXbashDBUser}" ] && errorContent="${errorContent}\\n[用户数据库哪去了，你帮忙瞅瞅]rFilePathXbashDBUser=$rFilePathXbashDBUser"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftFindAospBuildOuts -h && return
+
+    #实现主体
+    ftCdAospProject -u
+    local mAospProjectNameList="$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList)"
+    local mAospProjectStoragePathList="$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectStoragePathList)"
+
+    local dirPathAospProjectOuts
+    for dirPath in ${mAospProjectStoragePathList[@]}; do
+            for dirNameAospProject in ${mAospProjectNameList[@]}; do
+                dirPathAospProjectOuts="${dirPath}/${dirNameAospProject}/outs"
+                [ ! -d "${dirPathAospProjectOuts}" ] && continue
+                dirPathAospProjectOutList=($(ls $dirPathAospProjectOuts))
+                [[ -z ${dirPathAospProjectOutList} ]] && continue
+
+                ftEcho -s "${dirPath}/${dirNameAospProject}"
+                for dirPathAospProjectOut in ${dirPathAospProjectOutList[@]}; do
+                    echo ${dirPathAospProjectOut}
+                done
+            done
+    done
+}
