@@ -1475,12 +1475,20 @@ ftFindAospBuildOuts()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftFindAospBuildOuts -h && return
 
     #实现主体
-    ftCdAospProject -u
+    ftCdAospProject -u > /dev/null
     local mAospProjectNameList="$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList)"
     local mAospProjectStoragePathList="$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectStoragePathList)"
 
-    local dirPathAospProjectOuts
+    #去重，去掉软连接引起的重复
+    local mAospProjectStoragePathListNew
     for dirPath in ${mAospProjectStoragePathList[@]}; do
+        mAospProjectStoragePathListNew=(${mAospProjectStoragePathListNew[@]} $(readlink -f  $dirPath))
+    done
+    mAospProjectStoragePathListNew=($(echo ${mAospProjectStoragePathListNew[@]} | sed 's/ /\n/g'|sort |uniq))
+
+    #开始查找
+    local dirPathAospProjectOuts
+    for dirPath in ${mAospProjectStoragePathListNew[@]}; do
             for dirNameAospProject in ${mAospProjectNameList[@]}; do
                 dirPathAospProjectOuts="${dirPath}/${dirNameAospProject}/outs"
                 [ ! -d "${dirPathAospProjectOuts}" ] && continue
@@ -1488,8 +1496,9 @@ ftFindAospBuildOuts()
                 [[ -z ${dirPathAospProjectOutList} ]] && continue
 
                 ftEcho -s "${dirPath}/${dirNameAospProject}"
+                
                 for dirPathAospProjectOut in ${dirPathAospProjectOutList[@]}; do
-                    echo ${dirPathAospProjectOut}
+                    echo -e "    ${dirPathAospProjectOut}"
                 done
             done
     done
