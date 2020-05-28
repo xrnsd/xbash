@@ -1161,7 +1161,6 @@ ftAutoCreateReadMeBySoftwareVersion()
             unix2dos $filePathChangeListTemplate
 
             export AutoEnv_filePathReleaseNotes=$filePathChangeListTemplate
-            # export AutoEnv_filePathCustomerDescription=$filePathReadMeTemplate
 
    elif [[ $AutoEnv_mnufacturers = "mtk" ]]; then
 

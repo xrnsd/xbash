@@ -85,7 +85,7 @@ if [ -d "$ANDROID_SDK" ];then
     complete -W "${packageNameList[@]} launcher systemui monkey" xk
 fi
 
-alias xbash='effect=xbash主入口[旧];ftMain'
+alias xc='effect=xbash主入口[旧];ftMain'
 alias xb='effect=系统维护;ftMaintainSystem'
 alias xr='effect=更新xbash配置;ftResetXbash'
 alias xd='effect=MTK下载工具;ftMtkFlashTool'
