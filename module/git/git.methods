@@ -491,7 +491,7 @@ ftGitTag()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local tagName noteContent commitId isDeleteTag isModifyDescription isBranchDescription
+    local tagName noteContent commitId isDeleteTag isModifyDescription isBranchDescription isUseTemplate
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     local valCount=1 errorContent arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; case "${arg}" in
         # 说明参数解析部分==============
@@ -507,6 +507,11 @@ ftGitTag()
 #    ftGitTag -a 标签名
 #    ftGitTag -a 标签名 对应的commitid
 #    可简化 [ftGitTag -a] 为 [xgat] ,其他参数不变
+#
+#    添加版本标签,并使用模板:
+#    ftGitTag -t -a 标签名
+#    ftGitTag -t -a 标签名 对应的commitid
+#    可简化 [ftGitTag -t -a] 为 [xgat] ,其他参数不变
 #
 #    添加修改说明标签
 #    ftGitTag -m 标签名
@@ -526,6 +531,8 @@ ftGitTag()
         -a ) tagName="${arg2}"
             commitId="${arg3}"
             [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
+            ;;
+        -t ) isUseTemplate=true
             ;;
         -m ) tagName="${arg2}"
             commitId="${arg3}"
@@ -560,6 +567,8 @@ ftGitTag()
 
     local fileNameVersionNote="${tagName}的相应说明"
     local filePathVersionNote=/tmp/${fileNameVersionNote}
+    [ -f "${filePathVersionNote}" ] && rm -rf "${filePathVersionNote}"
+    [ -n "${isUseTemplate}" ] && ftCreateAppReadMeBySoftwareVersion -v "${tagName}" -f "${filePathVersionNote}"
     if touch $filePathVersionNote ; then
         XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathVersionNote
     else

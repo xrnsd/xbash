@@ -3276,10 +3276,11 @@ ftCreateAppReadMeBySoftwareVersion()
             ;;
         -v ) versionName="${arg2}"
             ;;
-    * ) break;;esac;done
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftCreateAppReadMeBySoftwareVersion --rely && return
     [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
+    [ -z "$filePathAppReadMe" ] && errorContent="${errorContent}\\n[模板路径为空]filePathAppReadMe=$filePathAppReadMe"
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCreateAppReadMeBySoftwareVersion -h && return
 
     #实现主体
