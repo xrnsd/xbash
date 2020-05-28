@@ -256,7 +256,7 @@ ftGitCheckoutBtanch()
     fi
 
     if [[ -z "${branchList[@]}" ]];then
-       [[ $branchNameNow =~ "$branchNameTag" ]] && ftEcho -s "只有当前分支包含TAG，无需切换" && return
+       [[ -n $(echo $branchNameNow |grep -i "${branchNameTag}") ]] && ftEcho -s "只有当前分支包含TAG，无需切换" && return
        ftEcho -e "未找到[$branchNameTag]对应的分支" && return
     fi
     local itemCount=${#branchList[@]}
