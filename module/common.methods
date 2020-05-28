@@ -2561,10 +2561,15 @@ ftCdAospProject()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCdAospProject -h && return
 
     #实现主体
-    local mAospProjectStoragePathEffectiveList pathAll
+    local mAospProjectStoragePathEffectiveList dirPathAll dirPathBase
     for path in ${mAospProjectStoragePathList[@]}; do
-        pathAll=${path}/${mAospProjectName}/alps
-        [[ -d "$pathAll" ]] && mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $pathAll")
+        dirPathBase=${path}/${mAospProjectName}
+        dirPathAll=${dirPathBase}/alps
+        if [[ -d "$dirPathAll" ]]; then
+            mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $dirPathAll")
+        elif [[ -d "$dirPathBase" ]]; then
+            mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $dirPathBase")
+        fi
     done
     [ -z "$mAospProjectStoragePathEffectiveList" ] && ftEcho -e "找不到${mAospProjectName}对应的Aosp项目有效存放路径" && return
 
