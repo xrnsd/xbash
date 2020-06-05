@@ -2493,16 +2493,6 @@ ftCdAospDirectory()
     ftOpenNemoTab -p $(pwd)/${dirPathTarget}
 }
 
-_cdAospProject()
-{
-    local ftEffect=快速进入不同Aosp项目参数补全实现
-    local isEnable=def
-
-    local curr_arg=${COMP_WORDS[COMP_CWORD]}
-    local mAospProjectNameList="$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList)"
-    COMPREPLY=( $(compgen -W "${mAospProjectNameList}" -- $curr_arg ) )
-}
-complete -F _cdAospProject -A file ftCdAospProject
 ftCdAospProject()
 {
     local ftEffect=快速进入不同Aosp项目
@@ -2561,6 +2551,25 @@ ftCdAospProject()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCdAospProject -h && return
 
     #实现主体
+    local mAospProjectNameList=($(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList| sed 's/ /\n/g'|sort |uniq |grep -i $mAospProjectName))
+    itemCount=${#mAospProjectNameList[@]}
+    if (( $itemCount>1 ));then
+        ftEcho -s 对应多个Aosp项目,请选择
+        local index=0
+        for item in ${mAospProjectNameList[@]} ; do
+            printf "%-4s %-4s\n" [$index] $item
+            ((index+=1))
+        done
+
+        local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
+        ftEcho -r  "请输入对应的序号(回车默认0):"
+        read -n $length tIndex &&echo
+        #设定默认值
+        [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
+        (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
+        mAospProjectName=${mAospProjectNameList[$tIndex]} && echo
+    fi
+
     local mAospProjectStoragePathEffectiveList dirPathAll dirPathBase
     for path in ${mAospProjectStoragePathList[@]}; do
         dirPathBase=${path}/${mAospProjectName}
@@ -2577,7 +2586,7 @@ ftCdAospProject()
     mAospProjectStoragePathEffective=$mAospProjectStoragePathEffectiveList
     itemCount=${#mAospProjectStoragePathEffectiveList[@]}
     if (( $itemCount>1 ));then
-        ftEcho -s 对应多个Aosp项目存放位置,请选择
+        ftEcho -s 对应Aosp项目有多个存放位置,请选择
         local index=0
         for item in ${mAospProjectStoragePathEffectiveList[@]} ; do
             printf "%-4s %-4s\n" [$index] $item
