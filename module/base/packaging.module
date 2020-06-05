@@ -42,8 +42,8 @@ if [[ -n $(which pigz) ]];then
 fi
 
 if [[ -n $(which sensors) ]];then
-    alias xcct="effect=查看cpu温度;xbash -sc"
-    alias xccct="effect=查看cpu各个核心温度;xbash -scc"
+    alias xcct="effect=查看cpu温度;ftMain -sc"
+    alias xccct="effect=查看cpu各个核心温度;ftMain -scc"
 fi
 
 if [ -d "$ANDROID_SDK" ];then
@@ -130,8 +130,8 @@ if [[ -n $(which git) ]];then
     alias xglh='effect=显示xx条commit的hash值;ftGitLogShell -c "%h" -n '
     alias xgbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a -t"
     alias xgbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch -t"
-    alias xbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a -t"
-    alias xbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch -t"
+    alias xbah="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch -t"
+    alias xbaha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a -t"
 fi
 
 if [[ -n ftCdAospDirectory ]];then
