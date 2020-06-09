@@ -155,37 +155,31 @@ ftGitPatchAdd2Branches()
 
     XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathBranchList $filePathCommitList
     local branchList=($(cat $filePathBranchList)) hashList=($(cat $filePathCommitList))
-    # rm -f $filePathBranchList $filePathCommitList
+    rm -f $filePathBranchList $filePathCommitList
      [ -z "$branchList" ] && ftEcho -e "${filePathBranchList} 为空" && return
      [ -z "$hashList" ] && ftEcho -e "${filePathCommitList} 为空" && return
 
-     echo $(echo ${branchList[*]})
+    for branchName in ${branchList[@]} ; do
+                ftEcho -s "切换到分支: ${branchName}"
+                git checkout   "$branchName"||return
+                git pull
 
-    # echo ${branchList[*]} | while read branchName ; do
-    #             # git checkout   "$branchName"||return
-    #             # git pull
-    #             # git cherry-pick 5981ad7||return
+                #添加多个commit
+                i=${#hashList[@]}
+                while (( $i>0 ));do
+                  (( i-=1 ))
+                  git cherry-pick ${hashList[$i]}||return
+                done
+                git push
 
-    #             # #添加多个commit
-    #             # i=${#hashList[@]}
-    #             # while (( $i>0 ))
-    #             # do
-    #             #   (( i-=1 ))
-    #             #   git cherry-pick ${hashList[$i]}||return
-    #             # done
-    #             # git push
-
-
-    #             echo "branchName:${branchName}  =============================="
-    #             i=${#hashList[@]}
-    #             while (( $i>0 ))
-    #             do
-    #               (( i-=1 ))
-    #               echo "git cherry-pick ${hashList[$i]}"
-    #             done
-    #     done
-        
-        # git reset --hard
+                ftEcho -s "分支:${branchName} 补丁添加成功"
+                i=${#hashList[@]}
+                while (( $i>0 ));do
+                  (( i-=1 ))
+                  echo "git cherry-pick ${hashList[$i]}"
+                done
+    done
+    git reset --hard
 }
 
 ftGitCheckoutBtanch()
@@ -561,6 +555,7 @@ ftGitTag()
 
     #实现主体
     if [[ -n "$isDeleteTag" ]];then
+        # git push origin --delete ${tagName}
         git tag -d $tagName && git push origin :refs/tags/${tagName}
         return
     fi
