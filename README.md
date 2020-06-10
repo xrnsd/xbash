@@ -66,6 +66,8 @@ bash的简单扩展
     04 开机时间图封装
     05 开机时间流程python封装
     06 封装kernel config的说明查找，cd kernel-3.18 && grep -nr "DYNAMIC_DEBUG" --include=Kconfig -C 5 
+    07 添加gitPatch[多分支],patch添加失败，不直接退出，尝试跳过当前分支
+    08 撤销最新的commit的git命令封装
 
 5.待修复
 ----------
@@ -73,3 +75,4 @@ bash的简单扩展
     02 自动push概率无法重启
     03 多分支串行编译[环境独立]/在多个终端间串行执行命令,无法生成独立的环境
     04 adb的多设备连接处理，xl过滤log时,重启设备概率出现死循环，不停输出  - waiting for device - ,怀疑adb内部问题
+    05 xconfig的sublime_text快捷方式模板，窗口打开状态在桌面显示异常

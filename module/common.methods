@@ -2493,6 +2493,7 @@ ftCdAospDirectory()
     ftOpenNemoTab -p $(pwd)/${dirPathTarget}
 }
 
+complete -W "-h --help --rely_install" ftCdAospProject
 ftCdAospProject()
 {
     local ftEffect=快速进入不同Aosp项目
@@ -2541,7 +2542,6 @@ ftCdAospProject()
                 done
                 mAospProjectNameListUpdate=($(echo ${mAospProjectNameListUpdate[@]} | sed 's/ /\n/g'|sort |uniq))
                 ftIniSetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList -l "${mAospProjectNameListUpdate[*]}"
-                complete -F _cdAospProject -A file ftCdAospProject
                 ftEcho -s "Aosp项目列表更新完成"
                 return;;
         settings ) dirPathTarget="packages/apps/Settings" ;;
