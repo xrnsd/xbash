@@ -160,24 +160,24 @@ ftGitPatchAdd2Branches()
      [ -z "$hashList" ] && ftEcho -e "${filePathCommitList} 为空" && return
 
     for branchName in ${branchList[@]} ; do
-                ftEcho -s "切换到分支: ${branchName}"
-                git checkout   "$branchName"||return
-                git pull
+        ftEcho -s "================  切换到分支: ${branchName} ====================="
+        git checkout "$branchName"||return
+        git pull
 
-                #添加多个commit
-                i=${#hashList[@]}
-                while (( $i>0 ));do
-                  (( i-=1 ))
-                  git cherry-pick ${hashList[$i]}||return
-                done
-                git push
-
-                ftEcho -s "分支:${branchName} 补丁添加成功"
-                i=${#hashList[@]}
-                while (( $i>0 ));do
-                  (( i-=1 ))
-                  echo "git cherry-pick ${hashList[$i]}"
-                done
+        #添加多个commit
+        i=${#hashList[@]}
+        local isApplyFail patchId
+        while (( $i>0 ));do
+            (( i-=1 ))
+            patchId=${hashList[$i]}
+            if ! git cherry-pick $patchId ;then
+                ftEcho -e "补丁：${patchId}，添加失败"
+                isApplyFail=true
+                git reset --hard
+                break
+            fi
+        done
+        [ -z "$isApplyFail" ] && git push
     done
     git reset --hard
 }
