@@ -132,6 +132,7 @@ if [[ -n $(which git) ]];then
     alias xgbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch -t"
     alias xgb="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch -t"
     alias xgba="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a -t"
+    alias xgrs="effect=回滚最新的commit;git reset --soft HEAD^"
 fi
 
 if [[ -n ftCdAospDirectory ]];then
