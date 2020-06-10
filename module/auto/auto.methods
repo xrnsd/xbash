@@ -1505,3 +1505,108 @@ ftFindAospBuildOuts()
                 done
     done
 }
+
+complete -W "-h --help --rely_install" ftAutoAsConfigFileAutoCreate
+ftAutoAsConfigFileAutoCreate()
+{
+    local ftEffect=在AOSP下面自动生成AndroidStudio的配置文件
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 ftAutoAsConfigFileAutoCreate --rely_install 补全依赖
+#========================================================="; return ;;
+        --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install make
+            return ;;
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftAutoAsConfigFileAutoCreate -h
+#========================================================="; return ;;
+        --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+#=========================================================
+# 环境未初始化 或 当前目录不是AOSP项目的根目录
+# 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
+#========================================================="; return ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #依赖校验
+    [[ -z $(which make) ]] && ftAutoAsConfigFileAutoCreate --rely "make" && return
+    #环境校验
+    local filePathEnvsetup=build/envsetup.sh
+    [ -z "$ANDROID_BUILD_TOP" ] && ftAutoInitEnv
+    [ -z "$ANDROID_BUILD_TOP" ] && ftAutoAsConfigFileAutoCreate --env && return
+    [ ! -f "${filePathEnvsetup}" ] && ftAutoAsConfigFileAutoCreate --env && return
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoAsConfigFileAutoCreate -h && return
+
+    #实现主体
+    local filePathAndroidIML=android.iml
+    [[ -f "$filePathAndroidIML" ]] &&ftEcho -y "存在旧的${filePathAndroidIML},是否删除(回车默认删除)" && read -n 1 sel && echo
+    if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then rm $filePathAndroidIML
+    else return ;fi
+
+    source $filePathEnvsetup
+    local filePathJarIdegen=out/host/linux-x86/framework/idegen.jar
+    if [[ ! -f "$filePathJarIdegen" ]]; then
+        ftEcho -s "idegen.jar不存在，生成中..."
+        local cpuCores=$(cat /proc/cpuinfo | grep processor | wc -l)
+        ((cpuCores/=2))
+        make idegen -j${cpuCores} > /dev/null|| ftEcho -e "idegen.jar 生成失败"
+        [[ ! -f "$filePathJarIdegen" ]] && return
+    fi
+
+    local filePathShIdegen=development/tools/idegen/idegen.sh
+    [[ ! -f "$filePathJarIdegen" ]] && ftEcho -s "未找到: ${filePathJarIdegen}" && return
+    ftEcho -s "开始使用脚本 idegen.sh 扫描AOSP"
+    $filePathShIdegen
+
+    local filePathExcludeFolderListTemp=excludeFolder.list
+    [[ ! -f "$filePathAndroidIML" ]] && ftEcho -s "未找到: ${filePathAndroidIML}，放弃更新" && return
+    ftEcho -s "开始优化 ${filePathAndroidIML}的excludeFolder配置"
+    local lineNumList=($(awk '/excludeFolder/{print NR}' android.iml))
+    [[ -z $lineNumList ]] && ftEcho -s "在 ${filePathAndroidIML} 中未找到excludeFolder的配置，放弃更新" && return
+    local lineNumCount=${#lineNumList[@]}
+    ((lineNumCount-=1))
+    local lineNum=${lineNumList[$lineNumCount]}
+    lineNum=$(echo $lineNum |sed s/[[:space:]]//g)
+    echo -e "<excludeFolder url=\"file://\$MODULE_DIR\$/art\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/bionic\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/bootable\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/build\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/cts\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/dalvik\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/developers\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/development\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/device\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/docs\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/external\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/hardware\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/kernel\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/libcore\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/libnativehelper\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/out\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/pdk\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/platform_testing\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/prebuilts\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/sdk\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/system\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/test\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/toolchain\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/tools\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/.repo\" />" > $filePathExcludeFolderListTemp
+    sed -i "$lineNum r $filePathExcludeFolderListTemp" $filePathAndroidIML
+    rm $filePathExcludeFolderListTemp
+}
