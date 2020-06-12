@@ -105,7 +105,6 @@ ftGitLogShell()
         echo "${hashVal[@]} "
         return
     fi
-    echo ddd
     branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(13,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
     git log --pretty=format:"$branchLogFormat" -$branchLogItemCount
 }
@@ -134,34 +133,30 @@ ftGitPatchAdd2Branches()
         ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
 
     #实现主体
-    if [[ -z $branchTag ]]; then
-        git branch > $filePathBranchList
-    else
-        local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-        local branchList=($(git branch|grep -i "$branchTag" | sed -e "s:*::g"))
-        for (( i = 0; i < ${#branchList[*]}; i++ )); do [[ "${branchList[$i]}" = "${branchNameNow}" ]] && unset branchList[$i] && break ;done
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local branchList=($(git branch | sed -e "s:*::g" | grep -v "${branchNameNow}"))
 
-        if [[ -n "$isAllBranchs" ]];then
-            local key="remotes/origin/"
-            local branchListServer=($(git branch -a|grep -i "$branchTag" |grep -v "$branchNameNow" |grep -v "remotes/origin/HEAD -> origin/master" |grep "$key"))
-            for (( i = 0; i < ${#branchListServer[@]}; i++ )); do
-                branchListServer[$i]=$(echo ${branchListServer[$i]} | sed -e "s:$key::g")
-            done
-            branchList=(${branchList[@]} ${branchListServer[@]} ${branchNameNow}) #合并本地和仓库分支
-            branchList=($(echo ${branchList[@]} | sed 's/ /\n/g'|sort |uniq)) #去重
-        fi
-        rm -f $filePathBranchList > /dev/null
-        for item in ${branchList[@]} ; do echo "${item}" >> $filePathBranchList ;done
-    fi
+    local key="remotes/origin/"
+    local branchListServer=($(git branch -a|grep -i "$branchNameTag" \
+                                                                     | grep -v "remotes/origin/HEAD -> origin/master" \
+                                                                     | grep "$key" \
+                                                                     | sed -e "s:*::g" \
+                                                                     | grep -v "${branchNameNow}"))
+    for (( i = 0; i < ${#branchListServer[@]}; i++ )); do branchListServer[$i]=${branchListServer[$i]##*$key} ; done
+    branchList=(${branchList[@]} ${branchListServer[@]}) #合并本地和仓库分支
+    branchList=($(echo ${branchList[@]} | sed 's/ /\n/g'|sort |uniq)) #去重
 
+    if [ -n "${branchTag}" ];then echo ${branchList[@]} |grep ${branchTag} | sed 's/ /\n/g' > $filePathBranchList
+    else echo ${branchList[@]} | sed 's/ /\n/g' > $filePathBranchList ;fi
     XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathBranchList $filePathCommitList
-    local branchList=($(cat $filePathBranchList)) hashList=($(cat $filePathCommitList)) 
+    branchList=($(cat $filePathBranchList)) hashList=($(cat $filePathCommitList)) 
     rm -f $filePathBranchList $filePathCommitList
      [ -z "$branchList" ] && ftEcho -e "${filePathBranchList} 为空" && return
      [ -z "$hashList" ] && ftEcho -e "${filePathCommitList} 为空" && return
 
     for branchName in ${branchList[@]} ; do
         ftEcho -s "================  切换到分支: ${branchName}  添加补丁====================="
+
         git checkout "$branchName"||return
         git pull
 
@@ -181,7 +176,8 @@ ftGitPatchAdd2Branches()
         done
         [ -z "$isApplyFail" ] && git push
     done
-    [ -n "${banchFailList}" ] && ftEcho -e "下面分支添加补丁没有成功：" && for branchName in ${branchList[@]} ; do
+    [ -n "${banchFailList}" ] && ftEcho -e "下面分支添加补丁没有成功：" &&
+    for branchName in ${branchList[@]} ; do
         echo ${branchName}
     done
 }
