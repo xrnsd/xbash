@@ -174,7 +174,9 @@ ftGitPatchAdd2Branches()
                 break
             fi
         done
-        [ -z "$isApplyFail" ] && git push
+        [ -z "$isApplyFail" ] && if ! git push ;then
+            ftEcho -s "分支${branchName} : 同步失败"
+        fi
     done
     [ -n "${banchFailList}" ] && ftEcho -e "下面分支添加补丁没有成功：" &&
     for branchName in ${branchList[@]} ; do
