@@ -65,8 +65,7 @@ bash的简单扩展
     03 ubuntu快捷方式快速新建
     04 开机时间图封装
     05 开机时间流程python封装
-    06 封装kernel config的说明查找，cd kernel-3.18 && grep -nr "DYNAMIC_DEBUG" --include=Kconfig -C 5 
-    07 添加gitPatch[多分支],patch添加失败，不直接退出，尝试跳过当前分支
+    06 封装kernel config的说明查找，cd kernel-3.18 && grep -nr "DYNAMIC_DEBUG" --include=Kconfig -C 5
 
 5.待修复
 ----------
