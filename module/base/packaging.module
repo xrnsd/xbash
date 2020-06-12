@@ -80,6 +80,7 @@ if [ -d "$ANDROID_SDK" ];then
     alias xqengineermode='effect=启动工程模式; adb shell am start -n com.mediatek.engineermode/.EngineerMode'
 
     alias xgetevent='effect=打印输入设备事件节点清单; adb shell  -- getevent -p'
+    alias xpapk='effect=APK文件基本信息解析;${ANDROID_SDK}/build-tools/29.0.3/aapt d badging'
 
     [[ -f $rFilePathXbashDBBase ]] && packageNameList="$(ftIniGetValue $rFilePathXbashDBBase androidDevicePackages packageNameList)"
     complete -W "${packageNameList[@]} launcher systemui" xlp
