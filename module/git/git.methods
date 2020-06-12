@@ -105,7 +105,8 @@ ftGitLogShell()
         echo "${hashVal[@]} "
         return
     fi
-    branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(13,trunc)%an%Creset %Cblue%h%Creset %s %C(yellow) %d'}
+    echo ddd
+    branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(13,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
     git log --pretty=format:"$branchLogFormat" -$branchLogItemCount
 }
 
@@ -160,7 +161,7 @@ ftGitPatchAdd2Branches()
      [ -z "$hashList" ] && ftEcho -e "${filePathCommitList} 为空" && return
 
     for branchName in ${branchList[@]} ; do
-        ftEcho -s "================  切换到分支: ${branchName} ====================="
+        ftEcho -s "================  切换到分支: ${branchName}  添加补丁====================="
         git checkout "$branchName"||return
         git pull
 
