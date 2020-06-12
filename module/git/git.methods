@@ -120,11 +120,16 @@ ftGitPatchAdd2Branches()
 #    ftGitPatchAdd2Branches 无参
 #    ftGitPatchAdd2Branches 分支TAG   #只操作名称中有TAG的分支
 #=========================================================" ;return ;;
+    --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
+#=========================================================
+# 当前目录无有效GIT仓库
+#=========================================================" ;return ;;
     * ) break;;esac;done
 
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
+    [ -z "$branchNameNow" ] && ftGitPatch --env && return
     local branchTag=$1 filePathBranchList=待打补丁的分支列表 filePathCommitList=patch的hash值列表
     local filePathAddPatchTool=$rFilePathXbashModuleGitAddPatchToolExample
     local filePathFailInfo="/home/wgx/.cache/ftGitPatchAdd2Branches.log" ; [ -f "$filePathFailInfo" ] && rm $filePathFailInfo
@@ -133,8 +138,9 @@ ftGitPatchAdd2Branches()
         ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
 
     #实现主体
-    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    git pull
     local branchList=($(git branch | sed -e "s:*::g" | grep -v "${branchNameNow}"))
+    local branchListLocal=${branchList}
 
     local key="remotes/origin/"
     local branchListServer=($(git branch -a|grep -i "$branchNameTag" \
@@ -156,6 +162,9 @@ ftGitPatchAdd2Branches()
 
     for branchName in ${branchList[@]} ; do
         ftEcho -s "================  切换到分支: ${branchName}  添加补丁====================="
+
+        [[ ! "${branchListLocal[@]}" =~ "${branchName}" ]] && ftEcho -y "此分支为远程分支，是否继续(回车默认y)" && read -n 1 sel && echo
+        [ -z "${sel}" ] && sel=y; [[ "$sel" != "y" ]] && continue
 
         git checkout "$branchName"||return
         git pull
