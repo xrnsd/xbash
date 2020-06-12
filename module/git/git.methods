@@ -180,6 +180,9 @@ ftGitPatchAdd2Branches()
     for branchName in ${branchList[@]} ; do
         echo ${branchName}
     done
+
+    ftEcho -s "开始切换初始分支：${branchNameNow}"
+    git checkout "${branchNameNow}"
 }
 
 ftGitCheckoutBtanch()
