@@ -3337,3 +3337,64 @@ ftCreateAppReadMeBySoftwareVersion()
     # 转化为windows下面文件格式
     unix2dos $filePathAppReadMe
 }
+
+ftCreateBranchReadMe()
+{
+    local ftEffect=分支新建情况说明模板
+    local isEnable=true
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    #解参验耦
+    local filePathAppReadMe filePathConfig=$rFilePathXbashDBUser
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+#=========================================================
+#
+#    ftCreateBranchReadMe -f 模板文件路径
+#========================================================="; return ;;
+    --rely) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
+#=========================================================
+#    工具依赖包 unix2dos #sudo apt-get install tofrodos
+#========================================================="; return ;;
+        # 变量参数解析部分 ==============
+        -f ) filePathAppReadMe="${arg2}"
+            filePathAppReadMe=$(ftPath $filePathAppReadMe)
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftCreateBranchReadMe --rely && return
+    [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
+    [ -z "$filePathAppReadMe" ] && errorContent="${errorContent}\\n[模板路径为空]filePathAppReadMe=$filePathAppReadMe"
+    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCreateBranchReadMe -h && return
+
+    #实现主体
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+
+    #版本说明
+    local enterLine="\n"
+    local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+    content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+    content=${content}${enterLine}
+    content=${content}${enterLine}"硬件项目平台："
+    if [[ -n "${branchNameNow}" ]]; then
+        content=${content}${enterLine}"版本CommitHash：$(ftGitLogShell -n 1 -c "%h") "
+        content=${content}${enterLine}"分支名[真实]：${branchNameNow}"
+        if [[ "${branchNameNow}" != "master" ]]; then
+            content=${content}${enterLine}"父分支名[真实]："
+        fi
+    else
+        content=${content}${enterLine}"分支名："
+    fi
+    content=${content}${enterLine}"分支变更原因说明："
+    content=${content}${enterLine}"\t01 "
+    content=${content}${enterLine}
+
+    echo -e ${content}${enterLine}${enterLine} >$filePathAppReadMe
+
+    # 转化为windows下面文件格式
+    unix2dos $filePathAppReadMe
+}
