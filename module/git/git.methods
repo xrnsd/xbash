@@ -490,7 +490,7 @@ ftGitTagGrep()
     cd $dirPathLocal
 }
 
-complete -W "-t -h --help -a -m -b" ftGitTag
+complete -W "-t -h  -a --help --app --modify --branch" ftGitTag
 ftGitTag()
 {
     local ftEffect=GIT的TAG常见操作
@@ -500,7 +500,7 @@ ftGitTag()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local tagName noteContent commitId isDeleteTag
-    local isUseModifyReadmeTemplate isUseBranchReadmeTemplate isUseAppReadMeTemplate
+    local isUseVersionReadMeTemplate isUseModifyReadmeTemplate isUseBranchReadmeTemplate isUseAppReadMeTemplate
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     local valCount=1 errorContent arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; case "${arg}" in
         # 说明参数解析部分==============
@@ -518,19 +518,19 @@ ftGitTag()
 #    可简化 [ftGitTag -a] 为 [xgat] ,其他参数不变
 #
 #    添加版本标签 [APP项目] :
-#    ftGitTag -t -a 标签名
-#    ftGitTag -t -a 标签名 对应的commitid
-#    可简化 [ftGitTag -t -a] 为 [xgatt] ,其他参数不变
+#    ftGitTag --app 标签名
+#    ftGitTag --app 标签名 对应的commitid
+#    可简化 [ftGitTag --app] 为 [xgatt] ,其他参数不变
 #
 #    添加修改说明标签 [修改的详细说明，无模板] :
-#    ftGitTag -m 标签名
-#    ftGitTag -m 标签名 对应的commitid
-#    可简化 [ftGitTag -m] 为 [xgmt] ,其他参数不变
+#    ftGitTag --modify 标签名
+#    ftGitTag --modify 标签名 对应的commitid
+#    可简化 [ftGitTag --modify] 为 [xgmt] ,其他参数不变
 #
 #    添加分支说明标签 [分支情况的详细说明，无模板] :
-#    ftGitTag -b 标签名
-#    ftGitTag -b 标签名 对应的commitid
-#    可简化 [ftGitTag -m] 为 [xgbt] ,其他参数不变
+#    ftGitTag --branch 标签名
+#    ftGitTag --branch 标签名 对应的commitid
+#    可简化 [ftGitTag --branch] 为 [xgbt] ,其他参数不变
 #
 #    删除标签:
 #    ftGitTag -d 标签名
@@ -540,17 +540,18 @@ ftGitTag()
         -a ) tagName="${arg2}"
             commitId="${arg3}"
             [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
+            isUseVersionReadMeTemplate=true
             ;;
-        -t ) isUseAppReadMeTemplate=true
+        --app ) isUseAppReadMeTemplate=true
             ;;
-        -m ) tagName="${arg2}"
+        --modify ) tagName="${arg2}"
             commitId="${arg3}"
             [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
             (( ${#commitId} > 7 )) && commitId=${commitId:0:7}
             tagName="ModifyDescription_${commitId}"
             isUseModifyReadmeTemplate=true
             ;;
-        -b ) tagName="${arg2}"
+        --branch ) tagName="${arg2}"
             commitId="${arg3}"
             [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
             (( ${#commitId} > 7 )) && commitId=${commitId:0:7}
@@ -564,7 +565,7 @@ ftGitTag()
     #依赖校验
     [[ -z $(which git) ]] && ftGitTag --rely "git" && return
     #参数校验
-    [ -z "$tagName" ] && errorContent="${errorContent}\\n[示例1]tagName=$tagName"
+    [ -z "$tagName" ]&&[ -z "${isUseVersionReadMeTemplate}" ] && errorContent="${errorContent}\\n[tagName为空]tagName=$tagName"
     [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTag -h && return
 
@@ -575,12 +576,21 @@ ftGitTag()
         return
     fi
 
-    local fileNameVersionNote="${tagName}的相应说明"
+    local fileNameVersionNote="${tagName}.readme"
     local filePathVersionNote=/tmp/${fileNameVersionNote}
     [ -f "${filePathVersionNote}" ] && rm -rf "${filePathVersionNote}"
 
+    if [ -n "${isUseVersionReadMeTemplate}" ];then
+        local key="当前版本："
+        ftGitTagCreateVersionTemplateByVersionReadme -t "${filePathVersionNote}"
+        if [[ -z ${tagName} ]]; then
+            tagName=$(cat $filePathVersionNote |grep ${key})
+            tagName=${tagName//$key/}
+            tagName=$(echo $tagName |sed s/[[:space:]]//g)
+        fi
+    fi
     [ -n "${isUseAppReadMeTemplate}" ] && ftGitTagCreateAppReadMeTemplate -v "${tagName}" -f "${filePathVersionNote}"
-    [ -n "${isUseBranchReadmeTemplate}" ] && ftGitTagCreateAppReadMeTemplate -f "${filePathVersionNote}"
+    [ -n "${isUseBranchReadmeTemplate}" ] && ftGitTagCreateBranchReadMeTemplate -f "${filePathVersionNote}"
     if touch $filePathVersionNote ; then
         XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathVersionNote
     else
@@ -603,7 +613,9 @@ ftGitTag()
     esac;done ; fi
 
     [[ -z "$noteContent" ]] && ftEcho -e 标签添加失败,缺少备注 && return
-    git tag -a "$tagName" -m "${noteContent[@]}" "$commitId"
+    if ! git tag -a "${tagName}" -m "${noteContent[@]}" "$commitId"; then
+        ftEcho -e 标签添加失败 && return
+    fi
 
     ftEcho -y "是否提交(回车默认y)" && read -n 1 sel && echo ; [ -z "${sel}" ] && sel=y
     [[ "${sel}" != "y" ]] && return
@@ -1121,8 +1133,8 @@ ftGitTagCreateBranchReadMeTemplate()
     unix2dos $filePathAppReadMe
 }
 
-complete -W "-h --help" ftGitTagCreateVersionReadMeTemplate
-ftGitTagCreateVersionReadMeTemplate()
+complete -W "-h --help" ftGitTagCreateVersionTemplateByVersionReadme
+ftGitTagCreateVersionTemplateByVersionReadme()
 {
     local ftEffect=创建基于版本说明的软件版本相关git标签说明模板
     local isEnable=true
@@ -1139,8 +1151,8 @@ ftGitTagCreateVersionReadMeTemplate()
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
-#    ftGitTagCreateVersionReadMeTemplate -t git标签用的模板存放路径
-#    ftGitTagCreateVersionReadMeTemplate -f 版本说明路径 -t git标签用的模板存放路径
+#    ftGitTagCreateVersionTemplateByVersionReadme -t git标签用的模板存放路径
+#    ftGitTagCreateVersionTemplateByVersionReadme -f 版本说明路径 -t git标签用的模板存放路径
 #========================================================="; return ;;
         --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
@@ -1158,16 +1170,17 @@ ftGitTagCreateVersionReadMeTemplate()
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "${filePathReadmeTarget}" ] && errorContent="${errorContent}\\n[模板存放路径为空]"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateVersionReadMeTemplate -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateVersionTemplateByVersionReadme -h && return
 
     #实现主体
     if [[ -z $filePathReadme ]] || [[ ! -f $filePathReadme ]]; then
         [[ ! -d out ]] && [ -n "$ANDROID_BUILD_TOP" ] && cd "${ANDROID_BUILD_TOP}"
-        [[ ! -d out ]] && ftEcho -s "未找到有效版本说明" && ftGitTagCreateVersionReadMeTemplate -h && return
+        [[ ! -d out ]] && ftEcho -s "未找到有效版本说明" && ftGitTagCreateVersionTemplateByVersionReadme -h && return
         filePathReadme=$(find out/packet -name 版本说明.txt)
     fi
 
     cp "${filePathReadme}" "${filePathReadmeTarget}"
+    filePathReadme=$filePathReadmeTarget
 
     #删除 标题头
     sed -i '1d' $filePathReadme
