@@ -604,6 +604,10 @@ ftGitTag()
 
     [[ -z "$noteContent" ]] && ftEcho -e 标签添加失败,缺少备注 && return
     git tag -a "$tagName" -m "${noteContent[@]}" "$commitId"
+
+    ftEcho -y "是否提交(回车默认y)" && read -n 1 sel && echo ; [ -z "${sel}" ] && sel=y
+    [[ "${sel}" != "y" ]] && return
+    git push --tag
 }
 
 complete -W "-h --help --rely_install" ftGitPushForce_SXTD
