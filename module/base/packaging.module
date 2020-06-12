@@ -64,7 +64,9 @@ if [ -d "$ANDROID_SDK" ];then
     alias xpml='effect=干掉设备对应包名的进程;ftMtkLog -p /home/enjoy/log'
 
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
-    alias xtp="effect=打印任务栈的栈顶信息;ftAdbContect && [ -n ${autoTestDeviceId} ] && adb -s ${autoTestDeviceId} shell dumpsys activity top"
+    alias xtp="effect=打印任务栈的栈顶信息;ftAdbContect ;\
+    [ -n ${autoTestDeviceId} ] && adb -s ${autoTestDeviceId} shell dumpsys activity top;\
+    [ -z ${autoTestDeviceId} ] && adb shell dumpsys activity top"
     alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
     alias xdv='effect=手机录屏;adb shell screenrecord /sdcard/sv.mp4&&adb pull /sdcard/sv.mp4 ~/download/'
 
