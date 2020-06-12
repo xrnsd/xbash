@@ -2174,28 +2174,38 @@ ftDu()
     local ftEffect=查找大文件
     local isEnable=true
 
-    # 说明参数解析部分
-    while true; do case "$1" in
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+        #解参验耦
+    local dirPathTarget fileCount dirPathLocal=$(pwd)
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
-#    ftDu 文件数量
-#    ftDu 目录 文件数量
+#    ftDu -n 文件数量
+#    ftDu -d 目录 -n 文件数量
 #========================================================="; return ;;
-    * ) break;;esac;done
 
-    #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
-    #解参验耦
-    local valCount=2 errorContent fileCount=${1:-'10'} dirPathLocal=$(pwd) dirPathTarget=${dirPathLocal}
-    (( $#>1 )) && dirPathTarget=$1 && fileCount=${2:-'$fileCount'}
+        # 变量参数解析部分 ==============
+        -d ) dirPathTarget="${arg2}"
+            ;;
+        -n ) fileCount="${arg2}"
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+   #参数校验
+    dirPathTarget=${dirPathTarget:-"${dirPathLocal}"}
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [[ ! -d "$dirPathTarget" ]] && errorContent="${errorContent}\\n目录[${dirPathLocal}]不存在"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftDu -h && return
 
     #实现主体
     cd $dirPathTarget
+    fileCount=${fileCount:-'10'}
     echo $userPassword | sudo  -p '' -S  du -hsx * | sort -rh | head -${fileCount}
     cd $dirPathLocal
 }
