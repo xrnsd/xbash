@@ -511,22 +511,22 @@ ftGitTag()
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #
-#    添加版本标签:
+#    添加版本标签 :
 #    ftGitTag -a 标签名
 #    ftGitTag -a 标签名 对应的commitid
 #    可简化 [ftGitTag -a] 为 [xgat] ,其他参数不变
 #
-#    添加版本标签,并使用模板:
+#    添加版本标签 [APP项目] :
 #    ftGitTag -t -a 标签名
 #    ftGitTag -t -a 标签名 对应的commitid
-#    可简化 [ftGitTag -t -a] 为 [xgat] ,其他参数不变
+#    可简化 [ftGitTag -t -a] 为 [xgatt] ,其他参数不变
 #
-#    添加修改说明标签
+#    添加修改说明标签 [修改的详细说明，无模板] :
 #    ftGitTag -m 标签名
 #    ftGitTag -m 标签名 对应的commitid
 #    可简化 [ftGitTag -m] 为 [xgmt] ,其他参数不变
 #
-#    添加分支说明标签,存在独立的分支信息描述文件时可用
+#    添加分支说明标签 [分支情况的详细说明，无模板] :
 #    ftGitTag -b 标签名
 #    ftGitTag -b 标签名 对应的commitid
 #    可简化 [ftGitTag -m] 为 [xgbt] ,其他参数不变
@@ -577,7 +577,7 @@ ftGitTag()
     local fileNameVersionNote="${tagName}的相应说明"
     local filePathVersionNote=/tmp/${fileNameVersionNote}
     [ -f "${filePathVersionNote}" ] && rm -rf "${filePathVersionNote}"
-    [ -n "${isUseTemplate}" ] && ftCreateAppReadMeBySoftwareVersion -v "${tagName}" -f "${filePathVersionNote}"
+    [ -n "${isUseTemplate}" ] && ftGitCreateAppReadMeBySoftwareVersion -v "${tagName}" -f "${filePathVersionNote}"
     if touch $filePathVersionNote ; then
         XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathVersionNote
     else
@@ -984,4 +984,132 @@ ftGitCreateAppVersionReadMeBySoftwareVersion()
         XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathVersionNote
     fi
     rm ${filePathChangeListTemplate}.temp
+}
+
+ftGitCreateAppReadMeBySoftwareVersion()
+{
+    local ftEffect=创建APP的版本说明模板
+    local isEnable=true
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    #解参验耦
+    local filePathConfig=$rFilePathXbashDBUser
+    local filePathAppReadMe versionName
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+#=========================================================
+#
+#    ftGitCreateAppReadMeBySoftwareVersion -f 模板文件路径 -v 版本号
+#========================================================="; return ;;
+    --rely) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
+#=========================================================
+#    工具依赖包 unix2dos #sudo apt-get install tofrodos
+#========================================================="; return ;;
+        # 变量参数解析部分 ==============
+        -f ) filePathAppReadMe="${arg2}"
+            filePathAppReadMe=$(ftPath $filePathAppReadMe)
+            ;;
+        -v ) versionName="${arg2}"
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitCreateAppReadMeBySoftwareVersion --rely && return
+    [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
+    [ -z "$filePathAppReadMe" ] && errorContent="${errorContent}\\n[模板路径为空]filePathAppReadMe=$filePathAppReadMe"
+    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCreateAppReadMeBySoftwareVersion -h && return
+
+    #实现主体
+    #使用git仓库相关记录
+    local gitCommitList=$(ftGitLogShell -nn 10)
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+
+    #版本说明
+    local enterLine="\n"
+    local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+    content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+    content=${content}${enterLine}
+    content=${content}${enterLine}"硬件项目平台："
+    content=${content}${enterLine}"当前版本：$versionName"
+    content=${content}${enterLine}"基础版本："
+    content=${content}${enterLine}"客户名："
+    content=${content}${enterLine}"说明："
+    content=${content}${enterLine}"\t01 "
+    content=${content}${enterLine}
+    content=${content}${enterLine}"修改记录："
+    content=${content}${enterLine}"\t01 "
+    content=${content}${enterLine}
+    #git log 列表
+    echo -e "﻿$gitCommitList">$filePathAppReadMe
+    seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathAppReadMe >${filePathAppReadMe}.temp
+    # 合并头部和git log 列表
+    echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathAppReadMe}.temp >$filePathAppReadMe
+    rm ${filePathAppReadMe}.temp
+
+    # 转化为windows下面文件格式
+    unix2dos $filePathAppReadMe
+}
+
+ftGitCreateBranchReadMe()
+{
+    local ftEffect=分支新建情况说明模板
+    local isEnable=true
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    #解参验耦
+    local filePathAppReadMe filePathConfig=$rFilePathXbashDBUser
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+#=========================================================
+#
+#    ftGitCreateBranchReadMe -f 模板文件路径
+#========================================================="; return ;;
+    --rely) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
+#=========================================================
+#    工具依赖包 unix2dos #sudo apt-get install tofrodos
+#========================================================="; return ;;
+        # 变量参数解析部分 ==============
+        -f ) filePathAppReadMe="${arg2}"
+            filePathAppReadMe=$(ftPath $filePathAppReadMe)
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitCreateBranchReadMe --rely && return
+    [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
+    [ -z "$filePathAppReadMe" ] && errorContent="${errorContent}\\n[模板路径为空]filePathAppReadMe=$filePathAppReadMe"
+    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCreateBranchReadMe -h && return
+
+    #实现主体
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+
+    #版本说明
+    local enterLine="\n"
+    local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+    content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+    content=${content}${enterLine}
+    content=${content}${enterLine}"硬件项目平台："
+    if [[ -n "${branchNameNow}" ]]; then
+        content=${content}${enterLine}"版本CommitHash：$(ftGitLogShell -n 1 -c "%h") "
+        content=${content}${enterLine}"分支名[真实]：${branchNameNow}"
+        if [[ "${branchNameNow}" != "master" ]]; then
+            content=${content}${enterLine}"父分支名[真实]："
+        fi
+    else
+        content=${content}${enterLine}"分支名："
+    fi
+    content=${content}${enterLine}"分支变更原因说明："
+    content=${content}${enterLine}"\t01 "
+    content=${content}${enterLine}
+
+    echo -e ${content}${enterLine}${enterLine} >$filePathAppReadMe
+
+    # 转化为windows下面文件格式
+    unix2dos $filePathAppReadMe
 }
