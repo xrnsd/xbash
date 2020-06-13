@@ -929,6 +929,7 @@ ftGitSxtdProjectBranchV2()
     fi
 }
 
+complete -W "-h --help -a -v" ftGitCreateAppVersionReadMeBySoftwareVersion
 ftGitCreateAppVersionReadMeBySoftwareVersion()
 {
     local ftEffect=创建APP软件版本说明模板并添加为Git的TAG
@@ -1008,6 +1009,7 @@ ftGitCreateAppVersionReadMeBySoftwareVersion()
     rm ${filePathChangeListTemplate}.temp
 }
 
+complete -W "-h --help -f -v" ftGitTagCreateAppReadMeTemplate
 ftGitTagCreateAppReadMeTemplate()
 {
     local ftEffect=GIT的标签模板[APP版本说明]
@@ -1069,6 +1071,7 @@ ftGitTagCreateAppReadMeTemplate()
     unix2dos $filePathAppReadMe
 }
 
+complete -W "-h --help -f  " ftGitTagCreateBranchReadMeTemplate
 ftGitTagCreateBranchReadMeTemplate()
 {
     local ftEffect=GIT的标签模板[分支创建说明]
@@ -1130,7 +1133,7 @@ ftGitTagCreateBranchReadMeTemplate()
     unix2dos $filePathAppReadMe
 }
 
-complete -W "-h --help" ftGitTagCreateVersionTemplateByVersionReadme
+complete -W "-h --help -f -t " ftGitTagCreateVersionTemplateByVersionReadme
 ftGitTagCreateVersionTemplateByVersionReadme()
 {
     local ftEffect=GIT的标签模板[版本说明]
