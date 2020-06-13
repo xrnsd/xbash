@@ -3270,3 +3270,63 @@ ftMD5()
                     return;;
     * ) break;;esac;done
 }
+
+complete -W "-h --help -f -n -i " ftCreateMoudleDesktop
+ftCreateMoudleDesktop()
+{
+    local ftEffect=创建可执行快捷方式
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local exeModuleName filePathExeModule filePathIcon
+    local valCount=6 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftCreateMoudleDesktop -n 快捷方式名 -f 执行文件路径 -i 图标路径
+#========================================================="; return ;;
+        # 变量参数解析部分 ==============
+        -n ) exeModuleName="${arg2}"
+            ;;
+        -f ) filePathExeModule="${arg2}"
+            ;;
+        -i ) filePathIcon="${arg2}"
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "${exeModuleName}" ] && errorContent="${errorContent}\\n[示例1]example1=$example1"
+    [ ! -f "${filePathExeModule}" ] && errorContent="${errorContent}\\n[示例1]example1=$example1"
+    [ ! -f "${filePathIcon}" ] && errorContent="${errorContent}\\n[示例1]example1=$example1"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCreateMoudleDesktop -h && return
+
+    #实现主体
+    local dirPathLocal=$(pwd)
+    cd /usr/bin
+    echo $userPassword | sudo -p '' -S chmod a+x $filePathExeModule
+    echo $userPassword | sudo -p '' -S ln -sf $filePathExeModule $exeModuleName
+    cd $dirPathLocal
+
+    local filePathReadMeTemplate="${exeModuleName}.desktop"
+    local enterLine="\n"
+    local content="[Desktop Entry] ${enterLine}"
+    content=${content}${enterLine}"Encoding=UTF-8"
+    content=${content}${enterLine}"Name=${exeModuleName}"
+    content=${content}${enterLine}"Comment=抓鸡小能手"
+    content=${content}${enterLine}"Exec=${exeModuleName}"
+    content=${content}${enterLine}"Icon=${filePathIcon}"
+    content=${content}${enterLine}"Terminal=false"
+    content=${content}${enterLine}"StartupNotify=true"
+    content=${content}${enterLine}"Type=Application"
+    content=${content}${enterLine}"Categories=Application;"
+
+    echo -e ${content} >$filePathReadMeTemplate
+    echo $userPassword | sudo -p '' -S chmod a+x $filePathReadMeTemplate
+}
