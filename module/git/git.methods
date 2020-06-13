@@ -429,7 +429,7 @@ ftGitPatch()
 complete -W "-h --help --rely_install -f" ftGitTagGrep
 ftGitTagGrep()
 {
-    local ftEffect=git的TAG标签内容过滤
+    local ftEffect=GIT的标签内容过滤
     local isEnable=true
 
     #可用性校验
@@ -493,7 +493,7 @@ ftGitTagGrep()
 complete -W "-t -h  -a --help --app --modify --branch" ftGitTag
 ftGitTag()
 {
-    local ftEffect=GIT的TAG常见操作
+    local ftEffect=GIT的标签常见操作
     local isEnable=true
 
     #可用性校验
@@ -1010,7 +1010,7 @@ ftGitCreateAppVersionReadMeBySoftwareVersion()
 
 ftGitTagCreateAppReadMeTemplate()
 {
-    local ftEffect=创建APP的版本相关的git标签说明模板
+    local ftEffect=GIT的标签模板[APP版本说明]
     local isEnable=true
 
     #可用性校验
@@ -1071,7 +1071,7 @@ ftGitTagCreateAppReadMeTemplate()
 
 ftGitTagCreateBranchReadMeTemplate()
 {
-    local ftEffect=创建分支新建相关的git标签说明模板
+    local ftEffect=GIT的标签模板[分支创建说明]
     local isEnable=true
 
     #可用性校验
@@ -1133,7 +1133,7 @@ ftGitTagCreateBranchReadMeTemplate()
 complete -W "-h --help" ftGitTagCreateVersionTemplateByVersionReadme
 ftGitTagCreateVersionTemplateByVersionReadme()
 {
-    local ftEffect=创建基于版本说明的软件版本相关git标签说明模板
+    local ftEffect=GIT的标签模板[版本说明]
     local isEnable=true
 
     #可用性校验
