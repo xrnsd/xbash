@@ -542,7 +542,10 @@ ftGitTag()
             [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
             isUseVersionReadMeTemplate=true
             ;;
-        --app ) isUseAppReadMeTemplate=true
+        --app ) tagName="${arg2}"
+            commitId="${arg3}"
+            [[ -z "$commitId" ]] && commitId=$(ftGitLogShell -t "%h" -n 1)
+            isUseAppReadMeTemplate=true
             ;;
         --modify ) tagName="${arg2}"
             commitId="${arg3}"
@@ -1042,8 +1045,6 @@ ftGitTagCreateAppReadMeTemplate()
     [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateAppReadMeTemplate -h && return
 
     #实现主体
-    #使用git仓库相关记录
-    local gitCommitList=$(ftGitLogShell -nn 10)
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
     #版本说明
@@ -1061,12 +1062,8 @@ ftGitTagCreateAppReadMeTemplate()
     content=${content}${enterLine}"修改记录："
     content=${content}${enterLine}"\t01 "
     content=${content}${enterLine}
-    #git log 列表
-    echo -e "﻿$gitCommitList">$filePathAppReadMe
-    seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathAppReadMe >${filePathAppReadMe}.temp
-    # 合并头部和git log 列表
-    echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathAppReadMe}.temp >$filePathAppReadMe
-    rm ${filePathAppReadMe}.temp
+
+    echo -e ${content}${enterLine}${enterLine} >$filePathAppReadMe
 
     # 转化为windows下面文件格式
     unix2dos $filePathAppReadMe
