@@ -1450,7 +1450,7 @@ ftAutoLnOut()
 complete -W "-h --help" ftFindAospBuildOuts
 ftFindAospBuildOuts()
 {
-    local ftEffect=快速查找所有AOSP工程项目的out备份outs
+    local ftEffect=快速查找所有AOSP工程项目下的所有out
     local isEnable=true
 
     #可用性校验
@@ -1492,11 +1492,14 @@ ftFindAospBuildOuts()
     mAospProjectStoragePathListNew=($(echo ${mAospProjectStoragePathListNew[@]} | sed 's/ /\n/g'|sort |uniq))
 
     #开始查找
-    local dirPathAospProjectOuts dirPathAospProjectOutList
+    local dirPathAospProjectOut dirPathAospProjectOuts dirPathAospProjectOutList
     for dirPath in ${mAospProjectStoragePathListNew[@]}; do
+                dirPathAospProjectOutList=
+                dirPathAospProjectOut="${dirPath}/alps/out"
+                [[ -d "${dirPathAospProjectOut}" ]] && dirPathAospProjectOutList="${dirPathAospProjectOut}"
                 dirPathAospProjectOuts="${dirPath}/outs"
                 [ ! -d "${dirPathAospProjectOuts}" ] && continue
-                dirPathAospProjectOutList=($(ls $dirPathAospProjectOuts))
+                dirPathAospProjectOutList=($dirPathAospProjectOutList $(ls $dirPathAospProjectOuts))
                 [[ -z ${dirPathAospProjectOutList} ]] && continue
 
                 ftEcho -s "${dirPath}"
