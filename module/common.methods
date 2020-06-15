@@ -1239,25 +1239,43 @@ ftMtkFlashTool()
     local ftEffect=mtk下载工具
     local isEnable=true
 
-    while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
-#=========================================================
-#    ftMtkFlashTool 可简化为 xd
-#
-#    ftMtkFlashTool 无参
-#========================================================="; return ;;
-    * ) break;;esac;done
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+        #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
+    local isEnableWindowMode
     local flashToolPath="$(ftIniGetValue $rFilePathXbashDBUser MtkSpFlashToolVersion toolsPath)"
-    local errorContent
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    #使用终端模式
+#    ftMtkFlashTool 无参
+#    可简化 [ftMtkFlashTool ] 为 [xd]
+#
+#    #使用窗口模式
+#    ftMtkFlashTool -w
+#    可简化 [ftMtkFlashTool -w] 为 [xdw]
+#========================================================="; return ;;
+        # 变量参数解析部分 ==============
+        -w ) isEnableWindowMode=true
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -f "$flashToolPath" ] && errorContent="${errorContent}\\n[mtk下载工具不存在]flashToolPath=$flashToolPath"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的出现错误:${errorContent}\\n" && return
 
     #实现主体
     echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+    if [[ -z $ANDROID_BUILD_TOP ]] && [[ -n $ANDROID_BUILD_TOP ]]; then
+        local dirPathLocal=$(pwd)
+        cd $ANDROID_BUILD_TOP
+        local filePathAndroidScatter="${ANDROID_PRODUCT_OUT}/"$(ls $ANDROID_PRODUCT_OUT |grep "Android_scatter")
+        sudo $flashToolPath -s "${filePathAndroidScatter}" -c download
+        cd "${dirPathLocal}"
+        return;
+    fi
     sudo $flashToolPath
 }
 
