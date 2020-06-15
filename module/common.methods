@@ -3274,7 +3274,7 @@ ftMD5()
 complete -W "-h --help -f -n -i " ftCreateMoudleDesktop
 ftCreateMoudleDesktop()
 {
-    local ftEffect=创建可执行快捷方式
+    local ftEffect=创建快捷方式
     local isEnable=true
 
     #可用性校验
