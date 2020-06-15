@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.2.2
+versionNum=v0.1.2.3
 
 #自动维护out用,有这些也视为空out
 [backupOrRestoreOutsInfo]
@@ -23,19 +23,9 @@ AospProjectNameList=
 AospProjectStoragePathList=
 AospProjectNameIgnoreList=
 
-#项目对应平台名
-[xbashAOSPConfigBranch2PlatformName]
-xxx=MTK6580
-yyy=SPRD7731C
-
 #项目软件包的下载工具包[客户用]
 [xbashAOSPConfigMTKSoftwareDownloadToool]
 filePath=
-
-#项目软件包packages文件名列表
-[xbashAOSPConfigSoftwarePackageFileLIst]
-#TARGET_PRODUCT=xx\
-#yyy
 
 #mtk下载工具配置
 [MtkSpFlashToolVersion]

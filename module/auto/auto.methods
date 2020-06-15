@@ -796,7 +796,7 @@ ftAutoPacket()
                     local dirNamePackage="packages"
                     local filePathSystemImage=${dirPathOut}/system.img
                     local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
-                    local fileList=($(ftIniGetValue $filePathDataUser $tagName ${TARGET_PRODUCT}))
+                   # local fileList=($(ftIniGetValue $filePathDataUser $tagName ${TARGET_PRODUCT}))
                     if [[ -z "$fileList" ]];then
                         ftEcho -e "未找到 [${TARGET_PRODUCT}] 对应的独立配置,将默认复制全部文件"
                         while read item ;do
