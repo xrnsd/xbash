@@ -586,6 +586,7 @@ ftGitTag()
     if [ -n "${isUseVersionReadMeTemplate}" ];then
         local key="当前版本："
         ftGitTagCreateVersionTemplateByVersionReadme -t "${filePathVersionNote}"
+        [[ ! -f $filePathVersionNote ]]||[[ -z $(cat $filePathVersionNote) ]] && ftEcho -e "缺少有效的版本说明"
         if [[ -z ${tagName} ]]; then
             tagName=$(cat $filePathVersionNote |grep ${key})
             tagName=${tagName//$key/}
