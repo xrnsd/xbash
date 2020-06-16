@@ -1268,7 +1268,7 @@ ftMtkFlashTool()
 
     #实现主体
     echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
-    if [[ -z $ANDROID_BUILD_TOP ]] && [[ -n $ANDROID_BUILD_TOP ]]; then
+    if [[ -z $isEnableWindowMode ]] && [[ -n $ANDROID_BUILD_TOP ]]; then
         local dirPathLocal=$(pwd)
         cd $ANDROID_BUILD_TOP
         local filePathAndroidScatter="${ANDROID_PRODUCT_OUT}/"$(ls $ANDROID_PRODUCT_OUT |grep "Android_scatter")
