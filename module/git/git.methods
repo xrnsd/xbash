@@ -995,6 +995,10 @@ ftGitCreateAppVersionReadMeBySoftwareVersion()
     #git log 列表
     [[ -n "${gitCommitList}" ]] && echo -e "﻿$gitCommitList">$filePathChangeListTemplate
     seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+    local lineNumIndex=($(awk '/\(tag:/{print NR}' ${filePathChangeListTemplate}.temp))
+    local item="\    \n\    =========================================================================================================\n"
+    [[ -n $lineNumIndex ]] && sed  -i "${lineNumIndex}i ${item}" ${filePathChangeListTemplate}.temp
+
     # 合并头部和git log 列表
      if [[ -n "${branchNameNow}" ]]; then
         echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
