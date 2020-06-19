@@ -623,7 +623,7 @@ ftGitTag()
 
     ftEcho -y "是否提交(回车默认y)" && read -n 1 sel && echo ; [ -z "${sel}" ] && sel=y
     [[ "${sel}" != "y" ]] && return
-    git push --tag
+    git push --tag && git push 
 }
 
 complete -W "-h --help --rely_install" ftGitPushForce_SXTD
