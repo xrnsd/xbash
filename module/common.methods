@@ -2602,6 +2602,8 @@ ftCdAospProject()
         [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
         (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
         mAospProjectName=${mAospProjectNameList[$tIndex]} && echo
+    else
+        mAospProjectName=$mAospProjectNameList
     fi
 
     local mAospProjectStoragePathEffectiveList dirPathAll dirPathBase
