@@ -1168,7 +1168,9 @@ ftAutoCreateReadMeBySoftwareVersion()
 
             #版本说明
             local enterLine="\n"
-            local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            local content="本文件为内部使用，请勿释放给客户"
+            content=${content}${enterLine}"$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}
             content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}"项目负责人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo projectManager)"
             content=${content}${enterLine}

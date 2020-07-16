@@ -56,6 +56,7 @@ if [ -d "$ANDROID_SDK" ];then
     alias xssd="effect=关闭设备;adb shell reboot"
     alias xsd="effect=关闭设备;adb shell reboot -p"
     alias xl='effect=过滤logcat;ftLogcatApplicationByTag'
+    alias xlt='effect=过滤logcat,没有时间信息;ftLogcatApplicationByTag -t '
     alias xle='effect=过滤错误的logcat;ftLogcatApplicationByTag -e'
     alias xlce='effect=过滤错误的logcat;adb logcat -c;ftLogcatApplicationByTag -e'
     alias xlp="effect=根据包名过滤logcat;ftLogcatApplicationByTag -p"
@@ -133,10 +134,10 @@ if [[ -n $(which git) ]];then
     alias xgdt='effect=删除git的TAG;ftGitTag -d '
     alias xgft='effect=git的TAG标签内容过滤;ftGitTagGrep -f '
     alias xglh='effect=显示xx条commit的hash值;ftGitLogShell -c "%h" -n '
-    alias xgbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a -t"
-    alias xgbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch -t"
-    alias xgb="effect=过滤git仓库已经checkout分支;ftGitCheckoutBtanch -t"
-    alias xgba="effect=过滤git仓库所有分支;ftGitCheckoutBtanch -a -t"
+    alias xgbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBranch -a -t"
+    alias xgbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBranch -t"
+    alias xgb="effect=过滤git仓库已经checkout分支;ftGitCheckoutBranch -t"
+    alias xgba="effect=过滤git仓库所有分支;ftGitCheckoutBranch -a -t"
     alias xgrs="effect=回滚最新的commit;git reset --soft HEAD^"
 fi
 

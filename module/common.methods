@@ -317,7 +317,7 @@ ftTimeConsuming()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
-    local contentName=本技能 arg arg2
+    local contentName=本次骚操作 arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         -r ) contentName="${arg2:-"$contentName"}"
@@ -1175,7 +1175,7 @@ ftLogcatApplicationByTag()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local tagContent=$1 vContent=$2 flagError packageName isUserPackageName
+    local tagContent=$1 vContent=$2 flagError packageName isUserPackageName isDisTime
     local arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -1210,6 +1210,10 @@ ftLogcatApplicationByTag()
                 vContent=$3
             fi
           ;;
+        -t )   isDisTime=true
+                tagContent="${arg2}"
+                vContent="${arg3}"
+          ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #实现主体
     #adb连接状态检测
@@ -1229,6 +1233,7 @@ ftLogcatApplicationByTag()
     elif [ -z "$tagContent" ];then
         adb -s $deviceId logcat "${flagError}"
     else
+        [[ -n "$isDisTime" ]] && adb -s $deviceId logcat -v tag|grep -i "${tagContent}" && return
         [[ -z "$vContent" ]] && adb -s $deviceId logcat "${flagError}" |grep -i "${tagContent}" && return
         adb -s $deviceId logcat "${flagError}" |grep -i "${tagContent}" |grep -v "${vContent}"
     fi
@@ -1272,6 +1277,7 @@ ftMtkFlashTool()
         local dirPathLocal=$(pwd)
         cd $ANDROID_BUILD_TOP
         local filePathAndroidScatter="${ANDROID_PRODUCT_OUT}/"$(ls $ANDROID_PRODUCT_OUT |grep "Android_scatter")
+        [[ ! -f $filePathAndroidScatter ]] && ftEcho -e "下载配置文件不存在" && cd "${dirPathLocal}" && return
         sudo $flashToolPath -s "${filePathAndroidScatter}" -c download
         cd "${dirPathLocal}"
         return;
@@ -2556,7 +2562,7 @@ ftCdAospProject()
 #    在文件管理器中打开
 #    ftCdAospProject -fm 项目名
 #
-#    可简化 [ftCdAospProject] 为 [xcd] ,其他参数不变
+#    可简化 [ ftCdAospProject 或 ftCdAospProject -n ] 为 [xcd] ,其他参数不变
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -fm ) isUserFileManager=true
@@ -3137,7 +3143,7 @@ ftAdbContect()
         [[ ${result} == *$resultFlag* ]] && ftEcho -en "提权失败:" && echo ${result} && return
         result=$(adb -s $deviceId remount) ; resultFlag="failed"
         [[ ${result} == *$resultFlag* ]] && ftEcho -en "提权失败:" && echo ${result} && return
-
+        adb -s $deviceId disable-verity
         ftEcho -s "ADB提权成功"
     fi
 }

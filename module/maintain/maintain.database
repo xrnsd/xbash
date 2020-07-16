@@ -37,7 +37,9 @@ dirPathsExcludeListSys= \
     /usr/share/icons/Paper/.icon-theme.cache \
     /usr/share/icons/gnome/icon-theme.cache \
     /usr/share/virtualbox/VBoxGuestAdditions.iso \
-    /usr/share/pyzy/db/open-phrase.db
+    /usr/share/pyzy/db/open-phrase.db \
+    /root/tmp
+
 dirPathsExcludeListHomeBase= \
     AndroidStudioProjects \
     cmds \
@@ -161,6 +163,7 @@ dirPathsExcludeAllListSys= \
     /usr/share/man \
     /opt/android_studio_preview \
     /opt/kingsoft \
-    /root/.gradle
+    /root/.gradle \
+    /root/tmp
     
 
