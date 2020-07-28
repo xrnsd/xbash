@@ -12,7 +12,11 @@ packageNameList=com.android.systemui \
                 com.android.mms
 
 [androidSDK2Verison]
+#Q
+29=Android10
+#P
 28=Android9.0
+#O
 27=Android8.1
 26=Android8.0
 25=Android7.1
