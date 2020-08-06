@@ -53,7 +53,7 @@ ftAutoInitEnv()
     local valCount=2 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoInitEnv -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoInitEnv -h && return
 
     #实现主体
     local dirPathLocal=$PWD
@@ -199,7 +199,7 @@ ftBranchNameResolution()
     local valCount=0 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBranchNameResolution -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBranchNameResolution -h && return
 
     #实现主体
     local dirPathLocal=$PWD
@@ -301,7 +301,7 @@ ftBuildPropResolution()
     local valCount=0 errorContent
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBuildPropResolution -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBuildPropResolution -h && return
 
     #实现主体
     local dirPathLocal=$PWD
@@ -394,7 +394,7 @@ ftAutoBuildMultiBranchEnvSeparation()
     [ -z "$editType" ] && errorContent="${errorContent}\\n[请指定操作]"
     [[ -n "$requestEnvState" ]] && errorContent="${errorContent}\\n[环境初始化异常,文件夹无法重置]requestEnvState=$requestEnvState"
     [ ! -f "$filePathserialBuildTool" ] && errorContent="${errorContent}\\n[串行编译工具不存在]filePathserialBuildTool=$filePathserialBuildTool"
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoBuildMultiBranchEnvSeparation -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoBuildMultiBranchEnvSeparation -h && return
 
     #实现主体
     if [[ "$editType" = "-b" ]]; then
@@ -464,7 +464,7 @@ ftAutoBackupOrRestoreOuts()
         ftAutoBackupOrRestoreOuts --env && return
     fi
     [ ! -d "$dirPathCode" ]||[  -z "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoBackupOrRestoreOuts -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoBackupOrRestoreOuts -h && return
 
     #实现主体
     cd $dirPathCode
@@ -603,7 +603,7 @@ ftAutoUpload()
             [ -z "$dirPathServerStore" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]目标路径获取失败"
         fi
     fi
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoUpload -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoUpload -h && return
 
     #实现主体
 
@@ -726,7 +726,7 @@ ftAutoPacket()
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
     [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase"
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoPacket -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoPacket -h && return
 
     #实现主体
     if [[ -d "$dirPathVersionSoftware" ]]; then
@@ -1069,7 +1069,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
     [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCreateReadMeBySoftwareVersion -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCreateReadMeBySoftwareVersion -h && return
 
     #实现主体
     local dirPathLocal=${PWD} fileNameReadMeTemplate=客户说明.txt fileNameChangeListTemplate=版本说明.txt
@@ -1293,7 +1293,7 @@ ftAutoTest()
     local errorContent
     # (($rebootTimeLong!=$rebootTimeLongDef))&&( ! echo -n $rebootTimeLong | grep -q -e "^[0-9][0-9]*$") && errorContent="${errorContent}\\n[时长必须为数字[单位S]]rebootTimeLong=$rebootTimeLong"
     [[ -n $packageBlackNameList ]] && [[ -n $packageNameList ]] && errorContent="${errorContent}\\n 包限制配置错误1"
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoTest -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoTest -h && return
 
     #实现主体
     local filePathDeviceInfo=/system/build.prop
@@ -1427,7 +1427,7 @@ ftAutoLnOut()
     local dirPathLocal=$(pwd)
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathDev" ] && errorContent="${errorContent}\\n[无法链接到目标路径]dirPathDev=$dirPathDev"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoLnOut -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoLnOut -h && return
 
     #实现主体
     cd "${ANDROID_BUILD_TOP}"
@@ -1479,7 +1479,7 @@ ftFindAospBuildOuts()
 
     #参数校验
     [ ! -f "${rFilePathXbashDBUser}" ] && errorContent="${errorContent}\\n[用户数据库哪去了，你帮忙瞅瞅]rFilePathXbashDBUser=$rFilePathXbashDBUser"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftFindAospBuildOuts -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftFindAospBuildOuts -h && return
 
     #实现主体
     ftCdAospProject -u > /dev/null
@@ -1561,7 +1561,7 @@ ftAutoAsConfigFileAutoCreate()
     [ ! -f "${filePathEnvsetup}" ] && ftAutoAsConfigFileAutoCreate --env && return
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoAsConfigFileAutoCreate -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoAsConfigFileAutoCreate -h && return
 
     #实现主体
     local filePathAndroidIML=android.iml

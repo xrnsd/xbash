@@ -84,7 +84,7 @@ ftGitLogShell()
     [[ -n "$isAllBranchLog" ]] && [ -z $(which gitk) ] && ftGitLogShell --rely && return
     [[ -z $(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') ]] && ftGitLogShell --env && return
     [ -z "$branchLogItemCount" ]||(($branchLogItemCount<0)) && errorContent="${errorContent}\\n[示例2]branchLogItemCount=$branchLogItemCount"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitLogShell -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitLogShell -h && return
 
     #实现主体
     local gitVersionMin="2.6.0" gitVersionNow=$(git --version)
@@ -242,7 +242,7 @@ ftGitCheckoutBranch()
     #参数校验
     [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
     [ -n "$delayLong" ] && ( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBranch -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBranch -h && return
 
     #实现主体
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
@@ -393,7 +393,7 @@ ftGitPatch()
     #参数校验
     [ -z "$branchNameNow" ] && ftGitPatch --env && return
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPatch -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPatch -h && return
 
     #实现主体
     local dirPathLocal=$(pwd)
@@ -472,7 +472,7 @@ ftGitTagGrep()
     #参数校验
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -z "$strKeyContent" ] && errorContent="${errorContent}\\n[想要的有点多,这个给不了]"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagGrep -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagGrep -h && return
 
     #实现主体
     local tagNameList=$(git tag)
@@ -570,7 +570,7 @@ ftGitTag()
     #参数校验
     [ -z "$tagName" ]&&[ -z "${isUseVersionReadMeTemplate}" ] && errorContent="${errorContent}\\n[tagName为空]tagName=$tagName"
     [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTag -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTag -h && return
 
     #实现主体
     if [[ -n "$isDeleteTag" ]];then
@@ -668,7 +668,7 @@ ftGitPushForce_SXTD()
     [ -z "${branchNameLocal}" ] && ftGitPushForce_SXTD --env && return
     [[ "${branchNameLocal}" = "master" ]] && ftGitPushForce_SXTD --env_warning && return
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPushForce_SXTD -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPushForce_SXTD -h && return
 
     #实现主体
     git push origin --delete "${branchNameLocal}" \
@@ -723,7 +723,7 @@ ftGitSxtdProjectBranchV1()
     local valCount=1 errorContent
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSxtdProjectBranchV1 -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSxtdProjectBranchV1 -h && return
 
     #实现主体
     ftEcho -s "开始收集项目状态"
@@ -828,7 +828,7 @@ ftGitSxtdProjectBranchV2()
     [ -z "${branchNameLocal}" ] && ftGitSxtdProjectBranchV2 --env && return
     #参数校验
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSxtdProjectBranchV2 -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSxtdProjectBranchV2 -h && return
 
     local mFilePathSxtdProjectBranchV2="${dirPathHome}/.cache/projectDescriptionTemp.ini"
     local mBranchList=(
@@ -1049,7 +1049,7 @@ ftGitTagCreateAppReadMeTemplate()
     [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitTagCreateAppReadMeTemplate --rely && return
     [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
     [ -z "$filePathAppReadMe" ] && errorContent="${errorContent}\\n[模板路径为空]filePathAppReadMe=$filePathAppReadMe"
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateAppReadMeTemplate -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateAppReadMeTemplate -h && return
 
     #实现主体
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
@@ -1108,7 +1108,7 @@ ftGitTagCreateBranchReadMeTemplate()
     [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitTagCreateBranchReadMeTemplate --rely && return
     [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
     [ -z "$filePathAppReadMe" ] && errorContent="${errorContent}\\n[模板路径为空]filePathAppReadMe=$filePathAppReadMe"
-    [[ -n "$errorContent" ]] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateBranchReadMeTemplate -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateBranchReadMeTemplate -h && return
 
     #实现主体
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
@@ -1175,7 +1175,7 @@ ftGitTagCreateVersionTemplateByVersionReadme()
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "${filePathReadmeTarget}" ] && errorContent="${errorContent}\\n[模板存放路径为空]"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateVersionTemplateByVersionReadme -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateVersionTemplateByVersionReadme -h && return
 
     #实现主体
     if [[ -z $filePathReadme ]] || [[ ! -f $filePathReadme ]]; then

@@ -3,11 +3,11 @@
 readonly rModuleName=module/auto/serialBuildByBranchName.module
 readonly rRirPathProcessEnableId=/tmp/ProcessEnableIds
 fileNamePID=$1
-# 函数
+#命令
 if [ -f $rFilePathXbashModuleCommon ];then
     source  $rFilePathXbashModuleCommon
 else
-    echo -e "\033[1;31m    函数加载失败\n\
+    echo -e "\033[1;31m    命令库加载失败\n\
     toolsPath=$rFilePathXbashModuleCommon\n\
     \033[0m"
 fi
