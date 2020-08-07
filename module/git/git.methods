@@ -1189,6 +1189,7 @@ ftGitTagCreateVersionTemplateByVersionReadme()
 
     #删除 标题头
     sed -i '1d' $filePathReadme
+    sed -i '1d' $filePathReadme
 
     #删除 git commit list
     local lineCount=$(awk 'END{print NR}' $filePathReadme)
