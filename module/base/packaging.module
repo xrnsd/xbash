@@ -89,8 +89,8 @@ if [ -d "$ANDROID_SDK" ];then
     complete -W "${packageNameList[@]} launcher systemui monkey" xk
 fi
 
-alias xc='effect=xbash主入口[旧];ftMain'
-alias xb='effect=系统维护;ftMaintainSystem'
+alias xb='effect=xbash主入口[旧];ftMain'
+alias xbp='effect=系统维护;ftMaintainSystem'
 alias xr='effect=更新xbash配置;ftResetXbash'
 alias xd='effect=MTK下载工具;ftMtkFlashTool'
 alias xdw='effect=MTK下载工具;ftMtkFlashTool -w'
@@ -163,8 +163,8 @@ if [[ -n $(which keytool) ]];then
 fi
 
 #命令选项快速适配
-complete -F _ftMainVal xc
+complete -F _ftMainVal xb
 complete -W " -a --adb -j -h -s" xr
 complete -F _cdAospDirectory xca
 complete -F _cdAospDirectory xcaf
-complete -W "--backup --restore --sd_finish -b -r -s" xb
+complete -W "--backup --restore --sd_finish -b -r -s" xbp
