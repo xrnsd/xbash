@@ -6,26 +6,16 @@ alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
 alias xcc='effect=进入原目录;cd $OLDPWD'
 
-if [[ -n $(which cat) ]];then
-    alias xbuildprop='effect=打印部分out下build.prop信息;[ -f "${ANDROID_PRODUCT_OUT}/system/build.prop" ] &&\
-                      cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.model=" && \
-                      cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.brand=" && \
-                      cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.name=" && \
-                      cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.device=" '
-    alias xbh='effect=bash命令历史查询;cat $(ftBashHistory -p) |grep'
+if [[ -n $(which pigz) ]];then
+    alias xtgz='effect=快速生成压缩;ftPigz -c'
 fi
 
-if [[ -n $(which du) ]];then
-    alias xdm='effect=查找最占用空间的20个目录;du -m --max-depth=2 | sort -nr | head -20 '
+if [[ -n $(which fdupes) ]];then
+    alias xfr='effect=查找重复文件;fdupes -Sr'
 fi
 
 if [[ -n $(which fuser) ]];then
      alias xkf='effect=解除文件或目录占用;fuser -m -k -i'
-fi
-
-if [[ -n $(which tr) ]];then
-    alias xX='effect=字符串转大写;_xX(){  echo "$1" | tr '[a-z]' '[A-Z]' ;};_xX $1'
-    alias Xx='effect=字符串转小写;_Xx(){  echo "$1" | tr '[A-Z]' '[a-z]' ;};_Xx $1'
 fi
 
 if [[ -n $(which todos) ]] && [[ -n $(which fromdos) ]];then
@@ -33,55 +23,63 @@ if [[ -n $(which todos) ]] && [[ -n $(which fromdos) ]];then
     alias dos2unix=fromdos
 fi
 
-if [[ -n $(which fdupes) ]];then
-    alias xfr='effect=查找重复文件;fdupes -Sr'
-fi
-
-if [[ -n $(which pigz) ]];then
-    alias xtgz='effect=快速生成压缩;ftPigz -c'
-fi
-
 if [[ -n $(which sensors) ]];then
     alias xcct="effect=查看cpu温度;ftMain -sc"
     alias xccct="effect=查看cpu各个核心温度;ftMain -scc"
 fi
 
+if [[ -n $(which tr) ]];then
+    alias xX='effect=字符串转大写;_xX(){  echo "$1" | tr '[a-z]' '[A-Z]' ;};_xX $1'
+    alias Xx='effect=字符串转小写;_Xx(){  echo "$1" | tr '[A-Z]' '[a-z]' ;};_Xx $1'
+fi
+
+if [[ -n $(which du) ]];then
+    alias xdm='effect=查找最占用空间的20个目录;du -m --max-depth=2 | sort -nr | head -20 '
+fi
+
+if [[ -n $(which cat) ]];then
+    alias xbh='effect=bash命令历史查询;cat $(ftBashHistory -p) |grep'
+    alias xbuildprop='effect=打印部分out下build.prop信息;[ -f "${ANDROID_PRODUCT_OUT}/system/build.prop" ] &&\
+                      cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.model=" && \
+                      cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.brand=" && \
+                      cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.name=" && \
+                      cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.device=" '
+fi
+
 if [ -d "$ANDROID_SDK" ];then
-    alias xp='effect=使用adb快速push[询问是否重启];ftAdbPush -f '
-    alias xpa='effect=使用adb快速push[自动重启];ftAdbPush -a -f'
-    alias xpn='effect=使用adb快速push[仅push];ftAdbPush -n -f'
-    alias xpc='effect=使用adb快速push[新终端中执行,询问是否重启];ftAdbPush -c -f'
-    alias xpca='effect=使用adb快速push[新终端中执行,自动重启];ftAdbPush -c -a -f'
-    alias xpcn='effect=使用adb快速push[新终端中执行,仅push];ftAdbPush -c -n -f'
     alias xssd="effect=关闭设备;adb shell reboot"
     alias xsd="effect=关闭设备;adb shell reboot -p"
     alias xl='effect=过滤logcat;ftLogcatApplicationByTag'
-    alias xlt='effect=过滤logcat,没有时间信息;ftLogcatApplicationByTag -t '
+    alias xpn='effect=使用adb快速push[仅push];ftAdbPush -n -f'
+    alias xpa='effect=使用adb快速push[自动重启];ftAdbPush -a -f'
+    alias xp='effect=使用adb快速push[询问是否重启];ftAdbPush -f '
     alias xle='effect=过滤错误的logcat;ftLogcatApplicationByTag -e'
-    alias xlce='effect=过滤错误的logcat;adb logcat -c;ftLogcatApplicationByTag -e'
     alias xlp="effect=根据包名过滤logcat;ftLogcatApplicationByTag -p"
-    alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
-
+    alias xlt='effect=过滤logcat,没有时间信息;ftLogcatApplicationByTag -t '
     alias xpml='effect=干掉设备对应包名的进程;ftMtkLog -p /home/enjoy/log'
+    alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
+    alias xlce='effect=过滤错误的logcat;adb logcat -c;ftLogcatApplicationByTag -e'
+    alias xpcn='effect=使用adb快速push[新终端中执行,仅push];ftAdbPush -c -n -f'
+    alias xpca='effect=使用adb快速push[新终端中执行,自动重启];ftAdbPush -c -a -f'
+    alias xpc='effect=使用adb快速push[新终端中执行,询问是否重启];ftAdbPush -c -f'
 
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
+    alias xgetevent='effect=打印输入设备事件节点清单; adb shell  -- getevent -p'
     alias xtp="effect=打印任务栈的栈顶信息;ftAdbContect ;\
     [ -n ${autoTestDeviceId} ] && adb -s ${autoTestDeviceId} shell dumpsys activity top;\
     [ -z ${autoTestDeviceId} ] && adb shell dumpsys activity top"
+    alias xpapk='effect=APK文件基本信息解析;${ANDROID_SDK}/build-tools/29.0.3/aapt d badging'
     alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
     alias xdv='effect=手机录屏;adb shell screenrecord /sdcard/sv.mp4&&adb pull /sdcard/sv.mp4 ~/download/'
 
     alias xqdialer='effect=启动拨号盘;adb shell am start -n com.android.dialer/.DialtactsActivity'
     alias xqselect='effect=启动隐藏;adb shell am start -n com.mtk.select/com.mtk.select.SelectActivity'
     alias xqsetting='effect=启动设置;adb shell am start -n com.android.settings/com.android.settings.Settings'
-    alias xqcamera='effect=启动Camera2;adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
-    alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
-    alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
-    alias xqmtklog='effect=启动MtkLog; adb shell am start -n com.mediatek.mtklogger/com.mediatek.mtklogger.MainActivity'
     alias xqengineermode='effect=启动工程模式; adb shell am start -n com.mediatek.engineermode/.EngineerMode'
-
-    alias xgetevent='effect=打印输入设备事件节点清单; adb shell  -- getevent -p'
-    alias xpapk='effect=APK文件基本信息解析;${ANDROID_SDK}/build-tools/29.0.3/aapt d badging'
+    alias xqlauncher='effect=启动launcher;adb shell am start -n com.android.launcher3/com.android.launcher3.Launcher'
+    alias xqcamera='effect=启动Camera2;adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
+    alias xqmtklog='effect=启动MtkLog; adb shell am start -n com.mediatek.mtklogger/com.mediatek.mtklogger.MainActivity'
+    alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
 
     [[ -f $rFilePathXbashDBBase ]] && packageNameList="$(ftIniGetValue $rFilePathXbashDBBase androidDevicePackages packageNameList)"
     complete -W "${packageNameList[@]} launcher systemui" xlp
@@ -96,11 +94,10 @@ alias xd='effect=MTK下载工具;ftMtkFlashTool'
 alias xdw='effect=MTK下载工具;ftMtkFlashTool -w'
 alias xcg='effect=清空回收站;ftCleanGarbage -e -t'
 alias xfind='effect=查找含特定字符串的文件;ftFind -s '
-alias xfindOuts='effect=显示所有out备份;ftFindAospBuildOuts'
-alias xfkc='effect=查找kernel的config说明;_xfkc(){  grep -nr "${1}" --include=Kconfig -C 5 kernel-* ;};_xfkc $1'
 alias xhf='effect=xbash扩展说明查找;ftMain -h |grep -i '
 alias xcb='effect=进入xbash目录;cd $dirPathHomeXbash'
 alias xca='effect=快速切换到Aosp功能目录;ftCdAospDirectory '
+alias xfindOuts='effect=显示所有out备份;ftFindAospBuildOuts'
 alias xcd='effect=快速切换到不同Aosp项目;ftCdAospProject -n'
 alias xcf='effect=进入xconfig目录;cd ${rDirPathUserHome}/xconfig'
 alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'
@@ -109,53 +106,50 @@ alias xrbcompare='effect=重新试用bcompare;rm -rf ~/.config/bcompare'
 alias xcaf='effect=用文件管理器打开Aosp功能目录;ftCdAospDirectory -fm '
 alias xcdf='effect=用文件管理器切换到不同Aosp项目;ftCdAospProject -fm '
 alias xcdu='effect=快速更新Aosp项目列表配置;ftCdAospProject -u > /dev/null '
-
-alias xas='effect=打开Android_studio;nohup ${rDirPathTools}/android-studio/bin/studio.sh & >/dev/null;rm nohup.out;exit'
-alias xqmtklogview='effect=MTKlog分析工具;nohup /home/enjoy/tools/gat-linux-x86_64-3/modules/MediatekLogView/MediatekLogView \
-& >/dev/null;rm nohup.out;exit'
-alias xrbp='effect=删除out下面build.prop;rm -rf ${ANDROID_PRODUCT_OUT}/obj/ETC/system_build_prop_intermediates \
-                                                                                 ${ANDROID_PRODUCT_OUT}/system/build.prop'
 alias xep='effect=打开Eclipse;nohup ${rDirPathTools}/eclipse/eclipse & >/dev/null;exit'
 alias xs2av='effect=android版本查询;ftIniGetValue $rFilePathXbashDBBase androidSDK2Verison'
+alias xfkc='effect=查找kernel的config说明;_xfkc(){  grep -nr "${1}" --include=Kconfig -C 5 kernel-* ;};_xfkc $1'
+alias xrbp='effect=删除out下面build.prop;rm -rf ${ANDROID_PRODUCT_OUT}/obj/ETC/system_build_prop_intermediates \
+         ${ANDROID_PRODUCT_OUT}/system/build.prop'
+alias xas='effect=打开Android_studio;nohup ${rDirPathTools}/android-studio/bin/studio.sh & >/dev/null;rm nohup.out;exit'
+alias xqmtklogview='effect=MTKlog分析工具;nohup /home/enjoy/tools/gat-linux-x86_64-3/modules/MediatekLogView/MediatekLogView \
+         & >/dev/null;rm nohup.out;exit'
 
 if [ -f /usr/bin/gnome-session-quit ] ;then
      alias xsss='effect=注销系统;ftPowerManagement logout'
 fi
 
 if [[ -n $(which git) ]];then
-    alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
-    alias xglbt='effect=查看本地仓库分支树;ftGitLogShell -at'
-    alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
-    alias xglf='effect=格式化显示包含指定字符git_log;ftGitLogShell -n 100 |grep'
-    alias xgat='effect=添加git的版本说明标签;ftGitTag -a '
-    alias xgatt='effect=添加git的版本说明标签,使用模板;ftGitTag --app '
-    alias xgmt='effect=添加git的修改说明标签;ftGitTag --modify '
-    alias xgbt='effect=添加git的分支说明标签;ftGitTag --branch '
     alias xgdt='effect=删除git的TAG;ftGitTag -d '
+    alias xgat='effect=添加git的版本说明标签;ftGitTag -a '
+    alias xglbt='effect=查看本地仓库分支树;ftGitLogShell -at'
     alias xgft='effect=git的TAG标签内容过滤;ftGitTagGrep -f '
-    alias xglh='effect=显示xx条commit的hash值;ftGitLogShell -c "%h" -n '
-    alias xgbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBranch -a -t"
-    alias xgbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBranch -t"
-    alias xgb="effect=过滤git仓库已经checkout分支;ftGitCheckoutBranch -t"
-    alias xgba="effect=过滤git仓库所有分支;ftGitCheckoutBranch -a -t"
+    alias xgbt='effect=添加git的分支说明标签;ftGitTag --branch '
+    alias xgmt='effect=添加git的修改说明标签;ftGitTag --modify '
+    alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
     alias xgrs="effect=回滚最新的commit;git reset --soft HEAD^"
+    alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
+    alias xgba="effect=过滤git仓库所有分支;ftGitCheckoutBranch -a -t"
+    alias xgatt='effect=添加git的版本说明标签,使用模板;ftGitTag --app '
+    alias xglh='effect=显示xx条commit的hash值;ftGitLogShell -c "%h" -n '
+    alias xgb="effect=过滤git仓库已经checkout分支;ftGitCheckoutBranch -t"
+    alias xgbrancha="effect=过滤git仓库所有分支;ftGitCheckoutBranch -a -t"
+    alias xglf='effect=格式化显示包含指定字符git_log;ftGitLogShell -n 100 |grep'
+    alias xgbranch="effect=过滤git仓库已经checkout分支;ftGitCheckoutBranch -t"
 fi
 
 if [[ -n ftCdAospDirectory ]];then
-    alias xcdlauncher='effect=快速进入launcher;ftCdAospDirectory app launcher'
-    alias xcdsettings='effect=快速进入settings;ftCdAospDirectory app settings'
     alias xcddialer='effect=快速进入dialer;ftCdAospDirectory app dialer'
+    alias xcdsettings='effect=快速进入settings;ftCdAospDirectory app settings'
+    alias xcdlauncher='effect=快速进入launcher;ftCdAospDirectory app launcher'
     alias xcdfactorytest='effect=快速进入factorytest;ftCdAospDirectory app factorytest'
     alias xcdsystemui='effect=快速进入systemui;ftCdAospDirectory frameworks base packages systemui'
     alias xcdsettingsprovider='effect=快速进入settingsprovider;ftCdAospDirectory frameworks base packages settingsprovider'
 fi
 
 if [[ -n $(which subl) ]];then
-    alias xsubl='effect=使用sublime_text打开xbash和xconfig ; subl $rDirPathXbash ${rDirPathUserHome}/xconfig'
     alias xspwd='effect=使用sublime_text打开本目录;subl $(pwd)'
-    alias xubpwm='effect=快速进入launcher;subl $(find frameworks/ -name "PhoneWindowManager.java")'
-    alias xubsettings='effect=快速进入launcher;subl $(find frameworks/base/core -name "Settings.java")'
-    alias xubl='effect=快速进入launcher;subl $(find frameworks/base/core -name "Settings.java")'
+    alias xsubl='effect=使用sublime_text打开xbash和xconfig ; subl $rDirPathXbash ${rDirPathUserHome}/xconfig'
 fi
 
 if [[ -n $(which keytool) ]];then

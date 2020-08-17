@@ -1,10 +1,10 @@
 #!/bin/bash
 # adb自动push的独立终端实现 
-#####-----------------------加载部分模块,便于调试--------------------------#######
+#####-----------------------加载部分模块--------------------------#######
 [[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
 [[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
 [[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
-# ==========================================================================
+# =================================================================
 ftAdbPushByTerminal()
 {
     local ftEffect=adbPush命令的简单封装[打开独立终端执行]
