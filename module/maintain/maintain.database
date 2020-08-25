@@ -44,6 +44,8 @@ dirPathsExcludeListHomeBase= \
     AndroidStudioProjects \
     cmds \
     code \
+    code_wh \
+    code_all \
     doc \
     download \
     floobits \
@@ -54,9 +56,6 @@ dirPathsExcludeListHomeBase= \
     temp \
     tools \
     server \
-    VMS \
-    share \
-    workspace \
     imgs \
     PlayOnLinux's virtual drives \
     workspaces \
@@ -136,13 +135,20 @@ dirPathsExcludeListHomeBase= \
     .electron \
     .AndroidStudio3.6 \
     .AndroidStudio3.5 \
-    .AndroidStudioPreview3.6 \
-    .AndroidStudioPreview3.5 \
     .AndroidStudio3.4 \
     .AndroidStudio3.3 \
     .AndroidStudio3.2 \
     .AndroidStudio3.1 \
     .AndroidStudio3.0 \
+    .AndroidStudio4.0 \
+    .AndroidStudioPreview4.0 \
+    .AndroidStudioPreview3.6 \
+    .AndroidStudioPreview3.5 \
+    .AndroidStudioPreview3.4 \
+    .AndroidStudioPreview3.3 \
+    .AndroidStudioPreview3.2 \
+    .AndroidStudioPreview3.1 \
+    .AndroidStudioPreview3.0 \
     .config/ubuntu-tweak \
     .themes \
     .android/avd \
@@ -166,4 +172,8 @@ dirPathsExcludeAllListSys= \
     /root/.gradle \
     /root/tmp
     
+
+
+
+
 

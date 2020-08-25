@@ -156,6 +156,10 @@ if [[ -n $(which keytool) ]];then
     alias xkey='effect=查看秘钥文件的信息;keytool -exportcert -list -v -keystore '
 fi
 
+if [[ -n $(which apt-fast) ]];then
+    alias apt-get='apt-fast'
+fi
+
 #命令选项快速适配
 complete -F _ftMainVal xb
 complete -W " -a --adb -j -h -s" xr
