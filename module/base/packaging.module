@@ -122,6 +122,8 @@ fi
 if [[ -n $(which git) ]];then
     alias xgdt='effect=删除git的TAG;ftGitTag -d '
     alias xgat='effect=添加git的版本说明标签;ftGitTag -a '
+    alias xgp='effect=获取父分支[自动获取分支名];ftGitgetParentBranch'
+    alias xgpp='effect=获取父分支[指定分支名];ftGitgetParentBranch -b '
     alias xglbt='effect=查看本地仓库分支树;ftGitLogShell -at'
     alias xgft='effect=git的TAG标签内容过滤;ftGitTagGrep -f '
     alias xgbt='effect=添加git的分支说明标签;ftGitTag --branch '
