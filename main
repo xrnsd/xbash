@@ -125,6 +125,7 @@ fi
 
     dirNameHome=$(echo "$dirPathHomeXbash"| sed 's?/? ?g'| awk '{print $2}')
     export dirPathHome=/home/${dirNameHome:-"$userName"}
+    [[ $userName = "root" ]] && export dirPathHome="/root"
 
     [ ! -d "$dirPathHomeXbash" ] && echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeXbash=$dirPathHomeXbash]\033[0m" && return
     export dirPathHomeTools=${dirPathHome}/tools
