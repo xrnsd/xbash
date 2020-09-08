@@ -12,6 +12,8 @@ dirPathsExcludeListSys= \
     /.Trash-0 \
     /media \
     /var/cache \
+	/share \
+	/code \
     /var/tmp \
     /var/lib/docker \
     /var/log \
@@ -32,13 +34,16 @@ dirPathsExcludeListSys= \
     /usr/share/hplip/data \
     /usr/share/sogou-qimpanel/recommendSkin/skin \
     /usr/lib/vmware/isoimages \
+	/usr/share/icons/ubuntu-mono-light \
     /usr/share/icons/HighContrast/icon-theme.cache \
     /usr/share/icons/oxygen/icon-theme.cache \
     /usr/share/icons/Paper/.icon-theme.cache \
     /usr/share/icons/gnome/icon-theme.cache \
     /usr/share/virtualbox/VBoxGuestAdditions.iso \
     /usr/share/pyzy/db/open-phrase.db \
-    /root/tmp
+    /root \
+	/home/78 \
+	/home/yy
 
 dirPathsExcludeListHomeBase= \
     AndroidStudioProjects \
