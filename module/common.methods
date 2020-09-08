@@ -756,7 +756,7 @@ ftBashHistory()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     # 环境校验
-    [ "$(whoami)" == "root" ] || [[ -z "$isUseXbashHistory" ]] && return
+    [[ -z "$isUseXbashHistory" ]] && return
     #参数解析
     local filePathBashHistory=${dirPathHome}/.bash_history
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
