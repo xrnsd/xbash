@@ -1566,7 +1566,7 @@ ftAutoAsConfigFileAutoCreate()
     #实现主体
     local filePathAndroidIML=android.iml
     [[ -f "$filePathAndroidIML" ]] &&ftEcho -y "存在旧的${filePathAndroidIML},是否删除(回车默认删除)" && read -n 1 sel && echo
-    if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then rm $filePathAndroidIML
+    if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then rm -f $filePathAndroidIML
     else return ;fi
 
     source $filePathEnvsetup
@@ -1582,7 +1582,7 @@ ftAutoAsConfigFileAutoCreate()
     local filePathShIdegen=development/tools/idegen/idegen.sh
     [[ ! -f "$filePathJarIdegen" ]] && ftEcho -s "未找到: ${filePathJarIdegen}" && return
     ftEcho -s "开始使用脚本 idegen.sh 扫描AOSP"
-    $filePathShIdegen
+    echo $userPassword | sudo -p '' -S $filePathShIdegen
 
     local filePathExcludeFolderListTemp=excludeFolder.list
     [[ ! -f "$filePathAndroidIML" ]] && ftEcho -s "未找到: ${filePathAndroidIML}，放弃更新" && return
@@ -1620,4 +1620,6 @@ ftAutoAsConfigFileAutoCreate()
 <excludeFolder url=\"file://\$MODULE_DIR\$/.repo\" />" > $filePathExcludeFolderListTemp
     sed -i "$lineNum r $filePathExcludeFolderListTemp" $filePathAndroidIML
     rm $filePathExcludeFolderListTemp
+
+    echo $userPassword | sudo -p '' -S chmod 777 android.ipr android.iml android.iws
 }

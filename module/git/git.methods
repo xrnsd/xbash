@@ -1018,10 +1018,10 @@ complete -W "-h --help -f -v" ftGitTagCreateAppReadMeTemplate
 ftGitTagCreateAppReadMeTemplate()
 {
     local ftEffect=GIT的标签模板[APP版本说明]
-    local isEnable=true
+    local isEnable=sub
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [ "$isEnable" != "true" ] &&[ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local filePathConfig=$rFilePathXbashDBUser
     local filePathAppReadMe versionName
@@ -1080,10 +1080,10 @@ complete -W "-h --help -f  " ftGitTagCreateBranchReadMeTemplate
 ftGitTagCreateBranchReadMeTemplate()
 {
     local ftEffect=GIT的标签模板[分支创建说明]
-    local isEnable=true
+    local isEnable=sub
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local filePathAppReadMe filePathConfig=$rFilePathXbashDBUser
     local valCount=1 errorContent arg arg2
@@ -1142,10 +1142,10 @@ complete -W "-h --help -f -t " ftGitTagCreateVersionTemplateByVersionReadme
 ftGitTagCreateVersionTemplateByVersionReadme()
 {
     local ftEffect=GIT的标签模板[版本说明]
-    local isEnable=true
+    local isEnable=sub
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePathReadme
     local valCount=4 errorContent arg arg2

@@ -45,6 +45,10 @@ ftMain()
                 ftEcho -s "xbash -h    #查看所有说明\nxbash -hb   #bash命令封装和xbash扩展封装的说明\nxbash -ft   #xbash的扩展实现说明" && 
                 echo && ftMain -ft && echo && ftMain -hb
                 break;;
+    -ha )
+                ftEcho -s "xbash -h    #查看所有说明\nxbash -hb   #bash命令封装和xbash扩展封装的说明\nxbash -ft   #xbash的扩展实现说明" && 
+                echo && ftReadAllAlias && echo && ftReadAllFt -a
+                break;;
     -hb )
                 ftReadAllAlias
                 break;;
@@ -162,9 +166,15 @@ ftReadAllFt()
         #可用性校验
         [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
 
+        local isEchoDefFt isEchoSubF
         local key="local ftEffect=" keyEnable="local isEnable="
         local effectDescription effectDescriptionEnable
         local intervalSize=40
+
+        if [[ "$1" = "-a" ]]; then
+            #isEchoDefFt=true
+            isEchoSubF=true
+        fi
 
         ftEcho -s "$ftEffect"
         echo -e "========================================================="
@@ -179,10 +189,12 @@ ftReadAllFt()
             effectDescriptionEnable=${effectDescriptionEnable//$keyEnable/}
             effectDescriptionEnable=${effectDescriptionEnable// /}
 
-            [[ "$effectDescriptionEnable" = "def" ]] && continue
+            [[ -z "${isEchoDefFt}" ]] && [[ "$effectDescriptionEnable" = "def" ]] && continue #内部流程方法
+            [[ -z "${isEchoSubF}" ]] && [[ "$effectDescriptionEnable" = "sub" ]] && continue #内部工具方法,不适合独立被外部调用
 
             printf "%${intervalSize}s  " ${effectName//()/}
-            [[ "$effectDescriptionEnable" = "true" ]] && echo ${effectDescription} || ftEcho -s "[暂时关闭]"
+            [[ "$effectDescriptionEnable" = "false" ]] && ftEcho -s "[暂时关闭]" && continue
+            echo ${effectDescription}
         done | column -t
 }
 
@@ -394,8 +406,9 @@ ftCheckUserConfig()
 {
     local ftEffect=校验用户配置和模版版本一致性
     local isEnable=true
+
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [[ "$isEnable" != "true" ]] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #实现主体
     local filePathUserConfigExpmale=${rDirPathXbashConfig}/expmale.config
 
@@ -421,8 +434,9 @@ ftCheckUserDatabase()
 {
     local ftEffect=校验用户数据库和模版版本一致性
     local isEnable=true
+
     #可用性校验
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [[ "$isEnable" = "false" ]] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #实现主体
     [[ ! -f ${rFilePathXbashDBUserExcepmale}  ]] && return
     [[ ! -f ${rFilePathXbashDBUser}  ]] && return
@@ -449,10 +463,10 @@ ftCheckUserDatabase()
 ftIniCreateFileOrTag()
 {
     local ftEffect=创建ini文件,添加TAG
-    local isEnable=true
+    local isEnable=sub
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathIni editType contentTagName contentTagKeyValList
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -521,10 +535,10 @@ ftIniCreateFileOrTag()
 ftIniDeleteTag()
 {
     local ftEffect=删除ini文件中对应TAG块
-    local isEnable=true
+    local isEnable=sub
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local tagName filePathIni
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -563,10 +577,10 @@ ftIniDeleteTag()
 ftIniAddItem()
 {
     local ftEffect=在ini文件对应TAG中添加指定item
-    local isEnable=true
+    local isEnable=sub
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local tagName itemContent filePathIni
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -612,10 +626,10 @@ ftIniAddItem()
 ftIniDeleteItem()
 {
     local ftEffect=在ini文件对应TAG中删除指定item
-    local isEnable=true
+    local isEnable=sub
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local tagName itemName filePathIni
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -654,10 +668,10 @@ ftIniDeleteItem()
 ftIniGetValue()
 {
     local ftEffect=在ini文件对应TAG中读取指定item
-    local isEnable=true
+    local isEnable=sub
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local filePath=$1 blockName=$2 keyName=$3 isReadSilence
     local valCount=3 errorContent
@@ -708,10 +722,10 @@ ftIniGetValue()
 ftIniSetValue()
 {
     local ftEffect=在ini文件对应TAG中修改指定item
-    local isEnable=true
+    local isEnable=sub
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local isListValue filePath=$1 blockName=$2 keyName=$3 keyValue=$4
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -783,6 +797,7 @@ ftBashHistory()
     #历史去重
     sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
     && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
+    echo $userPassword | sudo -p '' -S chmod 777 $filePathBashHistoryArchive
 
     #历史扩容
     if [[ -f $rFilePathXbashDBUser ]]; then
@@ -3247,7 +3262,10 @@ ftMD5()
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#   获取文件的MD5
+#   获取文件的MD5，直接打印MD5
+#    ftMD5 -c 文件路径
+#
+#   获取文件的MD5，获取后保存在环境变量不打印
 #    ftMD5 -a 文件路径
 #
 #   获取文件的MD5,校验文件是否一致
@@ -3257,6 +3275,12 @@ ftMD5()
 #    ftMD5 -p MD5信息保存路径 -s 文件路径
 #========================================================="; return ;;
         # 变量参数解析部分==============
+        -c )   filePathVersion="${arg2}"
+                if [[ -f "${arg2}" ]]; then
+                    echo $(md5sum $filePathVersion | awk '{print $1}')
+                    return
+                fi
+           ;;
         -a )   filePathVersion="${arg2}"
                 editType=onlyCreate
            ;;
