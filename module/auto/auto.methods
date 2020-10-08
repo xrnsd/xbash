@@ -1265,10 +1265,10 @@ ftAutoTest()
 #    ftAutoTest -s 设备ID
 #
 #    测试白名单,允许多个包名,和黑名单互斥
-#    ftAutoTest -p "com.xx com.yy.zz"
+#    ftAutoTest -p \"com.xx com.yy.zz\"
 #
 #    测试黑名单,允许多个包名,和白名单互斥
-#    ftAutoTest -pb "com.xx com.yy.zz"
+#    ftAutoTest -pb \"com.xx com.yy.zz\"
 #
 #    log存放路径
 #    ftAutoTest -d /home/xxx/xxx

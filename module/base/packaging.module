@@ -66,8 +66,8 @@ if [ -d "$ANDROID_SDK" ];then
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
     alias xgetevent='effect=打印输入设备事件节点清单; adb shell  -- getevent -p'
     alias xtp="effect=打印任务栈的栈顶信息;ftAdbContect ;\
-    [ -n ${autoTestDeviceId} ] && adb -s ${autoTestDeviceId} shell dumpsys activity top;\
-    [ -z ${autoTestDeviceId} ] && adb shell dumpsys activity top"
+    [ -n ${autoTestDeviceId} ] && adb -s ${autoTestDeviceId} shell dumpsys activity top |grep ACTIVITY;\
+    [ -z ${autoTestDeviceId} ] && adb shell dumpsys activity top |grep ACTIVITY"
     alias xpapk='effect=APK文件基本信息解析;${ANDROID_SDK}/build-tools/29.0.3/aapt d badging'
     alias xds='effect=手机截图;adb shell screencap -p /sdcard/sc.png&&adb pull /sdcard/sc.png ~/download/'
     alias xdv='effect=手机录屏;adb shell screenrecord /sdcard/sv.mp4&&adb pull /sdcard/sv.mp4 ~/download/'
