@@ -859,7 +859,7 @@ ftAutoPacket()
 
                                 fileName=$(basename $filePath)
                                 printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
-                                 cp -r -f  $filePath $dirPathPackageDataBase
+                                cp -r -f  $filePath $dirPathPackageDataBase
                             done
                         else
                             ftEcho -e "database 创建失败,无法创建${dirPathPackageDataBase}"  && ftClearTail $dirPathLocal && return
@@ -931,13 +931,17 @@ ftAutoPacket()
                 || ftEcho -e "版本说明中的MD5信息写入失败"
 
                 #修改版本包目录结构
-                local dirPathVersionSoftwareVersionNow=${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase}
-                mkdir $dirPathVersionSoftwareVersionNow
-                mv ${dirPathVersionSoftware}/${fileNamePackage} $dirPathVersionSoftwareVersionNow
-                mv $AutoEnv_filePathReleaseNotes $dirPathVersionSoftwareVersionNow
-                [ -f ${dirPathVersionSoftware}/${fileNameOtaPackage} ] && \
-                mv ${dirPathVersionSoftware}/${fileNameOtaPackage} $dirPathVersionSoftwareVersionNow
+                [[ -f ${dirPathVersionSoftware}/${fileNameOtaPackage} ]] && \
+                mv ${dirPathVersionSoftware}/${fileNameOtaPackage} ${dirPathVersionSoftwareVersion}
+                mv ${dirPathVersionSoftware}/${fileNamePackage} ${dirPathVersionSoftwareVersion}
+                mv ${AutoEnv_filePathReleaseNotes} ${dirPathVersionSoftwareVersion}
+                rm -rf ${AutoEnv_filePathCustomerDescription}
+                rm -rf ${dirPathPackage}
+                rm -rf ${dirPathPackageDataBase}
+                rm -rf ${dirPathPackageOtaPackages}
+                rm -rf ${dirPathPackageTools}
 
+                #软件包临时文件清理
                 ftEcho -s "软件打包结束"
             fi
 
