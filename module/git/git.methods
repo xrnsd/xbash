@@ -33,7 +33,8 @@ ftGitLogShell()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local isAllBranchLog isTagBranchLog branchLogFormat isCustomBranchLog branchLogItemCount branchLogItemCountDef=20 pathTarget
+    local isAllBranchLog isAllBranchTree isTagBranchLog branchLogFormat isCustomBranchLog branchLogItemCount  pathTarget
+    local branchLogItemCountDef=20
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
      --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -47,9 +48,13 @@ ftGitLogShell()
 #=========================================================" ;return ;;
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
+#
 #    全部分支log
 #    ftGitLogShell -a
 #    ftGitLogShell -a 目录/文件
+#
+#    分支树
+#    ftGitLogShell -b
 #
 #    ftGitLogShell -at  # 查看分支树
 #    ftGitLogShell -a  路径 # 指定路径下的全部分支log
@@ -61,6 +66,9 @@ ftGitLogShell()
         # 变量参数解析部分==============
         -a )  isAllBranchLog=true
                 pathTarget="${arg2}"
+                branchLogItemCount=0
+                ;;
+        -b )  isAllBranchTree=true
                 branchLogItemCount=0
                 ;;
         -at )  gitk --simplify-by-decoration --all && return
@@ -92,6 +100,7 @@ ftGitLogShell()
     gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
     [[ -n "$isAllBranchLog" ]] && gitk --all "${pathTarget}" && return
+    [[ -n "$isAllBranchTree" ]] && gitk --simplify-by-decoration --all && return
     [[ -n "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return
 
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]] && [ "$isCustomBranchLog" != "true" ];then

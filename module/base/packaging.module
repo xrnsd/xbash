@@ -130,6 +130,7 @@ if [[ -n $(which git) ]];then
     alias xgbt='effect=添加git的分支说明标签;ftGitTag --branch '
     alias xgmt='effect=添加git的修改说明标签;ftGitTag --modify '
     alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
+    alias xglb='effect=查看本地分支树;ftGitLogShell -b'
     alias xgrs="effect=回滚最新的commit;git reset --soft HEAD^"
     alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
     alias xgba="effect=过滤git仓库所有分支;ftGitCheckoutBranch -a -t"
