@@ -2333,7 +2333,18 @@ ftAdbPush()
     done
     if [[ -z "$isTacitMode" ]]; then
         [[ -z "$isAutoReboot" ]] &&ftEcho -y "是否重启(回车默认重启)" && read -n 1 sel && echo
-        if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then adb -s $deviceId reboot && ftEcho -s "已重启设备:${deviceId} "; fi
+        if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then
+            local keySDKVersion="ro.build.version.sdk="
+            local deviceSdkVersion=$(adb shell "cat /system/build.prop" |grep ${keySDKVersion})
+            deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
+            deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
+            deviceSdkVersion=${deviceSdkVersion:-'null'}
+            if (( $deviceSdkVersion>=28 )); then
+                sleep 2 && adb shell stop && adb shell start 
+            else
+                 adb -s $deviceId reboot
+            fi
+            ftEcho -s "已重启设备:${deviceId} "; fi
     fi
 }
 
