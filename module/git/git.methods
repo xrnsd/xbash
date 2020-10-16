@@ -120,7 +120,7 @@ ftGitLogShell()
 
 ftGitPatchAdd2Branches()
 {
-    local ftEffect=添加gitPatch[多分支]
+    local ftEffect=快速添加git的Patch补丁[跨分支]
     local isEnable=true
 
     while true; do case "$1" in
@@ -138,7 +138,7 @@ ftGitPatchAdd2Branches()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
-    [ -z "$branchNameNow" ] && ftGitPatch --env && return
+    [ -z "$branchNameNow" ] && ftGitPatchAdd2Branches --env && return
     local branchTag=$1 filePathBranchList=待打补丁的分支列表 filePathCommitList=patch的hash值列表
     local filePathAddPatchTool=$rFilePathXbashModuleGitAddPatchToolExample
     local filePathFailInfo="/home/wgx/.cache/ftGitPatchAdd2Branches.log" ; [ -f "$filePathFailInfo" ] && rm $filePathFailInfo
