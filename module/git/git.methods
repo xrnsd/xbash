@@ -138,6 +138,7 @@ ftGitPatchAdd2Branches()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     [ -z "$branchNameNow" ] && ftGitPatchAdd2Branches --env && return
     local branchTag=$1 filePathBranchList=待打补丁的分支列表 filePathCommitList=patch的hash值列表
     local filePathAddPatchTool=$rFilePathXbashModuleGitAddPatchToolExample
