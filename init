@@ -44,7 +44,8 @@ ftInitUserConfig()
 
     local dirPathXbashConfigBashrc=${dirPathLocal}/config
     local dirPathXbashConfigBashrcUser=${dirPathXbashConfigBashrc}/user
-    local filePathXbashConfigExample=${dirPathXbashConfigBashrc}/expmale.config
+    local dirPathXbashModuleExpmale=${dirPathLocal}/module/expmale
+    local filePathXbashConfigExample=${dirPathXbashModuleExpmale}/user_expmale.config
     local filePathXbashConfigNew=${dirPathXbashConfigBashrcUser}/${userNameLocal}.config
 
     [ ! -d "$dirPathXbashConfigBashrcUser" ] && mkdir $dirPathXbashConfigBashrcUser

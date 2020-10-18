@@ -20,8 +20,7 @@ bash的简单扩展
     │
     ├── config  ---------------  工具相关配置
     │     │
-    │     ├── common.config  --------------------  xbash模块名称/路径配置
-    │     └── expmale.config  -------------------  用户xbash配置模版
+    │     └── common.config  --------------------  xbash模块名称/路径配置
     │
     └── module  ---------------  脚本实现文件[以文件夹划分功能]
           │
@@ -38,6 +37,7 @@ bash的简单扩展
           ├── common.methods  -------------------  框架和公用实现
           │
           ├── example     -----------------------  用于存放模版,该模块无需在main中初始化
+          │    ├── user_expmale.config  --------------  用户xbash配置模版
           │    ├── test.module.example  ---------  测试工具的模版
           │    ├── multiBranch.module.example ---  添加gitPatch[多分支]的模版
           │    └── user_database.example  -------  xbash的用户数据库的模版

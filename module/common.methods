@@ -410,13 +410,11 @@ ftCheckUserConfig()
     #可用性校验
     [[ "$isEnable" != "true" ]] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #实现主体
-    local filePathUserConfigExpmale=${rDirPathXbashConfig}/expmale.config
-
-    [[ ! -f ${filePathUserConfigExpmale}  ]] && return
+    [[ ! -f ${rFilePathXbashConfigExample}  ]] && return
     [[ ! -f ${rFilePathXbashConfigUser}  ]] && return
 
     local key="versionNum="
-    local versionNumExcepmale=$(cat $filePathUserConfigExpmale |grep $key)
+    local versionNumExcepmale=$(cat $rFilePathXbashConfigExample |grep $key)
     local versionNumUser=$(cat $rFilePathXbashConfigUser |grep $key)
 
     versionNumExcepmale=${versionNumExcepmale//$key/}
