@@ -348,7 +348,7 @@ ftBuildPropResolution()
             deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
             deviceSdkVersion=${deviceSdkVersion:-'null'}
             export AutoEnv_deviceSdkVersion=$deviceSdkVersion
-            local AndroidVersion=$(ftIniGetValue $rFilePathXbashDBBase androidSDK2Verison $deviceSdkVersion)
+            local AndroidVersion=$(ftXbGetValue androidSDK2Verison $deviceSdkVersion)
             export AutoEnv_AndroidVersion=$AndroidVersion
     fi
 
@@ -489,7 +489,7 @@ ftAutoBackupOrRestoreOuts()
     if [[ -n "$isMoveBack" ]]; then
         if [[ -d "$dirPathOut" ]]||[[ -d "$dirPathOutTop" ]]; then
             #lunch生成的out，视为无效
-            local excludeConfigInfo=($(ftIniGetValue $rFilePathXbashDBUser backupOrRestoreOutsInfo excludeConfig))
+            local excludeConfigInfo=($(ftXbGetValue backupOrRestoreOutsInfo excludeConfig))
             local excludeConfigSize=${#excludeConfigInfo[@]}
             local dirPathOutTopInfo=($(ls $dirPathOutTop))
             local dirPathOutTopSize=${#dirPathOutTopInfo[@]}
@@ -581,7 +581,6 @@ ftAutoUpload()
     #环境校验
      [[ -z $(which nmap) ]]|| [[ -z $(which sshpass) ]]|| [[ -z $(which pigz) ]]|| [[ -z $(which pv) ]] && ftAutoUpload --rely && return
     #解参验耦
-    local filePathConfig=$rFilePathXbashDBUser
     local dirPathContentUploadSource=$1 serverIp=$2
     local valCount=2 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
@@ -593,10 +592,10 @@ ftAutoUpload()
             errorContent="${errorContent}\\n 目标服务器指向本机，请确认配置:serverIp=$serverIp"
         else
             local tagName=serverConfig_${serverIp}
-            local userName=$(ftIniGetValue $filePathConfig $tagName userName)
-            local userPassword=$(ftIniGetValue $filePathConfig $tagName userPassword)
-            local dirPathServerStore=$(ftIniGetValue $filePathConfig $tagName dirPathServerStore)
-            local dirNameServerStore=$(ftIniGetValue $filePathConfig serverConfigDef softwareStoreDirName)
+            local userName=$(ftXbGetValue $tagName userName)
+            local userPassword=$(ftXbGetValue $tagName userPassword)
+            local dirPathServerStore=$(ftXbGetValue $tagName dirPathServerStore)
+            local dirNameServerStore=$(ftXbGetValue serverConfigDef softwareStoreDirName)
 
             [ -z "$userName" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]用户名获取失败"
             [ -z "$userPassword" ] && errorContent="${errorContent}\\n 服务器[${serverIp}]密码获取失败"
@@ -611,7 +610,7 @@ ftAutoUpload()
 
     local serverProtInfo="$(nmap $serverIp)"
     if [[ -z $(echo ${serverProtInfo[@]}|grep ssh) ]] && [[ -n $(echo ${serverProtInfo[@]}|grep 445) ]]; then #使用smb协议
-        local dirPathServerLocalBase=$(ftIniGetValue $filePathConfig $tagName dirPathPackageLocal)
+        local dirPathServerLocalBase=$(ftXbGetValue $tagName dirPathPackageLocal)
         if ! mountpoint -q $dirPathServerLocalBase; then
             #ftEcho -e "当前目录未挂载服务器共享目录:\n${dirPathUploadLocal}" && return
             ftEcho -s "未挂载SMB服务器共享目录到本地,将使用SMB协议在线传输"
@@ -627,7 +626,7 @@ EOF
         fi
     else #使用ssh协议
         # 自动添加旧软件的TAG
-        local dirPathServerLocalBase=$(ftIniGetValue $filePathConfig $tagName dirPathPackageLocal)
+        local dirPathServerLocalBase=$(ftXbGetValue $tagName dirPathPackageLocal)
         if [[ -n "$dirPathServerLocalBase" ]]; then
             local dirPathServerLocal=${dirPathServerLocalBase}/${dirPathContentUploadSource}
             if [[ -d $dirPathServerLocal ]] && [[ -n "$ANDROID_BUILD_TOP" ]]; then
@@ -715,8 +714,6 @@ ftAutoPacket()
         return
     fi
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
-    local filePathDataBase=$rFilePathXbashDBBase \
-            filePathDataUser=$rFilePathXbashDBUser
     local dirPathLocal=$dirPathCode \
             dirNameVersionSoftware=packet \
             buildType=$AutoEnv_buildType
@@ -725,7 +722,6 @@ ftAutoPacket()
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
-    [ ! -f "$filePathDataBase" ] && errorContent="${errorContent}\\n[数据库文件不存在]filePathDataBase=$filePathDataBase"
     [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoPacket -h && return
 
     #实现主体
@@ -795,7 +791,7 @@ ftAutoPacket()
                     local dirNamePackage="packages"
                     local filePathSystemImage=${dirPathOut}/system.img
                     local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
-                   # local fileList=($(ftIniGetValue $filePathDataUser $tagName ${TARGET_PRODUCT}))
+                   # local fileList=($(ftXbGetValue $tagName ${TARGET_PRODUCT}))
                     if [[ -z "$fileList" ]];then
                         ftEcho -e "未找到 [${TARGET_PRODUCT}] 对应的独立配置,将默认复制全部文件"
                         while read item ;do
@@ -830,8 +826,8 @@ ftAutoPacket()
                     local dirNamePackageDataBase="dataBase"
                     local dataBaseFileList dataBaseFileListTemp
                     local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
-                    local apdbDirPathList=($(ftIniGetValue $filePathDataUser $tagName apdbDirPathList))
-                    local mddbDirPathList=($(ftIniGetValue $filePathDataUser $tagName mddbDirPathList))
+                    local apdbDirPathList=($(ftXbGetValue $tagName apdbDirPathList))
+                    local mddbDirPathList=($(ftXbGetValue $tagName mddbDirPathList))
                     for item in ${apdbDirPathList[@]} ; do
                             item=$(ftPath $item)
                             local itemPathRoot=${dirPathOut}/${item}
@@ -888,7 +884,7 @@ ftAutoPacket()
                     tagName="xbashAOSPConfigMTKSoftwareDownloadToool"
                     local dirNamePackageTools="tools"
                     local dirPathPackageTools=${dirPathVersionSoftwareVersion}/${dirNamePackageTools}
-                    local filePathTools=($(ftIniGetValue $filePathDataUser $tagName filePath))
+                    local filePathTools=($(ftXbGetValue $tagName filePath))
                     if [[ -n "${filePathTools}" ]]; then
                         ftEcho -s "创建 tools"
 
@@ -947,7 +943,7 @@ ftAutoPacket()
 
             #上传服务器
             if [[ -n "$isUpload" ]]; then
-                local serverIpAdress=$(ftIniGetValue $filePathDataUser serverConfigDef softwareServerIp)
+                local serverIpAdress=$(ftXbGetValue serverConfigDef softwareServerIp)
                 ftAutoUpload ${dirPathVersionSoftwareVersion}/${dirNameVeriosionBase} ${serverIpAdress:-'10.168.1.253'}
             fi
     elif [[ $AutoEnv_mnufacturers = "sprd" ]]; then
@@ -1065,14 +1061,12 @@ ftAutoCreateReadMeBySoftwareVersion()
     ftAutoInitEnv
     [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return
     local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT dirPathVersionSoftware=$1
-    local filePathConfig=$rFilePathXbashDBUser
     [[ -z "$dirPathVersionSoftware" ]] && dirPathVersionSoftware=${dirPathOut}/${AutoEnv_versionName}
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
     local valCount=1 errorContent
     #(( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
-    [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
     [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCreateReadMeBySoftwareVersion -h && return
 
     #实现主体
@@ -1141,8 +1135,8 @@ ftAutoCreateReadMeBySoftwareVersion()
             #修改记录头部
             local enterLine="\n"
             local content="当前版本：$versionName"${enterLine}
-            content=${content}${enterLine}"说明：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
-            content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig softwareVersionReadMeInfo projectManager)"
+            content=${content}${enterLine}"说明：$(ftXbGetValue projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"记录创建人：$(ftXbGetValue softwareVersionReadMeInfo projectManager)"
             content=${content}${enterLine}
             content=${content}${enterLine}"摄像头类型：$cameraTypeInfo"
             content=${content}${enterLine}"默认 前/后摄大小：$cameraSizeFrontDefault/$cameraSizeBackDefault"
@@ -1173,10 +1167,10 @@ ftAutoCreateReadMeBySoftwareVersion()
             #版本说明
             local enterLine="\n"
             local content="本文件为内部使用，请勿释放给客户"
-            content=${content}${enterLine}"$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"$(ftXbGetValue projectSoftwareReadMeInfo recordMeTag)"
             content=${content}${enterLine}
-            content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
-            content=${content}${enterLine}"项目负责人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo projectManager)"
+            content=${content}${enterLine}"记录创建人：$(ftXbGetValue projectSoftwareReadMeInfo recordCreator)"
+            content=${content}${enterLine}"项目负责人：$(ftXbGetValue projectSoftwareReadMeInfo projectManager)"
             content=${content}${enterLine}
             content=${content}${enterLine}"当前版本：$versionName"
             content=${content}${enterLine}"基础版本："
@@ -1211,15 +1205,15 @@ ftAutoCreateReadMeBySoftwareVersion()
             rm ${filePathChangeListTemplate}.temp
 
             #客户说明
-            content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
-            content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+            content="$(ftXbGetValue projectSoftwareReadMeInfo recordMeTag)"
+            content=${content}${enterLine}"记录创建人：$(ftXbGetValue projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
             content=${content}${enterLine}"当前版本：$versionName"
             content=${content}${enterLine}"基础版本："
             content=${content}${enterLine}
             content=${content}${enterLine}"说明："
             if [[ ${isPacketMtkSoftwareDownloadTools} = "true" ]]; then
-                content=${content}${enterLine}"\t01 $(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo softwareDescriptionMtk)"
+                content=${content}${enterLine}"\t01 $(ftXbGetValue projectSoftwareReadMeInfo softwareDescriptionMtk)"
             fi
             content=${content}${enterLine}"\t02 "
             content=${content}${enterLine}
@@ -1482,13 +1476,12 @@ ftFindAospBuildOuts()
     * ) break;;esac;done
 
     #参数校验
-    [ ! -f "${rFilePathXbashDBUser}" ] && errorContent="${errorContent}\\n[用户数据库哪去了，你帮忙瞅瞅]rFilePathXbashDBUser=$rFilePathXbashDBUser"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftFindAospBuildOuts -h && return
 
     #实现主体
     ftCdAospProject -u > /dev/null
-    local mAospProjectNameList="$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList)"
-    local mAospProjectStoragePathList="$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectStoragePathList)"
+    local mAospProjectNameList="$(ftXbGetValue AospProjectsInfo AospProjectNameList)"
+    local mAospProjectStoragePathList="$(ftXbGetValue AospProjectsInfo AospProjectStoragePathList)"
 
     #去重，去掉软连接引起的重复
     local dirPathAospProject mAospProjectStoragePathListNew
@@ -1609,6 +1602,7 @@ ftAutoAsConfigFileAutoCreate()
 <excludeFolder url=\"file://\$MODULE_DIR\$/docs\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/external\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/hardware\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/gen\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/kernel\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/libcore\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/libnativehelper\" />
