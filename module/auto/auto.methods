@@ -1621,3 +1621,63 @@ ftAutoAsConfigFileAutoCreate()
 
     echo $userPassword | sudo -p '' -S chmod 777 android.ipr android.iml android.iws
 }
+
+complete -W "-h --help -p -s --rely_install" ftAutoLnCcacheByAosp
+ftAutoLnCcacheByAosp()
+{
+    local ftEffect=自动创建AOSP项目独立的ccache目录
+    local isEnable=true
+
+    #可用性校验
+    [[ -z "${isUseBuildCcache}" ]] && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local aospProjectName ccacheMaxSize
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 ftAutoLnCcacheByAosp --rely_install 补全依赖
+#========================================================="; return ;;
+        --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install ccache
+            return ;;
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftAutoLnCcacheByAosp -p 项目名
+#    ftAutoLnCcacheByAosp -s 缓存大小,单位G
+#========================================================="; return ;;
+        # 变量参数解析部分 ==============
+        -p ) aospProjectName="${arg2}"
+            ;;
+        -s ) ccacheMaxSize="${arg2}"
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #依赖校验
+    [[ -z $(which ccache) ]] && ftAutoLnCcacheByAosp --rely "ccache" && return
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "${aospProjectName}" ] && errorContent="${errorContent}\\n[项目名为空]"
+    [ ! -d "${CCACHE_DEV_DIR}" ] && errorContent="${errorContent}\\n[缓存设备路径不存在]CCACHE_DEV_DIR=CCACHE_DEV_DIR"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoLnCcacheByAosp -h && return
+
+    #实现主体
+    local dirPathCcache="${CCACHE_DEV_DIR}/.ccache/${aospProjectName}"
+    [ ! -d "${dirPathCcache}" ] && mkdir -p "${dirPathCcache}"
+    export CCACHE_DIR=$dirPathCcache
+    export USE_CCACHE=1
+    export CACHE_UMASK=002
+    unset CCACHE_HARDLINK
+
+    [ -n "$ccacheMaxSize" ] && ccache -M ${ccacheMaxSize}G
+
+    #校验ccache是否有足够的剩余空间
+    ftCheckCcache
+}

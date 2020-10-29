@@ -425,7 +425,7 @@ ftCheckUserConfig()
 
     ftEcho -e "建议更新用户配置: ${versionNumUser} > ${versionNumExcepmale}"
     echo -n "更新文件" ; ftEcho -s "：$rFilePathXbashConfigUser"
-    echo -n "更新模版" ; ftEcho -s "：$filePathUserConfigExpmale"
+    echo -n "更新模版" ; ftEcho -s "：$rFilePathXbashConfigExample"
 }
 
 ftCheckUserDatabase()
