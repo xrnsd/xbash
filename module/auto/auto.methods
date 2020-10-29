@@ -1633,7 +1633,7 @@ ftAutoLnCcacheByAosp()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local aospProjectName ccacheMaxSize
-    local valCount=2 errorContent arg arg2
+    local valCount=4 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
