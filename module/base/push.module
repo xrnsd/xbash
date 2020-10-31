@@ -50,7 +50,7 @@ ftAdbPushByTerminal()
         done
     fi
     #adb连接状态检测
-    ftAdbContect -e; [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbConnect -e; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
 
     for filePath in ${filePathSourceList[@]}; do

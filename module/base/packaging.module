@@ -62,10 +62,11 @@ if [ -d "$ANDROID_SDK" ];then
     alias xpcn='effect=使用adb快速push[新终端中执行,仅push];ftAdbPush -c -n -f'
     alias xpca='effect=使用adb快速push[新终端中执行,自动重启];ftAdbPush -c -a -f'
     alias xpc='effect=使用adb快速push[新终端中执行,询问是否重启];ftAdbPush -c -f'
+    alias xass='effect=共享android设备屏幕;ftAdbConnect -s'
 
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'
     alias xgetevent='effect=打印输入设备事件节点清单; adb shell  -- getevent -p'
-    alias xtp="effect=打印任务栈的栈顶信息;ftAdbContect ;\
+    alias xtp="effect=打印任务栈的栈顶信息;ftAdbConnect ;\
     [ -n ${autoTestDeviceId} ] && adb -s ${autoTestDeviceId} shell dumpsys activity top |grep ACTIVITY;\
     [ -z ${autoTestDeviceId} ] && adb shell dumpsys activity top |grep ACTIVITY"
     alias xpapk='effect=APK文件基本信息解析;${ANDROID_SDK}/build-tools/29.0.3/aapt d badging'

@@ -103,7 +103,7 @@ ftResetXbash()
 #    ftResetXbash -j / -c / -jc / -jcc
 #========================================================="; return ;;
         # 变量参数解析部分==============
-        -a |--adb) ftAdbContect -r && return
+        -a |--adb) ftAdbConnect -r && return
           ;;
         -j ) export isResetJdk=true
             targetSdkVersionForce="${arg2}"
@@ -1035,7 +1035,7 @@ adb()
             if [[ "$filePathAdbNow" != "$filePathAdb" ]]; then
                 local pid=$(lsof -i:5037  |grep adb |awk '{print $2}')
                 [[ -f "$filePathAdbLocal" ]] && echo $userPassword | sudo -p '' -S mv $filePathAdbLocal ${filePathAdbLocal}2
-                ftAdbContect -r
+                ftAdbConnect -r
             fi
         fi
     else
@@ -1047,7 +1047,7 @@ adb()
                 [[ ! -f "$filePath" ]] && ftEcho -e "Android SDK 配置 失败，文件不存在：$filePath" && return
                 echo $userPassword | sudo  -p ''  -S ln -s  ${ANDROID_SDK}/platform-tools/adb $filePathAdbLocal
             fi
-            ftAdbContect -r
+            ftAdbConnect -r
         fi
         filePathAdbNow=$filePathAdbLocal
     fi
@@ -1163,7 +1163,7 @@ ftKillApplicationByPackageName()
 
     #实现主体
     #adb连接状态检测
-    ftAdbContect -e ; [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbConnect -e ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
 
     while true; do case "$packageName" in
@@ -1230,7 +1230,7 @@ ftLogcatApplicationByTag()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #实现主体
     #adb连接状态检测
-    ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbConnect ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
 
     [ -z "${flagError}" ] && adb -s $deviceId logcat -c
@@ -2149,7 +2149,7 @@ ftApkMergeOdex()
     if [[ "$isAutoPull" = "true" ]]; then
         [[ -z "${fileNameApk}" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误,未指定app名\\n请查看下面说明:" && ftApkMergeOdex -h && return
 
-        ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
+        ftAdbConnect ; [[ -z "${autoTestDeviceId}" ]] && return
         local deviceId=${autoTestDeviceId}
 
         local dirPathLocal=$(pwd) dirPathTarget=/tmp/mergeOdex
@@ -2315,7 +2315,7 @@ ftAdbPush()
 
     #实现主体
     #adb连接状态检测
-    ftAdbContect -e ; [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbConnect -e ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
 
     for filePath in ${filePathSourceList[@]}; do
@@ -2733,7 +2733,8 @@ ftCheckCcache()
     || (( $(echo "$cacheSizeMax == 1"|bc) == 1 )) && return
     local proportionSize="0$(echo "scale=5; $cacheSizeNow / $cacheSizeMax" | bc)"
     local remainingSize="$(echo "scale=5; $cacheSizeMax - $cacheSizeNow" | bc)"
-    local proportionThresholdSize=0.855 remainingThresholdSize=10.0 #10GB/基本满足单次新工程的缓存空间要求
+    #local proportionThresholdSize=0.855 remainingThresholdSize=10.0 #10GB/基本满足单次新工程的缓存空间要求
+    local proportionThresholdSize=0.9 remainingThresholdSize=4.0 #10GB/基本满足单次新工程的缓存空间要求
 
     if (( $(echo "$proportionThresholdSize < ${proportionSize}"|bc) == 1 )) \
         &&(( $(echo "$remainingSize < ${remainingThresholdSize}"|bc) == 1 )) ;then
@@ -2829,7 +2830,7 @@ ftMtkLog()
         || [ "$isStop" = "true" ];then
         #adb连接状态检测
         if [[ -z "${deviceIdLocal}" ]];then
-            ftAdbContect ; [[ -z "${autoTestDeviceId}" ]] && return
+            ftAdbConnect ; [[ -z "${autoTestDeviceId}" ]] && return
             local deviceId=${autoTestDeviceId}
         fi
     fi
@@ -2994,8 +2995,8 @@ ftMtkLog()
     fi
 }
 
-complete -W "-h --help -w --wifi -u" ftAdbContect
-ftAdbContect()
+complete -W "-h --help -w --wifi -u -s" ftAdbConnect
+ftAdbConnect()
 {
     local ftEffect=adb连接处理
     local isEnable=true
@@ -3003,25 +3004,35 @@ ftAdbContect()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
-    local isUseWifi isUpdateDeviceId isElevation
+    local isUseWifi isUpdateDeviceId isElevation isScreenShare
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #
-#    ftAdbContect 无参
+#    ftAdbConnect 无参
 #
 #    重启adb服务
-#    ftAdbContect -r
+#    ftAdbConnect -r
 #
 #    使用wifi调试
-#    ftAdbContect -w / --wifi
+#    ftAdbConnect -w / --wifi
 #
 #    更新adb的设备ID
-#    ftAdbContect -u
+#    ftAdbConnect -u
 #
 #    更新adb的设备ID , 提高adb的设备的权限许可
-#    ftAdbContect -e
+#    ftAdbConnect -e
+#
+#    共享设备屏幕
+#    ftAdbConnect -s
+#    可简化 [ftAdbConnect -s] 为 [xass]
+#========================================================="; return ;;
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    请尝试使用下面命令补全依赖
+#    sudo apt install snapd
+#    sudo snap install scrcpy
 #========================================================="; return ;;
     --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
@@ -3038,6 +3049,8 @@ ftAdbContect()
             adb devices
             return
           ;;
+        -s ) isScreenShare=true
+          ;;
         -w | --wifi ) isUseWifi=true
           ;;
         -u ) isUpdateDeviceId=true
@@ -3047,10 +3060,14 @@ ftAdbContect()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
     #依赖校验
+    if [[ -n "${isScreenShare}" ]]; then
+         [[ -z $(which snap) ]]  && ftAdbConnect --rely && return
+         [[ -n $(snap info scrcpy|grep "no snap found") ]]  && ftAdbConnect --rely && return
+    fi
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAdbContect -h && return
-    [[ -z $(which adb) ]] && ftAdbContect --env && return
-    [[ ! -d ${ANDROID_SDK} ]] && ftAdbContect --env && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAdbConnect -h && return
+    [[ -z $(which adb) ]] && ftAdbConnect --env && return
+    [[ ! -d ${ANDROID_SDK} ]] && ftAdbConnect --env && return
     #环境校验
     [[ -n "$ANDROID_BUILD_TOP" ]] && ftEcho -s "当前终端已初始化Android编译环境,此功能不可用" \
     && export autoTestDeviceId= && return
@@ -3169,6 +3186,12 @@ ftAdbContect()
         [[ ${result} == *$resultFlag* ]] && ftEcho -en "提权失败:" && echo ${result} && return
         adb -s $deviceId disable-verity
         ftEcho -s "ADB提权成功"
+    fi
+
+    # 连接屏幕共享
+    if [[ -n "${isScreenShare}" ]] && [ -n "${deviceId}" ]; then
+        ftEcho -s "开始共享设备:${deviceId}的屏幕 ... "
+        snap run scrcpy
     fi
 }
 

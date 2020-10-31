@@ -1304,7 +1304,7 @@ ftAutoTest()
     local monkeyConfig logcatFlag #="*:E"
 
     #adb状态确认
-    ftAdbContect -u ; [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbConnect -u ; [[ -z "${autoTestDeviceId}" ]] && return
     local deviceId=${autoTestDeviceId}
     ftEcho -s "开始对设备 : [$deviceId] 进行测试"
 
@@ -1591,9 +1591,12 @@ ftAutoAsConfigFileAutoCreate()
     local lineNum=${lineNumList[$lineNumCount]}
     lineNum=$(echo $lineNum |sed s/[[:space:]]//g)
     echo -e "<excludeFolder url=\"file://\$MODULE_DIR\$/art\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/art\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/bionic\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/bootable\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/build\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/ccu_tool\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/compatibility\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/cts\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/dalvik\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/developers\" />
@@ -1601,11 +1604,18 @@ ftAutoAsConfigFileAutoCreate()
 <excludeFolder url=\"file://\$MODULE_DIR\$/device\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/docs\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/external\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/frameworks/base/docs\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/frameworks/base/tests\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/frameworks/base/tools\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/hardware\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/gen\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/kernel\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/kernel-3.18\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/kernel-4.4\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/kernel-4.9\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/libcore\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/libnativehelper\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/ndk\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/out\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/pdk\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/platform_testing\" />
@@ -1614,7 +1624,9 @@ ftAutoAsConfigFileAutoCreate()
 <excludeFolder url=\"file://\$MODULE_DIR\$/system\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/test\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/toolchain\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/trusty\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/tools\" />
+<excludeFolder url=\"file://\$MODULE_DIR\$/vendor/nxp\" />
 <excludeFolder url=\"file://\$MODULE_DIR\$/.repo\" />" > $filePathExcludeFolderListTemp
     sed -i "$lineNum r $filePathExcludeFolderListTemp" $filePathAndroidIML
     rm $filePathExcludeFolderListTemp
