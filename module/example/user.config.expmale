@@ -1,5 +1,5 @@
 #! /bin/bash
-versionNum=v0.1.5.7
+versionNum=v0.1.5.8
 xEcho(){
     local val1="${1}" val2="${2}" val3="${3}";echo -en "\033[1;33m${val1}\033[0m";echo -en "\033[1;31m${val2}\033[0m";echo -en "\033[1;33m${val3}\033[0m"; echo -e "\033[1;31m does not exist\033[0m"
 }
@@ -149,6 +149,24 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
         done
         export PATH=${PATHLOCAL}:${dirPathFlutterSDK}
     else xEcho "flutter SDK " "config error : " ${dirPathFlutterSDK}; fi
+
+    # Python
+    filePathPython="$(which python)"
+    [[ "$isEnableResetPythonConfig" = "true" ]] && if [[ -n "$filePathPython" ]] ;then
+        ftEcho -s "update Python config"
+        echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+        if [[ -n $(update-alternatives --list gcc|grep "no alternatives for python") ]]; then
+                while read filePath ;do
+                    sudo -p '' -S  update-alternatives --install /usr/bin/gcc python ${filePath} 300
+                    sudo -p '' -S  update-alternatives --install /usr/bin/gcc python2 ${filePath} 300
+                done < <(echo "$(ls ${filePathPython}2.*)" |grep -v ".*m")
+                while read filePath ;do
+                    sudo -p '' -S  update-alternatives --install /usr/bin/gcc python ${filePath} 300
+                    sudo -p '' -S  update-alternatives --install /usr/bin/gcc python3 ${filePath} 300
+                done < <(echo "$(ls ${filePathPython}3.*)" |grep -v ".*m")
+        fi
+        echo "$gccPath" | sudo -p '' -S update-alternatives --config python >/dev/null
+    else xEcho "Python" "config error : " ${filePathPython}; fi
 
     #other
     [[ -z $(echo $PATH |grep "/usr/libexec/git-core") ]] && export PATH=$PATH:/usr/libexec/git-core

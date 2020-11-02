@@ -70,7 +70,6 @@ bash的简单扩展
     08 ftAutoAsConfigFileAutoCreate函数配置分离
     09 不同函数错误连续提示修复
     10 ftAutoAsConfigFileAutoCreate生成的配置文件android.iml改为项目名.iml
-    11 用户配置 添加 python3 版本切换配置
 
 5.待修复
 ----------
