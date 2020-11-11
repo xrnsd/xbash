@@ -1,5 +1,5 @@
 #! /bin/bash
-versionNum=v0.1.5.8
+versionNum=v0.1.5.9
 xEcho(){
     local val1="${1}" val2="${2}" val3="${3}";echo -en "\033[1;33m${val1}\033[0m";echo -en "\033[1;31m${val2}\033[0m";echo -en "\033[1;33m${val3}\033[0m"; echo -e "\033[1;31m does not exist\033[0m"
 }
@@ -105,8 +105,9 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
     dirPathAndroidSdk=${dirPathHomeTools}/Sdk
     if [[ -d "$dirPathAndroidSdk" ]]; then
         export ANDROID_SDK="${dirPathAndroidSdk}"
-        export ANDROID_HOME=$ANDROID_SDK
-        export ANDROID_SDK_HOME=$ANDROID_SDK
+        export ANDROID_SDK_ROOT="${ANDROID_SDK}"
+        export ANDROID_HOME="${ANDROID_SDK}"
+        export ANDROID_SDK_HOME="${ANDROID_SDK}"
         #export ANDROID_SDK_BUILD_TOOL=${ANDROID_SDK_HOME}/build-tools/android-4.4W
         #export PATH=$PATH:$ANDROID_SDK_BUILD_TOOL
 
@@ -167,6 +168,15 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
         fi
         echo "$gccPath" | sudo -p '' -S update-alternatives --config python >/dev/null
     else xEcho "Python" "config error : " ${filePathPython}; fi
+
+    # Flashcache
+    if [[ -n "$(which flashcache_load)" ]] ;then
+        echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+        sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.new_style_write_merge=1 >/dev/null
+        sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.skip_seq_thresh_kb=512 >/dev/null
+        sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.fast_remove=1 >/dev/null
+        sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.reclaim_policy=1 >/dev/null
+    fi
 
     #other
     [[ -z $(echo $PATH |grep "/usr/libexec/git-core") ]] && export PATH=$PATH:/usr/libexec/git-core

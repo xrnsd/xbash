@@ -70,6 +70,7 @@ bash的简单扩展
     08 ftAutoAsConfigFileAutoCreate函数配置分离
     09 不同函数错误连续提示修复
     10 ftAutoAsConfigFileAutoCreate生成的配置文件android.iml改为项目名.iml
+    11 fastboot封装实现
 
 5.待修复
 ----------
@@ -79,3 +80,4 @@ bash的简单扩展
     04 adb的多设备连接处理，xl过滤log时,重启设备概率出现死循环，不停输出  - waiting for device - ,怀疑adb内部问题
     05 xconfig的sublime_text快捷方式模板，窗口打开状态在桌面显示异常
     06 基于android的out生成版本软件包 部分函数执行失败后没有停止执行
+    07 xbash命令历史概率丢失
