@@ -150,7 +150,7 @@ ftGitPatchAdd2Branches()
     #实现主体
     git pull
     local branchList=($(git branch | sed -e "s:*::g" | grep -v "${branchNameNow}"))
-    local branchListLocal=${branchList}
+    local branchListLocal=(${branchList[@]})
 
     local key="remotes/origin/"
     local branchListServer=($(git branch -a|grep -i "$branchNameTag" \
