@@ -193,8 +193,12 @@ ftGitPatchAdd2Branches()
                 break
             fi
         done
-        [ -z "$isApplyFail" ] && if ! git push ;then
-            ftEcho -s "分支${branchName} : 同步失败"
+        if [ -z "${isApplyFail}" ]; then
+            ftGitLogShell -n 20
+            ftEcho -y "是否同步到远程分支 [回车同步]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
+            [[ "${sel}" = "y" ]] && if ! git push ;then
+                ftEcho -s "分支${branchName} : 同步失败"
+            fi
         fi
     done
     [ -n "${banchFailList}" ] && ftEcho -e "下面分支添加补丁没有成功：" &&
