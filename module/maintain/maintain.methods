@@ -8,6 +8,8 @@ ftRestoreOperate()
     local ftEffect=根据备份包还原系统
     local isEnable=sub
 
+    #可用性校验
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathIniMaintain tagNameMaintain dirPathRestoreTarget
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -54,6 +56,8 @@ ftRestoreChoiceSource()
     local ftEffect=选择还原使用的版本[备份]包
     local isEnable=sub
 
+    #可用性校验
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathIni filePathIniMaintain tagNameMaintain
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -117,6 +121,8 @@ ftSetBackupDevDir()
     local ftEffect=选择备份包存放的设备
     local isEnable=sub
 
+    #可用性校验
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local editType filePathIni versionName
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -193,7 +199,7 @@ ftSetBackupType()
     local isEnable=sub
 
     #可用性校验
-    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathIni versionName filePathIniMaintain
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -276,6 +282,8 @@ ftSetRestoreOverryList()
     local ftEffect=选择还原时忽略的目录
     local isEnable=sub
 
+    #可用性校验
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathIniMaintain tagNameMaintain
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -319,6 +327,8 @@ ftBackupOs()
     local ftEffect=生成备份包
     local isEnable=sub
 
+    #可用性校验
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathIni versionName filePathIniMaintain
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -403,6 +413,8 @@ ftMaintainInfoNote()
     local ftEffect=记录备份包相关备注
     local isEnable=sub
 
+    #可用性校验
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local editType filePathIni versionName
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
@@ -445,6 +457,8 @@ ftSystemEnv()
     local ftEffect=记录和校验备份包软件和硬件信息
     local isEnable=sub
 
+    #可用性校验
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local editType versionName filePathInfo
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in

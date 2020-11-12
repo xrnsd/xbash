@@ -159,7 +159,8 @@ dirPathsExcludeListHomeBase= \
     .android/avd \
     .m2 \
     .android/build-cache \
-    .android/cache
+    .android/cache \
+    other
 dirPathsExcludeAllListSys= \
     /usr/lib/libreoffice/share/gallery \
     /usr/share/code/resources/app/extensions/markdown \
