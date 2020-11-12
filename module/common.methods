@@ -3192,7 +3192,8 @@ ftAdbConnect()
     if [[ -n "${isScreenShare}" ]] && [ -n "${deviceId}" ]; then
         ftEcho -s "开始共享设备:${deviceId}的屏幕 ... "
         # export ADB="${ANDROID_SDK_ROOT}/platform-tools/adb"
-        snap run scrcpy
+        #snap run scrcpy
+        guiscrcpy
     fi
 }
 
