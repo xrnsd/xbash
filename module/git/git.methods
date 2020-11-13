@@ -631,7 +631,7 @@ ftGitTag()
         return
     fi
 
-    local fileNameVersionNote="${tagName}.readme"
+    local fileNameVersionNote="GitTag.readme"
     local filePathVersionNote=/tmp/${fileNameVersionNote}
     [ -f "${filePathVersionNote}" ] && rm -rf "${filePathVersionNote}"
 
@@ -647,8 +647,8 @@ ftGitTag()
     fi
     [ -n "${isUseAppReadMeTemplate}" ] && ftGitTagCreateAppReadMeTemplate -v "${tagName}" -f "${filePathVersionNote}"
     [ -n "${isUseBranchReadmeTemplate}" ] && ftGitTagCreateBranchReadMeTemplate -f "${filePathVersionNote}"
-    if touch $filePathVersionNote ; then
-        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathVersionNote
+    if touch "${filePathVersionNote}" ; then
+        XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s "${filePathVersionNote}"
     else
         ftEcho -ex "创建临时说明信息文件失败"
         return;
