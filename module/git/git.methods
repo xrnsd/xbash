@@ -118,22 +118,40 @@ ftGitLogShell()
     git log --pretty=format:"$branchLogFormat" -$branchLogItemCount
 }
 
+complete -W "-h --help -a -s" ftGitPatchAdd2Branches
 ftGitPatchAdd2Branches()
 {
     local ftEffect=快速添加git的Patch补丁[跨分支]
     local isEnable=true
 
-    while true; do case "$1" in
+    local branchTag isAutoPush isAutoSync=true
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+        # 说明参数解析部分==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftGitPatchAdd2Branches 无参
-#    ftGitPatchAdd2Branches 分支TAG   #只操作名称中有TAG的分支
+#
+#    #只操作名称中有TAG的分支
+#    ftGitPatchAdd2Branches -t 分支TAG   
+#
+#    #添加的补丁自动提交
+#    ftGitPatchAdd2Branches -a
+#
+#    #添加的补丁之前不进行远程分支同步
+#    ftGitPatchAdd2Branches -ns
 #=========================================================" ;return ;;
     --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
 # 当前目录无有效GIT仓库
 #=========================================================" ;return ;;
-    * ) break;;esac;done
+        # 变量参数解析部分==============
+        -t )  branchTag="${arg2}"
+                ;;
+        -a )  isAutoPush=true
+                ;;
+        -ns )  isAutoSync=
+                ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
@@ -182,8 +200,7 @@ ftGitPatchAdd2Branches()
         fi
 
         git checkout "$branchName"||return
-        ftEcho -s "正同步当前分支,请稍等..."
-        git pull --rebase && git push
+        [ -n "$isAutoSync" ] && ftEcho -s "正同步当前分支,请稍等..." && git pull --rebase && git push
 
         #添加多个commit
         i=${#hashList[@]}
@@ -199,7 +216,9 @@ ftGitPatchAdd2Branches()
                 break
             fi
         done
-        if [[ -z "$isApplyFail" ]]; then
+
+        #同步到远程分支
+        [ -n "$isAutoPush" ] && if [[ -z "$isApplyFail" ]]; then
             echo && ftEcho -s "更新后的 commit list :"
             ftGitLogShell -n 20
             ftEcho -y "是否同步到远程分支 [回车同步]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
@@ -212,6 +231,8 @@ ftGitPatchAdd2Branches()
             sel=
         fi
     done
+
+    #异常信息汇总
     [ -n "${banchFailList}" ] && echo && ftEcho -e "下面分支添加补丁没有成功：" &&
     for branchName in ${branchList[@]} ; do
         echo ${branchName}
@@ -222,6 +243,7 @@ ftGitPatchAdd2Branches()
         echo ${branchName}
     done && echo
 
+    #回到初始点
     echo && ftEcho -s "开始切换初始分支：${branchNameNow}"
     git checkout "${branchNameNow}"
 }
