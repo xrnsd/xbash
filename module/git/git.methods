@@ -148,9 +148,12 @@ ftGitPatchAdd2Branches()
         ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
 
     #实现主体
-    git pull
+    ftEcho -s "正同步当前分支,请稍等..."
+     git pull --rebase && git push
+
     local branchList=($(git branch | sed -e "s:*::g" | grep -v "${branchNameNow}"))
-    local branchListLocal=(${branchList[@]})
+    local branchListLocal=($(git branch | sed -e "s:*::g"))
+    local banchFailList banchCancelSyncList
 
     local key="remotes/origin/"
     local branchListServer=($(git branch -a|grep -i "$branchNameTag" \
@@ -171,13 +174,16 @@ ftGitPatchAdd2Branches()
      [ -z "$hashList" ] && ftEcho -e "${filePathCommitList} 为空" && return
 
     for branchName in ${branchList[@]} ; do
-        ftEcho -s "================  切换到分支: ${branchName}  添加补丁====================="
+        echo;ftEcho -s "================  切换到分支: ${branchName}  添加补丁====================="
 
-        [[ ! "${branchListLocal[@]}" =~ "${branchName}" ]] && ftEcho -y "此分支为远程分支，是否继续(回车默认y)" && read -n 1 sel && echo
-        [ -z "${sel}" ] && sel=y; [[ "$sel" != "y" ]] && continue
+        if [[ ! "${branchListLocal[@]}" =~ "${branchName}" ]]; then
+            ftEcho -y "此分支为远程分支，是否继续(回车默认y)" && read -n 1 sel && echo
+            [ -z "${sel}" ] && sel=y; [[ "$sel" != "y" ]] && continue
+        fi
 
         git checkout "$branchName"||return
-        git pull
+        ftEcho -s "正同步当前分支,请稍等..."
+        git pull --rebase && git push
 
         #添加多个commit
         i=${#hashList[@]}
@@ -193,20 +199,30 @@ ftGitPatchAdd2Branches()
                 break
             fi
         done
-        if [ -z "${isApplyFail}" ]; then
+        if [[ -z "$isApplyFail" ]]; then
+            echo && ftEcho -s "更新后的 commit list :"
             ftGitLogShell -n 20
             ftEcho -y "是否同步到远程分支 [回车同步]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
-            [[ "${sel}" = "y" ]] && if ! git push ;then
-                ftEcho -s "分支${branchName} : 同步失败"
+            if [[ "${sel}" = "y" ]]; then
+                git push || ftEcho -e "分支${branchName} : 同步失败"
+            else
+                echo && ftEcho -s "已放弃同步"
+                banchCancelSyncList=(${banchCancelSyncList[@]} ${branchName})
             fi
+            sel=
         fi
     done
-    [ -n "${banchFailList}" ] && ftEcho -e "下面分支添加补丁没有成功：" &&
+    [ -n "${banchFailList}" ] && echo && ftEcho -e "下面分支添加补丁没有成功：" &&
     for branchName in ${branchList[@]} ; do
         echo ${branchName}
-    done
+    done && echo
 
-    ftEcho -s "开始切换初始分支：${branchNameNow}"
+    [ -n "${banchCancelSyncList}" ] && echo && ftEcho -e "下面分支没有同步：" &&
+    for branchName in ${banchCancelSyncList[@]} ; do
+        echo ${branchName}
+    done && echo
+
+    echo && ftEcho -s "开始切换初始分支：${branchNameNow}"
     git checkout "${branchNameNow}"
 }
 
