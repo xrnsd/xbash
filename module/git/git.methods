@@ -158,7 +158,7 @@ ftGitPatchAdd2Branches()
     #解参验耦
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     [ -z "$branchNameNow" ] && ftGitPatchAdd2Branches --env && return
-    local branchTag=$1 filePathBranchList=待打补丁的分支列表 filePathCommitList=patch的hash值列表
+    local branchTag=$1 filePathBranchList=待打补丁的分支列表 filePathCommitList="patch的hash值列表[会自动倒序,请按新旧正序填写]"
     local filePathAddPatchTool=$rFilePathXbashModuleGitAddPatchToolExample
     local filePathFailInfo="/home/wgx/.cache/ftGitPatchAdd2Branches.log" ; [ -f "$filePathFailInfo" ] && rm $filePathFailInfo
     [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return
@@ -171,7 +171,7 @@ ftGitPatchAdd2Branches()
 
     local branchList=($(git branch | sed -e "s:*::g" | grep -v "${branchNameNow}"))
     local branchListLocal=($(git branch | sed -e "s:*::g"))
-    local banchFailList banchCancelSyncList
+    local banchApplayPatchFailList banchSyncCancelList banchSyncFailList
 
     local key="remotes/origin/"
     local branchListServer=($(git branch -a|grep -i "$branchNameTag" \
@@ -192,7 +192,7 @@ ftGitPatchAdd2Branches()
      [ -z "$hashList" ] && ftEcho -e "${filePathCommitList} 为空" && return
 
     for branchName in ${branchList[@]} ; do
-        echo;ftEcho -s "================  切换到分支: ${branchName}  添加补丁====================="
+        echo;ftEcho -s "================  切换到分支: ${branchName} ====================="
 
         if [[ ! "${branchListLocal[@]}" =~ "${branchName}" ]]; then
             ftEcho -y "此分支为远程分支，是否继续(回车默认y)" && read -n 1 sel && echo
@@ -200,46 +200,64 @@ ftGitPatchAdd2Branches()
         fi
 
         git checkout "$branchName"||return
-        [ -n "$isAutoSync" ] && ftEcho -s "正同步当前分支,请稍等..." && git pull --rebase && git push
+        [ -n "$isAutoSync" ] && ftEcho -s "添加补丁前同步当前分支,请稍等..." && git pull --rebase && git push
 
         #添加多个commit
         i=${#hashList[@]}
-        local isApplyFail patchId
+        local isApplyFail patchId commitIdNewestOld=$(ftGitLogShell  -n 1 -c "%h")
         while (( $i>0 ));do
             (( i-=1 ))
             patchId=${hashList[$i]}
+            ftEcho -s "添加补丁 : ${patchId}"
             if ! git cherry-pick $patchId ;then
                 ftEcho -e "补丁：${patchId}，添加失败"
                 isApplyFail=true
-                banchFailList=(${banchFailList[@]} ${branchName})
+                banchApplayPatchFailList=(${banchApplayPatchFailList[@]} ${branchName})
                 git reset --hard
                 break
             fi
         done
 
         #同步到远程分支
-        [ -n "$isAutoPush" ] && if [[ -z "$isApplyFail" ]]; then
+        local commitIdNewestNow=$(ftGitLogShell  -n 1 -c "%h")
+        if [[ -z "$isApplyFail" ]] || [[ ${commitIdNewestOld} != ${commitIdNewestNow} ]]; then
             echo && ftEcho -s "更新后的 commit list :"
             ftGitLogShell -n 20
-            ftEcho -y "是否同步到远程分支 [回车同步]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
-            if [[ "${sel}" = "y" ]]; then
-                git push || ftEcho -e "分支${branchName} : 同步失败"
+
+            [ -z "${isAutoPush}" ] && ftEcho -y "是否同步到远程分支 [回车同步]" && read -n 1 sel && [ -z "${sel}" ] && sel=y
+            if [ -n "${isAutoPush}" ] || [[ "${sel}" = "y" ]]; then
+                ftEcho -s "正在当前分支补丁到远程分支,请稍等..." 
+                if ! git push; then
+                    ftEcho -e "分支${branchName} : 同步失败"
+                    banchSyncFailList=(${banchSyncFailList[@]} ${branchName})
+                fi
             else
                 echo && ftEcho -s "已放弃同步"
-                banchCancelSyncList=(${banchCancelSyncList[@]} ${branchName})
+                banchSyncCancelList=(${banchSyncCancelList[@]} ${branchName})
             fi
             sel=
         fi
     done
 
     #异常信息汇总
-    [ -n "${banchFailList}" ] && echo && ftEcho -e "下面分支添加补丁没有成功：" &&
+    if [ -n "${banchApplayPatchFailList}" ] \
+        || [ -n "${banchSyncCancelList}" ] \
+        || [ -n "${banchSyncFailList}" ]; then
+        ftEcho -s "操作结果说明:"
+    fi
+
+    [ -n "${banchApplayPatchFailList}" ] && echo && ftEcho -e "下面分支添加补丁没有成功：" &&
     for branchName in ${branchList[@]} ; do
         echo ${branchName}
     done && echo
 
-    [ -n "${banchCancelSyncList}" ] && echo && ftEcho -e "下面分支没有同步：" &&
-    for branchName in ${banchCancelSyncList[@]} ; do
+    [ -n "${banchSyncCancelList}" ] && echo && ftEcho -e "下面分支没有同步：" &&
+    for branchName in ${banchSyncCancelList[@]} ; do
+        echo ${branchName}
+    done && echo
+
+    [ -n "${banchSyncFailList}" ] && echo && ftEcho -e "下面分支同步失败：" &&
+    for branchName in ${banchSyncFailList[@]} ; do
         echo ${branchName}
     done && echo
 
@@ -580,8 +598,8 @@ ftGitTag()
 #    可简化 [ftGitTag --modify] 为 [xgmt] ,其他参数不变
 #
 #    添加分支说明标签 [分支情况的详细说明，无模板] :
-#    ftGitTag --branch 标签名
-#    ftGitTag --branch 标签名 对应的commitid
+#    ftGitTag --branch 分支名
+#    ftGitTag --branch 分支名 对应的commitid
 #    可简化 [ftGitTag --branch] 为 [xgbt] ,其他参数不变
 #
 #    删除标签:
