@@ -2712,10 +2712,10 @@ ftCheckCcache()
     local keyCacheSizeNow="cache size"
     local keyCacheSizeMax="max cache size"
     local UnitMb="Mbytes" UnitGb="Gbytes"
-    local cacheSizeNow=$(ccache -s |grep "$keyCacheSizeNow"| awk '{print $3}' | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
-    local cacheSizeNowUnit=$(ccache -s |grep "$keyCacheSizeNow"| awk '{print $4}')
+    local cacheSizeNow=$(ccache -s |grep -v "${keyCacheSizeMax}" |grep "$keyCacheSizeNow"| awk '{print $3}' | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
+    local cacheSizeNowUnit=$(ccache -s |grep -v "${keyCacheSizeMax}" |grep "${keyCacheSizeNow}"| awk '{print $4}')
     local cacheSizeMax=$(ccache -s |grep "$keyCacheSizeMax" | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
-    local cacheSizeMaxUnit=$(ccache -s |grep "$keyCacheSizeMax"| awk '{print $4}')
+    local cacheSizeMaxUnit=$(ccache -s |grep "$keyCacheSizeMax"| awk '{print $5}')
 
 
     if [[ -n $(echo $cacheSizeMaxUnit |grep $UnitMb) ]];then
@@ -2734,7 +2734,7 @@ ftCheckCcache()
     local proportionSize="0$(echo "scale=5; $cacheSizeNow / $cacheSizeMax" | bc)"
     local remainingSize="$(echo "scale=5; $cacheSizeMax - $cacheSizeNow" | bc)"
     #local proportionThresholdSize=0.855 remainingThresholdSize=10.0 #10GB/基本满足单次新工程的缓存空间要求
-    local proportionThresholdSize=0.9 remainingThresholdSize=4.0 #10GB/基本满足单次新工程的缓存空间要求
+    local proportionThresholdSize=0.9 remainingThresholdSize=4.0
 
     if (( $(echo "$proportionThresholdSize < ${proportionSize}"|bc) == 1 )) \
         &&(( $(echo "$remainingSize < ${remainingThresholdSize}"|bc) == 1 )) ;then
@@ -3050,6 +3050,7 @@ ftAdbConnect()
             return
           ;;
         -s ) isScreenShare=true
+            ftEcho -s "共享屏幕已停用，请确认" && return
           ;;
         -w | --wifi ) isUseWifi=true
           ;;
@@ -3193,7 +3194,7 @@ ftAdbConnect()
         ftEcho -s "开始共享设备:${deviceId}的屏幕 ... "
         # export ADB="${ANDROID_SDK_ROOT}/platform-tools/adb"
         #snap run scrcpy
-        guiscrcpy
+        # guiscrcpy
     fi
 }
 
