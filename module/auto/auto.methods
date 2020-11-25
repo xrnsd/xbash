@@ -1691,5 +1691,5 @@ ftAutoLnCcacheByAosp()
     [ -n "$ccacheMaxSize" ] && ccache -M ${ccacheMaxSize}G
 
     #校验ccache是否有足够的剩余空间
-    ftCheckCcache
+    [[ "$(type -t ftCheckCcache)" = "function" ]] && ftCheckCcache
 }
