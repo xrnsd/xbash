@@ -158,7 +158,7 @@ ftGitPatchAdd2Branches()
     #解参验耦
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     [ -z "$branchNameNow" ] && ftGitPatchAdd2Branches --env && return
-    local branchTag=$1 filePathBranchList=待打补丁的分支列表 filePathCommitList="patch的hash值列表[会自动倒序,请按新旧正序填写]"
+    local filePathBranchList=待打补丁的分支列表 filePathCommitList="patch的hash值列表[会自动倒序,请按新旧正序填写]"
     local filePathAddPatchTool=$rFilePathXbashModuleGitAddPatchToolExample
     local filePathFailInfo="/home/wgx/.cache/ftGitPatchAdd2Branches.log" ; [ -f "$filePathFailInfo" ] && rm $filePathFailInfo
     [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return
@@ -224,9 +224,9 @@ ftGitPatchAdd2Branches()
             echo && ftEcho -s "更新后的 commit list :"
             ftGitLogShell -n 20
 
-            [ -z "${isAutoPush}" ] && ftEcho -y "是否同步到远程分支 [回车同步]" && read -n 1 sel && [ -z "${sel}" ] && sel=y
+            [ -z "${isAutoPush}" ] && ftEcho -y "当前分支已添加新补丁,是否同步到远程分支 [回车同步]" && read -n 1 sel && [ -z "${sel}" ] && sel=y
             if [ -n "${isAutoPush}" ] || [[ "${sel}" = "y" ]]; then
-                ftEcho -s "正在当前分支补丁到远程分支,请稍等..." 
+                ftEcho -s "正在同步,请稍等..." 
                 if ! git push; then
                     ftEcho -e "分支${branchName} : 同步失败"
                     banchSyncFailList=(${banchSyncFailList[@]} ${branchName})
