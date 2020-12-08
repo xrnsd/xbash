@@ -816,19 +816,37 @@ ftDevAvailableSpace()
     local ftEffect=设备可用空间
     local isEnable=true
 
-    while true; do case "$1" in
-    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+    local dirPathTraget=$1 isReturn=$2 isFormatGbyte
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 ftAutoLnCcacheByAosp --rely_install 补全依赖
+#========================================================="; return ;;
+        --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install ccache
+            return ;;
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
 #    ftDevAvailableSpace [dirPathTraget] [[isReturn]]
 #    ftDevAvailableSpace /media/test
 #========================================================="; return ;;
-    * ) break;;esac;done
+        # 变量参数解析部分 ==============
+        -g ) isFormatGbyte=true
+                dirPathTraget=$2
+                isReturn=$3
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
-    local dirPathTraget=$1 isReturn=$2
-    local valCount=1 errorContent
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathTraget" ] && errorContent="${errorContent}\\n[设备路径不存在]dirPathTraget=$dirPathTraget"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftDevAvailableSpace -h && return
@@ -849,7 +867,7 @@ ftDevAvailableSpace()
             elif [[ $size == *G ]];then
                 size=${size//G/}
                 size=${size%.*}
-                ((size*=1024))
+                [[ -z "$isFormatGbyte" ]] && ((size*=1024))
             else
                 size=${size//M/}
             fi
