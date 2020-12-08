@@ -2699,7 +2699,11 @@ ftCheckCcache()
     #可用性校验
     [[ "$isEnable" != "true" ]] && return #&& ftEcho -s "${ftEffect} 已停用，请确认" && return
     # 说明参数解析部分
-    while true; do case "$1" in
+    local isChecked
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    ${ftEffect}依赖包 $2
@@ -2715,15 +2719,19 @@ ftCheckCcache()
 #
 #    补全依赖
 #    ftCheckCcache --rely_install
+#
+#    获取当前已使用 ccache 大小
+#    ftCheckCcache -c
 #========================================================="; return ;;
-    * ) break;;esac;done
+        # 变量参数解析部分 ==============
+        -c ) isChecked=true
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
 
-    #依赖校验
     [[ -z $(which ccache) ]] && ftCheckCcache --rely "ccache" && return
     [[ ! -d ${CCACHE_DEV_DIR} ]] && return
     #解参验耦
-    local valCount=0 errorContent
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    (( $# > $valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCheckCcache -h && return
 
     #实现主体
@@ -2731,24 +2739,30 @@ ftCheckCcache()
     local keyCacheSizeMax="max cache size"
     local UnitMb="Mbytes" UnitGb="Gbytes"
     local cacheSizeNow=$(ccache -s |grep -v "${keyCacheSizeMax}" |grep "$keyCacheSizeNow"| awk '{print $3}' | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
+            cacheSizeNow=${cacheSizeNow%.*}
     local cacheSizeNowUnit=$(ccache -s |grep -v "${keyCacheSizeMax}" |grep "${keyCacheSizeNow}"| awk '{print $4}')
     local cacheSizeMax=$(ccache -s |grep "$keyCacheSizeMax" | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
+            cacheSizeMax=${cacheSizeMax%.*}
     local cacheSizeMaxUnit=$(ccache -s |grep "$keyCacheSizeMax"| awk '{print $5}')
+    local ccacheStorageDeviceAvailableSpaceSize=$(ftDevAvailableSpace -g ${CCACHE_DEV_DIR})
+            ccacheStorageDeviceAvailableSpaceSize=${ccacheStorageDeviceAvailableSpaceSize%.*}
 
-
-    if [[ -n $(echo $cacheSizeMaxUnit |grep $UnitMb) ]];then
-        ftEcho -e "ccache 空间有限,请及时使用ccache -M xxG处理"
+    if [[ -n "$isChecked" ]]; then
+        export ccacheEnv_SizeNow="${cacheSizeNow}"
+        export ccacheEnv_SizeNowUni="${cacheSizeNowUnit}"
+        export ccacheEnv_SizeMax="${cacheSizeMax}"
+        export ccacheEnv_SizeMaxUnit="${cacheSizeMaxUnit}"
         return
-    elif (( $(echo "$cacheSizeMax < 20"|bc) == 1 )) ;then
+    fi
+
+    if [[ -n $(echo $cacheSizeMaxUnit |grep $UnitMb) ]] || (( $(echo "$cacheSizeMax < 20"|bc) == 1 ));then
         ftEcho -e "ccache 空间有限,请及时使用ccache -M xxG处理"
         return
     fi
 
-    [[ -n $(echo $cacheSizeNow |grep $UnitMb) ]] && cacheSizeNow=$(($cacheSizeNow/1024))
-
     [[ -z "${cacheSizeNow}" ]] \
-    || (( $(echo "$cacheSizeNow <= 0"|bc) == 1 )) \
-    || (( $(echo "$cacheSizeMax == 1"|bc) == 1 )) && return
+    || (( $cacheSizeNow <= 0 )) \
+    || (( $cacheSizeMax == 1 )) && return
     local proportionSize="0$(echo "scale=5; $cacheSizeNow / $cacheSizeMax" | bc)"
     local remainingSize="$(echo "scale=5; $cacheSizeMax - $cacheSizeNow" | bc)"
     #local proportionThresholdSize=0.855 remainingThresholdSize=10.0 #10GB/基本满足单次新工程的缓存空间要求
@@ -2758,6 +2772,8 @@ ftCheckCcache()
         &&(( $(echo "$remainingSize < ${remainingThresholdSize}"|bc) == 1 )) ;then
         ftEcho -e "ccache 剩余空间有限,即将溢出,请及时处理"
     fi
+
+    (( $cacheSizeMax-$cacheSizeNow > $(ftDevAvailableSpace -g ${CCACHE_DEV_DIR}))) && ftEcho -e "ccache的存储剩余空间不足,请及时处理"
 }
 
 complete -W "--help --stop --clearn -h -s -sp -c -p" ftMtkLog
