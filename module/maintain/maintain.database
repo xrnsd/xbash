@@ -37,13 +37,11 @@ dirPathsExcludeListSys= \
 	/usr/share/icons/ubuntu-mono-light \
     /usr/share/icons/HighContrast/icon-theme.cache \
     /usr/share/icons/oxygen/icon-theme.cache \
-    /usr/share/icons/Paper/.icon-theme.cache \
     /usr/share/icons/gnome/icon-theme.cache \
     /usr/share/virtualbox/VBoxGuestAdditions.iso \
     /usr/share/pyzy/db/open-phrase.db \
     /root \
-	/home/78 \
-	/home/yy
+	/home
 
 dirPathsExcludeListHomeBase= \
     AndroidStudioProjects \
@@ -178,6 +176,7 @@ dirPathsExcludeAllListSys= \
     /root/.gradle \
     /root/tmp
     
+
 
 
 

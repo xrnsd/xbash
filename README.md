@@ -70,6 +70,7 @@ bash的简单扩展
     08 ftAutoAsConfigFileAutoCreate函数配置分离
     10 ftAutoAsConfigFileAutoCreate生成的配置文件android.iml改为项目名.iml
     11 基于标签找到分支信息
+    12 将命令封装改成用户模块+模板
 
 5.待修复
 ----------
