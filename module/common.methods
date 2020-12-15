@@ -1206,7 +1206,7 @@ ftLogcatApplicationByTag()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local tagContent=$1 vContent=$2 flagError packageName isUserPackageName isDisTime
+    local tagContent=$1 vContent=$2 flagError packageName isUserPackageName isDisTime isMoreTag
     local arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -1217,18 +1217,23 @@ ftLogcatApplicationByTag()
 #
 #     打印包名为 com.android.settings的应用输出的log
 #    ftLogcatApplicationByTag -p com.android.settings
+#    可简化 [ftLogcatApplicationByTag -p ] 为 [xlp],其他参数不变
 #
 #     打印包含123456的log
 #    ftLogcatApplicationByTag 123456
+#    可简化 [ftLogcatApplicationByTag] 为 [xl],其他参数不变
 #
 #     打印包含123456 不包含777  的log
 #    ftLogcatApplicationByTag 123456 7777
+#    可简化 [ftLogcatApplicationByTag] 为 [xl],其他参数不变
 #
-#    可简化 [ftLogcatApplicationByTag] 为 [xl] ,其他参数不变
-#
-#     打印包含123456 不包含777  的错误 log
+#     打印包含123456不包含777的错误log
 #    ftLogcatApplicationByTag -e 123456 7777
 #    可简化 [ftLogcatApplicationByTag -e] 为 [xle] ,其他参数不变
+#
+#     打印同时包含123456或777的log
+#    ftLogcatApplicationByTag -o \"123456 7777\"
+#    可简化 [ftLogcatApplicationByTag -o] 为 [xlo],其他参数不变
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -p ) packageName="${arg2}"
@@ -1245,6 +1250,11 @@ ftLogcatApplicationByTag()
                 tagContent="${arg2}"
                 vContent="${arg3}"
           ;;
+        -o )   isMoreTag=true
+                tagContent="${arg2}"
+                tagContent=${tagContent// /|}
+                vContent=
+          ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #实现主体
     #adb连接状态检测
@@ -1259,11 +1269,11 @@ ftLogcatApplicationByTag()
             launcher3) packageName="com.android.launcher3"  ;break;;
         * ) break;;esac;done
         local pid=$(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}')
-        [[ -z "$vContent" ]] && adb -s $deviceId logcat "${flagError}" |grep "${pid}"
-        adb -s $deviceId logcat "${flagError}" |grep "${pid}" #|grep -v "${vContent}"
+        adb -s $deviceId logcat "${flagError}" |grep "${pid}"
     elif [ -z "$tagContent" ];then
         adb -s $deviceId logcat "${flagError}"
     else
+        [[ -n "$isMoreTag" ]] && adb -s $deviceId logcat "${flagError}"|grep -E "${tagContent}" && return
         [[ -n "$isDisTime" ]] && adb -s $deviceId logcat -v tag|grep -i "${tagContent}" && return
         [[ -z "$vContent" ]] && adb -s $deviceId logcat "${flagError}" |grep -i "${tagContent}" && return
         adb -s $deviceId logcat "${flagError}" |grep -i "${tagContent}" |grep -v "${vContent}"
