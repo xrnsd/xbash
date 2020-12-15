@@ -127,7 +127,7 @@ ftGitPatchAdd2Branches()
     local ftEffect=快速添加git的Patch补丁[跨分支]
     local isEnable=true
 
-    local branchTag isAutoPush isAutoSync=true
+    local branchTag isAutoPush isAutoSyncDef=true isAutoSync=true
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -140,8 +140,11 @@ ftGitPatchAdd2Branches()
 #    #添加的补丁自动提交
 #    ftGitPatchAdd2Branches -a
 #
-#    #添加的补丁之前不进行远程分支同步
+#    #开始添加的补丁之前,当前分支不进行远程分支同步
 #    ftGitPatchAdd2Branches -ns
+#
+#    #开始添加的补丁之前,初始分支不进行远程分支同步
+#    ftGitPatchAdd2Branches -nsd
 #=========================================================" ;return ;;
     --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
@@ -153,6 +156,8 @@ ftGitPatchAdd2Branches()
         -a )  isAutoPush=true
                 ;;
         -ns )  isAutoSync=
+                ;;
+        -nsd )  isAutoSyncDef=
                 ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
@@ -169,8 +174,10 @@ ftGitPatchAdd2Branches()
         ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
 
     #实现主体
-    ftEcho -s "正同步当前分支,请稍等..."
-     git pull --rebase && git push
+    if [[ -n $isAutoSyncDef ]]; then
+        ftEcho -s "正同步当前分支,请稍等..."
+        git pull --rebase && git push
+    fi
 
     local branchList=($(git branch | sed -e "s:*::g" | grep -v "${branchNameNow}"))
     local branchListLocal=($(git branch | sed -e "s:*::g"))
@@ -250,7 +257,7 @@ ftGitPatchAdd2Branches()
     fi
 
     [ -n "${banchApplayPatchFailList}" ] && echo && ftEcho -e "下面分支添加补丁没有成功：" &&
-    for branchName in ${branchList[@]} ; do
+    for branchName in ${banchApplayPatchFailList[@]} ; do
         echo ${branchName}
     done && echo
 
