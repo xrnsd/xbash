@@ -116,37 +116,6 @@ fi
 #added by wgx : xbash初始化
 #---------------- bash 配置 ----------------------------------
     shopt -s histappend    #多个终端情况下，共享history
-
-#---------------- 初始化变量 ----------------------------------
-    [[ -z "$SUDO_USER" ]] && userName=$USER || userName=$SUDO_USER
-    export filePathHomeBash=$BASH_SOURCE
-    export dirPathHomeXbash=$(dirname $(readlink -f  $BASH_SOURCE))
-    export dirNameXbash=$(basename $dirPathHomeXbash)
-
-    dirNameHome=$(echo "$dirPathHomeXbash"| sed 's?/? ?g'| awk '{print $2}')
-    export dirPathHome=/home/${dirNameHome:-"$userName"}
-    [[ $userName = "root" ]] && export dirPathHome="/root"
-
-    [ ! -d "$dirPathHomeXbash" ] && echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeXbash=$dirPathHomeXbash]\033[0m" && return
-    export dirPathHomeTools=${dirPathHome}/tools
-    export dirPathHomeXbashConfig=${dirPathHomeXbash}/config
-    export dirPathHomeXbashConfigUser=${dirPathHomeXbashConfig}/user
-
-#---------------- 加载配置 ------------------
-    # 加载common配置
-    filePathXbashTragetBashrcConfigBase=${dirPathHomeXbashConfig}/common.config
-    if [[ -f $filePathXbashTragetBashrcConfigBase ]];then source $filePathXbashTragetBashrcConfigBase
-    else echo -e "\033[1;31mXbash需要的基础配置\n${filePathXbashTragetBashrcConfigBase}\033[0m不存在" ;return ;fi
-    # 加载用户配置
-    filePathUserConfig=${dirPathHomeXbashConfigUser}/${userName}.config
-    if [ ! -f "$filePathUserConfig" ];then
-        [ ! -f $rFilePathXbashConfigExample ] && echo -e "\033[1;31m用户${userName}独立配置创建失败,缺少模版:\n $rFilePathXbashConfigExample\033[0m" && return
-        echo -e "\033[1;33m初始化用户[${userName}]的xbash配置\n\033[0m"
-        ${dirPathHomeXbash}/init --userconfig
-    fi
-    if [[ -f $filePathUserConfig ]];then source  $filePathUserConfig
-    else echo -e "\033[1;31用户[${userName}]的xbash配置不存在:\n${filePathUserConfig}\033[0m" ;fi
-
 #---------------- 加载扩展 ------------------
     #加载common
     if [[ -f $rFilePathXbashModuleCommon ]];then source  $rFilePathXbashModuleCommon

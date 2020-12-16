@@ -130,6 +130,8 @@ ftInitUserConfig()
 
 ftInitMoule()
 {
+    local filePathXbashConfigProfileNew=${dirPathLocal}/config/profile.config
+    local filePathHomeLocalProfile=${dirPathHomeLocal}/.profile
     local filePathXbashModuleBashrcNew=${dirPathLocal}/main
     local filePathHomeLocalBashrc=${dirPathHomeLocal}/.bashrc
     local dirPathXbashModuleUser=${dirPathLocal}/module/user
@@ -138,13 +140,23 @@ ftInitMoule()
 
     [ ! -d "$dirPathXbashModuleUser" ] && mkdir -p $dirPathXbashModuleUser
     [ ! -f "$filePathXbashModuleUser" ] && echo "#! /bin/bash" > $filePathXbashModuleUser
+    
+    if [ -f "$filePathXbashConfigProfileNew" ]; then
+        cd $dirPathHomeLocal
+        [[ -f "$filePathHomeLocalProfile" ]] && [ $(readlink -f  $filePathHomeLocalProfile) != $filePathXbashConfigProfileNew ] && mv ${filePathHomeLocalProfile} ${filePathHomeLocalProfile}_backup
+        ln -sf $filePathXbashConfigProfileNew .bashrc || exceptionContent="${exceptionContent}\n xbash基础配置添加失败"
+    else
+        exceptionContent="${exceptionContent}\n xbash基础配置添加失败,文件不存在:${filePathXbashConfigProfileNew}"
+    fi
+    
     if [ -f "$filePathXbashModuleBashrcNew" ]; then
         cd $dirPathHomeLocal
         [[ -f "$filePathHomeLocalBashrc" ]] && [ $(readlink -f  $filePathHomeLocalBashrc) != $filePathXbashModuleBashrcNew ] && mv ${filePathHomeLocalBashrc} ${filePathHomeLocalBashrc}_backup
-        ln -sf $filePathXbashModuleBashrcNew .bashrc || exceptionContent="${exceptionContent}\n xbash生效初始化失败"
+        ln -sf $filePathXbashModuleBashrcNew .bashrc || exceptionContent="${exceptionContent}\n xbash模块初始化配置添加失败"
     else
-        exceptionContent="${exceptionContent}\n xbash生效初始化失败,文件不存在:${filePathXbashModuleBashrcNew}"
+        exceptionContent="${exceptionContent}\n xbash模块初始化配置添加失败,文件不存在:${filePathXbashModuleBashrcNew}"
     fi
+    
     cd $dirPathLocal
 }
 
