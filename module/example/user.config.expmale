@@ -1,5 +1,5 @@
 #! /bin/bash
-versionNum=v0.1.6.0
+versionNum=v0.1.6.1
 xEcho(){
     local val1="${1}" val2="${2}" val3="${3}";echo -en "\033[1;33m${val1}\033[0m";echo -en "\033[1;31m${val2}\033[0m";echo -en "\033[1;33m${val3}\033[0m"; echo -e "\033[1;31m does not exist\033[0m"
 }
@@ -100,6 +100,15 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
         echo "$gccPath" | sudo -p '' -S update-alternatives --config g++ >/dev/null
         gcc -v
     else xEcho "GCC & G++ " "config error : " ${gccPath}; fi
+
+    #Android Studio KeyStore
+    isConfigAndroidStudioKeyStore=
+    if [[ -n "$isConfigAndroidStudioKeyStore" ]]; then
+            ANDROID_KEY_STORE_FLLE_PATH=
+            ANDROID_KEY_STORE_PASSWORD=
+            ANDROID_KEY_ALIAS=
+            ANDROID_KEY_PASSWORD=
+    fi
 
     #Android SDK
     dirPathAndroidSdk=${dirPathHomeTools}/Sdk
