@@ -104,10 +104,10 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
     #Android Studio KeyStore
     isConfigAndroidStudioKeyStore=
     if [[ -n "$isConfigAndroidStudioKeyStore" ]]; then
-            ANDROID_KEY_STORE_FLLE_PATH=
-            ANDROID_KEY_STORE_PASSWORD=
-            ANDROID_KEY_ALIAS=
-            ANDROID_KEY_PASSWORD=
+        export ANDROID_KEY_STORE_FLLE_PATH=
+        export ANDROID_KEY_STORE_PASSWORD=
+        export ANDROID_KEY_ALIAS=
+        export ANDROID_KEY_PASSWORD=
     fi
 
     #Android SDK
