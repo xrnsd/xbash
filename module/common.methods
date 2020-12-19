@@ -1992,7 +1992,7 @@ ftFind()
 #   ftFind 路径 文件名 文件名内容[可选]
 #   ftFind xx/xx \"*.java\" \"yyy\"
 #
-#    可简化 [ftFind -s] 为 [xFind] ,其他参数不变
+#    可简化 [ftFind -s] 为 [xfind] ,其他参数不变
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -s ) isSuffix=true
@@ -3503,4 +3503,48 @@ ftXbGetValue()
 
     itemValue=($(ftIniGetValue $rFilePathXbashDBBase $tagName $itemName))
     echo ${itemValue[@]}
+}
+
+complete -W "-h --help" ftGetPublicIp
+ftGetPublicIp()
+{
+    local ftEffect=获取公网IP
+    local isEnable=sub
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+        # 说明参数解析部分 ==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#
+#    ftGetPublicIp -h 
+#========================================================="; return ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #环境校验
+    [[ -z $(which wget) ]] && ftGetPublicIp --rely "wget" && return
+    #参数校验
+    (( $# > $valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGetPublicIp -h && return
+
+    #实现主体
+    local dirPathLocal=$(pwd)
+    local dirPathTemp=/temp
+    local fileNameGetIp=getip
+    cd ${dirPathTemp}
+    if ! wget http://members.3322.org/dyndns/getip; then
+        cd "${dirPathLocal}"
+        return
+    fi
+    cat $fileNameGetIp
+    cd "${dirPathLocal}"
 }
