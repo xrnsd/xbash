@@ -290,6 +290,7 @@ ftEcho()
 #    ftEcho    -y    内容    # 特定信息显示，y/n，对字符串的缩进敏感
 #    ftEcho    -s    内容    # 执行信息，对字符串的缩进敏感
 #    ftEcho    -sn   内容    # 执行信息，不换行，对字符串的缩进敏感
+#    ftEcho    -snw 内容    # 执行信息，不换行，对字符串的缩进敏感,循环显示省略号
 #    ftEcho    -rc   内容    # xbash函数的说明显示，对字符串的缩进敏感
 #========================================================="; return ;;
     * ) break;;esac;done
@@ -309,6 +310,10 @@ ftEcho()
         -ex )    echo -e "\033[1;31m$content\033[0m" ; [ "$XMODULE" = "env" ] && return ; exit;;
         -s )       echo -e "\033[1;33m$content\033[0m"; break;;
         -sn )     echo -en "\033[1;33m$content\033[0m"; break;;
+        -snw )
+                [[ -z $mWaitForPromptSymbol ]] || [[ "$mWaitForPromptSymbol" = "...." ]] && mWaitForPromptSymbol="."
+                echo -en "\033[1;33m$content ${mWaitForPromptSymbol}\033[0m"
+                mWaitForPromptSymbol="${mWaitForPromptSymbol}."; break;;
         -sh )     echo;echo -e "\033[1;33m$content\033[0m";echo; break;;
         -b )       echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
         -bh )    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
@@ -796,7 +801,8 @@ ftBashHistory()
     #历史去重
     sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
     && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
-    echo $userPassword | sudo -p '' -S chmod 777 $filePathBashHistoryArchive
+    echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+    sudo chmod 777 $filePathBashHistoryArchive
 
     #历史扩容
     if [[ -f $rFilePathXbashDBUser ]]; then
@@ -3547,4 +3553,66 @@ ftGetPublicIp()
     fi
     cat $fileNameGetIp
     cd "${dirPathLocal}"
+}
+
+complete -W "-h --help" ftFastbootUnlock
+ftFastbootUnlock()
+{
+    local ftEffect=fastboot解锁
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftFastbootUnlock -h
+#========================================================="; return ;;
+        --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+#=========================================================
+#    找不到AndroidSDK
+#========================================================="; return ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #环境校验
+    [[ -z $(which adb) ]] && ftFastbootUnlock --env && return
+    [[ -z $(which fastboot) ]] && ftFastbootUnlock --env && return
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftFastbootUnlock -h && return
+
+    #实现主体
+    ftAdbConnect
+    adb reboot bootloader
+    tput sc
+    while [[ -z $(fastboot devices) ]]; do
+        tput rc;tput ed
+        ftEcho -snw "正在等待设备进入fastboot模式"
+        sleep 1
+    done && echo
+
+    ftEcho -s "设备已进入fastboot模式，请按下音量键解锁"
+    fastboot flashing unlock
+     while true; do
+    ftEcho -y "解锁是否成功[回车是并自动重启]"
+    read -n 1 sel
+    [ -z "${sel}" ] && sel=y
+    case "$sel" in
+        y | Y )
+                ftEcho -s "设备将退出fastboot模式"
+                fastboot reboot
+                break;;
+        n | q )
+                ftEcho -s "请按下音量键解锁"
+                fastboot flashing unlock
+                ;;
+        * ) ftEcho -e 错误的选择：$sel
+            echo "输入n，q，离开";;
+    esac;done
 }
