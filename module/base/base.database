@@ -1,6 +1,6 @@
 #xbash
 [xbash]
-bashHistoryThresholdSize=1000
+bashHistoryThresholdSize=10000
 
 #开发用
 [androidDevicePackages]

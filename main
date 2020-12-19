@@ -114,8 +114,6 @@ if ! shopt -oq posix; then
 fi
 
 #added by wgx : xbash初始化
-#---------------- bash 配置 ----------------------------------
-    shopt -s histappend    #多个终端情况下，共享history
 #---------------- 加载扩展 ------------------
     #加载common
     if [[ -f $rFilePathXbashModuleCommon ]];then source  $rFilePathXbashModuleCommon
@@ -144,7 +142,7 @@ fi
 
 #---------------- 默认启用部分xbash功能 ------------------
     #处理bash历史记录
-    #ftBashHistory
+    ftBashHistory
     #校验用户配置和模版版本一致性
     ftCheckUserConfig
     #校验用户数据库和模版版本一致性

@@ -776,7 +776,9 @@ ftBashHistory()
     # 环境校验
     [[ -z "$isUseXbashHistory" ]] && return
     #参数解析
-    local filePathBashHistory=${dirPathHome}/.bash_history
+    local bashHistorySize filePathBashHistory=${dirPathHome}/.bash_history
+    local filePathBashHistoryArchive=${filePathBashHistory}_archive
+    local filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -785,26 +787,24 @@ ftBashHistory()
 #    ftBashHistory -p
 #========================================================="; return ;;
         # 变量参数解析部分==============
-        -p )    echo ${filePathBashHistory} ;return
+        -p )    cat ${filePathBashHistoryArchive} ;return
            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
-    local bashHistorySize filePathBashHistoryArchive filePathBashHistoryArchiveTemp
     [ ! -d $dirPathHome ]  && errorContent="${errorContent}\\n[迷路中，请稍等]dirPathHome=$，dirPathHome"
     [ ! -f $filePathBashHistory ] && errorContent="${errorContent}\\n[历史记录为空]"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteItem -h && return
 
-    filePathBashHistoryArchive=${filePathBashHistory}_archive
-    filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
+    #实现主体
 
     #备份历史记录
     [ -f $filePathBashHistory ] && cat $filePathBashHistory >> $filePathBashHistoryArchive
-    #历史去重
-    sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp} \
-    && mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
+    sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp}
+    mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
     echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
     sudo chmod 777 $filePathBashHistoryArchive
+    local fileSizeBashHistoryArchive=$(stat -c "%s" ${filePathBashHistoryArchive})
+    (( $fileSizeBashHistoryArchive > 15728640 )) && ftEcho -s "xbash的命令历史过大建议整理 , 文件路径:${filePathBashHistoryArchive}"
 
-    #历史扩容
     if [[ -f $rFilePathXbashDBUser ]]; then
         bashHistorySize=$(ftXbGetValue  xbash bashHistoryThresholdSize)
     else
@@ -816,6 +816,7 @@ ftBashHistory()
 
     export HISTSIZE=$bashHistorySize
     export HISTFILESIZE=$bashHistorySize
+    shopt -s histappend #多个终端情况下，共享history
 }
 
 ftDevAvailableSpace()
