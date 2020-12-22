@@ -38,7 +38,7 @@ if [[ -n $(which du) ]];then
 fi
 
 if [[ -n $(which cat) ]];then
-    alias xbh='effect=bash命令历史查询;cat $(ftBashHistory -p) |grep'
+    alias xbh='effect=bash命令历史查询;ftBashHistory -p |grep'
     alias xbuildprop='effect=打印部分out下build.prop信息;[ -f "${ANDROID_PRODUCT_OUT}/system/build.prop" ] &&\
                       cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.model=" && \
                       cat ${ANDROID_PRODUCT_OUT}/system/build.prop|grep "ro.product.brand=" && \
