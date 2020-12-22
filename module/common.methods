@@ -83,8 +83,9 @@ ftResetXbash()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
+    local valCount=1 errorContent
     export isResetJdk= isResetGcc= isResetCcache= isResetXbash=true targetSdkVersionForce=
-    local dirPathCode dirPathLocal=$(pwd)
+    local dirPathCode dirPathLocal=$(pwd)  filePathHomeBash=~/.bashrc
     local arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分==============
@@ -125,9 +126,12 @@ ftResetXbash()
             export isResetJdk=true
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ ! -f "$filePathXbashTragetBashrcConfigProfile" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathXbashTragetBashrcConfigProfile=$filePathXbashTragetBashrcConfigProfile"
+    [ ! -f "$filePathHomeBash" ] && errorContent="${errorContent}\\n[bash入口文件不存在]filePathHomeBash=$filePathHomeBash"
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftResetXbash -h && return
 
     #实现主体
-    # source ~/.bashrc
     source $filePathXbashTragetBashrcConfigProfile
     source $filePathHomeBash
     export isResetXbash=
