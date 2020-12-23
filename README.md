@@ -67,10 +67,12 @@ bash的简单扩展
     05 百度网盘自动上传封装，属于auto
     06 jar库快速删除指定class文件
     07 同项目不同存放设备之间的同步
-    08 ftAutoAsConfigFileAutoCreate函数配置分离
-    10 ftAutoAsConfigFileAutoCreate生成的配置文件android.iml改为项目名.iml
-    11 基于标签找到分支信息
-    12 将命令封装改成用户模块+模板
+    08 ftAutoAsConfigFileAutoCreate生成的配置文件android.iml改为项目名.iml
+    09 基于标签找到分支信息
+    10 将命令封装改成用户模块+模板
+    11 快速挂载远程nfs目录
+    12 APP模板参照系统软件说明版本添加部分信息
+    13 xconfig配置快速生效实现
 
 5.待修复
 ----------

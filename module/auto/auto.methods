@@ -1559,6 +1559,7 @@ ftAutoAsConfigFileAutoCreate()
     [ ! -f "${filePathEnvsetup}" ] && ftAutoAsConfigFileAutoCreate --env && return
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ ! -f "${rFilePathXbashDBAuto}" ] && errorContent="${errorContent}\\n[Auto模块的数据库不存在]rFilePathXbashDBAuto=${rFilePathXbashDBAuto}"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoAsConfigFileAutoCreate -h && return
 
     #实现主体
@@ -1591,44 +1592,12 @@ ftAutoAsConfigFileAutoCreate()
     ((lineNumCount-=1))
     local lineNum=${lineNumList[$lineNumCount]}
     lineNum=$(echo $lineNum |sed s/[[:space:]]//g)
-    echo -e "<excludeFolder url=\"file://\$MODULE_DIR\$/art\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/art\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/bionic\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/bootable\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/build\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/ccu_tool\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/compatibility\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/cts\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/dalvik\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/developers\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/development\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/device\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/docs\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/external\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/frameworks/base/docs\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/frameworks/base/tests\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/frameworks/base/tools\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/hardware\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/gen\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/kernel\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/kernel-3.18\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/kernel-4.4\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/kernel-4.9\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/libcore\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/libnativehelper\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/ndk\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/out\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/pdk\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/platform_testing\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/prebuilts\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/sdk\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/system\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/test\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/toolchain\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/trusty\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/tools\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/vendor/nxp\" />
-<excludeFolder url=\"file://\$MODULE_DIR\$/.repo\" />" > $filePathExcludeFolderListTemp
+
+    local excludeFolderList=($(ftIniGetValue $rFilePathXbashDBAuto autoAsConfigFileAutoCreateConfig excludeFolderList))
+    for i in ${excludeFolderList[@]}; do
+        echo "<excludeFolder url=\"file://\$MODULE_DIR\$/${i}\" />" >> $filePathExcludeFolderListTemp
+    done
+
     sed -i "$lineNum r $filePathExcludeFolderListTemp" $filePathAndroidIML
     rm $filePathExcludeFolderListTemp
 

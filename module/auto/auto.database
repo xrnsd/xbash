@@ -1,0 +1,42 @@
+#xbash
+[autoAsConfigFileAutoCreateConfig]
+excludeFolderList=\
+    art \
+    bionic \
+    bootable \
+    build \
+    ccu_tool \
+    compatibility \
+    cts \
+    dalvik \
+    developers \
+    development \
+    device \
+    docs \
+    external \
+    frameworks/base/docs \
+    frameworks/base/tests \
+    frameworks/base/tools \
+    hardware \
+    gen \
+    kernel \
+    kernel-3.18 \
+    kernel-4.4 \
+    kernel-4.9 \
+    libcore \
+    libnativehelper \
+    ndk \
+    out \
+    pdk \
+    platform_testing \
+    prebuilts \
+    sdk \
+    system \
+    test \
+    toolchain \
+    trusty \
+    tools \
+    vendor/nxp \
+    .repo
+
+
