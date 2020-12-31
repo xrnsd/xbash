@@ -470,35 +470,33 @@ ftAutoBackupOrRestoreOuts()
     cd $dirPathCode
     #分支名
     local buildType=$AutoEnv_buildType versionName=$AutoEnv_versionName branchName="$AutoEnv_branchName"
-
     local dirNameCodeRootOuts=outs
-    local dirPathOutTop=${dirPathCode}/out
-    dirPathOutTop=$(readlink -f ${dirPathOutTop})
-    local dirPathCodeRootOuts=$(dirname ${dirPathOutTop})
-    dirPathCodeRootOuts=$(dirname ${dirPathCodeRootOuts})/${dirNameCodeRootOuts}
     local versionInfoDateTime=$(date -d "today" +"%y%m%d[%H:%M]")
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----${versionInfoDateTime}
     [[ -n "$mTagContent" ]] && dirNameBranchVersion=${dirNameBranchVersion}_Tag[${mTagContent}]
-    local dirPathOutBranchVersion=${dirPathCodeRootOuts}/${dirNameBranchVersion}
 
-    if [ ! -d "$dirPathCodeRootOuts" ];then
+    local dirPathOutLocal=${dirPathCode}/out
+    local dirPathCodeRootOutsLocal=$(dirname $(dirname ${dirPathOutLocal}))/${dirNameCodeRootOuts}
+    local dirPathOutBranchVersionLocal=${dirPathCodeRootOutsLocal}/${dirNameBranchVersion}
+
+    if [ ! -d "$dirPathCodeRootOutsLocal" ];then
         [[ -n "$isMoveBack" ]] && ftEcho -e "${dirNameCodeRootOuts}为空" && return
-        mkdir -p $dirPathCodeRootOuts
+        mkdir -p $dirPathCodeRootOutsLocal
     fi
 
     if [[ -n "$isMoveBack" ]]; then
-        if [[ -d "$dirPathOut" ]]||[[ -d "$dirPathOutTop" ]]; then
+        if [[ -d "$dirPathOut" ]]||[[ -d "$dirPathOutLocal" ]]; then
             #lunch生成的out，视为无效
             local excludeConfigInfo=($(ftXbGetValue backupOrRestoreOutsInfo excludeConfig))
             local excludeConfigSize=${#excludeConfigInfo[@]}
-            local dirPathOutTopInfo=($(ls $dirPathOutTop))
-            local dirPathOutTopSize=${#dirPathOutTopInfo[@]}
+            local dirPathOutLocalInfo=($(ls $dirPathOutLocal))
+            local dirPathOutLocalSize=${#dirPathOutLocalInfo[@]}
             for item in ${excludeConfigInfo[@]} ; do
-                    item=${dirPathOutTop}/${item}
+                    item=${dirPathOutLocal}/${item}
                     [[ ! -d "$item" ]] && [[ ! -f "$item" ]] && ((excludeConfigSize-=1)) && break
             done
-            if (( $excludeConfigSize == $dirPathOutTopSize )); then
-                rm -rf $dirPathOutTop
+            if (( $excludeConfigSize == $dirPathOutLocalSize )); then
+                rm -rf $dirPathOutLocal
             else
                 ftEcho -e "out已存在 ,请先备份"
                 return
@@ -506,7 +504,7 @@ ftAutoBackupOrRestoreOuts()
         fi
 
         [[ -n "$filterString" ]] && branchName=$filterString
-        local dirPathOutList=($(ls $dirPathCodeRootOuts|grep $branchName))
+        local dirPathOutList=($(ls $dirPathCodeRootOutsLocal|grep $branchName))
         [[ -z "$dirPathOutList" ]] && ftEcho -e "未找到\n分支[$branchName]对应的out" && return
 
         local itemCount=${#dirPathOutList[@]}
@@ -527,20 +525,41 @@ ftAutoBackupOrRestoreOuts()
             (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
             dirNameOutTraget=${dirPathOutList[$tIndex]}
         fi
-        mv ${dirPathCodeRootOuts}/${dirNameOutTraget} $dirPathOutTop&&
-        ftEcho -s "移动 ${dirPathCodeRootOuts}/${dirNameOutTraget}\n 到  ${dirPathOutTop}"
+
+        local dirPathOutTragetLocal="${dirPathCodeRootOutsLocal}/${dirNameOutTraget}"
+        local dirPathOutTragetReal="$(readlink -f ${dirPathOutTragetLocal})"
+        [[ -n "$dirPathOutTragetReal" ]] && if [[ "${dirPathOutTragetReal}" != "${dirPathOutTragetLocal}" ]]; then
+            local dirPathCodeReal=$(dirname $(dirname ${dirPathOutTragetReal}))/alps
+            [ ! -d "$dirPathCodeReal" ] && mkdir -p $dirPathCodeReal
+            local dirPathOutReal="${dirPathCodeReal}/out"
+            mv "${dirPathOutTragetReal}" "${dirPathOutReal}"&&
+            ftEcho -s "移动 ${dirPathOutTragetReal}\n 到  ${dirPathOutReal}"
+            rm "${dirPathOutTragetLocal}"
+            ln -s "${dirPathOutReal}" "${dirPathOutLocal}"
+
+            echo "dirPathOutReal=${dirPathOutReal}"
+            return
+        fi
+
+        mv "${dirPathOutTragetLocal}" "${dirPathOutLocal}"&&
+        ftEcho -s "移动 ${dirPathOutTragetLocal}\n 到  ${dirPathOutLocal}"
         return
     fi
 
-    if [ ! -d "$dirPathOutBranchVersion" ];then
-        [[ ! -d "$dirPathOutTop" ]] && ftEcho -e "out 不存在" && return
+    local dirPathOutReal=$(readlink -f ${dirPathOutLocal})
+    local dirPathCodeRootOutsReal=$(dirname $(dirname ${dirPathOutReal}))/${dirNameCodeRootOuts}
+    [ ! -d "$dirPathCodeRootOutsReal" ] && mkdir -p $dirPathCodeRootOutsReal
+    local dirPathOutBranchVersionReal=${dirPathCodeRootOutsReal}/${dirNameBranchVersion}
+
+    if [ ! -d "$dirPathOutBranchVersionReal" ];then
+        [[ ! -d "$dirPathOutReal" ]] && ftEcho -e "out 不存在" && return
         if [[ ! -d "$dirPathOut" ]]; then
              ftEcho -e "out 不完整"
              dirNameBranchVersion=${dirNameBranchVersion}____section
         fi
 
         local fileNameGitLogInfo=git.log
-        local filePathGitLogInfo=${dirPathOutTop}/${fileNameGitLogInfo}
+        local filePathGitLogInfo=${dirPathOutReal}/${fileNameGitLogInfo}
         [[ ! -f $filePathGitLogInfo ]] && touch $filePathGitLogInfo
         echo -e "
 
@@ -548,8 +567,12 @@ ftAutoBackupOrRestoreOuts()
 $dirNameBranchVersion
 ======================================================================================================
 $(ftGitLogShell  -n 20 -c "%h  %s")" >> $filePathGitLogInfo
-        mv ${dirPathOutTop}/ $dirPathOutBranchVersion &&
-        ftEcho -s "移动 $dirPathOutTop \n到  ${dirPathCodeRootOuts}/${dirNameBranchVersion}"
+        mv ${dirPathOutReal}/ $dirPathOutBranchVersionReal &&
+        ftEcho -s "移动 $dirPathOutReal \n到  ${dirPathCodeRootOutsReal}/${dirNameBranchVersion}"
+        [[ -n "$dirPathOutReal" ]] && if [[ "${dirPathOutReal}" != "${dirPathOutLocal}" ]]; then
+            ln -sf "${dirPathCodeRootOutsReal}/${dirNameBranchVersion}" "${dirPathCodeRootOutsLocal}/${dirNameBranchVersion}"
+            rm "${dirPathOutLocal}"
+        fi
     else
         ftEcho -ex 存在相同out
     fi
