@@ -116,29 +116,29 @@ fi
     fi
 
 #---------------- 加载扩展 ------------------
-    #加载common
+    #加载 common module
     if [[ -f $rFilePathXbashModuleCommon ]];then source  $rFilePathXbashModuleCommon
     else echo -e "\033[1;31mXbash的框架和公用扩展块加载失败\n${rFilePathXbashModuleCommon}\033[0m" ;return ;fi
-    #加载auto
+    #加载 auto module
     if [[ -f $rFilePathXbashModuleAuto ]];then source  $rFilePathXbashModuleAuto
     else echo -e "\033[1;31mXbash的Auto扩展块加载失败\n${rFilePathXbashModuleAuto}\033[0m" ;fi
-    #加载git
+    #加载 git module
     if [[ -f $rFilePathXbashModuleGit ]];then source  $rFilePathXbashModuleGit
     else echo -e "\033[1;31mXbash的git扩展块加载失败\n${rFilePathXbashModuleGit}\033[0m" ;fi
-    #加载git,非自定义的bash扩展
+    #加载 git module[非自定义]
     if [[ -f $rFilePathGitBash ]];then source  $rFilePathGitBash
     else echo -e "\033[1;31m非Xbash自定义的git扩展块加载失败\n${rFilePathGitBash}\033[0m" ;fi
-    #加载命令封装
-    if [[ -f $rFilePathXbashModuleBasePackaging ]];then source  $rFilePathXbashModuleBasePackaging
-    else echo -e "\033[1;31mXbash的命令封装加载失败\n${rFilePathXbashModuleBasePackaging}\033[0m" ;fi
-    #加载user自定义扩展
+    #加载 user module
     if [ ! -f $rFilePathXbashModuleUser ]; then
         [ ! -d $rDirPathXbashModuleUser ] && mkdir $rDirPathXbashModuleUser
         echo "#! /bin/bash" > $rFilePathXbashModuleUser
     fi
     if [[ -f $rFilePathXbashModuleUser ]];then source  $rFilePathXbashModuleUser
     else echo -e "\033[1;31mXbash的用户独立模块创建失败:\n${rFilePathXbashModuleUser}\033[0m" ;fi
-    #加载input
+    [ ! -f $rFilePathXbashPackagingUser ] && [ -f $rFilePathXbashPackagingUserExample ]&& cp -rf $rFilePathXbashPackagingUserExample $rFilePathXbashPackagingUser
+    if [[ -f $rFilePathXbashPackagingUser ]];then source  $rFilePathXbashPackagingUser
+    else echo -e "\033[1;31m用户可自定义命令封装扩展块加载失败\n${rFilePathXbashPackagingUser}\033[0m" ;fi
+    #加载 input module
     [ -f $rFilePathXbashModuleInput ] && [ "$rFilePathXbashModuleInput" != "$(readlink -f ~/.inputrc)" ] && rm -rf ~/.inputrc && ln -sf $rFilePathXbashModuleInput ~/.inputrc
 
 #---------------- 默认启用部分xbash功能 ------------------

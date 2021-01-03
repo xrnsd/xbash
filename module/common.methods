@@ -146,7 +146,7 @@ ftReadAllAlias()
         #可用性校验
         [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
         #解参验耦
-        [[ ! -f $rFilePathXbashModuleBasePackaging ]] && ftEcho -e "xbash配置不存在:$rFilePathXbashModuleBasePackaging" && return
+        [[ ! -f $rFilePathXbashPackagingUser ]] && ftEcho -e "xbash配置不存在:$rFilePathXbashPackagingUser" && return
 
         local cmdName cmdContent
         local intervalSize=24
@@ -155,7 +155,7 @@ ftReadAllAlias()
         echo -e "========================================================="
         printf "%s  %${intervalSize}s \n" 命令 说明
         echo -e "========================================================"
-        cat $rFilePathXbashModuleBasePackaging $rFilePathXbashModuleUser|grep alias | sort | while read line; do
+        cat $rFilePathXbashPackagingUser $rFilePathXbashModuleUser|grep alias | sort | while read line; do
                 cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
                 cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
                 [[ -n "$cmdContent" ]] && printf "%${intervalSize}s  %s\n" ${cmdName} ${cmdContent}
