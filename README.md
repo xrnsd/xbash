@@ -72,6 +72,8 @@ bash的简单扩展
     10 快速挂载远程nfs目录
     11 APP模板参照系统软件说明版本添加部分信息
     12 xconfig配置快速生效实现
+    13 目录间同步封装
+    14 proguard-rules.pro文件自动扫描生成
 
 5.待修复
 ----------
@@ -79,3 +81,4 @@ bash的简单扩展
     02 软件打包,选择不清理的话,打包存在异常
     03 不同函数错误连续提示修复
     04 flashcache在配置后插入其他硬盘开机导致sdx变化,就会开机配置失败
+    05 ftAutoBackupOrRestoreOuts 无法区分user和userdebug

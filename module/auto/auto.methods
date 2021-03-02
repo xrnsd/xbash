@@ -471,7 +471,7 @@ ftAutoBackupOrRestoreOuts()
     #分支名
     local buildType=$AutoEnv_buildType versionName=$AutoEnv_versionName branchName="$AutoEnv_branchName"
     local dirNameCodeRootOuts=outs
-    local versionInfoDateTime=$(date -d "today" +"%y%m%d[%H:%M]")
+    local versionInfoDateTime=$(date -d "today" +"%Y%m%d[%H:%M]")
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----${versionInfoDateTime}
     [[ -n "$mTagContent" ]] && dirNameBranchVersion=${dirNameBranchVersion}_Tag[${mTagContent}]
 
