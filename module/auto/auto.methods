@@ -861,6 +861,7 @@ ftAutoPacket()
                                 [[ -f "${itemPathRoot}/${fileName}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
                             done < <(echo "$(ls ${itemPathRoot})")
                     done
+
                     for item in ${mddbDirPathList[@]} ; do
                             item=$(ftPath $item)
                             local itemPathRoot=${dirPathOut}/${item}
@@ -870,6 +871,12 @@ ftAutoPacket()
                                 [[ -f "${itemPathRoot}/${fileName}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
                             done < <(echo "$(ls ${itemPathRoot})")
                     done
+
+
+                    [[ -n "$AutoEnv_ModemPath" ]] && cd ${dirPathCode} && while read filePath ;do
+                                [[ -f "${filePath}" ]] && dataBaseFileList=(${dataBaseFileList[@]} "../../../../"${filePath})
+                     done < <(echo "$(find ${AutoEnv_ModemPath} -type f -name MDDB* -o -name Db*)") && cd ${dirPathVersionSoftware}
+
                     if [[ -n "$dataBaseFileList" ]];then
                         if mkdir -p $dirPathPackageDataBase; then
                             for filePath in ${dataBaseFileList[@]}; do
