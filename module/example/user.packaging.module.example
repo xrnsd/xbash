@@ -1,6 +1,7 @@
 #!/bin/bash
 #存放命令封装
 #存放xbash扩展封装
+versionNum=v0.0.0.1
 
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
@@ -57,6 +58,7 @@ if [ -d "$ANDROID_SDK" ];then
     alias xlo='effect=过滤存在多个标签中一个的logcat;ftLogcatApplicationByTag -o'
     alias xlp="effect=根据包名过滤logcat;ftLogcatApplicationByTag -p"
     alias xlt='effect=过滤logcat,没有时间信息;ftLogcatApplicationByTag -t '
+    alias xltp='effect=过滤logcat,没有时间信息;ftLogcatApplicationByTag -tp '
     alias xpml='effect=干掉设备对应包名的进程;ftMtkLog -p /home/enjoy/log'
     alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
     alias xlce='effect=过滤错误的logcat;adb logcat -c;ftLogcatApplicationByTag -e'
@@ -152,7 +154,7 @@ if [[ -n ftCdAospDirectory ]];then
 fi
 
 if [[ -n $(which subl) ]];then
-    alias xspwd='effect=使用sublime_text打开本目录;subl $(pwd)'
+    alias xpwd='effect=使用sublime_text打开本目录;subl $(pwd)'
     alias xsubl='effect=使用sublime_text打开xbash和xconfig ; subl $rDirPathXbash ${rDirPathUserHome}/xconfig'
 fi
 

@@ -148,3 +148,5 @@ fi
     ftCheckUserConfig
     #校验用户数据库和模版版本一致性
     ftCheckUserDatabase
+    #校验用户扩展和模版版本一致性
+    ftCheckUserPackaging
