@@ -1,7 +1,7 @@
 #!/bin/bash
 #存放命令封装
 #存放xbash扩展封装
-versionNum=v0.0.0.1
+versionNum=v0.0.0.2
 
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
@@ -136,6 +136,7 @@ if [[ -n $(which git) ]];then
     alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
     alias xglb='effect=查看仓库分支树;ftGitLogShell -b'
     alias xgrs="effect=回滚最新的commit;git reset --soft HEAD^"
+    alias xgrsc="effect=修改最新的commit的标签;git reset --soft HEAD^ ; git commit -m "
     alias xgl='effect=格式化显示20或xxx条git_log;ftGitLogShell -n 20'
     alias xgatt='effect=添加git的版本说明标签,使用模板;ftGitTag --app '
     alias xglh='effect=显示xx条commit的hash值;ftGitLogShell -c "%h" -n '
