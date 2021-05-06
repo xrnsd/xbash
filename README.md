@@ -82,3 +82,4 @@ bash的简单扩展
     03 不同函数错误连续提示修复
     04 flashcache在配置后插入其他硬盘开机导致sdx变化,就会开机配置失败
     05 ftAutoBackupOrRestoreOuts 无法区分user和userdebug
+    06 ftAutoPacket无法处理9.0的dataBase的modem包

@@ -3644,15 +3644,21 @@ ftFastbootUnlock()
     ftEcho -s "设备已进入fastboot模式，请按下音量键解锁"
     fastboot flashing unlock
      while true; do
-    ftEcho -y "解锁是否成功[回车是并自动重启]"
+    ftEcho -y "按下后请查看设备屏幕，在提示解锁成功后，请按下回车[回车后设备自动重启]"
     read -n 1 sel
     [ -z "${sel}" ] && sel=y
     case "$sel" in
         y | Y )
                 ftEcho -s "设备将退出fastboot模式"
                 fastboot reboot
+                ftEcho -s "尝试禁用verity,请稍等"
+                adb wait-for-device && adb root && adb disable-verity && adb reboot
+                ftEcho -s "尝试adb root,请稍等"
+                adb wait-for-device && adb root && adb remount
+                ftEcho -s "操作完成"
                 break;;
         n | q )
+                echo
                 ftEcho -s "请按下音量键解锁"
                 fastboot flashing unlock
                 ;;
