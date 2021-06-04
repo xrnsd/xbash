@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.2.3
+versionNum=v0.1.2.4
 
 #自动维护out用,有这些也视为空out
 [backupOrRestoreOutsInfo]
@@ -35,7 +35,9 @@ toolsPath=
 recordCreator=xxx<xxx@xxx.com>
 recordMeTag=为方便后期追溯,对应git_commit已添加以版本号为名的标签.其中的标签注释内容为版本号具体修改的说明,请知悉.
 projectManager=xxxx<xxx@xxx.com>yyyy<xxx@xxx.com>
-softwareDescriptionMtk=tools目录存放MTK系统软件[固件]下载工具和工具使用说明书
+softwareDescriptionMtkTools=tools目录存放MTK系统软件[固件]下载工具和工具使用说明书
+softwareDescriptionMtkPackages=packages目录存放系统软件
+softwareDescriptionMtkDatabase=database目录存放设备校准等用途的配置文件
 
 [serverConfigDef]
 softwareServerIp=xxx

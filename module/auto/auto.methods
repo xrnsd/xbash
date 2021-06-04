@@ -536,8 +536,6 @@ ftAutoBackupOrRestoreOuts()
             ftEcho -s "移动 ${dirPathOutTragetReal}\n 到  ${dirPathOutReal}"
             rm "${dirPathOutTragetLocal}"
             ln -s "${dirPathOutReal}" "${dirPathOutLocal}"
-
-            echo "dirPathOutReal=${dirPathOutReal}"
             return
         fi
 
@@ -846,7 +844,7 @@ ftAutoPacket()
                     # database
                     ftEcho -s "创建 database"
                     tagName=xbashAOSPConfigSoftwareDataBaseFileLIst
-                    local dirNamePackageDataBase="dataBase"
+                    local dirNamePackageDataBase="database"
                     local dataBaseFileList dataBaseFileListTemp
                     local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
                     local apdbDirPathList=($(ftXbGetValue $tagName apdbDirPathList))
@@ -1244,9 +1242,10 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}
             content=${content}${enterLine}"说明："
             if [[ ${isPacketMtkSoftwareDownloadTools} = "true" ]]; then
-                content=${content}${enterLine}"\t01 $(ftXbGetValue projectSoftwareReadMeInfo softwareDescriptionMtk)"
+                content=${content}${enterLine}"\t01 $(ftXbGetValue projectSoftwareReadMeInfo softwareDescriptionMtkTools)"
+                content=${content}${enterLine}"\t02 $(ftXbGetValue projectSoftwareReadMeInfo softwareDescriptionMtkPackages)"
+                content=${content}${enterLine}"\t03 $(ftXbGetValue projectSoftwareReadMeInfo softwareDescriptionMtkDatabase)"
             fi
-            content=${content}${enterLine}"\t02 "
             content=${content}${enterLine}
             content=${content}${enterLine}"修改记录："
             content=${content}${enterLine}"\t01 "
