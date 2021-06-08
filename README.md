@@ -4,6 +4,7 @@ bash的简单扩展
 ----------
     1.初始化
 ```sh
+    $ cd xbash
     $ sudo -k chmod -R a+x module/ config/ init
     $ ./init
 ```

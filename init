@@ -33,8 +33,8 @@ ftInitGitConfig()
         #切换到独立分支
         local brachName="${userNameLocal}_$(date -d "today" +"%y%m%d%H%M%S")"
         brachName=$(echo $brachName |sed s/[[:space:]]//g)
-        git checkout ${brachName}
-    fi||exceptionContent="${exceptionContent}\n git配置初始化失败"
+        git checkout -b ${brachName}
+    fi
 }
 
 ftInitUserConfig()
@@ -44,9 +44,17 @@ ftInitUserConfig()
 
     local dirPathXbashConfigBashrc=${dirPathLocal}/config
     local dirPathXbashConfigBashrcUser=${dirPathXbashConfigBashrc}/user
-    local dirPathXbashModuleExpmale=${dirPathLocal}/module/expmale
-    local filePathXbashConfigExample=${dirPathXbashModuleExpmale}/user.config.expmale
+    local dirPathXbashModuleexample=${dirPathLocal}/module/example
+    local filePathXbashConfigExample=${dirPathXbashModuleexample}/user.config.example
     local filePathXbashConfigNew=${dirPathXbashConfigBashrcUser}/${userNameLocal}.config
+    local filePathXbashConfigProfile=${dirPathXbashConfigBashrc}/profile.config
+    local filePathHomeConfigProfile=${dirPathHomeLocal}/.profile
+
+    if [[ -f "$filePathXbashConfigProfile" ]]; then
+        cp -rf "${filePathXbashConfigProfile}" "${filePathHomeConfigProfile}"
+    else
+        exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败,${filePathXbashConfigProfile}未找到"
+    fi
 
     [ ! -d "$dirPathXbashConfigBashrcUser" ] && mkdir $dirPathXbashConfigBashrcUser
     if [[ -f "$filePathXbashConfigExample" ]]; then
@@ -55,7 +63,7 @@ ftInitUserConfig()
         if [ -n "${userPasswdLocal}" ];then
             local taguserPasswordBase="export\ userPassword="
             local taguserPasswordNew="export\ userPassword=$userPasswdLocal"
-            sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败"
+            sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败\n ${filePathXbashConfigExample} > ${filePathXbashConfigNew}"
         fi
 
         local tagisAutoUpdateBase="export\ isAutoUpdate=" \
@@ -124,7 +132,7 @@ ftInitUserConfig()
        #     fi
        # fi
     else
-        exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败"
+        exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败,${filePathXbashConfigExample}未找到"
     fi
 }
 
@@ -143,15 +151,18 @@ ftInitMoule()
     
     if [ -f "$filePathXbashConfigProfileNew" ]; then
         cd $dirPathHomeLocal
-        [[ -f "$filePathHomeLocalProfile" ]] && [ $(readlink -f  $filePathHomeLocalProfile) != $filePathXbashConfigProfileNew ] && mv ${filePathHomeLocalProfile} ${filePathHomeLocalProfile}_backup
-        ln -sf $filePathXbashConfigProfileNew .bashrc || exceptionContent="${exceptionContent}\n xbash基础配置添加失败"
+        [[ -f "$filePathHomeLocalProfile" ]] && [ $(readlink -f  $filePathHomeLocalProfile) != $filePathXbashConfigProfileNew ] \
+             && mv ${filePathHomeLocalProfile} ${filePathHomeLocalProfile}_backup
+        ln -sf ${filePathXbashConfigProfileNew} ${filePathHomeLocalProfile} \
+             || exceptionContent="${exceptionContent}\n xbash基础配置添加失败"
     else
         exceptionContent="${exceptionContent}\n xbash基础配置添加失败,文件不存在:${filePathXbashConfigProfileNew}"
     fi
     
     if [ -f "$filePathXbashModuleBashrcNew" ]; then
         cd $dirPathHomeLocal
-        [[ -f "$filePathHomeLocalBashrc" ]] && [ $(readlink -f  $filePathHomeLocalBashrc) != $filePathXbashModuleBashrcNew ] && mv ${filePathHomeLocalBashrc} ${filePathHomeLocalBashrc}_backup
+        [[ ! -f ${filePathHomeLocalBashrc}_backup ]] && [[ ! -L "$filePathHomeLocalBashrc" ]] \
+        && mv ${filePathHomeLocalBashrc} ${filePathHomeLocalBashrc}_backup
         ln -sf $filePathXbashModuleBashrcNew .bashrc || exceptionContent="${exceptionContent}\n xbash模块初始化配置添加失败"
     else
         exceptionContent="${exceptionContent}\n xbash模块初始化配置添加失败,文件不存在:${filePathXbashModuleBashrcNew}"
@@ -259,7 +270,20 @@ ftInitXbash()
 
         #结果显示
         echo
-        [[ -z "$exceptionContent" ]] && ftInitEcho -s "Xbash 初始化成功 " ||ftInitEcho -e "Xbash 初始化失败"
+        if [[ -z "$exceptionContent" ]];then
+            while true; do
+            ftInitEcho -y "Xbash初始化成功,但需要注销重新登录才能生效，是否注销(回车默认y)"
+            read -n 1 sel && echo ; [ -z "${sel}" ] && sel=y
+            case "$sel" in
+                y|Y) /usr/bin/gnome-session-quit --logout --force
+                     break;;
+                n|N|q|Q)  exit;;
+                *) ftInitEcho -e 错误的选择：$sel ;echo "输入n，q，退出";;
+            esac
+            done
+        else
+            ftInitEcho -e "Xbash 初始化失败\n${exceptionContent}"
+        fi
         return
     fi
     #根据参数初始化
