@@ -3666,3 +3666,71 @@ ftFastbootUnlock()
             echo "输入n，q，离开";;
     esac;done
 }
+
+complete -W "-h -d --help" ftAutoCreateProguardRulesPro
+ftAutoCreateProguardRulesPro()
+{
+    local ftEffect=快速生成模块混淆策略配置文件proguard-rules.pro的模板
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local dirPathModule dirPathModuleJavaSourceCode
+    local valCount=1 errorContent arg arg2 # arg3 # arg4
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    #eval arg3=\${$((i+2))} #; eval arg4=\${$((i+3))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    查看函数说明
+#    ftAutoCreateProguardRulesPro -h
+#
+#   根据模块路径下的java文件，自动生成proguard-rules.pro在模块路径下
+#    ftAutoCreateProguardRulesPro -d 模块路径
+#========================================================="; return ;;
+        # 变量参数解析部分 ==============
+        -d ) dirPathModule="${arg2}"
+                dirPathModuleJavaSourceCode=${dirPathModule}/src/main/java
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #参数校验
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ ! -d "${dirPathModule}" ] && errorContent="${errorContent}\\n[模块路径未找到]dirPathModule=$dirPathModule"
+    [ ! -d "${dirPathModuleJavaSourceCode}" ] && errorContent="${errorContent}\\n[模块java代码路径未找到]dirPathModuleJavaSourceCode=$dirPathModuleJavaSourceCode"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCreateProguardRulesPro -h && return
+
+    #实现主体
+    local dirPathLocal=$(pwd) fileNameConfig=proguard-rules.pro
+    local filePathConfigExamle=${rDirPathXbashModuleExample}/proguard-rules.pro.example
+    local filePathConfig=${dirPathModuleJavaSourceCode}/${fileNameConfig}
+
+    if [[ -f ${filePathConfig} ]]; then
+        ftEcho -y "存在旧proguard-rules.pro，是否删除(回车默认y)"
+        read -n 1 sel
+        [ -z "${sel}" ] && sel=y
+        while true; do case "$sel" in
+                y | Y )  echo ; break ;;
+                n | q )  echo ; return ;;
+                * ) ftEcho -e "错误的选择：$sel"
+                    echo "输入n，q，离开";;
+        esac;done
+    fi
+    cp -rf ${filePathConfigExamle} ${filePathConfig}
+
+    local packageList=($(find ${dirPathModuleJavaSourceCode} -name *.java | xargs cat |grep package))
+    local packageList=($(awk -v RS=' ' '!a[$1]++' <<< ${packageList[@]})) #去重复
+    for packageName in ${packageList[@]}; do
+        if [[ ${packageName} = "package" ]]; then
+            continue
+        fi
+        packageName=$(echo $packageName | sed -e "s:;::g")
+        echo "-keep class ${packageName}.**  {*;}" >> ${filePathConfig}
+    done
+
+    ftEcho -s "创建成功"
+}
