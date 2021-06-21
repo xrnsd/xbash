@@ -2797,7 +2797,9 @@ ftCheckCcache()
     local keyCacheSizeNow="cache size"
     local keyCacheSizeMax="max cache size"
     local UnitMb="Mbytes" UnitGb="Gbytes"
-    local cacheSizeNow=$(ccache -s |grep -v "${keyCacheSizeMax}" |grep "$keyCacheSizeNow"| awk '{print $3}' | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
+    local cacheSizeNow=$(ccache -s |grep -v "${keyCacheSizeMax}" |grep "$keyCacheSizeNow")
+    local cacheSizeNowUint=$(echo $cacheSizeNow| awk '{print $4}' )
+            cacheSizeNow=$(echo $cacheSizeNow| awk '{print $3}')
             cacheSizeNow=${cacheSizeNow%.*}
     local cacheSizeNowUnit=$(ccache -s |grep -v "${keyCacheSizeMax}" |grep "${keyCacheSizeNow}"| awk '{print $4}')
     local cacheSizeMax=$(ccache -s |grep "$keyCacheSizeMax" | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
@@ -2805,6 +2807,11 @@ ftCheckCcache()
     local cacheSizeMaxUnit=$(ccache -s |grep "$keyCacheSizeMax"| awk '{print $5}')
     local ccacheStorageDeviceAvailableSpaceSize=$(ftDevAvailableSpace -g ${CCACHE_DEV_DIR})
             ccacheStorageDeviceAvailableSpaceSize=${ccacheStorageDeviceAvailableSpaceSize%.*}
+
+    if [[ ${cacheSizeNowUint} = ${UnitMb} ]]; then
+        #cacheSizeNow=$(printf "%.2f" `echo "scale=2;$cacheSizeNow/1024"|bc`)
+        cacheSizeNow=1
+    fi
 
     if [[ -n "$isChecked" ]]; then
         export ccacheEnv_SizeNow="${cacheSizeNow}"
