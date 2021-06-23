@@ -13,7 +13,7 @@ ftSetBashPs1ByGitBranch()
     [[ "$(whoami)" = "root" ]] && defaultPrefix="root" && defaultColorConfig=42
     export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
 
-    [[ -z $(which git) ]] && return
+    [[ -z $(which git) ]] && return $resultFail
 
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     local branchNameAll
@@ -106,21 +106,21 @@ ftGitLogShell()
                 ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     #参耦校验
-    [[ -z $(which git) ]] && ftGitLogShell --rely && return
-    [[ -n "$isAllBranchLog" ]] && [ -z $(which gitk) ] && ftGitLogShell --rely && return
-    [[ -z $(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') ]] && ftGitLogShell --env && return
+    [[ -z $(which git) ]] && ftGitLogShell --rely && return $resultFail
+    [[ -n "$isAllBranchLog" ]] && [ -z $(which gitk) ] && ftGitLogShell --rely && return $resultFail
+    [[ -z $(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') ]] && ftGitLogShell --env && return $resultFail
     [ -z "$branchLogItemCount" ]||(($branchLogItemCount<0)) && errorContent="${errorContent}\\n log显示数量未指定"
     [ -n "$isFindString" ] && [ -z "${findStringContent}" ] && errorContent="${errorContent}\\n 查找的字符串未制定"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitLogShell -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitLogShell -h && return $resultFail
 
     #实现主体
     local gitVersionMin="2.6.0" gitVersionNow=$(git --version)
     gitVersionNow=${gitVersionNow//git version/}
     gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
-    [[ -n "$isAllBranchLog" ]] && gitk --all "${pathTarget}" && return
-    [[ -n "$isAllBranchTree" ]] && gitk --simplify-by-decoration --all && return
-    [[ -n "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return
+    [[ -n "$isAllBranchLog" ]] && gitk --all "${pathTarget}" && return $resultFail
+    [[ -n "$isAllBranchTree" ]] && gitk --simplify-by-decoration --all && return $resultFail
+    [[ -n "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return $resultFail
 
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]] && [ "$isCustomBranchLog" != "true" ];then
         branchLogFormat=${branchLogFormat:-'%C(green)%<(9,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
@@ -189,13 +189,13 @@ ftGitPatchAdd2Branches()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    [ -z "$branchNameNow" ] && ftGitPatchAdd2Branches --env && return
+    [ -z "$branchNameNow" ] && ftGitPatchAdd2Branches --env && return $resultFail
     local filePathBranchList=待打补丁的分支列表 filePathCommitList="patch的hash值列表[会自动倒序,请按新旧正序填写]"
     local filePathAddPatchTool=$rFilePathXbashModuleGitAddPatchToolExample
     local filePathFailInfo="/home/wgx/.cache/ftGitPatchAdd2Branches.log" ; [ -f "$filePathFailInfo" ] && rm $filePathFailInfo
-    [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return
+    [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return $resultFail
     [ ! -f "$filePathAddPatchTool" ] && [ -f "${filePathAddPatchTool}.example" ] &&\
-        ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return
+        ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return $resultFail
 
     #实现主体
     if [[ -n $isAutoSyncDef ]]; then
@@ -222,8 +222,8 @@ ftGitPatchAdd2Branches()
     XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathBranchList $filePathCommitList
     branchList=($(cat $filePathBranchList)) hashList=($(cat $filePathCommitList)) 
     rm -f $filePathBranchList $filePathCommitList
-     [ -z "$branchList" ] && ftEcho -e "${filePathBranchList} 为空" && return
-     [ -z "$hashList" ] && ftEcho -e "${filePathCommitList} 为空" && return
+     [ -z "$branchList" ] && ftEcho -e "${filePathBranchList} 为空" && return $resultFail
+     [ -z "$hashList" ] && ftEcho -e "${filePathCommitList} 为空" && return $resultFail
 
     for branchName in ${branchList[@]} ; do
         echo;ftEcho -s "================  切换到分支: ${branchName} ====================="
@@ -233,7 +233,7 @@ ftGitPatchAdd2Branches()
             [ -z "${sel}" ] && sel=y; [[ "$sel" != "y" ]] && continue
         fi
 
-        git checkout "$branchName"||return
+        git checkout "$branchName"||return $resultFail
         [ -n "$isAutoSync" ] && ftEcho -s "添加补丁前同步当前分支,请稍等..." && git pull --rebase && git push
 
         #添加多个commit
@@ -336,14 +336,14 @@ ftGitSelectBranch()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     if [[ -z "$branchNameTag" ]]; then
         git branch
-        return
+        return $resultFail
     fi
     #依赖校验
-    [[ -z $(which git) ]] && ftGitSelectBranch --rely "git" && return
+    [[ -z $(which git) ]] && ftGitSelectBranch --rely "git" && return $resultFail
     #参数校验
     [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
     [ -n "$delayLong" ] && ( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSelectBranch -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSelectBranch -h && return $resultFail
 
     #实现主体
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
@@ -366,7 +366,7 @@ ftGitSelectBranch()
 
     if [[ -z "${branchList[@]}" ]];then
        [[ -n $(echo $branchNameNow |grep -i "${branchNameTag}") ]] && ftEcho -s "只有当前分支包含TAG，无需切换" && return
-       ftEcho -e "未找到[$branchNameTag]对应的分支" && return
+       ftEcho -e "未找到[$branchNameTag]对应的分支" && return $resultFail
     fi
     local itemCount=${#branchList[@]}
     for item in ${branchList[@]} ; do [ -n "$item" ] && branchNameTraget=$item && break ;done
@@ -390,7 +390,7 @@ ftGitSelectBranch()
         read -n $length tIndex && echo
         #设定默认值
         [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
-        (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
+        (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return $resultFail
         index=0;for item in ${branchList[@]} ; do
             [ -z "$item" ] && continue
             (( $index == $tIndex )) && branchNameTraget=$item && break
@@ -441,14 +441,14 @@ ftGitCheckoutBranch()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     if [[ -z "$branchNameTag" ]]; then
         git branch
-        return
+        return $resultFail
     fi
     #依赖校验
-    [[ -z $(which git) ]] && ftGitCheckoutBranch --rely "git" && return
+    [[ -z $(which git) ]] && ftGitCheckoutBranch --rely "git" && return $resultFail
     #参数校验
     [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
     [ -n "$delayLong" ] && ( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBranch -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBranch -h && return $resultFail
 
     #实现主体
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
@@ -471,7 +471,7 @@ ftGitCheckoutBranch()
 
     if [[ -z "${branchList[@]}" ]];then
        [[ -n $(echo $branchNameNow |grep -i "${branchNameTag}") ]] && ftEcho -s "只有当前分支包含TAG，无需切换" && return
-       ftEcho -e "未找到[$branchNameTag]对应的分支" && return
+       ftEcho -e "未找到[$branchNameTag]对应的分支" && return $resultFail
     fi
     local itemCount=${#branchList[@]}
     for item in ${branchList[@]} ; do [ -n "$item" ] && branchNameTraget=$item && break ;done
@@ -495,7 +495,7 @@ ftGitCheckoutBranch()
         read -n $length tIndex && echo
         #设定默认值
         [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
-        (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return
+        (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return $resultFail
         index=0;for item in ${branchList[@]} ; do
             [ -z "$item" ] && continue
             (( $index == $tIndex )) && branchNameTraget=$item && break
@@ -596,39 +596,39 @@ ftGitPatch()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
     #依赖校验
-    [[ -z $(which git) ]] && ftGitPatch --rely "git" && return
+    [[ -z $(which git) ]] && ftGitPatch --rely "git" && return $resultFail
     #参数校验
-    [ -z "$branchNameNow" ] && ftGitPatch --env && return
+    [ -z "$branchNameNow" ] && ftGitPatch --env && return $resultFail
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPatch -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPatch -h && return $resultFail
 
     #实现主体
     local dirPathLocal=$(pwd)
     local dirPathGitRoot=$(git rev-parse --show-toplevel)
-    [[ ! -d ${dirPathGitRoot} ]] && ftEcho -e "找不到仓库的根目录\\ndirPathGitRoot=$dirPathGitRoot" && return
+    [[ ! -d ${dirPathGitRoot} ]] && ftEcho -e "找不到仓库的根目录\\ndirPathGitRoot=$dirPathGitRoot" && return $resultFail
     cd ${dirPathGitRoot}
 
     [[ -n "isApplayPatch" ]] && if [[ -f $filePathPatchSource ]]; then
         git am $filePathPatchSource
         return
     # elif [[ -d $filePathPatchSource  ]]; then
-    else ftEcho -e "patch添加失败，无效路径：${filePathPatchSource}" && return
+    else ftEcho -e "patch添加失败，无效路径：${filePathPatchSource}" && return $resultFail
     fi
 
     [[ -n "isByChange" ]] && if [[ -n "${patchNameTarget}" ]]; then
         git diff-tree -r --no-commit-id --name-only ${patchNameTarget} | xargs tar -rf ${patchNameTarget}.tar
         return
-    else ftEcho -e "patch生成失败，无效包名：${patchNameTarget}" && return ;fi
+    else ftEcho -e "patch生成失败，无效包名：${patchNameTarget}" && return $resultFail ;fi
 
     [[ -n "isByHash" ]] && if [[ -n "${commitIdNew}" ]] && [[ -n "${commitIdOld}" ]] && [[ -n "${patchNameTarget}" ]]; then
         git diff ${commitIdNew} ${commitIdOld} --name-only | xargs tar -rf ${patchNameTarget}.tar
         return
-    else ftEcho -e "patch生成失败" && return ;fi
+    else ftEcho -e "patch生成失败" && return $resultFail ;fi
 
     [[ -n "isByHashAndMore" ]] && if [[ -n "${commitIdOld}" ]] && [[ -n "${dirPathPatchTarget}" ]]; then
         git format-patch -s ${commitIdOld} -o ${dirPathPatchTarget}
         return
-    else ftEcho -e "patch生成失败" && return ;fi
+    else ftEcho -e "patch生成失败" && return $resultFail;fi
 
     cd ${dirPathLocal}
 }
@@ -672,14 +672,14 @@ ftGitTagGrep()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
     #依赖校验
-    [[ -z $(which git) ]] && ftGitTagGrep --rely "git" && return
+    [[ -z $(which git) ]] && ftGitTagGrep --rely "git" && return $resultFail
     #环境校验
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    [[ -z "${branchNameNow}" ]] && ftGitTagGrep --env && return
+    [[ -z "${branchNameNow}" ]] && ftGitTagGrep --env && return $resultFail
     #参数校验
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ -z "$strKeyContent" ] && errorContent="${errorContent}\\n[想要的有点多,这个给不了]"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagGrep -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagGrep -h && return $resultFail
 
     #实现主体
     local tagNameList=$(git tag)
@@ -773,11 +773,11 @@ ftGitTag()
             ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #依赖校验
-    [[ -z $(which git) ]] && ftGitTag --rely "git" && return
+    [[ -z $(which git) ]] && ftGitTag --rely "git" && return $resultFail
     #参数校验
     [ -z "$tagName" ]&&[ -z "${isUseVersionReadMeTemplate}" ] && errorContent="${errorContent}\\n[tagName为空]tagName=$tagName"
     [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTag -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTag -h && return $resultFail
 
     #实现主体
     if [[ -n "$isDeleteTag" ]];then
@@ -837,9 +837,9 @@ ftGitTag()
                     echo "输入n，q，离开";;
     esac;done ; fi
 
-    [[ -z "$noteContent" ]] && ftEcho -e 标签添加失败,缺少备注 && return
+    [[ -z "$noteContent" ]] && ftEcho -e 标签添加失败,缺少备注 && return $resultFail
     if ! git tag -a "${tagName}" -m "${noteContent[@]}" "$commitId"; then
-        ftEcho -e 标签添加失败 && return
+        ftEcho -e 标签添加失败 && return $resultFail
     fi
 
     ftEcho -y "是否提交(回车默认y)" && read -n 1 sel && echo ; [ -z "${sel}" ] && sel=y
@@ -882,14 +882,14 @@ ftGitPushForce_SXTD()
     * ) break;;esac;done
 
     #依赖校验
-    [[ -z $(which git) ]] && ftGitPushForce_SXTD --rely "git" "ftGitPushForce_SXTD --rely_install" && return
+    [[ -z $(which git) ]] && ftGitPushForce_SXTD --rely "git" "ftGitPushForce_SXTD --rely_install" && return $resultFail
     #解参验耦
     local valCount=0 errorContent
     local branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    [ -z "${branchNameLocal}" ] && ftGitPushForce_SXTD --env && return
-    [[ "${branchNameLocal}" = "master" ]] && ftGitPushForce_SXTD --env_warning && return
+    [ -z "${branchNameLocal}" ] && ftGitPushForce_SXTD --env && return $resultFail
+    [[ "${branchNameLocal}" = "master" ]] && ftGitPushForce_SXTD --env_warning && return $resultFail
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPushForce_SXTD -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPushForce_SXTD -h && return $resultFail
 
     #实现主体
     git push origin --delete "${branchNameLocal}" \
@@ -935,16 +935,16 @@ ftGitSxtdProjectBranchV1()
         ftAutoInitEnv > /dev/null
     fi
     local dirPathAospRoot=$(dirname $ANDROID_BUILD_TOP)
-    [[ ! -d "${dirPathAospRoot}" ]] && ftGitSxtdProjectBranchV1 --env && return
+    [[ ! -d "${dirPathAospRoot}" ]] && ftGitSxtdProjectBranchV1 --env && return $resultFail
     local dirPathLocal=$(pwd)
     cd "${dirPathAospRoot}"
     #依赖校验
-    [[ -z $(which git) ]] && ftGitSxtdProjectBranchV1 --rely "git" && return
+    [[ -z $(which git) ]] && ftGitSxtdProjectBranchV1 --rely "git" && return $resultFail
     #解参验耦
     local valCount=1 errorContent
     local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     [ -z "$branchName" ] && errorContent="${errorContent}\\n[当前目录无有效git仓库]"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSxtdProjectBranchV1 -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSxtdProjectBranchV1 -h && return $resultFail
 
     #实现主体
     ftEcho -s "开始收集项目状态"
@@ -981,7 +981,7 @@ ftGitSxtdProjectBranchV1()
                 tar -xvf ${tarPackagAutoCreateName}.tar -C ${tarPackagAutoCreateNameTemp}
 
                 [[ -z $(ls $tarPackagAutoCreateNameTemp) ]] && ftEcho -e "分支patch包生成失败,请确认是否有除[?/T/M/D]之外修改类型,或检查gitignore配置文件" \
-               && rm -rf ${tarPackagAutoCreateNameTemp} ${tarPackagAutoCreateName}.tar && return
+               && rm -rf ${tarPackagAutoCreateNameTemp} ${tarPackagAutoCreateName}.tar && return $resultFail
 
                 mv ${tarPackagAutoCreateNameTemp}/alps ${tarPackagAutoCreateName}
                 rm -rf $tarPackagAutoCreateNameTemp ${tarPackagAutoCreateName}.tar
@@ -1043,13 +1043,13 @@ ftGitSxtdProjectBranchV2()
     * ) break;;esac;done
 
     #依赖校验
-    [[ -z $(which git) ]] && ftGitSxtdProjectBranchV2 --rely "git" && return
+    [[ -z $(which git) ]] && ftGitSxtdProjectBranchV2 --rely "git" && return $resultFail
     #环境校验
     local branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-    [ -z "${branchNameLocal}" ] && ftGitSxtdProjectBranchV2 --env && return
+    [ -z "${branchNameLocal}" ] && ftGitSxtdProjectBranchV2 --env && return $resultFail
     #参数校验
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSxtdProjectBranchV2 -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitSxtdProjectBranchV2 -h && return $resultFail
 
     local mFilePathSxtdProjectBranchV2="${dirPathHome}/.cache/projectDescriptionTemp.ini"
     local mBranchList=(
@@ -1069,10 +1069,10 @@ ftGitSxtdProjectBranchV2()
         XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $mFilePathSxtdProjectBranchV2
         local mBranchNameBase=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameBase)
                 mBranchNameNew=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameNew)
-        [ -z "${mBranchNameBase}" ] && ftEcho -e "缺失原分支名,请确认是否输入" && return
-        [ -z "${mBranchNameNew}" ] && ftEcho -e "缺失新分支名,请确认是否输入" && return
+        [ -z "${mBranchNameBase}" ] && ftEcho -e "缺失原分支名,请确认是否输入" && return $resultFail
+        [ -z "${mBranchNameNew}" ] && ftEcho -e "缺失新分支名,请确认是否输入" && return $resultFail
 
-        git branch -m "${mBranchNameBase}" "${mBranchNameNew}" || return
+        git branch -m "${mBranchNameBase}" "${mBranchNameNew}" || return $resultFail
         ftEcho -s "${mBranchNameBase} \n本地修改为 \n${mBranchNameNew}"
 
         ftEcho -y "是否同时重命名服务器分支(回车默认y)"
@@ -1099,9 +1099,9 @@ ftGitSxtdProjectBranchV2()
 
         XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $mFilePathSxtdProjectBranchV2 > /dev/null
         local mBranchNameDelete=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameDelete)
-        [ -z "${mBranchNameDelete}" ] && ftEcho -e "缺失待删除分支名,请确认是否输入" && return
+        [ -z "${mBranchNameDelete}" ] && ftEcho -e "缺失待删除分支名,请确认是否输入" && return $resultFail
 
-        git branch -D "${mBranchNameDelete}" || return
+        git branch -D "${mBranchNameDelete}" || return $resultFail
 
         ftEcho -y "是否同时删除对应服务器分支(回车默认y)"
         read -n 1 sel ; [ -z "${sel}" ] && sel=y ; while true; do case "$sel" in
@@ -1128,16 +1128,16 @@ ftGitSxtdProjectBranchV2()
         ${mKeyIniClientName}= \
         #不同特性之间用下划线分割 \
         ${mKeyIniDemandSignName}="
-        [[ ! -f "$mFilePathSxtdProjectBranchV2" ]] && ftEcho -e "${TagName}文件创建失败" && return
+        [[ ! -f "$mFilePathSxtdProjectBranchV2" ]] && ftEcho -e "${TagName}文件创建失败" && return $resultFail
         XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $mFilePathSxtdProjectBranchV2
 
         local mMotherBoardName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniMotherBoardName) \
                 mProjrctName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniProjrctName) \
                 mClientName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniClientName) \
                 mDemandSignName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniDemandSignName)
-        [[ -z "$mMotherBoardName" ]] && ftEcho -e "缺失项目主板名信息,请确认是否输入" && return
-        [[ -z "$mProjrctName" ]] && ftEcho -e "缺失项目名信息,请确认是否输入" && return
-        [[ -z "$mClientName" ]] && ftEcho -e "缺失项目客户名信息,请确认是否输入" && return
+        [[ -z "$mMotherBoardName" ]] && ftEcho -e "缺失项目主板名信息,请确认是否输入" && return $resultFail
+        [[ -z "$mProjrctName" ]] && ftEcho -e "缺失项目名信息,请确认是否输入" && return $resultFail
+        [[ -z "$mClientName" ]] && ftEcho -e "缺失项目客户名信息,请确认是否输入" && return $resultFail
         mDemandSignName=${mDemandSignName:-'ZhongXing'}
         local mBranchName="${mKeyBranchMotherBoardName}(${mMotherBoardName})"
         mBranchName="${mBranchName}_${mKeyBranchProjrctName}(${mProjrctName})"
@@ -1178,7 +1178,7 @@ ftGitCreateAppVersionReadMeBySoftwareVersion()
         -a )   isAutoAddTAg="true" ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     #环境校验
-    [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitCreateAppVersionReadMeBySoftwareVersion --rely && return
+    [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitCreateAppVersionReadMeBySoftwareVersion --rely && return $resultFail
     local filePathConfig=$rFilePathXbashDBUser
 
     #实现主体
@@ -1267,10 +1267,10 @@ ftGitTagCreateAppReadMeTemplate()
             ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
-    [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitTagCreateAppReadMeTemplate --rely && return
+    [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitTagCreateAppReadMeTemplate --rely && return $resultFail
     [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
     [ -z "$filePathAppReadMe" ] && errorContent="${errorContent}\\n[模板路径为空]filePathAppReadMe=$filePathAppReadMe"
-    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateAppReadMeTemplate -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateAppReadMeTemplate -h && return $resultFail
 
     #实现主体
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
@@ -1326,10 +1326,10 @@ ftGitTagCreateBranchReadMeTemplate()
             ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
-    [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitTagCreateBranchReadMeTemplate --rely && return
+    [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitTagCreateBranchReadMeTemplate --rely && return $resultFail
     [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
     [ -z "$filePathAppReadMe" ] && errorContent="${errorContent}\\n[模板路径为空]filePathAppReadMe=$filePathAppReadMe"
-    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateBranchReadMeTemplate -h && return
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateBranchReadMeTemplate -h && return $resultFail
 
     #实现主体
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
@@ -1396,12 +1396,12 @@ ftGitTagCreateVersionTemplateByVersionReadme()
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "${filePathReadmeTarget}" ] && errorContent="${errorContent}\\n[模板存放路径为空]"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateVersionTemplateByVersionReadme -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitTagCreateVersionTemplateByVersionReadme -h && return $resultFail
 
     #实现主体
     if [[ -z $filePathReadme ]] || [[ ! -f $filePathReadme ]]; then
         [[ ! -d out ]] && [ -n "$ANDROID_BUILD_TOP" ] && cd "${ANDROID_BUILD_TOP}"
-        [[ ! -d out ]] && ftEcho -s "未找到有效版本说明" && ftGitTagCreateVersionTemplateByVersionReadme -h && return
+        [[ ! -d out ]] && ftEcho -s "未找到有效版本说明" && ftGitTagCreateVersionTemplateByVersionReadme -h && return $resultFail
         filePathReadme=$(find out/packet -name 版本说明.txt)
     fi
 
@@ -1428,7 +1428,7 @@ ftGitgetParentBranch()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return $resultFail
     #解参验耦
     local branchNameLocal
     local valCount=2 errorContent arg arg2
@@ -1469,13 +1469,13 @@ ftGitgetParentBranch()
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #依赖校验
-    [[ -z $(which git) ]] && ftGitgetParentBranch --rely "git" && return
+    [[ -z $(which git) ]] && ftGitgetParentBranch --rely "git" && return $resultFail
     [ -z "${branchNameLocal}" ] &&
         branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -z "${branchNameLocal}" ] && errorContent="${errorContent}\\n[未指定分支名]"
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitgetParentBranch -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitgetParentBranch -h && return $resultFail
 
     #实现主体
      local branchNameParent=($(git reflog show --date=iso "${branchNameLocal}"|grep "branch: Created from"))

@@ -6,6 +6,7 @@ diaNameLocal="xbash"
 dirPathLocal=$(cd "$(dirname "$0")";pwd)
 [[ -z "$SUDO_USER" ]] && userNameLocal=$USER || userNameLocal=$SUDO_USER
 dirPathHomeLocal=/home/${userNameLocal}
+resultSuccess=0 resultFail=1
 
 #####-----------------------公共方法-----------------------#########
 ftInitGitConfig()
@@ -16,7 +17,7 @@ ftInitGitConfig()
     if [[ -z $(which git) ]];then
         ftInitEcho -e "git没有安装，请手动安装"
         exceptionContent="${exceptionContent}\n git配置初始化失败"
-        return
+        return $resultFail
     fi
 
     filePathGitIgnore=${dirPathLocal}/.gitignore
@@ -178,8 +179,8 @@ ftInitInputrc()
     local filePathHomeLocalConfigInputrc=${dirPathHomeLocal}/${fileNameXbashModuleBashrcInputrcTraget}
     local dirPathLocal=$(pwd)
 
-    [ -z "${isUseXbashHistory}" ] && return
-    [[ !  -f "$filePathXbashModuleBashrcInputrc" ]] && exceptionContent="${exceptionContent}\n xbash配置的命令历史适配逻辑初始化失败" && return
+    [ -z "${isUseXbashHistory}" ] && return $resultFail
+    [[ !  -f "$filePathXbashModuleBashrcInputrc" ]] && exceptionContent="${exceptionContent}\n xbash配置的命令历史适配逻辑初始化失败" && return $resultFail
 
     cd $dirPathHomeLocal
 

@@ -28,10 +28,10 @@ ftAdbPushByTerminal()
             ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #依赖校验
-    [[ -z $(which adb) ]] && ftAdbPushByTerminal --rely "adb" && return
+    [[ -z $(which adb) ]] && ftAdbPushByTerminal --rely "adb" && return $resultFail
     #参数校验
     [ -z "$filePathSourceList" ] && errorContent="${errorContent}\\n[push的源路径不存在]filePathSourceList=$filePathSourceList"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAdbPushByTerminal -h && return
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAdbPushByTerminal -h && return $resultFail
 
     #实现主体
     if [[ "$isUseConsole" = "true" ]]; then
@@ -50,7 +50,7 @@ ftAdbPushByTerminal()
         done
     fi
     #adb连接状态检测
-    ftAdbConnect -e; [[ -z "${autoTestDeviceId}" ]] && return
+    ftAdbConnect -e; [[ -z "${autoTestDeviceId}" ]] && return $resultFail
     local deviceId=${autoTestDeviceId}
 
     for filePath in ${filePathSourceList[@]}; do
