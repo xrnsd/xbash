@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.2.4
+versionNum=v0.1.2.5
 
 #自动维护out用,有这些也视为空out
 [backupOrRestoreOutsInfo]
@@ -49,3 +49,7 @@ userPassword=xxxx
 dirPathPackage=/xxxx/xxx/xxx
 dirPathPackageLocal=/xxx/xx/
 
+[vpnConfig_anyconnect]
+hostName=xxxx
+userName=xxxx
+userPassword=xxxx
