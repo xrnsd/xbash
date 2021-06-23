@@ -1912,6 +1912,8 @@ ftMaintainSystem()
                         ftMaintainInfoNote -a -p $filePathVersionInfo -v $infoVersionName
                     #显示当前配置信息
                         local dirPathStore=$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName  dirPathStore)
+                        [[ ${dirPathStore} = "null" ]] && ftEcho -e "无效备份包保存路径,请确认是否正确配置:${filePathVersionInfoVersion}" && return
+
                         ftEcho -bh "备份关键信息"
                         ftEcho -s "生成的备份包：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName fileName)"
                         ftEcho -s  "备份包的说明：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName  backupPackageNote)"
