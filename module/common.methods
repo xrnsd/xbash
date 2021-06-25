@@ -3736,7 +3736,7 @@ ftVpnControl()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePathAnyconnect=/opt/cisco/anyconnect/bin/vpn
-    local isConnect isDisConnect
+    local isConnect isDisConnect isRestPassword
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -3751,12 +3751,18 @@ ftVpnControl()
 #    连接VPN
 #    ftVpnControl -c
 #
+#    重新输入密码,连接VPN
+#    ftVpnControl -rc
+#
 #    断开VPN
 #    ftVpnControl -d
 #========================================================="; return ;;
 
         # 变量参数解析部分 ==============
         -c ) isConnect=true
+            ;;
+        -cp ) isConnect=true
+                isRestPassword=true
             ;;
         -d ) isDisConnect=true
             ;;
@@ -3778,6 +3784,14 @@ ftVpnControl()
         local userName=$(ftIniGetValue $rFilePathXbashDBUser $tag $keyUserName)
         local userPassword=$(ftIniGetValue $rFilePathXbashDBUser $tag $keyUserPassword)
 
+        if [[ "$isRestPassword" = "true" ]]; then
+            $filePathAnyconnect  -s connect ${hostName}<< EOF
+${userName}
+${userPassword}
+y
+EOF
+            $filePathAnyconnect -s disconnect ${hostName}
+        fi
         $filePathAnyconnect  -s connect ${hostName}<< EOF
 ${userName}
 y
