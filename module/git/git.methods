@@ -159,7 +159,7 @@ ftGitPatchAdd2Branches()
 #    ftGitPatchAdd2Branches 无参
 #
 #    #只操作名称中有TAG的分支
-#    ftGitPatchAdd2Branches -t 分支TAG   
+#    ftGitPatchAdd2Branches -t 分支TAG
 #
 #    #添加的补丁自动提交
 #    ftGitPatchAdd2Branches -a
@@ -1007,8 +1007,7 @@ ftGitSxtdProjectBranchV2()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local isCreateBranch isReName isDelete
-    local valCount=1 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -1246,8 +1245,7 @@ ftGitTagCreateAppReadMeTemplate()
     #解参验耦
     local filePathConfig=$rFilePathXbashDBUser
     local filePathAppReadMe versionName
-    local valCount=1 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -1307,8 +1305,7 @@ ftGitTagCreateBranchReadMeTemplate()
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local filePathAppReadMe filePathConfig=$rFilePathXbashDBUser
-    local valCount=1 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -1369,8 +1366,7 @@ ftGitTagCreateVersionTemplateByVersionReadme()
     [[ "$isEnable" != "true" ]] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePathReadme
-    local valCount=4 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=4 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
@@ -1431,8 +1427,7 @@ ftGitgetParentBranch()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return $resultFail
     #解参验耦
     local branchNameLocal
-    local valCount=2 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\

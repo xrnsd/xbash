@@ -74,7 +74,7 @@ ftClearTail()
     trap SIGINT
 }
 
-complete -W "-a --adb -h -j -s" ftResetXbash
+complete -W "-a --adb -h --help -j -s" ftResetXbash
 ftResetXbash()
 {
     local ftEffect=更新xbash配置
@@ -242,7 +242,7 @@ ftTest()
     trap SIGINT
 }
 
-complete -W " --rely_install" ftGitUpdateVersion
+complete -W " --rely_install -h --help" ftGitUpdateVersion
 ftGitUpdateVersion()
 {
     local ftEffect=xbash自动更新
@@ -339,8 +339,7 @@ ftTimeConsuming()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
-    local contentName=本次骚操作 arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local contentName=本次骚操作 arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         -r ) contentName="${arg2:-"$contentName"}"
           ;;
@@ -714,8 +713,7 @@ ftIniGetValue()
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local filePath=$1 blockName=$2 keyName=$3 isReadSilence
-    local valCount=3 errorContent
-    for ((i=1;i<=$#;i++)) ; do case "$1" in
+    local valCount=3 errorContent ; for ((i=1;i<=$#;i++)) ; do case "$1" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -860,8 +858,7 @@ ftDevAvailableSpace()
     local isEnable=true
 
     local dirPathTraget=$1 isReturn=$2 isFormatGbyte
-    local valCount=2 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -1339,8 +1336,7 @@ ftMtkFlashTool()
     #解参验耦
     local isEnableWindowMode
     local flashToolPath="$(ftXbGetValue MtkSpFlashToolVersion toolsPath)"
-    local valCount=1 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
@@ -1375,7 +1371,7 @@ ftMtkFlashTool()
     sudo $flashToolPath
 }
 
-complete -W "create new" ftBootAnimation
+complete -W "create new -h --help" ftBootAnimation
 ftBootAnimation()
 {
     local ftEffect=生成开关机动画
@@ -1722,7 +1718,7 @@ ftReduceFileList()
     done
 }
 
-complete -W "-h -d -l -ap -as -r -rs" ftReNameFile
+complete -W " -h --help -d -l -ap -as -r -rs" ftReNameFile
 ftReNameFile()
 {
     local ftEffect=批量重命名文件
@@ -1816,7 +1812,7 @@ ftReNameFile()
     cd "${dirPathLocal}"
 }
 
-complete -W "-b -r -s" ftMaintainSystem
+complete -W "-b -r -s -h --help" ftMaintainSystem
 ftMaintainSystem()
 {
     local ftEffect=ubuntu系统维护
@@ -2072,7 +2068,7 @@ ftFind()
     find "${pathTarget}" ! -type d -name ${nameAll}
 }
 
-complete -W "-p -d" ftPdfPasswordClear
+complete -W "-p -d -h --help" ftPdfPasswordClear
 ftPdfPasswordClear()
 {
     local ftEffect=pdf密码批量清除
@@ -2128,7 +2124,7 @@ ftPdfPasswordClear()
     done < <(echo "$(ls $dirPathTarget)")
 }
 
-complete -W "-f" ftApkSignature
+complete -W "-f -h --help" ftApkSignature
 ftApkSignature()
 {
     local ftEffect=apk签名
@@ -2184,7 +2180,7 @@ ftApkSignature()
     cd "${dirPathLocal}"
 }
 
-complete -W "-a -d -f -o" ftApkMergeOdex
+complete -W "-a -d -f -o -h --help" ftApkMergeOdex
 ftApkMergeOdex()
 {
     local ftEffect=合并odex和apk
@@ -2288,7 +2284,7 @@ ftApkMergeOdex()
     cd $dirPathLocal
 }
 
-complete -W "-h" ftDu
+complete -W "-h --help" ftDu
 ftDu()
 {
     local ftEffect=查找大文件
@@ -2298,8 +2294,7 @@ ftDu()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
         #解参验耦
     local dirPathTarget fileCount dirPathLocal=$(pwd)
-    local valCount=2 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -2330,7 +2325,7 @@ ftDu()
     cd $dirPathLocal
 }
 
-complete -W "-h -f" ftAdbPush
+complete -W "-h -f --help" ftAdbPush
 ftAdbPush()
 {
     local ftEffect=adbPush命令的简单封装
@@ -2643,13 +2638,10 @@ ftCdAospProject()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local valCount=1 errorContent arg arg2  arg3  arg4
     local isUserFileManager itemCount mAospProjectName mAospProjectStoragePathEffective
     local mAospProjectStoragePathList="$(ftXbGetValue AospProjectsInfo AospProjectStoragePathList)"
-
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    eval arg3=\${$((i+2))} ; eval arg4=\${$((i+3))}
-    case "${arg}" in
+    local valCount=1 errorContent arg arg2  arg3  arg4
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; eval arg4=\${$((i+3))} ; case "${arg}" in
     # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -2759,8 +2751,7 @@ ftCheckCcache()
     [[ "$isEnable" != "true" ]] && return #&& ftEcho -s "${ftEffect} 已停用，请确认" && return
     # 说明参数解析部分
     local isChecked
-    local valCount=2 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -3472,8 +3463,7 @@ ftCreateMoudleDesktop()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local exeModuleName filePathExeModule filePathIcon
-    local valCount=6 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=6 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
@@ -3493,9 +3483,9 @@ ftCreateMoudleDesktop()
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
-    [ -z "${exeModuleName}" ] && errorContent="${errorContent}\\n[示例1]example1=$example1"
-    [ ! -f "${filePathExeModule}" ] && errorContent="${errorContent}\\n[示例1]example1=$example1"
-    [ ! -f "${filePathIcon}" ] && errorContent="${errorContent}\\n[示例1]example1=$example1"
+    [ -z "${exeModuleName}" ] && errorContent="${errorContent}\\n请指定快捷方式名"
+    [ ! -f "${filePathExeModule}" ] && errorContent="${errorContent}\\n请指定执行文件路径"
+    [ ! -f "${filePathIcon}" ] && errorContent="${errorContent}\\n请指定图标路径"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCreateMoudleDesktop -h && return $resultFail
 
     #实现主体
@@ -3532,8 +3522,7 @@ ftXbGetValue()
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local tagName=$1 itemName=$2
-    local valCount=4 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=4 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
@@ -3569,8 +3558,7 @@ ftGetPublicIp()
     #可用性校验
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local valCount=1 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -3613,8 +3601,7 @@ ftFastbootUnlock()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local valCount=1 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
@@ -3684,10 +3671,7 @@ ftAutoCreateProguardRulesPro()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local dirPathModule dirPathModuleJavaSourceCode
-    local valCount=1 errorContent arg arg2 # arg3 # arg4
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    #eval arg3=\${$((i+2))} #; eval arg4=\${$((i+3))}
-    case "${arg}" in
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
@@ -3752,9 +3736,8 @@ ftVpnControl()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePathAnyconnect=/opt/cisco/anyconnect/bin/vpn
-    local valCount=1 errorContent isConnect isDisConnect
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    local isConnect isDisConnect
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
