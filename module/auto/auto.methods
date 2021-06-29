@@ -749,22 +749,24 @@ ftAutoPacket()
             if [[ -n "$isClean" ]]; then
                 rm  -rf $dirPathVersionSoftware
                 ftEcho -s "删除旧的软件包"
-            elif [[ -n "$isMove" ]]; then
-                mv $dirPathVersionSoftware ${dirPathVersionSoftware}_old
-                ftEcho -s "发现软件包,移至xx_old"
-            elif [[ -z "$isUpload" ]]; then
+            fi
+            if [[ -z "$isUpload" ]]; then
                   while true; do
                         ftEcho -y "有旧的软件包  ${dirPathVersionSoftware}\n是否删除(回车默认y)"
                         read -n 1 sel ;[ -z "${sel}" ] && sel=y
                         case "$sel" in
                             y | Y ) rm  -rf $dirPathVersionSoftware
                                        break ;;
-                            n | q ) break ;;
+                            n | q ) isMove=true; break ;;
                             * ) ftEcho -e 错误的选择：$sel
                                 echo "输入n，q，离开";;
                         esac
                 done
                 echo
+            fi
+            if [[ -n "$isMove" ]]; then
+                mv $dirPathVersionSoftware ${dirPathVersionSoftware}_old
+                echo;ftEcho -s "旧软件包已移至${dirPathVersionSoftware}_old"
             fi
     fi
 
