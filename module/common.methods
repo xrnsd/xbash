@@ -1306,7 +1306,7 @@ ftLogcatApplicationByTag()
     ftAdbConnect ; [[ -z "${autoTestDeviceId}" ]] && return $resultFail
     local deviceId=${autoTestDeviceId}
 
-    [ -z "${flagError}" ] && adb -s $deviceId logcat -c
+    [ -z "${flagError}" ] && [ -z "${isUserPackageName}" ] && adb -s $deviceId logcat -c
     if [[ "$isUserPackageName" = "true" ]]; then
         while true; do case "$packageName" in
             systemui)   packageName="com.android.systemui"  ;break;;

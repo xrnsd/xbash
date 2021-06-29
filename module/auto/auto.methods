@@ -153,6 +153,16 @@ ftAutoInitEnv()
     fi
     export AutoEnv_buildType=$buildType
 
+    if [[ -n $ANDROID_PRODUCT_OUT ]]; then
+        local productName=$(basename $ANDROID_PRODUCT_OUT)
+        local filepathDeviceMtk9ProjectConfig="device/mediateksample/${productName}/ProjectConfig.mk"
+        if [[ -f ${filepathDeviceMtk9ProjectConfig} ]]; then
+            local keyNameModemConfig="CUSTOM_MODEM"
+            local dirNameModem=$(cat ${filepathDeviceMtk9ProjectConfig} |grep ${keyNameModemConfig} | awk '{print $3}')
+            export AutoEnv_ModemPath="vendor/mediatek/proprietary/modem/${dirNameModem}"
+        fi
+    fi
+
     #git分支信息解析
    ftBranchNameResolution
 
@@ -833,7 +843,7 @@ ftAutoPacket()
                                             [[ "${sel}" != "y" ]] && echo && ftEcho -e "放弃 ${file}"&& continue
                                 fi
                                 printf "%-2s %-30s\n" 复制 $file
-                                cp -r -f  $filePath $dirPathPackage
+                                #cp -r -f  $filePath $dirPathPackage
                             done
                         else
                             ftEcho -e "packages创建失败" && ftClearTail $dirPathLocal && return $resultFail
@@ -871,15 +881,15 @@ ftAutoPacket()
                             done < <(echo "$(ls ${itemPathRoot})")
                     done
 
-
                     [[ -n "$AutoEnv_ModemPath" ]] && cd ${dirPathCode} && while read filePath ;do
-                                [[ -f "${filePath}" ]] && dataBaseFileList=(${dataBaseFileList[@]} "../../../../"${filePath})
+                                [[ -f "${filePath}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
                      done < <(echo "$(find ${AutoEnv_ModemPath} -type f -name MDDB* -o -name Db*)") && cd ${dirPathVersionSoftware}
 
                     if [[ -n "$dataBaseFileList" ]];then
                         if mkdir -p $dirPathPackageDataBase; then
                             for filePath in ${dataBaseFileList[@]}; do
-                                 [[ ! -f "$filePath" ]] && filePath=${dirPathOut}/${filePath}
+                                 [[ ! -f "$filePath" ]] && [[ -f "${dirPathOut}/${filePath}" ]] && filePath=${dirPathOut}/${filePath}
+                                 [[ ! -f "$filePath" ]] && [[ -f "${dirPathCode}/${filePath}" ]] && filePath=${dirPathCode}/${filePath}
                                  [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && continue
 
                                 fileName=$(basename $filePath)
