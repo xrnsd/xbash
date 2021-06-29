@@ -80,4 +80,3 @@ bash的简单扩展
     01 xconfig的sublime_text快捷方式模板，窗口打开状态在桌面显示异常
     02 不同函数错误连续提示修复
     03 flashcache在配置后插入其他硬盘开机导致sdx变化,就会开机配置失败
-    04 ftAutoBackupOrRestoreOuts 无法区分user和userdebug

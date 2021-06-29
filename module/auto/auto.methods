@@ -515,6 +515,7 @@ ftAutoBackupOrRestoreOuts()
 
         [[ -n "$filterString" ]] && branchName=$filterString
         local dirPathOutList=($(ls $dirPathCodeRootOutsLocal|grep $branchName))
+        [[ ${filterString} = "user" ]] && dirPathOutList=($(ls $dirPathCodeRootOutsLocal|grep $branchName |grep -v "userdebug"))
         [[ -z "$dirPathOutList" ]] && ftEcho -e "未找到\n分支[$branchName]对应的out" && return $resultFail
 
         local itemCount=${#dirPathOutList[@]}
