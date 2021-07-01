@@ -3752,7 +3752,7 @@ ftVpnControl()
 #    ftVpnControl -c
 #
 #    重新输入密码,连接VPN
-#    ftVpnControl -rc
+#    ftVpnControl -cp
 #
 #    断开VPN
 #    ftVpnControl -d

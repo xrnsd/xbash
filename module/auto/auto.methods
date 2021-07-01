@@ -757,10 +757,12 @@ ftAutoPacket()
 
     #实现主体
     if [[ -d "$dirPathVersionSoftware" ]]; then
+
             if [[ -n "$isClean" ]]; then
                 rm  -rf $dirPathVersionSoftware
                 ftEcho -s "删除旧的软件包"
             fi
+
             if [[ -z "$isUpload" ]]; then
                   while true; do
                         ftEcho -y "有旧的软件包  ${dirPathVersionSoftware}\n是否删除(回车默认y)"
@@ -775,9 +777,21 @@ ftAutoPacket()
                 done
                 echo
             fi
+
             if [[ -n "$isMove" ]]; then
-                mv $dirPathVersionSoftware ${dirPathVersionSoftware}_old
-                echo;ftEcho -s "旧软件包已移至${dirPathVersionSoftware}_old"
+                local keyDirNameFlag="_old"
+                echo
+                ls ${dirPathVersionSoftware}* | while read dirPath;do
+                       dirPath=${dirPath%?}
+                       [[ -z ${dirPath} ]] && continue
+                       [[ ${dirPath} == *${keyDirNameFlag}* ]] && continue
+
+                        local dirPathLastTime=$(stat -c %Y $dirPath)
+                        local dirPathFormartDate=$(date '+[%Y%m%d_%H%M%S]' -d @$dirPathLastTime)
+                        local dirPath_old="${dirPath}${keyDirNameFlag}_${dirPathFormartDate}"
+                       mv ${dirPath} ${dirPath_old}
+                       ftEcho -s "旧软件包已移至${dirPath_old}"
+                done
             fi
     fi
 
@@ -824,7 +838,7 @@ ftAutoPacket()
                     local dirNamePackage="packages"
                     local filePathSystemImage=${dirPathOut}/system.img
                     local dirPathPackage=${dirPathVersionSoftwareVersion}/${dirNamePackage}
-                   # local fileList=($(ftXbGetValue $tagName ${TARGET_PRODUCT}))
+                   local fileList= #($(ftXbGetValue $tagName ${TARGET_PRODUCT}))
                     if [[ -z "$fileList" ]];then
                         ftEcho -e "未找到 [${TARGET_PRODUCT}] 对应的独立配置,将默认复制全部文件"
                         while read item ;do
@@ -844,7 +858,7 @@ ftAutoPacket()
                                             [[ "${sel}" != "y" ]] && echo && ftEcho -e "放弃 ${file}"&& continue
                                 fi
                                 printf "%-2s %-30s\n" 复制 $file
-                                #cp -r -f  $filePath $dirPathPackage
+                                cp -r -f  $filePath $dirPathPackage
                             done
                         else
                             ftEcho -e "packages创建失败" && ftClearTail $dirPathLocal && return $resultFail
