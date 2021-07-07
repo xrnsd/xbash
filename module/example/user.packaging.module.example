@@ -1,7 +1,7 @@
 #!/bin/bash
 #存放命令封装
 #存放xbash扩展封装
-versionNum=v0.0.0.3
+versionNum=v0.0.0.5
 
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
@@ -93,9 +93,12 @@ if [ -d "$ANDROID_SDK" ];then
 fi
 
 alias xb='effect=xbash主入口[旧];ftMain'
+
+
 alias xbp='effect=系统维护;ftMaintainSystem'
 alias xr='effect=更新xbash配置;ftResetXbash'
 alias xd='effect=MTK下载工具;ftMtkFlashTool'
+alias xdf='effect=普通磁盘空间;df -lh |grep -E "文件系统|/dev/" |grep -v "/snap"'
 alias xdw='effect=MTK下载工具;ftMtkFlashTool -w'
 alias xcg='effect=清空回收站;ftCleanGarbage -e -t'
 alias xfind='effect=查找含特定字符串的文件;ftFind -s '
@@ -165,6 +168,10 @@ fi
 
 if [[ -n $(which apt-fast) ]];then
     alias apt-get='apt-fast'
+fi
+
+if [[ -n $(which netstat) ]];then
+    alias xcddialer='effect=查找制定端口;sudo netstat -ap |grep '
 fi
 
 if [[ -d "/opt/cisco/anyconnect" ]];then
