@@ -3298,8 +3298,8 @@ ftPigz()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local contentTarget filrPathTarget dirPathTarget dirPathLocal=$(pwd)
-    local valCount=2 errorContent arg arg2 ;for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local contentTarget filrNameTarget threadCount dirPathTarget dirPathLocal=$(pwd)
+    local valCount=4 errorContent arg arg2 ;for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
     # 说明参数解析部分==============
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -3311,10 +3311,17 @@ ftPigz()
 #    以下[参数对]无先后顺序可任意组合
 #
 #    ftPigz -c 文件路径/目录
-#    可简化 [ftPigz -c] 为 [xtgz] ,其他参数不变
+#
+#    ftPigz -t 压缩包名称,不包含后缀
+#
+#    ftPigz -j 并发线程数
 #========================================================="; return ;;
     # 变量参数解析部分==============
     -c ) contentTarget="${arg2}"
+      ;;
+    -t ) filrNameTarget="${arg2}"
+      ;;
+    -j ) threadCount="${arg2}"
       ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
 
@@ -3326,10 +3333,15 @@ ftPigz()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPigz -h && return $resultFail
 
     #实现主体
-    filrPathTarget=${contentTarget}.tgz
+    [ -z "$filrNameTarget" ] && filrNameTarget=${contentTarget}
+    local threadCountMax=$(grep 'processor' /proc/cpuinfo | sort -u | wc -l)
+    [ -z "$threadCount" ] || (( $threadCount>$threadCountMax )) && threadCount=${threadCountMax}
+    filrNameTarget=${filrNameTarget}.tgz
     dirPathTarget=$(dirname $contentTarget)
+
     cd $dirPathTarget
-    tar --use-compress-program=pigz -cvPf $filrPathTarget ${contentTarget}
+    #tar --use-compress-program=pigz -cvPf $filrNameTarget ${contentTarget}
+    tar cvPf - ${contentTarget} | pigz -p $threadCount > ${filrNameTarget}
     cd $dirPathLocal
 }
 
