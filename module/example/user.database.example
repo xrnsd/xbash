@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.2.5
+versionNum=v0.1.2.6
 
 #自动维护out用,有这些也视为空out
 [backupOrRestoreOutsInfo]
@@ -17,11 +17,14 @@ mddbDirPathList= \
     system/etc/mddb \
     system/vendor/etc/mddb
 
-#不同AOSP项目之间快速切换
+#AOSP项目列表和存放信息
 [AospProjectsInfo]
 AospProjectNameList=
 AospProjectStoragePathList=
-AospProjectNameIgnoreList=
+AospProjectNameIgnoreList=\
+    lost+found \
+    download \
+    demos
 
 #项目软件包的下载工具包[客户用]
 [xbashAOSPConfigMTKSoftwareDownloadToool]

@@ -1531,7 +1531,7 @@ ftAutoFindAospBuildOuts()
     * ) break;;esac;done
 
     #参数校验
-    ftCdAospProject -u > /dev/null
+    ftAutoCdAospProject -u > /dev/null
     mAospProjectNameList="$(ftXbGetValue AospProjectsInfo AospProjectNameList)"
     mAospProjectStoragePathList="$(ftXbGetValue AospProjectsInfo AospProjectStoragePathList)"
     [ -z "$mAospProjectStoragePathList" ] && errorContent="${errorContent}\\n找不到AOSP项目存储路径,请检查数据库:\n${rFilePathXbashDBUser}中的AospProjectsInfo"
@@ -1723,4 +1723,116 @@ ftAutoLnCcacheByAosp()
 
     #校验ccache是否有足够的剩余空间
     [[ "$(type -t ftCheckCcache)" = "function" ]] && ftCheckCcache
+}
+
+complete -W "-h --help --rely_install" ftAutoCdAospProject
+ftAutoCdAospProject()
+{
+    local ftEffect=快速进入不同Aosp项目
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    #参数解析
+    local isUserFileManager itemCount mAospProjectName mAospProjectStoragePathEffective
+    local mAospProjectStoragePathList="$(ftXbGetValue AospProjectsInfo AospProjectStoragePathList)"
+    local valCount=1 errorContent arg arg2  arg3  arg4
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; eval arg4=\${$((i+3))} ; case "${arg}" in
+    # 说明参数解析部分==============
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+#=========================================================
+#
+#    自动更新项目列表
+#    ftAutoCdAospProject -u
+#
+#    切换终端路径
+#    ftAutoCdAospProject -n 项目名
+#
+#    在文件管理器中打开
+#    ftAutoCdAospProject -fm 项目名
+#
+#    可简化 [ ftAutoCdAospProject 或 ftAutoCdAospProject -n ] 为 [xcd] ,其他参数不变
+#========================================================="; return ;;
+        # 变量参数解析部分==============
+        -fm ) isUserFileManager=true
+                mAospProjectName="${arg2}"
+         ;;
+        -n ) mAospProjectName="${arg2}"
+         ;;
+        -u | --update ) #更新数据库
+                local mAospProjectNameIgnoreList="$(ftXbGetValue AospProjectsInfo AospProjectNameIgnoreList)"
+                local mAospProjectNameListUpdate
+                for path in ${mAospProjectStoragePathList[@]}; do
+                    while read projectName ;do
+                        [[ -n $(echo ${mAospProjectNameIgnoreList[@]} |grep ${projectName}) ]] && continue
+                        [[ ! -d "${path}/${projectName}" ]] && continue
+                        mAospProjectNameListUpdate=(${mAospProjectNameListUpdate[@]} ${projectName})
+                    done < <(echo "$(ls ${path})")
+                done
+                mAospProjectNameListUpdate=($(echo ${mAospProjectNameListUpdate[@]} | sed 's/ /\n/g'|sort |uniq))
+                ftIniSetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList -l "${mAospProjectNameListUpdate[*]}"
+                ftEcho -s "Aosp项目列表更新完成"
+                return;;
+        settings ) dirPathTarget="packages/apps/Settings" ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    [ -z "$mAospProjectStoragePathList" ] && errorContent="${errorContent}\\n[Aosp项目存放路径列表为空]"
+    [ -z "$mAospProjectName" ] && errorContent="${errorContent}\\n[未指定Aosp项目名]"
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCdAospProject -h && return $resultFail
+
+    #实现主体
+    local mAospProjectNameList=($(ftXbGetValue AospProjectsInfo AospProjectNameList| sed 's/ /\n/g'|sort |uniq |grep -i $mAospProjectName))
+    itemCount=${#mAospProjectNameList[@]}
+    if (( $itemCount>1 ));then
+        ftEcho -s 对应多个Aosp项目,请选择
+        local index=0
+        for item in ${mAospProjectNameList[@]} ; do
+            printf "%-4s %-4s\n" [$index] $item
+            ((index+=1))
+        done
+
+        local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
+        ftEcho -r  "请输入对应的序号(回车默认0):"
+        read -n $length tIndex &&echo
+        #设定默认值
+        [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
+        (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return $resultFail
+        mAospProjectName=${mAospProjectNameList[$tIndex]} && echo
+    else
+        mAospProjectName=$mAospProjectNameList
+    fi
+
+    local mAospProjectStoragePathEffectiveList dirPathAll dirPathBase
+    for path in ${mAospProjectStoragePathList[@]}; do
+        dirPathBase=${path}/${mAospProjectName}
+        dirPathAll=${dirPathBase}/alps
+        if [[ -d "$dirPathAll" ]]; then
+            mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $dirPathAll")
+        elif [[ -d "$dirPathBase" ]]; then
+            mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $dirPathBase")
+        fi
+    done
+    [ -z "$mAospProjectStoragePathEffectiveList" ] && ftEcho -e "找不到${mAospProjectName}对应的Aosp项目有效存放路径" && return $resultFail
+
+    mAospProjectStoragePathEffectiveList=($(echo "${mAospProjectStoragePathEffectiveList}"| sed -e "s: ^::g"))
+    mAospProjectStoragePathEffective=$mAospProjectStoragePathEffectiveList
+    itemCount=${#mAospProjectStoragePathEffectiveList[@]}
+    if (( $itemCount>1 ));then
+        ftEcho -s 对应Aosp项目有多个存放位置,请选择
+        local index=0
+        for item in ${mAospProjectStoragePathEffectiveList[@]} ; do
+            printf "%-4s %-4s\n" [$index] $item
+            ((index+=1))
+        done
+
+        local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
+        ftEcho -r  "请输入对应的序号(回车默认0):"
+        read -n $length tIndex &&echo
+        #设定默认值
+        [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
+        (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return $resultFail
+        mAospProjectStoragePathEffective=${mAospProjectStoragePathEffectiveList[$tIndex]}
+    fi
+
+    [[ -z "$isUserFileManager" ]] && cd $mAospProjectStoragePathEffective && return $resultFail
+    ftOpenNemoTab -p $mAospProjectStoragePathEffective
 }
