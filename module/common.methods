@@ -3289,7 +3289,7 @@ ftAdbConnect()
     fi
 }
 
-complete -W "-h --help --rely_install -c" ftPigz
+complete -W "-h --help --rely_install -c" -A file ftPigz
 ftPigz()
 {
     local ftEffect=pigz压缩的相关封装
@@ -3345,7 +3345,7 @@ ftPigz()
     cd $dirPathLocal
 }
 
-complete -W "-h --help --rely -o -f" ftDex2Jar
+complete -W "-h --help --rely -o -f" -A file ftDex2Jar
 ftDex2Jar()
 {
     local ftEffect=dex转jar
