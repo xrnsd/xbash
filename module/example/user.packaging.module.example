@@ -47,9 +47,9 @@ if [ -d "$ANDROID_SDK" ];then
     alias xssd="effect=关闭设备;adb shell reboot"
     alias xsd="effect=关闭设备;adb shell reboot -p"
     alias xl='effect=过滤logcat;ftLogcatApplicationByTag'
-    alias xpn='effect=使用adb快速push[仅push];ftAdbPush -n -f'
-    alias xpa='effect=使用adb快速push[自动重启];ftAdbPush -a -f'
-    alias xp='effect=使用adb快速push[询问是否重启];ftAdbPush -f '
+    alias xpn='effect=使用adb快速push[仅push];ftAutoAdbPush -n -f'
+    alias xpa='effect=使用adb快速push[自动重启];ftAutoAdbPush -a -f'
+    alias xp='effect=使用adb快速push[询问是否重启];ftAutoAdbPush -f '
     alias xle='effect=过滤错误的logcat;ftLogcatApplicationByTag -e'
     alias xlo='effect=过滤存在多个标签中一个的logcat;ftLogcatApplicationByTag -o'
     alias xlp="effect=根据包名过滤logcat;ftLogcatApplicationByTag -p"
@@ -58,9 +58,9 @@ if [ -d "$ANDROID_SDK" ];then
     alias xpml='effect=干掉设备对应包名的进程;ftMtkLog -p /home/enjoy/log'
     alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
     alias xlce='effect=过滤错误的logcat;adb logcat -c;ftLogcatApplicationByTag -e'
-    alias xpcn='effect=使用adb快速push[新终端中执行,仅push];ftAdbPush -c -n -f'
-    alias xpca='effect=使用adb快速push[新终端中执行,自动重启];ftAdbPush -c -a -f'
-    alias xpc='effect=使用adb快速push[新终端中执行,询问是否重启];ftAdbPush -c -f'
+    alias xpcn='effect=使用adb快速push[新终端中执行,仅push];ftAutoAdbPush -c -n -f'
+    alias xpca='effect=使用adb快速push[新终端中执行,自动重启];ftAutoAdbPush -c -a -f'
+    alias xpc='effect=使用adb快速push[新终端中执行,询问是否重启];ftAutoAdbPush -c -f'
     alias xass='effect=共享android设备屏幕;ftAdbConnect -s'
 
     alias .9='effect=.9图片制作工具;${ANDROID_SDK}/tools/draw9patch'

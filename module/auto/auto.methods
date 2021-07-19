@@ -1083,6 +1083,7 @@ ftAutoPacket()
     trap SIGINT
 }
 
+complete -W "-h -d --help" -A file ftAutoCreateReadMeBySoftwareVersion
 ftAutoCreateReadMeBySoftwareVersion()
 {
     local ftEffect=创建软件版本相关客户说明和版本说明
@@ -1835,4 +1836,257 @@ ftAutoCdAospProject()
 
     [[ -z "$isUserFileManager" ]] && cd $mAospProjectStoragePathEffective && return $resultFail
     ftOpenNemoTab -p $mAospProjectStoragePathEffective
+}
+
+complete -W "-h -f --help" -A file ftAutoAdbPush
+ftAutoAdbPush()
+{
+    local ftEffect=adbPush命令的简单封装
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    #参数解析
+    local filePathSourceList fileNameSource isAutoReboot isTacitMode
+    local errorContent arg  ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
+    case "${arg}" in
+    # 说明参数解析部分==============
+    --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖 Android SDK
+#========================================================="; return ;;
+    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+#=========================================================
+#   注意：-f 参数必须在最后使用
+#
+#   开启新终端,进行操作
+#   ftAutoAdbPush -c
+#    可简化 [ftAutoAdbPush -c -f] 为 [xpc] ,其他参数不变
+#
+#   自动push,用户选择操作
+#   ftAutoAdbPush -f 文件路径
+#    可简化 [ftAutoAdbPush -f] 为 [xp] ,其他参数不变
+#
+#   push完,自动重启
+#   ftAutoAdbPush -a -f 文件路径
+#    可简化 [ftAutoAdbPush -a -f] 为 [xpa] ,其他参数不变
+#
+#   push完,不重启
+#   ftAutoAdbPush -n -f 文件路径
+#    可简化 [ftAutoAdbPush -n -f] 为 [xpn] ,其他参数不变
+#========================================================="; return ;;
+       # 变量参数解析部分==============
+       -c ) shift ;local valList=(${@})
+             [[ ! -f "${rFilePathXbashModuleBaseAdbPush}" ]] && \
+             ftEcho -s "脚本不存在:${rFilePathXbashModuleBaseAdbPush}" && return $resultFail
+             gnome-terminal -x bash -c "$rFilePathXbashModuleBaseAdbPush ${valList[*]}"
+             return
+            ;;
+       -a ) isAutoReboot=true
+            ;;
+       -n ) isTacitMode=true
+            ;;
+       -f )
+            local valIndex=$i
+            while (( $valIndex>=0 )) ;do (( valIndex-=1 )) && shift ;done
+            filePathSourceList=($@)
+            ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    #依赖校验
+    [[ -z $(which adb) ]] && ftAutoAdbPush --rely "adb" && return $resultFail
+    #参数校验
+    [ -z "$filePathSourceList" ] && errorContent="${errorContent}\\n[push的源路径不存在]filePathSourceList=$filePathSourceList"
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoAdbPush -h && return $resultFail
+
+    #实现主体
+    #adb连接状态检测
+    ftAdbConnect -e ; [[ -z "${autoTestDeviceId}" ]] && return $resultFail
+    local deviceId=${autoTestDeviceId}
+
+    for filePath in ${filePathSourceList[@]}; do
+            [[ ! -f "$filePath" ]] && ftEcho -e "找不到:${filePath}" && continue
+            if [[ -n $(echo $filePath |grep system) ]] ;then
+                fileNameSource=$(basename $filePath)
+                dirPathTarget=$(echo /system${filePath#*system} | sed -e "s:/$fileNameSource::g")
+                echo "push ${filePath} > ${dirPathTarget}"
+                adb -s $deviceId push $filePath $dirPathTarget &&  ftEcho -s "${fileNameSource} push to [${dirPathTarget}] finish"
+            else
+                ftEcho -en "无法自动解析:";echo "${filePath}"
+            fi
+    done
+    if [[ -z "$isTacitMode" ]]; then
+        [[ -z "$isAutoReboot" ]] &&ftEcho -y "是否重启(回车默认重启)" && read -n 1 sel && echo
+        if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then
+            local keySDKVersion="ro.build.version.sdk="
+            local deviceSdkVersion=$(adb shell "cat /system/build.prop" |grep ${keySDKVersion})
+            deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
+            deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
+            deviceSdkVersion=${deviceSdkVersion:-'null'}
+            if (( $deviceSdkVersion>=28 )); then
+                sleep 2 && adb shell stop && adb shell start 
+            else
+                 adb -s $deviceId reboot
+            fi
+            ftEcho -s "已重启设备:${deviceId} "; fi
+    fi
+}
+
+complete -W "-a -d -f -o -h --help" -A file ftAutoApkMergeOdex
+ftAutoApkMergeOdex()
+{
+    local ftEffect=合并odex和apk
+    local isEnable=true
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    #参数解析
+    local isAutoPull fileNameApk filePathApk filePathOdex dirPathFramework
+    local filePathToolResign=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/re-sign.jar
+    local filePathToolSmali=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/smali-2.2.7.jar
+    local filePathToolBaksmali=${DIR_PATH_ANDROID_DECOMPILE_TOOLS}/baksmali-2.2.7.jar
+    local arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+        # 说明参数解析部分==============
+        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 sudo apt-get install $2 补全依赖
+#========================================================="; return ;;
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+#=========================================================
+#    指定app名称，插上手机，执行pull和合并操作
+#    ftAutoApkMergeOdex -a xxxx
+#    直接指定已存在包路径，执行合并操作
+#    ftAutoApkMergeOdex -d framework路径 -f apk路径 -o odex文件路径
+#========================================================="; return ;;
+        # 变量参数解析部分==============
+        -a ) fileNameApk="${arg2}"
+               isAutoPull=true
+          ;;
+        -d ) dirPathFramework="${arg2}"
+          ;;
+        -f ) filePathApk="${arg2}"
+          ;;
+        -o ) filePathOdex="${arg2}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    #预处理
+    if [[ "$isAutoPull" = "true" ]]; then
+        [[ -z "${fileNameApk}" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误,未指定app名\\n请查看下面说明:" && ftAutoApkMergeOdex -h && return $resultFail
+
+        ftAdbConnect ; [[ -z "${autoTestDeviceId}" ]] && return $resultFail
+        local deviceId=${autoTestDeviceId}
+
+        local dirPathLocal=$(pwd) dirPathTarget=/tmp/mergeOdex
+        [[ ! -d "$dirPathTarget" ]] && mkdir $dirPathTarget
+        [[ ! -d "$dirPathTarget" ]] && ftEcho -e "初始化失败,无法新建临时目录:${dirPathTarget}" && return $resultFail
+        cd $dirPathTarget
+
+        [[ "$fileNameApk" == *.apk* ]] && fileNameApk=$(echo $fileNameApk| sed -e "s:.apk::g")
+        local dirPathDevices=system/app/${fileNameApk}
+        [[ -n $(adb -s $deviceId shell ls system/priv-app|grep $fileNameApk) ]] && dirPathDevices=system/priv-app/${fileNameApk}
+
+        filePathApk=${dirPathTarget}/${fileNameApk}/${fileNameApk}.apk
+        filePathOdex=${dirPathTarget}/${fileNameApk}/oat/arm/${fileNameApk}.odex
+        dirPathFramework=${dirPathTarget}/framework
+
+        if [[ -n "$(ls ${dirPathFramework})" ]];then
+            ftEcho -y "存在旧framework, 是否清理(回车默认清理)" && \
+            read -n 1 sel && echo
+            if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then
+             rm -rf $dirPathFramework && sel= ; else ftEcho -s "将使用旧framework" && sel=n ;fi
+        fi
+        if [ -z "${sel}" ]; then
+            adb -s $deviceId pull $dirPathDevices ${dirPathTarget}&& ftEcho -s "pull ${fileNameApk} 完成"
+            adb -s $deviceId pull system/framework/  ${dirPathTarget}&& ftEcho -s "pull framework 完成"
+            cp -rf -v ${dirPathTarget}/framework/arm/* ${dirPathTarget}/framework && ftEcho -s "复制 framework/arm/* 到 framework 完成"
+        fi
+    fi
+    #依赖校验
+    [[ -z $(which zip) ]] && ftAutoApkMergeOdex --rely "zip" && return $resultFail
+    #参数校验
+    local errorContent
+    [ -z "$JAVA_HOME" ] && errorContent="${errorContent}\\n[java环境未配置]缺失JAVA_HOME"
+    [ ! -f "$filePathToolSmali" ] && errorContent="${errorContent}\\n[找不到 filePathToolSmali=${filePathToolSmali}]"
+    # [ ! -f "$filePathToolResign" ] && errorContent="${errorContent}\\n[找不到 filePathToolResign=${filePathToolResign}]"
+    [ ! -f "$filePathToolBaksmali" ] && errorContent="${errorContent}\\n[找不到 filePathToolBaksmali=${filePathToolBaksmali}]"
+
+    [ ! -f "$filePathApk" ] && errorContent="${errorContent}\\n[找不到 filePathApk=${filePathApk}]"
+    [ ! -f "$filePathOdex" ] && errorContent="${errorContent}\\n[找不到 filePathOdex=${filePathOdex}]"
+    [ ! -d "$dirPathFramework" ] && errorContent="${errorContent}\\n[找不到 dirPathFramework=${dirPathFramework}]"
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoApkMergeOdex -h && return $resultFail
+
+    #实现主体
+    cd $dirPathFramework
+
+    if java -jar $filePathToolBaksmali deodex $filePathOdex ;then
+        ftEcho -s "odex转smali 完成" ; else ftEcho -e "odex转smali失败" && return $resultFail ;fi
+
+    if java -jar $filePathToolSmali assemble out -o classes.dex ;then
+        ftEcho -s "smali转dex 完成" ; else ftEcho -e "smali转dex失败" && return $resultFail ;fi
+
+    if zip -g $filePathApk classes.dex > /dev/null ;then
+        ftEcho -s "classes.dex/apk合并 完成" ;else ftEcho -e "classes.dex/apk合并失败" && return $resultFail ;fi
+
+    if java -jar $filePathToolResign $filePathApk ;then
+        ftEcho -s "apk签名 完成" ; else ftEcho -e "apk签名失败" && return $resultFail ;fi
+
+    ftEcho -s "${fileNameApk}的${ftEffect}操作成功"
+
+    cd $dirPathLocal
+}
+
+complete -W "-f -h --help" -A file ftAutoApkSignature
+ftAutoApkSignature()
+{
+    local ftEffect=apk签名
+    local isEnable=true
+
+    #可用性校验
+    [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    #参数解析
+    local filePathApk
+    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+        # 说明参数解析部分==============
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+#=========================================================
+#    ftAutoApkSignature -f xxx.apk
+#========================================================="; return ;;
+       --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
+#==========================================================
+# 环境未初始化
+# 使用前,请先初始化
+# source build/envsetup.sh && lunuch xxxxx
+#========================================================="; return ;;
+        # 变量参数解析部分==============
+        -f ) filePathApk="${arg2}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    #环境校验
+    local toolFilePathSignapk="${ANDROID_BUILD_TOP}/out/host/linux-x86/framework/signapk.jar"
+    [ ! -f "$toolFilePathSignapk" ] && [ ! -d "$ANDROID_BUILD_TOP" ] && ftAutoApkSignature --env && return $resultFail
+    [ -d "$ANDROID_BUILD_TOP" ] && cd $ANDROID_BUILD_TOP
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    [ -z "$JAVA_HOME" ] && errorContent="${errorContent}\\n[java环境未配置]缺失JAVA_HOME"
+    [ ! -f "$toolFilePathSignapk" ] && errorContent="${errorContent}\\n[缺少有效的签名工具]${toolFilePathSignapk}不存在"
+    [ ! -f "$filePathApk" ] && errorContent="${errorContent}\\n[你想干嘛]${filePathApk}不存在"
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoApkSignature -h && return $resultFail
+
+    #实现主体
+    local toolFilePathlibconscrypt_openjdk_jni="${ANDROID_BUILD_TOP}/prebuilts/sdk/tools/linux/lib64/libconscrypt_openjdk_jni.so"
+    local toolFilePathPlatformx509pem="${ANDROID_BUILD_TOP}/build/target/product/security/platform.x509.pem"
+    local toolFilePathPlatformpk8="${ANDROID_BUILD_TOP}/build/target/product/security/platform.pk8"
+
+    local fileNameApk=$(basename $filePathApk)
+    local fileNameApkBase=${fileNameApk%.*}
+    local fileNameApkEnd=${fileNameApk##*.}
+    local fileNameApkNew=$(dirname $filePathApk)/${fileNameApkBase}_new${fileNameApkEnd}
+
+    local dirPathLocal=$(pwd) dirPathSign=$(dirname $filePathApk)
+    cp -v "${toolFilePathlibconscrypt_openjdk_jni}" "${dirPathSign}"
+    cd "${dirPathSign}"
+    java -Djava.library.path=. -jar "${toolFilePathSignapk}" "${toolFilePathPlatformx509pem}" "${toolFilePathPlatformpk8}" "${filePathApk}" "${fileNameApkNew}" \
+    && mv "${fileNameApkNew}" "${filePathApk}" &&ftEcho -s  "${filePathApk}  签名成功"|| ftEcho -s "${filePathApk}签名失败"
+    rm -f $(basename "${toolFilePathlibconscrypt_openjdk_jni}")
+    cd "${dirPathLocal}"
 }

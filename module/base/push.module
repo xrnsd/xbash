@@ -5,7 +5,7 @@
 [[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
 [[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
 # =================================================================
-ftAdbPushByTerminal()
+ftAutoAdbPushByTerminal()
 {
     local ftEffect=adbPush命令的简单封装[打开独立终端执行]
     local isEnable=true
@@ -28,10 +28,10 @@ ftAdbPushByTerminal()
             ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #依赖校验
-    [[ -z $(which adb) ]] && ftAdbPushByTerminal --rely "adb" && return $resultFail
+    [[ -z $(which adb) ]] && ftAutoAdbPushByTerminal --rely "adb" && return $resultFail
     #参数校验
     [ -z "$filePathSourceList" ] && errorContent="${errorContent}\\n[push的源路径不存在]filePathSourceList=$filePathSourceList"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAdbPushByTerminal -h && return $resultFail
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoAdbPushByTerminal -h && return $resultFail
 
     #实现主体
     if [[ "$isUseConsole" = "true" ]]; then
@@ -71,5 +71,5 @@ ftAdbPushByTerminal()
     fi
 }
 
-ftAdbPushByTerminal $@ && echo "push完成,ctrl+c快速退出"
+ftAutoAdbPushByTerminal $@ && echo "push完成,ctrl+c快速退出"
 sleep 10;exit
