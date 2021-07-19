@@ -1,15 +1,11 @@
 #!/bin/bash
 #存放命令封装
 #存放xbash扩展封装
-versionNum=v0.0.0.5
+versionNum=v0.0.0.6
 
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
 alias xcc='effect=进入原目录;cd $OLDPWD'
-
-if [[ -n $(which pigz) ]];then
-    alias xtgz='effect=快速生成压缩;ftPigz -c'
-fi
 
 if [[ -n $(which fdupes) ]];then
     alias xfr='effect=查找重复文件;fdupes -Sr'
@@ -106,7 +102,7 @@ alias xhf='effect=xbash扩展说明查找;ftMain -h |grep -i '
 alias xhfa='effect=xbash扩展说明查找;ftMain -ha |grep -i '
 alias xcb='effect=进入xbash目录;cd $dirPathHomeXbash'
 alias xca='effect=快速切换到Aosp功能目录;ftCdAospDirectory '
-alias xFindOuts='effect=显示所有out备份;ftFindAospBuildOuts'
+alias xFindOuts='effect=显示所有out备份;ftAutoFindAospBuildOuts'
 alias xcd='effect=快速切换到不同Aosp项目;ftCdAospProject -n'
 alias xcf='effect=进入xconfig目录;cd ${rDirPathUserHome}/xconfig'
 alias xss='effect=无密码重启[默认10s];ftPowerManagement reboot'

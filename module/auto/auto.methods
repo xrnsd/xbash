@@ -1509,8 +1509,8 @@ ftAutoLnOut()
     cd "${dirPathLocal}"
 }
 
-complete -W "-h --help" ftFindAospBuildOuts
-ftFindAospBuildOuts()
+complete -W "-h --help" ftAutoFindAospBuildOuts
+ftAutoFindAospBuildOuts()
 {
     local ftEffect=快速查找所有AOSP工程项目下的所有out
     local isEnable=true
@@ -1518,6 +1518,7 @@ ftFindAospBuildOuts()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
+    local mAospProjectNameList mAospProjectStoragePathList
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
@@ -1525,18 +1526,19 @@ ftFindAospBuildOuts()
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
-#    ftFindAospBuildOuts xxxx
+#    ftAutoFindAospBuildOuts xxxx
 #========================================================="; return ;;
     * ) break;;esac;done
 
     #参数校验
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftFindAospBuildOuts -h && return $resultFail
+    ftCdAospProject -u > /dev/null
+    mAospProjectNameList="$(ftXbGetValue AospProjectsInfo AospProjectNameList)"
+    mAospProjectStoragePathList="$(ftXbGetValue AospProjectsInfo AospProjectStoragePathList)"
+    [ -z "$mAospProjectStoragePathList" ] && errorContent="${errorContent}\\n找不到AOSP项目存储路径,请检查数据库:\n${rFilePathXbashDBUser}中的AospProjectsInfo"
+    [ -z "$mAospProjectNameList" ] && errorContent="${errorContent}\\n找不到AOSP项目,请检查数据库:\n${rFilePathXbashDBUser}中的AospProjectsInfo"
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoFindAospBuildOuts -h && return $resultFail
 
     #实现主体
-    ftCdAospProject -u > /dev/null
-    local mAospProjectNameList="$(ftXbGetValue AospProjectsInfo AospProjectNameList)"
-    local mAospProjectStoragePathList="$(ftXbGetValue AospProjectsInfo AospProjectStoragePathList)"
-
     #去重，去掉软连接引起的重复
     local dirPathAospProject mAospProjectStoragePathListNew
     for dirPath in ${mAospProjectStoragePathList[@]}; do
