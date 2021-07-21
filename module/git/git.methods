@@ -123,12 +123,12 @@ ftGitLogShell()
     [[ -n "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return $resultFail
 
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]] && [ "$isCustomBranchLog" != "true" ];then
-        branchLogFormat=${branchLogFormat:-'%C(green)%<(9,trunc)%ad %Cred%<(8,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
+        branchLogFormat=${branchLogFormat:-'%C(green)%<(11,trunc)%ad %Cred%<(11,trunc)%an%Creset %Cblue%<(11,trunc)%h%Creset %s %C(yellow) %d'}
         if [[ -n "$isFindString" ]]; then
             git --no-pager log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount -S"${findStringContent}" 
             echo ; return
         fi
-        git --no-pager log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount
+        git --no-pager log --date=format-local:'%Y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount
         echo ;return
     fi
     if [ "${branchLogFormat}" = "%h" ];then
