@@ -1,6 +1,15 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.2.6
+versionNum=v0.1.2.7
+
+#开发用
+[androidDevicePackages]
+packageNameList=com.android.systemui \
+                com.android.launcher3 \
+                com.android.settings \
+                com.android.phone \
+                com.android.commands.monkey \
+                com.android.mms
 
 #自动维护out用,有这些也视为空out
 [backupOrRestoreOutsInfo]

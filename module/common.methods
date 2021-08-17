@@ -1268,6 +1268,10 @@ ftLogcatApplicationByTag()
 #    ftLogcatApplicationByTag 123456 7777
 #    可简化 [ftLogcatApplicationByTag] 为 [xl],其他参数不变
 #
+#     打印包含123456 不包含777  的log
+#    ftLogcatApplicationByTag -t 123456 7777
+#    可简化 [ftLogcatApplicationByTag] 为 [xlt],其他参数不变
+#
 #     打印包含123456不包含777的错误log
 #    ftLogcatApplicationByTag -e 123456 7777
 #    可简化 [ftLogcatApplicationByTag -e] 为 [xle] ,其他参数不变
@@ -1309,11 +1313,6 @@ ftLogcatApplicationByTag()
 
     [ -z "${flagError}" ] && [ -z "${isUserPackageName}" ] && adb -s $deviceId logcat -c
     if [[ "$isUserPackageName" = "true" ]]; then
-        while true; do case "$packageName" in
-            systemui)   packageName="com.android.systemui"  ;break;;
-            launcher) packageName="com.android.launcher3"  ;break;;
-            launcher3) packageName="com.android.launcher3"  ;break;;
-        * ) break;;esac;done
         local pid=$(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}')
         [[ -n "$isUserPackageNameAndTag" ]] && adb -s $deviceId logcat "${flagError}" -v thread |grep "${pid}" && return
         adb -s $deviceId logcat "${flagError}" |grep "${pid}"
@@ -1321,8 +1320,8 @@ ftLogcatApplicationByTag()
         adb -s $deviceId logcat "${flagError}"
     else
         [[ -n "$isMoreTag" ]] && adb -s $deviceId logcat "${flagError}"|grep -E "${tagContent}" && return
-        [[ -n "$isDisTime" ]] && adb -s $deviceId logcat -v tag|grep -i "${tagContent}" && return
-        [[ -z "$vContent" ]] && adb -s $deviceId logcat "${flagError}" |grep -i "${tagContent}" && return
+        [[ -n "$isDisTime" ]] && adb -s $deviceId logcat -v tag|grep -i -a "${tagContent}" && return
+        [[ -z "$vContent" ]] && adb -s $deviceId logcat "${flagError}" |grep -i -a "${tagContent}" && return
         adb -s $deviceId logcat "${flagError}" |grep -i "${tagContent}" |grep -v "${vContent}"
     fi
 }
@@ -2805,6 +2804,7 @@ ftAdbConnect()
 
     #实现主体
     local deviceIdDefault=0123456789ABCDEF
+    local deviceLogcatBufferCacheMax=100M
     local deviceId=${deviceIdDefault}
     local deviceIdTarget=$(date -d "today" +"%y%m%d%H%M%S")
     local deviceIdList=($(adb devices |grep -v "List of devices attached" |awk '{print $1}'))
@@ -2872,6 +2872,7 @@ ftAdbConnect()
     fi
 
     adb -s $deviceId wait-for-device
+    adb -s $deviceId logcat -G $deviceLogcatBufferCacheMax
     local adbStatus=$(adb -s $deviceId get-state)
     [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return $resultFail
     ftEcho -s "连接设备成功"
