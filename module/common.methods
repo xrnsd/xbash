@@ -3386,7 +3386,7 @@ ftVpnControl()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePathAnyconnect=/opt/cisco/anyconnect/bin/vpn
-    local isConnect isDisConnect isRestPassword
+    local isConnect isDisConnect isRestPassword isReInstall
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -3416,11 +3416,14 @@ ftVpnControl()
             ;;
         -d ) isDisConnect=true
             ;;
+        -ri ) isReInstall=true
+            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #依赖校验
-    [[ ! -d "/opt/cisco/anyconnect" ]] || [[ ! -f "$filePathAnyconnect" ]] && ftVpnControl --rely && return $resultFail
+   [ -z "$isReInstall" ]&& if [[ ! -d "/opt/cisco/anyconnect" ]] || [[ ! -f "$filePathAnyconnect" ]];then ftVpnControl --rely && return $resultFail ; fi
     #参数校验
+    (( $#==0 )) && errorContent="${errorContent}\\n缺少参数" 
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -f "${rFilePathXbashDBUser}" ] && errorContent="${errorContent}\\n[未找到VPN配置]${rFilePathXbashDBUser}"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftVpnControl -h && return $resultFail
@@ -3446,10 +3449,28 @@ EOF
 ${userName}
 y
 EOF
+        return $resultSuccess
     fi
 
      if [[ "$isDisConnect" = "true" ]]; then
         $filePathAnyconnect -s disconnect ${hostName}
+        return $resultSuccess
+     fi
+
+     if [[ "$isReInstall" = "true" ]]; then
+        local dirPathLocal=$(pwd)
+        local dirPathAnyconnect="$(ftXbGetValue vpnConfig_anyconnect toolsDirPath)/vpn"
+        local installToolFileName=vpn_install.sh
+        local uninstallToolFileName=vpn_uninstall.sh
+
+        cd ${dirPathAnyconnect}
+
+        echo $userPassword | sudo -p '' -S chmod a+x $installToolFileName $uninstallToolFileName
+        sudo ./${uninstallToolFileName}
+        sudo ./${installToolFileName}
+
+       cd ${dirPathLocal}
+        return $resultSuccess
      fi
 }
 

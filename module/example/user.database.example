@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.2.7
+versionNum=v0.1.2.8
 
 #开发用
 [androidDevicePackages]
@@ -62,6 +62,7 @@ dirPathPackage=/xxxx/xxx/xxx
 dirPathPackageLocal=/xxx/xx/
 
 [vpnConfig_anyconnect]
+toolsDirPath=xxxx
 hostName=xxxx
 userName=xxxx
 userPassword=xxxx
