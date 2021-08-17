@@ -1,7 +1,7 @@
 #!/bin/bash
 #存放命令封装
 #存放xbash扩展封装
-versionNum=v0.0.0.6
+versionNum=v0.0.0.9
 
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
@@ -23,6 +23,11 @@ fi
 if [[ -n $(which sensors) ]];then
     alias xcct="effect=查看cpu温度;ftMain -sc"
     alias xccct="effect=查看cpu各个核心温度;ftMain -scc"
+fi
+
+if [[ -n $(which xxd) ]];then
+    alias xs2x='effect=字符串转16进制;_xs2x(){  echo "${1}" |xxd -ps -u -i -c 10 ;};_xs2x $1'
+    alias xx2s='effect=16进制转字符串;xx2s(){  echo "${1}" | xxd -r -p ;echo};xx2s $1'
 fi
 
 if [[ -n $(which tr) ]];then
@@ -81,7 +86,7 @@ if [ -d "$ANDROID_SDK" ];then
     alias xqmtklog='effect=启动MtkLog; adb shell am start -n com.mediatek.mtklogger/com.mediatek.mtklogger.MainActivity'
     alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
 
-    [[ -f $rFilePathXbashDBBase ]] && packageNameList="$(ftIniGetValue $rFilePathXbashDBBase androidDevicePackages packageNameList)"
+    packageNameList="$(ftXbGetValue androidDevicePackages packageNameList)"
     complete -W "${packageNameList[@]} launcher systemui" xlp
     complete -W "${packageNameList[@]} launcher systemui 123456" xl
     complete -W "${packageNameList[@]} launcher systemui 123456" xlt
@@ -132,7 +137,7 @@ if [[ -n $(which git) ]];then
     alias xgft='effect=git的TAG标签内容过滤;ftGitTagGrep -f '
     alias xgbt='effect=添加git的分支说明标签;ftGitTag --branch '
     alias xgmt='effect=添加git的修改说明标签;ftGitTag --modify '
-    alias xgla='effect=查看本地所有分支历史;ftGitLogShell -a $2'
+    alias xgla='effect=查看本地所有分支历史;ftGitLogShell -aw $2'
     alias xglb='effect=查看仓库分支树;ftGitLogShell -b'
     alias xgrs="effect=回滚最新的commit;git reset --soft HEAD^"
     alias xgrsc="effect=修改最新的commit的标签;git reset --soft HEAD^ ; git commit -m "

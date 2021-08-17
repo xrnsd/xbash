@@ -34,8 +34,8 @@ ftGitLogShell()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local branchLogItemCountDef=20
-    local isAllBranchLog isAllBranchTree isTagBranchLog branchLogFormat isCustomBranchLog isFindString
-    local branchLogItemCount=${branchLogItemCountDef} pathTarget findStringContent
+    local isAllBranchLogByGitK isAllBranchLog isAllBranchTree isTagBranchLog branchLogFormat isCustomBranchLog isFindString
+    local branchLogItemCount=${branchLogItemCountDef} pathTarget findStringContent pathCommand
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
      --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -61,7 +61,10 @@ ftGitLogShell()
 #    查看分支树
 #    ftGitLogShell -at
 #
-#    指定路径下的全部分支log
+#    用gitk查看指定路径下的全部分支log
+#    ftGitLogShell -aw  路径
+#
+#    用git指定路径下的全部分支log
 #    ftGitLogShell -a  路径
 #
 #    过滤修改内容包含字符串的log
@@ -82,6 +85,9 @@ ftGitLogShell()
 #=========================================================" ;return ;;
         # 变量参数解析部分==============
         -a )  isAllBranchLog=true
+                pathTarget="${arg2}"
+                ;;
+        -aw )  isAllBranchLogByGitK=true
                 pathTarget="${arg2}"
                 branchLogItemCount=0
                 ;;
@@ -107,7 +113,7 @@ ftGitLogShell()
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     #参耦校验
     [[ -z $(which git) ]] && ftGitLogShell --rely && return $resultFail
-    [[ -n "$isAllBranchLog" ]] && [ -z $(which gitk) ] && ftGitLogShell --rely && return $resultFail
+    [[ -n "$isAllBranchLogByGitK" ]] && [ -z $(which gitk) ] && ftGitLogShell --rely && return $resultFail
     [[ -z $(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') ]] && ftGitLogShell --env && return $resultFail
     [ -z "$branchLogItemCount" ]||(($branchLogItemCount<0)) && errorContent="${errorContent}\\n log显示数量未指定"
     [ -n "$isFindString" ] && [ -z "${findStringContent}" ] && errorContent="${errorContent}\\n 查找的字符串未制定"
@@ -118,30 +124,31 @@ ftGitLogShell()
     gitVersionNow=${gitVersionNow//git version/}
     gitVersionNow=$(echo $gitVersionNow |sed s/[[:space:]]//g)
 
-    [[ -n "$isAllBranchLog" ]] && gitk --all "${pathTarget}" && return $resultFail
-    [[ -n "$isAllBranchTree" ]] && gitk --simplify-by-decoration --all && return $resultFail
-    [[ -n "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return $resultFail
+    [[ -n "$isAllBranchLogByGitK" ]] && gitk --all "${pathTarget}" && return $resultSuccess
+    [[ -n "$isAllBranchTree" ]] && gitk --simplify-by-decoration --all && return $resultSuccess
+    [[ -n "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return $resultSuccess
+    [[ -n "$isAllBranchLog" ]] && pathCommand="-- $pathTarget"
 
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]] && [ "$isCustomBranchLog" != "true" ];then
         branchLogFormat=${branchLogFormat:-'%C(green)%<(11,trunc)%ad %Cred%<(11,trunc)%an%Creset %Cblue%<(11,trunc)%h%Creset %s %C(yellow) %d'}
         if [[ -n "$isFindString" ]]; then
-            git --no-pager log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount -S"${findStringContent}" 
-            echo ; return
+            git --no-pager log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount -S"${findStringContent}" ${pathCommand}
+            echo ; return $resultSuccess
         fi
-        git --no-pager log --date=format-local:'%Y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount
-        echo ;return
+        git --no-pager log --date=format-local:'%Y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount ${pathCommand}
+        echo ;return $resultSuccess
     fi
     if [ "${branchLogFormat}" = "%h" ];then
-        hashVal=($(git log --pretty=format:"$branchLogFormat" -$branchLogItemCount))
+        hashVal=($(git log --pretty=format:"$branchLogFormat" -$branchLogItemCount  ${pathCommand}))
         echo "${hashVal[@]} "
-        echo ;return
+        echo ;return $resultSuccess
     fi
     branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(13,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
         if [[ -n "$isFindString" ]]; then
-            git --no-pager log --pretty=format:"$branchLogFormat" -$branchLogItemCount -S"${findStringContent}"
-            echo ; return
+            git --no-pager log --pretty=format:"$branchLogFormat" -$branchLogItemCount -S"${findStringContent}" ${pathCommand}
+            echo ; return $resultSuccess
         fi
-    git --no-pager log --pretty=format:"$branchLogFormat" -$branchLogItemCount
+    git --no-pager log --pretty=format:"$branchLogFormat" -$branchLogItemCount ${pathCommand}
     echo
 }
 
