@@ -2881,6 +2881,7 @@ ftAdbConnect()
     [[ -n "${deviceIdold}" ]]&&[[ "${deviceId}" != "${autoTestDeviceId}" ]] && echo -en "设备ID更新:" && ftEcho -s "${autoTestDeviceId} > ${deviceId}"
 
     if [[ -n ${isUseWifi} ]]; then
+        adb -s $deviceId shell svc wifi enable
         ftEcho -y "请确认设备是否连接wifi(回车确认)" && read -n 1 sel && echo ; [ -z "${sel}" ] && sel=y ; [[ $sel != "y" ]] && return $resultFail
         local ipAddressList portNum \
                  ipAddressInfoList=($(adb shell ifconfig wlan0 |grep inet)) \

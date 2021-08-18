@@ -1,7 +1,7 @@
 #!/bin/bash
 #存放命令封装
 #存放xbash扩展封装
-versionNum=v0.0.0.9
+versionNum=v0.0.1.0
 
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
@@ -85,6 +85,10 @@ if [ -d "$ANDROID_SDK" ];then
     alias xqcamera='effect=启动Camera2;adb shell am start -n com.android.camera2/com.android.camera.CameraActivity'
     alias xqmtklog='effect=启动MtkLog; adb shell am start -n com.mediatek.mtklogger/com.mediatek.mtklogger.MainActivity'
     alias xqfactorytest='effect=启动工厂测试;adb shell am start -n com.android.factorytest/com.android.factorytest.FTSamHomeActivity'
+
+    alias xwd='effect=关闭wifi;adb shell svc wifi disable'
+    alias xwe='effect=开启wifi;adb shell svc wifi enable'
+
 
     packageNameList="$(ftXbGetValue androidDevicePackages packageNameList)"
     complete -W "${packageNameList[@]} launcher systemui" xlp
