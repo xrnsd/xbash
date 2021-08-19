@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.2.8
+versionNum=v0.1.2.9
 
 #开发用
 [androidDevicePackages]
@@ -34,6 +34,9 @@ AospProjectNameIgnoreList=\
     lost+found \
     download \
     demos
+AospProjectGitStorehouseServerAddress=
+AospProjectGitStorehouseList=
+AospProjectActiveGitStorehouseList=
 
 #项目软件包的下载工具包[客户用]
 [xbashAOSPConfigMTKSoftwareDownloadToool]

@@ -1485,3 +1485,99 @@ ftGitgetParentBranch()
     ((arrayLength-=1))
     ftEcho -sn "父分支名:" && echo ${branchNameParent[$arrayLength]}
 }
+
+complete -W "-h --help -p" ftGitPullFailForceUpdateHEAD
+ftGitPullFailForceUpdateHEAD()
+{
+    local ftEffect=git更新失败时的强制更新
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local projectName
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    #eval arg3=\${$((i+2))} #; eval arg4=\${$((i+3))}
+    case "${arg}" in
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftGitPullFailForceUpdateHEAD -p 项目名称
+#========================================================="; return ;;
+
+        # 变量参数解析部分 ==============
+        -p ) projectName="${arg2}"
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -z "${projectName}" ] && errorContent="${errorContent}\\n[项目名无效]projectName=$projectName"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitPullFailForceUpdateHEAD -h && return $resultFail
+
+    #实现主体
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    #远程分支最新提交
+    local originCommitHashIdNew=$(git log --pretty=format:"%h" -1 origin/${branchNameNow})
+    local branchOldTemp=AutoBackupFromMaster_Temp_$(date -d "today" +"%y%m%d%H%M%S")
+
+    ftEcho -e "${projectName} 更新失败" && \
+    git branch ${branchOldTemp} && \
+    git reset --soft ${originCommitHashIdNew} && \
+    ftEcho -s "已强制更新到${originCommitHashIdNew}"
+}
+
+complete -W "-h --help" ftGitAutoClone
+ftGitAutoClone()
+{
+    local ftEffect=多仓库快速克隆[懒癌版]
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local isActive
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    # 全部克隆
+#    ftGitAutoClone 无参
+#
+#    # 只克隆活跃仓库
+#    ftGitAutoClone -m
+#========================================================="; return ;;
+        # 变量参数解析部分==============
+        -m ) isActive=true
+         ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitAutoClone -h && return $resultFail
+
+    #实现主体
+    local projectList=($(ftXbGetValue AospProjectsInfo AospProjectGitStorehouseList))
+    [[ -n "$isActive" ]] && projectList=($(ftXbGetValue AospProjectsInfo AospProjectActiveGitStorehouseList))
+    local gitStorehouseServerAddress=($(ftXbGetValue AospProjectsInfo AospProjectGitStorehouseServerAddress))
+    local dirPathLocal=$(pwd)
+    for project in ${projectList[@]}; do
+        cd $dirPathLocal
+        if [[ -d "${project}" ]]; then
+            cd $project
+            ftEcho -s "=============== 开始更新${project} ================="
+            git pull || ftGitPullFailForceUpdateHEAD -p ${project}
+            continue
+        else
+            ftEcho -s "=============== 开始拉取${project} ================="
+            git clone --no-checkout ${gitStorehouseServerAddress}/${project} || continue
+        fi
+        sleep 600
+    done
+}

@@ -1772,6 +1772,7 @@ ftAutoCdAospProject()
                 done
                 mAospProjectNameListUpdate=($(echo ${mAospProjectNameListUpdate[@]} | sed 's/ /\n/g'|sort |uniq))
                 ftIniSetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList -l "${mAospProjectNameListUpdate[*]}"
+                ftIniSetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectGitStorehouseList -l "${mAospProjectNameListUpdate[*]}"
                 ftEcho -s "Aosp项目列表更新完成"
                 return;;
         settings ) dirPathTarget="packages/apps/Settings" ;;
