@@ -1848,7 +1848,7 @@ ftAutoAdbPush()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local filePathSourceList fileNameSource isAutoReboot isTacitMode
+    local filePathSourceList fileNameSource isAutoReboot isTacitMode productName
     local errorContent arg  ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}
     case "${arg}" in
     # 说明参数解析部分==============
@@ -1906,9 +1906,26 @@ ftAutoAdbPush()
 
     for filePath in ${filePathSourceList[@]}; do
             [[ ! -f "$filePath" ]] && ftEcho -e "找不到:${filePath}" && continue
-            if [[ -n $(echo $filePath |grep system) ]] ;then
+            if [[ -n $(echo $filePath |grep product) ]] ;then
                 fileNameSource=$(basename $filePath)
-                dirPathTarget=$(echo /system${filePath#*system} | sed -e "s:/$fileNameSource::g")
+
+                local filePathTemp=$filePath
+                while true; do
+                    if [[ "." = $filePathTemp ]]; then
+                        ftEcho -en "无法解析:";echo "${filePathTemp}"
+                        return
+                    fi
+                    if [[ -z $filePathTemp ]]; then
+                        break
+                    fi
+                    if [[ "out/target/product" = $(dirname $filePathTemp) ]]; then
+                        productName=$(basename $filePathTemp)
+                        break
+                    fi
+                    filePathTemp=$(dirname $filePathTemp)
+                done
+                dirPathTarget=$(echo ${filePath#*${productName}} | sed -e "s:/$fileNameSource::g")
+
                 echo "push ${filePath} > ${dirPathTarget}"
                 adb -s $deviceId push $filePath $dirPathTarget &&  ftEcho -s "${fileNameSource} push to [${dirPathTarget}] finish"
             else
@@ -1924,11 +1941,13 @@ ftAutoAdbPush()
             deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
             deviceSdkVersion=${deviceSdkVersion:-'null'}
             if (( $deviceSdkVersion>=28 )); then
-                sleep 2 && adb shell stop && adb shell start 
+                sleep 2 && adb shell stop && adb shell start
+                ftEcho -s "已重启设备服务:${deviceId} "
             else
                  adb -s $deviceId reboot
+                 ftEcho -s "已重启设备:${deviceId} "
             fi
-            ftEcho -s "已重启设备:${deviceId} "; fi
+        fi
     fi
 }
 
