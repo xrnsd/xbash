@@ -2103,7 +2103,7 @@ ftAutoApkSignature()
     local fileNameApkNew=$(dirname $filePathApk)/${fileNameApkBase}_new${fileNameApkEnd}
 
     local dirPathLocal=$(pwd) dirPathSign=$(dirname $filePathApk)
-    cp -v "${toolFilePathlibconscrypt_openjdk_jni}" "${dirPathSign}"
+    # cp -v "${toolFilePathlibconscrypt_openjdk_jni}" "${dirPathSign}"
     cd "${dirPathSign}"
     java -Djava.library.path=. -jar "${toolFilePathSignapk}" "${toolFilePathPlatformx509pem}" "${toolFilePathPlatformpk8}" "${filePathApk}" "${fileNameApkNew}" \
     && mv "${fileNameApkNew}" "${filePathApk}" &&ftEcho -s  "${filePathApk}  签名成功"|| ftEcho -s "${filePathApk}签名失败"
