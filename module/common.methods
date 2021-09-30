@@ -2770,12 +2770,20 @@ ftAdbConnect()
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -r)
-            echo $userPassword | sudo  -p '' -S adb kill-server >/dev/null
+            # echo $userPassword | sudo  -p '' -S adb kill-server >/dev/null
+            # ftEcho -s "server kill ......"
+            # sleep 2
+            # echo $userPassword | sudo  -p '' -S adb start-server >/dev/null
+            # ftEcho -s "server start ......"
+            # adb devices
+
+            adb kill-server >/dev/null
             ftEcho -s "server kill ......"
             sleep 2
-            echo $userPassword | sudo  -p '' -S adb start-server >/dev/null
+            adb start-server >/dev/null
             ftEcho -s "server start ......"
             adb devices
+
             return
           ;;
         -s ) isScreenShare=true
@@ -2872,10 +2880,10 @@ ftAdbConnect()
     fi
 
     adb -s $deviceId wait-for-device
-    adb -s $deviceId logcat -G $deviceLogcatBufferCacheMax
     local adbStatus=$(adb -s $deviceId get-state)
     [ "$adbStatus" != "device" ] && ftEcho -e "adb连接状态[$adbStatus]异常,请重新尝试" && return $resultFail
     ftEcho -s "连接设备成功"
+    adb -s $deviceId logcat -G $deviceLogcatBufferCacheMax
 
     export autoTestDeviceId=$deviceId
     [[ -n "${deviceIdold}" ]]&&[[ "${deviceId}" != "${autoTestDeviceId}" ]] && echo -en "设备ID更新:" && ftEcho -s "${autoTestDeviceId} > ${deviceId}"
@@ -2928,6 +2936,62 @@ ftAdbConnect()
         #snap run scrcpy
         # guiscrcpy
     fi
+}
+
+complete -W "-h --help -r" ftScrcpy
+ftScrcpy()
+{
+    local ftEffect=scrcpy简单扩展
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local isReset
+    local valCount=2 errorContent arg arg2 # arg3 # arg4
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    #eval arg3=\${$((i+2))} #; eval arg4=\${$((i+3))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftScrcpy 无参
+#
+#    重置scrcpy
+#    ftScrcpy -r
+#========================================================="; return ;;
+
+        # 变量参数解析部分 ==============
+        -r ) isReset=true
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftScrcpy -h && return $resultFail
+
+    #实现主体
+    if [[ -n "$isReset" ]]; then
+        echo $userPassword | sudo -p '' -S  snap remove scrcpy
+        echo $userPassword | sudo -p '' -S  snap remove core
+        snap connections scrcpy
+        echo $userPassword | sudo -p '' -S  snap install scrcpy
+        echo $userPassword | sudo -p '' -S  snap install core
+        echo $userPassword | sudo -p '' -S  snap connect scrcpy:adb-support :adb-support
+        echo $userPassword | sudo -p '' -S  snap connect scrcpy:x11 :x11
+        echo $userPassword | sudo -p '' -S  snap connect scrcpy:desktop :desktop
+        echo $userPassword | sudo -p '' -S  snap connect scrcpy:desktop-legacy :desktop-legacy
+        echo $userPassword | sudo -p '' -S  snap connect scrcpy:network :network
+        echo $userPassword | sudo -p '' -S  snap connect scrcpy:network-bind :network-bind
+        echo $userPassword | sudo -p '' -S  snap connect scrcpy:wayland :wayland
+        ftEcho -s "scrcpy重置结束"
+        return
+    fi
+
+    local filePathToolScrcpy=/snap/bin/scrcpy
+    ADB=/home/xian/tools/android_sdk/platform-tools/adb $filePathToolScrcpy
 }
 
 complete -W "-h --help --rely_install -c" -A file ftPigz
