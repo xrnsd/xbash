@@ -1213,6 +1213,14 @@ ftGitTagCreateAppReadMeTemplate()
     local enterLine="\n"
     local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
     content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+    if [[ -n "${branchNameNow}" ]]; then
+        content=${content}${enterLine}"分支名[真实]：${branchNameNow}"
+        if [[ "${branchNameNow}" != "master" ]]; then
+            content=${content}${enterLine}"父分支名[真实]：$(ftGitgetParentBranch -b ${branchNameNow})"
+        fi
+    else
+        content=${content}${enterLine}"分支名："
+    fi
     content=${content}${enterLine}
     content=${content}${enterLine}"硬件项目平台："
     content=${content}${enterLine}"当前版本：$versionName"
