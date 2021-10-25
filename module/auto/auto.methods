@@ -1235,7 +1235,7 @@ ftAutoCreateReadMeBySoftwareVersion()
                 content=${content}${enterLine}"版本CommitHash：$(ftGitLogShell -n 1 -c "%h") "
                 content=${content}${enterLine}"分支名[真实]：${branchNameNow}"
                 if [[ "${branchNameNow}" != "master" ]]; then
-                    content=${content}${enterLine}"父分支名[真实]：$(ftGitgetParentBranch -b ${branchNameNow})"
+                    content=${content}${enterLine}"父分支名[真实]：$(ftGitgetParentBranch -m -b ${branchNameNow})"
                 fi
             else
                 content=${content}${enterLine}"分支名："

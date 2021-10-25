@@ -1361,7 +1361,7 @@ ftGitTagCreateVersionTemplateByVersionReadme()
     done
 }
 
-complete -W "-h --help --rely_install -b" ftGitgetParentBranch
+complete -W "-h --help --rely_install -b -m" ftGitgetParentBranch
 ftGitgetParentBranch()
 {
     local ftEffect=获取父分支
@@ -1370,7 +1370,7 @@ ftGitgetParentBranch()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return $resultFail
     #解参验耦
-    local branchNameLocal
+    local branchNameLocal isMiniPrintf
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
@@ -1391,19 +1391,17 @@ ftGitgetParentBranch()
 #    ftGitgetParentBranch
 #    可简化 [ftGitgetParentBranch] 为 [xgp] ,其他参数不变
 #
-#
 #   查看当前目录下指定GIT分支的父分支
 #    ftGitgetParentBranch -b 分支名
 #    可简化 [ftGitgetParentBranch -b] 为 [xgpp] ,其他参数不变
+#
+#    只输出分支名
+#    ftGitgetParentBranch -m
 #========================================================="; return ;;
-        --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
-#=========================================================
-#    环境未初始化
-#    使用前,请先初始化[xxxxxxxxx]
-#========================================================="; return ;;
-
         # 变量参数解析部分 ==============
         -b ) branchNameLocal="${arg2}"
+            ;;
+        -m ) isMiniPrintf=true
             ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
@@ -1420,6 +1418,7 @@ ftGitgetParentBranch()
      local branchNameParent=($(git reflog show --date=iso "${branchNameLocal}"|grep "branch: Created from"))
      local arrayLength=${#branchNameParent[@]}
     ((arrayLength-=1))
+    [ -n "$isMiniPrintf" ] && echo ${branchNameParent[$arrayLength]} && return
     ftEcho -sn "父分支名:" && echo ${branchNameParent[$arrayLength]}
 }
 
