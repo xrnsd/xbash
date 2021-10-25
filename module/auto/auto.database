@@ -30,6 +30,7 @@ excludeFolderList=\
     pdk \
     platform_testing \
     prebuilts \
+    packages/apps/Settings \
     sdk \
     system \
     test \
