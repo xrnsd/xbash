@@ -2974,11 +2974,11 @@ ftScrcpy()
 
     #实现主体
     if [[ -n "$isReset" ]]; then
-        echo $userPassword | sudo -p '' -S  snap remove scrcpy
         echo $userPassword | sudo -p '' -S  snap remove core
-        snap connections scrcpy
-        echo $userPassword | sudo -p '' -S  snap install scrcpy
+        echo $userPassword | sudo -p '' -S  snap remove scrcpy
         echo $userPassword | sudo -p '' -S  snap install core
+        echo $userPassword | sudo -p '' -S  snap install scrcpy
+        snap connections scrcpy
         echo $userPassword | sudo -p '' -S  snap connect scrcpy:adb-support :adb-support
         echo $userPassword | sudo -p '' -S  snap connect scrcpy:x11 :x11
         echo $userPassword | sudo -p '' -S  snap connect scrcpy:desktop :desktop
@@ -3212,7 +3212,7 @@ ftCreateMoudleDesktop()
 
     local filePathReadMeTemplate="${exeModuleName}.desktop"
     local enterLine="\n"
-    local content="[Desktop Entry] ${enterLine}"
+    local content="[Desktop Entry]"
     content=${content}${enterLine}"Encoding=UTF-8"
     content=${content}${enterLine}"Name=${exeModuleName}"
     content=${content}${enterLine}"Comment=抓鸡小能手"
@@ -3222,6 +3222,7 @@ ftCreateMoudleDesktop()
     content=${content}${enterLine}"StartupNotify=true"
     content=${content}${enterLine}"Type=Application"
     content=${content}${enterLine}"Categories=Application;"
+    content=${content}${enterLine}
 
     echo -e ${content} >$filePathReadMeTemplate
     echo $userPassword | sudo -p '' -S chmod a+x $filePathReadMeTemplate
