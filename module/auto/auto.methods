@@ -824,6 +824,7 @@ ftAutoPacket()
                 dirNameVeriosionBase=${tag}____${dirNameVeriosionBase}
             fi
 
+            local isAddToolReadme=
             local dirPathVersionSoftwareVersion=${dirPathVersionSoftware}/${dirNameVeriosionBase}
 
             # 生成本地软件包
@@ -939,18 +940,17 @@ ftAutoPacket()
                     local dirNamePackageTools="tools"
                     local dirPathPackageTools=${dirPathVersionSoftwareVersion}/${dirNamePackageTools}
                     local filePathTools=($(ftXbGetValue $tagName filePath))
-                    if [[ -n "${filePathTools}" ]]; then
+                    if [[ -n ${filePathTools} ]]; then
                         ftEcho -s "创建 tools"
 
                         [[ ! -d $dirPathPackageTools ]] && mkdir -p $dirPathPackageTools
                         for filePath in ${filePathTools[@]}; do
                             [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && ftClearTail $dirPathLocal \
-                            && export isPacketMtkSoftwareDownloadTools=false && return $resultFail
+                            && isAddToolReadme="-dt" && break
 
                              printf "%-2s %-30s\n" 复制 $filePath
                              cp -r -f  $filePath $dirPathPackageTools
                         done
-                        export isPacketMtkSoftwareDownloadTools=true
                     else
                         ftEcho -e "tools包配置错误,软件包可能不完整"
                     fi
@@ -958,7 +958,7 @@ ftAutoPacket()
 
             # 创建版本说明/客户说明
             if [[ -n "$isReadMe" ]]; then
-                ftEcho -s "创建 版本说明相关文档" && ftAutoCreateReadMeBySoftwareVersion ${dirPathVersionSoftwareVersion}
+                ftEcho -s "创建 版本说明相关文档" && ftAutoCreateReadMeBySoftwareVersion "${isAddToolReadme}" -t ${dirPathVersionSoftwareVersion}
                 ftEcho -y "是否更新版本说明 [回车更新]" ; read -n 1 sel ; [ -z "${sel}" ] && sel=y
                 [[ "${sel}" = "y" ]] &&  XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $AutoEnv_filePathReleaseNotes $AutoEnv_filePathCustomerDescription || echo
              fi
@@ -1069,7 +1069,7 @@ ftAutoPacket()
             tar --use-compress-program=pigz -xf $fileNamePackage ${dirPathVersionSoftwareVersion}
 
             # 生成说明文件
-            [[ -n "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion $dirPathVersionSoftwareVersion
+            [[ -n "$isReadMe" ]] && ftAutoCreateReadMeBySoftwareVersion -t $dirPathVersionSoftwareVersion
 
             #上传服务器
             [[ -n "$isUpload" ]] && ftAutoUpload $dirPathVersionSoftwareLocal 192.168.1.75
@@ -1092,11 +1092,14 @@ ftAutoCreateReadMeBySoftwareVersion()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    while true; do case "$1" in
+    local isAddToolsConnnect=true
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftAutoCreateReadMeBySoftwareVersion [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
-#    ftAutoCreateReadMeBySoftwareVersion out/pac
+#    ftAutoCreateReadMeBySoftwareVersion -t [dir_path_pac_res] #生成7731c使用的pac的目录，和生成所需的文件存放的目录
+#    ftAutoCreateReadMeBySoftwareVersion -t out/pac
 #========================================================="; return ;;
     --rely) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
@@ -1108,6 +1111,12 @@ ftAutoCreateReadMeBySoftwareVersion()
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #
 #========================================================="; return ;;
+
+        # 变量参数解析部分 ==============
+        -dt ) isAddToolsConnnect=
+            ;;
+        -t ) dirPathVersionSoftware="${arg2}"
+            ;;
     * ) break;;esac;done
 
     #环境校验
@@ -1115,10 +1124,9 @@ ftAutoCreateReadMeBySoftwareVersion()
     #解参验耦
     ftAutoInitEnv
     [ -z "$ANDROID_BUILD_TOP" ]||[ -z "$ANDROID_PRODUCT_OUT" ] && ftAutoCreateReadMeBySoftwareVersion --env && return $resultFail
-    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT dirPathVersionSoftware=$1
+    local dirPathCode=$ANDROID_BUILD_TOP dirPathOut=$ANDROID_PRODUCT_OUT
     [[ -z "$dirPathVersionSoftware" ]] && dirPathVersionSoftware=${dirPathOut}/${AutoEnv_versionName}
     dirPathVersionSoftware=$(ftPath $dirPathVersionSoftware)
-    local valCount=1 errorContent
     #(( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -d "$dirPathCode" ] && errorContent="${errorContent}\\n[工程根目录不存在]dirPathCode=$dirPathCode"
     [ ! -d "$dirPathOut" ] && errorContent="${errorContent}\\n[工程out目录不存在]dirPathOut=$dirPathOut"
@@ -1261,6 +1269,7 @@ ftAutoCreateReadMeBySoftwareVersion()
             rm ${filePathChangeListTemplate}.temp
 
             #客户说明
+            local lineNumCR=1
             content="$(ftXbGetValue projectSoftwareReadMeInfo recordMeTag)"
             content=${content}${enterLine}"记录创建人：$(ftXbGetValue projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}
@@ -1268,14 +1277,14 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}"基础版本："
             content=${content}${enterLine}
             content=${content}${enterLine}"说明："
-            if [[ ${isPacketMtkSoftwareDownloadTools} = "true" ]]; then
-                content=${content}${enterLine}"\t01 $(ftXbGetValue projectSoftwareReadMeInfo softwareDescriptionMtkTools)"
-                content=${content}${enterLine}"\t02 $(ftXbGetValue projectSoftwareReadMeInfo softwareDescriptionMtkPackages)"
-                content=${content}${enterLine}"\t03 $(ftXbGetValue projectSoftwareReadMeInfo softwareDescriptionMtkDatabase)"
+            if [[ -n "$isAddToolsConnnect" ]]; then
+                content=${content}${enterLine}"\t0${lineNumCR} $(ftXbGetValue projectSoftwareReadMeInfo softwareDescriptionMtkTools)"; ((lineNumCR+=1))
             fi
+            content=${content}${enterLine}"\t0${lineNumCR} $(ftXbGetValue projectSoftwareReadMeInfo softwareDescriptionMtkPackages)" ; ((lineNumCR+=1))
+            content=${content}${enterLine}"\t0${lineNumCR} $(ftXbGetValue projectSoftwareReadMeInfo softwareDescriptionMtkDatabase)" ; lineNumCR=1
             content=${content}${enterLine}
             content=${content}${enterLine}"修改记录："
-            content=${content}${enterLine}"\t01 "
+            content=${content}${enterLine}"\t0${lineNumCR} "
             echo -e ${content}${enterLine}${enterLine} >$filePathReadMeTemplate
 
             # 转化为windows下面文件格式
