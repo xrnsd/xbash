@@ -310,9 +310,10 @@ ftEcho()
 #    ftEcho    -snw  内容    # 执行信息，不换行，对字符串的缩进敏感,循环显示省略号
 #    ftEcho    -rc   内容    # xbash函数的说明显示，对字符串的缩进敏感
 #    ftEcho    -w 标题  内容    # 弹窗提示
+#    ftEcho    -iow 标题  内容    # 弹窗交互
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
-        -w )
+        -w|-iow )
             if [[ -z $arg3 ]]; then
                 title="提示"
                 content="${arg2}"
@@ -335,6 +336,7 @@ ftEcho()
                 mWaitForPromptSymbol="${mWaitForPromptSymbol}."; break;;
         -sh )    echo;echo -e "\033[1;33m$content\033[0m";echo; break;;
         -w )    notify-send ["${title}"] "${content}" ; break;;
+        -iow )  zenity --entry --title "${title}" --text "${content}" ; break;;
         -b )     echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
         -bh )    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
         -y )     echo;echo -en "${content}[y/n]"; break;;
