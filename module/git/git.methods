@@ -490,12 +490,15 @@ ftGitCheckoutBranch()
             [[  ! ${item^^} =~ "$branchNameTag"  ]] && indexNow=$((index)) && break
             ((index+=1))
         done ; index=0
+        local branchCandidateList
         for item in ${branchList[@]} ; do
+            [[ $branchNameNow == ${item} ]] && continue
             echo -n "[" ; ftEcho -sn "$(printf "%${length}d" $index)" ; echo -n "]"  ; printf "   %-4s\n" $item
             if (( $index == $indexNow-1 )) || (( $index == $itemCount-1 && $indexNow!=-1 ));then
                     ftEcho -sn "$(printf "%${length}s" "-" | sed -e "s: :-:g")" && ftEcho -sn "->" && ftEcho -s "$(printf "   %-4s\n" $branchNameNow)"
                     indexNow=-1
             fi
+            branchCandidateList=(${branchCandidateList[@]} $item)
             ((index+=1))
         done
         ftEcho -r  "请输入对应的序号(回车默认0):"
@@ -503,8 +506,7 @@ ftGitCheckoutBranch()
         #设定默认值
         [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
         (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return $resultFail
-        index=0;for item in ${branchList[@]} ; do
-            [ -z "$item" ] && continue
+        index=0;for item in ${branchCandidateList[@]} ; do
             (( $index == $tIndex )) && branchNameTraget=$item && break
             ((index+=1))
         done

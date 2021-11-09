@@ -2059,6 +2059,7 @@ ftFind()
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -s ) isSuffix=true
+              [[ "-s" = "${arg2}" ]] && shift
               pathTarget="${2}"
               # [[ "${pathTarget}" = "./" ]] && pathTarget=$(pwd)
               nameList="${3}"
