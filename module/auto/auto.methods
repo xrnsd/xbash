@@ -1812,15 +1812,28 @@ ftAutoCdAospProject()
         mAospProjectName=$mAospProjectNameList
     fi
 
-    local mAospProjectStoragePathEffectiveList dirPathAll dirPathBase
+    local mAospProjectStoragePathEffectiveList dirPathAll dirPathBase dirPathProjectStorehouseList
     for path in ${mAospProjectStoragePathList[@]}; do
         dirPathBase=${path}/${mAospProjectName}
+
+        [[ ! -d "${dirPathBase}" ]] && continue
+
+        #默认路径下无git仓库,开始遍历查找仓库
+        if [[ ! -d "${dirPathBase}/.git" ]]; then
+             dirPathProjectStorehouse=($(find ${dirPathBase} -maxdepth 2  -type d -path '*/.git'))
+             for pathStorehouse in ${dirPathProjectStorehouse[@]}; do
+                mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $(dirname $pathStorehouse)")
+             done
+             continue
+        fi
+
         dirPathAll=${dirPathBase}/alps
         if [[ -d "$dirPathAll" ]]; then
             mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $dirPathAll")
-        elif [[ -d "$dirPathBase" ]]; then
-            mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $dirPathBase")
+            continue
         fi
+
+        mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $dirPathBase")
     done
     [ -z "$mAospProjectStoragePathEffectiveList" ] && ftEcho -e "找不到${mAospProjectName}对应的Aosp项目有效存放路径" && return $resultFail
 
@@ -1843,6 +1856,9 @@ ftAutoCdAospProject()
         (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return $resultFail
         mAospProjectStoragePathEffective=${mAospProjectStoragePathEffectiveList[$tIndex]}
     fi
+
+    #项目存在嵌套
+    [[ -d "${mAospProjectStoragePathEffective}/${mAospProjectName}" ]] && mAospProjectStoragePathEffective=${mAospProjectStoragePathEffective}/${mAospProjectName}
 
     [[ -z "$isUserFileManager" ]] && cd $mAospProjectStoragePathEffective && return $resultFail
     ftOpenNemoTab -p $mAospProjectStoragePathEffective
