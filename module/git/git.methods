@@ -34,7 +34,7 @@ ftGitLogShell()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local branchLogItemCountDef=20
-    local isAllBranchLogByGitK isAllBranchLog isAllBranchTree isTagBranchLog branchLogFormat isCustomBranchLog isFindString
+    local isAllBranchLogByGitK isAllBranchLog isAllBranchTree isTagBranchLog branchLogFormat isCustomBranchLog isFindString isChangeList
     local branchLogItemCount=${branchLogItemCountDef} pathTarget findStringContent pathCommand
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
@@ -58,9 +58,6 @@ ftGitLogShell()
 #    ftGitLogShell -b
 #    可简化 [ftGitLogShell -b] 为 [xglb] ,其他参数不变
 #
-#    查看分支树
-#    ftGitLogShell -at
-#
 #    用gitk查看指定路径下的全部分支log
 #    ftGitLogShell -aw  路径
 #
@@ -70,6 +67,9 @@ ftGitLogShell()
 #    过滤修改内容包含字符串的log
 #    ftGitLogShell -fs \"字符串\"
 #    可简化 [ftGitLogShell -fs] 为 [xglf] ,其他参数不变
+#
+#    最近N次修改的文件列表
+#    ftGitLogShell -cl -n N
 #
 #    指定log数量
 #    ftGitLogShell -n 数量
@@ -110,6 +110,9 @@ ftGitLogShell()
         -fs )  findStringContent=${arg2}
                 isFindString=true
                 ;;
+        -cl )  findStringContent=${arg2}
+                isChangeList=true
+                ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     #参耦校验
     [[ -z $(which git) ]] && ftGitLogShell --rely && return $resultFail
@@ -128,6 +131,7 @@ ftGitLogShell()
     [[ -n "$isAllBranchTree" ]] && gitk --simplify-by-decoration --all && return $resultSuccess
     [[ -n "$isTagBranchLog" ]] && git log --date=short --pretty=format:"$branchLogFormat" -$branchLogItemCount && return $resultSuccess
     [[ -n "$isAllBranchLog" ]] && pathCommand="-- $pathTarget"
+    [[ -n "$isChangeList" ]] && git log --pretty=format:"" --name-only  -${branchLogItemCount} && return
 
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]] && [ "$isCustomBranchLog" != "true" ];then
         branchLogFormat=${branchLogFormat:-'%C(green)%<(11,trunc)%ad %Cred%<(11,trunc)%an%Creset %Cblue%<(11,trunc)%h%Creset %s %C(yellow) %d'}
