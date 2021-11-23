@@ -10,7 +10,7 @@ ftSetBashPs1ByGitBranch()
     [[ "$isUseCustomPS1" != "true" ]] && return
 
     local editType=$1 defaultPrefix=${rUserName:-'xbash'} defaultColorConfig=44
-    [[ "$(whoami)" = "root" ]] && defaultPrefix="root" && defaultColorConfig=42
+    [[ "$(whoami)" = "root" ]] && defaultPrefix="root" && defaultColorConfig="41;37"
     export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
 
     [[ -z $(which git) ]] && return $resultFail
