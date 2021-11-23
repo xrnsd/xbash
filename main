@@ -115,8 +115,7 @@ fi
     export dirNameXbash=xbash
     if [[ "$USER" = "root" ]]; then
         export dirPathHome="/root"
-        dirPathHomeXbashConfig=$(dirname $(readlink -f  $BASH_SOURCE))
-        export dirPathHomeXbash=$(dirname ${dirPathHomeXbashConfig})
+        export dirPathHomeXbash=$(dirname $(readlink -f  $BASH_SOURCE))
         dirNameHome=$(echo "$dirPathHomeXbash"| sed 's?/? ?g'| awk '{print $2}')
         export dirPathHome=/home/${dirNameHome:-"$userName"}
     else
