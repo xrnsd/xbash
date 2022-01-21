@@ -1346,7 +1346,7 @@ ftAutoTest()
         # 变量参数解析部分==============
         -r)     export   autoTestDeviceId=                          ;;
         -s)     deviceIdTargetForce=${arg2}; export autoTestDeviceId= ;;
-        -p)     packageNameList=${arg2}                            ;;
+        -p)    packageNameList=${arg2}                            ;;
         -pb)   packageBlackNameList=${arg2}                   ;;
         -d)     dirPathLogRoot=${arg2:-'dirPathLogRoot'}          ;;
         -t)     throttleLong=${arg2}                            ;;
@@ -1360,6 +1360,13 @@ ftAutoTest()
     [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoTest -h && return $resultFail
 
     #实现主体
+
+    #adb状态确认
+    ftAdbConnect -u ; [[ -z "${autoTestDeviceId}" ]] && return $resultFail
+    local deviceId=${autoTestDeviceId}
+    ftEcho -s "开始对设备 : [$deviceId] 进行测试"
+    local deviceIdTarget=${deviceId}
+
     local filePathDeviceInfo=/system/build.prop
     local dirPathLogMonkeyBase=${dirPathLogRoot}/monkey
     local dirNameLogMonkey=$deviceIdTarget
@@ -1368,11 +1375,6 @@ ftAutoTest()
     local filePathLogAdbLogcat=${dirPathLogMonkey}/logcat.log
     local dirPathDevicesTarget="/sdcard"
     local monkeyConfig logcatFlag #="*:E"
-
-    #adb状态确认
-    ftAdbConnect -u ; [[ -z "${autoTestDeviceId}" ]] && return $resultFail
-    local deviceId=${autoTestDeviceId}
-    ftEcho -s "开始对设备 : [$deviceId] 进行测试"
 
     # monkey命令参数配置
     [[ -n "$throttleLong" ]] && monkeyConfig=${monkeyConfig}" --throttle $throttleLong"
@@ -1384,18 +1386,20 @@ ftAutoTest()
         rm -rf $filePathBlack
         for packageName in ${packageBlackNameList[@]} ; do echo package:${packageName} >> $filePathBlack ;done
         adb -s $deviceId push $filePathBlack $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-blacklist-file ${filePathBlackDevices}"
+    fi
+    if [[ -n "$packageNameList" ]]; then
+        # if ((${#packageNameList[@]}>1)); then
+            # local fileNameWhite="monkey.whitelist"
+            # local filePathWhite="${rDirPathUserHome}/temp/${fileNameWhite}"
+            # local filePathWhiteDevices="${dirPathDevicesTarget}/${fileNameWhite}"
+            # rm -rf $filePathWhite
+            # for packageName in ${packageWhiteNameList[@]} ; do echo package:${packageName} >> $filePathWhite ;done
+            # adb -s $deviceId push $filePathWhite $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhiteDevices}"
 
-    elif [[ -n $packageNameList ]]; then
-        if ((${#packageNameList[@]}>1)); then
-            local fileNameWhite="monkey.whitelist"
-            local filePathWhite="${rDirPathUserHome}/temp/${fileNameWhite}"
-            local filePathWhiteDevices="${dirPathDevicesTarget}/${fileNameWhite}"
-            rm -rf $filePathWhite
-            for packageName in ${packageWhiteNameList[@]} ; do echo package:${packageName} >> $filePathWhite ;done
-            adb -s $deviceId push $filePathWhite $dirPathDevicesTarget && monkeyConfig=${monkeyConfig}" --pkg-whitelist-file ${filePathWhiteDevices}"
-        else
-            monkeyConfig=${monkeyConfig}" -p ${packageNameList}"
-        fi
+            for packageName in ${packageNameList[@]} ; do monkeyConfig=${monkeyConfig}" -p ${packageName}" ;done
+        # else
+        #     monkeyConfig=${monkeyConfig}" -p ${packageNameList}"
+        # fi
     fi
     monkeyConfig=${monkeyConfig}" -v -v -v"
     monkeyConfig=${monkeyConfig}" ${eventCount}"
@@ -1409,9 +1413,10 @@ ftAutoTest()
     #记录设备信息
     adb -s $deviceId pull $filePathDeviceInfo $dirPathLogMonkey > /dev/null&& ftEcho -s "设备信息已保存到${dirPathLogMonkey}"
     #开始测试
-    local filePathDeviceMonkeyFlag=/sdcrad/monkey_test_${deviceIdTarget} #设备进行过monkey测试的标示文件
-    adb -s $deviceId shell touch $filePathDeviceMonkeyFlag
+    local filePathDeviceMonkeyFlag=/sdcard/monkey_test_${deviceIdTarget} #设备进行过monkey测试的标示文件
+    adb -s $deviceId shell "echo > $filePathDeviceMonkeyFlag"
     adb -s $deviceId logcat "$logcatFlag" > $filePathLogAdbLogcat &
+    echo "monkeyConfig = ${monkeyConfig}"
     adb -s $deviceId shell monkey "${monkeyConfig}" 2>&1 |tee $filePathLogMonkey
     local isMonkeyTestSucess=$( [[ -n "$(grep -n '// Monkey finished' $filePathLogMonkey | tail -n 1)" ]]&&echo true|| echo false )
     #测试状态确认
