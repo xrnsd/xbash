@@ -1,7 +1,7 @@
 #!/bin/bash
 #存放命令封装
 #存放xbash扩展封装
-versionNum=v0.0.1.1
+versionNum=v0.0.1.2
 
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
@@ -51,18 +51,18 @@ fi
 if [ -d "$ANDROID_SDK" ];then
     alias xssd="effect=关闭设备;adb shell reboot"
     alias xsd="effect=关闭设备;adb shell reboot -p"
-    alias xl='effect=过滤logcat;ftLogcatApplicationByTag'
+    alias xl='effect=过滤logcat;ftLogcatApplicationByTag -k'
     alias xpn='effect=使用adb快速push[仅push];ftAutoAdbPush -n -f'
     alias xpa='effect=使用adb快速push[自动重启];ftAutoAdbPush -a -f'
     alias xp='effect=使用adb快速push[询问是否重启];ftAutoAdbPush -f '
-    alias xle='effect=过滤错误的logcat;ftLogcatApplicationByTag -e'
-    alias xlo='effect=过滤存在多个标签中一个的logcat;ftLogcatApplicationByTag -o'
-    alias xlp="effect=根据包名过滤logcat;ftLogcatApplicationByTag -p"
-    alias xlt='effect=过滤logcat,没有时间信息;ftLogcatApplicationByTag -t '
-    alias xltp='effect=过滤logcat,没有时间信息;ftLogcatApplicationByTag -tp '
+    alias xle='effect=过滤错误的logcat;ftLogcatApplicationByTag -k -e'
+    alias xlo='effect=过滤存在多个标签中一个的logcat;ftLogcatApplicationByTag -k -o'
+    alias xlp="effect=根据包名过滤logcat;ftLogcatApplicationByTag -k -p"
+    alias xlt='effect=过滤logcat,没有时间信息;ftLogcatApplicationByTag -k -t'
+    alias xltp='effect=过滤logcat,没有时间信息;ftLogcatApplicationByTag -k -tp '
     alias xpml='effect=干掉设备对应包名的进程;ftMtkLog -p /home/enjoy/log'
     alias xk='effect=干掉设备对应包名的进程;ftKillApplicationByPackageName'
-    alias xlce='effect=过滤错误的logcat;adb logcat -c;ftLogcatApplicationByTag -e'
+    alias xlce='effect=过滤错误的logcat;adb logcat -c;ftLogcatApplicationByTag -k -e'
     alias xpcn='effect=使用adb快速push[新终端中执行,仅push];ftAutoAdbPush -c -n -f'
     alias xpca='effect=使用adb快速push[新终端中执行,自动重启];ftAutoAdbPush -c -a -f'
     alias xpc='effect=使用adb快速push[新终端中执行,询问是否重启];ftAutoAdbPush -c -f'
