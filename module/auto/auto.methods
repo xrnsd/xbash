@@ -853,7 +853,8 @@ ftAutoPacket()
                                 [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && ftClearTail $dirPathLocal && return $resultFail
                                 local fileSize=$(stat -c "%s" $filePath)
                                 if (( $fileSize >= $fileSizeCheckMax )) \
-                                    && [[ "${file}" != "system.img" ]]; then
+                                    && [[ "${file}" != "system.img" ]] \
+                                    && [[ "${file}" != "super.img" ]]; then
                                             ftEcho -yn "${file}文件过大,是否放弃(回车默认y)" ; read -n 1 sel
                                             [ -z "${sel}" ] && sel=y
                                             [[ "${sel}" != "y" ]] && echo && ftEcho -e "放弃 ${file}"&& continue
@@ -985,6 +986,7 @@ ftAutoPacket()
                 mv ${dirPathVersionSoftware}/${fileNameOtaPackage} ${dirPathVersionSoftwareVersion}
                 mv ${dirPathVersionSoftware}/${fileNamePackage} ${dirPathVersionSoftwareVersion}
                 mv ${AutoEnv_filePathReleaseNotes} ${dirPathVersionSoftwareVersion}
+                mv ${AutoEnv_filePathBasicHardwareConfig} ${dirPathVersionSoftwareVersion}
                 rm -rf ${AutoEnv_filePathCustomerDescription}
                 rm -rf ${dirPathPackage}
                 rm -rf ${dirPathPackageDataBase}
@@ -1137,6 +1139,11 @@ ftAutoCreateReadMeBySoftwareVersion()
     local filePathReadMeTemplate=${dirPathVersionSoftware}/${fileNameReadMeTemplate}
     local filePathChangeListTemplate=$(dirname $dirPathVersionSoftware)/${fileNameChangeListTemplate}
     local versionName=$AutoEnv_versionName
+    local filePathToolCopyBasicHardwareConfig=${ANDROID_BUILD_TOP}/copyBasicHardwareConfig.sh
+
+    if [[ -f $filePathToolCopyBasicHardwareConfig ]]; then
+        export AutoEnv_filePathBasicHardwareConfig=$($filePathToolCopyBasicHardwareConfig ${dirPathVersionSoftware})
+    fi
 
     [ ! -d "$dirPathVersionSoftware" ] && mkdir $dirPathVersionSoftware
     cd $dirPathCode && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
@@ -1235,6 +1242,12 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}"记录创建人：$(ftXbGetValue projectSoftwareReadMeInfo recordCreator)"
             content=${content}${enterLine}"项目负责人：$(ftXbGetValue projectSoftwareReadMeInfo projectManager)"
             content=${content}${enterLine}"客户对接人：$(ftXbGetValue projectSoftwareReadMeInfo projectManager)"
+            content=${content}${enterLine}
+            content=${content}${enterLine}"软件路径[公网]："
+            content=${content}${enterLine}"    01 百度网盘："
+            content=${content}${enterLine}"    链接："
+            content=${content}${enterLine}"    提取码："
+            content=${content}${enterLine}"    有效期：永久"
             content=${content}${enterLine}
             content=${content}${enterLine}"当前版本：$versionName"
             content=${content}${enterLine}"基础版本："
