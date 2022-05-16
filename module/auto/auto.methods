@@ -1840,7 +1840,8 @@ ftAutoCdAospProject()
 
         #默认路径下无git仓库,开始遍历查找仓库
         if [[ ! -d "${dirPathBase}/.git" ]]; then
-             dirPathProjectStorehouse=($(find ${dirPathBase} -maxdepth 2  -type d -path '*/.git'))
+             #dirPathProjectStorehouse=($(find ${dirPathBase} -maxdepth 2  -type d -path '*/.git'))
+             dirPathProjectStorehouse=($(find ${dirPathBase} -maxdepth 2 -path '*/.git'))
              for pathStorehouse in ${dirPathProjectStorehouse[@]}; do
                 mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $(dirname $pathStorehouse)")
              done
