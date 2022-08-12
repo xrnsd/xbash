@@ -83,10 +83,9 @@ ftResetXbash()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local valCount=1 errorContent
     export isResetJdk= isResetGcc= isResetCcache= isResetXbash=true targetSdkVersionForce=
     local dirPathCode dirPathLocal=$(pwd)  filePathHomeBash=~/.bashrc
-    local arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; eval arg2=\${$((i+1))}
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -148,8 +147,7 @@ ftReadAllAlias()
         #解参验耦
         [[ ! -f $rFilePathXbashPackagingUser ]] && ftEcho -e "xbash配置不存在:$rFilePathXbashPackagingUser" && return $resultFail
 
-        local cmdName cmdContent
-        local intervalSize=24
+        local cmdName cmdContent intervalSize=24
 
         ftEcho -s "$ftEffect"
         echo -e "========================================================="
@@ -171,10 +169,8 @@ ftReadAllFt()
         #可用性校验
         [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
 
-        local isEchoDefFt isEchoSubF
-        local key="local ftEffect=" keyEnable="local isEnable="
-        local effectDescription effectDescriptionEnable
-        local intervalSize=40
+        local isEchoDefFt isEchoSubF effectDescription effectDescriptionEnable
+        local key="local ftEffect=" keyEnable="local isEnable=" intervalSize=40
 
         if [[ "$1" = "-a" ]]; then
             #isEchoDefFt=true
@@ -255,17 +251,13 @@ ftGitUpdateVersion()
     #依赖校验
     [[ -z $(which git) ]] && return $resultFail
     #解参验耦
-    local dirPathLocal=$(pwd)
-    local checkUpdateDateNow=$(date -d "today" +"%Y%m%d")
-    local tagName=xbashUpdateVersionConfig
-    local keyName=checkUpdateDate
-    local checkUpdateDateOld=$(ftXbGetValue $tagName $keyName)
+    local dirPathLocal=$(pwd) checkUpdateDateNow=$(date -d "today" +"%Y%m%d")
+    local tagName=xbashUpdateVersionConfig keyName=checkUpdateDate checkUpdateDateOld=$(ftXbGetValue $tagName $keyName)
     [[ -z "${checkUpdateDateOld}" ]] && ftIniCreateFileOrTag  -a -p $rFilePathXbashDBUser -t $tagName -l "${keyName}=${checkUpdateDateNow}" || \
     [[ "${checkUpdateDateOld}" = "${checkUpdateDateNow}" ]] && return $resultFail
     [[ -n "${rDirPathXbash}" ]] && cd $rDirPathXbash
 
-    local branchNameMaster="master"
-    local branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local branchNameMaster="master" branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     #实现主体
     [ -z "$branchNameLocal" ] || [ "$branchNameLocal" = "$branchNameMaster" ] && cd "${dirPathLocal}" && return $resultFail
     echo "$(git pull > /dev/null &)" > /dev/null
@@ -281,8 +273,7 @@ ftEcho()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local content option=$1 valList=$@
-    local title
+    local title content option=$1 valList=$@
     option=${option:-'未制定显示信息'}
         if [ ${#valList[@]} -eq 2 ];then
         content=$(echo $content |sed s/[[:space:]]//g)
@@ -440,8 +431,7 @@ ftCheckUserConfig()
     [[ ! -f ${rFilePathXbashConfigExample}  ]] && return $resultFail
     [[ ! -f ${rFilePathXbashConfigUser}  ]] && return $resultFail
 
-    local title="用户配置"
-    local key="versionNum="
+    local title="用户配置" key="versionNum="
     local versionNumExcepmale=$(cat $rFilePathXbashConfigExample |grep $key)
     local versionNumUser=$(cat $rFilePathXbashConfigUser |grep $key)
 
@@ -467,8 +457,7 @@ ftCheckUserDatabase()
     [[ ! -f ${rFilePathXbashDBUserExcepmale}  ]] && return $resultFail
     [[ ! -f ${rFilePathXbashDBUser}  ]] && return $resultFail
 
-    local title="用户数据库"
-    local tag=informationInThisDb key="versionNum"
+    local title="用户数据库" tag=informationInThisDb key="versionNum"
     local versionNumExcepmale=$(ftIniGetValue $rFilePathXbashDBUserExcepmale $tag $key)
     local versionNumUser=$(ftIniGetValue $rFilePathXbashDBUser $tag $key)
 
@@ -501,8 +490,7 @@ ftCheckUserPackaging()
     [[ ! -f ${rFilePathXbashPackagingUserExample}  ]] && return $resultFail
     [[ ! -f ${rFilePathXbashPackagingUser}  ]] && return $resultFail
 
-    local title="用户扩展"
-    local key="versionNum="
+    local title="用户扩展" key="versionNum="
     local versionNumExcepmale=$(cat $rFilePathXbashPackagingUserExample |grep $key)
     local versionNumUser=$(cat $rFilePathXbashPackagingUser |grep $key)
 
@@ -912,8 +900,7 @@ ftDevAvailableSpace()
     #实现主体
      local devAvailableSIzeList=$(df -lh | awk '{print $4}')
      local devMountDirPathList=($(df -lh | awk '{print $6}'))
-     local indexDevName=0
-     local devMountDirPath
+     local indexDevName=0 devMountDirPath
      for size in ${devAvailableSIzeList[*]} ; do
         devMountDirPath=${devMountDirPathList[indexDevName]}
         if [[ "$devMountDirPath" = "$dirPathTraget" ]]; then
@@ -962,10 +949,8 @@ ftLanguageUtil()
     local returnVal
     local allList=($(ftXbGetValue languageList allList))
     local shortList=($(ftXbGetValue languageList shortList))
-
     local ftLanguageContent2=${ftLanguageContent//_/}
     ftLanguageContent2=${ftLanguageContent2// /}
-
     local sourceList=(${shortList[@]})
     local tragetList=(${allList[@]})
     if [[ ! "$ftLanguageContent2" =~  ^[a-zA-Z]+$ ]]; then
@@ -1363,8 +1348,7 @@ ftMtkFlashTool()
         #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local isEnableWindowMode
-    local flashToolPath="$(ftXbGetValue MtkSpFlashToolVersion toolsPath)"
+    local isEnableWindowMode flashToolPath="$(ftXbGetValue MtkSpFlashToolVersion toolsPath)"
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
@@ -1391,7 +1375,7 @@ ftMtkFlashTool()
     if [[ -z $isEnableWindowMode ]] && [[ -n $ANDROID_BUILD_TOP ]]; then
         local dirPathLocal=$(pwd)
         cd $ANDROID_BUILD_TOP
-        local filePathAndroidScatter="${ANDROID_PRODUCT_OUT}/"$(ls $ANDROID_PRODUCT_OUT |grep "Android_scatter")
+        local filePathAndroidScatter="${ANDROID_PRODUCT_OUT}/"$(ls $ANDROID_PRODUCT_OUT |grep "Android_scatter.txt")
         [[ ! -f $filePathAndroidScatter ]] && ftEcho -e "下载配置文件不存在" && cd "${dirPathLocal}" && return $resultFail
         sudo $flashToolPath -s "${filePathAndroidScatter}" -c download
         cd "${dirPathLocal}"
@@ -1482,8 +1466,7 @@ ftBootAnimation()
         done
         break;;
     new)
-        local dirNamePart0=part0 dirNamePart1=part1 fileNameDesc=desc.txt fileNameLast
-        local dirNameAnimation=animation
+        local dirNamePart0=part0 dirNamePart1=part1 fileNameDesc=desc.txt fileNameLast dirNameAnimation=animation
 
         dirPathAnimationSourceRes=$dirPathAnimation
         cd $dirPathAnimationSourceRes
@@ -1570,7 +1553,7 @@ ftBootAnimation()
 
         #生成desc.txt
         local enterLine="\n"
-        local  content="$resolutionWidth $resolutionHeight $frameRate"
+        local content="$resolutionWidth $resolutionHeight $frameRate"
         content=${content}${enterLine}"p $cycleCount0 0 part0"
         content=${content}${enterLine}"p $cycleCount1 0 part1"
         echo -e "${content}" >${dirPathAnimationTraget}/${fileNameDesc}
@@ -2051,8 +2034,7 @@ ftFind()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
 
     #参数解析
-    local isSuffix nameAll
-    local pathTarget="${1}" nameList="${2}" contentKey="${3}"
+    local isSuffix nameAll pathTarget="${1}" nameList="${2}" contentKey="${3}"
     local arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分==============
@@ -2486,6 +2468,7 @@ ftCheckCcache()
     fi
 
     [[ -z "${cacheSizeNow}" ]] \
+    || [[ -z "${cacheSizeMax}" ]] \
     || (( $cacheSizeNow <= 0 )) \
     || (( $cacheSizeMax == 1 )) && return $resultFail
     local proportionSize="0$(echo "scale=5; $cacheSizeNow / $cacheSizeMax" | bc)"
@@ -2510,8 +2493,7 @@ ftMtkLog()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local isPull isCheck isSeparation isClearn isStop isPullMini deviceIdLocal
-    local filePathLog pathLog dirPathLogStorge fileSizeBaseMillionByte
+    local isPull isCheck isSeparation isClearn isStop isPullMini deviceIdLocal filePathLog pathLog dirPathLogStorge fileSizeBaseMillionByte
     local valCount=3 errorContent arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ;case "${arg}" in
     # 说明参数解析部分==============
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
@@ -2800,20 +2782,12 @@ ftAdbConnect()
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -r)
-            # echo $userPassword | sudo  -p '' -S adb kill-server >/dev/null
-            # ftEcho -s "server kill ......"
-            # sleep 2
-            # echo $userPassword | sudo  -p '' -S adb start-server >/dev/null
-            # ftEcho -s "server start ......"
-            # adb devices
-
             adb kill-server >/dev/null
             ftEcho -s "server kill ......"
             sleep 2
             adb start-server >/dev/null
             ftEcho -s "server start ......"
             adb devices
-
             return
           ;;
         -s ) isScreenShare=true
@@ -3089,9 +3063,8 @@ ftDex2Jar()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local filePathDex filePathJar
-    local dirPathToolResign=${DIR_PATH_ANDROID_DECOMPILE}/dex2jar-2.0
-    local arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local filePathDex filePathJar dirPathToolResign=${DIR_PATH_ANDROID_DECOMPILE}/dex2jar-2.0
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -3106,7 +3079,6 @@ ftDex2Jar()
         -f ) filePathDex="${arg2}" ; ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     #耦合校验
-    local errorContent
     [[ ! -f "$filePathDex" ]] && errorContent="${errorContent}\\n找不到dex文件:${filePathDex}"
     [[ ! -d "$dirPathToolResign" ]] && errorContent="${errorContent}\\n找不到dex2jar工具:${dirPathToolResign}"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftDex2Jar -h && return $resultFail
@@ -3326,9 +3298,7 @@ ftGetPublicIp()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGetPublicIp -h && return $resultFail
 
     #实现主体
-    local dirPathLocal=$(pwd)
-    local dirPathTemp=/temp
-    local fileNameGetIp=getip
+    local dirPathLocal=$(pwd) dirPathTemp=/temp fileNameGetIp=getip
     cd ${dirPathTemp}
     if ! wget http://members.3322.org/dyndns/getip; then
         cd "${dirPathLocal}"
@@ -3579,8 +3549,7 @@ ftDelRepeatFile()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local dirPathTarget
-    local valCount=2 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
