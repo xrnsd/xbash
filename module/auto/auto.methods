@@ -80,7 +80,6 @@ ftAutoInitEnv()
     [[ -z "$mnufacturers" ]] && ftEcho -e "未找到 $dirPathVendor\n mnufacturers[项目平台] 获取失败" || \
     export AutoEnv_mnufacturers=$mnufacturers
 
-
     #软件版本名
     export AutoEnv_versionName=
     local filePathOutBuildProp=${dirPathOut}/system/build.prop
@@ -1244,10 +1243,10 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}"客户对接人：$(ftXbGetValue projectSoftwareReadMeInfo projectManager)"
             content=${content}${enterLine}
             content=${content}${enterLine}"软件路径[公网]："
-            content=${content}${enterLine}"    01 百度网盘："
-            content=${content}${enterLine}"    链接："
-            content=${content}${enterLine}"    提取码："
-            content=${content}${enterLine}"    有效期：永久"
+            content=${content}${enterLine}"\t01 百度网盘："
+            content=${content}${enterLine}"\t\t链接："
+            content=${content}${enterLine}"\t\t提取码："
+            content=${content}${enterLine}"\t\t有效期：永久"
             content=${content}${enterLine}
             content=${content}${enterLine}"当前版本：$versionName"
             content=${content}${enterLine}"基础版本："
@@ -1744,7 +1743,7 @@ ftAutoLnCcacheByAosp()
     #ccache空间自动扩容
     ccacheMaxSize=${ccacheMaxSize:-'20G'}
     if [[ "$(type -t ftCheckCcache)" = "function" ]] && ftCheckCcache -c; then
-        if (( $ccacheEnv_SizeNow > 0 )); then
+        if [[ -n $ccacheEnv_SizeNow ]] && (( $ccacheEnv_SizeNow > 0 )); then
                 ((ccacheEnv_SizeNow+=10))
                 ccacheMaxSize="${ccacheEnv_SizeNow}G"
         fi
@@ -1752,7 +1751,7 @@ ftAutoLnCcacheByAosp()
     ccache -M ${ccacheMaxSize}G
 
     #校验ccache是否有足够的剩余空间
-    [[ "$(type -t ftCheckCcache)" = "function" ]] && ftCheckCcache
+    # [[ "$(type -t ftCheckCcache)" = "function" ]] && ftCheckCcache
 }
 
 complete -W "-h --help --rely_install" ftAutoCdAospProject
@@ -1949,6 +1948,11 @@ ftAutoAdbPush()
     #adb连接状态检测
     ftAdbConnect -e ; [[ -z "${autoTestDeviceId}" ]] && return $resultFail
     local deviceId=${autoTestDeviceId}
+    local keySDKVersion="ro.build.version.sdk="
+    local deviceSdkVersion=$(adb shell "cat /system/build.prop" |grep ${keySDKVersion})
+    deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
+    deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
+    deviceSdkVersion=${deviceSdkVersion:-'null'}
 
     for filePath in ${filePathSourceList[@]}; do
             [[ ! -f "$filePath" ]] && ftEcho -e "找不到:${filePath}" && continue
@@ -1971,6 +1975,7 @@ ftAutoAdbPush()
                     filePathTemp=$(dirname $filePathTemp)
                 done
                 dirPathTarget=$(echo ${filePath#*${productName}} | sed -e "s:/$fileNameSource::g")
+                (( $deviceSdkVersion>=30 )) && dirPathTarget=$(echo $dirPathTarget | sed -e "s:/system_other::g")
 
                 echo "push ${filePath} > ${dirPathTarget}"
                 adb -s $deviceId push $filePath $dirPathTarget &&  ftEcho -s "${fileNameSource} push to [${dirPathTarget}] finish"
@@ -1981,11 +1986,6 @@ ftAutoAdbPush()
     if [[ -z "$isTacitMode" ]]; then
         [[ -z "$isAutoReboot" ]] &&ftEcho -y "是否重启(回车默认重启)" && read -n 1 sel && echo
         if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then
-            local keySDKVersion="ro.build.version.sdk="
-            local deviceSdkVersion=$(adb shell "cat /system/build.prop" |grep ${keySDKVersion})
-            deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
-            deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
-            deviceSdkVersion=${deviceSdkVersion:-'null'}
             if (( $deviceSdkVersion>=28 )); then
                 sleep 2 && adb shell stop && adb shell start
                 ftEcho -s "已重启设备服务:${deviceId} "
