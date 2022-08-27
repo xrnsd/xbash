@@ -1,5 +1,5 @@
 #! /bin/bash
-versionNum=v0.1.7.0
+versionNum=v0.1.7.1
 xEcho(){
     local val1="${1}" val2="${2}" val3="${3}";echo -en "\033[1;33m${val1}\033[0m";echo -en "\033[1;31m${val2}\033[0m";echo -en "\033[1;33m${val3}\033[0m"; echo -e "\033[1;31m does not exist\033[0m"
 }
@@ -191,6 +191,23 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
         done
         export PATH=${PATHLOCAL}:${dirPathRepo}
     else xEcho "repo " "config error : " ${dirPathRepo}; fi
+
+    # go
+    export isUseGo=
+    dirPathGo=
+    [ "$isUseGo" = "true" ] && if [[ -d "$dirPathGo" ]]; then
+        export GOPATH=$HOME/.gopath
+        export GOROOT=${dirPathGo}
+        #环境更新
+        PATHLOCAL=
+        newList=($(echo "${PATH}"| sed 's?:? ?g'))
+        for item in ${newList[@]}; do
+            [[ -n $(echo $item |egrep -i "go") ]] && continue
+            [[ -z ${PATHLOCAL} ]]&&PATHLOCAL="${item}" || PATHLOCAL="${PATHLOCAL}:${item}"
+        done
+        export PATH=${PATHLOCAL}:${dirPathGo}
+        [[ ! -d "$GOPATH" ]] && mkdir ${GOPATH}
+    else xEcho "go " "config error : " ${dirPathGo}; fi
 fi
 
 #----------------    Android optimization acceleration    ---------------------------
