@@ -665,7 +665,6 @@ ftIniAddItem()
         fi
         ((index+=1))
     done
-
 }
 
 ftIniDeleteItem()
@@ -2055,7 +2054,6 @@ ftFind()
         -s ) isSuffix=true
               [[ "-s" = "${arg2}" ]] && shift
               pathTarget="${2}"
-              # [[ "${pathTarget}" = "./" ]] && pathTarget=$(pwd)
               nameList="${3}"
               contentKey="${4}"
           ;;
@@ -2937,7 +2935,7 @@ ftAdbConnect()
     if [[ -n "${isScreenShare}" ]] && [ -n "${deviceId}" ]; then
         ftEcho -s "开始共享设备:${deviceId}的屏幕 ... "
         # export ADB="${ANDROID_SDK_ROOT}/platform-tools/adb"
-        #snap run scrcpy
+        # snap run scrcpy
         # guiscrcpy
     fi
 }
@@ -2952,9 +2950,8 @@ ftScrcpy()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local isReset
-    local valCount=2 errorContent arg arg2 # arg3 # arg4
+    local valCount=2 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    #eval arg3=\${$((i+2))} #; eval arg4=\${$((i+3))}
     case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
@@ -3007,8 +3004,9 @@ ftPigz()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local contentTarget filrNameTarget threadCount dirPathTarget dirPathLocal=$(pwd)
-    local valCount=4 errorContent arg arg2 ;for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local isUnzip=false
+    local dirPathTargetStorg contentTarget filrNameTarget threadCount dirPathLocal=$(pwd)
+    local valCount=5 errorContent arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; case "${arg}" in
     # 说明参数解析部分==============
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -3019,16 +3017,22 @@ ftPigz()
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
-#    ftPigz -c 文件路径/目录
+#    压缩
+#    ftPigz -tc 待压缩目录/文件 压缩文件名称
+#    ftPigz -d 压缩文件存放目录
 #
-#    ftPigz -t 压缩包名称,不包含后缀
+#    解压
+#    ftPigz -tu 压缩文件路径 解压目录
 #
 #    ftPigz -j 并发线程数
 #========================================================="; return ;;
     # 变量参数解析部分==============
-    -c ) contentTarget="${arg2}"
+    -tc ) contentTarget="${arg2}" filrNameTarget="${arg3}"
       ;;
-    -t ) filrNameTarget="${arg2}"
+    -tu ) contentTarget="${arg2}" contentTarget2="${arg3}"
+            isUnzip=true
+      ;;
+    -d ) dirPathTargetStorg="${arg2}"
       ;;
     -j ) threadCount="${arg2}"
       ;;
@@ -3042,15 +3046,22 @@ ftPigz()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPigz -h && return $resultFail
 
     #实现主体
+    if [[ $isUnzip = "true" ]]; then
+        local dirPathTargetUnzip=$contentTarget2
+        [[ -z $dirPathTargetUnzip ]]|| [[ ! -d $dirPathTargetUnzip ]] && dirPathTargetUnzip=$(dirname $contentTarget)
+        tar --use-compress-program=pigz -xvpf $contentTarget -C $dirPathTargetUnzip
+        return
+    fi
     [ -z "$filrNameTarget" ] && filrNameTarget=${contentTarget}
     local threadCountMax=$(grep 'processor' /proc/cpuinfo | sort -u | wc -l)
     [ -z "$threadCount" ] || (( $threadCount>$threadCountMax )) && threadCount=${threadCountMax}
     filrNameTarget=${filrNameTarget}.tgz
-    dirPathTarget=$(dirname $contentTarget)
+    local dirPathTarget=$(dirname $contentTarget)
+    local dirNameTarget=$(basename $contentTarget)
+    [ -z "$dirPathTargetStorg" ]&&dirPathTargetStorg=$dirPathTarget
 
     cd $dirPathTarget
-    #tar --use-compress-program=pigz -cvPf $filrNameTarget ${contentTarget}
-    tar cvPf - ${contentTarget} | pigz -p $threadCount > ${filrNameTarget}
+    tar cvPf - ${dirNameTarget} | pigz -p $threadCount > ${dirPathTargetStorg}/${filrNameTarget}
     cd $dirPathLocal
 }
 
