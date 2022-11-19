@@ -859,7 +859,7 @@ ftAutoPacket()
                                             [[ "${sel}" != "y" ]] && echo && ftEcho -e "放弃 ${file}"&& continue
                                 fi
                                 printf "%-2s %-30s\n" 复制 $file
-                                cp -r -f  $filePath $dirPathPackage
+                                # cp -r -f  $filePath $dirPathPackage
                             done
                         else
                             ftEcho -e "packages创建失败" && ftClearTail $dirPathLocal && return $resultFail
@@ -910,7 +910,7 @@ ftAutoPacket()
 
                                 fileName=$(basename $filePath)
                                 printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
-                                cp -r -f  $filePath $dirPathPackageDataBase
+                                # cp -r -f  $filePath $dirPathPackageDataBase
                             done
                         else
                             ftEcho -e "database 创建失败,无法创建${dirPathPackageDataBase}"  && ftClearTail $dirPathLocal && return $resultFail
@@ -949,7 +949,7 @@ ftAutoPacket()
                             && isAddToolReadme="-dt" && continue
 
                              printf "%-2s %-30s\n" 复制 $filePath
-                             cp -r -f  $filePath $dirPathPackageTools
+                             # cp -r -f  $filePath $dirPathPackageTools
                         done
                     else
                         ftEcho -e "tools包配置错误,软件包可能不完整"
@@ -1141,6 +1141,10 @@ ftAutoCreateReadMeBySoftwareVersion()
     local filePathToolCopyBasicHardwareConfig=${ANDROID_BUILD_TOP}/copyBasicHardwareConfig.sh
 
     if [[ -f $filePathToolCopyBasicHardwareConfig ]]; then
+        if [[ "$(type -t ftBranchNameResolution)" = "function" ]]; then
+            export AutoEnv_motherboardName=
+            ftBranchNameResolution > /dev/null
+        fi
         export AutoEnv_filePathBasicHardwareConfig=$($filePathToolCopyBasicHardwareConfig ${dirPathVersionSoftware})
     fi
 
@@ -1787,6 +1791,8 @@ ftAutoCdAospProject()
                 mAospProjectName="${arg2}"
          ;;
         -n ) mAospProjectName="${arg2}"
+              #mAospProjectName有效路径，立即调转
+              [[ $mAospProjectName == /* ]] && [[ -d $mAospProjectName ]] && cd ${mAospProjectName} && return
          ;;
         -u | --update ) #更新数据库
                 local mAospProjectNameIgnoreList="$(ftXbGetValue AospProjectsInfo AospProjectNameIgnoreList)"
