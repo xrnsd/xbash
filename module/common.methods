@@ -1,9 +1,9 @@
 #!/bin/bash
-#########################
+##################################################
 ##                                              ##
-##             框架通用实现             ##
+##             框架通用实现                      ##
 ##                                              ##
-#########################
+##################################################
 _ftMainVal()
 {
     local ftEffect=bash内建命令和xbash扩展封装对应的参数补全实现
@@ -3631,4 +3631,45 @@ ftDelRepeatFile()
         [[ "${sel}" = "y" ]] && rm "${filePathNow}"
         [[ "${sel}" = "n" ]] && rm "${filePathReldey}"
     done
+}
+
+ftSync()
+{
+    local ftEffect=两个目录间同步
+    local isEnable=def
+
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    
+    local dirPathChangeTarget dirPathStandard isEnableTest
+    local arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; case "${arg}" in
+        # 说明参数解析部分==============
+        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
+#=========================================================
+#
+#    同步目录间差异，将修改目标目录
+#    ftSync -s 基准目录 目标目录
+#
+#    查看目录间差异，显示目标目录与基准的不同
+#    ftSync -t 基准目录 目标目录
+#
+#========================================================="; return ;;
+        # 变量参数解析部分==============
+        -l ) dirPathStandard="${arg2}"
+             dirPathChangeTarget="${arg3}"
+          ;;
+        -t ) isEnableTest=true
+              dirPathStandard="${arg2}"
+              dirPathChangeTarget="${arg3}"
+          ;;
+    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+
+    # local dirPathStandardReal=$(readlink -f  "${dirPathStandard}")
+    # local dirNameStandard=$(basename "${dirPathStandardReal}")
+
+    if [[ $isEnableTest = "true" ]]; then
+        rsync -n -avum -p --append -e ssh --link-dest ${dirPathStandard} --delete ${dirPathChangeTarget} ${dirPathStandard}
+    else
+        # rsync -ac --delete -v ${dirNameStandard}/ ${dirPathChangeTarget}
+        rsync -avum -p --append -e ssh --link-dest ${dirPathStandard} --delete ${dirPathChangeTarget} ${dirPathStandard}
+    fi
 }
