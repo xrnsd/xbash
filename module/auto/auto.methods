@@ -859,7 +859,7 @@ ftAutoPacket()
                                             [[ "${sel}" != "y" ]] && echo && ftEcho -e "放弃 ${file}"&& continue
                                 fi
                                 printf "%-2s %-30s\n" 复制 $file
-                                # cp -r -f  $filePath $dirPathPackage
+                                cp -r -f  $filePath $dirPathPackage
                             done
                         else
                             ftEcho -e "packages创建失败" && ftClearTail $dirPathLocal && return $resultFail
@@ -910,7 +910,7 @@ ftAutoPacket()
 
                                 fileName=$(basename $filePath)
                                 printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
-                                # cp -r -f  $filePath $dirPathPackageDataBase
+                                cp -r -f  $filePath $dirPathPackageDataBase
                             done
                         else
                             ftEcho -e "database 创建失败,无法创建${dirPathPackageDataBase}"  && ftClearTail $dirPathLocal && return $resultFail
@@ -949,7 +949,7 @@ ftAutoPacket()
                             && isAddToolReadme="-dt" && continue
 
                              printf "%-2s %-30s\n" 复制 $filePath
-                             # cp -r -f  $filePath $dirPathPackageTools
+                             cp -r -f  $filePath $dirPathPackageTools
                         done
                     else
                         ftEcho -e "tools包配置错误,软件包可能不完整"
@@ -1139,6 +1139,9 @@ ftAutoCreateReadMeBySoftwareVersion()
     local filePathChangeListTemplate=$(dirname $dirPathVersionSoftware)/${fileNameChangeListTemplate}
     local versionName=$AutoEnv_versionName
     local filePathToolCopyBasicHardwareConfig=${ANDROID_BUILD_TOP}/copyBasicHardwareConfig.sh
+    local filePathToolCopyModuleSoftwareConfig=${ANDROID_BUILD_TOP}/copyModuleSoftwareConfig.sh
+    [[ ! -f $filePathToolCopyBasicHardwareConfig ]] && filePathToolCopyBasicHardwareConfig=${ANDROID_BUILD_TOP}/build/tools/copyBasicHardwareConfig.sh
+    [[ ! -f $filePathToolCopyModuleSoftwareConfig ]] && filePathToolCopyModuleSoftwareConfig=${ANDROID_BUILD_TOP}/build/tools/copyModuleSoftwareConfig.sh
 
     if [[ -f $filePathToolCopyBasicHardwareConfig ]]; then
         if [[ "$(type -t ftBranchNameResolution)" = "function" ]]; then
@@ -1281,8 +1284,13 @@ ftAutoCreateReadMeBySoftwareVersion()
             [[ -n $lineNumIndex ]] && sed  -i "${lineNumIndex}i ${item}" ${filePathChangeListTemplate}.temp
 
             # 合并头部和git log 列表
-            echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
+            echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathChangeListTemplate}.temp > $filePathChangeListTemplate
             rm ${filePathChangeListTemplate}.temp
+
+            #添加模块列表信息
+            if [[ -f $filePathToolCopyModuleSoftwareConfig ]]; then
+                echo -e ${enterLine}${enterLine}"$($filePathToolCopyModuleSoftwareConfig)" >> $filePathChangeListTemplate
+            fi
 
             #客户说明
             local lineNumCR=1
@@ -1798,6 +1806,7 @@ ftAutoCdAospProject()
                 local mAospProjectNameIgnoreList="$(ftXbGetValue AospProjectsInfo AospProjectNameIgnoreList)"
                 local mAospProjectNameListUpdate
                 for path in ${mAospProjectStoragePathList[@]}; do
+                    [[ ! -d "${path}" ]] && continue
                     while read projectName ;do
                         [[ -n $(echo ${mAospProjectNameIgnoreList[@]} |grep ${projectName}) ]] && continue
                         [[ ! -d "${path}/${projectName}" ]] && continue
