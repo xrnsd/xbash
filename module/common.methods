@@ -1135,7 +1135,7 @@ ftCleanGarbage()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     ftInitDevicesList
-    local isAutoExit sleepTime
+    local isAutoExit sleepTime isNoEcho
     local errorContent arg arg2 ;for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
      --exception) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
@@ -1153,6 +1153,8 @@ ftCleanGarbage()
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -e ) isAutoExit=true
+          ;;
+        -n ) isNoEcho=true
           ;;
         -t ) sleepTime="${arg2}"
           ;;
@@ -1186,7 +1188,11 @@ ftCleanGarbage()
         cd $dirDevPath && trap '[ -d files ] && cd $dirPathLocal && exit' SIGINT
 
         [ ! -d empty ] && mkdir empty
-        rsync --delete-before -d -a -H -v --progress --stats empty/ files/
+        if [[ -n $isNoEcho ]]; then
+            rsync --delete-before -d -a -H --progress --stats empty/ files/
+        else
+            rsync --delete-before -d -a -H -v --progress --stats empty/ files/
+        fi
         rm -rf files/*
         trap SIGINT
     done
