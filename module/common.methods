@@ -1254,7 +1254,7 @@ ftLogcatApplicationByTag()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local flagError packageName isUserPackageName isDisTime isMoreTag isUserPackageNameAndTag isKeep
+    local flagError packageName isUserPackageName isDisTime isMoreTag isUserPackageNameAndTag isKeep isWait
     local tagContent=$1 vContent=$2
     local arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; case "${arg}" in
         # 说明参数解析部分==============
@@ -1270,6 +1270,10 @@ ftLogcatApplicationByTag()
 #     打印包名为 com.android.settings的应用输出的log
 #    ftLogcatApplicationByTag -p com.android.settings
 #    可简化 [ftLogcatApplicationByTag -p ] 为 [xlp],其他参数不变
+#
+#     打印包名为 com.android.settings的应用输出的log
+#    ftLogcatApplicationByTag -p com.android.settings
+#    可简化 [ftLogcatApplicationByTag -pw ] 为 [xlpw],其他参数不变
 #
 #     打印包含123456的log
 #    ftLogcatApplicationByTag 123456
@@ -1295,6 +1299,11 @@ ftLogcatApplicationByTag()
         -p ) packageName="${arg2}"
                vContent="${arg3}"
                isUserPackageName=true
+          ;;
+        -pw ) packageName="${arg2}"
+               vContent="${arg3}"
+               isUserPackageName=true
+               isWait=true
           ;;
         -tp ) packageName="${arg2}"
                vContent="${arg3}"
@@ -1329,8 +1338,27 @@ ftLogcatApplicationByTag()
     [ -z "${flagError}" ] && [ -z "${isUserPackageName}" ] && adb -s $deviceId logcat -c
     while true; do
         if [[ "$isUserPackageName" = "true" ]]; then
+
             local pid=$(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}')
-            [[ -z "$pid" ]] && ftEcho -e "未找到应用 : ${packageName}" && return
+            if [[ -z "$pid" ]]; then
+                if [[ -z "$isWait" ]]; then
+                    ftEcho -e "未找到应用 : ${packageName}" && return
+                fi
+                ftEcho -s "等待应用 : ${packageName}启动中..."
+                local timeOut=60
+                local time=0;
+                while true; do
+                    pid=$(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}')
+                    ((time+=1))
+
+                    if [[ -z "$pid" ]]; then
+                        (( $time>$timeOut )) && ftEcho -e "等待启动超时,自动退出" && return
+                        sleep 1 && continue
+                    else
+                        break
+                    fi
+                done
+            fi
             [[ -n "$isUserPackageNameAndTag" ]] && adb -s $deviceId logcat "${flagError}" -v thread |grep "${pid}" && return
             adb -s $deviceId logcat "${flagError}" |grep "${pid}"
 
