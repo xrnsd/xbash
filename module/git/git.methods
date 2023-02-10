@@ -249,10 +249,13 @@ ftGitPatchAdd2Branches()
 
         #添加多个commit
         i=${#hashList[@]}
-        local isApplyFail patchId commitIdNewestOld=$(ftGitLogShell  -n 1 -c "%h")
+        local isApplyFail patchId commitIdNewestOld=$(ftGitLogShell  -n 1 -c "%h") hashHandled
         while (( $i>0 ));do
             (( i-=1 ))
             patchId=${hashList[$i]}
+            [ -z "$patchId" ] && continue
+            [ -n "$hashHandled" ] && [ "$hashHandled" == "$patchId" ] && continue
+            hashHandled=${patchId}
             ftEcho -s "添加补丁 : ${patchId}"
             if ! git cherry-pick $patchId ;then
                 ftEcho -e "补丁：${patchId}，添加失败"
