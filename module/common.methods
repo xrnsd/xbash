@@ -131,7 +131,7 @@ ftResetXbash()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftResetXbash -h && return $resultFail
 
     #实现主体
-    source $filePathXbashTragetBashrcConfigProfile
+    #source $filePathXbashTragetBashrcConfigProfile
     source $filePathHomeBash
     export isResetXbash=
     cd ${dirPathLocal}
@@ -210,6 +210,7 @@ ftTest()
 #=========================================================
 #
 #    ftTest 任意参数
+#    ftTest -j 或 -java
 #========================================================="; return ;;
     * ) break;;esac;done
 
@@ -229,6 +230,18 @@ ftTest()
 
     #实现主体
     local dirPathLocal=$PWD dirPathTemp=${rDirPathUserHome}/.temp
+    if [[ $2 == "-java" ]]; then
+        local toolFilePath="$(ftXbGetValue JavaTestTool toolsFilePath)"
+        [ ! -f "$toolFilePath" ] && ftEcho -e "java文件不存在:${toolFilePath}" && return
+        # XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $toolFilePath
+        local dirName=$(dirname $toolFilePath) 
+        local fileName=$(basename $toolFilePath)
+        local fileNameBasic=${fileName%.*}
+        javac "${toolFilePath}"
+        cd "${dirName}"
+        java "${fileNameBasic}"
+        return
+    fi
     [[ ! -d "${dirPathTemp}" ]] && mkdir $dirPathTemp
     [[ ! -f ${dirPathLocal}/Makefile ]] && [[ -z "$ANDROID_BUILD_TOP" ]] && cd $dirPathTemp && trap '[ -d $dirPathLocal ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
@@ -2779,7 +2792,7 @@ ftAdbConnect()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
-    local isUseWifi isUpdateDeviceId isElevation isScreenShare
+    local isUseWifi isUpdateDeviceId isElevation isScreenShare isReConnectWifi
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -2828,6 +2841,9 @@ ftAdbConnect()
             ftEcho -s "共享屏幕已停用，请确认" && return
           ;;
         -w | --wifi ) isUseWifi=true
+          ;;
+        -rw | --reWifi ) isUseWifi=true
+                                isReConnectWifi=true
           ;;
         -u ) isUpdateDeviceId=true
           ;;
@@ -2927,6 +2943,10 @@ ftAdbConnect()
     [[ -n "${deviceIdold}" ]]&&[[ "${deviceId}" != "${autoTestDeviceId}" ]] && echo -en "设备ID更新:" && ftEcho -s "${autoTestDeviceId} > ${deviceId}"
 
     if [[ -n ${isUseWifi} ]]; then
+        if [[ -n ${isReConnectWifi} ]] && [[ -n ${ENV_ADB_DEV_IP} ]]; then
+            adb -s $ENV_ADB_DEV_ID connect ${ENV_ADB_DEV_IP}:${ENV_ADB_DEV_PORT}
+            return
+        fi
         adb -s $deviceId shell svc wifi enable
         ftEcho -y "请确认设备是否连接wifi(回车确认)" && read -n 1 sel && echo ; [ -z "${sel}" ] && sel=y ; [[ $sel != "y" ]] && return $resultFail
         local ipAddressList portNum \
@@ -2949,6 +2969,9 @@ ftAdbConnect()
         adb -s ${deviceId} tcpip ${portNum}
         for ipAddress in ${ipAddressList[*]}; do
             adb -s $deviceId connect ${ipAddress}:${portNum}
+            export ENV_ADB_DEV_ID=${deviceId}
+            export ENV_ADB_DEV_IP=${ipAddress}
+            export ENV_ADB_DEV_PORT=${portNum}
         done
     fi
 
@@ -3409,9 +3432,9 @@ ftFastbootUnlock()
                 ftEcho -s "设备将退出fastboot模式"
                 fastboot reboot
                 ftEcho -s "尝试禁用verity,请稍等"
-                adb wait-for-device && adb root && adb disable-verity && adb reboot
+                adb wait-for-device && adb root && sleep 25 && adb disable-verity && adb reboot
                 ftEcho -s "尝试adb root,请稍等"
-                adb wait-for-device && adb root && adb remount
+                adb wait-for-device && adb root && sleep 25 && adb remount
                 ftEcho -s "操作完成"
                 break;;
         n | q )

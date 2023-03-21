@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.2.9
+versionNum=v0.1.3.0
 
 #开发用
 [androidDevicePackages]
@@ -69,3 +69,7 @@ toolsDirPath=xxxx
 hostName=xxxx
 userName=xxxx
 userPassword=xxxx
+
+#java测试
+[JavaTestTool]
+toolsFilePath=
