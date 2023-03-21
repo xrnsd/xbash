@@ -1596,7 +1596,7 @@ ftAutoFindAospBuildOuts()
     for dirPath in ${mAospProjectStoragePathListNew[@]}; do
                 dirPathAospProjectOutList=
                 dirPathAospProjectOut="${dirPath}/alps/out"
-                if [[ -d "${dirPathAospProjectOut}" ]]; then
+                if [[ -d "${dirPathAospProjectOut}" ]] && [ "$(ls -A $dirPathAospProjectOut)" ]; then
                     local dirPathAospProjectOutReal=$(readlink -f  $dirPathAospProjectOut)
                     [[ "${dirPathAospProjectOutReal}" == "${dirPathAospProjectOut}" ]]&&dirPathAospProjectOutList="${dirPathAospProjectOut}"
                 fi
@@ -1606,6 +1606,7 @@ ftAutoFindAospBuildOuts()
                 [[ -z ${dirPathAospProjectOutList} ]] && continue
                 ftEcho -s "${dirPath}"
                 for dirPathAospProjectOut in ${dirPathAospProjectOutList[@]}; do
+                    [ ! "$(ls -A $dirPathAospProjectOut)" ] && continue
                     echo -e "    ${dirPathAospProjectOut}"
                 done
     done
