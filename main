@@ -154,9 +154,6 @@ fi
     #加载 git module
     if [[ -f $rFilePathXbashModuleGit ]];then source  $rFilePathXbashModuleGit
     else echo -e "\033[1;31mXbash的git扩展块加载失败\n${rFilePathXbashModuleGit}\033[0m" ;fi
-    #加载 git module[非自定义]
-    if [[ -f $rFilePathGitBash ]];then source  $rFilePathGitBash
-    else echo -e "\033[1;31m非Xbash自定义的git扩展块加载失败\n${rFilePathGitBash}\033[0m" ;fi
     #加载 user module
     if [ ! -f $rFilePathXbashModuleUser ]; then
         [ ! -d $rDirPathXbashModuleUser ] && mkdir $rDirPathXbashModuleUser
@@ -171,6 +168,8 @@ fi
     [ -f $rFilePathXbashModuleInput ] && [ "$rFilePathXbashModuleInput" != "$(readlink -f ~/.inputrc)" ] && rm -rf ~/.inputrc && ln -sf $rFilePathXbashModuleInput ~/.inputrc
 
 #---------------- 默认启用部分xbash功能 ------------------
+    #加载 git module[非自定义]
+    ftLoadGitCompletion
     #处理bash历史记录
     ftBashHistory
     #校验用户配置和模版版本一致性

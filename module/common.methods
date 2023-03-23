@@ -3730,3 +3730,21 @@ ftSync()
         rsync -avum -p --append -e ssh --link-dest ${dirPathStandard} --delete ${dirPathChangeTarget} ${dirPathStandard}
     fi
 }
+
+ftLoadGitCompletion()
+{
+    local ftEffect=加载GitModule[非自定义]
+    local isEnable=def
+
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+
+    local gitVersion=$(git --version)
+    gitVersion=$(echo $gitVersion | sed -e "s:git version::g" |sed s/[[:space:]]//g)
+
+    local checkResult=$(ftVersionComparison "2.4" "${gitVersion}" )
+    if [[ $checkResult == "<" ]]; then
+        return
+    fi
+    if [[ -f $rFilePathGitBash ]];then source  $rFilePathGitBash && echo 123
+    else echo -e "\033[1;31m非Xbash自定义的git扩展块加载失败\n${rFilePathGitBash}\033[0m" ;fi
+}
