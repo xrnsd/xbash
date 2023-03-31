@@ -2,8 +2,9 @@
 #  git常用功能的封装
 ftSetBashPs1ByGitBranch()
 {
-    local ftEffect=根据git分支名,设定bash的PS1
+    local ftEffect=设定bash的PS1
     local isEnable=true
+    local isEnableCustomTitle=true
 
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
@@ -12,6 +13,7 @@ ftSetBashPs1ByGitBranch()
     local editType=$1 defaultPrefix=${rUserName:-'xbash'} defaultColorConfig=44
     [[ "$(whoami)" = "root" ]] && defaultPrefix="root" && defaultColorConfig="41;37"
     export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]: "
+    [[ "$isEnableCustomTitle" == "true" ]] && echo -e "\033]0;bash > $(pwd)\007" > /dev/null
 
     [[ -z $(which git) ]] && return $resultFail
 
@@ -22,6 +24,7 @@ ftSetBashPs1ByGitBranch()
         branchNameAll="branchName→ ${branchName}: "
         [[ -n "${COLUMNS}" ]] && (( ${#ps1}>$COLUMNS/2-11 )) && branchNameAll="\nbranchName→ ${branchName}: "
         export PS1="$defaultPrefix[\[\033[${defaultColorConfig}m\]\w\[\033[0m\]]\[\033[33m\]${branchNameAll}\[\033[0m\]"
+        [[ "$isEnableCustomTitle" == "true" ]] && echo -e "\033]0;bash > ${branchNameAll}\007" > /dev/null
     fi
 }
 
