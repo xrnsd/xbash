@@ -3432,9 +3432,9 @@ ftFastbootUnlock()
                 ftEcho -s "设备将退出fastboot模式"
                 fastboot reboot
                 ftEcho -s "尝试禁用verity,请稍等"
-                adb wait-for-device && adb root && sleep 25 && adb disable-verity && adb reboot
+                adb wait-for-device && adb root && sleep 35 && adb disable-verity && adb reboot
                 ftEcho -s "尝试adb root,请稍等"
-                adb wait-for-device && adb root && sleep 25 && adb remount
+                adb wait-for-device && adb root && sleep 35 && adb remount
                 ftEcho -s "操作完成"
                 break;;
         n | q )
