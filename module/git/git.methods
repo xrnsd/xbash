@@ -1529,3 +1529,20 @@ ftGitAutoClone()
         sleep 600
     done
 }
+
+ftResetSshLocalKey()
+{
+    local ftEffect=重新设定Git的本地密钥
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [[ -z $(which git) ]] && return $resultFail
+    [ -z $(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') ] && echo 123 && return
+
+    local tag="GitKeySsh" keyFilePath="filePathLocalPublicKey"
+    local filePathLocalPublicKey=$(ftIniGetValue $rFilePathXbashDBUser $tag $keyFilePath)
+
+    eval $(ssh-agent)
+    ssh-add "${filePathLocalPublicKey}"
+}
