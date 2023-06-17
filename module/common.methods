@@ -1425,7 +1425,7 @@ ftMtkFlashTool()
         cd $ANDROID_BUILD_TOP
         local filePathAndroidScatter="${ANDROID_PRODUCT_OUT}/"$(ls $ANDROID_PRODUCT_OUT |grep "Android_scatter.txt")
         [[ ! -f $filePathAndroidScatter ]] && ftEcho -e "下载配置文件不存在" && cd "${dirPathLocal}" && return $resultFail
-        sudo $flashToolPath -s "${filePathAndroidScatter}" -c download
+         $flashToolPath -s "${filePathAndroidScatter}" -c download
         cd "${dirPathLocal}"
         return;
     fi
@@ -2883,16 +2883,16 @@ ftAdbConnect()
         ftEcho -sn "等待设备连接>"
         adb wait-for-device
         deviceId=$(adb get-serialno)
-    elif [[ -n "${deviceIdold}" ]]&&[[ -n $(echo ${deviceIdList[@]} |grep $autoTestDeviceId ) ]]; then
-        ftEcho -sn "等待设备连接>"
-        deviceId=$deviceIdold
+    # elif [[ -n "${deviceIdold}" ]]&&[[ -n $(echo ${deviceIdList[@]} |grep $deviceIdold ) ]]; then
+    #     ftEcho -sn "等待设备连接>"
+    #     deviceId=$deviceIdold
     else
         if [[ -n "${deviceIdold}" ]]; then
             ftEcho -y "存在旧的设备ID,是否更新(回车默认y)"
             read -n 1 sel && [ -z "${sel}" ] && sel=y
             while true; do case "$sel" in
-                    y | Y ) export autoTestDeviceId=; break; ;;
-                    n | q ) return ; ;;
+                    y | Y ) export autoTestDeviceId=;echo; break; ;;
+                    n | q ) echo;return ; ;;
                     * ) ftEcho -e "错误的选择：$sel"
                         echo "输入n，q，离开";;
             esac;done ;
@@ -2903,7 +2903,7 @@ ftAdbConnect()
             adb disconnect
         fi
 
-        if [[ -n "$isUpdateDeviceId" ]] || [[ -z $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]] ;then
+        if (( $deviceCount >1 )) ;then
             ftEcho -s "存在多个设备,请选择"
             local index=0
             for deviceId in ${deviceIdList[@]} ; do
@@ -2919,9 +2919,11 @@ ftAdbConnect()
             (( $deviceCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return $resultFail
             deviceId=${deviceIdList[$tIndex]}
             ftEcho -sn "等待设备连接>"
+        fi
 
-        elif [[ -n $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]]\
-                &&[[ "${deviceId}" != "${deviceIdTarget}" ]];then # 对默认deviceID进行修改
+        if [[ -n "$isUpdateDeviceId" ]] \
+                && [[ -n $(echo ${deviceIdList[@]} |grep $deviceIdDefault ) ]]\
+                && [[ "${deviceId}" != "${deviceIdTarget}" ]];then # 对默认deviceID进行修改
             ftEcho -sn "等待设备连接>" && adb -s $deviceId wait-for-device
             if adb -s $deviceId shell "echo $deviceIdTarget > /sys/class/android_usb/android0/iSerial"; then
                 ftEcho -sn "请重新插拔usb设备>"

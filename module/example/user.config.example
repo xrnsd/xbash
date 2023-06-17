@@ -1,5 +1,5 @@
 #! /bin/bash
-versionNum=v0.1.7.2
+versionNum=v0.1.7.3
 xEcho(){
     local val1="${1}" val2="${2}" val3="${3}";echo -en "\033[1;33m${val1}\033[0m";echo -en "\033[1;31m${val2}\033[0m";echo -en "\033[1;33m${val3}\033[0m"; echo -e "\033[1;31m does not exist\033[0m"
 }
@@ -284,6 +284,7 @@ else xEcho "Python" "config error : " ${filePathPython}; fi
 
 #other
 [[ -z $(echo $PATH |grep "/usr/libexec/git-core") ]] && export PATH=$PATH:/usr/libexec/git-core
+[[ -z $(echo $PATH |grep "/usr/lib/git-core") ]] && export PATH=$PATH:/usr/lib/git-core
 [[ -z $(echo $PATH |grep "$dirPathHomeTools") ]] && export PATH=$PATH:$dirPathHomeTools
 
 #decompile

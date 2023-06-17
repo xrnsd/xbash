@@ -178,3 +178,11 @@ fi
     ftCheckUserDatabase
     #校验用户扩展和模版版本一致性
     ftCheckUserPackaging
+
+# pnpm
+export PNPM_HOME="/home/wds_work/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end

@@ -2004,7 +2004,7 @@ ftAutoAdbPush()
         if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then
             if (( $deviceSdkVersion>=28 )); then
                 sleep 2 && adb shell stop && adb shell start
-                ftEcho -s "已重启设备服务:${deviceId} "
+                ftEcho -s "已重启设备:${deviceId} 服务 "
             else
                  adb -s $deviceId reboot
                  ftEcho -s "已重启设备:${deviceId} "
