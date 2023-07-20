@@ -27,9 +27,7 @@ bash的简单扩展
           │
           ├── auto
           │    ├── auto.methods  ----------------  Auto的相关实现
-          │    ├── packet_7731c.module  ---------  7731c的packet打包工具
-          │    ├── serialBuildByBranchName.module  独立窗口串行多进程实现
-          │    └── serialBuildDemo.module
+          │    └── packet_7731c.module  ---------  7731c的packet打包工具
           ├── base
           │    ├── base.database  ---------------  工具数据
           │    ├── bash_input.module  -----------  配置命令历史适配逻辑
@@ -38,9 +36,11 @@ bash的简单扩展
           ├── common.methods  -------------------  框架和公用实现
           │
           ├── example     -----------------------  用于存放模版,该模块无需在main中初始化
-          │    ├── user.config.expmale  --------------  用户xbash配置模版
+          │    ├── user.config.expmale  ---------  用户xbash配置模版
           │    ├── test.module.example  ---------  测试工具的模版
           │    ├── multiBranch.module.example ---  添加gitPatch[多分支]的模版
+          │    ├── user.packaging.module.example   xbash对扩展和内置命令的封装模版
+          │    ├── proguard-rules.pro.example --   混淆配置文件模版
           │    └── user.database.example  -------  xbash的用户数据库的模版
           ├── maintain
           │    ├── maintain.methods  ------------  系统维护工具
