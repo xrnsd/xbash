@@ -2966,6 +2966,8 @@ ftAdbConnect()
         fi
         [[ -z ${ipAddressList[@]} ]]||(( ${#ipAddressList[@]}==0 )) && ftEcho -e "无法获取设备wifi相关IP地址" && return $resultFail
 
+        ftEcho -s "设备IP:${ipAddressList[@]}"
+
         ftEcho -sn "请设定wifi调试端口号(5555-5585)(回车默认5555):"
         read -n 4 portNum && echo ;[ -z "${portNum}" ] && portNum=5555
         adb -s ${deviceId} tcpip ${portNum}
@@ -3749,4 +3751,15 @@ ftLoadGitCompletion()
     fi
     if [[ -f $rFilePathGitBash ]];then source  $rFilePathGitBash && echo 123
     else echo -e "\033[1;31m非Xbash自定义的git扩展块加载失败\n${rFilePathGitBash}\033[0m" ;fi
+}
+
+ftDf()
+{
+    local ftEffect=Df高亮显示封装
+    local isEnable=true
+
+    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+
+    df -lh |grep -E "Filesystem"| awk '{print "\033[1;33m" $0 "\033[0m"; }'
+    df -lh |grep -E "文件系统|/dev/" |grep -v "/snap"| awk '{ if ($5 >= 75) print "\033[0;31m" $0 "\033[0m"; else print $0 }'
 }
