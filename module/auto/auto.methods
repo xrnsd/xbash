@@ -1090,7 +1090,7 @@ ftAutoCreateReadMeBySoftwareVersion()
     cd $dirPathCode && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
 
     #使用git仓库相关记录
-    local gitCommitList=$(ftGitLogShell -nn 20)
+    local gitCommitList=$(ftGitLogShell -nn 50)
     local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
     if [ $AutoEnv_mnufacturers = "sprd" ];then

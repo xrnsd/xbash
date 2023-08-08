@@ -300,21 +300,21 @@ ftEcho()
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftEcho          内容    # 直接显示内容
-#    ftEcho    -b    内容    # 标题，不换行，对字符串的缩进敏感
-#    ftEcho    -bh   内容    # 标题，换行，对字符串的缩进敏感
-#    ftEcho    -e    内容    # 错误信息显示，对字符串的缩进敏感
-#    ftEcho    -en   内容    # 错误信息显示，对字符串的缩进敏感
-#    ftEcho    -ex   内容    # 错误信息显示，显示完退出，对字符串的缩进敏感
-#    ftEcho    -ea   内容    # 错误信息多行显示，对字符串的缩进不敏感，包含内置数组会显示不正常
-#    ftEcho    -eax  内容    # 错误信息多行显示，对字符串的缩进不敏感，包含内置数组会显示不正常，显示完退出
-#    ftEcho    -y    内容    # 特定信息显示，y/n，对字符串的缩进敏感
-#    ftEcho    -s    内容    # 执行信息，对字符串的缩进敏感
-#    ftEcho    -sn   内容    # 执行信息，不换行，对字符串的缩进敏感
-#    ftEcho    -snw  内容    # 执行信息，不换行，对字符串的缩进敏感,循环显示省略号
-#    ftEcho    -rc   内容    # xbash函数的说明显示，对字符串的缩进敏感
-#    ftEcho    -w 标题  内容    # 弹窗提示
-#    ftEcho    -iow 标题  内容    # 弹窗交互
+#    ftEcho          内容       # 直接显示内容
+#    ftEcho    -b    内容       # 标题，不换行，对字符串的缩进敏感
+#    ftEcho    -bh   内容       # 标题，换行，对字符串的缩进敏感
+#    ftEcho    -e    内容       # 错误信息显示，对字符串的缩进敏感
+#    ftEcho    -en   内容       # 错误信息显示，对字符串的缩进敏感
+#    ftEcho    -ex   内容       # 错误信息显示，显示完退出，对字符串的缩进敏感
+#    ftEcho    -ea   内容       # 错误信息多行显示，对字符串的缩进不敏感，包含内置数组会显示不正常
+#    ftEcho    -eax  内容       # 错误信息多行显示，对字符串的缩进不敏感，包含内置数组会显示不正常，显示完退出
+#    ftEcho    -y    内容       # 特定信息显示，y/n，对字符串的缩进敏感
+#    ftEcho    -s    内容       # 执行信息，对字符串的缩进敏感
+#    ftEcho    -sn   内容       # 执行信息，不换行，对字符串的缩进敏感
+#    ftEcho    -snw  内容       # 执行信息，不换行，对字符串的缩进敏感,循环显示省略号
+#    ftEcho    -rc   内容       # xbash函数的说明显示，对字符串的缩进敏感
+#    ftEcho    -w    标题  内容  # 弹窗提示
+#    ftEcho    -iow  标题  内容  # 弹窗交互
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -w|-iow )
@@ -1372,8 +1372,8 @@ ftLogcatApplicationByTag()
                     fi
                 done
             fi
-            [[ -n "$isUserPackageNameAndTag" ]] && adb -s $deviceId logcat "${flagError}" -v thread |grep "${pid}" && return
-            adb -s $deviceId logcat "${flagError}" |grep "${pid}"
+            [[ -n "$isUserPackageNameAndTag" ]] && adb -s $deviceId logcat "${flagError}" -v thread --pid=${pid} && return
+            adb -s $deviceId logcat "${flagError}" --pid=${pid}
 
         elif [ -z "$tagContent" ];then
             adb -s $deviceId logcat "${flagError}"
@@ -1496,9 +1496,9 @@ ftBootAnimation()
                     ftEcho -y 有旧的${dirNamePackageName}，是否覆盖
                     read -n 1 sel
                     case "$sel" in
-                        y | Y )    break;;
+                        y | Y )   break;;
                         n | N)    mv $filePath /${rDirPathUserHome}/${dirNamePackageName/.zip/_old.zip};break;;
-                        q |Q)    exit;;
+                        q | Q)    exit;;
                         * ) ftEcho -e 错误的选择：$sel
                             echo "输入q，离开" ;;
                     esac
@@ -1981,17 +1981,17 @@ ftMaintainSystem()
                         local filePathStore=$dirPathStore/${fileNameVersion}
                         [ -f "$filePathStore" ] && ftMD5  -p $filePathVersionInfo -s $filePathStore && ftEcho -s "备份完成"
                     #版本信息备份
-                    ftIniCreateFileOrTag -r -p ${dirPathStore}/version.info -t $infoVersionName -l "\
-                            fileName=$fileNameVersion \
-                            backupType=$(ftIniGetValue  $filePathVersionInfo $infoVersionName backupType) \
-                            dirPathStore=$(ftIniGetValue  $filePathVersionInfo $infoVersionName dirPathStore) \
-                            backupPackageNote=$(ftIniGetValue  $filePathVersionInfo $infoVersionName backupPackageNote) \
-                            MD5=$(ftIniGetValue  $filePathVersionInfo $infoVersionName MD5) \
-                            hwCpu=$(ftIniGetValue  $filePathVersionInfo $infoVersionName hwCpu) \
-                            hwMainboard=$(ftIniGetValue  $filePathVersionInfo $infoVersionName hwMainboard) \
-                            swSystemVersion=$(ftIniGetValue  $filePathVersionInfo $infoVersionName swSystemVersion) \
-                            swSystemType=$(ftIniGetValue  $filePathVersionInfo $infoVersionName swSystemType)" && \
-                    chmod 777 ${dirPathStore}/version.info $filePathVersionInfo
+                        ftIniCreateFileOrTag -r -p ${dirPathStore}/version.info -t $infoVersionName -l "\
+                                fileName=$fileNameVersion \
+                                backupType=$(ftIniGetValue  $filePathVersionInfo $infoVersionName backupType) \
+                                dirPathStore=$(ftIniGetValue  $filePathVersionInfo $infoVersionName dirPathStore) \
+                                backupPackageNote=$(ftIniGetValue  $filePathVersionInfo $infoVersionName backupPackageNote) \
+                                MD5=$(ftIniGetValue  $filePathVersionInfo $infoVersionName MD5) \
+                                hwCpu=$(ftIniGetValue  $filePathVersionInfo $infoVersionName hwCpu) \
+                                hwMainboard=$(ftIniGetValue  $filePathVersionInfo $infoVersionName hwMainboard) \
+                                swSystemVersion=$(ftIniGetValue  $filePathVersionInfo $infoVersionName swSystemVersion) \
+                                swSystemType=$(ftIniGetValue  $filePathVersionInfo $infoVersionName swSystemType)" && \
+                        chmod 777 ${dirPathStore}/version.info $filePathVersionInfo
                     #把备份同步到不同设备上
                         # ftSynchronous -d "${mXbashModuleDataDevicesList[*]}" -s ".*\.tgz"
                     #清尾
@@ -3055,7 +3055,7 @@ ftScrcpy()
     fi
 
     local filePathToolScrcpy=/snap/bin/scrcpy
-    ADB=/home/xian/tools/android_sdk/platform-tools/adb $filePathToolScrcpy -m 1024
+    ADB=${ANDROID_SDK}/platform-tools/adb $filePathToolScrcpy -m 1024
 }
 
 complete -W "-h --help --rely_install -c" -A file ftPigz
@@ -3761,5 +3761,6 @@ ftDf()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
 
     df -lh |grep -E "Filesystem"| awk '{print "\033[1;33m" $0 "\033[0m"; }'
-    df -lh |grep -E "文件系统|/dev/" |grep -v "/snap"| awk '{ if ($5 >= 75) print "\033[0;31m" $0 "\033[0m"; else print $0 }'
+    df -lh |grep -E "文件系统|/dev/" |grep -v "/snap" |grep -v "/boot/efi" \
+    | awk '{ if ($5 >= 75) print "\033[0;31m" $0 "\033[0m"; else print $0 }'
 }
