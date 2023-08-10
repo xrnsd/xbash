@@ -1746,12 +1746,52 @@ ftAutoCdAospProject()
         -u | --update ) #更新数据库
                 local mAospProjectNameIgnoreList="$(ftXbGetValue AospProjectsInfo AospProjectNameIgnoreList)"
                 local mAospProjectNameListUpdate
+                local dirPathLocal=$(pwd)
+                local key="_PJ("
+
                 for path in ${mAospProjectStoragePathList[@]}; do
                     [[ ! -d "${path}" ]] && continue
                     while read projectName ;do
                         [[ -n $(echo ${mAospProjectNameIgnoreList[@]} |grep ${projectName}) ]] && continue
+                        [[ -d "${path}/${projectName}/.git_backup" ]] && continue
+                        [[ -d "${path}/${projectName}/.git_local" ]] && continue
+                        [[ -d "${path}/${projectName}/alps/.git_backup" ]] && continue
+                        [[ -d "${path}/${projectName}/alps/.git_local" ]] && continue
                         [[ ! -d "${path}/${projectName}" ]] && continue
                         mAospProjectNameListUpdate=(${mAospProjectNameListUpdate[@]} ${projectName})
+
+                        #更新项目中分支的项目号列表
+                        local projectInfoFlag="AospProjectItem_"
+                        local projectDirPathTemp=${path}/${projectName}/.git
+                        [[ ! -d ${projectDirPathTemp} ]] && projectDirPathTemp=${path}/${projectName}/alps/.git
+                        if [[ -d ${projectDirPathTemp} ]] && [[ ! -h ${projectDirPathTemp} ]] ; then
+                            cd $projectDirPathTemp
+                            local brachListProject=$(git branch | sed -e "s:*: :g" | grep $key)
+                            if [ -n "$brachListProject" ]; then
+                                local projectList projectNameTemp
+                                for item in ${brachListProject[@]} ; do
+                                    local itemList=($(echo "${item}"| sed 's?)? ?g'))
+                                    local val=$(echo ${itemList[1]} | grep $key | sed -e "s:$key::g")
+                                    [[ -n $projectNameTemp ]] && [[ $projectNameTemp == $val ]] && continue
+                                    [[ -z $projectNameTemp ]]
+                                    projectList="${val} ${projectList}"
+                                    projectNameTemp=$val
+                                done
+
+                                if [ -n "$projectList" ];then
+                                    local projectListLocal=$(ftIniGetValue $rFilePathXbashDBUser AospProjectsInfo ${projectInfoFlag}${projectName})
+                                    [[ -z ${projectListLocal} ]] && projectListLocal=$(cat $rFilePathXbashDBUser | grep "${projectInfoFlag}${projectName}=")
+                                    if [[ -z ${projectListLocal} ]]; then
+                                        ftIniAddItem -p $rFilePathXbashDBUser -t AospProjectsInfo -i ${projectInfoFlag}${projectName} -l "${projectList}"
+                                    fi
+                                    projectList=""
+                                fi
+                            fi
+
+                            cd $dirPathLocal
+                        fi
+
+
                     done < <(echo "$(ls ${path})")
                 done
                 mAospProjectNameListUpdate=($(echo ${mAospProjectNameListUpdate[@]} | sed 's/ /\n/g'|sort |uniq))
@@ -1767,6 +1807,19 @@ ftAutoCdAospProject()
 
     #实现主体
     local mAospProjectNameList=($(ftXbGetValue AospProjectsInfo AospProjectNameList| sed 's/ /\n/g'|sort |uniq |grep -i $mAospProjectName))
+    #进入分支信息判断
+    if [ -z "$mAospProjectNameList" ]; then 
+        local projectInfoFlag="AospProjectItem_"
+        local aospProjectNameList=$(cat $rFilePathXbashDBUser | grep -i $mAospProjectName)
+        for line in ${aospProjectNameList[@]}; do
+            [ -z "$line" ] && continue
+            [ -z $(echo $line |grep $projectInfoFlag) ] && continue
+            local lineItems=($(echo $line | sed -e "s:=: :g"))
+            local lineNew=$(echo ${lineItems[0]} | sed -e "s:$projectInfoFlag: :g")
+            #将存在匹配分支的项目名放入待选项目列表内
+            mAospProjectNameList=($lineNew ${mAospProjectNameList[@]})
+        done
+    fi
     itemCount=${#mAospProjectNameList[@]}
     if (( $itemCount>1 ));then
         ftEcho -s 对应多个Aosp项目,请选择

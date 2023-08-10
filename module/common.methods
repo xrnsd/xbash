@@ -640,44 +640,33 @@ ftIniAddItem()
     #可用性校验
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local tagName itemContent filePathIni
+    local filePathIni tagName itemName itemContent
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftIniAddItem -p ini文件路径 -t TAG块名  -l 块对应的键值对列表
+#    ftIniAddItem -p ini文件路径 -t TAG块名  -i item名 -l 块对应的键值对列表
 #========================================================="; return ;;
         # 变量参数解析部分==============
-        -t )   tagName="${arg2}"        ;;
-        -l )   itemContent="${arg2}"    ;;
         -p )   filePathIni="${arg2}"    ;;
+        -t )   tagName="${arg2}"        ;;
+        -i )   itemName="${arg2}"       ;;
+        -l )   itemContent="${arg2}"    ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     #参耦校验
     [ -z "$itemContent" ] && errorContent="${errorContent}\\n[缺少必要参数]itemContent=$itemContent"
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
+    [ -z "$itemName" ] && errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniAddItem -h && return $resultFail
 
     #实现主体
-    local indexStart=0 index=1 tagContent
-    cat $filePathIni | while read line ;do
-        if [[ "$line" = "[${tagName}]" ]]||(( $indexStart != 0 )); then
-            (( $indexStart == 0 )) && indexStart=1
-            tagContent=(${tagContent[@]} ${line})
-            if [[ -z "$line" ]]; then
-                for item in ${itemContent[*]} ; do
-                    for itemBase in ${tagContent[*]}; do
-                        [[ "${itemBase}" = "${item}" ]] &&item= && break
-                    done
-                    [ -z "${item}" ] && break
-                    sed  -i "${index}i ${item}" $filePathIni
-                    ((index+=1))
-                done
-                break
-            fi
-        fi
-        ((index+=1))
-    done
+    local indexStart=$(sed -n "/\[${tagName}\]/=" $filePathIni)
+    
+    ((indexStart+=1))
+    itemName="${itemName}="
+    sed  -i "${indexStart}i ${itemName}${itemContent[@]}" $filePathIni
+
 }
 
 ftIniDeleteItem()
