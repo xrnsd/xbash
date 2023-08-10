@@ -87,33 +87,33 @@ ftGitLogShell()
 #    ftGitLogShell -c \"格式字串\"
 #=========================================================" ;return ;;
         # 变量参数解析部分==============
-        -a )  isAllBranchLog=true
+        -a )    isAllBranchLog=true
                 pathTarget="${arg2}"
                 ;;
-        -aw )  isAllBranchLogByGitK=true
+        -aw )   isAllBranchLogByGitK=true
                 pathTarget="${arg2}"
                 branchLogItemCount=0
                 ;;
-        -b )  isAllBranchTree=true
+        -b )    isAllBranchTree=true
                 branchLogItemCount=0
                 ;;
-        -t )   branchLogFormat=${arg2:-'%s'}
+        -t )    branchLogFormat=${arg2:-'%s'}
                 isTagBranchLog=true
                 ;;
-        -c )   branchLogFormat=${arg2}
+        -c )    branchLogFormat=${arg2}
                 isCustomBranchLog=true
                 ;;
-        -n )  branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
+        -n )    branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
                 (( $#==3 ))&&(echo -n $3 | grep -q -e "^[0-9][0-9]*$")&&(($3>$branchLogItemCount)) && branchLogItemCount=$3
                 ;;
-        -nn )  branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
+        -nn )   branchLogItemCount=${arg2:-'$branchLogItemCountDef'}
                 (( $#==3 ))&&(echo -n $3 | grep -q -e "^[0-9][0-9]*$")&&(($3>$branchLogItemCount)) && branchLogItemCount=$3
-                branchLogFormat="%<(21 ,trunc)%ai  %<(10,trunc)%an %h %s  %d"
+                branchLogFormat="%<(21 ,trunc)%ad  %<(10,trunc)%an %h %s  %d"
                 ;;
-        -fs )  findStringContent=${arg2}
+        -fs )   findStringContent=${arg2}
                 isFindString=true
                 ;;
-        -cl )  findStringContent=${arg2}
+        -cl )   findStringContent=${arg2}
                 isChangeList=true
                 ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
@@ -137,12 +137,12 @@ ftGitLogShell()
     [[ -n "$isChangeList" ]] && git log --pretty=format:"" --name-only  -${branchLogItemCount} && return
 
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]] && [ "$isCustomBranchLog" != "true" ];then
-        branchLogFormat=${branchLogFormat:-'%C(green)%<(11,trunc)%ad %Cred%<(11,trunc)%an%Creset %Cblue%<(11,trunc)%h%Creset %s %C(yellow) %d'}
+        branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ad %Cred%<(11,trunc)%an%Creset %Cblue%<(11,trunc)%h%Creset %s %C(yellow) %d'}
         if [[ -n "$isFindString" ]]; then
             git --no-pager log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount -S"${findStringContent}" ${pathCommand}
             echo ; return $resultSuccess
         fi
-        git --no-pager log --date=format-local:'%Y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount ${pathCommand}
+        git --no-pager log --date=format-local:'%Y-%m-%d %H:%M:%S' --pretty=format:"$branchLogFormat" -$branchLogItemCount ${pathCommand}
         echo ;return $resultSuccess
     fi
     if [ "${branchLogFormat}" = "%h" ];then
