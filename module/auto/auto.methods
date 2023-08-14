@@ -810,6 +810,7 @@ ftAutoPacket()
                     local dirPathPackageDataBase=${dirPathVersionSoftwareVersion}/${dirNamePackageDataBase}
                     local apdbDirPathList=($(ftXbGetValue $tagName apdbDirPathList))
                     local mddbDirPathList=($(ftXbGetValue $tagName mddbDirPathList))
+                    local apdbFileCount mddbFileCount
                     for item in ${apdbDirPathList[@]} ; do
                             item=$(ftPath $item)
                             local itemPathRoot=${dirPathOut}/${item}
@@ -817,6 +818,7 @@ ftAutoPacket()
                             while read fileName ;do
                                 [[ -z $(echo "${fileName}"|grep '^APDB') ]] && [[ -z $(echo "${fileName}"|grep '^_APDB') ]] && continue
                                 local filePath=${item}/${fileName}
+                                [[ -f "${itemPathRoot}/${fileName}" ]] && ((apdbFileCount+=1))
                                 [[ -f "${itemPathRoot}/${fileName}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
                             done < <(echo "$(ls ${itemPathRoot})")
                     done
@@ -827,11 +829,12 @@ ftAutoPacket()
                             [[ ! -d "${itemPathRoot}" ]] && ftEcho -e "未找到database的mddb的相关项: ${item}" && continue
                             while read fileName ;do
                                 local filePath=${item}/${fileName}
+                                [[ -f "${itemPathRoot}/${fileName}" ]] && ((mddbFileCount+=1))
                                 [[ -f "${itemPathRoot}/${fileName}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
                             done < <(echo "$(ls ${itemPathRoot})")
                     done
-
                     [[ -n "$AutoEnv_ModemPath" ]] && cd ${dirPathCode} && while read filePath ;do
+                                [[ -f "${filePath}" ]] && ((mddbFileCount+=1))
                                 [[ -f "${filePath}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
                      done < <(echo "$(find ${AutoEnv_ModemPath} -type f -name MDDB* -o -name Db*)") && cd ${dirPathVersionSoftware}
 
@@ -851,6 +854,9 @@ ftAutoPacket()
                         fi
                     else
                         ftEcho -e "database 创建失败" && ftClearTail $dirPathLocal && return $resultFail
+                    fi
+                    if [ -z "$apdbFileCount" ] || [ -z "$mddbFileCount" ]; then
+                       ftEcho -e "=====================================\n===  database 不完整，请检查配置  ===\n====================================="
                     fi
 
                     # otaPackages
@@ -886,7 +892,7 @@ ftAutoPacket()
                              cp -r -f  $filePath $dirPathPackageTools
                         done
                     else
-                        ftEcho -e "tools包配置错误,软件包可能不完整"
+                        ftEcho -e "=====================================\n===  tools包配置错误,软件包可能不完整  ===\n====================================="
                     fi
             fi
 
