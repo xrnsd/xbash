@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.3.1
+versionNum=v0.1.3.2
 
 #开发用
 [androidDevicePackages]
@@ -19,9 +19,10 @@ build_c_date.txt
 
 #项目软件包database文件名列表
 [xbashAOSPConfigSoftwareDataBaseFileLIst]
-apdbDirPathList= \
-    /obj/CODEGEN/cgen \
-    obj/CGEN
+apdbDirPathList=\
+    obj/CODEGEN/cgen \
+    obj/CGEN \
+    obj/ETC/apdb_intermediates
 mddbDirPathList= \
     system/etc/mddb \
     system/vendor/etc/mddb
