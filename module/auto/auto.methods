@@ -1533,28 +1533,32 @@ ftAutoFindAospBuildOuts()
     mAospProjectStoragePathListNew=($(echo ${mAospProjectStoragePathListNew[@]} | sed 's/ /\n/g'|sort |uniq))
 
     #开始查找
+    local filePathResult="/tmp/findOuts"
     for dirPath in ${mAospProjectStoragePathListNew[@]}; do
-                local dirPathAospProjectOutList
+            echo "" > $filePathResult
 
-                local dirPathAospProjectOut="${dirPath}/alps/out"
-                if [[ -d "${dirPathAospProjectOut}" ]] && [ "$(ls -A $dirPathAospProjectOut)" ]; then
-                    local dirPathAospProjectOutReal=$(readlink -f  $dirPathAospProjectOut)
-                    [[ "${dirPathAospProjectOutReal}" == "${dirPathAospProjectOut}" ]]&&dirPathAospProjectOutList="${dirPathAospProjectOut}"
-                else
-                    continue;
-                fi
-                local dirPathAospProjectOuts="${dirPath}/outs"
-                if [ -d "${dirPathAospProjectOuts}" ]; then
-                    dirPathAospProjectOutList=(${dirPathAospProjectOutList[@]} $(ls $dirPathAospProjectOuts))
-                fi
+            local dirPathAospProjectOut="${dirPath}/alps/out"
+            if [[ -d "${dirPathAospProjectOut}" ]] \
+                && [ "$(ls -A $dirPathAospProjectOut)" ] \
+                && [ ! -L "${dirPathAospProjectOut}" ]; then
+                    echo "${dirPathAospProjectOut}" >> $filePathResult
+            fi
 
-                [[ -z ${dirPathAospProjectOutList} ]] && continue
-                ftEcho -s "${dirPath}"
-                for dirPathAospProjectOutItem in ${dirPathAospProjectOutList[@]}; do
-                    [ ! -d "${dirPathAospProjectOutItem}" ] && dirPathAospProjectOutItem=${dirPathAospProjectOuts}/${dirPathAospProjectOutItem}
-                    [ ! -d "${dirPathAospProjectOutItem}" ] || [ ! "$(ls -A $dirPathAospProjectOutItem)" ] && continue
-                    echo -e "    ${dirPathAospProjectOutItem}"
-                done
+            local dirPathAospProjectOuts="${dirPath}/outs"
+            if [ -d "${dirPathAospProjectOuts}" ] \
+                && [ ! -L "${dirPathAospProjectOuts}" ] \
+                && [ "$(ls -A $dirPathAospProjectOuts)" ]; then
+                    while read item ;do
+                        [ -L "${dirPathAospProjectOuts}/${item}" ] && continue
+                        echo "${item}" >> $filePathResult
+                    done < <(echo "$(ls $dirPathAospProjectOuts)")
+            fi
+
+            [[ -z "$(cat $filePathResult)" ]] && continue
+            ftEcho -sn "${dirPath}"
+            while read dirPathAospProjectOutItem ;do
+                echo -e "    ${dirPathAospProjectOutItem}"
+            done < <(cat $filePathResult)
     done
 }
 
