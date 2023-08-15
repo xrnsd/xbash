@@ -461,14 +461,16 @@ ftGitCheckoutBranch()
         return $resultFail
     fi
     #依赖校验
+    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     [[ -z $(which git) ]] && ftGitCheckoutBranch --rely "git" && return $resultFail
     #参数校验
+    [ -z "$branchNameNow" ] && errorContent="${errorContent}\\n[当前目录缺少有效的git仓库]"
     [ -z "$branchNameTag" ] && errorContent="${errorContent}\\n[分支TAg为空]branchNameTag=$branchNameTag"
     [ -n "$delayLong" ] && ( ! echo -n $delayLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[延时设定错误]delayLong=$delayLong"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftGitCheckoutBranch -h && return $resultFail
 
     #实现主体
-    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    [[ -d out ]] && ftAutoInitEnv #防止out和分支出现不匹配情况
     local branchList=($(git branch|grep -i "$branchNameTag" | sed -e "s:*::g"))
     for (( i = 0; i < ${#branchList[*]}; i++ )); do [[ "${branchList[$i]}" = "${branchNameNow}" ]] && unset branchList[$i] && break ;done
 
