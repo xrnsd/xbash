@@ -1,5 +1,5 @@
 #! /bin/bash
-versionNum=v0.1.8.0
+versionNum=v0.1.7.4
 xEcho(){
     local val1="${1}" val2="${2}" val3="${3}";echo -en "\033[1;33m${val1}\033[0m";echo -en "\033[1;31m${val2}\033[0m";echo -en "\033[1;33m${val3}\033[0m"; echo -e "\033[1;31m does not exist\033[0m"
 }
@@ -15,54 +15,48 @@ export isUseXbashHistory=
 #----------------    Android development environment config    ---------------------------
 export isUseCustomAndroidDevEnvConfig=
 if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
+        # dirPathOracleJdk6=${rDirPathTools}/jdk/1.6.038
+    dirPathOpenJdk7=/usr/lib/jvm/java-7-openjdk-amd64
+    dirPathOpenJdk8=/usr/lib/jvm/java-8-openjdk-amd64
+    dirPathOpenJdk11=/usr/lib/jvm/java-11-openjdk-amd64
+    jdkHomePath=$dirPathOpenJdk8
 
-    if [[ "$isResetSdk" = "true" ]]; then
-        sdkVersion=
-        filePath=build/core/version_defaults.mk
-        if [[ -f "$filePath" ]]; then
-                key="PLATFORM_SDK_VERSION := "
-                sdkVersion=$(cat $filePath | grep "$key")
-                sdkVersion=${sdkVersion//$key/}
-                sdkVersion=$(echo $sdkVersion |sed s/[[:space:]]//g)
-        fi
-        [[ -n "${targetSdkVersionForce}" ]] && sdkVersion=$targetSdkVersionForce
-        if [[ -n $sdkVersion ]]; then
-            case "$sdkVersion" in
-            33 | 32 | 31 | 30 | 29 )
+    dirPathOpenGcc44=/usr/bin/gcc-4.4
+    dirPathOpenGcc46=/usr/bin/gcc-4.6
+    dirPathOpenGcc48=/usr/bin/gcc-4.8
+    gccPath=${dirPathOpenGcc48}
+
+    #modify the current java&gcc configuration according to the android sdk version
+    #sdkVersion=24 # default
+    filePath=build/core/version_defaults.mk
+    if [[ -f "$filePath" ]]; then
+            key="PLATFORM_SDK_VERSION := "
+            sdkVersion=$(cat $filePath | grep "$key")
+            sdkVersion=${sdkVersion//$key/}
+            sdkVersion=$(echo $sdkVersion |sed s/[[:space:]]//g)
+    fi
+    [[ -n "${targetSdkVersionForce}" ]] && sdkVersion=$targetSdkVersionForce
+    if [[ -n $sdkVersion ]]; then
+        if (( $sdkVersion>=29 ));then
                 jdkHomePath=$dirPathOpenJdk11
                 gccPath=${dirPathOpenGcc48}
-               ;;
-            *) 
+        elif (( $sdkVersion>=24 ));then
                 jdkHomePath=$dirPathOpenJdk8
-                gccPath=${dirPathOpenGcc48};; esac
+                gccPath=${dirPathOpenGcc48}
+        # else
+        #         jdkHomePath=$dirPathOracleJdk6
+        #         gccPath=${dirPathOpenGcc44}
         fi
-    fi
-
-    if [[ "$isResetGcc" = "true" ]]; then
-        if [[ -n $targetGccForce ]]; then
-            gccPath=/usr/bin/gcc-${targetGccForce}
-            if [[ ! -f ${gccPath} ]]; then
-                xEcho "Gcc " "version code invalid : " $targetGccForce
-                gccPath=
-            fi
-        fi
-    fi
-
-    if [[ "$isResetJdk" = "true" ]]; then
-        if [[ -n $targetJdkForce ]]; then
-            jdkHomePath=/usr/lib/jvm/java-${targetJdkForce}-openjdk-amd64
-            if [[ ! -d ${jdkHomePath} ]]; then
-                xEcho "Jdk " "version code invalid : " $targetJdkForce
-                jdkHomePath=
-            fi
-        fi
+    else
+            jdkHomePath=$dirPathOpenJdk11
+            gccPath=${dirPathOpenGcc46}
     fi
 
     #JAVA
-    if [[ -n "$jdkHomePath" ]] && [[ -d "$jdkHomePath" ]]; then
+    if [[ -d "$jdkHomePath" ]]; then
         #java config
         filePathJava=${jdkHomePath}/bin/java
-        if [[ -f "$filePathJava" ]]; then
+        [[ "$isResetJdk" = "true" ]] && if [[ -f "$filePathJava" ]]; then
             filePathJavaList=($filePathJava ${filePathJava}c ${filePathJava}p ${filePathJava}ws ${filePathJava}doc ${filePathJava}h)
             configList=(java javac javap javaws javadoc javah)
 
@@ -72,7 +66,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
                 path=${filePathJavaList[$index]}
                 config=${configList[$index]}
                 if [[ ! -f "${path}" ]] ;then
-                    xEcho "${config} "  "config skip : " ${path}
+                    [[ "$isResetJdk" = "true" ]]  && xEcho "${config} "  "config skip : " ${path}
                     continue
                 fi
                 [[ -z $(update-alternatives --list $config|grep $path) ]] && sudo -p '' -S  update-alternatives --install /usr/bin/${config} $config $path 300
@@ -99,12 +93,10 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
         done
         export PATH=${PATHLOCAL}
         export PATH=$PATH:${JAVA_HOME}/bin:${JRE_HOME}/bin
-
-        jdkHomePath=
-    fi
+    else xEcho "Java " "env config error : " ${jdkHomePath}; fi
 
     #GCC&G++
-    if [[ -n "$gccPath" ]] && [[ -f "$gccPath" ]] ;then
+    [[ "$isResetGcc" = "true" ]] && if [[ -f "$gccPath" ]] ;then
         ftEcho -s "update gcc&g++ config"
         echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
         #sudo update-alternatives --remove gcc /usr/bin/gcc-x.x
@@ -114,9 +106,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
         [[ -z $(update-alternatives --list gcc|grep $gccPath) ]] && sudo -p '' -S  update-alternatives --install /usr/bin/g++ g++ $gccPath 300
         echo "$gccPath" | sudo -p '' -S update-alternatives --config g++ >/dev/null
         gcc -v
-        
-        gccPath=
-    fi
+    else xEcho "GCC & G++ " "config error : " ${gccPath}; fi
 
     #Android Studio KeyStore
     isConfigAndroidStudioKeyStore=

@@ -74,7 +74,7 @@ ftClearTail()
     trap SIGINT
 }
 
-complete -W "-a --adb -h --help -j -c -s" ftResetXbash
+complete -W "-a --adb -h --help -j -s" ftResetXbash
 ftResetXbash()
 {
     local ftEffect=更新xbash配置
@@ -83,10 +83,9 @@ ftResetXbash()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    export isResetJdk=false isResetGcc=false isResetSdk=false
-    export targetSdkVersionForce targetGccForce targetJdkForce
+    export isResetJdk= isResetGcc= isResetCcache= isResetXbash=true targetSdkVersionForce=
     local dirPathCode dirPathLocal=$(pwd)  filePathHomeBash=~/.bashrc
-    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; eval arg2=\${$((i+1))}
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -107,16 +106,24 @@ ftResetXbash()
         -a |--adb) ftAdbConnect -r && return
           ;;
         -j ) export isResetJdk=true
-            targetJdkForce="${arg2}"
-            break ;;
+            targetSdkVersionForce="${arg2}"
+            [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
+          ;;
         -c ) export isResetGcc=true
-            targetGccForce="${arg2}"
-            break ;;
-        -s | --sdk)
+            targetSdkVersionForce="${arg2}"
+            [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
+          ;;
+        -cj | -jc |-jcc)
             [[ -n "${arg2}" ]] && export targetSdkVersionForce="${arg2}"
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
-            export isResetSdk=true
-            break ;;
+            [ -d "${dirPathLocal}/alps" ] && dirPathCode=${dirPathLocal}/alps
+            [ -d "${dirPathLocal}/idh" ] && dirPathCode=${dirPathLocal}/idh
+            [ -n "${dirPathCode}" ] && cd $dirPathCode
+
+            [[ -n "$isUseBuildCcache" ]] && [ "${arg}" = "-jcc" ] && export isResetCcache=true
+            export isResetGcc=true
+            export isResetJdk=true
+          ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -f "$filePathXbashTragetBashrcConfigProfile" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathXbashTragetBashrcConfigProfile=$filePathXbashTragetBashrcConfigProfile"
@@ -126,6 +133,7 @@ ftResetXbash()
     #实现主体
     #source $filePathXbashTragetBashrcConfigProfile
     source $filePathHomeBash
+    export isResetXbash=
     cd ${dirPathLocal}
 }
 
