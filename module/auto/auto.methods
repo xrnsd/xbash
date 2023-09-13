@@ -926,7 +926,7 @@ ftAutoPacket()
                 mv ${dirPathVersionSoftware}/${fileNameOtaPackage} ${dirPathVersionSoftwareVersion}
                 mv ${dirPathVersionSoftware}/${fileNamePackage} ${dirPathVersionSoftwareVersion}
                 mv ${AutoEnv_filePathReleaseNotes} ${dirPathVersionSoftwareVersion}
-                mv ${AutoEnv_filePathBasicHardwareConfig} ${dirPathVersionSoftwareVersion}
+                [[ -f ${AutoEnv_filePathBasicHardwareConfig} ]] && mv ${AutoEnv_filePathBasicHardwareConfig} ${dirPathVersionSoftwareVersion}
                 rm -rf ${AutoEnv_filePathCustomerDescription}
                 rm -rf ${dirPathPackage}
                 rm -rf ${dirPathPackageDataBase}
@@ -1231,6 +1231,16 @@ ftAutoCreateReadMeBySoftwareVersion()
             #添加模块列表信息
             if [[ -f $filePathToolCopyModuleSoftwareConfig ]]; then
                 echo -e ${enterLine}${enterLine}"$($filePathToolCopyModuleSoftwareConfig)" >> $filePathChangeListTemplate
+            fi
+
+            #添加版本硬件信息
+            if [[ -f $AutoEnv_filePathBasicHardwareConfig ]]; then
+                local fileNameHw=$(basename $AutoEnv_filePathBasicHardwareConfig)
+                fileNameHw=${fileNameHw%.*}
+                echo -e ${enterLine}${enterLine} >> $filePathChangeListTemplate
+                echo -e "${fileNameHw}" >> $filePathChangeListTemplate
+                echo -e "$(cat $AutoEnv_filePathBasicHardwareConfig)" >> $filePathChangeListTemplate
+                rm -rf $AutoEnv_filePathBasicHardwareConfig
             fi
 
             #客户说明
