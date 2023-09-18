@@ -879,9 +879,16 @@ ftAutoPacket()
                     tagName="xbashAOSPConfigMTKSoftwareDownloadToool"
                     local dirNamePackageTools="tools"
                     local dirPathPackageTools=${dirPathVersionSoftwareVersion}/${dirNamePackageTools}
-                    local filePathTools=($(ftXbGetValue $tagName filePath))
+                    local projectOldList=($(ftXbGetValue $tagName projectOld))
+                    local filePathToolsTag=filePath
+                    local toolTitle="创建 tools"
+                    if [[ -n "$projectOldList" ]] && [[ -n "$AutoEnv_projrctName" ]] && [[ ${projectOldList[@]} == *${AutoEnv_projrctName}* ]]; then
+                        toolTitle=${toolTitle}",项目:${AutoEnv_projrctName}为旧平台硬件,将使用兼容版本下载工具"
+                        filePathToolsTag=filePathOld
+                    fi
+                    local filePathTools=($(ftXbGetValue $tagName $filePathToolsTag))
                     if [[ -n ${filePathTools} ]]; then
-                        ftEcho -s "创建 tools"
+                        ftEcho -s ${toolTitle}
 
                         [[ ! -d $dirPathPackageTools ]] && mkdir -p $dirPathPackageTools
                         for filePath in ${filePathTools[@]}; do

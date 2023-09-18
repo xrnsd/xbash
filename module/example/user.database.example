@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.3.2
+versionNum=v0.1.3.4
 
 #开发用
 [androidDevicePackages]
@@ -42,10 +42,13 @@ AospProjectActiveGitStorehouseList=
 #项目软件包的下载工具包[客户用]
 [xbashAOSPConfigMTKSoftwareDownloadToool]
 filePath=
+filePathOld=
+projectOld=
 
 #mtk下载工具配置
 [MtkSpFlashToolVersion]
 toolsPath=
+toolsPathOld=
 
 [projectSoftwareReadMeInfo]
 recordCreator=xxx<xxx@xxx.com>

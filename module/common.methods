@@ -1386,6 +1386,8 @@ ftMtkFlashTool()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local isEnableWindowMode flashToolPath="$(ftXbGetValue MtkSpFlashToolVersion toolsPath)"
+    local isOldMode flashToolPathOld="$(ftXbGetValue MtkSpFlashToolVersion toolsPathOld)"
+
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
@@ -1398,17 +1400,29 @@ ftMtkFlashTool()
 #    #使用窗口模式
 #    ftMtkFlashTool -w
 #    可简化 [ftMtkFlashTool -w] 为 [xdw]
+#
+#    #使用兼容模式，兼容旧设备
+#    ftMtkFlashTool --old
+#    可简化 [ftMtkFlashTool -w] 为 [xdw]
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -w ) isEnableWindowMode=true
             ;;
+        --old ) isOldMode=true
+            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -f "$flashToolPath" ] && errorContent="${errorContent}\\n[mtk下载工具不存在]flashToolPath=$flashToolPath"
+    [ -n "$isOldMode" ] && [ ! -f "$flashToolPathOld" ] && errorContent="${errorContent}\\n[mtk下载工具不存在]flashToolPathOld=$flashToolPathOld"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的出现错误:${errorContent}\\n" && return $resultFail
 
     #实现主体
     echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+    local projectOldList=($(ftXbGetValue xbashAOSPConfigMTKSoftwareDownloadToool projectOld))
+    if [[ -n "$projectOldList" ]] && [[ -n "$AutoEnv_projrctName" ]] && [[ ${projectOldList[@]} == *${AutoEnv_projrctName}* ]]; then
+        flashToolPath=$flashToolPathOld
+    fi
+    [ -n "$isOldMode" ] && [ -f "$flashToolPathOld" ]&& flashToolPath=$flashToolPathOld
     if [[ -z $isEnableWindowMode ]] && [[ -n $ANDROID_BUILD_TOP ]]; then
         local dirPathLocal=$(pwd)
         cd $ANDROID_BUILD_TOP
