@@ -1432,7 +1432,10 @@ ftMtkFlashTool()
         cd "${dirPathLocal}"
         return;
     fi
+    local isRmoveDirLog
+    [ ! -d "Log" ] && isRmoveDirLog=true
     sudo $flashToolPath
+    [ -d "Log" ] && [ -n "${isRmoveDirLog}" ] && sudo rm -rf Log
 }
 
 complete -W "create new -h --help" ftBootAnimation
