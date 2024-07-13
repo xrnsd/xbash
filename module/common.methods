@@ -1946,7 +1946,7 @@ ftMaintainSystem()
 
     #实现主体
     source $filePathMaintain
-    local  filePathVersionInfoVersion=${rDirPathXbashModuleMaintain}/versionInfo.database
+    local  filePathVersionInfoVersion=${rDirPathXbashConfigUser}/systemVersionPacketInfo.database
     local  filePathVersionInfoMaintain=${rDirPathXbashModuleMaintain}/maintain.database
 
     case "$editType" in
@@ -1957,8 +1957,12 @@ ftMaintainSystem()
                     local fileNameVersion=${infoVersionName}.$(ftIniGetValue $filePathVersionInfoMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
                     # 进入根目录
                         cd /
-                    #清理无效版本记录
-                        ftCleanUpInvalidRecords -p $filePathVersionInfoVersion || return $resultFail
+                    #新建数据库或清理无效版本记录
+                        if [[ ! -f "$filePathVersionInfo" ]]; then
+                            cp $rFilePathXbashModuleMaintainSystemVersionPacketInfoExample $filePathVersionInfo
+                        else
+                            ftCleanUpInvalidRecords -p $filePathVersionInfoVersion || return $resultFail
+                        fi
                     #预写入版本信息
                         ftIniCreateFileOrTag -a -p $filePathVersionInfo -t $infoVersionName -l "\
                             fileName=$fileNameVersion \
