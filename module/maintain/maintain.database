@@ -9,6 +9,7 @@ dirPathsExcludeListSys= \
     /tmp \
     /dev \
     /sys \
+    /snap \
     /.Trash-0 \
     /media \
     /var/cache \

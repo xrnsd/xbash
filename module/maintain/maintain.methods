@@ -493,6 +493,10 @@ ftSystemEnv()
     infoHwSystem=${infoHwSystem//"."/}
     infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
 
+    if [[ -z "$infoHwCpu" ]]; then
+        infoHwCpu="$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c|sed s/[[:space:]]//g)"
+    fi
+
     local keyCpu=hwCpu keyMainboard=hwMainboard keySystemVersion=swSystemVersion keySystemType=swSystemType
 
     if [ ${editType} == "add" ]; then
