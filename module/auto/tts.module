@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#echo "(SayText \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\")" | festival  '(voice_cmu_us_slt_arctic_hts)' -
+#-pipe
+
+# bash -c "espeak -s100 -g20 -p80 -v english-us \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\""
+
+source /home/myname/.venv/bin/activate
+cd /home/myname/.venv/bin/
+edge-playback --text "$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\")"
