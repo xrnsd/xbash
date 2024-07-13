@@ -1245,7 +1245,21 @@ ftKillApplicationByPackageName()
         launcher3|launcher) packageName="com.android.launcher3"  ;break;;
         monkey)     packageName="com.android.commands.monkey"  ;break;;
     * ) break;;esac;done
+    
+    # local pidArray=($(adb shell ps | grep "$packageName" | awk '{print $2}'))
+    # local packageArray=($(adb shell ps | grep "$packageName" | awk '{print $9}'))
 
+    # if [[ -n "$pidArray" ]]; then
+    #     for index in "${!packageArray[@]}"; do
+    #        if [[  ${packageArray[$index]} = "$packageName" ]]; then
+    #             adb -s $deviceId shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
+    #             adb -s $deviceId shell kill $pid&& ftEcho -s "kill pid ${pid}"
+    #        fi
+    #     done
+    # elif [[ -z "$(adb -s $deviceId shell pm list packages|grep $packageName)" ]]; then
+    #      ftEcho -e "包名[${packageName}]不存在，请确认"
+    # fi
+    
     if [[ -n "$(adb shell ps | grep $packageName | awk '{print $2}')" ]]; then
         adb -s $deviceId shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
         for pid in $(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}'); do adb -s $deviceId shell kill $pid&& ftEcho -s "kill pid ${pid}"  ;done
