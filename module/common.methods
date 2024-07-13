@@ -240,6 +240,7 @@ ftTest()
         javac "${toolFilePath}"
         cd "${dirName}"
         java "${fileNameBasic}"
+        cd "${dirPathLocal}"
         return
     fi
     [[ ! -d "${dirPathTemp}" ]] && mkdir $dirPathTemp
@@ -815,7 +816,9 @@ ftBashHistory()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     # 环境校验
-    [[ -z "$isUseXbashHistory" ]] && return $resultFail
+    if [[ -z "$isUseXbashHistory" ]] && [[ "$1" != "-p" ]]; then
+        return $resultFail
+    fi
     #参数解析
     local bashHistorySize filePathBashHistory=${dirPathHome}/.bash_history
     local filePathBashHistoryArchive=${filePathBashHistory}_archive
@@ -828,7 +831,10 @@ ftBashHistory()
 #    ftBashHistory -p
 #========================================================="; return ;;
         # 变量参数解析部分==============
-        -p )    cat ${filePathBashHistoryArchive} ;return
+        -p )
+            [ -f $filePathBashHistory ] && cat ${filePathBashHistory}
+            [ -f $filePathBashHistoryArchive ] && cat ${filePathBashHistoryArchive}
+            return
            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     [ ! -d $dirPathHome ]  && errorContent="${errorContent}\\n[迷路中，请稍等]dirPathHome=$，dirPathHome"
