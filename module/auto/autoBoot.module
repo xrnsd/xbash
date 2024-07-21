@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#网络代理工具
+#Clash for Windows
+if [[ -n $(which alltray) ]] && [[ -n $(which clashGui) ]];then
+	sleep 10 ; alltray  "clashGui --no-sandbox &" --notray
+fi
+
+#系统负载提示器
+#一个能够以图形方式显示 CPU、内存、对换文件使用情况，以及网络流量的系统监视器。
+if [[ -n $(which indicator-multiload) ]];then
+	sleep 15 ; indicator-multiload &
+fi
+
+#电池电量监测提醒
+#电量超过阈值时提醒用户注意
+sleep 35 ; /home/myname/xbash/module/auto/battery.module --lowFlag 33 --heighFlag 81 --normalFreq 600
+
