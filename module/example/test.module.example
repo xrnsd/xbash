@@ -1,7 +1,9 @@
 #!/bin/bash
-#  测试模块
-#####-----------------------加载部分模块,便于调试--------------------------#######
+#测试模块
+#加载部分模块,便于调试
 [[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
 [[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
 [[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
+# =================================================================
+ftEcho -s "#####----------------------测试模式--------------------------#######"
 # =================================================================
