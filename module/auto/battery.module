@@ -56,19 +56,17 @@ ftBatteryLevelListener()
 	   local isCharging=$(acpi |grep "charged" )
 	   if $isCharging; then
 	       if [[ ! $isChargeFull ]] && (( $battery_level >= $heighFlag  )); then
-	          local title="Battery Full Level: ${battery_level}% ，\n it's recommended to stop charging."
-	          notify-send "${title}"
-	       	  zenity --warning --text="${title}" --ok-label="sure"
+	          notify-send "Battery Full Level: ${battery_level}% ， it's recommended to stop charging."
+	       	  zenity --warning --text="Battery Full Level: ${battery_level}% ，\n it's recommended to stop charging." --ok-label="sure"
 	          #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
-	          
 	          isChargeFull=true
 	       fi
 	       isDischargeNull=false
 	   else
 	       if [[ ! $isDischargeNull ]] && (( $battery_level < $lowFlag  )); then
-	          local title="Battery Low Level: ${battery_level}% , \nit's recommended to start charging."
-	          notify-send "${title}"
-	       	  zenity --warning --text="${title}" --ok-label="sure"
+	          notify-send "Battery Low Level: ${battery_level}% ， it's recommended to start charging."
+	       	  zenity --warning --text="Battery Low Level: ${battery_level}% ，\n it's recommended to start charging." --ok-label="sure"
+	          
 	          #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
 
 	          isDischargeNull=true
@@ -98,4 +96,5 @@ ftBatteryLevelListener()
 	done
 }
 
-ftBatteryLevelListener --lowFlag 33 --heighFlag 81 --normalFreq 600
+ftBatteryLevelListener $@
+# ftBatteryLevelListener --lowFlag 33 --heighFlag 81 --normalFreq 600

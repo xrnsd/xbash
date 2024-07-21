@@ -1824,11 +1824,11 @@ ftAutoCdAospProject()
                 mAospProjectNameListUpdate=($(echo ${mAospProjectNameListUpdate[@]} | sed 's/ /\n/g'|sort |uniq))
                 ftIniSetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectNameList -l "${mAospProjectNameListUpdate[*]}"
                 ftIniSetValue $rFilePathXbashDBUser AospProjectsInfo AospProjectGitStorehouseList -l "${mAospProjectNameListUpdate[*]}"
-                ftEcho -s "Aosp项目列表更新完成"
+                ftEcho -s "项目列表更新完成"
                 return;;
         settings ) dirPathTarget="packages/apps/Settings" ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
-    [ -z "$mAospProjectStoragePathList" ] && errorContent="${errorContent}\\n[Aosp项目存放路径列表为空]"
+    [ -z "$mAospProjectStoragePathList" ] && errorContent="${errorContent}\\n[项目存放路径列表为空]"
     [ -z "$mAospProjectName" ] && errorContent="${errorContent}\\n[未指定Aosp项目名]"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCdAospProject -h && return $resultFail
 
