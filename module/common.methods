@@ -45,6 +45,9 @@ ftMain()
                 ftEcho -s "xbash -h    #查看所有说明\nxbash -hb   #bash命令封装和xbash扩展封装的说明\nxbash -ft   #xbash的扩展实现说明" && 
                 echo && ftMain -ft && echo && ftMain -hb
                 break;;
+    -hf | --help_find )
+                ftMain -h |grep -i "${2}"
+                break;;
     -ha )
                 ftEcho -s "xbash -h    #查看所有说明\nxbash -hb   #bash命令封装和xbash扩展封装的说明\nxbash -ft   #xbash的扩展实现说明" && 
                 echo && ftReadAllAlias && echo && ftReadAllFt -a

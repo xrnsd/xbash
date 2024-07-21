@@ -1,7 +1,7 @@
 #!/bin/bash
 #存放命令封装
 #存放xbash扩展封装
-versionNum=v0.0.1.9
+versionNum=v0.0.2.0
 
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
@@ -104,8 +104,7 @@ alias xdf='effect=普通磁盘空间;ftDf'
 alias xdw='effect=MTK下载工具;ftMtkFlashTool -w'
 alias xcg='effect=清空回收站;ftCleanGarbage -n -e -t'
 alias xfind='effect=查找含特定字符串的文件;ftFind -s '
-alias xhf='effect=xbash扩展说明查找;ftMain -h |grep -i '
-alias xhfa='effect=xbash扩展说明查找;ftMain -ha |grep -i '
+alias xhf='effect=xbash扩展说明查找;ftMain -hf'
 alias xcb='effect=进入xbash目录;cd $dirPathHomeXbash'
 alias xca='effect=快速切换到Aosp功能目录;ftCdAospDirectory '
 alias xFindOuts='effect=显示所有out备份;ftAutoFindAospBuildOuts'
@@ -186,6 +185,10 @@ fi
 
 if [[ -n $(which dia) ]];then
     alias dia="env GTK_IM_MODULE=xim dia"
+fi
+
+if [[ -n $(which zhcon) ]];then
+     alias zhc='effect=enable_support_Chinese_simplified_terminal_environment;zhcon --utf8'
 fi
 
 #命令选项快速适配
