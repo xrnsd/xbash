@@ -1,0 +1,23 @@
+#!/bin/bash
+#加载部分模块
+[[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
+[[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
+[[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
+
+ftDialogShutdown()
+{
+	local timeFreq=$1
+	(
+		index=0
+		for i in $(seq $timeFreq -1 1); do
+	  		echo "#按回车键关机，按Esc键取消,倒计时时间: $i 秒"
+	  		sleep 1
+	  		(( index+=20 ))
+	  		echo "$index"
+		done
+	) |
+	# percentage是进度条的起始点，auto-close是进度条达到100则自动关闭
+	zenity --progress --title="关机" --text="按回车键关机，按Esc键取消,倒计时时间:${timeFreq}秒" --auto-close && ftPowerManagement shutdown 1
+}
+
+ftDialogShutdown $@
