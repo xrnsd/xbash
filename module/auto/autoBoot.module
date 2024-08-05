@@ -3,7 +3,7 @@
 #网络代理工具
 #Clash for Windows
 if [[ -n $(which alltray) ]] && [[ -n $(which clashGui) ]];then
-	sleep 10 ; alltray  "clashGui --no-sandbox &" --notray
+	sleep 10 ; alltray  "clashGui &" --notray
 fi
 
 #系统负载提示器
