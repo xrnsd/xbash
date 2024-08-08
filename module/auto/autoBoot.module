@@ -1,18 +1,43 @@
 #!/bin/bash
 
-#网络代理工具
+
+#网络加速工具
 #Clash for Windows
-if [[ -n $(which alltray) ]] && [[ -n $(which clashGui) ]];then
-	sleep 10 ; alltray  "clashGui &" --notray
-fi
+ftBootClash()
+{
+    sleep $1
+    clashGui &
+    notify-send "自启动成功：clash"
+
+    local timeOut=10 flag=0
+    while [[ -n $(which wmctrl) ]] && [[ ! $(wmctrl -c "Clash for Windows") ]]; do
+        if (( $flag >= $timeOut )); then
+            break
+        fi
+        (( flag+=1 ))
+        sleep 1
+        if [[ -z $(wmctrl -xl | grep "clash for windows.Clash for Windows"| awk '{print $1}') ]]; then
+            break
+        fi
+    done
+}
 
 #系统负载提示器
 #一个能够以图形方式显示 CPU、内存、对换文件使用情况，以及网络流量的系统监视器。
-if [[ -n $(which indicator-multiload) ]];then
-	sleep 15 ; indicator-multiload &
-fi
+ftBootIndicatorMultiload()
+{
+	if [[ -z $(which indicator-multiload) ]];then
+		return
+	fi 
+	sleep $1
+	indicator-multiload &
+	notify-send "自启动成功：indicator-multiload"
+}
 
+ftBootClash 10
+ftBootIndicatorMultiload 15
 #电池电量监测提醒
 #电量超过阈值时提醒用户注意
 sleep 35 ; /home/myname/xbash/module/auto/battery.module --lowFlag 33 --heighFlag 81 --normalFreq 600
+notify-send "自启动成功：电池电量监测提醒"
 
