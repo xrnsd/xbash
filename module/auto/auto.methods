@@ -1528,11 +1528,11 @@ ftAutoFindAospBuildOuts()
     * ) break;;esac;done
 
     #参数校验
-    ftAutoCdAospProject -u > /dev/null
+    ftAutoCdProjectDirectory -u > /dev/null
     mAospProjectNameList="$(ftXbGetValue AospProjectsInfo AospProjectNameList)"
     mAospProjectStoragePathList="$(ftXbGetValue AospProjectsInfo AospProjectStoragePathList)"
-    [ -z "$mAospProjectStoragePathList" ] && errorContent="${errorContent}\\n找不到AOSP项目存储路径,请检查数据库:\n${rFilePathXbashDBUser}中的AospProjectsInfo"
-    [ -z "$mAospProjectNameList" ] && errorContent="${errorContent}\\n找不到AOSP项目,请检查数据库:\n${rFilePathXbashDBUser}中的AospProjectsInfo"
+    [ -z "$mAospProjectStoragePathList" ] && errorContent="${errorContent}\\n找不到项目存储路径,请检查数据库:\n${rFilePathXbashDBUser}中的AospProjectsInfo"
+    [ -z "$mAospProjectNameList" ] && errorContent="${errorContent}\\n找不到项目,请检查数据库:\n${rFilePathXbashDBUser}中的AospProjectsInfo"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoFindAospBuildOuts -h && return $resultFail
 
     #实现主体
@@ -1608,7 +1608,7 @@ ftAutoAsConfigFileAutoCreate()
 #========================================================="; return ;;
         --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
-# 环境未初始化 或 当前目录不是AOSP项目的根目录
+# 环境未初始化 或 当前目录不是项目的根目录
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #========================================================="; return ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
@@ -1644,7 +1644,7 @@ ftAutoAsConfigFileAutoCreate()
     local filePathShIdegen=development/tools/idegen/idegen.sh
     [[ ! -f "$filePathJarIdegen" ]] && ftEcho -s "未找到: ${filePathJarIdegen}" && return $resultFail
     ftEcho -s "开始使用脚本 idegen.sh 扫描AOSP"
-    sudo echo ""
+    sudo echo "" || return
     sudo $filePathShIdegen
 
     local filePathExcludeFolderListTemp=excludeFolder.list
@@ -1665,7 +1665,7 @@ ftAutoAsConfigFileAutoCreate()
     sed -i "$lineNum r $filePathExcludeFolderListTemp" $filePathAndroidIML
     rm $filePathExcludeFolderListTemp
 
-    sudo echo ""
+    sudo echo "" || return
     sudo chmod 777 android.ipr android.iml android.iws
 }
 
@@ -1736,10 +1736,10 @@ ftAutoLnCcacheByAosp()
     # [[ "$(type -t ftCheckCcache)" = "function" ]] && ftCheckCcache
 }
 
-complete -W "-h --help --rely_install" ftAutoCdAospProject
-ftAutoCdAospProject()
+complete -W "-h --help --rely_install" ftAutoCdProjectDirectory
+ftAutoCdProjectDirectory()
 {
-    local ftEffect=快速进入不同Aosp项目
+    local ftEffect=快速进入不同项目目录
     local isEnable=true
 
     #可用性校验
@@ -1754,15 +1754,15 @@ ftAutoCdAospProject()
 #=========================================================
 #
 #    自动更新项目列表
-#    ftAutoCdAospProject -u
+#    ftAutoCdProjectDirectory -u
 #
 #    切换终端路径
-#    ftAutoCdAospProject -n 项目名
+#    ftAutoCdProjectDirectory -n 项目名
 #
 #    在文件管理器中打开
-#    ftAutoCdAospProject -fm 项目名
+#    ftAutoCdProjectDirectory -fm 项目名
 #
-#    可简化 [ ftAutoCdAospProject 或 ftAutoCdAospProject -n ] 为 [xcd] ,其他参数不变
+#    可简化 [ ftAutoCdProjectDirectory 或 ftAutoCdProjectDirectory -n ] 为 [xcd] ,其他参数不变
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -fm ) isUserFileManager=true
@@ -1832,7 +1832,7 @@ ftAutoCdAospProject()
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     [ -z "$mAospProjectStoragePathList" ] && errorContent="${errorContent}\\n[项目存放路径列表为空]"
     [ -z "$mAospProjectName" ] && errorContent="${errorContent}\\n[未指定Aosp项目名]"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCdAospProject -h && return $resultFail
+    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCdProjectDirectory -h && return $resultFail
 
     #实现主体
     local mAospProjectNameList=($(ftXbGetValue AospProjectsInfo AospProjectNameList| sed 's/ /\n/g'|sort |uniq |grep -i $mAospProjectName))

@@ -27,11 +27,11 @@ mddbDirPathList= \
     system/etc/mddb \
     system/vendor/etc/mddb
 
-#AOSP项目列表和存放信息
+#项目列表和存放信息
 [AospProjectsInfo]
-AospProjectNameList=
-AospProjectStoragePathList=
-AospProjectNameIgnoreList=\
+CodeProjectNameList=
+CodeProjectStoragePathList=
+CodeProjectNameIgnoreList=\
     lost+found \
     download \
     demos
