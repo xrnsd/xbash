@@ -1644,7 +1644,8 @@ ftAutoAsConfigFileAutoCreate()
     local filePathShIdegen=development/tools/idegen/idegen.sh
     [[ ! -f "$filePathJarIdegen" ]] && ftEcho -s "未找到: ${filePathJarIdegen}" && return $resultFail
     ftEcho -s "开始使用脚本 idegen.sh 扫描AOSP"
-    echo $userPassword | sudo -p '' -S $filePathShIdegen
+    sudo echo ""
+    sudo $filePathShIdegen
 
     local filePathExcludeFolderListTemp=excludeFolder.list
     [[ ! -f "$filePathAndroidIML" ]] && ftEcho -s "未找到: ${filePathAndroidIML}，放弃更新" && return $resultFail
@@ -1664,7 +1665,8 @@ ftAutoAsConfigFileAutoCreate()
     sed -i "$lineNum r $filePathExcludeFolderListTemp" $filePathAndroidIML
     rm $filePathExcludeFolderListTemp
 
-    echo $userPassword | sudo -p '' -S chmod 777 android.ipr android.iml android.iws
+    sudo echo ""
+    sudo chmod 777 android.ipr android.iml android.iws
 }
 
 complete -W "-h --help -p -s --rely_install" ftAutoLnCcacheByAosp

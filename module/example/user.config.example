@@ -1,10 +1,8 @@
 #! /bin/bash
-versionNum=v0.1.7.4
+versionNum=v0.1.8.0
 xEcho(){
     local val1="${1}" val2="${2}" val3="${3}";echo -en "\033[1;33m${val1}\033[0m";echo -en "\033[1;31m${val2}\033[0m";echo -en "\033[1;33m${val3}\033[0m"; echo -e "\033[1;31m does not exist\033[0m"
 }
-#----------------    User info Config    ---------------------------
-export userPassword=
 #----------------    update config  ------------------
 export isAutoUpdate=
 #----------------    PS1 config  ------------------
@@ -61,7 +59,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
             configList=(java javac javap javaws javadoc javah)
 
             ftEcho -s "upadte jdk config"
-            echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+            sudo echo "" #echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
             for index in "${!filePathJavaList[@]}"; do
                 path=${filePathJavaList[$index]}
                 config=${configList[$index]}
@@ -98,7 +96,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
     #GCC&G++
     [[ "$isResetGcc" = "true" ]] && if [[ -f "$gccPath" ]] ;then
         ftEcho -s "update gcc&g++ config"
-        echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+        sudo echo "" #echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
         #sudo update-alternatives --remove gcc /usr/bin/gcc-x.x
         [[ -z $(update-alternatives --list gcc|grep $gccPath) ]] && sudo -p '' -S  update-alternatives --install /usr/bin/gcc gcc $gccPath 300
         echo "$gccPath" | sudo -p '' -S update-alternatives --config gcc >/dev/null
@@ -145,10 +143,10 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
     else xEcho "Android SDK " "config error : " ${dirPathAndroidSdk}; fi
 
     #Android JACK
-    isConfigAndroidJACK=
-    if [[ -n "$isConfigAndroidJACK" ]]; then
-        export JACK_SERVER_VM_ARGUMENTS=”${JACK_SERVER_VM_ARGUMENTS:=-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx7144M}”
-    else xEcho "Android SDK " "config error : " ${dirPathAndroidSdk}; fi
+    # isConfigAndroidJACK=
+    # if [[ -n "$isConfigAndroidJACK" ]]; then
+    #     export JACK_SERVER_VM_ARGUMENTS=”${JACK_SERVER_VM_ARGUMENTS:=-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx7144M}”
+    # else xEcho "Android SDK " "config error : " ${dirPathAndroidSdk}; fi
 
     #Android NDK
     dirPathAndroidNdk=${dirPathHomeTools}/ndk/android-ndk-r12b
@@ -251,7 +249,7 @@ fi
 # Flashcache
 export isUseFlashcache=
 if [ "$isUseFlashcache" = "true" ]&&[[ -n "$(which flashcache_load)" ]] ;then
-    echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+    sudo echo "" # echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
     sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.new_style_write_merge=1 >/dev/null
     sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.skip_seq_thresh_kb=512 >/dev/null
     sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.fast_remove=1 >/dev/null
@@ -270,7 +268,7 @@ filePathPython="$(which python)"
     ftEcho -s "update Python config"
     pythonFilePath=
     python3FilePath=
-    echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+    sudo echo "" # echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
     if [[ -n $(update-alternatives --list gcc|grep "no alternatives for python") ]]; then
             while read filePath ;do
                 sudo -p '' -S  update-alternatives --install /usr/bin/python python ${filePath} 300
@@ -291,3 +289,13 @@ else xEcho "Python" "config error : " ${filePathPython}; fi
 #decompile
 export DIR_PATH_ANDROID_DECOMPILE=${rDirPathUserHome}/xconfig/decompile
 export DIR_PATH_ANDROID_DECOMPILE_TOOLS=${DIR_PATH_ANDROID_DECOMPILE}/tools
+
+#pyenv
+isInitPyenv=
+if [[ -n "$isInitPyenv" ]]; then   
+    export PYENV_ROOT="$HOME/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    if command -v pyenv 1>/dev/null 2>&1; then
+     eval "$(pyenv init -)"
+    fi
+fi
