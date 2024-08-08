@@ -1,7 +1,6 @@
 #!/bin/bash
 #####-----------------------变量初始化-----------------------#########
 exceptionContent=
-userPasswdLocal=
 diaNameLocal="xbash"
 dirPathLocal=$(cd "$(dirname "$0")";pwd)
 [[ -z "$SUDO_USER" ]] && userNameLocal=$USER || userNameLocal=$SUDO_USER
@@ -11,8 +10,6 @@ resultSuccess=0 resultFail=1
 #####-----------------------公共方法-----------------------#########
 ftInitGitConfig()
 {
-    # 变量初始化
-    [[ -z "$userPasswdLocal" ]] && ftinitUserPassword
 
     if [[ -z $(which git) ]];then
         ftInitEcho -e "git没有安装，请手动安装"
@@ -40,8 +37,6 @@ ftInitGitConfig()
 
 ftInitUserConfig()
 {
-    # 变量初始化
-    [[ -z "$userPasswdLocal" ]] && ftinitUserPassword
 
     local dirPathXbashConfigBashrc=${dirPathLocal}/config
     local dirPathXbashConfigBashrcUser=${dirPathXbashConfigBashrc}/user
@@ -191,22 +186,22 @@ ftInitInputrc()
     cd $dirPathLocal
 }
 
-ftinitUserPassword()
-{
-        userPasswdLocal=def_null
-        local status=1
-        stty -echo
-        while [[ status -ne "0" ]]; do
-            if [[ $userPasswdLocal != "def_null" ]]; then
-                echo -e "\033[1;31m密码错误,请重新输入\033[0m";
-            fi
-            echo -en "请输入用户[$userNameLocal]对应的密码:"
-            read -s userPasswdLocal
-            echo $userPasswdLocal | sudo -p '' -S echo 2> /dev/null
-            status=$?
-        done||exceptionContent=" 用户信息配置初始化失败"
-        stty echo
-}
+# ftinitUserPassword()
+# {
+#         userPasswdLocal=def_null
+#         local status=1
+#         stty -echo
+#         while [[ status -ne "0" ]]; do
+#             if [[ $userPasswdLocal != "def_null" ]]; then
+#                 echo -e "\033[1;31m密码错误,请重新输入\033[0m";
+#             fi
+#             echo -en "请输入用户[$userNameLocal]对应的密码:"
+#             read -s userPasswdLocal
+#             echo $userPasswdLocal | sudo -p '' -S echo 2> /dev/null
+#             status=$?
+#         done||exceptionContent=" 用户信息配置初始化失败"
+#         stty echo
+# }
 
 ftInitEcho()
 {
@@ -260,8 +255,6 @@ ftInitXbash()
     [[ "$isEnable" = "false" ]] && ftInitEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     if [[ -z "$1" ]];then #初始化所有配置
-        # 变量初始化
-        [[ -z "$userPasswdLocal" ]] && ftinitUserPassword
  
         #配置初始化
         ftInitGitConfig

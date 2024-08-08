@@ -221,8 +221,9 @@ ftTest()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     if [[ ! -f "$rFilePathXbashModuleTest" ]] && [[ -f $rFilePathXbashModuleTestExpmale ]]; then
+       sudo echo ""
        cp $rFilePathXbashModuleTestExpmale $rFilePathXbashModuleTest
-       echo $userPassword | sudo -p '' -S chmod a+x $rFilePathXbashModuleTest
+       sudo chmod a+x $rFilePathXbashModuleTest
        [[ -z $(cat ${rDirPathXbash}/.gitignore |grep $rFileNameXbashModuleTestBase) ]] && \
        echo $(echo $rFilePathXbashModuleTest | sed -e "s:${rDirPathXbash}/::g") >> ${rDirPathXbash}/.gitignore
     fi
@@ -849,7 +850,7 @@ ftBashHistory()
     [ -f $filePathBashHistory ] && cat $filePathBashHistory >> $filePathBashHistoryArchive
     sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp}
     mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
-    echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+    sudo echo ""
     sudo chmod 777 $filePathBashHistoryArchive
     local fileSizeBashHistoryArchive=$(stat -c "%s" ${filePathBashHistoryArchive})
     (( $fileSizeBashHistoryArchive > 15728640 )) && ftEcho -s "xbash的命令历史过大建议整理 , 文件路径:${filePathBashHistoryArchive}"
@@ -1104,19 +1105,21 @@ adb()
         local  filePathAdb=${dirPathCode}/out/host/linux-x86/bin/adb
         if [[ "$dirPathLocal" = "$dirPathCode" ]] && [[ -f "$filePathAdb" ]]; then
             if [[ "$filePathAdbNow" != "$filePathAdb" ]]; then
+                sudo echo ""
                 local pid=$(lsof -i:5037  |grep adb |awk '{print $2}')
-                [[ -f "$filePathAdbLocal" ]] && echo $userPassword | sudo -p '' -S mv $filePathAdbLocal ${filePathAdbLocal}2
+                [[ -f "$filePathAdbLocal" ]] && sudo mv $filePathAdbLocal ${filePathAdbLocal}2
                 ftAdbConnect -r
             fi
         fi
     else
         if [[ ! -f "${filePathAdbLocal}" ]]; then
+            sudo echo ""
             if [[ -f "${filePathAdbLocal}2" ]]; then
-                echo $userPassword | sudo -p '' -S mv ${filePathAdbLocal}2 $filePathAdbLocal
+                sudo mv ${filePathAdbLocal}2 $filePathAdbLocal
             else
                 local filePath=${ANDROID_SDK}/platform-tools/adb
                 [[ ! -f "$filePath" ]] && ftEcho -e "Android SDK 配置 失败，文件不存在：$filePath" && return $resultFail
-                echo $userPassword | sudo  -p ''  -S ln -s  ${ANDROID_SDK}/platform-tools/adb $filePathAdbLocal
+                sudo ln -s  ${ANDROID_SDK}/platform-tools/adb $filePathAdbLocal
             fi
             ftAdbConnect -r
         fi
@@ -1440,7 +1443,8 @@ ftMtkFlashTool()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的出现错误:${errorContent}\\n" && return $resultFail
 
     #实现主体
-    echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+    sudo echo ""
+    #echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
     local projectOldList=($(ftXbGetValue xbashAOSPConfigMTKSoftwareDownloadToool projectOld))
     if [[ -n "$projectOldList" ]] && [[ -n "$AutoEnv_projrctName" ]] && [[ ${projectOldList[@]} == *${AutoEnv_projrctName}* ]]; then
         flashToolPath=$flashToolPathOld
@@ -1697,11 +1701,11 @@ ftPowerManagement()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
-    local edittype=$1 timeLong=$2 filePathFlag=/tmp/xbashPowerManagementFlag
+    local edittype=$1 timeLong=$2 userPassword=$3 filePathFlag=/tmp/xbashPowerManagementFlag
     timeLong=${timeLong:-$2}
     timeLong=${timeLong:-'10'}
     local errorContent
-    [ -z "$userPassword" ] && errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword"
+    [ -z "$userPassword" ] && sudo echo "" # errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword"
     [ -z "$edittype" ] && errorContent="${errorContent}\\n[操作参数为空]edittype=$edittype"
     ( ! echo -n $timeLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[倒计时时长无效]timeLong=$timeLong"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPowerManagement -h && return $resultFail
@@ -1717,8 +1721,9 @@ ftPowerManagement()
                 echo -ne "\033[1;31m将在${i}秒后关机，ctrl+c 取消\033[0m"
                 sleep 1
             done
-            echo $userPassword | sudo   -p '' -S shutdown -h now
-            break;;
+            [ -n "$userPassword" ] && echo $userPassword | sudo   -p '' -S shutdown -h now && break
+            sudo shutdown -h now
+            ;;
         reboot)
             touch $filePathFlag
             tput sc
@@ -1727,8 +1732,9 @@ ftPowerManagement()
                 echo -ne "\033[1;31m将在${i}秒后重启，ctrl+c 取消\033[0m";
                 sleep 1
             done
-            echo $userPassword | sudo   -p '' -S reboot
-            break;;
+            [ -n "$userPassword" ] && echo $userPassword | sudo   -p '' -S reboot && break
+            sudo reboot
+            ;;
         logout)
             tput sc
             for i in $(seq -w $timeLong -1 1) ; do
@@ -2254,9 +2260,10 @@ ftDu()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftDu -h && return $resultFail
 
     #实现主体
+    sudo echo ""
     cd $dirPathTarget
     fileCount=${fileCount:-'10'}
-    echo $userPassword | sudo  -p '' -S  du -hsx * | sort -rh | head -${fileCount}
+    sudo  du -hsx * | sort -rh | head -${fileCount}
     cd $dirPathLocal
 }
 
@@ -3071,18 +3078,19 @@ ftScrcpy()
 
     #实现主体
     if [[ -n "$isReset" ]]; then
-        echo $userPassword | sudo -p '' -S  snap remove core
-        echo $userPassword | sudo -p '' -S  snap remove scrcpy
-        echo $userPassword | sudo -p '' -S  snap install core
-        echo $userPassword | sudo -p '' -S  snap install scrcpy
+        sudo echo ""
+        sudo  snap remove core
+        sudo  snap remove scrcpy
+        sudo  snap install core
+        sudo  snap install scrcpy
         snap connections scrcpy
-        echo $userPassword | sudo -p '' -S  snap connect scrcpy:adb-support :adb-support
-        echo $userPassword | sudo -p '' -S  snap connect scrcpy:x11 :x11
-        echo $userPassword | sudo -p '' -S  snap connect scrcpy:desktop :desktop
-        echo $userPassword | sudo -p '' -S  snap connect scrcpy:desktop-legacy :desktop-legacy
-        echo $userPassword | sudo -p '' -S  snap connect scrcpy:network :network
-        echo $userPassword | sudo -p '' -S  snap connect scrcpy:network-bind :network-bind
-        echo $userPassword | sudo -p '' -S  snap connect scrcpy:wayland :wayland
+        sudo  snap connect scrcpy:adb-support :adb-support
+        sudo  snap connect scrcpy:x11 :x11
+        sudo  snap connect scrcpy:desktop :desktop
+        sudo  snap connect scrcpy:desktop-legacy :desktop-legacy
+        sudo  snap connect scrcpy:network :network
+        sudo  snap connect scrcpy:network-bind :network-bind
+        sudo  snap connect scrcpy:wayland :wayland
         ftEcho -s "scrcpy重置结束"
         return
     fi
@@ -3313,10 +3321,11 @@ ftCreateMoudleDesktop()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCreateMoudleDesktop -h && return $resultFail
 
     #实现主体
+    sudo echo ""
     local dirPathLocal=$(pwd)
     cd /usr/bin
-    echo $userPassword | sudo -p '' -S chmod a+x $filePathExeModule
-    echo $userPassword | sudo -p '' -S ln -sf $filePathExeModule $exeModuleName
+    sudo chmod a+x $filePathExeModule
+    sudo ln -sf $filePathExeModule $exeModuleName
     cd $dirPathLocal
 
     local filePathReadMeTemplate="${exeModuleName}.desktop"
@@ -3334,7 +3343,7 @@ ftCreateMoudleDesktop()
     content=${content}${enterLine}
 
     echo -e ${content} >$filePathReadMeTemplate
-    echo $userPassword | sudo -p '' -S chmod a+x $filePathReadMeTemplate
+    sudo chmod a+x $filePathReadMeTemplate
 }
 
 complete -W "-h --help -t -i" ftXbGetValue
@@ -3637,8 +3646,8 @@ EOF
         local uninstallToolFileName=vpn_uninstall.sh
 
         cd ${dirPathAnyconnect}
-
-        echo $userPassword | sudo -p '' -S chmod a+x $installToolFileName $uninstallToolFileName
+        sudo echo ""
+        sudo chmod a+x $installToolFileName $uninstallToolFileName
         sudo ./${uninstallToolFileName}
         sudo ./${installToolFileName}
 
