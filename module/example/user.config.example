@@ -59,7 +59,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
             configList=(java javac javap javaws javadoc javah)
 
             ftEcho -s "upadte jdk config"
-            sudo echo "" #echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+            sudo echo "" || return #echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
             for index in "${!filePathJavaList[@]}"; do
                 path=${filePathJavaList[$index]}
                 config=${configList[$index]}
@@ -96,7 +96,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
     #GCC&G++
     [[ "$isResetGcc" = "true" ]] && if [[ -f "$gccPath" ]] ;then
         ftEcho -s "update gcc&g++ config"
-        sudo echo "" #echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+        sudo echo "" || return #echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
         #sudo update-alternatives --remove gcc /usr/bin/gcc-x.x
         [[ -z $(update-alternatives --list gcc|grep $gccPath) ]] && sudo -p '' -S  update-alternatives --install /usr/bin/gcc gcc $gccPath 300
         echo "$gccPath" | sudo -p '' -S update-alternatives --config gcc >/dev/null
@@ -249,7 +249,7 @@ fi
 # Flashcache
 export isUseFlashcache=
 if [ "$isUseFlashcache" = "true" ]&&[[ -n "$(which flashcache_load)" ]] ;then
-    sudo echo "" # echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+    sudo echo "" || return # echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
     sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.new_style_write_merge=1 >/dev/null
     sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.skip_seq_thresh_kb=512 >/dev/null
     sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.fast_remove=1 >/dev/null
@@ -268,7 +268,7 @@ filePathPython="$(which python)"
     ftEcho -s "update Python config"
     pythonFilePath=
     python3FilePath=
-    sudo echo "" # echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
+    sudo echo "" || return # echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
     if [[ -n $(update-alternatives --list gcc|grep "no alternatives for python") ]]; then
             while read filePath ;do
                 sudo -p '' -S  update-alternatives --install /usr/bin/python python ${filePath} 300

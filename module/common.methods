@@ -221,7 +221,7 @@ ftTest()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     if [[ ! -f "$rFilePathXbashModuleTest" ]] && [[ -f $rFilePathXbashModuleTestExpmale ]]; then
-       sudo echo ""
+       sudo echo "" || return
        cp $rFilePathXbashModuleTestExpmale $rFilePathXbashModuleTest
        sudo chmod a+x $rFilePathXbashModuleTest
        [[ -z $(cat ${rDirPathXbash}/.gitignore |grep $rFileNameXbashModuleTestBase) ]] && \
@@ -850,7 +850,7 @@ ftBashHistory()
     [ -f $filePathBashHistory ] && cat $filePathBashHistory >> $filePathBashHistoryArchive
     sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp}
     mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
-    sudo echo ""
+    sudo echo "" || return
     sudo chmod 777 $filePathBashHistoryArchive
     local fileSizeBashHistoryArchive=$(stat -c "%s" ${filePathBashHistoryArchive})
     (( $fileSizeBashHistoryArchive > 15728640 )) && ftEcho -s "xbash的命令历史过大建议整理 , 文件路径:${filePathBashHistoryArchive}"
@@ -1105,7 +1105,7 @@ adb()
         local  filePathAdb=${dirPathCode}/out/host/linux-x86/bin/adb
         if [[ "$dirPathLocal" = "$dirPathCode" ]] && [[ -f "$filePathAdb" ]]; then
             if [[ "$filePathAdbNow" != "$filePathAdb" ]]; then
-                sudo echo ""
+                sudo echo "" || return
                 local pid=$(lsof -i:5037  |grep adb |awk '{print $2}')
                 [[ -f "$filePathAdbLocal" ]] && sudo mv $filePathAdbLocal ${filePathAdbLocal}2
                 ftAdbConnect -r
@@ -1113,7 +1113,7 @@ adb()
         fi
     else
         if [[ ! -f "${filePathAdbLocal}" ]]; then
-            sudo echo ""
+            sudo echo "" || return
             if [[ -f "${filePathAdbLocal}2" ]]; then
                 sudo mv ${filePathAdbLocal}2 $filePathAdbLocal
             else
@@ -1443,7 +1443,7 @@ ftMtkFlashTool()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的出现错误:${errorContent}\\n" && return $resultFail
 
     #实现主体
-    sudo echo ""
+    sudo echo "" || return
     #echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
     local projectOldList=($(ftXbGetValue xbashAOSPConfigMTKSoftwareDownloadToool projectOld))
     if [[ -n "$projectOldList" ]] && [[ -n "$AutoEnv_projrctName" ]] && [[ ${projectOldList[@]} == *${AutoEnv_projrctName}* ]]; then
@@ -1705,7 +1705,7 @@ ftPowerManagement()
     timeLong=${timeLong:-$2}
     timeLong=${timeLong:-'10'}
     local errorContent
-    [ -z "$userPassword" ] && sudo echo "" # errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword"
+    [ -z "$userPassword" ] && sudo echo "" || return # errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword"
     [ -z "$edittype" ] && errorContent="${errorContent}\\n[操作参数为空]edittype=$edittype"
     ( ! echo -n $timeLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[倒计时时长无效]timeLong=$timeLong"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPowerManagement -h && return $resultFail
@@ -2260,7 +2260,7 @@ ftDu()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftDu -h && return $resultFail
 
     #实现主体
-    sudo echo ""
+    sudo echo "" || return
     cd $dirPathTarget
     fileCount=${fileCount:-'10'}
     sudo  du -hsx * | sort -rh | head -${fileCount}
@@ -2442,7 +2442,7 @@ ftCdAospDirectory()
     --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #==========================================================
 # 当前非有效AOSP目录，请确认
-# 可以尝试使用 ftAutoCdAospProject 快速进入项目
+# 可以尝试使用 ftAutoCdProjectDirectory 快速进入项目
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -fm ) isUserFileManager=true ;;
@@ -3078,7 +3078,7 @@ ftScrcpy()
 
     #实现主体
     if [[ -n "$isReset" ]]; then
-        sudo echo ""
+        sudo echo "" || return
         sudo  snap remove core
         sudo  snap remove scrcpy
         sudo  snap install core
@@ -3321,7 +3321,7 @@ ftCreateMoudleDesktop()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftCreateMoudleDesktop -h && return $resultFail
 
     #实现主体
-    sudo echo ""
+    sudo echo "" || return
     local dirPathLocal=$(pwd)
     cd /usr/bin
     sudo chmod a+x $filePathExeModule
@@ -3646,7 +3646,7 @@ EOF
         local uninstallToolFileName=vpn_uninstall.sh
 
         cd ${dirPathAnyconnect}
-        sudo echo ""
+        sudo echo "" || return
         sudo chmod a+x $installToolFileName $uninstallToolFileName
         sudo ./${uninstallToolFileName}
         sudo ./${installToolFileName}
