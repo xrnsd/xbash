@@ -15,7 +15,7 @@ ftBootClash()
             break
         fi
         (( flag+=1 ))
-        sleep 1
+        sleep 3
         if [[ -z $(wmctrl -xl | grep "clash for windows.Clash for Windows"| awk '{print $1}') ]]; then
             break
         fi
