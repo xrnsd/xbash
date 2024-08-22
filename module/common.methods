@@ -3806,3 +3806,69 @@ ftDf()
     df -lh |grep -E "文件系统|/dev/" |grep -v "/snap" |grep -v "/boot/efi" \
     | awk '{ if ($5 >= 75) print "\033[0;31m" $0 "\033[0m"; else print $0 }'
 }
+
+ftEdgeTTs()
+{
+    local ftEffect=将剪贴板内部的英文转化为语音并播放
+    local isEnable=true
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+
+    #解参验耦
+    local playContent speedVal=
+    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 ftEdgeTTs --rely_install 补全依赖
+#========================================================="; return ;;
+        --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install xsel
+            pip install edge-tts
+            return ;;
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    速度值1 ～ 100，越大越慢
+#    ftEdgeTTs --speed 50
+#========================================================="; return ;;
+
+        # 变量参数解析部分 ==============
+        --speed) speedVal="${arg2}" ;;
+        --playContent) playContent="${arg2}" ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #依赖校验
+    local dirPathPythonVirtualEnvironment="/home/myname/.venv/bin/"
+    source ${dirPathPythonVirtualEnvironment}activate
+    cd ${dirPathPythonVirtualEnvironment}
+    [[ -z $(which xsel) ]] && ftEdgeTTs --rely "xsel" && return $resultFail
+    [[ -z $(which edge-playback) ]] && ftEdgeTTs --rely "edge-tts" && return $resultFail
+
+    local filePath=/tmp/tts.lock
+    if [[ -f $filePath ]]; then
+        local alarmContent="tts is lock , please wait"
+        notify-send -e "${alarmContent}"
+        echo "${alarmContent}"
+        return
+    fi
+    touch $filePath
+    if [ -z "${playContent}" ]; then
+        playContent="$(xsel | sed -e :a -e 'N;s/\n/ /;ta')"
+        [ -z "${playContent}" ] && return
+    fi
+    source /home/myname/.venv/bin/activate
+    cd /home/myname/.venv/bin/
+    edge-playback --rate=-${speedVal}% --text "${playContent}"
+    rm $filePath
+
+
+    #echo "(SayText \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\")" | festival  '(voice_cmu_us_slt_arctic_hts)' -
+    #-pipe
+
+    # bash -c "espeak -s100 -g20 -p80 -v english-us \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\""
+}
