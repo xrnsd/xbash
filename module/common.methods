@@ -1900,9 +1900,14 @@ ftReNameFile()
         fi
 
         [[ -n "${isAddName}" ]] && fileName=${fileNameAddPrefix}${fileName}${fileNameAddSuffix}
-        [[ -n "${fileTagBase}" ]] && fileName="$(echo $fileName |sed s/$fileTagBase/$fileTagNew/g)"
+        #[[ -n "${fileTagBase}" ]] && fileName="$(echo $fileName |sed s/$fileTagBase/$fileTagNew/g)"
+        [[ -n "${fileTagBase}" ]] && fileName=$(echo ${fileName/$fileTagBase/$fileTagNew})
+        # echo "fileTagBase=${fileTagBase}"
+        # echo "fileTagNew=${fileTagNew}"
+        # echo "fileName2=${fileName}"
+        
         [[ -n "${fileSuffixTagBase}" ]] && fileSuffixName="$(echo $fileSuffixName |sed s/$fileSuffixTagBase/$fileSuffixTagNew/g)"
-        cp -rf "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileName}.${fileSuffixName}
+        cp -rf -v "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileName}.${fileSuffixName}
         ((index+=1))
     done < <(echo "$(ls $dirPathFileList)")
     cd "${dirPathLocal}"
@@ -3809,7 +3814,7 @@ ftDf()
 
 ftEdgeTTs()
 {
-    local ftEffect=将剪贴板内部的英文转化为语音并播放
+    local ftEffect=EdgeTts播放工具
     local isEnable=true
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
@@ -3849,14 +3854,14 @@ ftEdgeTTs()
     [[ -z $(which xsel) ]] && ftEdgeTTs --rely "xsel" && return $resultFail
     [[ -z $(which edge-playback) ]] && ftEdgeTTs --rely "edge-tts" && return $resultFail
 
-    local filePath=/tmp/tts.lock
-    if [[ -f $filePath ]]; then
+    local filePathLock=/tmp/tts.lock
+    if [[ -f $filePathLock ]]; then
         local alarmContent="tts is lock , please wait"
         notify-send -e "${alarmContent}"
         echo "${alarmContent}"
         return
     fi
-    touch $filePath
+    touch $filePathLock && trap '[ -f "$filePathLock" ] && rm $filePathLock && exit' SIGINT
     if [ -z "${playContent}" ]; then
         playContent="$(xsel | sed -e :a -e 'N;s/\n/ /;ta')"
         [ -z "${playContent}" ] && return
@@ -3864,7 +3869,7 @@ ftEdgeTTs()
     source /home/myname/.venv/bin/activate
     cd /home/myname/.venv/bin/
     edge-playback --rate=-${speedVal}% --text "${playContent}"
-    rm $filePath
+    rm $filePathLock
 
 
     #echo "(SayText \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\")" | festival  '(voice_cmu_us_slt_arctic_hts)' -
