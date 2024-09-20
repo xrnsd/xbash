@@ -3877,3 +3877,83 @@ ftEdgeTTs()
 
     # bash -c "espeak -s100 -g20 -p80 -v english-us \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\""
 }
+
+complete -W "-h --help --rely_install -p -l" -A file ftOcrRepetionDrill 
+ftOcrRepetionDrill()
+{
+    local ftEffect=英语图片文本语音合成
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local flag="."
+    local sentence sentenceContent filePath sentenceHeaderFlag=0
+    local valCount=4 errorContent arg arg2 # arg3 # arg4
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    #eval arg3=\${$((i+2))} #; eval arg4=\${$((i+3))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 ftOcrRepetionDrill --rely_install 补全依赖
+#========================================================="; return ;;
+        --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install xxxx
+            return ;;
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftOcrRepetionDrill -p 图片路径 -l 句子截取长度
+#========================================================="; return ;;
+        # 变量参数解析部分 ==============
+        -p ) filePath="${arg2}"
+            ;;
+        -l ) sentenceHeaderFlag="${arg2}"
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #依赖校验
+    [[ -z $(which tesseract) ]] && ftOcrRepetionDrill --rely "tesseract-ocr-eng" && return $resultFail
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ ! -f "${filePath}" ] && errorContent="${errorContent}\\n[文件不存在]$filePath"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftOcrRepetionDrill -h && return $resultFail
+
+    #实现主体
+    local fileType=${filePath##*.}
+    if [[ $fileType != "txt" ]]; then
+        ftEcho -s "图片OCR处理中..."
+        local filePathTemp=/tmp/ocrTemp
+        if tesseract "${filePath}" "${filePathTemp}"; then
+            filePath="${filePathTemp}.txt"
+        else
+            ftEcho -e "OCR处理失败"
+            return
+        fi
+    fi
+
+    ftEcho -s "句子切分中..."
+    while read -u 3 -d "$flag" -a sentence;do
+      if (( $sentenceHeaderFlag>0 )) && (( ${#sentence[@]}>$sentenceHeaderFlag )); then
+          for (( i = 0; i < ${sentenceHeaderFlag}; i++ )); do
+            eval word=\${sentence[$i]}
+            sentenceContent="${sentenceContent} ${word}"
+          done
+      else
+        sentenceContent=${sentence[@]}
+      fi
+      ftEcho -sn "开始合成下面句子语音： "
+      echo "${sentenceContent}"
+      ftEdgeTTs --speed 10 --playContent "${sentenceContent}" > /dev/null
+      #重置缓存
+      sentenceContent=
+
+      ftEcho -s "是否继续下一句(回车继续/其他任意键取消)"
+      read -n 1 sel
+      [ -n "${sel}" ] && return
+    done 3< $filePath
+}
