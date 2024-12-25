@@ -38,6 +38,4 @@ ftBootClash 10
 ftBootIndicatorMultiload 15
 #电池电量监测提醒
 #电量超过阈值时提醒用户注意
-sleep 35 ; /home/myname/xbash/module/auto/battery.module --lowFlag 33 --heighFlag 81 --normalFreq 600
-notify-send "自启动成功：电池电量监测提醒"
-
+/home/myname/xbash/module/auto/battery.module --lowFlag 40 --heighFlag 81

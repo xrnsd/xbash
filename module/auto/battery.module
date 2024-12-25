@@ -4,11 +4,10 @@
 [[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
 [[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
 # =================================================================
-
-complete -W " --help --lowFlag --heighFlag --normalFreq" ftBatteryLevelListener
-ftBatteryLevelListener()
+complete -W " --help --lowFlag --heighFlag --normalFreq" ftBatteryLevelListenerOld
+ftBatteryLevelListenerOld()
 {
-    local ftEffect=电池电量监测
+    local ftEffect=电池电量监测[遍历实现]
     local isEnable=true
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
@@ -21,7 +20,7 @@ ftBatteryLevelListener()
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    ${ftEffect}依赖包 $2
-#    请尝试使用 ftBatteryLevelListener --rely_install 补全依赖
+#    请尝试使用 ftBatteryLevelListenerOld --rely_install 补全依赖
 #========================================================="; return ;;
         --rely_install)
             ftEcho -s "开始补全依赖"
@@ -31,7 +30,7 @@ ftBatteryLevelListener()
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
-#    ftBatteryLevelListener --lowFlag 放电电量阈值 --heighFlag 充电电量阈值 --normalFreq 监测频率,单位秒
+#    ftBatteryLevelListenerOld --lowFlag 放电电量阈值 --heighFlag 充电电量阈值 --normalFreq 监测频率,单位秒
 #========================================================="; return ;;
 
         # 变量参数解析部分 ==============
@@ -41,10 +40,10 @@ ftBatteryLevelListener()
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #依赖校验
-    [[ -z $(which acpi) ]] && ftBatteryLevelListener --rely "fdupes" && return $resultFail
+    [[ -z $(which acpi) ]] && ftBatteryLevelListenerOld --rely "fdupes" && return $resultFail
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBatteryLevelListener -h && return $resultFail
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBatteryLevelListenerOld -h && return $resultFail
 
     #实现主体
     local isChargeFull=false isDischargeNull=false
@@ -96,5 +95,74 @@ ftBatteryLevelListener()
 	done
 }
 
+complete -W " --help --lowFlag --heighFlag" ftBatteryLevelListener
+ftBatteryLevelListener()
+{
+    local ftEffect=电池电量监测[监听实现]
+    local isEnable=true
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+
+    #解参验耦
+    local dirPathTarget lowFlag=30 heighFlag=80 normalFreq=600 heightCriticalFreq=30 lowCriticalFreq=60
+    local valCount=6 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 ftBatteryLevelListener --rely_install 补全依赖
+#========================================================="; return ;;
+        --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install xxxx
+            return ;;
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftBatteryLevelListener --lowFlag 放电电量阈值 --heighFlag 充电电量阈值
+#========================================================="; return ;;
+
+        # 变量参数解析部分 ==============
+        --lowFlag) lowFlag="${arg2}" ;;
+        --heighFlag) heighFlag="${arg2}" ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #依赖校验
+    [[ -z $(which acpi) ]] && ftBatteryLevelListener --rely "fdupes" && return $resultFail
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBatteryLevelListener -h && return $resultFail
+
+    #实现主体
+    notify-send "开启电池电量监测提醒"
+    local isChargeFull=false isLowPower=false
+    local filePathBatteryCapacity=/sys/class/power_supply/BAT0/capacity
+    while true; do
+      inotifywait -m -e access $filePathBatteryCapacity |
+      while read events;
+      do
+      export DISPLAY=:0.0
+      local battery_level=$(cat $filePathBatteryCapacity) #$(acpi -b | grep -P -o '[0-9]+(?=%)')
+      local isCharging=$(acpi |grep "charged" )
+      if [[ $isCharging ]] && [[ ! $isChargeFull ]] && (( $battery_level >= $heighFlag  )); then
+          notify-send "Battery Full Level: ${battery_level}% ， it's recommended to stop charging."
+          zenity --warning --text="Battery Full Level: ${battery_level}% ，\n it's recommended to stop charging." --ok-label="sure"
+          #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
+          isChargeFull=true
+      fi
+
+      if (( $battery_level < $lowFlag  )); then
+          notify-send "Battery Low Level: ${battery_level}% ， it's recommended to start charging."
+          zenity --warning --text="Battery Low Level: ${battery_level}% ，\n it's recommended to start charging." --ok-label="sure"
+          #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
+          isChargeFull=false
+      fi
+
+      break;
+      done
+    done
+}
+
 ftBatteryLevelListener $@
-# ftBatteryLevelListener --lowFlag 33 --heighFlag 81 --normalFreq 600
