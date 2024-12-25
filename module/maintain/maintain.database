@@ -9,6 +9,7 @@ dirPathsExcludeListSys= \
     /tmp \
     /dev \
     /sys \
+    /swap.img \
     /snap \
     /.Trash-0 \
     /media \
@@ -172,6 +173,7 @@ dirPathsExcludeAllListSys= \
     /usr/share/icons/Paper \
     /usr/lib/firefox \
     /usr/share/man \
+    /swap.img \
     /opt/android_studio_preview \
     /opt/kingsoft \
     /root/.gradle \
