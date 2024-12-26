@@ -137,7 +137,7 @@ ftBatteryLevelListener()
 
     #实现主体
     notify-send "开启电池电量监测提醒"
-    local isChargeFull=false isLowPower=false
+    local isChargeFull= isLowPower=false
     local filePathBatteryCapacity=/sys/class/power_supply/BAT0/capacity
     while true; do
       inotifywait -m -e access $filePathBatteryCapacity |
@@ -146,18 +146,22 @@ ftBatteryLevelListener()
       export DISPLAY=:0.0
       local battery_level=$(cat $filePathBatteryCapacity) #$(acpi -b | grep -P -o '[0-9]+(?=%)')
       local isCharging=$(acpi |grep "charged" )
-      if [[ $isCharging ]] && [[ ! $isChargeFull ]] && (( $battery_level >= $heighFlag  )); then
+      if [[ -n "$isCharging" ]] && [[ -z $isChargeFull ]] && (( $battery_level >= $heighFlag  )); then
           notify-send "Battery Full Level: ${battery_level}% ， it's recommended to stop charging."
           zenity --warning --text="Battery Full Level: ${battery_level}% ，\n it's recommended to stop charging." --ok-label="sure"
           #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
           isChargeFull=true
+          break
       fi
 
-      if (( $battery_level < $lowFlag  )); then
+      if (( $battery_level <= $lowFlag  )); then
+        if [[ ! $isCharging ]]; then
           notify-send "Battery Low Level: ${battery_level}% ， it's recommended to start charging."
           zenity --warning --text="Battery Low Level: ${battery_level}% ，\n it's recommended to start charging." --ok-label="sure"
           #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
-          isChargeFull=false
+        fi
+        isChargeFull=
+        break
       fi
 
       break;
