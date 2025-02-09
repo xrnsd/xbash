@@ -145,14 +145,14 @@ ftSetBackupDevDir()
     [ -z "$rDirPathXbash" ] && errorContent="${errorContent}\\n[默认用户名为空]rUserName=$rUserName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[备份包数据库文件不存在]filePathIni=$filePathIni"
     [ -z "$versionName" ] && errorContent="${errorContent}\\n[备份包名为空]versionName=$versionName"
-    [ -z "$mXbashModuleDataDevicesList" ] && errorContent="${errorContent}\\n[可用的备份包备份存储设备列表为空]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}"
+    [ -z "$mXbashModuleDataDevicesList" ]||[ ${#mXbashModuleDataDevicesList[@]} ==0 ] && errorContent="${errorContent}\\n[可用的备份包备份存储设备列表为空]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSetBackupDevDir -h && return $resultFail
 
     #实现主体
     ftEcho -b 请${ftEffect}
 
     local devTarget devTargetDir devEffectiveSpace
-    local index=0
+    local index=0 listSize=${#mXbashModuleDataDevicesList[@]}
     for dev in ${mXbashModuleDataDevicesList[*]} ; do
         devEffectiveSpace=$(ftDevAvailableSpace $dev)
         devEffectiveSpace=$(($devEffectiveSpace/1024))
@@ -161,26 +161,30 @@ ftSetBackupDevDir()
         #echo [ ${index} ] ${mXbashModuleDataDevicesList[$index]}
         ((index+=1))
     done
-    echo
 
-    while true; do
-        ftEcho -r  "请选择存放备份文件的设备[0~$(expr $index - 1),q](回车默认0):"
-        if (( ${#mXbashModuleDataDevicesList[@]} > 9 ));then
-            read dir
-        else
-            read -n 1 dir
-        fi
-        #设定默认值
-         [ ${#dir} == 0 ] && dir=0
-         if [ ${dir} == "q" ]; then
-            exit
-         elif [ -n "$(echo $dir| sed -n "/^[0-$index]\+$/p")" ];then
-            devTargetDir=${mXbashModuleDataDevicesList[$dir]}
-            echo
-            break;
-         fi
-         ftEcho -e 错误的选择：$dir
-    done
+    if [ $listSize == 1 ];then
+        devTargetDir=$mXbashModuleDataDevicesList
+    else
+        echo
+        while true; do
+            ftEcho -r  "请选择存放备份文件的设备[0~$(expr $index - 1),q](回车默认0):"
+            if (( ${#mXbashModuleDataDevicesList[@]} > 9 ));then
+                read dir
+            else
+                read -n 1 dir
+            fi
+            #设定默认值
+             [ ${#dir} == 0 ] && dir=0
+             if [ ${dir} == "q" ]; then
+                exit
+             elif [ -n "$(echo $dir| sed -n "/^[0-$index]\+$/p")" ];then
+                devTargetDir=${mXbashModuleDataDevicesList[$dir]}
+                echo
+                break;
+             fi
+             ftEcho -e 错误的选择：$dir
+        done
+    fi
 
     case "$editType" in
     backup ) local dirPathStoreSource=${devTargetDir}/backup/os/${rUserName}/${versionName}
