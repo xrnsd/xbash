@@ -95,6 +95,43 @@ ftBatteryLevelListenerOld()
 	done
 }
 
+ftBatteryLevelNotice()
+{
+    local ftEffect=电池电量提醒
+    local isEnable=true
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+
+    #解参验耦
+    local heighFlag=80
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        --heighFlag) heighFlag="${arg2}" ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #依赖校验
+    [[ -z $(which acpi) ]] && return $resultFail
+
+    #实现主体
+    local filePathBatteryCapacity=/sys/class/power_supply/BAT0/capacity
+    local battery_level=$(cat $filePathBatteryCapacity) #$(acpi -b | grep -P -o '[0-9]+(?=%)')
+    local isCharging=$(acpi |grep "charged" )
+
+    if [[ -n "$isCharging" ]] && (( $battery_level >= $heighFlag  )); then
+      notify-send "Battery Full Level: ${battery_level}% ， it's recommended to stop charging."
+      zenity --warning --text="Battery Full Level: ${battery_level}% ，\n it's recommended to stop charging." --ok-label="sure"
+      #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
+      break
+    fi
+
+    if (( $battery_level <= $lowFlag  )) && [[ -z $isCharging ]]; then
+      notify-send "Battery Low Level: ${battery_level}% ， it's recommended to start charging."
+      zenity --warning --text="Battery Low Level: ${battery_level}% ，\n it's recommended to start charging." --ok-label="sure"
+      #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
+    fi
+}
+
 complete -W " --help --lowFlag --heighFlag" ftBatteryLevelListener
 ftBatteryLevelListener()
 {
@@ -104,7 +141,7 @@ ftBatteryLevelListener()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     #解参验耦
-    local dirPathTarget lowFlag=30 heighFlag=80 normalFreq=600 heightCriticalFreq=30 lowCriticalFreq=60
+    local dirPathTarget lowFlag=30 heighFlag=80
     local valCount=6 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
@@ -137,32 +174,24 @@ ftBatteryLevelListener()
 
     #实现主体
     notify-send "开启电池电量监测提醒"
-    local isChargeFull= isLowPower=false
     local filePathBatteryCapacity=/sys/class/power_supply/BAT0/capacity
+    local filePathBatteryCapacityCache=/tmp/batteryCapacity.tmp
+
+    rm $filePathBatteryCapacityCache
+    ftBatteryLevelNotice --heighFlag $heighFlag
+
     while true; do
       inotifywait -m -e access $filePathBatteryCapacity |
       while read events;
       do
       export DISPLAY=:0.0
+        
       local battery_level=$(cat $filePathBatteryCapacity) #$(acpi -b | grep -P -o '[0-9]+(?=%)')
-      local isCharging=$(acpi |grep "charged" )
-      if [[ -n "$isCharging" ]] && [[ -z $isChargeFull ]] && (( $battery_level >= $heighFlag  )); then
-          notify-send "Battery Full Level: ${battery_level}% ， it's recommended to stop charging."
-          zenity --warning --text="Battery Full Level: ${battery_level}% ，\n it's recommended to stop charging." --ok-label="sure"
-          #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
-          isChargeFull=true
-          break
-      fi
+      local batteryLevelCache=$(cat $filePathBatteryCapacityCache)
+      [ -n "$batteryLevelCache" ] && [[ "$battery_level" == "$batteryLevelCache" ]] && echo "cancel battery_level=${battery_level}"&& break
 
-      if (( $battery_level <= $lowFlag  )); then
-        if [[ ! $isCharging ]]; then
-          notify-send "Battery Low Level: ${battery_level}% ， it's recommended to start charging."
-          zenity --warning --text="Battery Low Level: ${battery_level}% ，\n it's recommended to start charging." --ok-label="sure"
-          #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
-        fi
-        isChargeFull=
-        break
-      fi
+      echo $battery_level > $filePathBatteryCapacityCache
+      ftBatteryLevelNotice --heighFlag $heighFlag
 
       break;
       done
