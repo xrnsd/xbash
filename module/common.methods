@@ -847,14 +847,6 @@ ftBashHistory()
 
     #实现主体
     #备份历史记录
-    [ -f $filePathBashHistory ] && cat $filePathBashHistory >> $filePathBashHistoryArchive
-    sort -k2n $filePathBashHistoryArchive | awk '{if ($0!=line) print;line=$0}' >${filePathBashHistoryArchiveTemp}
-    mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
-    sudo echo "" || return
-    sudo chmod 777 $filePathBashHistoryArchive
-    local fileSizeBashHistoryArchive=$(stat -c "%s" ${filePathBashHistoryArchive})
-    (( $fileSizeBashHistoryArchive > 15728640 )) && ftEcho -s "xbash的命令历史过大建议整理 , 文件路径:${filePathBashHistoryArchive}"
-
     if [[ -f $rFilePathXbashDBUser ]]; then
         bashHistorySize=$(ftXbGetValue  xbash bashHistoryThresholdSize)
     else
@@ -867,6 +859,43 @@ ftBashHistory()
     export HISTSIZE=$bashHistorySize
     export HISTFILESIZE=$bashHistorySize
     shopt -s histappend #多个终端情况下，共享history
+
+    [ ！-f $filePathBashHistory ] && echo "" > $filePathBashHistory && return
+
+    local fileLineCountNormalFlag=50000
+    local fileLineCountMaxFlag=15728640
+    local fileLineCountBashHistory=$(awk 'END{print NR}' $filePathBashHistory)
+    local fileLineCountBashHistoryArchive=$(awk 'END{print NR}' $filePathBashHistoryArchive)
+    (( $fileLineCountBashHistory <= $fileLineCountBashHistoryArchive )) && return
+
+    if (( $fileLineCountBashHistory >= $fileLineCountMaxFlag )); then
+        while true; do
+        echo
+        ftEcho -y "xbash的命令历史过大，是否只保留最后${fileLineCountNormalFlag}行记录"
+        read -n 1 sel
+        case "$sel" in
+            y | Y )   
+                tail -n $fileLineCountNormalFlag $fileLineCountBashHistory > $filePathBashHistoryArchiveTemp
+                mv $filePathBashHistoryArchiveTemp $filePathBashHistoryArchive
+                cp $filePathBashHistoryArchive $filePathBashHistory
+                ftEcho -s "命令历史整理完成"
+                return
+                ;;
+            * ) ftEcho -s "放弃整理命令历史" 
+                return
+                ;;
+        esac
+        done
+    fi
+    ftEcho -s "xbash的命令历史过大建议整理 , 文件路径:${filePathBashHistoryArchive}"
+
+    local fileLineCountChangeFlag=100
+    local fileLineCountChange=$fileLineCountBashHistory
+    (( $fileLineCountChange < $fileLineCountChangeFlag )) && return
+
+    #去重
+    sort -u $filePathBashHistory > $filePathBashHistoryArchive
+    cp -rf $filePathBashHistoryArchive $filePathBashHistory
 }
 
 ftDevAvailableSpace()
