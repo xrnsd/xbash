@@ -1,0 +1,86 @@
+#!/bin/bash
+##################################################
+##                                              ##
+##             学习工具实现                      ##
+##                                              ##
+##################################################
+complete -W "-h --help" ftEnglishRepetionDrillEveryDay
+ftEnglishRepetionDrillEveryDay()
+{
+    local ftEffect=英语例句每天练习
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+	local dirPathTempEng=/tmp/eng
+	local filePathEnglishBasic=${dirPathTempEng}/english.basic
+	local filePathChineseBasic=${dirPathTempEng}/chinese.basic
+	local isRest=true
+
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    ftEnglishRepetionDrillEveryDay -h
+#========================================================="; return ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #环境校验
+    if [[ -d $dirPathTempEng ]] && [[ -f $filePathEnglishBasic ]]; then
+        ftEcho -y "存在旧练习本，是否删除(回车默认y)"
+        read -n 1 sel
+        [ -z "${sel}" ] && sel=y
+        while true; do case "$sel" in
+                y | Y ) rm -rf $dirPathTempEng
+						break ;;
+                n | q ) isRest=false
+						break ;;
+                * ) ftEcho -e "错误的选择：$sel"
+                    echo "输入n，q，离开";;
+        esac;done
+        echo
+	fi
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftEnglishRepetionDrillEveryDay -h && return $resultFail
+
+    #实现主体
+	if $isRest; then
+		if ! mkdir -p $dirPathTempEng; then
+			ftEcho -e "无法创建文件夹:${dirPathTempEng}"
+			return
+		fi
+	    if touch $filePathEnglishBasic $filePathChineseBasic; then
+		    XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathEnglishBasic $filePathChineseBasic
+		else
+		    ftEcho -ex "创建信息文件失败"
+		    return;
+		fi
+	fi
+	local fileSizeEnglishBasic=$(sed -n '$=' $filePathEnglishBasic)
+	local fileSizeChineseBasic=$(sed -n '$=' $filePathChineseBasic)
+	if (($fileSizeEnglishBasic==0)) \
+		|| (($fileSizeChineseBasic==0)) \
+		|| (($fileSizeChineseBasic!=$fileSizeEnglishBasic)) ; then
+		ftEcho -ex "信息文件内容为空或数量不一致"
+	    return;
+	fi
+
+	clear
+	local arrayIndexSort=$(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf)
+	for i in ${arrayIndexSort[@]}; do
+		awk 'NR=="'$i'"' $filePathChineseBasic
+	    local title=$(awk 'NR=="'$i'"' $filePathEnglishBasic)
+		echo && ftEcho -s "按T显示翻译，其他任意键继续" && read -n 1 sel
+
+		if [[ $sel == "t" ]]; then
+        	clear
+			echo $title
+			echo && ftEcho -s "按任意键继续" && read -n 1 sel2
+    	fi
+		clear
+	done
+}

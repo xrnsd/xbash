@@ -104,6 +104,9 @@ ftResetXbash()
 #
 #    更新 jdk配置 / gcc配置 / jdk和gcc配置 / jdk和gcc和ccache配置
 #    ftResetXbash -j / -c / -jc / -jcc
+#
+#    加载学习模块相关
+#    ftResetXbash -l / --learn
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -a |--adb) ftAdbConnect -r && return
@@ -112,6 +115,14 @@ ftResetXbash()
             targetSdkVersionForce="${arg2}"
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
           ;;
+        -l | --learn)
+            if [[ -f $rFilePathXbashModuleLearn ]];then
+                source  $rFilePathXbashModuleLearn
+                ftEcho -s "Xbash的学习扩展块加载完成"
+            else
+                ftEcho -e "Xbash的学习扩展块加载失败${rFilePathXbashModuleLearn}" 
+            fi
+            ;;
         -c ) export isResetGcc=true
             targetSdkVersionForce="${arg2}"
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
