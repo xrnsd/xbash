@@ -13,7 +13,7 @@ ftEnglishRepetionDrillEveryDay()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRoot)
+    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  dirPathRoot)
     [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
     local filePathEnglishBasic=${dirPathTempEng}/english.basic
     local filePathChineseBasic=${dirPathTempEng}/chinese.basic
@@ -166,4 +166,104 @@ ftOcrRepetionDrill()
       read -n 1 sel
       [ -n "${sel}" ] && return
     done 3< $filePath
+}
+
+
+complete -W "-h --help -acg --ac" ftLearnCourseManage
+ftLearnCourseManage()
+{
+    local ftEffect=学习课程配置
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local isAddCourseGroup=false isAddCourse=false
+    local learnCourseGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  courseGroupList))
+    local valCount=1 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftLearnCourseManage xxxx
+#========================================================="; return ;;
+        # 变量参数解析部分 ==============
+        -acg) isAddCourseGroup=true
+                     ;;
+        -ac) isAddCourse=true
+                     ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnCourseManage -h && return $resultFail
+
+    #实现主体
+    if $isAddCourseGroup; then
+        local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRoot)
+        [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
+        ftEcho -r  "请输入课程集名称："
+        read courseGroupName
+        courseGroupName=$(echo $courseGroupName |sed s/[[:space:]]//g)
+        learnCourseGroupList=(${learnCourseGroupList[@]} $courseGroupName)
+        ftIniSetValue $rFilePathXbashDBUser learnCourseInfo  courseGroupList ${learnCourseGroupList[@]}
+        ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $courseGroupName -l "none"
+        #创建课程文件夹
+        mkdir -p ${dirPathTempEng}/$courseGroupName
+        return
+    fi
+    if $isAddCourse; then
+        local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRoot)
+        [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
+        
+        local courseGroupNameSel index=0
+        for dev in ${learnCourseGroupList[*]} ; do
+            echo "[${index}] ${dev}"
+            ((index+=1))
+        done
+        if ((  $index == 1 ));then
+            courseGroupNameSel=$learnCourseGroupList
+        else
+            while true; do
+                ftEcho -r  "请选择课程集[0~$(expr $index - 1),q](回车默认0):"
+                if (( $index > 9 ));then
+                    read dir
+                else
+                    read -n 1 dir
+                fi
+                #设定默认值
+                 [ ${#dir} == 0 ] && dir=0
+                 if [ ${dir} == "q" ]; then
+                    exit
+                 elif [ -n "$(echo $dir| sed -n "/^[0-$index]\+$/p")" ];then
+                    courseGroupNameSel=${learnCourseGroupList[$dir]}
+                    echo
+                    break;
+                 fi
+                 ftEcho -e 错误的选择：$dir
+            done
+        fi
+
+        ftEcho -r  "请输入课程名称："
+        read courseName
+        courseName=$(echo $courseName |sed s/[[:space:]]//g)
+
+        local dirPathCourseGroup="${dirPathTempEng}/${courseGroupNameSel}"
+        local filePathEnglishBasic="${dirPathCourseGroup}/${courseName}.english"
+        local filePathChineseBasic="${dirPathCourseGroup}/${courseName}.chinese"
+        if touch $filePathEnglishBasic $filePathChineseBasic; then
+            XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathEnglishBasic $filePathChineseBasic
+        else
+            ftEcho -ex "创建信息文件失败"
+            return;
+        fi
+
+        local learnCourseList=($(ls $dirPathCourseGroup|grep chinese |  awk -F. '{print $1}'))
+        if [[ -n $learnCourseList ]]; then
+            echo ${learnCourseList[@]}
+            ftIniSetValue $rFilePathXbashDBUser learnCourseInfo  $courseGroupNameSel -l "${learnCourseList[*]}"
+        fi
+    fi
 }
