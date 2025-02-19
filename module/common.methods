@@ -316,21 +316,22 @@ ftEcho()
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftEcho          内容       # 直接显示内容
-#    ftEcho    -b    内容       # 标题，不换行，对字符串的缩进敏感
-#    ftEcho    -bh   内容       # 标题，换行，对字符串的缩进敏感
-#    ftEcho    -e    内容       # 错误信息显示，对字符串的缩进敏感
-#    ftEcho    -en   内容       # 错误信息显示，对字符串的缩进敏感
-#    ftEcho    -ex   内容       # 错误信息显示，显示完退出，对字符串的缩进敏感
-#    ftEcho    -ea   内容       # 错误信息多行显示，对字符串的缩进不敏感，包含内置数组会显示不正常
-#    ftEcho    -eax  内容       # 错误信息多行显示，对字符串的缩进不敏感，包含内置数组会显示不正常，显示完退出
-#    ftEcho    -y    内容       # 特定信息显示，y/n，对字符串的缩进敏感
-#    ftEcho    -s    内容       # 执行信息，对字符串的缩进敏感
-#    ftEcho    -sn   内容       # 执行信息，不换行，对字符串的缩进敏感
-#    ftEcho    -snw  内容       # 执行信息，不换行，对字符串的缩进敏感,循环显示省略号
-#    ftEcho    -rc   内容       # xbash函数的说明显示，对字符串的缩进敏感
-#    ftEcho    -w    标题  内容  # 弹窗提示
-#    ftEcho    -iow  标题  内容  # 弹窗交互
+#    ftEcho           内容       # 直接显示内容
+#    ftEcho    -b     内容       # 标题，不换行，对字符串的缩进敏感
+#    ftEcho    -bh    内容       # 标题，换行，对字符串的缩进敏感
+#    ftEcho    -e     内容       # 错误信息显示，对字符串的缩进敏感
+#    ftEcho    -en    内容       # 错误信息显示，对字符串的缩进敏感
+#    ftEcho    -ex    内容       # 错误信息显示，显示完退出，对字符串的缩进敏感
+#    ftEcho    -ea    内容       # 错误信息多行显示，对字符串的缩进不敏感，包含内置数组会显示不正常
+#    ftEcho    -eax   内容       # 错误信息多行显示，对字符串的缩进不敏感，包含内置数组会显示不正常，显示完退出
+#    ftEcho    -y     内容       # 特定信息显示，y/n，对字符串的缩进敏感
+#    ftEcho    -s     内容       # 执行信息，对字符串的缩进敏感
+#    ftEcho    -sn    内容       # 执行信息，不换行，对字符串的缩进敏感
+#    ftEcho    -snw   内容       # 执行信息，不换行，对字符串的缩进敏感,循环显示省略号
+#    ftEcho    -rc    内容       # xbash函数的说明显示，对字符串的缩进敏感
+#    ftEcho    -w     标题  内容  # 弹窗提示
+#    ftEcho    -iow   标题  内容  # 弹窗交互
+#    ftEcho    -frame 内容       # 弹窗交互
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -w|-iow )
@@ -366,6 +367,20 @@ ftEcho()
         -ea )    for val in ${content[@]} ; do echo -e "\033[1;31m$val\033[0m"; done; break;;
         -eax )   for val in ${content[@]} ; do echo -e "\033[1;31m$val\033[0m"; done; exit;;
         -rc )    echo -en "\033[1;33m${2}\033[0m";echo "${3}";echo -e "${4}" ; break;;
+        -frame ) local max_length=${#content}
+                 local border_length=$((max_length + 4))
+                 local contentFlag=${content:0:1}
+                 #首字符非英文视为中文处理
+                 if [[ ! $contentFlag =~  " " ]] && [[ ! "$contentFlag" =~ ^[a-zA-Z] ]]; then
+                    echo "contentFlag=${contentFlag}xx"
+                    echo "max_length=$max_length"
+                     border_length=$((max_length + max_length + 4))
+                    echo "border_length=$border_length"
+                 fi
+                 printf "%${border_length}s\n" | tr ' ' '-'
+                 printf "| %-${max_length}s |\n" "${content[@]}"
+                 printf "%${border_length}s\n" | tr ' ' '-'
+                 break;;
     * )    echo $option ;break;; esac ;done
 }
 
