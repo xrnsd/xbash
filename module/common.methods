@@ -690,10 +690,23 @@ ftIniAddItem()
 
     #实现主体
     local indexStart=$(sed -n "/\[${tagName}\]/=" $filePathIni)
-    
-    ((indexStart+=1))
+    local lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni)
+
+    if [[ "${lineContent}" != "[${tagName}]" ]]; then
+        indexStart=$(grep -wn "${tagName}" $filePathIni | awk -F: '{print $1}')
+        lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni)
+        [[ "${lineContent}" != "[${tagName}]" ]] && ftEcho -e "找不到TAG:${tagName}对应的行" && return
+    fi
+
+    local indexCheck=$indexStart
+    echo "indexStart=${indexStart}"
+    while true; do
+        ((indexCheck+=1))
+        lineContent=$(awk 'NR=="'$indexCheck'"' $filePathIni)
+        [[ -z $lineContent ]] && echo "indexCheck=${indexCheck}" && break
+    done
     itemName="${itemName}="
-    sed  -i "${indexStart}i ${itemName}${itemContent[@]}" $filePathIni
+    sed  -i "${indexCheck}i ${itemName}${itemContent[@]}" $filePathIni
 
 }
 
@@ -800,7 +813,7 @@ ftIniSetValue()
     #可用性校验
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local isListValue filePath=$1 blockName=$2 keyName=$3 keyValue=$4
+    local isListValue filePath=$1 blockName=$2 keyName=$3 keyValue="${4}"
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
