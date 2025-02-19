@@ -14,10 +14,10 @@ ftEnglishRepetionDrillEveryDay()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRoot)
-	[[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
-	local filePathEnglishBasic=${dirPathTempEng}/english.basic
-	local filePathChineseBasic=${dirPathTempEng}/chinese.basic
-	local isRest=true
+    [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
+    local filePathEnglishBasic=${dirPathTempEng}/english.basic
+    local filePathChineseBasic=${dirPathTempEng}/chinese.basic
+    local isRest=true
 
     local valCount=1 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
@@ -36,56 +36,56 @@ ftEnglishRepetionDrillEveryDay()
         [ -z "${sel}" ] && sel=y
         while true; do case "$sel" in
                 y | Y ) rm -rf $dirPathTempEng
-						break ;;
+                        break ;;
                 n | q ) isRest=false
-						break ;;
+                        break ;;
                 * ) ftEcho -e "错误的选择：$sel"
                     echo "输入n，q，离开";;
         esac;done
         echo
-	fi
+    fi
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftEnglishRepetionDrillEveryDay -h && return $resultFail
 
     #实现主体
-	if $isRest; then
-		if ! mkdir -p $dirPathTempEng; then
-			ftEcho -e "无法创建文件夹:${dirPathTempEng}"
-			return
-		fi
-	    if touch $filePathEnglishBasic $filePathChineseBasic; then
-		    XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathEnglishBasic $filePathChineseBasic
-		else
-		    ftEcho -ex "创建信息文件失败"
-		    return;
-		fi
-	fi
-	local fileSizeEnglishBasic=$(sed -n '$=' $filePathEnglishBasic)
-	local fileSizeChineseBasic=$(sed -n '$=' $filePathChineseBasic)
-	if (($fileSizeEnglishBasic==0)) \
-		|| (($fileSizeChineseBasic==0)) \
-		|| (($fileSizeChineseBasic!=$fileSizeEnglishBasic)) ; then
-		ftEcho -ex "信息文件内容为空或数量不一致"
-	    return;
-	fi
+    if $isRest; then
+        if ! mkdir -p $dirPathTempEng; then
+            ftEcho -e "无法创建文件夹:${dirPathTempEng}"
+            return
+        fi
+        if touch $filePathEnglishBasic $filePathChineseBasic; then
+            XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathEnglishBasic $filePathChineseBasic
+        else
+            ftEcho -ex "创建信息文件失败"
+            return;
+        fi
+    fi
+    local fileSizeEnglishBasic=$(sed -n '$=' $filePathEnglishBasic)
+    local fileSizeChineseBasic=$(sed -n '$=' $filePathChineseBasic)
+    if (($fileSizeEnglishBasic==0)) \
+        || (($fileSizeChineseBasic==0)) \
+        || (($fileSizeChineseBasic!=$fileSizeEnglishBasic)) ; then
+        ftEcho -ex "信息文件内容为空或数量不一致"
+        return;
+    fi
 
-	clear
-	local arrayIndexSort=$(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf)
+    clear
+    local arrayIndexSort=$(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf)
     local englishItem
-	for i in ${arrayIndexSort[@]}; do
+    for i in ${arrayIndexSort[@]}; do
         englishItem=$(awk 'NR=="'$i'"' $filePathEnglishBasic)
         ftEcho -frame $(awk 'NR=="'$i'"' $filePathChineseBasic)
-		echo && ftEcho -s "按T显示翻译，其他任意键继续" && read -n 1 sel
+        echo && ftEcho -s "按T显示翻译，其他任意键继续" && read -n 1 sel
 
-		if [[ $sel == "t" ]]; then 
-        	clear
-			ftEcho -frame  $englishItem
-			echo && ftEcho -s "按任意键继续" && read -n 1 sel2
-    	fi
+        if [[ $sel == "t" ]]; then 
+            clear
+            ftEcho -frame  $englishItem
+            echo && ftEcho -s "按任意键继续" && read -n 1 sel2
+        fi
         englishItem=
-		clear
-	done
+        clear
+    done
 }
 
 complete -W "-h --help --rely_install -p -l" -A file ftOcrRepetionDrill 

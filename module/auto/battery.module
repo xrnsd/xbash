@@ -47,52 +47,52 @@ ftBatteryLevelListenerOld()
 
     #实现主体
     local isChargeFull=false isDischargeNull=false
-	while true
-	do
-	   export DISPLAY=:0.0
+    while true
+    do
+       export DISPLAY=:0.0
 
-	   local battery_level=$(acpi -b | grep -P -o '[0-9]+(?=%)')
-	   local isCharging=$(acpi |grep "charged" )
-	   if $isCharging; then
-	       if [[ ! $isChargeFull ]] && (( $battery_level >= $heighFlag  )); then
-	          notify-send "Battery Full Level: ${battery_level}% ， it's recommended to stop charging."
-	       	  zenity --warning --text="Battery Full Level: ${battery_level}% ，\n it's recommended to stop charging." --ok-label="sure"
-	          #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
-	          isChargeFull=true
-	       fi
-	       isDischargeNull=false
-	   else
-	       if [[ ! $isDischargeNull ]] && (( $battery_level < $lowFlag  )); then
-	          notify-send "Battery Low Level: ${battery_level}% ， it's recommended to start charging."
-	       	  zenity --warning --text="Battery Low Level: ${battery_level}% ，\n it's recommended to start charging." --ok-label="sure"
-	          
-	          #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
+       local battery_level=$(acpi -b | grep -P -o '[0-9]+(?=%)')
+       local isCharging=$(acpi |grep "charged" )
+       if $isCharging; then
+           if [[ ! $isChargeFull ]] && (( $battery_level >= $heighFlag  )); then
+              notify-send "Battery Full Level: ${battery_level}% ， it's recommended to stop charging."
+                 zenity --warning --text="Battery Full Level: ${battery_level}% ，\n it's recommended to stop charging." --ok-label="sure"
+              #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
+              isChargeFull=true
+           fi
+           isDischargeNull=false
+       else
+           if [[ ! $isDischargeNull ]] && (( $battery_level < $lowFlag  )); then
+              notify-send "Battery Low Level: ${battery_level}% ， it's recommended to start charging."
+                 zenity --warning --text="Battery Low Level: ${battery_level}% ，\n it's recommended to start charging." --ok-label="sure"
+              
+              #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
 
-	          isDischargeNull=true
-	       	  isChargeFull=false
-	       else
-	          isChargeFull=$($battery_level >= $heighFlag)
-	       fi
-	   fi
+              isDischargeNull=true
+                 isChargeFull=false
+           else
+              isChargeFull=$($battery_level >= $heighFlag)
+           fi
+       fi
 
-	   #轮询频率设定，接近阈值时使用特定频率
-	   local heighFlagTemp=$heighFlag
-	   local lowFlagTemp=$lowFlag
-	   (( heighFlagTemp-=battery_level ))
-	   (( lowFlagTemp-=battery_level ))
-	   if [[ $isCharging ]] && [[ ! $isChargeFull ]] && (( ${heighFlagTemp#-} <= 5  )); then
-			#echo "height critical mode"
-			sleep $heightCriticalFreq
-		else 
-			if [[ ! $isCharging ]] && [[ ! $isDischargeNull ]] && (( ${lowFlagTemp#-} <= 5  )); then
-				#echo "low critical mode"
-				sleep $lowCriticalFreq
-			else
-				#echo "remaining mode"
-				sleep $normalFreq
-			fi
-		fi
-	done
+       #轮询频率设定，接近阈值时使用特定频率
+       local heighFlagTemp=$heighFlag
+       local lowFlagTemp=$lowFlag
+       (( heighFlagTemp-=battery_level ))
+       (( lowFlagTemp-=battery_level ))
+       if [[ $isCharging ]] && [[ ! $isChargeFull ]] && (( ${heighFlagTemp#-} <= 5  )); then
+            #echo "height critical mode"
+            sleep $heightCriticalFreq
+        else 
+            if [[ ! $isCharging ]] && [[ ! $isDischargeNull ]] && (( ${lowFlagTemp#-} <= 5  )); then
+                #echo "low critical mode"
+                sleep $lowCriticalFreq
+            else
+                #echo "remaining mode"
+                sleep $normalFreq
+            fi
+        fi
+    done
 }
 
 ftBatteryLevelNotice()
