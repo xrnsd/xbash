@@ -372,10 +372,7 @@ ftEcho()
                  local contentFlag=${content:0:1}
                  #首字符非英文视为中文处理
                  if [[ ! $contentFlag =~  " " ]] && [[ ! "$contentFlag" =~ ^[a-zA-Z] ]]; then
-                    echo "contentFlag=${contentFlag}xx"
-                    echo "max_length=$max_length"
                      border_length=$((max_length + max_length + 4))
-                    echo "border_length=$border_length"
                  fi
                  printf "%${border_length}s\n" | tr ' ' '-'
                  printf "| %-${max_length}s |\n" "${content[@]}"
