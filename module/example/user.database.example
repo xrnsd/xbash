@@ -1,15 +1,10 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.3.4
+versionNum=v0.1.3.5
 
 #开发用
 [androidDevicePackages]
-packageNameList=com.android.systemui \
-                com.android.launcher3 \
-                com.android.settings \
-                com.android.phone \
-                com.android.commands.monkey \
-                com.android.mms
+packageNameList=
 
 #自动维护out用,有这些也视为空out
 [backupOrRestoreOutsInfo]
@@ -80,3 +75,7 @@ toolsFilePath=
 
 [GitKeySsh]
 filePathLocalPublicKey=
+
+#Learn配置
+[learnConfigInfo]
+dirPathRoot=
