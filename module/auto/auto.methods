@@ -1877,6 +1877,7 @@ ftAutoCdProjectDirectory()
 
         #默认路径下无git仓库,开始遍历查找仓库
         if [[ ! -d "${dirPathBase}/.git" ]]; then
+             mAospProjectStoragePathEffectiveList=${dirPathBase}
              #dirPathProjectStorehouse=($(find ${dirPathBase} -maxdepth 2  -type d -path '*/.git'))
              dirPathProjectStorehouse=($(find ${dirPathBase} -maxdepth 2 -path '*/.git'))
              for pathStorehouse in ${dirPathProjectStorehouse[@]}; do
@@ -1893,13 +1894,13 @@ ftAutoCdProjectDirectory()
 
         mAospProjectStoragePathEffectiveList=("${mAospProjectStoragePathEffectiveList[@]} $dirPathBase")
     done
-    [ -z "$mAospProjectStoragePathEffectiveList" ] && ftEcho -e "找不到${mAospProjectName}对应的Aosp项目有效存放路径" && return $resultFail
+    [ -z "$mAospProjectStoragePathEffectiveList" ] && ftEcho -e "找不到${mAospProjectName}对应项目的有效存放路径" && return $resultFail
 
     mAospProjectStoragePathEffectiveList=($(echo "${mAospProjectStoragePathEffectiveList}"| sed -e "s: ^::g"))
     mAospProjectStoragePathEffective=$mAospProjectStoragePathEffectiveList
     itemCount=${#mAospProjectStoragePathEffectiveList[@]}
     if (( $itemCount>1 ));then
-        ftEcho -s 对应Aosp项目有多个存放位置,请选择
+        ftEcho -s 对应项目有多个存放位置,请选择
         local index=0
         for item in ${mAospProjectStoragePathEffectiveList[@]} ; do
             printf "%-4s %-4s\n" [$index] $item

@@ -55,11 +55,14 @@ ftLearnEnglishRepetionDrillEveryDay()
             #设定默认值
              [ ${#dir} == 0 ] && dir=0
              if [ ${dir} == "q" ]; then
-                exit
+                return
+             elif (( $dir>=$ListSize  ));then
+                ftEcho -e "错误的选择：${dir}"
+                continue
              elif [ -n "$(echo $dir| sed -n "/^[0-$ListSize]\+$/p")" ];then
                 courseGroupNameSel=${learnCourseGroupList[$dir]}
                 echo
-                break;
+                break
              fi
              ftEcho -e 错误的选择：$dir
         done
@@ -92,7 +95,10 @@ ftLearnEnglishRepetionDrillEveryDay()
             #设定默认值
              [ ${#dir} == 0 ] && dir=0
              if [ ${dir} == "q" ]; then
-                exit
+                return
+             elif (( $dir>=$ListSize  ));then
+                ftEcho -e "错误的选择：${dir}"
+                continue
              elif [ -n "$(echo $dir| sed -n "/^[0-$ListSize]\+$/p")" ];then
                 courseNameSel=${learnCourseList[$dir]}
                 echo
@@ -229,7 +235,6 @@ ftOcrRepetionDrill()
     done 3< $filePath
 }
 
-
 complete -W "-h --help -acg --ac" ftLearnCourseManage
 ftLearnCourseManage()
 {
@@ -301,7 +306,10 @@ ftLearnCourseManage()
                 #设定默认值
                  [ ${#dir} == 0 ] && dir=0
                  if [ ${dir} == "q" ]; then
-                    exit
+                    return
+                 elif (( $dir>=$ListSize  ));then
+                    ftEcho -e "错误的选择：${dir}"
+                    continue
                  elif [ -n "$(echo $dir| sed -n "/^[0-$ListSize]\+$/p")" ];then
                     courseGroupNameSel=${learnCourseGroupList[$dir]}
                     echo
@@ -327,8 +335,11 @@ ftLearnCourseManage()
 
         local learnCourseList=($(ls $dirPathCourseGroup|grep chinese |  awk -F. '{print $1}'))
         if [[ -n $learnCourseList ]]; then
-            echo ${learnCourseList[@]}
+            # echo ${learnCourseList[@]}
+            # echo "courseGroupNameSel=${courseGroupNameSel}"
             ftIniSetValue $rFilePathXbashDBUser learnCourseInfo  $courseGroupNameSel -l "${learnCourseList[*]}"
         fi
+
+        ftEcho -s "在${courseGroupNameSel}下已新建课程${courseName}"
     fi
 }
