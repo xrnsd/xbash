@@ -104,6 +104,9 @@ ftResetXbash()
 #
 #    更新 jdk配置 / gcc配置 / jdk和gcc配置 / jdk和gcc和ccache配置
 #    ftResetXbash -j / -c / -jc / -jcc
+#
+#    加载学习模块相关
+#    ftResetXbash -l / --learn
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -a |--adb) ftAdbConnect -r && return
@@ -112,6 +115,14 @@ ftResetXbash()
             targetSdkVersionForce="${arg2}"
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
           ;;
+        -l | --learn)
+            if [[ -f $rFilePathXbashModuleLearn ]];then
+                source  $rFilePathXbashModuleLearn
+                ftEcho -s "Xbash的学习扩展块加载完成"
+            else
+                ftEcho -e "Xbash的学习扩展块加载失败${rFilePathXbashModuleLearn}" 
+            fi
+            ;;
         -c ) export isResetGcc=true
             targetSdkVersionForce="${arg2}"
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
@@ -1280,7 +1291,21 @@ ftKillApplicationByPackageName()
         launcher3|launcher) packageName="com.android.launcher3"  ;break;;
         monkey)     packageName="com.android.commands.monkey"  ;break;;
     * ) break;;esac;done
+    
+    # local pidArray=($(adb shell ps | grep "$packageName" | awk '{print $2}'))
+    # local packageArray=($(adb shell ps | grep "$packageName" | awk '{print $9}'))
 
+    # if [[ -n "$pidArray" ]]; then
+    #     for index in "${!packageArray[@]}"; do
+    #        if [[  ${packageArray[$index]} = "$packageName" ]]; then
+    #             adb -s $deviceId shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
+    #             adb -s $deviceId shell kill $pid&& ftEcho -s "kill pid ${pid}"
+    #        fi
+    #     done
+    # elif [[ -z "$(adb -s $deviceId shell pm list packages|grep $packageName)" ]]; then
+    #      ftEcho -e "包名[${packageName}]不存在，请确认"
+    # fi
+    
     if [[ -n "$(adb shell ps | grep $packageName | awk '{print $2}')" ]]; then
         adb -s $deviceId shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
         for pid in $(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}'); do adb -s $deviceId shell kill $pid&& ftEcho -s "kill pid ${pid}"  ;done
@@ -1915,9 +1940,14 @@ ftReNameFile()
         fi
 
         [[ -n "${isAddName}" ]] && fileName=${fileNameAddPrefix}${fileName}${fileNameAddSuffix}
-        [[ -n "${fileTagBase}" ]] && fileName="$(echo $fileName |sed s/$fileTagBase/$fileTagNew/g)"
+        #[[ -n "${fileTagBase}" ]] && fileName="$(echo $fileName |sed s/$fileTagBase/$fileTagNew/g)"
+        [[ -n "${fileTagBase}" ]] && fileName=$(echo ${fileName/$fileTagBase/$fileTagNew})
+        # echo "fileTagBase=${fileTagBase}"
+        # echo "fileTagNew=${fileTagNew}"
+        # echo "fileName2=${fileName}"
+        
         [[ -n "${fileSuffixTagBase}" ]] && fileSuffixName="$(echo $fileSuffixName |sed s/$fileSuffixTagBase/$fileSuffixTagNew/g)"
-        cp -rf "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileName}.${fileSuffixName}
+        cp -rf -v "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileName}.${fileSuffixName}
         ((index+=1))
     done < <(echo "$(ls $dirPathFileList)")
     cd "${dirPathLocal}"
@@ -3821,3 +3851,70 @@ ftDf()
     df -lh |grep -E "文件系统|/dev/" |grep -v "/snap" |grep -v "/boot/efi" \
     | awk '{ if ($5 >= 75) print "\033[0;31m" $0 "\033[0m"; else print $0 }'
 }
+
+ftEdgeTTs()
+{
+    local ftEffect=EdgeTts播放工具
+    local isEnable=true
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+
+    #解参验耦
+    local playContent speedVal=
+    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 ftEdgeTTs --rely_install 补全依赖
+#========================================================="; return ;;
+        --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install xsel
+            pip install edge-tts
+            return ;;
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    速度值1 ～ 100，越大越慢
+#    ftEdgeTTs --speed 50
+#========================================================="; return ;;
+
+        # 变量参数解析部分 ==============
+        --speed) speedVal="${arg2}" ;;
+        --playContent) playContent="${arg2}" ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #依赖校验
+    local dirPathPythonVirtualEnvironment="/home/myname/.venv/bin/"
+    source ${dirPathPythonVirtualEnvironment}activate
+    cd ${dirPathPythonVirtualEnvironment}
+    [[ -z $(which xsel) ]] && ftEdgeTTs --rely "xsel" && return $resultFail
+    [[ -z $(which edge-playback) ]] && ftEdgeTTs --rely "edge-tts" && return $resultFail
+
+    local filePathLock=/tmp/tts.lock
+    if [[ -f $filePathLock ]]; then
+        local alarmContent="tts is lock , please wait"
+        notify-send -e "${alarmContent}"
+        echo "${alarmContent}"
+        return
+    fi
+    touch $filePathLock && trap '[ -f "$filePathLock" ] && rm $filePathLock && exit' SIGINT
+    if [ -z "${playContent}" ]; then
+        playContent="$(xsel | sed -e :a -e 'N;s/\n/ /;ta')"
+        [ -z "${playContent}" ] && return
+    fi
+    source /home/myname/.venv/bin/activate
+    cd /home/myname/.venv/bin/
+    edge-playback --rate=-${speedVal}% --text "${playContent}"
+    rm $filePathLock
+
+
+    #echo "(SayText \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\")" | festival  '(voice_cmu_us_slt_arctic_hts)' -
+    #-pipe
+
+    # bash -c "espeak -s100 -g20 -p80 -v english-us \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\""
+}
+
