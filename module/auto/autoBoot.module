@@ -26,12 +26,12 @@ ftBootClash()
 #一个能够以图形方式显示 CPU、内存、对换文件使用情况，以及网络流量的系统监视器。
 ftBootIndicatorMultiload()
 {
-	if [[ -z $(which indicator-multiload) ]];then
-		return
-	fi 
-	sleep $1
-	indicator-multiload &
-	notify-send "自启动成功：indicator-multiload"
+    if [[ -z $(which indicator-multiload) ]];then
+        return
+    fi 
+    sleep $1
+    indicator-multiload &
+    notify-send "自启动成功：indicator-multiload"
 }
 
 ftBootClash 10
