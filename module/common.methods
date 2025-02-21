@@ -711,11 +711,11 @@ ftIniAddItem()
     fi
 
     local indexCheck=$indexStart
-    echo "indexStart=${indexStart}"
+    #echo "indexStart=${indexStart}"
     while true; do
         ((indexCheck+=1))
         lineContent=$(awk 'NR=="'$indexCheck'"' $filePathIni)
-        [[ -z $lineContent ]] && echo "indexCheck=${indexCheck}" && break
+        [[ -z $lineContent ]] && break
     done
     itemName="${itemName}="
     sed  -i "${indexCheck}i ${itemName}${itemContent[@]}" $filePathIni
@@ -749,18 +749,25 @@ ftIniDeleteItem()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteItem -h && return $resultFail
 
     #实现主体
-    local indexStart indexEnd index=0
-    cat $filePathIni | while read line ;do
-        if [[ "$line" = "[${tagName}]" ]]||[[ -n "$indexStart" ]]; then
-            [[ -z "$indexStart" ]] && indexStart=$index && ((indexStart+=1))
-            if [[ "$line" =~ ^${itemName}* ]]; then
-                ((index+=1))
-                sed -i "${index}d" $filePathIni
-                break
-            fi
-            [[ -z "$line" ]] && indexEnd=$index && break
+    local indexStart=$(sed -n "/\[${tagName}\]/=" $filePathIni)
+    local lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni)
+
+    if [[ "${lineContent}" != "[${tagName}]" ]]; then
+        indexStart=$(grep -wn "${tagName}" $filePathIni | awk -F: '{print $1}')
+        lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni)
+        [[ "${lineContent}" != "[${tagName}]" ]] && ftEcho -e "找不到TAG:${tagName}对应的行" && return
+    fi
+
+    local indexCheck=$indexStart
+    #echo "indexStart=${indexStart}"
+    while true; do
+        ((indexCheck+=1))
+        lineContent=$(awk 'NR=="'$indexCheck'"' $filePathIni)
+        [[ -z $lineContent ]] && break
+        if [[ "$lineContent" =~ ^${itemName}* ]]; then
+            sed -i "${indexCheck}d" $filePathIni
+            break
         fi
-        ((index+=1))
     done
 }
 
