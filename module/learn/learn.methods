@@ -4,18 +4,18 @@
 ##             学习工具实现                      ##
 ##                                              ##
 ##################################################
-complete -W "-h --help" ftLearnEnglishRepetionDrillEveryDay
+complete -W "-h --help -cet -cit -cpe --compare" ftLearnEnglishRepetionDrillEveryDay
 ftLearnEnglishRepetionDrillEveryDay()
 {
-    local ftEffect=英语例句每天练习
+    local ftEffect=英语每天练习
     local isEnable=true
 
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRoot)
+    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
-    local isRest=true
+    local isRest=true  isModelCourseExampleText=false  isModelCourseImitateText=false isModelCompare=false
     local valCount=1 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
@@ -23,12 +23,40 @@ ftLearnEnglishRepetionDrillEveryDay()
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    ftLearnEnglishRepetionDrillEveryDay -h
+#    
+#    #课文默写比对练习
+#    ftLearnEnglishRepetionDrillEveryDay -c
 #========================================================="; return ;;
+        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    当前未安装,请安装后重新尝试
+#========================================================="; return ;;
+        # 变量参数解析部分 ==============
+        -cet ) isModelCourseExampleText=true
+             [[ -z $(which gedit) ]] && ftExample --rely "gedit" && return $resultFail
+            ;;
+        -cit ) isModelCourseImitateText=true
+             [[ -z $(which gedit) ]] && ftExample --rely "gedit" && return $resultFail
+            ;;
+        -cpe | --compare ) isModelCompare=true
+             [[ -z $(which bcompare) ]] && ftExample --rely "bcompare" && return $resultFail
+            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnEnglishRepetionDrillEveryDay -h && return $resultFail
+
+    #例文相关
+    local dirPathTemp=/tmp/ExampleTextDrill
+    local filePathCompareTempText=${dirPathTemp}/tempTextDrill.txt
+    local filePathCompareExampleText=${dirPathTemp}/exampleTextDrill.txt
+    if $isModelCompare; then
+        [[ ! -d $dirPathTemp ]] && ftEcho -e "没有练习记录无法比对" && return
+        bcompare $filePathCompareTempText $filePathCompareExampleText &
+        return
+    fi
 
     #选择课程集
     local learnCourseGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  courseGroupList))
@@ -108,6 +136,19 @@ ftLearnEnglishRepetionDrillEveryDay()
         done
     fi
 
+    if $isModelCourseExampleText; then
+        local filePathEnglishExampleText=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}.exampleText
+        [[ "$isModelCourseImitateText" = "true" ]] && filePathEnglishExampleText=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}.imitateText
+        [[ ! -f $filePathEnglishExampleText ]] && ftEcho -e "当前课程没有录入例文" && return
+
+
+        mkdir $dirPathTemp
+        echo "" > $filePathCompareTempText
+        cp $filePathEnglishExampleText $filePathCompareExampleText
+        gedit --new-window $filePathCompareTempText $filePathCompareExampleText &
+        return
+    fi
+
     local keyRepetionDrillErrorHository="repetionDrillErrorHository_${courseGroupNameSel}_${courseNameSel}"
     local valRepetionDrillErrorHository=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  $keyRepetionDrillErrorHository))
     local isRepetitionDrillMode=false
@@ -169,11 +210,14 @@ ftLearnEnglishRepetionDrillEveryDay()
         clear
     done
 
+    #排序
+    local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g'| sort -n)
     #记录练习数据
     ftIniDeleteItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository
-    ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHository[*]}"
+    # ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHository[*]}"
+    ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHositorySort[*]}"
  
-    ftEcho -s "${courseGroupNameSel} 课程:${courseNameSel}练习完成，正确率:$(printf "%d%%" $((courseTrueCount*100/courseSize)))"
+    ftEcho -s "${courseGroupNameSel} 课程:${courseNameSel}练习完成，正确率:$(printf "%d%%" $((courseTrueCount*100/courseSize)))\n错误ID:$(echo ${valRepetionDrillErrorHositorySort[*]})"
 }
 
 complete -W "-h --help --rely_install -p -l" -A file ftOcrRepetionDrill 
@@ -274,7 +318,13 @@ ftLearnCourseManage()
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
-#    ftLearnCourseManage xxxx
+#    ftLearnCourseManage -h / --help 
+#
+#    #添加课程集
+#    ftLearnCourseManage -acg 
+#
+#    #添加课程集对应的课程
+#    ftLearnCourseManage -ac
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -acg) isAddCourseGroup=true
@@ -284,12 +334,16 @@ ftLearnCourseManage()
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #参数校验
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    if (( $#!=$valCount )); then
+        errorContent="${errorContent}\\n参数无效"
+    elif ! $isAddCourseGroup  &&  ! $isAddCourse ;then
+        errorContent="${errorContent}\\n参数无效"
+    fi
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnCourseManage -h && return $resultFail
 
     #实现主体
     if $isAddCourseGroup; then
-        local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRoot)
+        local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
         [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
         ftEcho -r  "请输入课程集名称："
         read courseGroupName
@@ -302,7 +356,7 @@ ftLearnCourseManage()
         return
     fi
     if $isAddCourse; then
-        local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRoot)
+        local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
         [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
         
         local courseGroupNameSel ListSize=0
