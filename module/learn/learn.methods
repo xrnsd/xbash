@@ -73,6 +73,8 @@ ftLearnEnglishRepetionDrillEveryDay()
             echo "[${index}] ${dev}"
             ((index+=1))
         done
+        local dirFlag=$ListSize
+        (( $ListSize > 9 )) && dirFlag=9
         while true; do
             ftEcho -r  "请选择课程集[0~$(expr $ListSize - 1),q](回车默认0):"
             if (( $ListSize > 9 ));then
@@ -87,7 +89,7 @@ ftLearnEnglishRepetionDrillEveryDay()
              elif (( $dir>=$ListSize  ));then
                 ftEcho -e "错误的选择：${dir}"
                 continue
-             elif [ -n "$(echo $dir| sed -n "/^[0-$ListSize]\+$/p")" ];then
+             elif [ -n "$(echo $dir| sed -n "/^[0-$dirFlag]\+$/p")" ];then
                 courseGroupNameSel=${learnCourseGroupList[$dir]}
                 echo
                 break
@@ -113,6 +115,8 @@ ftLearnEnglishRepetionDrillEveryDay()
             echo "[${index}] ${dev}"
             ((index+=1))
         done
+       local dirFlag=$ListSize
+        (( $ListSize > 9 )) && dirFlag=9
         while true; do
             ftEcho -r  "请选择课程[0~$(expr $ListSize - 1),q](回车默认0):"
             if (( $ListSize > 9 ));then
@@ -124,10 +128,10 @@ ftLearnEnglishRepetionDrillEveryDay()
              [ ${#dir} == 0 ] && dir=0
              if [ ${dir} == "q" ]; then
                 return
-             elif (( $dir>=$ListSize  ));then
+             elif (( $dir>=$ListSize  )) || (( $dir < 0  ));then
                 ftEcho -e "错误的选择：${dir}"
                 continue
-             elif [ -n "$(echo $dir| sed -n "/^[0-$ListSize]\+$/p")" ];then
+             elif [ -n "$(echo $dir| sed -n "/^[0-$dirFlag]\+$/p")" ];then
                 courseNameSel=${learnCourseList[$dir]}
                 echo
                 break;
@@ -141,8 +145,7 @@ ftLearnEnglishRepetionDrillEveryDay()
         [[ "$isModelCourseImitateText" = "true" ]] && filePathEnglishExampleText=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}.imitateText
         [[ ! -f $filePathEnglishExampleText ]] && ftEcho -e "当前课程没有录入例文" && return
 
-
-        mkdir $dirPathTemp
+        [[ ! -d $dirPathTemp ]] && mkdir $dirPathTemp
         echo "" > $filePathCompareTempText
         cp $filePathEnglishExampleText $filePathCompareExampleText
         gedit --new-window $filePathCompareTempText $filePathCompareExampleText &
@@ -371,6 +374,8 @@ ftLearnCourseManage()
                 echo "[${index}] ${dev}"
                 ((index+=1))
             done
+            local dirFlag=$ListSize
+            (( $ListSize > 9 )) && dirFlag=9
             while true; do
                 ftEcho -r  "请选择课程集[0~$(expr $ListSize - 1),q](回车默认0):"
                 if (( $ListSize > 9 ));then
@@ -385,7 +390,7 @@ ftLearnCourseManage()
                  elif (( $dir>=$ListSize  ));then
                     ftEcho -e "错误的选择：${dir}"
                     continue
-                 elif [ -n "$(echo $dir| sed -n "/^[0-$ListSize]\+$/p")" ];then
+                 elif [ -n "$(echo $dir| sed -n "/^[0-$dirFlag]\+$/p")" ];then
                     courseGroupNameSel=${learnCourseGroupList[$dir]}
                     echo
                     break;
