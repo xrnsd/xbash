@@ -340,7 +340,7 @@ ftEcho()
 #    ftEcho    -rc    内容       # xbash函数的说明显示，对字符串的缩进敏感
 #    ftEcho    -w     标题  内容  # 弹窗提示
 #    ftEcho    -iow   标题  内容  # 弹窗交互
-#    ftEcho    -frame 内容       # 弹窗交互
+#    ftEcho    -frame 内容        # 多行排版显示,带边框
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -w|-iow )
@@ -379,12 +379,27 @@ ftEcho()
         -frame ) local max_length=${#content}
                  local border_length=$((max_length + 4))
                  local contentFlag=${content:0:1}
+                 #计算需要换行的内容长度
+                 local contentFLagLineBreak=0 contentLineLength=0
+                 while read line;do
+                    contentLineLength=${#line}
+                    if (( $contentLineLength > $contentFLagLineBreak )); then
+                        contentFLagLineBreak=$contentLineLength
+                    fi
+                 done <<< $(echo -e ${content})
+                 if (( $contentFLagLineBreak > 0 )) && (( $contentFLagLineBreak < $max_length )); then
+                    max_length=$contentFLagLineBreak
+                    border_length=$((max_length + 4))
+                 fi
                  #首字符非英文视为中文处理
                  if [[ ! $contentFlag =~  " " ]] && [[ ! "$contentFlag" =~ ^[a-zA-Z] ]]; then
                      border_length=$((max_length + max_length + 4))
                  fi
                  printf "%${border_length}s\n" | tr ' ' '-'
-                 printf "| %-${max_length}s |\n" "${content[@]}"
+                 #printf "| %-${max_length}s |\n" "${content[@]}"
+                 while read line;do
+                    printf "| %-${max_length}s |\n" "${line}"
+                 done <<< $(echo -e ${content})
                  printf "%${border_length}s\n" | tr ' ' '-'
                  break;;
     * )    echo $option ;break;; esac ;done
@@ -1904,7 +1919,7 @@ ftReNameFile()
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local isAutoName isAddName dirPathFileList  fileNameAddPrefix fileNameAddSuffix fileTagBase fileTagNew fileSuffixTagBase fileSuffixTagNew startNumber
+    local isAutoName isAddName isAddNameEnd dirPathFileList  fileNameAddPrefix fileNameAddSuffix fileTagBase fileTagNew fileSuffixTagBase fileSuffixTagNew startNumber
     local fileNameLength=4
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; case "${arg}" in
         # 说明参数解析部分==============
@@ -1939,7 +1954,7 @@ ftReNameFile()
         -ap ) isAddName=true
                 fileNameAddPrefix="${arg2}"
           ;;
-        -as ) isAddName=true
+        -as ) isAddNameEnd=true
                 fileNameAddSuffix="${arg2}"
           ;;
         -r ) fileTagBase="${arg2}"
@@ -1972,6 +1987,7 @@ ftReNameFile()
 
         fileName=${file%.*}
         fileSuffixName=${file##*.}
+        [ "$fileName" == "$fileSuffixName" ] && fileSuffixName=
 
         if [[ -n "${isAutoName}" ]]; then
             fileName="$(printf "%0${fileNameLength}d" "$index")"
@@ -1980,7 +1996,8 @@ ftReNameFile()
             continue
         fi
 
-        [[ -n "${isAddName}" ]] && fileName=${fileNameAddPrefix}${fileName}${fileNameAddSuffix}
+        [[ -n "${isAddName}" ]] && fileName="${fileNameAddPrefix}${fileName}"
+        [[ -n "${isAddNameEnd}" ]] && fileSuffixName="${fileNameAddSuffix}"
         #[[ -n "${fileTagBase}" ]] && fileName="$(echo $fileName |sed s/$fileTagBase/$fileTagNew/g)"
         [[ -n "${fileTagBase}" ]] && fileName=$(echo ${fileName/$fileTagBase/$fileTagNew})
         # echo "fileTagBase=${fileTagBase}"
@@ -3767,7 +3784,7 @@ ftDelRepeatFile()
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
-#    ftDelRepeatFile xxxx
+#    ftDelRepeatFile -f 路径
 #========================================================="; return ;;
         --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
@@ -3943,13 +3960,12 @@ ftEdgeTTs()
         return
     fi
     touch $filePathLock && trap '[ -f "$filePathLock" ] && rm $filePathLock && exit' SIGINT
-    if [ -z "${playContent}" ]; then
-        playContent="$(xsel | sed -e :a -e 'N;s/\n/ /;ta')"
-        [ -z "${playContent}" ] && return
-    fi
+    [ -z "${playContent}" ] && playContent="$(xsel | sed -e :a -e 'N;s/\n/ /;ta')"
+    [ -z "${playContent}" ] && ftEcho -e "播放内容为空" && return
+    ftEcho -s "${playContent}"
     source /home/myname/.venv/bin/activate
     cd /home/myname/.venv/bin/
-    edge-playback --rate=-${speedVal}% --text "${playContent}"
+    edge-playback --volume 50% --rate=-${speedVal}% --text "${playContent}" 
     rm $filePathLock
 
 
