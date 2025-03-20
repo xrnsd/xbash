@@ -401,12 +401,27 @@ ftLearnCourseManage()
         local dirPathCourseGroup="${dirPathTempEng}/${courseGroupNameSel}"
         local filePathEnglishBasic="${dirPathCourseGroup}/${courseName}.english"
         local filePathChineseBasic="${dirPathCourseGroup}/${courseName}.chinese"
-        if touch $filePathEnglishBasic $filePathChineseBasic; then
-            XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathEnglishBasic $filePathChineseBasic
+        local filePathExampleText="${dirPathCourseGroup}/${courseName}.exampleText"
+        local filePathImitateText="${dirPathCourseGroup}/${courseName}.imitateText"
+        if [[ -f $filePathEnglishBasic ]] || [[ -f $filePathChineseBasic ]]; then
+            ftEcho -e "课程:${courseName}已存在"
+            return
+        fi
+
+        if touch $filePathEnglishBasic $filePathChineseBasic $filePathExampleText $filePathImitateText; then
+            XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathEnglishBasic $filePathChineseBasic $filePathExampleText $filePathImitateText
         else
-            ftEcho -ex "创建信息文件失败"
+            ftEcho -ex "创建课程文件失败"
             return;
         fi
+
+        if [[ ! -s $filePathEnglishBasic ]] || [[ ! -s $filePathChineseBasic ]]; then
+            ftEcho -s "在${courseGroupNameSel}下新建的课程${courseName}为空，将删除"
+            rm $filePathEnglishBasic $filePathChineseBasic $filePathExampleText $filePathImitateText
+            return
+        fi
+        [[ ! -s $filePathExampleText ]] && ftEcho -e "课程${courseName}的例文为空"
+        [[ ! -s $filePathImitateText ]] && ftEcho -e "课程${courseName}的仿例文为空"
 
         local learnCourseList=($(ls $dirPathCourseGroup|grep chinese |  awk -F. '{print $1}'))
         if [[ -n $learnCourseList ]]; then
