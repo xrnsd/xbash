@@ -22,10 +22,20 @@ ftLearnEnglishRepetionDrillEveryDay()
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
+#    #例句翻译练习
+#    ftLearnEnglishRepetionDrillEveryDay
+#    
+#    #查看帮助
 #    ftLearnEnglishRepetionDrillEveryDay -h
 #    
-#    #课文默写比对练习
-#    ftLearnEnglishRepetionDrillEveryDay -c
+#    #默认课文默写比对练习
+#    ftLearnEnglishRepetionDrillEveryDay -cet
+#    
+#    #仿造课文默写比对练习
+#    ftLearnEnglishRepetionDrillEveryDay -cit
+#    
+#    #默写结果和对比
+#    ftLearnEnglishRepetionDrillEveryDay -cpe / --compare
 #========================================================="; return ;;
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -182,6 +192,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     local arrayIndexSort=$(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf)
     if $isRepetitionDrillMode; then
         arrayIndexSort=($(echo ${valRepetionDrillErrorHository[@]} | shuf))
+        valRepetionDrillErrorHository=""
     fi
     local englishItem chineseItem courseNameTitle
     local courseSize=0 courseTrueCount=0 indexSort
@@ -214,12 +225,12 @@ ftLearnEnglishRepetionDrillEveryDay()
     done
 
     #排序
-    local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g'| sort -n)
+    local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g'| sort -n  | xargs echo -n)
     #记录练习数据
     ftIniDeleteItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository
     # ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHository[*]}"
     ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHositorySort[*]}"
- 
+
     ftEcho -s "${courseGroupNameSel} 课程:${courseNameSel}练习完成，正确率:$(printf "%d%%" $((courseTrueCount*100/courseSize)))\n错误ID:$(echo ${valRepetionDrillErrorHositorySort[*]})"
 }
 
