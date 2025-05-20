@@ -3913,6 +3913,7 @@ ftDf()
     | awk '{ if ($5 >= 75) print "\033[0;31m" $0 "\033[0m"; else print $0 }'
 }
 
+complete -W "-h --help --rely_install --speed --playContent" ftEdgeTTs
 ftEdgeTTs()
 {
     local ftEffect=EdgeTts播放工具
@@ -3968,7 +3969,7 @@ ftEdgeTTs()
     ftEcho -s "${playContent}"
     source /home/myname/.venv/bin/activate
     cd /home/myname/.venv/bin/
-    edge-playback --volume 50% --rate=-${speedVal}% --text "${playContent}" 
+    edge-playback --volume=+100% --rate=-${speedVal}% --text "${playContent}" 
     rm $filePathLock
 
 
