@@ -225,11 +225,10 @@ ftSetBackupType()
 
     #实现主体
     # 备份类型
-    local infoBackupType=cg
+    local infoBackupType=nromal
     ftEcho -b 请${ftEffect}
     echo -e "[1]\t精简"
     echo -e "[2]\t基础"
-    echo -e "[3]\t全部"
     echo
 
     while true; do
@@ -239,9 +238,8 @@ ftSetBackupType()
 
         [ ${#typeIndex} == 0 ] && typeIndex=1 #设定默认值
         case $typeIndex in
-            1)        infoBackupType=jj; break;;
-            2)        infoBackupType=cg; break;;
-            3)        infoBackupType=bx; break;;
+            1)        infoBackupType=mini; break;;
+            2)        infoBackupType=nromal; break;;
             n | q) exit;;
             * )       ftEcho -e 错误的选择：$typeIndex ;echo "输入1,2 选择    输入n，q离开";break;;
     esac;done
@@ -252,23 +250,13 @@ ftSetBackupType()
     local dirsExclude index=0
     local filePatheExclude=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo filePatheExclude)
     local excludeListSys=($(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo dirPathsExcludeListSys))
-    local excludeAllListSys=($(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo dirPathsExcludeAllListSys))
-    local excludeListHomeRoot
-    local excludeListHomeBase=($(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo dirPathsExcludeListHomeBase))
-
-    for item in ${excludeListHomeBase[@]}; do
-        excludeListHomeBase[$index]=${dirPathHome}/${item}
-        excludeListHomeRoot[$index]=/root/${item}
-        ((index+=1))
-    done
+    local excludeListSysExtends=($(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo dirPathsExcludeListExtends))
 
     while true; do
         case $infoBackupType in
-            jj)   dirsExclude=(${excludeListSys[@]} ${excludeListHomeBase[@]} ${excludeListHomeRoot[@]} ${excludeAllListSys[@]})
+            mini)   dirsExclude=(${excludeListSys[@]} ${excludeListSysExtends[@]})
                     break;;
-            cg)   dirsExclude=(${excludeListSys[@]} ${excludeListHomeBase[@]} ${excludeListHomeRoot[@]})
-                    break;;
-            bx)  dirsExclude=(${excludeListSys[@]})
+            nromal)   dirsExclude=(${excludeListSys[@]})
                     break;;
             * )    ftEcho -ex  你想金包还是银包呢
                     exit;;

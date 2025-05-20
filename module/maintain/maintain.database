@@ -9,7 +9,6 @@ dirPathsExcludeListSys= \
     /tmp \
     /dev \
     /sys \
-    /swap.img \
     /snap \
     /.Trash-0 \
     /media \
@@ -19,166 +18,40 @@ dirPathsExcludeListSys= \
     /var/tmp \
     /var/lib/docker \
     /var/log \
-    /opt/longene/qq \
-    /usr/share/help \
-    /usr/lib/vmware/help \
-    /usr/share/gnome/help \
-    /usr/local/share/OpenCV/samples \
-    /usr/lib/beyondcompare/help \
-    /usr/lib/python2.7/dist-packages/pygame/docs \
-    /usr/lib/python2.7/dist-packages/pygame/examples \
-    /usr/lib/python2.7/dist-packages/cherrypy/test \
-    /usr/share/matplotlib/sample_data \
-    /usr/local/share/OpenCV/samples \
-    /usr/lib/beyondcompare/help \
-    /usr/share/doc \
-    /usr/share/pixmaps \
-    /usr/share/hplip/data \
-    /usr/share/sogou-qimpanel/recommendSkin/skin \
-    /usr/lib/vmware/isoimages \
-    /usr/share/icons/ubuntu-mono-light \
-    /usr/share/icons/HighContrast/icon-theme.cache \
-    /usr/share/icons/oxygen/icon-theme.cache \
-    /usr/share/icons/gnome/icon-theme.cache \
-    /usr/share/virtualbox/VBoxGuestAdditions.iso \
-    /usr/share/pyzy/db/open-phrase.db \
     /root \
-    /home
-
-dirPathsExcludeListHomeBase= \
-    AndroidStudioProjects \
-    cmds \
-    code \
-    code_wh \
-    code_all \
-    doc \
-    download \
-    floobits \
-    GAT_TEMP \
-    xbash \
-    xconfig \
-    log \
-    temp \
-    tools \
-    server \
-    imgs \
-    PlayOnLinux's virtual drives \
-    workspaces \
-    w7_170815.desktop \
-    VirtualBoxVMs \
-    .bashrc \
-    .dmrc \
-    .gitconfig \
-    .history-timestamp \
-    .kshdb_hist \
-    .pki \
-    .watershed \
-    .xsession-errors.old \
-    .git-credentials \
-    .ICEauthority \
-    .lesshst \
-    .PlayOnLinux \
-    .sogouinput \
-    .wine \
-    .xware-desktop \
-    .adobe \
-    .byteexec \
-    .gksu.lock \
-    .cache \
-    .emulator_console_auth_token \
-    .longene \
-    .subversion \
-    .Xauthority \
-    .AndroidStudioPreview3.0 \
-    .gnome2 \
-    .jack \
-    .macromedia \
-    .pub \
-    .swt \
-    .fontconfig \
-    .gnome2_private \
-    .jack-server \
-    .metadata \
-    .qd \
-    .xchm \
-    .apport-ignore.xml \
-    .compiz \
-    .fr-3XdPtb \
-    .gphoto \
-    .jack-settings \
-    .mozilla \
-    .remmina \
-    .thumbnails \
-    .freerdp \
-    .gradle \
-    .repoconfig \
-    .thunderbird \
-    .bash_history_archive \
-    .dbus \
-    .gstreamer-0.10 \
-    .kde \
-    .mysql_history \
-    .repo_.gitconfig.json \
-    .xsel.log \
-    .bash_logout \
-    .distcc \
-    .gconf \
-    .gvfs \
-    .kingsoft \
-    .pip \
-    .rpmdb \
-    .xsession-errors \
-    .local/share \
-    .nvm \
-    .npm \
-    .config/Code \
-    .config/Electron/Cache \
-    .config/sublime-text-3 \
-    .config/sogou-qimpanel \
-    .config/google-chrome \
-    .config/menus \
-    .electron \
-    .AndroidStudio3.6 \
-    .AndroidStudio3.5 \
-    .AndroidStudio3.4 \
-    .AndroidStudio3.3 \
-    .AndroidStudio3.2 \
-    .AndroidStudio3.1 \
-    .AndroidStudio3.0 \
-    .AndroidStudio4.0 \
-    .AndroidStudioPreview4.0 \
-    .AndroidStudioPreview3.6 \
-    .AndroidStudioPreview3.5 \
-    .AndroidStudioPreview3.4 \
-    .AndroidStudioPreview3.3 \
-    .AndroidStudioPreview3.2 \
-    .AndroidStudioPreview3.1 \
-    .AndroidStudioPreview3.0 \
-    .config/ubuntu-tweak \
-    .themes \
-    .android/avd \
-    .m2 \
-    .android/build-cache \
-    .android/cache \
-    other
-dirPathsExcludeAllListSys= \
-    /usr/lib/libreoffice/share/gallery \
-    /usr/share/code/resources/app/extensions/markdown \
-    /usr/share/playonlinux \
-    /usr/share/calibre/images \
-    /usr/share/xml/docbook/stylesheet/docbook-xsl \
-    /usr/share/backgrounds \
-    /usr/share/inkscape/tutorials \
-    /usr/lib/vmware/share/icons \
-    /usr/share/icons/Paper \
-    /usr/lib/firefox \
+    /home \
+    /var/lib/snapd \
     /usr/share/man \
-    /swap.img \
-    /opt/android_studio_preview \
+    /swap.img
+
+dirPathsExcludeListExtends= \
     /opt/kingsoft \
-    /root/.gradle \
-    /root/tmp
-    
+    /opt/longene/qq \
+    /opt/android_studio_preview \
+    /usr/share/sogou-qimpanel/recommendSkin/skin \
+    /usr/share/doc \
+    /usr/share/help \
+    /usr/share/icons \
+    /usr/share/pixmaps \
+    /usr/share/gnome/help \
+    /usr/share/hplip/data \
+    /usr/share/playonlinux \
+    /usr/share/backgrounds \
+    /usr/share/calibre/images \
+    /usr/share/inkscape/tutorials \
+    /usr/share/matplotlib/sample_data \
+    /usr/share/pyzy/db/open-phrase.db \
+    /usr/share/code/resources/app/extensions \
+    /usr/share/xml/docbook/stylesheet/docbook-xsl \
+    /usr/local/share/OpenCV/samples \
+    /usr/local/share/OpenCV/samples \
+    /usr/lib/firefox \
+    /usr/lib/vmware/help \
+    /usr/lib/vmware/isoimages \
+    /usr/lib/vmware/share/icons \
+    /usr/lib/beyondcompare/help \
+    /usr/lib/python2.7/dist-packages \
+    /usr/lib/libreoffice/share/gallery \
 
 
 
