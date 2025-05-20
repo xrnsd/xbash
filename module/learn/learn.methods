@@ -46,7 +46,8 @@ ftLearnEnglishRepetionDrillEveryDay()
         -cet ) isModelCourseExampleText=true
              [[ -z $(which gedit) ]] && ftExample --rely "gedit" && return $resultFail
             ;;
-        -cit ) isModelCourseImitateText=true
+        -cit ) isModelCourseExampleText=true
+             isModelCourseImitateText=true
              [[ -z $(which gedit) ]] && ftExample --rely "gedit" && return $resultFail
             ;;
         -cpe | --compare ) isModelCompare=true
@@ -225,7 +226,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     done
 
     #排序
-    local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g'| sort -n  | xargs echo -n)
+    local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | uniq | sed 's/ /\n/g'| sort -n  | xargs echo -n)
     #记录练习数据
     ftIniDeleteItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository
     # ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHository[*]}"
