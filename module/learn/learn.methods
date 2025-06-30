@@ -15,7 +15,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     #解参验耦
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
-    local isRest=true  isModelCourseExampleText=false  isModelCourseImitateText=false isModelCompare=false isSentenceListenDrill=false
+    local isRest=true  isModeCourseExampleText=false  isModeCourseImitateText=false isModeCompare=false isModeSentenceListenDrill=false
     local valCount=1 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
@@ -46,29 +46,35 @@ ftLearnEnglishRepetionDrillEveryDay()
 #    当前未安装,请安装后重新尝试
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
-        -cet ) isModelCourseExampleText=true
+        -cet ) isModeCourseExampleText=true
              [[ -z $(which gedit) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "gedit" && return $resultFail
             ;;
-        -cit ) isModelCourseExampleText=true
-             isModelCourseImitateText=true
+        -cit ) isModeCourseExampleText=true
+             isModeCourseImitateText=true
              [[ -z $(which gedit) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "gedit" && return $resultFail
             ;;
-        -cpe | --compare ) isModelCompare=true
+        -cpe | --compare ) isModeCompare=true
              [[ -z $(which bcompare) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "bcompare" && return $resultFail
             ;;
-        -ld ) isSentenceListenDrill=true
+        -ld ) isModeSentenceListenDrill=true
             ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #参数校验
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    case "$1" in
+    -h | --help | -cet | -cit | -cpe | --compare | -ld)
+        ;;
+    *)   errorContent="${errorContent}\\n无效参数:${1}"
+        ;;
+    esac
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnEnglishRepetionDrillEveryDay -h && return $resultFail
 
     #例文相关
     local dirPathTemp=/tmp/ExampleTextDrill
     local filePathCompareTempText=${dirPathTemp}/tempTextDrill.txt
     local filePathCompareExampleText=${dirPathTemp}/exampleTextDrill.txt
-    if $isModelCompare; then
+    if $isModeCompare; then
         [[ ! -d $dirPathTemp ]] && ftEcho -e "没有练习记录无法比对" && return
         bcompare $filePathCompareTempText $filePathCompareExampleText &
         return
@@ -156,9 +162,9 @@ ftLearnEnglishRepetionDrillEveryDay()
         done
     fi
 
-    if $isModelCourseExampleText; then
+    if $isModeCourseExampleText; then
         local filePathEnglishExampleText=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}.exampleText
-        [[ "$isModelCourseImitateText" = "true" ]] && filePathEnglishExampleText=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}.imitateText
+        [[ "$isModeCourseImitateText" = "true" ]] && filePathEnglishExampleText=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}.imitateText
         [[ ! -f $filePathEnglishExampleText ]] && ftEcho -e "当前课程没有录入例文" && return
 
         [[ ! -d $dirPathTemp ]] && mkdir $dirPathTemp
@@ -208,14 +214,15 @@ ftLearnEnglishRepetionDrillEveryDay()
         englishItem=$(awk 'NR=="'$i'"' $filePathEnglishBasic)
         chineseItem=$(awk 'NR=="'$i'"' $filePathChineseBasic)
         courseNameTitle="${courseGroupNameSel} 课程:${courseNameSel} 例句:${i}"
-        if $isSentenceListenDrill; then
-            ftEcho -s ${courseNameTitle}
-            ftEcho -frame $chineseItem
-            echo && ftEcho -s "按T显示英文句子,Y已听懂,R重新播放，其他任意键继续"
+        if $isModeSentenceListenDrill; then
             while true; do
-                ftEdgeTTs --speed 10 --playContent "${englishItem}"
+                ftEcho -s ${courseNameTitle}
+                ftEcho -frame $chineseItem
+                echo && ftEcho -s "按T显示英文句子,Y已听懂,R重新播放，其他任意键继续"
+                ftEdgeTTs --speed 10 --playContent "${englishItem}" --hide
                 read -n 1 playOpt
                 [[ $playOpt != "r" ]] && [[ $playOpt != "R" ]] && itemOptionSelect=$playOpt && break
+                clear
             done
         else
             ftEcho -s ${courseNameTitle}
@@ -223,17 +230,31 @@ ftLearnEnglishRepetionDrillEveryDay()
             echo && ftEcho -s "按T显示翻译,Y已熟悉，其他任意键继续"
         fi
 
-        if ! $isSentenceListenDrill; then
+        if ! $isModeSentenceListenDrill; then
             read -n 1 itemOptionSelect
         fi
         (( courseSize+=1 ))
         if [[ $itemOptionSelect == "y" ]] || [[ $itemOptionSelect == "Y" ]]; then   
             (( courseTrueCount+=1 ))
         elif [[ $itemOptionSelect == "t" ]] || [[ $itemOptionSelect == "T" ]]; then
-            clear
-            ftEcho -s ${courseNameTitle}
-            ftEcho -frame  $englishItem
-            echo && ftEcho -s "按任意键继续" && read -n 1 sel2
+            if $isModeSentenceListenDrill; then
+                while true; do
+                    clear
+                    ftEcho -s ${courseNameTitle}
+                    ftEcho -frame  $englishItem
+                    ftEcho -s "按R重新播放，其他任意键继续"
+                    ftEdgeTTs --speed 10 --playContent "${englishItem}" --hide
+                    read -n 1 sel2
+                    [[ $sel2 != "r" ]] && [[ $sel2 != "R" ]] && break
+                done
+            else
+                clear
+                ftEcho -s ${courseNameTitle}
+                ftEcho -frame  $englishItem
+                echo && ftEcho -s "按任意键继续" && read -n 1 sel2
+            fi
+
+
             valRepetionDrillErrorHository=(${valRepetionDrillErrorHository[@]} $indexSort)
         else
             valRepetionDrillErrorHository=(${valRepetionDrillErrorHository[@]} $indexSort)
