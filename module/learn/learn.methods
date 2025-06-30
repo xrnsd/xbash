@@ -4,7 +4,7 @@
 ##             学习工具实现                      ##
 ##                                              ##
 ##################################################
-complete -W "-h --help -cet -cit -cpe --compare" ftLearnEnglishRepetionDrillEveryDay
+complete -W "-h --help -cet -cit -cpe --compare -ld" ftLearnEnglishRepetionDrillEveryDay
 ftLearnEnglishRepetionDrillEveryDay()
 {
     local ftEffect=英语每天练习
@@ -15,7 +15,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     #解参验耦
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
-    local isRest=true  isModelCourseExampleText=false  isModelCourseImitateText=false isModelCompare=false
+    local isRest=true  isModelCourseExampleText=false  isModelCourseImitateText=false isModelCompare=false isSentenceListenDrill=false
     local valCount=1 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
@@ -34,6 +34,9 @@ ftLearnEnglishRepetionDrillEveryDay()
 #    #仿造课文默写比对练习
 #    ftLearnEnglishRepetionDrillEveryDay -cit
 #    
+#    #例句听写比对练习
+#    ftLearnEnglishRepetionDrillEveryDay -ld
+#       
 #    #默写结果和对比
 #    ftLearnEnglishRepetionDrillEveryDay -cpe / --compare
 #========================================================="; return ;;
@@ -44,14 +47,16 @@ ftLearnEnglishRepetionDrillEveryDay()
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -cet ) isModelCourseExampleText=true
-             [[ -z $(which gedit) ]] && ftExample --rely "gedit" && return $resultFail
+             [[ -z $(which gedit) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "gedit" && return $resultFail
             ;;
         -cit ) isModelCourseExampleText=true
              isModelCourseImitateText=true
-             [[ -z $(which gedit) ]] && ftExample --rely "gedit" && return $resultFail
+             [[ -z $(which gedit) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "gedit" && return $resultFail
             ;;
         -cpe | --compare ) isModelCompare=true
-             [[ -z $(which bcompare) ]] && ftExample --rely "bcompare" && return $resultFail
+             [[ -z $(which bcompare) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "bcompare" && return $resultFail
+            ;;
+        -ld ) isSentenceListenDrill=true
             ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
@@ -197,28 +202,41 @@ ftLearnEnglishRepetionDrillEveryDay()
     fi
     local englishItem chineseItem courseNameTitle
     local courseSize=0 courseTrueCount=0 indexSort
+    local itemOptionSelect
     for i in ${arrayIndexSort[@]}; do
         indexSort=$i
         englishItem=$(awk 'NR=="'$i'"' $filePathEnglishBasic)
         chineseItem=$(awk 'NR=="'$i'"' $filePathChineseBasic)
         courseNameTitle="${courseGroupNameSel} 课程:${courseNameSel} 例句:${i}"
-        ftEcho -s ${courseNameTitle}
-        ftEcho -frame $chineseItem
-        echo && ftEcho -s "按T显示翻译,Y已熟悉，其他任意键继续" && read -n 1 sel
-        (( courseSize+=1 ))
-        if [[ $sel == "y" ]] || [[ $sel == "Y" ]]; then   
-            (( courseTrueCount+=1 ))
+        if $isSentenceListenDrill; then
+            ftEcho -s ${courseNameTitle}
+            ftEcho -frame $chineseItem
+            echo && ftEcho -s "按T显示英文句子,Y已听懂,R重新播放，其他任意键继续"
+            while true; do
+                ftEdgeTTs --speed 10 --playContent "${englishItem}"
+                read -n 1 playOpt
+                [[ $playOpt != "r" ]] && [[ $playOpt != "R" ]] && itemOptionSelect=$playOpt && break
+            done
         else
+            ftEcho -s ${courseNameTitle}
+            ftEcho -frame $chineseItem
+            echo && ftEcho -s "按T显示翻译,Y已熟悉，其他任意键继续"
+        fi
+
+        if ! $isSentenceListenDrill; then
+            read -n 1 itemOptionSelect
+        fi
+        (( courseSize+=1 ))
+        if [[ $itemOptionSelect == "y" ]] || [[ $itemOptionSelect == "Y" ]]; then   
+            (( courseTrueCount+=1 ))
+        elif [[ $itemOptionSelect == "t" ]] || [[ $itemOptionSelect == "T" ]]; then
             clear
             ftEcho -s ${courseNameTitle}
             ftEcho -frame  $englishItem
-            echo && ftEcho -s "按Y翻译正确,其他任意键继续" && read -n 1 sel2
-            if [[ $sel2 == "y" ]] || [[ $sel2 == "Y" ]]; then   
-                (( courseTrueCount+=1 ))
-            else
-                valRepetionDrillErrorHository=(${valRepetionDrillErrorHository[@]} $indexSort)
-                read -n 1 sel3
-            fi
+            echo && ftEcho -s "按任意键继续" && read -n 1 sel2
+            valRepetionDrillErrorHository=(${valRepetionDrillErrorHository[@]} $indexSort)
+        else
+            valRepetionDrillErrorHository=(${valRepetionDrillErrorHository[@]} $indexSort)
         fi
         englishItem=
         chineseItem=
