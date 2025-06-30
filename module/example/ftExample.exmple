@@ -47,7 +47,13 @@ ftExample()
     #环境校验
     [ -z "${exampleTools2}" ] && ftExample --env && return $resultFail
     #参数校验
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    case "$1" in
+        -h | --help | --rely_install)
+            ;;
+        *)   errorContent="${errorContent}\\n无效参数:${1}"
+            ;;
+    esac
     [ -z "${example1}" ] && errorContent="${errorContent}\\n[示例1]example1=$example1"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftExample -h && return $resultFail
 
