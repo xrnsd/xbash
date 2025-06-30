@@ -3919,7 +3919,7 @@ ftEdgeTTs()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
     #解参验耦
-    local playContent speedVal=
+    local playContent speedVal= isModeHide=false
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
@@ -3939,10 +3939,17 @@ ftEdgeTTs()
 #
 #    速度值1 ～ 100，越大越慢
 #    ftEdgeTTs --speed 50
+#
+#    播放内容
+#    ftEdgeTTs --playContent "test play message"
+#
+#    不显示播放内容
+#    ftEdgeTTs --hide
 #========================================================="; return ;;
 
         # 变量参数解析部分 ==============
         --speed) speedVal="${arg2}" ;;
+        --hide) isModeHide=true ;;
         --playContent) playContent="${arg2}" ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
@@ -3952,8 +3959,10 @@ ftEdgeTTs()
     cd ${dirPathPythonVirtualEnvironment}
     [[ -z $(which xsel) ]] && ftEdgeTTs --rely "xsel" && return $resultFail
     [[ -z $(which edge-playback) ]] && ftEdgeTTs --rely "edge-tts" && return $resultFail
+    [[ -z $(which play) ]] && ftEdgeTTs --rely "sox" && return $resultFail
 
     local filePathLock=/tmp/tts.lock
+    local filePathMediaCache=/tmp/ftEdgeTts_Cache.mp3
     if [[ -f $filePathLock ]]; then
         local alarmContent="tts is lock , please wait"
         notify-send -e "${alarmContent}"
@@ -3963,12 +3972,28 @@ ftEdgeTTs()
     touch $filePathLock && trap '[ -f "$filePathLock" ] && rm $filePathLock && exit' SIGINT
     [ -z "${playContent}" ] && playContent="$(xsel | sed -e :a -e 'N;s/\n/ /;ta')"
     [ -z "${playContent}" ] && ftEcho -e "播放内容为空" && return
-    ftEcho -s "${playContent}"
-    source /home/myname/.venv/bin/activate
-    cd /home/myname/.venv/bin/
-    edge-playback --volume=+100% --rate=-${speedVal}% --text "${playContent}" 
-    rm $filePathLock
+    ! $isModeHide && ftEcho -s "${playContent}"
 
+    local isRefCacheMedia=false
+    [[ -z $playContentCache ]] && isRefCacheMedia=true
+    if [[ -n $playContentCache ]] && [[ "$playContentCache" != "$playContent" ]]; then
+        isRefCacheMedia=true
+    fi
+
+    if $isRefCacheMedia; then
+        ftEcho -s "${filePathMediaCache} is updating now"
+        local dirPathLocal=$(pwd)
+        source /home/myname/.venv/bin/activate
+        cd /home/myname/.venv/bin/
+        #edge-playback --volume=+100% --rate=-${speedVal}% --text "${playContent}" 
+        edge-tts --volume=+100% --rate=-${speedVal}% --text "${playContent}" --write-media $filePathMediaCache
+        cd $dirPathLocal
+        ftEcho -s "${filePathMediaCache} is update complete"
+    fi
+
+    play $filePathMediaCache
+    export playContentCache=$playContent
+    rm $filePathLock
 
     #echo "(SayText \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\")" | festival  '(voice_cmu_us_slt_arctic_hts)' -
     #-pipe
