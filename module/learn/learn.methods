@@ -189,8 +189,8 @@ ftLearnEnglishRepetionDrillEveryDay()
     fi
 
     #开始练习
-    local filePathEnglishBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}.english
-    local filePathChineseBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}.chinese
+    local filePathEnglishBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}./${courseNameSel}.english
+    local filePathChineseBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}./${courseNameSel}.chinese
     local fileSizeEnglishBasic=$(sed -n '$=' $filePathEnglishBasic)
     local fileSizeChineseBasic=$(sed -n '$=' $filePathChineseBasic)
     if (($fileSizeEnglishBasic==0)) \
@@ -242,9 +242,10 @@ ftLearnEnglishRepetionDrillEveryDay()
                     clear
                     ftEcho -s ${courseNameTitle}
                     ftEcho -frame  $englishItem
-                    ftEcho -s "按R重新播放，其他任意键继续"
+                    ftEcho -s "按R重新播放,Y已正确，其他任意键继续"
                     ftEdgeTTs --speed 10 --playContent "${englishItem}" --hide
                     read -n 1 sel2
+                    [[ $sel2 != "y" ]] && [[ $sel2 != "Y" ]] && (( courseTrueCount+=1 )) && break
                     [[ $sel2 != "r" ]] && [[ $sel2 != "R" ]] && break
                 done
             else
@@ -455,10 +456,10 @@ ftLearnCourseManage()
         courseName=$(echo $courseName |sed s/[[:space:]]//g)
 
         local dirPathCourseGroup="${dirPathTempEng}/${courseGroupNameSel}"
-        local filePathEnglishBasic="${dirPathCourseGroup}/${courseName}.english"
-        local filePathChineseBasic="${dirPathCourseGroup}/${courseName}.chinese"
-        local filePathExampleText="${dirPathCourseGroup}/${courseName}.exampleText"
-        local filePathImitateText="${dirPathCourseGroup}/${courseName}.imitateText"
+        local filePathEnglishBasic="${dirPathCourseGroup}/${courseName}/${courseName}.english"
+        local filePathChineseBasic="${dirPathCourseGroup}/${courseName}/${courseName}.chinese"
+        local filePathExampleText="${dirPathCourseGroup}/${courseName}/${courseName}.exampleText"
+        local filePathImitateText="${dirPathCourseGroup}/${courseName}/${courseName}.imitateText"
         if [[ -f $filePathEnglishBasic ]] || [[ -f $filePathChineseBasic ]]; then
             ftEcho -e "课程:${courseName}已存在"
             return
@@ -478,6 +479,20 @@ ftLearnCourseManage()
         fi
         [[ ! -s $filePathExampleText ]] && ftEcho -e "课程${courseName}的例文为空"
         [[ ! -s $filePathImitateText ]] && ftEcho -e "课程${courseName}的仿例文为空"
+        if [[ ! -s $filePathEnglishBasic ]]; then
+            ftEcho -y "Should any audio file be created?"
+            read -n 1 sel
+            case "$sel" in
+                y | Y )
+                    local filePathText=$filePathEnglishBasic
+                    local dirPathMp3="${dirPathCourseGroup}/${courseName}/sentence_listen_drill"
+                    ftText2Mp3 -fpt "${filePathEnglishBasic}" -dpm "${dirPathMp3}"
+                    ;;
+                * )
+                    ;;
+            esac
+            done
+        fi   
 
         local learnCourseList=($(ls $dirPathCourseGroup|grep chinese |  awk -F. '{print $1}'))
         if [[ -n $learnCourseList ]]; then
@@ -489,3 +504,79 @@ ftLearnCourseManage()
         ftEcho -s "在${courseGroupNameSel}下已新建课程${courseName}"
     fi
 }
+
+complete -W "-h --help --rely_install" ftText2Mp3
+ftText2Mp3()
+{
+    local ftEffect="Text generates audio files"
+    local isEnable=true
+
+    #可用性校验
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
+    #解参验耦
+    local filePathText dirPathMp3
+    local valCount=4 errorContent arg arg2 # arg3 # arg4
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # 说明参数解析部分 ==============
+        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
+#=========================================================
+#    ${ftEffect}依赖包 $2
+#    请尝试使用 ftText2Mp3 --rely_install 补全依赖
+#========================================================="; return ;;
+        --rely_install)
+            ftEcho -s "开始补全依赖"
+            sudo apt-get install xxxx
+            return ;;
+        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
+#=========================================================
+#    以下[参数对]无先后顺序可任意组合
+#
+#    ftText2Mp3 xxxx
+#========================================================="; return ;;
+        --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
+#=========================================================
+#    环境未初始化
+#    使用前,请先初始化[xxxxxxxxx]
+#========================================================="; return ;;
+
+        # 变量参数解析部分 ==============
+        -fpt ) filePathText="${arg2}"
+            ;;
+        -dpm ) dirPathMp3="${arg2}"
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
+    #参数校验
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    case "$1" in
+        -h | --help | --rely_install | -fpt | -dpm)
+            ;;
+        *)   errorContent="${errorContent}\\n无效参数:${1}"
+            ;;
+    esac
+    [ ! -d "${dirPathPythonVirtualEnvironment}" ] && errorContent="${errorContent}\\n[环境异常,目录不存在]:${dirPathPythonVirtualEnvironment}"
+    [ ! -d "${dirPathMp3}" ] && errorContent="${errorContent}\\n[生成文件存放目录不存在]:${dirPathMp3}"
+    [ ! -f "${filePathText}" ] && errorContent="${errorContent}\\n[文本数据文件不存在]:${filePathText}"
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftText2Mp3 -h && return $resultFail
+    
+    #依赖校验
+    source ${dirPathPythonVirtualEnvironment}activate
+    cd ${dirPathPythonVirtualEnvironment}
+    [[ -z $(which xsel) ]] && ftText2Mp3 --rely "xsel" && return $resultFail
+    [[ -z $(which edge-playback) ]] && ftText2Mp3 --rely "edge-tts" && return $resultFail
+    
+    #实现主体
+    local fileTextLineCount=$(sed -n '$=' $filePathText)
+    local lineIndex=2 lineContent
+    while (( $lineIndex<=$fileTextLineCount )) ;do
+      lineContent=$(awk 'NR=="'$lineIndex'"' $filePathText)
+      ftEcho -s "正在生成line:${lineIndex}=\"${lineContent}\"的音频文件"
+      edge-tts --text "${lineContent}" --write-media "${dirPathMp3}/${lineIndex}.mp3"
+        
+      (( lineIndex+=1 ))
+    done
+    ftEcho -s "生成完成"
+}
+
