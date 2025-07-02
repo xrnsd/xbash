@@ -3954,9 +3954,9 @@ ftEdgeTTs()
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #依赖校验
-    local dirPathPythonVirtualEnvironment="/home/myname/.venv/bin/"
-    source ${dirPathPythonVirtualEnvironment}activate
-    cd ${dirPathPythonVirtualEnvironment}
+    local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
+    [ ! -d "${dirPathPythonVirtualEnvironment}" ] && ftEcho -e "\\n[环境异常,目录不存在]${dirPathPythonVirtualEnvironment}" && return $resultFail
+    
     [[ -z $(which xsel) ]] && ftEdgeTTs --rely "xsel" && return $resultFail
     [[ -z $(which edge-playback) ]] && ftEdgeTTs --rely "edge-tts" && return $resultFail
     [[ -z $(which play) ]] && ftEdgeTTs --rely "sox" && return $resultFail
@@ -3983,8 +3983,8 @@ ftEdgeTTs()
     if $isRefCacheMedia; then
         ftEcho -s "${filePathMediaCache} is updating now"
         local dirPathLocal=$(pwd)
-        source /home/myname/.venv/bin/activate
-        cd /home/myname/.venv/bin/
+        source ${dirPathPythonVirtualEnvironment}activate
+        cd ${dirPathPythonVirtualEnvironment}
         #edge-playback --volume=+100% --rate=-${speedVal}% --text "${playContent}" 
         edge-tts --volume=+100% --rate=-${speedVal}% --text "${playContent}" --write-media $filePathMediaCache
         cd $dirPathLocal
