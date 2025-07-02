@@ -82,6 +82,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     fi
 
     #选择课程集
+    local groupNameRepetionDrill=needRepetionDrill
     local learnCourseGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  courseGroupList))
     [[ -z $learnCourseGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
     local courseGroupNameSel ListSize=0
@@ -177,20 +178,12 @@ ftLearnEnglishRepetionDrillEveryDay()
 
     local keyRepetionDrillErrorHository="repetionDrillErrorHository_${courseGroupNameSel}_${courseNameSel}"
     local valRepetionDrillErrorHository=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  $keyRepetionDrillErrorHository))
-    local isRepetitionDrillMode=false
-    if [[ -n $valRepetionDrillErrorHository ]]; then
-        ftEcho -y "存在旧的练习记录,Y覆盖，其他任意键使用"
-        read -n 1 sel
-        case "$sel" in
-            y | Y ) valRepetionDrillErrorHository=
-                ;;
-            * ) isRepetitionDrillMode=true
-                ;;
-        esac
-    fi
 
     #开始练习
-    local filePathLearnProblem=${dirPathTempEng}/Learn.problem
+    local filePathLearnResultProblem=${dirPathTempEng}/Problem.list
+    local filePathLearnResultDrillEnglish="${dirPathTempEng}/needRepetionDrill/normal/normal.english"
+    local filePathLearnResultDrillChinese="${dirPathTempEng}/needRepetionDrill/normal/normal.chinese"
+    local filePathLearnResultDrillAudioBasic="${dirPathTempEng}/needRepetionDrill/normal/sentence_listen_drill"
     local dirPathItemAudioFile=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence_listen_drill
     local filePathEnglishBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/${courseNameSel}.english
     local filePathChineseBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/${courseNameSel}.chinese
@@ -206,10 +199,6 @@ ftLearnEnglishRepetionDrillEveryDay()
 
     clear
     local arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
-    if $isRepetitionDrillMode; then
-        arrayIndexSort=($(echo ${valRepetionDrillErrorHository[@]} | shuf))
-        valRepetionDrillErrorHository=""
-    fi
     local englishItem chineseItem courseNameTitle
     local courseSize=0 courseTrueCount=0 indexSort indexArray=0
     local itemOptionSelect
@@ -243,7 +232,7 @@ ftLearnEnglishRepetionDrillEveryDay()
                 case "$playOpt" in
                     w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
                         break;;
-                    e | E ) echo -e "\ntranslator problem:\n  ${courseNameTitle}\n  ${englishItem}" >> $filePathLearnProblem
+                    e | E ) echo -e "\ntranslator problem:\n  ${courseNameTitle}\n  ${englishItem}" >> $filePathLearnResultProblem
                         break;;
                     t | T | y | Y | n | N ) break;;
                     * ) ;;
@@ -268,7 +257,13 @@ ftLearnEnglishRepetionDrillEveryDay()
                     clear
                     ftEcho -s ${courseNameTitle}
                     ftEcho -frame  "${chineseItem}\n${englishItem}"
-                    ftEcho -s "按,Y已听懂,N跳过,E翻译存疑,W上一句，其他任意键重新播放"
+
+                    if [[ $courseGroupNameSel = $groupNameRepetionDrill ]]; then
+                        ftEcho -s "按,Y已听懂,N跳过,W上一句，其他任意键重新播放"
+                    else
+                        ftEcho -s "按,Y已听懂,N跳过,E翻译存疑,R读待确认,D待加强,W上一句，其他任意键重新播放"
+                    fi
+
                     play $filePathItemAudioFile
                     #ftEdgeTTs --speed 10 --playContent "${englishItem}" --hide
 
@@ -278,7 +273,22 @@ ftLearnEnglishRepetionDrillEveryDay()
                             break;;
                         y | Y ) (( courseTrueCount+=1 ))
                             break;;
-                        e | E ) echo -e "\ntranslator problem:\n  ${courseNameTitle}\n  ${englishItem}" >> $filePathLearnProblem
+                        e | E )
+                            [[ $courseGroupNameSel = $groupNameRepetionDrill ]] && break
+                            echo -e "\n translator problem:\n   ${courseNameTitle}\n   ${englishItem}" >> $filePathLearnResultProblem
+                            break;;
+                        r | R ) 
+                            [[ $courseGroupNameSel = $groupNameRepetionDrill ]] && break
+                            echo -e "\n read problem:\n   ${courseNameTitle}\n   ${englishItem}" >> $filePathLearnResultProblem
+                            break;;
+                        d | D )
+                            [[ $courseGroupNameSel = $groupNameRepetionDrill ]] && break
+                            if [[ -z $(grep -rsn "${englishItem}" $filePathLearnResultDrillEnglish) ]]; then
+                                echo "${englishItem}" >> $filePathLearnResultDrillEnglish
+                                echo "${chineseItem}" >> $filePathLearnResultDrillChinese
+                                local fileLineSize=$(awk 'END{print NR}' $filePathLearnResultDrillEnglish)
+                                ln -s $filePathItemAudioFile "${filePathLearnResultDrillAudioBasic}/${fileLineSize}.mp3"
+                            fi
                             break;;
                         n | N ) break;;
                         * ) ;;

@@ -4052,6 +4052,8 @@ ftText2Mp3()
         *)   errorContent="${errorContent}\\n无效参数:${1}"
             ;;
     esac
+
+    [ ! -d "${dirPathMp3}" ] && mkdir -p $dirPathMp3
     [ ! -d "${dirPathPythonVirtualEnvironment}" ] && errorContent="${errorContent}\\n[环境异常,目录不存在]:${dirPathPythonVirtualEnvironment}"
     [ ! -d "${dirPathMp3}" ] && errorContent="${errorContent}\\n[生成文件存放目录不存在]:${dirPathMp3}"
     [ ! -f "${filePathText}" ] && errorContent="${errorContent}\\n[文本数据文件不存在]:${filePathText}"
