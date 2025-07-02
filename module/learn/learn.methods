@@ -205,39 +205,49 @@ ftLearnEnglishRepetionDrillEveryDay()
     [[ ! -d $dirPathItemAudioFile ]] && mkdir -p $dirPathItemAudioFile
 
     clear
-    local arrayIndexSort=$(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf)
+    local arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
     if $isRepetitionDrillMode; then
         arrayIndexSort=($(echo ${valRepetionDrillErrorHository[@]} | shuf))
         valRepetionDrillErrorHository=""
     fi
     local englishItem chineseItem courseNameTitle
-    local courseSize=0 courseTrueCount=0 indexSort
+    local courseSize=0 courseTrueCount=0 indexSort indexArray=0
     local itemOptionSelect
     local filePathItemAudioFile
-    for i in ${arrayIndexSort[@]}; do
-        indexSort=$i
-        englishItem=$(awk 'NR=="'$i'"' $filePathEnglishBasic)
-        chineseItem=$(awk 'NR=="'$i'"' $filePathChineseBasic)
-        courseNameTitle="${courseGroupNameSel} 课程:${courseNameSel} 例句:${i}"
 
-        filePathItemAudioFile="${dirPathItemAudioFile}/${i}.mp3"
+    local arrayIndexSortSize=${#arrayIndexSort[@]}
+    while (( $indexArray < $arrayIndexSortSize  )); do
+        indexSort=${arrayIndexSort[$indexArray]}
+        englishItem=$(awk 'NR=="'$indexSort'"' $filePathEnglishBasic)
+        chineseItem=$(awk 'NR=="'$indexSort'"' $filePathChineseBasic)
+        courseNameTitle="${courseGroupNameSel} 课程:${courseNameSel} 例句:${indexSort}"
+
+        filePathItemAudioFile="${dirPathItemAudioFile}/${indexSort}.mp3"
         if [[ ! -f $filePathItemAudioFile ]]; then
             local filePathText=/tmp/audioTemp.text
             local dirPathMp3=/tmp
             echo "$englishItem" > $filePathText
             ftText2Mp3 -fpt "${filePathText}" -dpm "${dirPathMp3}"
-            mv "${dirPathMp3}/1.mp3" $filePathItemAudioFile
+            mv "${dirPathMp3}/1.mp3" "${filePathItemAudioFile}"
         fi
 
         if $isModeSentenceListenDrill; then
             while true; do
                 ftEcho -s ${courseNameTitle}
                 ftEcho -frame $chineseItem
-                echo && ftEcho -s "按T显示英文句子,Y已听懂,R重新播放，其他任意键继续"
+                echo && ftEcho -s "按T显示英文句子,Y已听懂,N跳过,W上一句，其他任意键重新播放"
                 play $filePathItemAudioFile
                 #ftEdgeTTs --speed 10 --playContent "${englishItem}" --hide
                 read -n 1 playOpt
-                [[ $playOpt != "r" ]] && [[ $playOpt != "R" ]] && itemOptionSelect=$playOpt && break
+                itemOptionSelect=$playOpt
+                case "$playOpt" in
+                    w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
+                        break;;
+                    e | E ) echo -e "\ntranslator problem:\n  ${courseNameTitle}\n  ${englishItem}" >> $filePathLearnProblem
+                        break;;
+                    t | T | y | Y | n | N ) break;;
+                    * ) ;;
+                esac
                 clear
             done
         else
@@ -257,21 +267,21 @@ ftLearnEnglishRepetionDrillEveryDay()
                 while true; do
                     clear
                     ftEcho -s ${courseNameTitle}
-                    ftEcho -frame  $englishItem
-                    ftEcho -s "按R重新播放,Y已正确,E翻译存疑，其他任意键继续"
+                    ftEcho -frame  "${chineseItem}\n${englishItem}"
+                    ftEcho -s "按,Y已听懂,N跳过,E翻译存疑,W上一句，其他任意键重新播放"
                     play $filePathItemAudioFile
                     #ftEdgeTTs --speed 10 --playContent "${englishItem}" --hide
 
                     read -n 1 sel2
                     case "$sel2" in
+                        w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
+                            break;;
                         y | Y ) (( courseTrueCount+=1 ))
                             break;;
                         e | E ) echo -e "\ntranslator problem:\n  ${courseNameTitle}\n  ${englishItem}" >> $filePathLearnProblem
                             break;;
-                        r | R )
-                            break;;
-                        * )
-                            ;;
+                        n | N ) break;;
+                        * ) ;;
                     esac
                 done
             else
@@ -288,6 +298,7 @@ ftLearnEnglishRepetionDrillEveryDay()
         englishItem=
         chineseItem=
         clear
+        (( indexArray+=1 ))
     done
 
     #排序
