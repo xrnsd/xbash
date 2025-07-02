@@ -4,6 +4,8 @@
 [[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
 [[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
 [[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
+[[ -f "$rFilePathXbashModuleLearn" ]] && source $rFilePathXbashModuleLearn
+source ${rDirPathXbashModuleMaintain}/${rFileNameXbashModuleMaintain}
 # =================================================================
 ftEcho -s "#####----------------------测试模式--------------------------#######"
 # =================================================================
