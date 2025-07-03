@@ -169,7 +169,6 @@ ftLearnEnglishRepetionDrillEveryDay()
         done
     fi
 
-
     #开始课文练习
     if $isModeCourseExampleText; then
         local filePathEnglishExampleText="${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/article.text_english"
@@ -181,38 +180,38 @@ ftLearnEnglishRepetionDrillEveryDay()
         cp $filePathEnglishExampleText $filePathCompareExampleText
         gedit --new-window $filePathCompareTempText $filePathCompareExampleText &
         return
-    elif $isModeArticleListenDrill; then
-        local filePathEnglishExampleText="${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/article.text_english"
-        [[ "$isModeCourseImitateText" = "true" ]] && filePathEnglishExampleText="${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/imitate.text_chinese_english"
-        [[ ! -f $filePathEnglishExampleText ]] && ftEcho -e "当前课程没有录入例文" && return
-
-        [[ ! -d $dirPathTemp ]] && mkdir $dirPathTemp
-        echo "" > $filePathCompareTempText
-        cp $filePathEnglishExampleText $filePathCompareExampleText
-        gedit --new-window $filePathCompareTempText $filePathCompareExampleText &
-        return
     fi
 
 
-    #开始例句练习
     local keyRepetionDrillErrorHository="repetionDrillErrorHository_${courseGroupNameSel}_${courseNameSel}"
-    local valRepetionDrillErrorHository=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  $keyRepetionDrillErrorHository))
+    local valRepetionDrillInvalidIndex valRepetionDrillErrorHository #=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  $keyRepetionDrillErrorHository))
     local filePathLearnResultProblem=${dirPathTempEng}/Problem.list
-    local filePathLearnResultDrillEnglish="${dirPathTempEng}/needRepetionDrill/normal/normal.english"
-    local filePathLearnResultDrillChinese="${dirPathTempEng}/needRepetionDrill/normal/normal.chinese"
+    local filePathLearnResultDrillEnglish="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_english"
+    local filePathLearnResultDrillChinese="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_chinese"
     local filePathLearnResultDrillAudioBasic="${dirPathTempEng}/needRepetionDrill/normal/sentence.audio_english"
-    local dirPathItemAudioFile=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.audio_english
-    local filePathEnglishBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.text_english
-    local filePathChineseBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.text_chinese
+
+    #开始听读练习
+    local dirPathItemAudioFile filePathChineseBasic filePathChineseBasic
+    if $isModeArticleListenDrill; then
+        dirPathItemAudioFile=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/article.audio_english
+        filePathEnglishBasic="${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/article.text_english"
+        filePathChineseBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/article.text_chinese
+    elif $isModeSentenceListenDrill; then
+        dirPathItemAudioFile=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.audio_english
+        filePathEnglishBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.text_english
+        filePathChineseBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.text_chinese
+    else
+        ftEcho -e "错误操作，请查看参数配置" && return
+    fi
+    [[ ! -d $dirPathItemAudioFile ]] && ftEcho -e "找不到音频目录:${dirPathItemAudioFile}" && return
     local fileSizeEnglishBasic=$(sed -n '$=' $filePathEnglishBasic)
     local fileSizeChineseBasic=$(sed -n '$=' $filePathChineseBasic)
     if (($fileSizeEnglishBasic==0)) \
         || (($fileSizeChineseBasic==0)) \
         || (($fileSizeChineseBasic!=$fileSizeEnglishBasic)) ; then
-        ftEcho -ex "信息文件内容为空或数量不一致"
+        ftEcho -e "信息文件内容为空或数量不一致"
         return;
     fi
-    [[ ! -d $dirPathItemAudioFile ]] && mkdir -p $dirPathItemAudioFile
 
     clear
     local arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
@@ -225,6 +224,12 @@ ftLearnEnglishRepetionDrillEveryDay()
     while (( $indexArray < $arrayIndexSortSize  )); do
         indexSort=${arrayIndexSort[$indexArray]}
         englishItem=$(awk 'NR=="'$indexSort'"' $filePathEnglishBasic)
+        if [[ -z $englishItem ]];then
+            valRepetionDrillInvalidIndex=(${valRepetionDrillInvalidIndex[@]} $indexSort)
+            (( indexArray+=1 ))
+            continue
+        fi
+
         chineseItem=$(awk 'NR=="'$indexSort'"' $filePathChineseBasic)
         courseNameTitle="${courseGroupNameSel} 课程:${courseNameSel} 例句:${indexSort}"
 
@@ -276,7 +281,7 @@ ftLearnEnglishRepetionDrillEveryDay()
                     ftEcho -frame  "${chineseItem}\n${englishItem}"
 
                     if [[ $courseGroupNameSel = $groupNameRepetionDrill ]]; then
-                        ftEcho -s "按,Y已听懂,N跳过,W上一句，其他任意键重新播放"
+                        ftEcho -s "按,Y已听懂,N跳过,W上一句,D删除记录，其他任意键重新播放"
                     else
                         ftEcho -s "按,Y已听懂,N跳过,E翻译存疑,R读待确认,D待加强,W上一句，其他任意键重新播放"
                     fi
@@ -299,7 +304,16 @@ ftLearnEnglishRepetionDrillEveryDay()
                             echo -e "\n read problem:\n   ${courseNameTitle}\n   ${englishItem}" >> $filePathLearnResultProblem
                             break;;
                         d | D )
-                            [[ $courseGroupNameSel = $groupNameRepetionDrill ]] && break
+                            if [[ $courseGroupNameSel = $groupNameRepetionDrill ]]; then
+                                ftEcho -y "是否删除(回车默认y)"
+                                read -n 1 delSel
+                                [ -z "${delSel}" ] && delSel=y
+                                [[ $delSel != "y" ]]&&break
+                                sed -i "${indexSort}s/${englishItem}//g" $filePathEnglishBasic
+                                sed -i "${indexSort}s/${chineseItem}//g" $filePathChineseBasic
+                                rm $filePathItemAudioFile
+                                break
+                            fi
                             if [[ -z $(grep -rsn "${englishItem}" $filePathLearnResultDrillEnglish) ]]; then
                                 echo "${englishItem}" >> $filePathLearnResultDrillEnglish
                                 echo "${chineseItem}" >> $filePathLearnResultDrillChinese
@@ -328,14 +342,17 @@ ftLearnEnglishRepetionDrillEveryDay()
         (( indexArray+=1 ))
     done
 
-    #排序
-    local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | uniq | sed 's/ /\n/g'| sort -n  | xargs echo -n)
+    #排序,去重
+    local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g' | uniq | sort -n  | xargs echo -n)
     #记录练习数据
     ftIniDeleteItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository
     # ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHository[*]}"
     ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHositorySort[*]}"
 
-    ftEcho -s "${courseGroupNameSel} 课程:${courseNameSel}练习完成，正确率:$(printf "%d%%" $((courseTrueCount*100/courseSize)))\n错误ID:$(echo ${valRepetionDrillErrorHositorySort[*]})"
+    ftEcho -s "课程集:${courseGroupNameSel}\n课程:${courseNameSel}\
+    \n正确率:$(printf "%d%%" $((courseTrueCount*100/courseSize)))\
+    \n错误ID:$(echo ${valRepetionDrillErrorHositorySort[*]})\
+    \n无效ID:$(echo ${valRepetionDrillInvalidIndex[*]})"
 }
 
 complete -W "-h --help --rely_install -p -l" -A file ftOcrRepetionDrill 
