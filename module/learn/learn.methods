@@ -4,7 +4,7 @@
 ##             学习工具实现                      ##
 ##                                              ##
 ##################################################
-complete -W "-h --help -cet -cit -cpe --compare -ld" ftLearnEnglishRepetionDrillEveryDay
+complete -W "-h --help -cet -cit -cpe --compare -sld -ald" ftLearnEnglishRepetionDrillEveryDay
 ftLearnEnglishRepetionDrillEveryDay()
 {
     local ftEffect="English repetion drill"
@@ -15,7 +15,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     #解参验耦
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
-    local isRest=true  isModeCourseExampleText=false  isModeCourseImitateText=false isModeCompare=false isModeSentenceListenDrill=false
+    local isModeCourseExampleText=false  isModeCourseImitateText=false isModeCompare=false isModeSentenceListenDrill=false isModeArticleListenDrill=false
     local valCount=1 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
@@ -33,12 +33,15 @@ ftLearnEnglishRepetionDrillEveryDay()
 #    
 #    #仿造课文默写比对练习
 #    ftLearnEnglishRepetionDrillEveryDay -cit
-#    
-#    #例句听写比对练习
-#    ftLearnEnglishRepetionDrillEveryDay -ld
 #       
 #    #默写结果和对比
 #    ftLearnEnglishRepetionDrillEveryDay -cpe / --compare
+#    
+#    #例句听力练习
+#    ftLearnEnglishRepetionDrillEveryDay -sld
+#
+#    #课文听力练习
+#    ftLearnEnglishRepetionDrillEveryDay -ald
 #========================================================="; return ;;
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -56,14 +59,16 @@ ftLearnEnglishRepetionDrillEveryDay()
         -cpe | --compare ) isModeCompare=true
              [[ -z $(which bcompare) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "bcompare" && return $resultFail
             ;;
-        -ld ) isModeSentenceListenDrill=true
+        -sld ) isModeSentenceListenDrill=true
+            ;;
+        -ald ) isModeArticleListenDrill=true
             ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     case "$1" in
-    -h | --help | -cet | -cit | -cpe | --compare | -ld)
+    -h | --help | -cet | -cit | -cpe | --compare | -ald | -sld)
         ;;
     *)   errorContent="${errorContent}\\n无效参数:${1}"
         ;;
@@ -164,9 +169,21 @@ ftLearnEnglishRepetionDrillEveryDay()
         done
     fi
 
+
+    #开始课文练习
     if $isModeCourseExampleText; then
-        local filePathEnglishExampleText=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}.exampleText
-        [[ "$isModeCourseImitateText" = "true" ]] && filePathEnglishExampleText=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}.imitateText
+        local filePathEnglishExampleText="${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/article.text_english"
+        [[ "$isModeCourseImitateText" = "true" ]] && filePathEnglishExampleText="${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/imitate.text_chinese_english"
+        [[ ! -f $filePathEnglishExampleText ]] && ftEcho -e "当前课程没有录入例文" && return
+
+        [[ ! -d $dirPathTemp ]] && mkdir $dirPathTemp
+        echo "" > $filePathCompareTempText
+        cp $filePathEnglishExampleText $filePathCompareExampleText
+        gedit --new-window $filePathCompareTempText $filePathCompareExampleText &
+        return
+    elif $isModeArticleListenDrill; then
+        local filePathEnglishExampleText="${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/article.text_english"
+        [[ "$isModeCourseImitateText" = "true" ]] && filePathEnglishExampleText="${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/imitate.text_chinese_english"
         [[ ! -f $filePathEnglishExampleText ]] && ftEcho -e "当前课程没有录入例文" && return
 
         [[ ! -d $dirPathTemp ]] && mkdir $dirPathTemp
@@ -176,17 +193,17 @@ ftLearnEnglishRepetionDrillEveryDay()
         return
     fi
 
+
+    #开始例句练习
     local keyRepetionDrillErrorHository="repetionDrillErrorHository_${courseGroupNameSel}_${courseNameSel}"
     local valRepetionDrillErrorHository=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  $keyRepetionDrillErrorHository))
-
-    #开始练习
     local filePathLearnResultProblem=${dirPathTempEng}/Problem.list
     local filePathLearnResultDrillEnglish="${dirPathTempEng}/needRepetionDrill/normal/normal.english"
     local filePathLearnResultDrillChinese="${dirPathTempEng}/needRepetionDrill/normal/normal.chinese"
-    local filePathLearnResultDrillAudioBasic="${dirPathTempEng}/needRepetionDrill/normal/sentence_listen_drill"
-    local dirPathItemAudioFile=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence_listen_drill
-    local filePathEnglishBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/${courseNameSel}.english
-    local filePathChineseBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/${courseNameSel}.chinese
+    local filePathLearnResultDrillAudioBasic="${dirPathTempEng}/needRepetionDrill/normal/sentence.audio_english"
+    local dirPathItemAudioFile=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.audio_english
+    local filePathEnglishBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.text_english
+    local filePathChineseBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.text_chinese
     local fileSizeEnglishBasic=$(sed -n '$=' $filePathEnglishBasic)
     local fileSizeChineseBasic=$(sed -n '$=' $filePathChineseBasic)
     if (($fileSizeEnglishBasic==0)) \
@@ -502,10 +519,10 @@ ftLearnCourseManage()
         courseName=$(echo $courseName |sed s/[[:space:]]//g)
 
         local dirPathCourseGroup="${dirPathTempEng}/${courseGroupNameSel}"
-        local filePathEnglishBasic="${dirPathCourseGroup}/${courseName}/${courseName}.english"
-        local filePathChineseBasic="${dirPathCourseGroup}/${courseName}/${courseName}.chinese"
-        local filePathExampleText="${dirPathCourseGroup}/${courseName}/${courseName}.exampleText"
-        local filePathImitateText="${dirPathCourseGroup}/${courseName}/${courseName}.imitateText"
+        local filePathEnglishBasic="${dirPathCourseGroup}/${courseName}/sentence.text_english"
+        local filePathChineseBasic="${dirPathCourseGroup}/${courseName}/sentence.text_chinese"
+        local filePathExampleText="${dirPathCourseGroup}/${courseName}/article.text_english"
+        local filePathImitateText="${dirPathCourseGroup}/${courseName}/imitate.text_chinese_english"
         if [[ -f $filePathEnglishBasic ]] || [[ -f $filePathChineseBasic ]]; then
             ftEcho -e "课程:${courseName}已存在"
             return
@@ -531,7 +548,7 @@ ftLearnCourseManage()
             case "$sel" in
                 y | Y )
                     local filePathText=$filePathEnglishBasic
-                    local dirPathMp3="${dirPathCourseGroup}/${courseName}/sentence_listen_drill"
+                    local dirPathMp3="${dirPathCourseGroup}/${courseName}/sentence.audio_english"
                     ftText2Mp3 -fpt "${filePathEnglishBasic}" -dpm "${dirPathMp3}"
                     ;;
                 * )
@@ -548,4 +565,133 @@ ftLearnCourseManage()
 
         ftEcho -s "在${courseGroupNameSel}下已新建课程${courseName}"
     fi
+}
+
+ftCutTextNCEEnglish()
+{
+    #将新概念英文课文格式化
+    local filePathTextLessonBasicContent=$1
+    local dirPathLessonDataStorage=$2
+    local lineSizeTextLessonBasicContent=$(awk 'END{print NR}' $filePathTextLessonBasicContent)
+
+    if (( $lineSizeTextLessonBasicContent==0 ));then
+        ftEcho -e "数据为空"
+        return
+    fi
+
+    local indexArray=1 lineContent lineContentTemp LessonNumber dirPathLesson filePathLesson
+    while (( $indexArray < $lineSizeTextLessonBasicContent  )); do
+        lineContent=$(awk 'NR=="'$indexArray'"' $filePathTextLessonBasicContent)
+
+        if [[ "$lineContent" =~ ^Lesson* ]];then
+            lineContentTemp=${lineContent//Lesson/}
+            lineContent=$(echo $lineContentTemp |sed s/[[:space:]]//g)
+            LessonNumber=$(printf "%03d" $lineContent)
+            ftEcho -s "create lesson ${LessonNumber} article content"
+            dirPathLesson="${dirPathLessonDataStorage}/${LessonNumber}"
+            filePathLesson="${dirPathLesson}/article.text_english"
+            mkdir -p "${dirPathLesson}"
+        elif (( ${#lineContent}>0 ));then
+            lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
+            if (( ${#lineContentTemp}==0 ));then #只有空格的情况
+                lineContent=
+            else #进行句子切分
+                lineContentTemp=${lineContent//'.'/'.\n'}
+                lineContent=${lineContentTemp//'!'/'!\n'}
+                lineContentTemp=${lineContent//'?'/'?\n'}
+                lineContent="${lineContentTemp}"
+            fi
+            (( ${#lineContent}>0 )) && echo -e "${lineContent}" >> $filePathLesson
+        fi
+
+        (( indexArray+=1 ))
+    done
+}
+
+ftCutTextNCEChinese()
+{
+    #ftCutTextNCEChinese /home/myname/download/2.txt /home/myname/download/sss
+    #将新概念中文课文格式化
+    local filePathTextLessonBasicContent=$1
+    local dirPathLessonDataStorage=$2
+    local lineSizeTextLessonBasicContent=$(awk 'END{print NR}' $filePathTextLessonBasicContent)
+
+    if (( $lineSizeTextLessonBasicContent==0 ));then
+        ftEcho -e "数据为空"
+        return
+    fi
+
+    local indexArray=1 lineContent lineContentTemp LessonNumber dirPathLesson filePathLesson flag
+    while (( $indexArray < $lineSizeTextLessonBasicContent  )); do
+        lineContent=$(awk 'NR=="'$indexArray'"' $filePathTextLessonBasicContent)
+        flag=$(echo "${lineContent}"|grep "第" | grep "课")
+
+        if [[ -n $flag ]];then
+            lineContentTemp=${lineContent//第/}
+            lineContent=${lineContentTemp//课/}
+            lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
+            LessonNumber=$(printf "%03d" $lineContentTemp)
+            ftEcho -s "create lesson ${LessonNumber} article content"
+            dirPathLesson="${dirPathLessonDataStorage}/${LessonNumber}"
+            filePathLesson="${dirPathLesson}/article.text_chinese"
+            mkdir -p "${dirPathLesson}"
+        elif (( ${#lineContent}>0 ));then
+            lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
+            if (( ${#lineContentTemp}==0 ));then #只有空格的情况
+                lineContent=
+            else #进行句子切分
+                lineContentTemp=${lineContent//'.'/'.\n'}
+                lineContent=${lineContentTemp//'!'/'!\n'}
+                lineContentTemp=${lineContent//'?'/'?\n'}
+                lineContent="${lineContentTemp}"
+            fi
+            (( ${#lineContent}>0 )) && echo -e "${lineContent}" >> $filePathLesson
+        fi
+
+        (( indexArray+=1 ))
+    done
+}
+
+ftBatchText2Mp3()
+{
+    #批量将文本转成音频
+    #ftBatchText2Mp3 /media/data/English/learnData/新概念册2 article.text_english article.audio_english
+    local dirPathLessonGroup=$1
+    local fileNameTextData=$2
+    local dirNameAudio=$3
+    local filePathTextData dirPathAudio lessonNumberTemp
+
+    while read lessonNumber ;do  #可以在循环外保留变量
+      echo "===================== ${lessonNumber} ===================="
+      filePathTextData="${dirPathLessonGroup}/${lessonNumber}/${fileNameTextData}"
+      dirPathAudio="${dirPathLessonGroup}/${lessonNumber}/${dirNameAudio}"
+      #gedit --new-window "${filePathTextData}"
+      ftText2Mp3 -fpt "${filePathTextData}" -dpm "${dirPathAudio}"
+      sleep 5
+    done < <(echo "$(ls $dirPathLessonGroup)")
+}
+
+ftText2Mp3Apply()
+{
+    #将指定行文本转成音频
+    #ftText2Mp3Apply 新概念册2 article.text_english article.audio_english "051" 9
+    local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
+    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
+    local dirNameLessonGroup=$1
+    local fileNameTextData=$2
+    local dirNameAudio=$3
+    local lessonNumber=$4
+    local lineNumber=$5
+    local filePathTextData="${dirPathTempEng}/${dirNameLessonGroup}/${lessonNumber}/${fileNameTextData}"
+    local dirPathAudio="${dirPathTempEng}/${dirNameLessonGroup}/${lessonNumber}/${dirNameAudio}"
+    #依赖校验
+    source ${dirPathPythonVirtualEnvironment}activate
+    cd ${dirPathPythonVirtualEnvironment}
+    [[ -z $(which xsel) ]] && ftText2Mp3 --rely "xsel" && return $resultFail
+    [[ -z $(which edge-playback) ]] && ftText2Mp3 --rely "edge-tts" && return $resultFail
+
+    local lineContent=$(awk 'NR=="'$lineNumber'"' $filePathTextData)
+    [[ -z "$lineContent" ]] && ftEcho -s "empty line " && return
+    edge-tts --text "${lineContent}" --write-media "${dirPathAudio}/${lineNumber}.mp3"
+
 }
