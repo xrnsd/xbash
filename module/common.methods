@@ -4028,7 +4028,7 @@ ftText2Mp3()
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
-#    ftText2Mp3 xxxx
+#    ftText2Mp3 -fpt 文本数据源文件路径 -dpm 音频文件生成目录
 #========================================================="; return ;;
         --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
 #=========================================================
@@ -4070,7 +4070,7 @@ ftText2Mp3()
     local lineIndex=1 lineContent
     while (( $lineIndex<=$fileTextLineCount )) ;do
       lineContent=$(awk 'NR=="'$lineIndex'"' $filePathText)
-      [[ -z "$lineContent" ]] && ftEcho -s "empty line :${lineIndex}" && continue
+      [[ -z "$lineContent" ]] && ftEcho -s "empty line :${lineIndex}" && (( lineIndex+=1 )) && continue
       ftEcho -s "正在生成line:${lineIndex}=\"${lineContent}\"的音频文件"
       edge-tts --text "${lineContent}" --write-media "${dirPathMp3}/${lineIndex}.mp3"
         
