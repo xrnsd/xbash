@@ -338,9 +338,10 @@ ftEcho()
 #    ftEcho    -sn    内容       # 执行信息，不换行，对字符串的缩进敏感
 #    ftEcho    -snw   内容       # 执行信息，不换行，对字符串的缩进敏感,循环显示省略号
 #    ftEcho    -rc    内容       # xbash函数的说明显示，对字符串的缩进敏感
-#    ftEcho    -w     标题  内容  # 弹窗提示
-#    ftEcho    -iow   标题  内容  # 弹窗交互
-#    ftEcho    -frame 内容        # 多行排版显示,带边框
+#    ftEcho    -w     标题  内容      # 弹窗提示
+#    ftEcho    -iow   标题  内容      # 弹窗交互
+#    ftEcho    -frame 内容           # 多行排版显示,带边框
+#    ftEcho    -c     阈值  标题 内容 # 超出阈值使用表格显示内容
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -w|-iow )
@@ -402,6 +403,58 @@ ftEcho()
                  done <<< $(echo -e ${content})
                  printf "%${border_length}s\n" | tr ' ' '-'
                  break;;
+        -c )    local contentItemSizeFlag=$2
+                local contentTitle=$3
+                shift&&shift&&shift
+                content=($@)
+                [[ -z $content ]] && "echo error" && return $resultFail
+                export publicSelItemContent=
+                local index=0
+                local contentItemSize=${#content[@]}
+                if (( $contentItemSize<=$contentItemSizeFlag ));then
+                    for contenItem in ${content[*]} ; do
+                        echo "[${index}]${contenItem}"
+                        ((index+=1))
+                    done
+                else       
+                    local enterFlag=1 fileColumnPathTmp=/tmp/columnContentGroup.tmp
+                    rm -rf $fileColumnPathTmp
+                    for contenItem in ${content[*]} ; do
+                        echo -n "[${index}]${contenItem}    " >>$fileColumnPathTmp
+                        ((index+=1))
+                        ((enterFlag+=1))
+                        ((enterFlag==$contentItemSizeFlag)) && echo -e "\n" >> $fileColumnPathTmp&& enterFlag=1
+                    done
+                    cat $fileColumnPathTmp | column -t && rm $fileColumnPathTmp
+                    echo
+                fi
+
+                (( $contentItemSize == 1 )) && export publicSelItemContent=$content && return
+
+                local dirFlag=$contentItemSize
+                (( $contentItemSize > 9 )) && dirFlag=9
+                while true; do
+                    ftEcho -r  "${contentTitle}[0~$(expr $contentItemSize - 1),q](回车默认0):"
+                    if (( $contentItemSize > 9 ));then
+                        read dir
+                    else
+                        read -n 1 dir
+                    fi
+                    #设定默认值
+                     [ ${#dir} == 0 ] && dir=0
+                     if [ ${dir} == "q" ]; then
+                        return
+                     elif (( $dir>=$contentItemSize  ));then
+                        ftEcho -e "错误的选择：${dir}"
+                        continue
+                     elif [ -n "$(echo $dir| sed -n "/^[0-$dirFlag]\+$/p")" ];then
+                        export publicSelItemContent=${content[$dir]}
+                        echo
+                        break
+                     fi
+                     ftEcho -e 错误的选择：$dir
+                done
+                break;;
     * )    echo $option ;break;; esac ;done
 }
 
