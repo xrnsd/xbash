@@ -15,7 +15,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     #解参验耦
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
-    local isModeCourseExampleText=false  isModeCourseImitateText=false isModeCompare=false isModeSentenceListenDrill=false isModeArticleListenDrill=false
+    local isModeLessonExampleText=false  isModeLessonImitateText=false isModeCompare=false isModeSentenceListenDrill=false isModeArticleListenDrill=false
     local valCount=1 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
@@ -49,11 +49,11 @@ ftLearnEnglishRepetionDrillEveryDay()
 #    当前未安装,请安装后重新尝试
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
-        -cet ) isModeCourseExampleText=true
+        -cet ) isModeLessonExampleText=true
              [[ -z $(which gedit) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "gedit" && return $resultFail
             ;;
-        -cit ) isModeCourseExampleText=true
-             isModeCourseImitateText=true
+        -cit ) isModeLessonExampleText=true
+             isModeLessonImitateText=true
              [[ -z $(which gedit) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "gedit" && return $resultFail
             ;;
         -cpe | --compare ) isModeCompare=true
@@ -88,25 +88,25 @@ ftLearnEnglishRepetionDrillEveryDay()
 
     #选择课程集
     local groupNameRepetionDrill=needRepetionDrill
-    local learnCourseGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  courseGroupList))
-    [[ -z $learnCourseGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
-    local courseGroupNameSel
+    local learnLessonGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  lessonGroupList))
+    [[ -z $learnLessonGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
+    local lessonGroupNameSel
     
-    ftEcho -c 10 "请选择课程集" "${learnCourseGroupList[@]}"
-    courseGroupNameSel=$publicSelItemContent
+    ftEcho -c 10 "请选择课程集" "${learnLessonGroupList[@]}"
+    lessonGroupNameSel=$publicSelItemContent
     
     #选择课程
     echo
-    local learnCourseList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo $courseGroupNameSel))
-    [[ -z $learnCourseList ]] || [[ $learnCourseList == "none" ]] && ftEcho -e "当前课程集合为空" && return
-    local courseNameSel
-    ftEcho -c 10 "请选择课程" "${learnCourseList[@]}"
-    courseNameSel=$publicSelItemContent
+    local learnLessonList=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo $lessonGroupNameSel))
+    [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "当前课程集合为空" && return
+    local lessonNameSel
+    ftEcho -c 10 "请选择课程" "${learnLessonList[@]}"
+    lessonNameSel=$publicSelItemContent
 
     #开始课文练习
-    if $isModeCourseExampleText; then
-        local filePathEnglishExampleText="${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/article.text_english"
-        [[ "$isModeCourseImitateText" = "true" ]] && filePathEnglishExampleText="${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/imitate.text_chinese_english"
+    if $isModeLessonExampleText; then
+        local filePathEnglishExampleText="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_english"
+        [[ "$isModeLessonImitateText" = "true" ]] && filePathEnglishExampleText="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/imitate.text_chinese_english"
         [[ ! -f $filePathEnglishExampleText ]] && ftEcho -e "当前课程没有录入例文" && return
 
         [[ ! -d $dirPathTemp ]] && mkdir $dirPathTemp
@@ -116,8 +116,8 @@ ftLearnEnglishRepetionDrillEveryDay()
         return
     fi
 
-    local keyRepetionDrillErrorHository="repetionDrillErrorHository_${courseGroupNameSel}_${courseNameSel}"
-    local valRepetionDrillInvalidIndex valRepetionDrillErrorHository #=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  $keyRepetionDrillErrorHository))
+    local keyRepetionDrillErrorHository="repetionDrillErrorHository_${lessonGroupNameSel}_${lessonNameSel}"
+    local valRepetionDrillInvalidIndex valRepetionDrillErrorHository #=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  $keyRepetionDrillErrorHository))
     local filePathLearnResultProblem=${dirPathTempEng}/Problem.list
     local filePathLearnResultDrillEnglish="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_english"
     local filePathLearnResultDrillChinese="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_chinese"
@@ -126,13 +126,13 @@ ftLearnEnglishRepetionDrillEveryDay()
     #开始听读练习
     local dirPathItemAudioFile filePathChineseBasic filePathChineseBasic
     if $isModeArticleListenDrill; then
-        dirPathItemAudioFile=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/article.audio_english
-        filePathEnglishBasic="${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/article.text_english"
-        filePathChineseBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/article.text_chinese
+        dirPathItemAudioFile=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.audio_english
+        filePathEnglishBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_english"
+        filePathChineseBasic=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_chinese
     elif $isModeSentenceListenDrill; then
-        dirPathItemAudioFile=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.audio_english
-        filePathEnglishBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.text_english
-        filePathChineseBasic=${dirPathTempEng}/${courseGroupNameSel}/${courseNameSel}/sentence.text_chinese
+        dirPathItemAudioFile=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.audio_english
+        filePathEnglishBasic=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_english
+        filePathChineseBasic=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_chinese
     else
         ftEcho -e "错误操作，请查看参数配置" && return
     fi
@@ -148,8 +148,8 @@ ftLearnEnglishRepetionDrillEveryDay()
 
     clear
     local arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
-    local englishItem chineseItem courseNameTitle
-    local courseSize=0 courseTrueCount=0 indexSort indexArray=0
+    local englishItem chineseItem lessonNameTitle
+    local lessonSize=0 lessonTrueCount=0 indexSort indexArray=0
     local itemOptionSelect
     local filePathItemAudioFile
 
@@ -164,7 +164,7 @@ ftLearnEnglishRepetionDrillEveryDay()
         fi
 
         chineseItem=$(awk 'NR=="'$indexSort'"' $filePathChineseBasic)
-        courseNameTitle="${courseGroupNameSel} 课程:${courseNameSel} 例句:${indexSort}"
+        lessonNameTitle="${lessonGroupNameSel} 课程:${lessonNameSel} 例句:${indexSort}"
 
         filePathItemAudioFile="${dirPathItemAudioFile}/${indexSort}.mp3"
         if [[ ! -f $filePathItemAudioFile ]]; then
@@ -177,7 +177,7 @@ ftLearnEnglishRepetionDrillEveryDay()
 
         if $isModeSentenceListenDrill; then
             while true; do
-                ftEcho -s ${courseNameTitle}
+                ftEcho -s ${lessonNameTitle}
                 ftEcho -frame $chineseItem
                 echo && ftEcho -s "按T显示英文句子,Y已听懂,N跳过,W上一句，其他任意键重新播放"
                 play $filePathItemAudioFile
@@ -187,7 +187,7 @@ ftLearnEnglishRepetionDrillEveryDay()
                 case "$playOpt" in
                     w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
                         break;;
-                    e | E ) echo -e "\ntranslator problem:\n  ${courseNameTitle}\n  ${englishItem}" >> $filePathLearnResultProblem
+                    e | E ) echo -e "\ntranslator problem:\n  ${lessonNameTitle}\n  ${englishItem}" >> $filePathLearnResultProblem
                         break;;
                     t | T | y | Y | n | N ) break;;
                     * ) ;;
@@ -195,7 +195,7 @@ ftLearnEnglishRepetionDrillEveryDay()
                 clear
             done
         else
-            ftEcho -s ${courseNameTitle}
+            ftEcho -s ${lessonNameTitle}
             ftEcho -frame $chineseItem
             echo && ftEcho -s "按T显示翻译,Y已熟悉，其他任意键继续"
         fi
@@ -203,17 +203,17 @@ ftLearnEnglishRepetionDrillEveryDay()
         if ! $isModeSentenceListenDrill; then
             read -n 1 itemOptionSelect
         fi
-        (( courseSize+=1 ))
+        (( lessonSize+=1 ))
         if [[ $itemOptionSelect == "y" ]] || [[ $itemOptionSelect == "Y" ]]; then   
-            (( courseTrueCount+=1 ))
+            (( lessonTrueCount+=1 ))
         elif [[ $itemOptionSelect == "t" ]] || [[ $itemOptionSelect == "T" ]]; then
             if $isModeSentenceListenDrill; then
                 while true; do
                     clear
-                    ftEcho -s ${courseNameTitle}
+                    ftEcho -s ${lessonNameTitle}
                     ftEcho -frame  "${chineseItem}\n${englishItem}"
 
-                    if [[ $courseGroupNameSel = $groupNameRepetionDrill ]]; then
+                    if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]]; then
                         ftEcho -s "按,Y已听懂,N跳过,W上一句,D删除记录，其他任意键重新播放"
                     else
                         ftEcho -s "按,Y已听懂,N跳过,E翻译存疑,R读待确认,D待加强,W上一句，其他任意键重新播放"
@@ -226,18 +226,18 @@ ftLearnEnglishRepetionDrillEveryDay()
                     case "$sel2" in
                         w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
                             break;;
-                        y | Y ) (( courseTrueCount+=1 ))
+                        y | Y ) (( lessonTrueCount+=1 ))
                             break;;
                         e | E )
-                            [[ $courseGroupNameSel = $groupNameRepetionDrill ]] && break
-                            echo -e "\n translator problem:\n   ${courseNameTitle}\n   ${englishItem}" >> $filePathLearnResultProblem
+                            [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && break
+                            echo -e "\n translator problem:\n   ${lessonNameTitle}\n   ${englishItem}" >> $filePathLearnResultProblem
                             break;;
                         r | R ) 
-                            [[ $courseGroupNameSel = $groupNameRepetionDrill ]] && break
-                            echo -e "\n read problem:\n   ${courseNameTitle}\n   ${englishItem}" >> $filePathLearnResultProblem
+                            [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && break
+                            echo -e "\n read problem:\n   ${lessonNameTitle}\n   ${englishItem}" >> $filePathLearnResultProblem
                             break;;
                         d | D )
-                            if [[ $courseGroupNameSel = $groupNameRepetionDrill ]]; then
+                            if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]]; then
                                 ftEcho -y "是否删除(回车默认y)"
                                 read -n 1 delSel
                                 [ -z "${delSel}" ] && delSel=y
@@ -260,7 +260,7 @@ ftLearnEnglishRepetionDrillEveryDay()
                 done
             else
                 clear
-                ftEcho -s ${courseNameTitle}
+                ftEcho -s ${lessonNameTitle}
                 ftEcho -frame  $englishItem
                 echo && ftEcho -s "按任意键继续" && read -n 1 sel2
             fi
@@ -278,14 +278,14 @@ ftLearnEnglishRepetionDrillEveryDay()
     #排序,去重
     local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g' | uniq | sort -n  | xargs echo -n)
     #记录练习数据
-    ftIniDeleteItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository
-    # ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHository[*]}"
-    ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHositorySort[*]}"
+    ftIniDeleteItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $keyRepetionDrillErrorHository
+    # ftIniAddItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHository[*]}"
+    ftIniAddItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHositorySort[*]}"
 
-    ftEcho -s "课程集:${courseGroupNameSel}\n课程:${courseNameSel}\
-    \n正确率:$(printf "%d%%" $((courseTrueCount*100/courseSize)))\
-    \n错误ID:$(echo ${valRepetionDrillErrorHositorySort[*]})\
-    \n无效ID:$(echo ${valRepetionDrillInvalidIndex[*]})"
+    ftEcho -s "课程集:${lessonGroupNameSel}\n课程:${lessonNameSel}\
+    \n正确率:$(printf "%d%%" $((lessonTrueCount*100/lessonSize)))\
+    \n错误行:$(echo ${valRepetionDrillErrorHositorySort[*]})\
+    \n无效行:$(echo ${valRepetionDrillInvalidIndex[*]})"
 }
 
 complete -W "-h --help --rely_install -p -l" -A file ftOcrRepetionDrill 
@@ -368,8 +368,8 @@ ftOcrRepetionDrill()
     done 3< $filePath
 }
 
-complete -W "-h --help -acg --ac" ftLearnCourseManage
-ftLearnCourseManage()
+complete -W "-h --help -acg --ac" ftLearnLessonManage
+ftLearnLessonManage()
 {
     local ftEffect=学习课程配置
     local isEnable=true
@@ -377,7 +377,7 @@ ftLearnCourseManage()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local isAddCourseGroup=false isAddCourse=false isUpdate=false
+    local isAddLessonGroup=false isAddLesson=false isUpdate=false
     local valCount=1 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
@@ -385,21 +385,21 @@ ftLearnCourseManage()
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
-#    ftLearnCourseManage -h / --help 
+#    ftLearnLessonManage -h / --help 
 #
 #    #添加课程集
-#    ftLearnCourseManage -acg 
+#    ftLearnLessonManage -acg 
 #
 #    #添加课程集对应的课程
-#    ftLearnCourseManage -ac
+#    ftLearnLessonManage -ac
 #
 #    #课程刷新
-#    ftLearnCourseManage -u
+#    ftLearnLessonManage -u
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
-        -acg) isAddCourseGroup=true
+        -acg) isAddLessonGroup=true
                      ;;
-        -ac) isAddCourse=true
+        -ac) isAddLesson=true
                      ;;
         -u) isUpdate=true
                      ;;
@@ -413,62 +413,62 @@ ftLearnCourseManage()
     *)   errorContent="${errorContent}\\n参数无效:${1}"
         ;;
     esac
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnCourseManage -h && return $resultFail
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnLessonManage -h && return $resultFail
 
     #实现主体
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
-    local learnCourseGroupList
+    local learnLessonGroupList
     if $isUpdate; then
-        local dirPathCourseGroup dirPathArrayCourse
+        local dirPathLessonGroup dirPathArrayLesson
         local dirPathLocal=$(pwd)
         cd "${dirPathTempEng}"
-        learnCourseGroupList=($(ls -d */| sed 's/\///g'))
-        for courseGroup in ${learnCourseGroupList[*]} ; do
-            dirPathCourseGroup="${dirPathTempEng}/${courseGroup}"
-            dirPathArrayCourse=($(ls $dirPathCourseGroup))
-            [[ -z $dirPathArrayCourse ]] &&ftEcho -s "invald lesson group : ${courseGroup}" && continue
-            echo "lesson group name : ${courseGroup}"
-            echo "lesson list :${dirPathArrayCourse[@]}"
+        learnLessonGroupList=($(ls -d */| sed 's/\///g'))
+        for lessonGroup in ${learnLessonGroupList[*]} ; do
+            dirPathLessonGroup="${dirPathTempEng}/${lessonGroup}"
+            dirPathArrayLesson=($(ls $dirPathLessonGroup))
+            [[ -z $dirPathArrayLesson ]] &&ftEcho -s "invald lesson group : ${lessonGroup}" && continue
+            echo "lesson group name : ${lessonGroup}"
+            echo "lesson list :${dirPathArrayLesson[@]}"
             ftEcho -s "lesson group update finish"
-            ftIniSetValue $rFilePathXbashDBUser learnCourseInfo $courseGroup -a -l "$(echo ${dirPathArrayCourse[@]} | sed 's/ /\n/g')"
+            ftIniSetValue $rFilePathXbashDBUser learnLessonInfo $lessonGroup -a -l "$(echo ${dirPathArrayLesson[@]} | sed 's/ /\n/g')"
         done
-        ftIniSetValue $rFilePathXbashDBUser learnCourseInfo  courseGroupList -a -l "$(echo ${learnCourseGroupList[@]} | sed 's/ /\n/g')"
+        ftIniSetValue $rFilePathXbashDBUser learnLessonInfo  lessonGroupList -a -l "$(echo ${learnLessonGroupList[@]} | sed 's/ /\n/g')"
         cd "${dirPathLocal}"
         ftEcho -s "all lesson update finish"
         return
     fi
-    if $isAddCourseGroup; then
+    if $isAddLessonGroup; then
         [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
         ftEcho -r  "请输入课程集名称："
-        read courseGroupName
-        courseGroupName=$(echo $courseGroupName |sed s/[[:space:]]//g)
-        learnCourseGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  courseGroupList))
-        learnCourseGroupList=(${learnCourseGroupList[@]} $courseGroupName)
-        ftIniSetValue $rFilePathXbashDBUser learnCourseInfo  courseGroupList ${learnCourseGroupList[@]}
-        ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $courseGroupName -l "none"
+        read lessonGroupName
+        lessonGroupName=$(echo $lessonGroupName |sed s/[[:space:]]//g)
+        learnLessonGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  lessonGroupList))
+        learnLessonGroupList=(${learnLessonGroupList[@]} $lessonGroupName)
+        ftIniSetValue $rFilePathXbashDBUser learnLessonInfo  lessonGroupList ${learnLessonGroupList[@]}
+        ftIniAddItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $lessonGroupName -l "none"
         #创建课程文件夹
-        mkdir -p ${dirPathTempEng}/$courseGroupName
+        mkdir -p ${dirPathTempEng}/$lessonGroupName
         return
     fi
-    if $isAddCourse; then
+    if $isAddLesson; then
         [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
-        local courseGroupNameSel
-        learnCourseGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  courseGroupList))
-        [[ -z $learnCourseGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
-        ftEcho -c 10 "请选择课程集" "${learnCourseGroupList[@]}"
-        courseGroupNameSel=$publicSelItemContent
+        local lessonGroupNameSel
+        learnLessonGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  lessonGroupList))
+        [[ -z $learnLessonGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
+        ftEcho -c 10 "请选择课程集" "${learnLessonGroupList[@]}"
+        lessonGroupNameSel=$publicSelItemContent
 
         ftEcho -r  "请输入课程名称："
-        read courseName
-        courseName=$(echo $courseName |sed s/[[:space:]]//g)
+        read lessonName
+        lessonName=$(echo $lessonName |sed s/[[:space:]]//g)
 
-        local dirPathCourseGroup="${dirPathTempEng}/${courseGroupNameSel}"
-        local filePathEnglishBasic="${dirPathCourseGroup}/${courseName}/sentence.text_english"
-        local filePathChineseBasic="${dirPathCourseGroup}/${courseName}/sentence.text_chinese"
-        local filePathExampleText="${dirPathCourseGroup}/${courseName}/article.text_english"
-        local filePathImitateText="${dirPathCourseGroup}/${courseName}/imitate.text_chinese_english"
+        local dirPathLessonGroup="${dirPathTempEng}/${lessonGroupNameSel}"
+        local filePathEnglishBasic="${dirPathLessonGroup}/${lessonName}/sentence.text_english"
+        local filePathChineseBasic="${dirPathLessonGroup}/${lessonName}/sentence.text_chinese"
+        local filePathExampleText="${dirPathLessonGroup}/${lessonName}/article.text_english"
+        local filePathImitateText="${dirPathLessonGroup}/${lessonName}/imitate.text_chinese_english"
         if [[ -f $filePathEnglishBasic ]] || [[ -f $filePathChineseBasic ]]; then
-            ftEcho -e "课程:${courseName}已存在"
+            ftEcho -e "课程:${lessonName}已存在"
             return
         fi
 
@@ -480,19 +480,19 @@ ftLearnCourseManage()
         fi
 
         if [[ ! -s $filePathEnglishBasic ]] || [[ ! -s $filePathChineseBasic ]]; then
-            ftEcho -s "在${courseGroupNameSel}下新建的课程${courseName}为空，将删除"
+            ftEcho -s "在${lessonGroupNameSel}下新建的课程${lessonName}为空，将删除"
             rm $filePathEnglishBasic $filePathChineseBasic $filePathExampleText $filePathImitateText
             return
         fi
-        [[ ! -s $filePathExampleText ]] && ftEcho -e "课程${courseName}的例文为空"
-        [[ ! -s $filePathImitateText ]] && ftEcho -e "课程${courseName}的仿例文为空"
+        [[ ! -s $filePathExampleText ]] && ftEcho -e "课程${lessonName}的例文为空"
+        [[ ! -s $filePathImitateText ]] && ftEcho -e "课程${lessonName}的仿例文为空"
         if [[ ! -s $filePathEnglishBasic ]]; then
             ftEcho -y "Should any audio file be created?"
             read -n 1 sel
             case "$sel" in
                 y | Y )
                     local filePathText=$filePathEnglishBasic
-                    local dirPathMp3="${dirPathCourseGroup}/${courseName}/sentence.audio_english"
+                    local dirPathMp3="${dirPathLessonGroup}/${lessonName}/sentence.audio_english"
                     ftText2Mp3 -fpt "${filePathEnglishBasic}" -dpm "${dirPathMp3}"
                     ;;
                 * )
@@ -500,14 +500,14 @@ ftLearnCourseManage()
             esac
         fi   
 
-        local learnCourseList=($(ls $dirPathCourseGroup|grep chinese |  awk -F. '{print $1}'))
-        if [[ -n $learnCourseList ]]; then
-            # echo ${learnCourseList[@]}
-            # echo "courseGroupNameSel=${courseGroupNameSel}"
-            ftIniSetValue $rFilePathXbashDBUser learnCourseInfo  $courseGroupNameSel -l "${learnCourseList[*]}"
+        local learnLessonList=($(ls $dirPathLessonGroup|grep chinese |  awk -F. '{print $1}'))
+        if [[ -n $learnLessonList ]]; then
+            # echo ${learnLessonList[@]}
+            # echo "lessonGroupNameSel=${lessonGroupNameSel}"
+            ftIniSetValue $rFilePathXbashDBUser learnLessonInfo  $lessonGroupNameSel -l "${learnLessonList[*]}"
         fi
 
-        ftEcho -s "在${courseGroupNameSel}下已新建课程${courseName}"
+        ftEcho -s "在${lessonGroupNameSel}下已新建课程${lessonName}"
     fi
 }
 
