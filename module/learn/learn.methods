@@ -90,84 +90,18 @@ ftLearnEnglishRepetionDrillEveryDay()
     local groupNameRepetionDrill=needRepetionDrill
     local learnCourseGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  courseGroupList))
     [[ -z $learnCourseGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
-    local courseGroupNameSel ListSize=0
-    for dev in ${learnCourseGroupList[*]} ; do
-        ((ListSize+=1))
-    done
-    if ((  $ListSize == 1 ));then
-        courseGroupNameSel=$learnCourseGroupList
-    else
-        local index=0
-        for dev in ${learnCourseGroupList[*]} ; do
-            echo "[${index}] ${dev}"
-            ((index+=1))
-        done
-        local dirFlag=$ListSize
-        (( $ListSize > 9 )) && dirFlag=9
-        while true; do
-            ftEcho -r  "请选择课程集[0~$(expr $ListSize - 1),q](回车默认0):"
-            if (( $ListSize > 9 ));then
-                read dir
-            else
-                read -n 1 dir
-            fi
-            #设定默认值
-             [ ${#dir} == 0 ] && dir=0
-             if [ ${dir} == "q" ]; then
-                return
-             elif (( $dir>=$ListSize  ));then
-                ftEcho -e "错误的选择：${dir}"
-                continue
-             elif [ -n "$(echo $dir| sed -n "/^[0-$dirFlag]\+$/p")" ];then
-                courseGroupNameSel=${learnCourseGroupList[$dir]}
-                echo
-                break
-             fi
-             ftEcho -e 错误的选择：$dir
-        done
-    fi
+    local courseGroupNameSel
+    
+    ftEcho -c 10 "请选择课程集" "${learnCourseGroupList[@]}"
+    courseGroupNameSel=$publicSelItemContent
     
     #选择课程
     echo
     local learnCourseList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo $courseGroupNameSel))
     [[ -z $learnCourseList ]] || [[ $learnCourseList == "none" ]] && ftEcho -e "当前课程集合为空" && return
     local courseNameSel
-    ListSize=0
-    for dev in ${learnCourseList[*]} ; do
-        ((ListSize+=1))
-    done
-    if ((  $ListSize == 1 ));then
-        courseNameSel=$learnCourseList
-    else
-        local index=0
-        for dev in ${learnCourseList[*]} ; do
-            echo "[${index}] ${dev}"
-            ((index+=1))
-        done
-       local dirFlag=$ListSize
-        (( $ListSize > 9 )) && dirFlag=9
-        while true; do
-            ftEcho -r  "请选择课程[0~$(expr $ListSize - 1),q](回车默认0):"
-            if (( $ListSize > 9 ));then
-                read dir
-            else
-                read -n 1 dir
-            fi
-            #设定默认值
-             [ ${#dir} == 0 ] && dir=0
-             if [ ${dir} == "q" ]; then
-                return
-             elif (( $dir>=$ListSize  )) || (( $dir < 0  ));then
-                ftEcho -e "错误的选择：${dir}"
-                continue
-             elif [ -n "$(echo $dir| sed -n "/^[0-$dirFlag]\+$/p")" ];then
-                courseNameSel=${learnCourseList[$dir]}
-                echo
-                break;
-             fi
-             ftEcho -e 错误的选择：$dir
-        done
-    fi
+    ftEcho -c 10 "请选择课程" "${learnCourseList[@]}"
+    courseNameSel=$publicSelItemContent
 
     #开始课文练习
     if $isModeCourseExampleText; then
@@ -181,7 +115,6 @@ ftLearnEnglishRepetionDrillEveryDay()
         gedit --new-window $filePathCompareTempText $filePathCompareExampleText &
         return
     fi
-
 
     local keyRepetionDrillErrorHository="repetionDrillErrorHository_${courseGroupNameSel}_${courseNameSel}"
     local valRepetionDrillInvalidIndex valRepetionDrillErrorHository #=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  $keyRepetionDrillErrorHository))
@@ -444,8 +377,7 @@ ftLearnCourseManage()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local isAddCourseGroup=false isAddCourse=false
-    local learnCourseGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  courseGroupList))
+    local isAddCourseGroup=false isAddCourse=false isUpdate=false
     local valCount=1 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
@@ -460,29 +392,57 @@ ftLearnCourseManage()
 #
 #    #添加课程集对应的课程
 #    ftLearnCourseManage -ac
+#
+#    #课程刷新
+#    ftLearnCourseManage -u
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -acg) isAddCourseGroup=true
                      ;;
         -ac) isAddCourse=true
                      ;;
+        -u) isUpdate=true
+                     ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #参数校验
-    if (( $#!=$valCount )); then
-        errorContent="${errorContent}\\n参数无效"
-    elif ! $isAddCourseGroup  &&  ! $isAddCourse ;then
-        errorContent="${errorContent}\\n参数无效"
-    fi
+    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数数量无效"
+    case "$1" in
+    -h | --help | -ac | -acg | -u)
+        ;;
+    *)   errorContent="${errorContent}\\n参数无效:${1}"
+        ;;
+    esac
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnCourseManage -h && return $resultFail
 
     #实现主体
+    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
+    local learnCourseGroupList
+    if $isUpdate; then
+        local dirPathCourseGroup dirPathArrayCourse
+        local dirPathLocal=$(pwd)
+        cd "${dirPathTempEng}"
+        learnCourseGroupList=($(ls -d */| sed 's/\///g'))
+        for courseGroup in ${learnCourseGroupList[*]} ; do
+            dirPathCourseGroup="${dirPathTempEng}/${courseGroup}"
+            dirPathArrayCourse=($(ls $dirPathCourseGroup))
+            [[ -z $dirPathArrayCourse ]] &&ftEcho -s "invald lesson group : ${courseGroup}" && continue
+            echo "lesson group name : ${courseGroup}"
+            echo "lesson list :${dirPathArrayCourse[@]}"
+            ftEcho -s "lesson group update finish"
+            ftIniSetValue $rFilePathXbashDBUser learnCourseInfo $courseGroup -a -l "$(echo ${dirPathArrayCourse[@]} | sed 's/ /\n/g')"
+        done
+        ftIniSetValue $rFilePathXbashDBUser learnCourseInfo  courseGroupList -a -l "$(echo ${learnCourseGroupList[@]} | sed 's/ /\n/g')"
+        cd "${dirPathLocal}"
+        ftEcho -s "all lesson update finish"
+        return
+    fi
     if $isAddCourseGroup; then
-        local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
         [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
         ftEcho -r  "请输入课程集名称："
         read courseGroupName
         courseGroupName=$(echo $courseGroupName |sed s/[[:space:]]//g)
+        learnCourseGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  courseGroupList))
         learnCourseGroupList=(${learnCourseGroupList[@]} $courseGroupName)
         ftIniSetValue $rFilePathXbashDBUser learnCourseInfo  courseGroupList ${learnCourseGroupList[@]}
         ftIniAddItem -p $rFilePathXbashDBUser -t learnCourseInfo -i $courseGroupName -l "none"
@@ -491,45 +451,12 @@ ftLearnCourseManage()
         return
     fi
     if $isAddCourse; then
-        local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
         [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
-        
-        local courseGroupNameSel ListSize=0
-        for dev in ${learnCourseGroupList[*]} ; do
-            ((ListSize+=1))
-        done
-        if ((  $ListSize == 1 ));then
-            courseGroupNameSel=$learnCourseGroupList
-        else
-            local index=0
-            for dev in ${learnCourseGroupList[*]} ; do
-                echo "[${index}] ${dev}"
-                ((index+=1))
-            done
-            local dirFlag=$ListSize
-            (( $ListSize > 9 )) && dirFlag=9
-            while true; do
-                ftEcho -r  "请选择课程集[0~$(expr $ListSize - 1),q](回车默认0):"
-                if (( $ListSize > 9 ));then
-                    read dir
-                else
-                    read -n 1 dir
-                fi
-                #设定默认值
-                 [ ${#dir} == 0 ] && dir=0
-                 if [ ${dir} == "q" ]; then
-                    return
-                 elif (( $dir>=$ListSize  ));then
-                    ftEcho -e "错误的选择：${dir}"
-                    continue
-                 elif [ -n "$(echo $dir| sed -n "/^[0-$dirFlag]\+$/p")" ];then
-                    courseGroupNameSel=${learnCourseGroupList[$dir]}
-                    echo
-                    break;
-                 fi
-                 ftEcho -e 错误的选择：$dir
-            done
-        fi
+        local courseGroupNameSel
+        learnCourseGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnCourseInfo  courseGroupList))
+        [[ -z $learnCourseGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
+        ftEcho -c 10 "请选择课程集" "${learnCourseGroupList[@]}"
+        courseGroupNameSel=$publicSelItemContent
 
         ftEcho -r  "请输入课程名称："
         read courseName
