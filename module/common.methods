@@ -700,13 +700,13 @@ ftIniAddItem()
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftIniAddItem -p ini文件路径 -t TAG块名  -i item名 -l 块对应的键值对列表
+#    ftIniAddItem -p ini文件路径 -t TAG块名  -i item名 -l \"\$(echo \${keyValueArray[@]} | sed 's/ /\\\n/g')\"
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -p )   filePathIni="${arg2}"    ;;
         -t )   tagName="${arg2}"        ;;
         -i )   itemName="${arg2}"       ;;
-        -l )   itemContent="${arg2}"    ;;
+        -l )   itemContent="$(echo ${arg2[@]} | sed 's/\n/ /g')"    ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     #参耦校验
     [ -z "$itemContent" ] && errorContent="${errorContent}\\n[缺少必要参数]itemContent=$itemContent"
@@ -847,18 +847,22 @@ ftIniSetValue()
     #可用性校验
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local isListValue filePath=$1 blockName=$2 keyName=$3 keyValue="${4}"
+    local isListValue=false isAutoAdd=false
+    local filePath=$1 blockName=$2 keyName=$3 keyValue="${4}"
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #    ftIniSetValue [文件路径] [目标块TAG] [键名] [键对应的值]
 #    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup 1232
-#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l \"${xxx[*]}\"  #写入数组
+#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l \"\$(echo \${keyValueArray[@]} | sed 's/ /\\\n/g')\"  #写入数组
+#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup 1232 -a #Setup不存在时自动添加
 #========================================================="; return ;;
         # 变量参数解析部分==============
-        -l )    keyValue="${arg2}"
+        -l )    keyValue="$(echo ${arg2[@]} | sed 's/\n/ /g')"
                 isListValue=true
+           ;;
+        -a )    isAutoAdd=true
            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
@@ -866,7 +870,14 @@ ftIniSetValue()
         if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
         elif [ -z "$(cat $filePath|grep $blockName)" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
         if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
-        elif [ -z "$(cat $filePath|grep $keyName)" ];then    errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName" ; fi
+        elif [ -z "$(cat $filePath|grep $keyName)" ];then
+            if $isAutoAdd;then
+                ftIniAddItem -p $filePath -t $blockName -i $keyName -l "$(echo ${keyValue[@]} | sed 's/ /\n/g')"
+                return
+            else
+                errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName" ;
+            fi
+        fi
         [ -z "$keyValue" ] && errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
     fi
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h && return $resultFail
