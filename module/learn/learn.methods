@@ -4,7 +4,7 @@
 ##             学习工具实现                      ##
 ##                                              ##
 ##################################################
-complete -W "-h --help -cet -cit -cpe --compare -sld -ald" ftLearnEnglishRepetionDrillEveryDay
+complete -W "-h --help -cet -cit -cpe --compare -sld -ald -sd" ftLearnEnglishRepetionDrillEveryDay
 ftLearnEnglishRepetionDrillEveryDay()
 {
     local ftEffect="English repetion drill"
@@ -15,7 +15,8 @@ ftLearnEnglishRepetionDrillEveryDay()
     #解参验耦
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
-    local isModeLessonExampleText=false  isModeLessonImitateText=false isModeCompare=false isModeSentenceListenDrill=false isModeArticleListenDrill=false
+    local isModeLessonExampleText=false  isModeLessonImitateText=false isModeCompare=false 
+    local isModeSentenceListenDrill=false isModeArticleListenDrill=false isModeSentenceDrill=false
     local valCount=1 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
@@ -23,7 +24,7 @@ ftLearnEnglishRepetionDrillEveryDay()
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    #例句翻译练习
-#    ftLearnEnglishRepetionDrillEveryDay
+#    ftLearnEnglishRepetionDrillEveryDay -sd
 #    
 #    #查看帮助
 #    ftLearnEnglishRepetionDrillEveryDay -h
@@ -61,6 +62,8 @@ ftLearnEnglishRepetionDrillEveryDay()
             ;;
         -sld ) isModeSentenceListenDrill=true
             ;;
+        -sd ) isModeSentenceDrill=true
+            ;;
         -ald ) isModeArticleListenDrill=true
             ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
@@ -68,7 +71,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     case "$1" in
-    -h | --help | -cet | -cit | -cpe | --compare | -ald | -sld)
+    -h | --help | -cet | -cit | -cpe | --compare | -ald | -sld | -sd)
         ;;
     *)   errorContent="${errorContent}\\n无效参数:${1}"
         ;;
@@ -124,21 +127,61 @@ ftLearnEnglishRepetionDrillEveryDay()
     local filePathLearnResultDrillAudioBasic="${dirPathTempEng}/needRepetionDrill/normal/sentence.audio_english"
 
     #开始听读练习
+    clear
     local dirPathItemAudioFile filePathChineseBasic filePathChineseBasic
     if $isModeArticleListenDrill; then
         dirPathItemAudioFile=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.audio_english
         filePathEnglishBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_english"
         filePathChineseBasic=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_chinese
-    elif $isModeSentenceListenDrill; then
+    elif $isModeSentenceListenDrill || $isModeSentenceDrill; then
         dirPathItemAudioFile=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.audio_english
         filePathEnglishBasic=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_english
         filePathChineseBasic=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_chinese
     else
         ftEcho -e "错误操作，请查看参数配置" && return
     fi
-    [[ ! -d $dirPathItemAudioFile ]] && ftEcho -e "找不到音频目录:${dirPathItemAudioFile}" && return
+
     local fileSizeEnglishBasic=$(sed -n '$=' $filePathEnglishBasic)
     local fileSizeChineseBasic=$(sed -n '$=' $filePathChineseBasic)
+    local arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
+    local englishItem chineseItem lessonNameTitle
+    local lessonSize=0 lessonTrueCount=0 indexSort indexArray=0
+    local itemOptionSelect
+    local filePathItemAudioFile
+
+    #课文练习
+    if $isModeArticleListenDrill; then
+        lessonNameTitle="${lessonGroupNameSel} 课程:${lessonNameSel}"
+
+        englishItem=$(cat $filePathEnglishBasic)
+        chineseItem=$(cat $filePathChineseBasic)
+
+        filePathItemAudioFile="${dirPathItemAudioFile}/1.mp3"
+        fileCountAudio=$(ls -l ${dirPathItemAudioFile}|grep "^-"|wc -l )
+        if (( ${#fileCountAudio[@]}==0 ));then
+            ftText2Mp3 -txt "${filePathEnglishBasic}" -dpm "${filePathItemAudioFile}"
+        elif (( ${#fileCountAudio[@]}>1 ));then
+            ftEcho -e "存在多个课文音频文件"
+            return
+        else
+            filePathItemAudioFile="${dirPathItemAudioFile}/$(ls $dirPathItemAudioFile)"
+        fi
+        while true; do
+                ftEcho -s ${lessonNameTitle}
+                echo -e "${chineseItem}\n\n${englishItem}"
+                echo && ftEcho -s "Y退出，其他任意键重新播放"
+                play "${filePathItemAudioFile}"
+                read -n 1 playOpt
+                case "$playOpt" in
+                    y | Y) return;;
+                    * ) ;;
+                esac
+                clear
+        done
+        return
+    fi
+    
+    [[ ! -d $dirPathItemAudioFile ]] && ftEcho -e "找不到音频目录:${dirPathItemAudioFile}" && return
     if (($fileSizeEnglishBasic==0)) \
         || (($fileSizeChineseBasic==0)) \
         || (($fileSizeChineseBasic!=$fileSizeEnglishBasic)) ; then
@@ -146,13 +189,7 @@ ftLearnEnglishRepetionDrillEveryDay()
         return;
     fi
 
-    clear
-    local arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
-    local englishItem chineseItem lessonNameTitle
-    local lessonSize=0 lessonTrueCount=0 indexSort indexArray=0
-    local itemOptionSelect
-    local filePathItemAudioFile
-
+    #例句练习
     local arrayIndexSortSize=${#arrayIndexSort[@]}
     while (( $indexArray < $arrayIndexSortSize  )); do
         indexSort=${arrayIndexSort[$indexArray]}
@@ -164,18 +201,17 @@ ftLearnEnglishRepetionDrillEveryDay()
         fi
 
         chineseItem=$(awk 'NR=="'$indexSort'"' $filePathChineseBasic)
-        lessonNameTitle="${lessonGroupNameSel} 课程:${lessonNameSel} 例句:${indexSort}"
-
-        filePathItemAudioFile="${dirPathItemAudioFile}/${indexSort}.mp3"
-        if [[ ! -f $filePathItemAudioFile ]]; then
-            local filePathText=/tmp/audioTemp.text
-            local dirPathMp3=/tmp
-            echo "$englishItem" > $filePathText
-            ftText2Mp3 -fpt "${filePathText}" -dpm "${dirPathMp3}"
-            mv "${dirPathMp3}/1.mp3" "${filePathItemAudioFile}"
-        fi
+        lessonNameTitle="课程名:${lessonGroupNameSel} 课:${lessonNameSel} 例句:${indexSort}"
 
         if $isModeSentenceListenDrill; then
+            filePathItemAudioFile="${dirPathItemAudioFile}/${indexSort}.mp3"
+            if [[ ! -f $filePathItemAudioFile ]]; then
+                local filePathText=/tmp/audioTemp.text
+                local dirPathMp3=/tmp
+                echo "$englishItem" > $filePathText
+                ftText2Mp3 -fpt "${filePathText}" -dpm "${dirPathMp3}"
+                mv "${dirPathMp3}/1.mp3" "${filePathItemAudioFile}"
+            fi
             while true; do
                 ftEcho -s ${lessonNameTitle}
                 ftEcho -frame $chineseItem
@@ -264,7 +300,6 @@ ftLearnEnglishRepetionDrillEveryDay()
                 ftEcho -frame  $englishItem
                 echo && ftEcho -s "按任意键继续" && read -n 1 sel2
             fi
-
             valRepetionDrillErrorHository=(${valRepetionDrillErrorHository[@]} $indexSort)
         else
             valRepetionDrillErrorHository=(${valRepetionDrillErrorHository[@]} $indexSort)
