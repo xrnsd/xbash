@@ -4065,7 +4065,7 @@ ftEdgeTTs()
     # bash -c "espeak -s100 -g20 -p80 -v english-us \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\""
 }
 
-complete -W "-h --help --rely_install" ftText2Mp3
+complete -W "-h --help --rely_install -fpt -dpm -txt -fpm" ftText2Mp3
 ftText2Mp3()
 {
     local ftEffect="Text generates audio files"
@@ -4075,6 +4075,7 @@ ftText2Mp3()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePathText dirPathMp3
+    local textContxt filePathMp3
     local valCount=4 errorContent arg arg2 # arg3 # arg4
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
@@ -4082,28 +4083,21 @@ ftText2Mp3()
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    ${ftEffect}依赖包 $2
-#    请尝试使用 ftText2Mp3 --rely_install 补全依赖
 #========================================================="; return ;;
-        --rely_install)
-            ftEcho -s "开始补全依赖"
-            sudo apt-get install xxxx
-            return ;;
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
 #
 #    ftText2Mp3 -fpt 文本数据源文件路径 -dpm 音频文件生成目录
 #========================================================="; return ;;
-        --env) ftEcho -rc "${ftEffect}" "的使用环境说明" "\
-#=========================================================
-#    环境未初始化
-#    使用前,请先初始化[xxxxxxxxx]
-#========================================================="; return ;;
-
         # 变量参数解析部分 ==============
         -fpt ) filePathText="${arg2}"
             ;;
         -dpm ) dirPathMp3="${arg2}"
+            ;;
+        -txt ) textContxt="${arg2}"
+            ;;
+        -fpm ) filePathMp3="${arg2}"
             ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
@@ -4111,7 +4105,7 @@ ftText2Mp3()
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     case "$1" in
-        -h | --help | --rely_install | -fpt | -dpm)
+        -h | --help | --rely_install | -fpt | -dpm | -txt | -fpm)
             ;;
         *)   errorContent="${errorContent}\\n无效参数:${1}"
             ;;
@@ -4119,10 +4113,10 @@ ftText2Mp3()
 
     [ ! -d "${dirPathMp3}" ] && mkdir -p $dirPathMp3
     [ ! -d "${dirPathPythonVirtualEnvironment}" ] && errorContent="${errorContent}\\n[环境异常,目录不存在]:${dirPathPythonVirtualEnvironment}"
-    [ ! -d "${dirPathMp3}" ] && errorContent="${errorContent}\\n[生成文件存放目录不存在]:${dirPathMp3}"
-    [ ! -f "${filePathText}" ] && errorContent="${errorContent}\\n[文本数据文件不存在]:${filePathText}"
+    [ ! -d "${dirPathMp3}" ] && [[ -z $filePathMp3 ]] && errorContent="${errorContent}\\n[生成文件存放目录不存在]:${dirPathMp3}"
+    [ ! -f "${filePathText}" ] && [[ -z $textContxt ]] && errorContent="${errorContent}\\n[文本数据文件不存在]:${filePathText}"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftText2Mp3 -h && return $resultFail
-    
+
     #依赖校验
     source ${dirPathPythonVirtualEnvironment}activate
     cd ${dirPathPythonVirtualEnvironment}
@@ -4130,6 +4124,10 @@ ftText2Mp3()
     [[ -z $(which edge-playback) ]] && ftText2Mp3 --rely "edge-tts" && return $resultFail
     
     #实现主体
+    if [[ -n $textContxt ]];then
+        edge-tts --text "${textContxt}" --write-media "${filePathMp3}"
+        return
+    fi
     local fileTextLineCount=$(sed -n '$=' $filePathText)
     local lineIndex=1 lineContent
     while (( $lineIndex<=$fileTextLineCount )) ;do
