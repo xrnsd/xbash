@@ -30,9 +30,9 @@ CodeProjectNameIgnoreList=\
     lost+found \
     download \
     demos
-AospProjectGitStorehouseServerAddress=
-AospProjectGitStorehouseList=
-AospProjectActiveGitStorehouseList=
+ProjectGitStorehouseServerAddress=
+ProjectGitStorehouseList=
+ProjectActiveGitStorehouseList=
 
 #项目软件包的下载工具包[客户用]
 [xbashAOSPConfigMTKSoftwareDownloadToool]
