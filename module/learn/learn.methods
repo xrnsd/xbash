@@ -101,7 +101,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     #选择课程
     echo
     local learnLessonList=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo $lessonGroupNameSel))
-    [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "当前课程集合为空" && return
+    [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "空课程集合:${lessonGroupNameSel}" && return
     local lessonNameSel
     ftEcho -c 10 "请选择课程" "${learnLessonList[@]}"
     lessonNameSel=$publicSelItemContent
@@ -141,17 +141,23 @@ ftLearnEnglishRepetionDrillEveryDay()
         ftEcho -e "错误操作，请查看参数配置" && return
     fi
 
-    local fileSizeEnglishBasic=$(sed -n '$=' $filePathEnglishBasic)
-    local fileSizeChineseBasic=$(sed -n '$=' $filePathChineseBasic)
-    local arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
+    if $isModeArticleListenDrill || $isModeSentenceListenDrill; then
+        [[ ! -d $dirPathItemAudioFile ]] && ftEcho -e "找不到音频目录:${dirPathItemAudioFile}" && return
+    fi
+
+    local fileContentEnglishBasic=$(cat $filePathEnglishBasic)
+    [[ -z $fileContentEnglishBasic ]] && ftEcho -e "课程名:${lessonGroupNameSel} 课:${lessonNameSel} 为空" && return
+    
+    local fileContentChineseBasic=$(cat $filePathChineseBasic)
+    [[ -z $fileContentChineseBasic ]] && ftEcho -e "课程名:${lessonGroupNameSel} 课:${lessonNameSel} 缺失翻译" && return
+
     local englishItem chineseItem lessonNameTitle
     local lessonSize=0 lessonTrueCount=0 indexSort indexArray=0
-    local itemOptionSelect
-    local filePathItemAudioFile
+    local itemOptionSelect filePathItemAudioFile
 
     #课文练习
     if $isModeArticleListenDrill; then
-        lessonNameTitle="${lessonGroupNameSel} 课程:${lessonNameSel}"
+        lessonNameTitle="课程名:${lessonGroupNameSel} 课:${lessonNameSel}"
 
         englishItem=$(cat $filePathEnglishBasic)
         chineseItem=$(cat $filePathChineseBasic)
@@ -180,14 +186,14 @@ ftLearnEnglishRepetionDrillEveryDay()
         done
         return
     fi
-    
-    [[ ! -d $dirPathItemAudioFile ]] && ftEcho -e "找不到音频目录:${dirPathItemAudioFile}" && return
-    if (($fileSizeEnglishBasic==0)) \
-        || (($fileSizeChineseBasic==0)) \
-        || (($fileSizeChineseBasic!=$fileSizeEnglishBasic)) ; then
+
+    local fileSizeEnglishBasic=$(sed -n '$=' $filePathEnglishBasic)
+    local fileSizeChineseBasic=$(sed -n '$=' $filePathChineseBasic)
+    if (($fileSizeChineseBasic!=$fileSizeEnglishBasic)) ; then
         ftEcho -e "信息文件内容为空或数量不一致"
         return;
     fi
+    local arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
 
     #例句练习
     local arrayIndexSortSize=${#arrayIndexSort[@]}
@@ -288,6 +294,8 @@ ftLearnEnglishRepetionDrillEveryDay()
                                 echo "${chineseItem}" >> $filePathLearnResultDrillChinese
                                 local fileLineSize=$(awk 'END{print NR}' $filePathLearnResultDrillEnglish)
                                 ln -s $filePathItemAudioFile "${filePathLearnResultDrillAudioBasic}/${fileLineSize}.mp3"
+                            else
+                                ftEcho -s "重复添加记录，取消操作"
                             fi
                             break;;
                         n | N ) break;;

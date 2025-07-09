@@ -166,9 +166,9 @@ fi
     else echo -e "\033[1;31m用户可自定义命令封装扩展块加载失败\n${rFilePathXbashPackagingUser}\033[0m" ;fi
     #加载 input module
     [ -f $rFilePathXbashModuleInput ] && [ "$rFilePathXbashModuleInput" != "$(readlink -f ~/.inputrc)" ] && rm -rf ~/.inputrc && ln -sf $rFilePathXbashModuleInput ~/.inputrc
-    # #加载 learn module
-    # if [[ -f $rFilePathXbashModuleLearn ]];then source  $rFilePathXbashModuleLearn
-    # else echo -e "\033[1;31mXbash的学习扩展块加载失败\n${rFilePathXbashModuleLearn}\033[0m" ;fi
+    #加载 learn module
+    if [[ -f $rFilePathXbashModuleLearn ]];then source  $rFilePathXbashModuleLearn
+    else echo -e "\033[1;31mXbash的学习扩展块加载失败\n${rFilePathXbashModuleLearn}\033[0m" ;fi
 
 #---------------- 默认启用部分xbash功能 ------------------
     #加载 git module[非自定义]
