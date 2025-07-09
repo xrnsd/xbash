@@ -125,20 +125,35 @@ ftLearnEnglishRepetionDrillEveryDay()
     local filePathLearnResultDrillEnglish="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_english"
     local filePathLearnResultDrillChinese="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_chinese"
     local filePathLearnResultDrillAudioBasic="${dirPathTempEng}/needRepetionDrill/normal/sentence.audio_english"
+    local filePathEnglishDrillResult
 
     #开始听读练习
     clear
     local dirPathItemAudioFile filePathChineseBasic filePathChineseBasic
     if $isModeArticleListenDrill; then
-        dirPathItemAudioFile=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.audio_english
+        dirPathItemAudioFile="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.audio_english"
         filePathEnglishBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_english"
-        filePathChineseBasic=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_chinese
+        filePathChineseBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_chinese"
+        filePathEnglishDrillResult="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_english_drill_result"
     elif $isModeSentenceListenDrill || $isModeSentenceDrill; then
-        dirPathItemAudioFile=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.audio_english
-        filePathEnglishBasic=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_english
-        filePathChineseBasic=${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_chinese
+        dirPathItemAudioFile="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.audio_english"
+        filePathEnglishBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_english"
+        filePathChineseBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_chinese"
+        filePathEnglishDrillResult="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_english_drill_result"
     else
-        ftEcho -e "错误操作，请查看参数配置" && return
+        ftEcho -e "错误操作，请查看参数配置" && returnentence
+    fi
+
+    #处理学习结果
+    local sentenceDrillResltItem
+    if [[ -n $(cat $filePathEnglishDrillResult) ]]&&[[ -z $( grep -sn 033 $filePathEnglishDrillResult) ]];then
+        ftEcho -y "存在练习结果未处理(回车默认y)"
+        read -n 1 delSel
+        [ -z "${delSel}" ] && delSel=y
+        if [[ $delSel = "y" ]];then
+            mv "${filePathEnglishDrillResult}" "${filePathEnglishDrillResult}_basic"
+            ftCheckDrillReslt "${filePathEnglishDrillResult}_basic" "${filePathEnglishDrillResult}"
+        fi
     fi
 
     if $isModeArticleListenDrill || $isModeSentenceListenDrill; then
@@ -151,7 +166,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     local fileContentChineseBasic=$(cat $filePathChineseBasic)
     [[ -z $fileContentChineseBasic ]] && ftEcho -e "课程名:${lessonGroupNameSel} 课:${lessonNameSel} 缺失翻译" && return
 
-    local englishItem chineseItem lessonNameTitle
+    local englishItem chineseItem lessonNameTitle 
     local lessonSize=0 lessonTrueCount=0 indexSort indexArray=0
     local itemOptionSelect filePathItemAudioFile
 
@@ -161,6 +176,7 @@ ftLearnEnglishRepetionDrillEveryDay()
 
         englishItem=$(cat $filePathEnglishBasic)
         chineseItem=$(cat $filePathChineseBasic)
+        sentenceDrillResltItem=$(cat $filePathEnglishDrillResult)
 
         filePathItemAudioFile="${dirPathItemAudioFile}/1.mp3"
         fileCountAudio=$(ls -l ${dirPathItemAudioFile}|grep "^-"|wc -l )
@@ -174,7 +190,7 @@ ftLearnEnglishRepetionDrillEveryDay()
         fi
         while true; do
                 ftEcho -s ${lessonNameTitle}
-                echo -e "${chineseItem}\n\n${englishItem}"
+                echo -e "${chineseItem}\n\n${englishItem}\n\n${sentenceDrillResltItem}"
                 echo && ftEcho -s "Y退出，其他任意键重新播放"
                 play "${filePathItemAudioFile}"
                 read -n 1 playOpt
@@ -207,6 +223,7 @@ ftLearnEnglishRepetionDrillEveryDay()
         fi
 
         chineseItem=$(awk 'NR=="'$indexSort'"' $filePathChineseBasic)
+        sentenceDrillResltItem="$(awk 'NR=="'$indexSort'"' $filePathEnglishDrillResult)"
         lessonNameTitle="课程名:${lessonGroupNameSel} 课:${lessonNameSel} 例句:${indexSort}"
 
         if $isModeSentenceListenDrill; then
@@ -253,7 +270,14 @@ ftLearnEnglishRepetionDrillEveryDay()
                 while true; do
                     clear
                     ftEcho -s ${lessonNameTitle}
-                    ftEcho -frame  "${chineseItem}\n${englishItem}"
+                    if [[ -z $sentenceDrillResltItem ]];then
+                        ftEcho -frame  "${chineseItem}\n${englishItem}"
+                    else
+                        echo
+                        echo "${chineseItem}"
+                        echo -e "$sentenceDrillResltItem"
+                        echo
+                    fi
 
                     if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]]; then
                         ftEcho -s "按,Y已听懂,N跳过,W上一句,D删除记录，其他任意键重新播放"
@@ -681,4 +705,36 @@ ftText2Mp3Apply()
     [[ -z "$lineContent" ]] && ftEcho -s "empty line " && return
     edge-tts --text "${lineContent}" --write-media "${dirPathAudio}/${lineNumber}.mp3"
 
+}
+
+ftCheckDrillReslt()
+{
+    #处理练习结果将**表示的错误改为可以高亮显示的格式
+
+    # ftCheckDrillReslt /media/data/English/learnData/English-Made-Easy-Volume-2/03/sentence.text_english_drill_result \
+    # /home/myname/download/test2.txt
+    local filePathResult=$1
+    local filePathResultNew=$2
+
+    local lineContentTemp
+
+    cat $filePathResult | while read lineContent;do
+        if [[ -n $lineContent ]];then
+            lineContentTemp="${lineContent// \*\*/ \\\\033[1;31m}"
+            lineContent="${lineContentTemp//\*\* /\\\\033[0m }"
+            lineContentTemp="${lineContent//\*\*./\\\\033[0m }"
+            lineContent="${lineContentTemp//\*\*?/\\\\033[0m }"
+            lineContentTemp="${lineContent//\*\*,/\\\\033[0m }"
+            lineContent="${lineContentTemp//\*\*!/\\\\033[0m }"
+            lineContentTemp="${lineContent//\*\*\"/\\\\033[0m }"
+            lineContent="${lineContentTemp//\*\*/ \\\\033[1;31m}"
+        fi
+        echo "${lineContent}" >> $filePathResultNew
+    done
+
+    ftEcho -s "高亮格式文本转化完成"
+
+    # cat $filePathResultNew | while read lineContent;do
+    #     echo -e "${lineContent}"
+    # done
 }
