@@ -108,6 +108,21 @@ ftBatchText2Mp3()
     done < <(echo "$(ls $dirPathLessonGroup)")
 }
 
+ftText2Mp3ByLesson()
+{
+    #批量将文本转成音频
+    #ftText2Mp3ByLesson 课程集 课程名
+    local LessonGroupName=$1
+    local LessonName=$2
+
+    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
+    local dirPathLesson="${dirPathTempEng}/${LessonGroupName}/${LessonName}"
+    local dirPathLessonAudio="${dirPathTempEng}/${LessonGroupName}/${LessonName}/sentence.audio_english"
+    local filePathLessonText="${dirPathTempEng}/${LessonGroupName}/${LessonName}/sentence.text_english"
+
+    ftText2Mp3 -fpt "${filePathLessonText}" -dpm "${dirPathLessonAudio}"
+}
+
 ftText2Mp3Apply()
 {
     #将指定行文本转成音频
