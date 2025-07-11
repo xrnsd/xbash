@@ -349,9 +349,9 @@ ftLearnEnglishRepetionDrillEveryDay()
             mv "${filePathLearnDrillTemp}" "${filePathLearnDrillTemp}_basic"
             ftCheckDrillReslt "${filePathLearnDrillTemp}_basic" "${filePathLearnDrillTemp}"
             rm -rf "${filePathLearnDrillTemp}_basic"
-            echo "" > "${filePathLearnDrillTemp}"
             cat "${filePathLearnDrillTemp}" >> "${filePathItemSentenceEnglishDrillResult}"
-            ftEcho -s "${lessonNameTitle} 练习结果已经处理"
+            echo "" > "${filePathLearnDrillTemp}"
+            ftEcho -s "${lessonNameTitle} 练习结果已经处理\n"
         fi
 
         englishItem=
