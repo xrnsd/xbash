@@ -115,14 +115,6 @@ ftResetXbash()
             targetSdkVersionForce="${arg2}"
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
           ;;
-        -l | --learn)
-            if [[ -f $rFilePathXbashModuleLearn ]];then
-                source  $rFilePathXbashModuleLearn
-                ftEcho -s "Xbash的学习扩展块加载完成"
-            else
-                ftEcho -e "Xbash的学习扩展块加载失败${rFilePathXbashModuleLearn}" 
-            fi
-            ;;
         -c ) export isResetGcc=true
             targetSdkVersionForce="${arg2}"
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
