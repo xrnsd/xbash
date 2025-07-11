@@ -542,7 +542,7 @@ ftLearnLessonManage()
         ftIniSetValue $rFilePathXbashDBUser learnLessonInfo  lessonGroupList ${learnLessonGroupList[@]}
         ftIniAddItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $lessonGroupName -l "none"
         #创建课程文件夹
-        mkdir -p ${dirPathTempEng}/$lessonGroupName
+        mkdir -p "${dirPathTempEng}/${lessonGroupName}"
         return
     fi
     if $isAddLesson; then
@@ -561,13 +561,27 @@ ftLearnLessonManage()
         local filePathEnglishBasic="${dirPathLessonGroup}/${lessonName}/sentence.text_english"
         local filePathChineseBasic="${dirPathLessonGroup}/${lessonName}/sentence.text_chinese"
         local filePathExampleText="${dirPathLessonGroup}/${lessonName}/article.text_english"
+        local filePathExampleTranslateText="${dirPathLessonGroup}/${lessonName}/article.text_chinese"
         local filePathImitateText="${dirPathLessonGroup}/${lessonName}/imitate.text_chinese_english"
         if [[ -f $filePathEnglishBasic ]] || [[ -f $filePathChineseBasic ]]; then
+
+            #补齐课程默认文件目录
+            touch $filePathEnglishBasic $filePathChineseBasic $filePathExampleText $filePathExampleTranslateText $filePathImitateText
+            mkdir -p "${dirPathLessonGroup}/${lessonName}/article.audio_english" \
+                     "${dirPathLessonGroup}/${lessonName}/article.drill_result" \
+                     "${dirPathLessonGroup}/${lessonName}/sentence.audio_english" \
+                     "${dirPathLessonGroup}/${lessonName}/sentence.drill_result"
+
             ftEcho -e "课程:${lessonName}已存在"
             return
         fi
 
-        if touch $filePathEnglishBasic $filePathChineseBasic $filePathExampleText $filePathImitateText; then
+        mkdir -p "${dirPathLessonGroup}/${lessonName}/article.audio_english" \
+                 "${dirPathLessonGroup}/${lessonName}/article.drill_result" \
+                 "${dirPathLessonGroup}/${lessonName}/sentence.audio_english" \
+                 "${dirPathLessonGroup}/${lessonName}/sentence.drill_result"
+
+        if touch $filePathEnglishBasic $filePathChineseBasic $filePathExampleText $filePathExampleTranslateText $filePathImitateText; then
             XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathEnglishBasic $filePathChineseBasic $filePathExampleText $filePathImitateText
         else
             ftEcho -ex "创建课程文件失败"
