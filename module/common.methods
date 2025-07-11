@@ -4014,6 +4014,7 @@ ftEdgeTTs()
     local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
     [ ! -d "${dirPathPythonVirtualEnvironment}" ] && ftEcho -e "\\n[环境异常,目录不存在]${dirPathPythonVirtualEnvironment}" && return $resultFail
     
+    source ${dirPathPythonVirtualEnvironment}activate
     [[ -z $(which xsel) ]] && ftEdgeTTs --rely "xsel" && return $resultFail
     [[ -z $(which edge-playback) ]] && ftEdgeTTs --rely "edge-tts" && return $resultFail
     [[ -z $(which play) ]] && ftEdgeTTs --rely "sox" && return $resultFail
@@ -4040,7 +4041,6 @@ ftEdgeTTs()
     if $isRefCacheMedia; then
         ftEcho -s "${filePathMediaCache} is updating now"
         local dirPathLocal=$(pwd)
-        source ${dirPathPythonVirtualEnvironment}activate
         cd ${dirPathPythonVirtualEnvironment}
         #edge-playback --volume=+100% --rate=-${speedVal}% --text "${playContent}" 
         edge-tts --volume=+100% --rate=-${speedVal}% --text "${playContent}" --write-media $filePathMediaCache
@@ -4048,8 +4048,9 @@ ftEdgeTTs()
         ftEcho -s "${filePathMediaCache} is update complete"
     fi
 
-    play $filePathMediaCache
-    export playContentCache=$playContent
+    [[ -f $filePathMediaCache ]] && play $filePathMediaCache && export playContentCache=$playContent
+    [[ ! -f $filePathMediaCache ]] && ftEcho -e "音频文件不存在" && export playContentCache=
+
     rm $filePathLock
 
     #echo "(SayText \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\")" | festival  '(voice_cmu_us_slt_arctic_hts)' -
