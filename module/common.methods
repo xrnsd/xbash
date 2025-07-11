@@ -787,7 +787,6 @@ ftIniAddItem()
     done
     itemName="${itemName}="
     sed  -i "${indexCheck}i ${itemName}${itemContent[@]}" $filePathIni
-
 }
 
 ftIniDeleteItem()
@@ -901,7 +900,7 @@ ftIniSetValue()
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local isListValue=false isAutoAdd=false
-    local filePath=$1 blockName=$2 keyName=$3 keyValue="${4}"
+    local filePath=$1 blockName=$2 blockNameFlag="[${2}]" keyName=$3 keyValue="${4}" keyNameFlag="${3}="
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -918,12 +917,14 @@ ftIniSetValue()
         -a )    isAutoAdd=true
            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #检验参数
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
     else
         if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
-        elif [ -z "$(cat $filePath|grep $blockName)" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
+        elif [ -z "$(cat $filePath|grep $blockNameFlag)" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
         if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
-        elif [ -z "$(cat $filePath|grep $keyName)" ];then
+        elif [ -z "$(cat $filePath|grep $keyNameFlag)" ];then
             if $isAutoAdd;then
                 ftIniAddItem -p $filePath -t $blockName -i $keyName -l "$(echo ${keyValue[@]} | sed 's/ /\n/g')"
                 return
