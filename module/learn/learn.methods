@@ -18,8 +18,8 @@ ftLearnEnglishRepetionDrillEveryDay()
     [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
     local isModeLessonExampleText=false  isModeLessonImitateText=false isModeCompare=false 
     local isModeSentenceListenDrill=false isModeArticleListenDrill=false isModeSentenceDrill=false
-    local isModeTextEditDrill=false
-    local valCount=2 errorContent arg arg2
+    local isModeTextEditDrill=false isModeHideChineseTitle=false
+    local valCount=3 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
@@ -45,6 +45,9 @@ ftLearnEnglishRepetionDrillEveryDay()
 #
 #    #同步开启文本编辑器练习,不可单独使用
 #    ftLearnEnglishRepetionDrillEveryDay -t
+#
+#    #隐藏提示练习,不可单独使用
+#    ftLearnEnglishRepetionDrillEveryDay -ht
 #========================================================="; return ;;
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -70,12 +73,14 @@ ftLearnEnglishRepetionDrillEveryDay()
             ;;
         -t ) isModeTextEditDrill=true
             ;;
+        -ht ) isModeHideChineseTitle=true
+            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     case "$1" in
-    -h | --help | -cet | -cit | -cpe | --compare | -ald | -sld | -sd)
+    -h | --help | -cet | -cit | -cpe | --compare | -ald | -sld | -sd | -t | -ht)
         ;;
     *)   errorContent="${errorContent}\\n无效参数:${1}"
         ;;
@@ -210,7 +215,9 @@ ftLearnEnglishRepetionDrillEveryDay()
     fi
     local arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
 
-    $isModeTextEditDrill && ftTextGeditBackground "${filePathLearnDrillTemp}" &
+    if $isModeTextEditDrill;then
+        ftTextGeditBackground "${filePathLearnDrillTemp}" &
+    fi
 
     #例句练习
     local arrayIndexSortSize=${#arrayIndexSort[@]}
@@ -240,8 +247,8 @@ ftLearnEnglishRepetionDrillEveryDay()
             fi
             while true; do
                 ftEcho -s ${lessonNameTitle}
-                ftEcho -frame $chineseItem
-                echo && ftEcho -s "按T显示英文句子,Y已听懂,N跳过,W上一句，其他任意键重新播放"
+                ! $isModeHideChineseTitle && ftEcho -frame $chineseItem
+                echo && ftEcho -s "按T显示提示,Y已听懂,N跳过,W上一句，其他任意键重新播放"
                 play $filePathItemAudioFile
                 #ftEdgeTTs --speed 10 --playContent "${englishItem}" --hide
                 read -n 1 playOpt
@@ -275,14 +282,9 @@ ftLearnEnglishRepetionDrillEveryDay()
                 while true; do
                     clear
                     ftEcho -s ${lessonNameTitle}
-                    if [[ -z $sentenceDrillResltItem ]];then
-                        ftEcho -frame  "${chineseItem}\n${englishItem}"
-                    else
-                        echo
-                        echo "${chineseItem}"
-                        echo -e "$sentenceDrillResltItem"
-                        echo
-                    fi
+                    echo
+                    echo -e  "${chineseItem}\n${englishItem}\n${sentenceDrillResltItem}"
+                    echo
 
                     if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]]; then
                         ftEcho -s "按,Y已听懂,N跳过,W上一句,D删除记录，其他任意键重新播放"
@@ -347,11 +349,12 @@ ftLearnEnglishRepetionDrillEveryDay()
         #处理学习结果
         if $isModeTextEditDrill && [[ -n $(grep -sn "\*\*" "${filePathLearnDrillTemp}") ]];then
             mv "${filePathLearnDrillTemp}" "${filePathLearnDrillTemp}_basic"
+            echo -n "例句:${indexSort} 错误结果的"
             ftCheckDrillReslt "${filePathLearnDrillTemp}_basic" "${filePathLearnDrillTemp}"
             rm -rf "${filePathLearnDrillTemp}_basic"
             cat "${filePathLearnDrillTemp}" >> "${filePathItemSentenceEnglishDrillResult}"
             echo "" > "${filePathLearnDrillTemp}"
-            ftEcho -s "${lessonNameTitle} 练习结果已经处理\n"
+            echo
         fi
 
         englishItem=
