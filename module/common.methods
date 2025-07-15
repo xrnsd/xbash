@@ -455,17 +455,37 @@ ftTimeConsuming()
     local ftEffect=脚本操作耗时记录
     local isEnable=def
 
+    local isModeStopwatch=false
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local contentName=本次骚操作 arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
+        -i ) mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
+          ;;
         -r ) contentName="${arg2:-"$contentName"}"
+          ;;
+        -s ) isModeStopwatch=true
+            contentName="${arg2:-"$contentName"}"
+            [ -z "$mTimingStart" ] && ftEcho -e "计时操作错误" && return
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     [ -z "$mTimingStart" ]||[ "$1" = "-i" ] && mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
 
     local content timeNow=$(date +%s -d $(date +"%H:%M:%S"))
+
+    if $isModeStopwatch;then
+        local tagName=${contentName} keyName=$(date -d "today" +"%Y%m%d")
+        local ftTimeNormal=$(ftIniGetValue  $rFilePathXbashDbftTime ${tagName} ${keyName})
+        local ftTimeAdded=$((timeNow-mTimingStart))
+        local ftTimeAll=$((ftTimeAdded+ftTimeNormal))
+
+        ftIniSetValue $rFilePathXbashDbftTime ${tagName} ${keyName} ${ftTimeAll} -a
+
+        ftEcho -s "$(echo "scale=2;${ftTimeAll} / 3600"|bc)小时"
+        return
+    fi
+
     local time3=$(((timeNow-mTimingStart)%60))
     local time5=$(((timeNow-mTimingStart)/3600))
     local time4=$((((timeNow-mTimingStart)-time5*3600)/60))
@@ -889,7 +909,7 @@ ftIniSetValue()
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local isListValue=false isAutoAdd=false
-    local filePath=$1 blockName=$2 blockNameFlag="[${2}]" keyName=$3 keyValue="${4}" keyNameFlag="${3}="
+    local filePath=$1 blockName=$2 blockNameFlag="\[${2}\]" keyName=$3 keyValue="${4}" keyNameFlag="${3}="
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -911,7 +931,14 @@ ftIniSetValue()
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
     else
         if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
-        elif [ -z "$(cat $filePath|grep $blockNameFlag)" ];then    errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName" ; fi
+        elif [ -z "$(cat $filePath|grep $blockNameFlag)" ];then
+            if $isAutoAdd;then
+                ftIniCreateFileOrTag  -a -p $filePath -t $blockName -l "${keyName}=${keyValue}"
+                return
+            else
+                errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName"
+            fi
+        fi
         if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
         elif [ -z "$(cat $filePath|grep $keyNameFlag)" ];then
             if $isAutoAdd;then

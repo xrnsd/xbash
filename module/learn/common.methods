@@ -157,7 +157,7 @@ ftCheckDrillReslt()
     local filePathResult=$1
     local filePathResultNew=$2
 
-    [[ -z $(grep -sn "\*\*" $filePathResult) ]] && ftEcho -e "无效文件：${filePathResult}" && return
+    [[ -z $(grep -sn "\*\*" $filePathResult) ]] && [[ -z $(grep -sn "\+\+" $filePathResult) ]] && ftEcho -e "无效文件：${filePathResult}" && return
 
     local lineContentTemp
 
@@ -166,14 +166,25 @@ ftCheckDrillReslt()
 
     cat $filePathResult | while read lineContent;do
         if [[ -n $lineContent ]];then
-            lineContentTemp="${lineContent// \*\*/ \\033[1;31m}"
-            lineContent="${lineContentTemp//\*\* /\\033[0m }"
-            lineContentTemp="${lineContent//\*\*./\\033[0m }"
-            lineContent="${lineContentTemp//\*\*?/\\033[0m }"
-            lineContentTemp="${lineContent//\*\*,/\\033[0m }"
-            lineContent="${lineContentTemp//\*\*!/\\033[0m }"
-            lineContentTemp="${lineContent//\*\*\"/\\033[0m }"
-            lineContent="${lineContentTemp//\*\*/ \\033[1;31m}"
+            # lineContentTemp="${lineContent// \*\*/ \\033[1;31m}"
+            # lineContentTemp="${lineContent//\'\*\*/\'\\033[1;31m}"
+            # lineContent="${lineContentTemp//\*\* /\\033[0m }"
+            # lineContentTemp="${lineContent//\*\*./\\033[0m }"
+            # lineContent="${lineContentTemp//\*\*?/\\033[0m }"
+            # lineContentTemp="${lineContent//\*\*,/\\033[0m }"
+            # lineContent="${lineContentTemp//\*\*!/\\033[0m }"
+            # lineContentTemp="${lineContent//\*\*\"/\\033[0m }"
+            # lineContent="${lineContentTemp//\*\*/ \\033[1;31m}"
+
+            #start
+            lineContentTemp="${lineContent//\*\*/\\033[1;31m}"
+            #end
+            lineContent="${lineContentTemp//\*/\\033[0m}"
+
+            #start
+            lineContentTemp="${lineContent//\+\+/\\033[1;36m}"
+            #end
+            lineContent="${lineContentTemp//\+/\\033[0m}"
             echo "${lineContent}" >> $filePathResultNew
         fi
     done

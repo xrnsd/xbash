@@ -117,6 +117,8 @@ ftLearnEnglishRepetionDrillEveryDay()
     ftEcho -c 10 "请选择课程" "${learnLessonList[@]}"
     lessonNameSel=$publicSelItemContent
 
+    ftTimeConsuming -i
+
     #开始课文练习
     if $isModeLessonExampleText; then
         local filePathEnglishExampleText="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_english"
@@ -347,9 +349,11 @@ ftLearnEnglishRepetionDrillEveryDay()
         clear
 
         #处理学习结果
-        if $isModeTextEditDrill && [[ -n $(grep -sn "\*\*" "${filePathLearnDrillTemp}") ]];then
+        if [[ -n $(grep -sn "\+\+" "${filePathLearnDrillTemp}") ]] \
+            || [[ -n $(grep -sn "\*\*" "${filePathLearnDrillTemp}") ]] \
+            && $isModeTextEditDrill;then
             mv "${filePathLearnDrillTemp}" "${filePathLearnDrillTemp}_basic"
-            echo -n "例句:${indexSort} 错误结果的"
+            echo -n "例句:${indexSort} 练习结果的"
             ftCheckDrillReslt "${filePathLearnDrillTemp}_basic" "${filePathLearnDrillTemp}"
             rm -rf "${filePathLearnDrillTemp}_basic"
             cat "${filePathLearnDrillTemp}" >> "${filePathItemSentenceEnglishDrillResult}"
@@ -376,14 +380,19 @@ ftLearnEnglishRepetionDrillEveryDay()
     #排序,去重
     local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g' | uniq | sort -n  | xargs echo -n)
     #记录练习数据
-    ftIniDeleteItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $keyRepetionDrillErrorHository
-    # ftIniAddItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHository[*]}"
-    ftIniAddItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $keyRepetionDrillErrorHository -l "${valRepetionDrillErrorHositorySort[*]}"
+    if [ -z $valRepetionDrillErrorHositorySort ];then
+        ftIniDeleteItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $keyRepetionDrillErrorHository
+    else
+        ftIniSetValue $rFilePathXbashDBUser learnLessonInfo $keyRepetionDrillErrorHository -a -l "$(echo ${valRepetionDrillErrorHositorySort[@]} | sed 's/ /\n/g')"
+    fi
 
     ftEcho -s "课程集:${lessonGroupNameSel}\n课程:${lessonNameSel}\
     \n正确率:$(printf "%d%%" $((lessonTrueCount*100/lessonSize)))\
     \n错误行:$(echo ${valRepetionDrillErrorHositorySort[*]})\
     \n无效行:$(echo ${valRepetionDrillInvalidIndex[*]})"
+
+    #记录练习时间
+    echo -n "今日练习：" ;ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
 }
 
 complete -W "-h --help --rely_install -p -l" -A file ftOcrRepetionDrill 
