@@ -171,7 +171,7 @@ ftLearnEnglishRepetionDrillEveryDay()
 
     local englishItem chineseItem sentenceDrillResltItem
     local lessonNameTitle 
-    local lessonSize=0 lessonTrueCount=0 indexSort indexArray=0 itemOptionSelect
+    local lessonSize=0 lessonTrueCount=0 indexSort indexArray=0 itemOptionSelect indexProcess=0
 
     #课文练习
     if $isModeArticleListenDrill; then
@@ -226,6 +226,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     while (( $indexArray < $arrayIndexSortSize  )); do
         indexSort=${arrayIndexSort[$indexArray]}
         englishItem=$(awk 'NR=="'$indexSort'"' $filePathEnglishBasic)
+        ((indexProcess+=1))
         if [[ -z $englishItem ]];then
             valRepetionDrillInvalidIndex=(${valRepetionDrillInvalidIndex[@]} $indexSort)
             (( indexArray+=1 ))
@@ -233,7 +234,8 @@ ftLearnEnglishRepetionDrillEveryDay()
         fi
 
         chineseItem=$(awk 'NR=="'$indexSort'"' $filePathChineseBasic)
-        lessonNameTitle="课程名:${lessonGroupNameSel} 课:${lessonNameSel} 例句:${indexSort}"
+        lessonNameTitle="课程名:${lessonGroupNameSel} 课:${lessonNameSel} 例句:${indexSort}\
+         进度：$(echo "scale=1; $indexProcess* 100 / $arrayIndexSortSize" | bc)%"
         filePathItemSentenceEnglishDrillResult="${dirPathItemSentenceEnglishDrillResult}/${indexSort}.result"
         echo "" > $filePathLearnDrillTemp
         #sentenceDrillResltItem="$(cat $filePathItemSentenceEnglishDrillResult)"
