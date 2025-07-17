@@ -786,6 +786,7 @@ ftIniAddItem()
         [[ "${lineContent}" != "[${tagName}]" ]] && ftEcho -e "找不到TAG:${tagName}对应的行" && return
     fi
 
+    
     local indexCheck=$indexStart
     #echo "indexStart=${indexStart}"
     while true; do
@@ -794,7 +795,17 @@ ftIniAddItem()
         [[ -z $lineContent ]] && break
     done
     itemName="${itemName}="
+
+    local fileLineCount=$(sed -n '$=' $filePathIni)
+    local lineCountFlag=$(( $fileLineCount - $indexCheck ))
+    (( $lineCountFlag < 2 )) && echo "" >> $filePathIni 
+
     sed  -i "${indexCheck}i ${itemName}${itemContent[@]}" $filePathIni
+
+    # echo "fileLineCount=${fileLineCount}"
+    # echo "indexCheck=${indexCheck}"
+    # echo "itemName=${indexCheck}"
+    # echo "itemContent=${itemContent[@]}"
 }
 
 ftIniDeleteItem()
