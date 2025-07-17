@@ -172,6 +172,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     local englishItem chineseItem sentenceDrillResltItem
     local lessonNameTitle 
     local lessonSize=0 lessonTrueCount=0 indexSort indexArray=0 itemOptionSelect indexProcess=0
+    local timingStart=$(date +%s -d $(date +"%H:%M:%S")) timingChang
 
     #课文练习
     if $isModeArticleListenDrill; then
@@ -224,6 +225,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     #例句练习
     local arrayIndexSortSize=${#arrayIndexSort[@]}
     while (( $indexArray < $arrayIndexSortSize  )); do
+        timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
         indexSort=${arrayIndexSort[$indexArray]}
         englishItem=$(awk 'NR=="'$indexSort'"' $filePathEnglishBasic)
         ((indexProcess+=1))
@@ -235,7 +237,8 @@ ftLearnEnglishRepetionDrillEveryDay()
 
         chineseItem=$(awk 'NR=="'$indexSort'"' $filePathChineseBasic)
         lessonNameTitle="课程名:${lessonGroupNameSel} 课:${lessonNameSel} 例句:${indexSort}\
-         进度：$(echo "scale=1; $indexProcess* 100 / $arrayIndexSortSize" | bc)%"
+         进度：$(echo "scale=1; $indexProcess* 100 / $arrayIndexSortSize" | bc)%\
+          时长：${timingChang}"
         filePathItemSentenceEnglishDrillResult="${dirPathItemSentenceEnglishDrillResult}/${indexSort}.result"
         echo "" > $filePathLearnDrillTemp
         #sentenceDrillResltItem="$(cat $filePathItemSentenceEnglishDrillResult)"
@@ -262,6 +265,7 @@ ftLearnEnglishRepetionDrillEveryDay()
                         (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
                         return;;
                     w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
+                       (( indexProcess>=1 )) && (( indexProcess-=2 )) || (( indexProcess=0 ))
                         break;;
                     e | E ) echo -e "\ntranslator problem:\n  ${lessonNameTitle}\n  ${englishItem}" >> $filePathLearnResultProblem
                         break;;
@@ -308,6 +312,7 @@ ftLearnEnglishRepetionDrillEveryDay()
                             (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
                             return;;
                         w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
+                                (( indexProcess>=1 )) && (( indexProcess-=2 )) || (( indexProcess=0 ))
                             break;;
                         y | Y ) (( lessonTrueCount+=1 ))
                             break;;
