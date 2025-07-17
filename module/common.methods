@@ -484,8 +484,7 @@ ftTimeConsuming()
         local ftTimeAll=$((ftTimeAdded+ftTimeNormal))
 
         ftIniSetValue $rFilePathXbashDbftTime ${tagName} ${keyName} ${ftTimeAll} -a
-
-        ftEcho -s "$(echo "scale=2;${ftTimeAll} / 3600"|bc)小时"
+        ftEcho -s "$(printf "%.2f" `echo "scale=2;${ftTimeAll}/3600"|bc`)小时"
         return
     fi
 
