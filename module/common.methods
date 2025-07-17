@@ -938,7 +938,13 @@ ftIniSetValue()
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #检验参数
-    if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
+    if [ ! -f "$filePath" ];then
+        if $isAutoAdd && [ -n $filePath ]&& [ -n $blockName ]&& [ -n $keyName ]&& [ -n $keyValue ];then
+            ftIniCreateFileOrTag  -a -p $filePath -t $blockName -l "${keyName}=${keyValue}"
+            return
+        else
+            errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
+        fi
     else
         if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
         elif [ -z "$(cat $filePath|grep $blockNameFlag)" ];then
