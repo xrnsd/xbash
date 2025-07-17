@@ -250,12 +250,15 @@ ftLearnEnglishRepetionDrillEveryDay()
             while true; do
                 ftEcho -s ${lessonNameTitle}
                 ! $isModeHideChineseTitle && ftEcho -frame $chineseItem
-                echo && ftEcho -s "按T显示提示,Y已听懂,N跳过,W上一句，其他任意键重新播放"
+                echo && ftEcho -s "按Q退出,T显示提示,Y已听懂,N跳过,W上一句，其他任意键重新播放"
                 play $filePathItemAudioFile
                 #ftEdgeTTs --speed 10 --playContent "${englishItem}" --hide
                 read -n 1 playOpt
                 itemOptionSelect=$playOpt
                 case "$playOpt" in
+                    q | Q ) 
+                        (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
+                        return;;
                     w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
                         break;;
                     e | E ) echo -e "\ntranslator problem:\n  ${lessonNameTitle}\n  ${englishItem}" >> $filePathLearnResultProblem
@@ -289,9 +292,9 @@ ftLearnEnglishRepetionDrillEveryDay()
                     echo
 
                     if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]]; then
-                        ftEcho -s "按,Y已听懂,N跳过,W上一句,D删除记录，其他任意键重新播放"
+                        ftEcho -s "按,Q退出,Y已听懂,N跳过,W上一句,D删除记录，其他任意键重新播放"
                     else
-                        ftEcho -s "按,Y已听懂,N跳过,E翻译存疑,R读待确认,D待加强,W上一句，其他任意键重新播放"
+                        ftEcho -s "按,Q退出,N跳过,E翻译存疑,R读待确认,D待加强,W上一句，其他任意键重新播放"
                     fi
 
                     play $filePathItemAudioFile
@@ -299,6 +302,9 @@ ftLearnEnglishRepetionDrillEveryDay()
 
                     read -n 1 sel2
                     case "$sel2" in
+                        q | Q ) 
+                            (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
+                            return;;
                         w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
                             break;;
                         y | Y ) (( lessonTrueCount+=1 ))
@@ -475,7 +481,7 @@ ftOcrRepetionDrill()
     done 3< $filePath
 }
 
-complete -W "-h --help -acg --ac" ftLearnLessonManage
+complete -W "-h --help -acg --ac -u -une" ftLearnLessonManage
 ftLearnLessonManage()
 {
     local ftEffect=学习课程配置
@@ -502,6 +508,9 @@ ftLearnLessonManage()
 #
 #    #课程刷新
 #    ftLearnLessonManage -u
+#
+#    #将课程练习结果生成为needRepetionDrill/error课程
+#    ftLearnLessonManage -une
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -acg) isAddLessonGroup=true
@@ -510,12 +519,14 @@ ftLearnLessonManage()
                      ;;
         -u) isUpdate=true
                      ;;
+        -une) isUpdateDrillGroupError=true
+                     ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #参数校验
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数数量无效"
     case "$1" in
-    -h | --help | -ac | -acg | -u)
+    -h | --help | -ac | -acg | -u | -une)
         ;;
     *)   errorContent="${errorContent}\\n参数无效:${1}"
         ;;
@@ -525,6 +536,61 @@ ftLearnLessonManage()
     #实现主体
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local learnLessonGroupList
+    if $isUpdateDrillGroupError;then
+        local dirPathLessonNeedRepetionDrillError="${dirPathTempEng}/needRepetionDrill/error"
+        local dirPathLessonNeedRepetionDrillErrorSDR="${dirPathLessonNeedRepetionDrillError}/sentence.drill_result"
+        local dirPathLessonNeedRepetionDrillErrorSAE="${dirPathLessonNeedRepetionDrillError}/sentence.audio_english"
+        local filePathLessonNeedRepetionDrillErrorSTE="${dirPathLessonNeedRepetionDrillError}/sentence.text_english"
+        local filePathLessonNeedRepetionDrillErrorSTC="${dirPathLessonNeedRepetionDrillError}/sentence.text_chinese"
+        local lineIndex=1 lineNum filePathLessonNeedRepetionDrillErrorSDR filePathLessonNeedRepetionDrillErrorSAE
+
+        rm -rf ${dirPathLessonNeedRepetionDrillErrorSAE} ${dirPathLessonNeedRepetionDrillErrorSDR} && \
+        mkdir -p ${dirPathLessonNeedRepetionDrillErrorSAE} ${dirPathLessonNeedRepetionDrillErrorSDR}
+        rm -rf ${filePathLessonNeedRepetionDrillErrorSTE} ${filePathLessonNeedRepetionDrillErrorSTC} && \
+        touch ${filePathLessonNeedRepetionDrillErrorSTE} ${filePathLessonNeedRepetionDrillErrorSTC}
+
+        local dirPathLessonGroup dirPathLesson dirPathArrayLesson fileArrayDrillResult
+        local dirParhLessonSDR dirParhLessonSAE filePathLessonSTE filePathLessonSTC
+        local dirPathLocal=$(pwd)
+        cd "${dirPathTempEng}"
+        learnLessonGroupList=($(ls -d */| sed 's/\///g'))
+        for lessonGroup in ${learnLessonGroupList[*]} ; do
+
+            [[ $lessonGroup = "needRepetionDrill" ]] && continue
+            dirPathLessonGroup="${dirPathTempEng}/${lessonGroup}"
+            dirPathArrayLesson=($(ls $dirPathLessonGroup))
+            [[ -z $dirPathArrayLesson ]] &&ftEcho -s "invald lesson group : ${lessonGroup}" && continue
+            echo "load drill result :lesson group name : ${lessonGroup}"
+
+            for lessonName in ${dirPathArrayLesson[*]} ; do
+                dirPathLesson="${dirPathLessonGroup}/${lessonName}"
+                dirParhLessonSAE="${dirPathLesson}/sentence.audio_english"
+                dirParhLessonSDR="${dirPathLesson}/sentence.drill_result"
+                filePathLessonSTE="${dirPathLesson}/sentence.text_english"
+                filePathLessonSTC="${dirPathLesson}/sentence.text_chinese"
+
+                [[ ! -d ${dirParhLessonSDR} ]] && continue
+
+                fileArrayDrillResult=($(ls $dirParhLessonSDR))
+
+                for fileName in ${fileArrayDrillResult[*]} ; do
+                    lineNum=${fileName%.*}
+
+                    #写入文件
+                    echo $(awk 'NR=="'$lineNum'"' $filePathLessonSTE) >> $filePathLessonNeedRepetionDrillErrorSTE
+                    echo $(awk 'NR=="'$lineNum'"' $filePathLessonSTC) >> $filePathLessonNeedRepetionDrillErrorSTC
+                    #建立软连接
+                    ln -s "${dirParhLessonSAE}/${lineNum}.mp3" "${dirPathLessonNeedRepetionDrillErrorSAE}/${lineIndex}.mp3"
+                    ln -s "${dirParhLessonSDR}/${lineNum}.result" "${dirPathLessonNeedRepetionDrillErrorSDR}/${lineIndex}.result"
+
+                    ((lineIndex+=1))
+                done
+
+            done
+            ftEcho -s "load finish"
+        done
+        return
+    fi
     if $isUpdate; then
         local dirPathLessonGroup dirPathArrayLesson
         local dirPathLocal=$(pwd)
