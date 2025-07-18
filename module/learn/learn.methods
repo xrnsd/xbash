@@ -101,21 +101,40 @@ ftLearnEnglishRepetionDrillEveryDay()
     fi
 
     #选择课程集
-    local groupNameRepetionDrill=needRepetionDrill
+    local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=normal
     local learnLessonGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  lessonGroupList))
     [[ -z $learnLessonGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
     local lessonGroupNameSel
     
     ftEcho -c 10 "请选择课程集" "${learnLessonGroupList[@]}"
     lessonGroupNameSel=$publicSelItemContent
+
+    local fileNameDataBaseRepetionDrill=repetionDrill.hository
+    local filePathDataBaseRepetionDrill="${dirPathTempEng}/${lessonGroupNameSel}/${fileNameDataBaseRepetionDrill}"
     
     #选择课程
-    echo
-    local learnLessonList=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo $lessonGroupNameSel))
+    local indexArray=0 drillTrueCount=0 arrayIndexSort valRepetionDrillErrorHository #=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  $keyRepetionDrillErrorHository))
+    local learnLessonList=($(ftIniGetValue $rFilePathXbashDBUser learnLessonInfo $lessonGroupNameSel))
     [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "空课程集合:${lessonGroupNameSel}" && return
     local lessonNameSel
-    ftEcho -c 10 "请选择课程" "${learnLessonList[@]}"
-    lessonNameSel=$publicSelItemContent
+     if [ -f $filePathDataBaseRepetionDrill ];then
+        ftEcho -y "存在训练历史是否使用(y为使用，回车默认y)"
+        read -n 1 delSel
+        [ -z "${delSel}" ] && delSel=y
+        [[ $delSel != "y" ]] && rm -rf $filePathDataBaseRepetionDrill
+        echo
+    fi
+    if [ ! -f $filePathDataBaseRepetionDrill ];then
+        echo
+        ftEcho -c 10 "请选择课程" "${learnLessonList[@]}"
+        lessonNameSel=$publicSelItemContent
+    else
+        lessonNameSel=$(ftIniGetValue $filePathDataBaseRepetionDrill hository lessonName)
+        indexArray=$(ftIniGetValue $filePathDataBaseRepetionDrill hository sctenceIndexArray)
+        arrayIndexSort=($(ftIniGetValue $filePathDataBaseRepetionDrill hository sctenceArrayIndexSort))
+        valRepetionDrillErrorHository=($(ftIniGetValue $filePathDataBaseRepetionDrill hository sctenceIndexArrayError))
+        drillTrueCount=($(ftIniGetValue $filePathDataBaseRepetionDrill hository sctenceDrillTrueCount)) 
+    fi
 
     ftTimeConsuming -i
 
@@ -133,7 +152,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     fi
 
     local keyRepetionDrillErrorHository="repetionDrillErrorHository_${lessonGroupNameSel}_${lessonNameSel}"
-    local valRepetionDrillInvalidIndex valRepetionDrillErrorHository #=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  $keyRepetionDrillErrorHository))
+    local valRepetionDrillInvalidIndex
     local filePathLearnResultProblem=${dirPathTempEng}/Problem.list
     local filePathLearnResultDrillEnglish="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_english"
     local filePathLearnResultDrillChinese="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_chinese"
@@ -170,8 +189,8 @@ ftLearnEnglishRepetionDrillEveryDay()
     [[ -z $fileContentChineseBasic ]] && ftEcho -e "课程名:${lessonGroupNameSel} 课:${lessonNameSel} 缺失翻译" && return
 
     local englishItem chineseItem sentenceDrillResltItem
-    local lessonNameTitle 
-    local lessonSize=0 lessonTrueCount=0 indexSort indexArray=0 itemOptionSelect indexProcess=0
+    local lessonNameTitle
+    local lessonSize=0 indexSort itemOptionSelect
     local timingStart=$(date +%s -d $(date +"%H:%M:%S")) timingChang
 
     #课文练习
@@ -216,7 +235,7 @@ ftLearnEnglishRepetionDrillEveryDay()
         ftEcho -e "信息文件内容为空或数量不一致"
         return;
     fi
-    local arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
+    [ -z $arrayIndexSort ] && arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
 
     if $isModeTextEditDrill;then
         ftTextGeditBackground "${filePathLearnDrillTemp}" &
@@ -228,7 +247,6 @@ ftLearnEnglishRepetionDrillEveryDay()
         timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
         indexSort=${arrayIndexSort[$indexArray]}
         englishItem=$(awk 'NR=="'$indexSort'"' $filePathEnglishBasic)
-        ((indexProcess+=1))
         if [[ -z $englishItem ]];then
             valRepetionDrillInvalidIndex=(${valRepetionDrillInvalidIndex[@]} $indexSort)
             (( indexArray+=1 ))
@@ -237,7 +255,7 @@ ftLearnEnglishRepetionDrillEveryDay()
 
         chineseItem=$(awk 'NR=="'$indexSort'"' $filePathChineseBasic)
         lessonNameTitle="课程名:${lessonGroupNameSel} 课:${lessonNameSel} 例句:${indexSort}\
-         进度：$(echo "scale=1; $indexProcess* 100 / $arrayIndexSortSize" | bc)%\
+         进度：$(echo "scale=1; $indexArray* 100 / $arrayIndexSortSize" | bc)%\
           时长：${timingChang}"
         filePathItemSentenceEnglishDrillResult="${dirPathItemSentenceEnglishDrillResult}/${indexSort}.result"
         echo "" > $filePathLearnDrillTemp
@@ -255,17 +273,28 @@ ftLearnEnglishRepetionDrillEveryDay()
             while true; do
                 ftEcho -s ${lessonNameTitle}
                 ! $isModeHideChineseTitle && ftEcho -frame $chineseItem
-                echo && ftEcho -s "按Q退出,T显示提示,Y已听懂,N跳过,W上一句，其他任意键重新播放"
+                echo && ftEcho -s "按S保存退出,Q退出,T显示提示,Y已听懂,N跳过,W上一句，其他任意键重新播放"
                 play $filePathItemAudioFile
                 #ftEdgeTTs --speed 10 --playContent "${englishItem}" --hide
                 read -n 1 playOpt
                 itemOptionSelect=$playOpt
                 case "$playOpt" in
-                    q | Q ) 
+                    s | S ) 
+                        (( $indexArray <= 1 )) && ftEcho -s "训练时间过短，放弃保存" && return
+                        echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
+                        ftIniSetValue $filePathDataBaseRepetionDrill hository lessonName $lessonNameSel  -a
+                        ftIniSetValue $filePathDataBaseRepetionDrill hository drillType "sentence" -a
+                        ftIniSetValue $filePathDataBaseRepetionDrill hository drillTime "$(date +%s -d $(date +"%H:%M:%S"))"  -a
+                        ftIniSetValue $filePathDataBaseRepetionDrill hository sctenceIndexArray $indexArray  -a
+                        ftIniSetValue $filePathDataBaseRepetionDrill hository sctenceDrillTrueCount $drillTrueCount  -a
+                        ftIniSetValue $filePathDataBaseRepetionDrill hository sctenceArrayIndexSort -a -l "$(echo ${arrayIndexSort[@]} | sed 's/ /\n/g')"
+                        ftIniSetValue $filePathDataBaseRepetionDrill hository sctenceIndexArrayError -a -l "$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g')"
+                        ftEcho -s "练习记录已保存"
+                        return;;
+                    q | Q )
                         (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
                         return;;
                     w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
-                       (( indexProcess>=1 )) && (( indexProcess-=2 )) || (( indexProcess=0 ))
                         break;;
                     e | E ) echo -e "\ntranslator problem:\n  ${lessonNameTitle}\n  ${englishItem}" >> $filePathLearnResultProblem
                         break;;
@@ -285,7 +314,7 @@ ftLearnEnglishRepetionDrillEveryDay()
         fi
         (( lessonSize+=1 ))
         if [[ $itemOptionSelect == "y" ]] || [[ $itemOptionSelect == "Y" ]]; then   
-            (( lessonTrueCount+=1 ))
+            (( drillTrueCount+=1 ))
             echo "" > $filePathLearnDrillTemp
         elif [[ $itemOptionSelect == "t" ]] || [[ $itemOptionSelect == "T" ]]; then
             sentenceDrillResltItem=$(cat $filePathItemSentenceEnglishDrillResult)
@@ -297,7 +326,7 @@ ftLearnEnglishRepetionDrillEveryDay()
                     echo -e  "${chineseItem}\n${englishItem}\n${sentenceDrillResltItem}"
                     echo
 
-                    if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]]; then
+                    if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && [[ $lessonNameSel = $lessonNameRepetionDrill ]]; then
                         ftEcho -s "按,Q退出,Y已听懂,N跳过,W上一句,D删除记录，其他任意键重新播放"
                     else
                         ftEcho -s "按,Q退出,N跳过,E翻译存疑,R读待确认,D待加强,W上一句，其他任意键重新播放"
@@ -308,13 +337,24 @@ ftLearnEnglishRepetionDrillEveryDay()
 
                     read -n 1 sel2
                     case "$sel2" in
+                        s | S )
+                            (( $indexArray <= 1 )) && ftEcho -s "训练时间过短，放弃保存" && return
+                            echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
+                            ftIniSetValue $filePathDataBaseRepetionDrill hository lessonName $lessonNameSel  -a
+                            ftIniSetValue $filePathDataBaseRepetionDrill hository drillType "sentence" -a
+                            ftIniSetValue $filePathDataBaseRepetionDrill hository drillTime "$(date +%s -d $(date +"%H:%M:%S"))"  -a
+                            ftIniSetValue $filePathDataBaseRepetionDrill hository sctenceIndexArray $indexArray  -a
+                            ftIniSetValue $filePathDataBaseRepetionDrill hository sctenceDrillTrueCount $drillTrueCount  -a
+                            ftIniSetValue $filePathDataBaseRepetionDrill hository sctenceArrayIndexSort -a -l "$(echo ${arrayIndexSort[@]} | sed 's/ /\n/g')"
+                            ftIniSetValue $filePathDataBaseRepetionDrill hository sctenceIndexArrayError -a -l "$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g')"
+                            ftEcho -s "练习记录已保存"
+                            return;;
                         q | Q ) 
                             (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
                             return;;
                         w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
-                                (( indexProcess>=1 )) && (( indexProcess-=2 )) || (( indexProcess=0 ))
                             break;;
-                        y | Y ) (( lessonTrueCount+=1 ))
+                        y | Y ) (( drillTrueCount+=1 ))
                             break;;
                         e | E )
                             [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && break
@@ -325,7 +365,8 @@ ftLearnEnglishRepetionDrillEveryDay()
                             echo -e "\n read problem:\n   ${lessonNameTitle}\n   ${englishItem}" >> $filePathLearnResultProblem
                             break;;
                         d | D )
-                            if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]]; then
+                            if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] \
+                                && [[ $lessonNameSel = $lessonNameRepetionDrill ]]; then
                                 ftEcho -y "是否删除(回车默认y)"
                                 read -n 1 delSel
                                 [ -z "${delSel}" ] && delSel=y
@@ -400,12 +441,15 @@ ftLearnEnglishRepetionDrillEveryDay()
     fi
 
     ftEcho -s "课程集:${lessonGroupNameSel}\n课程:${lessonNameSel}\
-    \n正确率:$(printf "%d%%" $((lessonTrueCount*100/lessonSize)))\
+    \n正确率:$(printf "%d%%" $((drillTrueCount*100/lessonSize)))\
     \n错误行:$(echo ${valRepetionDrillErrorHositorySort[*]})\
     \n无效行:$(echo ${valRepetionDrillInvalidIndex[*]})"
 
     #记录练习时间
     echo -n "今日练习：" ;ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
+
+    #删除临时练习记录
+    rm -rf $filePathDataBaseRepetionDrill
 }
 
 complete -W "-h --help --rely_install -p -l" -A file ftOcrRepetionDrill 
