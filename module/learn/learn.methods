@@ -273,7 +273,7 @@ ftLearnEnglishRepetionDrillEveryDay()
             while true; do
                 ftEcho -s ${lessonNameTitle}
                 ! $isModeHideChineseTitle && ftEcho -frame $chineseItem
-                echo && ftEcho -s "按S保存退出,Q退出,T显示提示,Y已听懂,N跳过,W上一句，其他任意键重新播放"
+                echo && ftEcho -s "按S保存进度退出,Q退出,T显示提示,Y已听懂,N跳过并进入下一句,W上一句，其他任意键重新播放"
                 play $filePathItemAudioFile
                 #ftEdgeTTs --speed 10 --playContent "${englishItem}" --hide
                 read -n 1 playOpt
@@ -327,9 +327,9 @@ ftLearnEnglishRepetionDrillEveryDay()
                     echo
 
                     if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && [[ $lessonNameSel = $lessonNameRepetionDrill ]]; then
-                        ftEcho -s "按,Q退出,Y已听懂,N跳过,W上一句,D删除记录，其他任意键重新播放"
+                        ftEcho -s "按S保存进度退出,Q退出,Y已听懂,N跳过并进入下一句,W上一句,D删除记录，其他任意键重新播放"
                     else
-                        ftEcho -s "按,Q退出,N跳过,E翻译存疑,R读待确认,D待加强,W上一句，其他任意键重新播放"
+                        ftEcho -s "按S保存进度退出,Q退出,N跳过并进入下一句,E翻译存疑,R读待确认,D待加强,W上一句，其他任意键重新播放"
                     fi
 
                     play $filePathItemAudioFile
@@ -431,14 +431,14 @@ ftLearnEnglishRepetionDrillEveryDay()
     #     fi
     # fi
 
-    #排序,去重
-    local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g' | uniq | sort -n  | xargs echo -n)
-    #记录练习数据
-    if [ -z $valRepetionDrillErrorHositorySort ];then
-        ftIniDeleteItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $keyRepetionDrillErrorHository
-    else
-        ftIniSetValue $rFilePathXbashDBUser learnLessonInfo $keyRepetionDrillErrorHository -a -l "$(echo ${valRepetionDrillErrorHositorySort[@]} | sed 's/ /\n/g')"
-    fi
+    # #排序,去重
+    # local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g' | uniq | sort -n  | xargs echo -n)
+    # #记录练习数据
+    # if [ -z $valRepetionDrillErrorHositorySort ];then
+    #     ftIniDeleteItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $keyRepetionDrillErrorHository
+    # else
+    #     ftIniSetValue $rFilePathXbashDBUser learnLessonInfo $keyRepetionDrillErrorHository -a -l "$(echo ${valRepetionDrillErrorHositorySort[@]} | sed 's/ /\n/g')"
+    # fi
 
     ftEcho -s "课程集:${lessonGroupNameSel}\n课程:${lessonNameSel}\
     \n正确率:$(printf "%d%%" $((drillTrueCount*100/lessonSize)))\
@@ -449,7 +449,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     echo -n "今日练习：" ;ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
 
     #删除临时练习记录
-    rm -rf $filePathDataBaseRepetionDrill
+    [ -f $filePathDataBaseRepetionDrill ] && rm -rf $filePathDataBaseRepetionDrill
 }
 
 complete -W "-h --help --rely_install -p -l" -A file ftOcrRepetionDrill 
