@@ -334,6 +334,7 @@ ftEcho()
 #    ftEcho    -iow   标题  内容      # 弹窗交互
 #    ftEcho    -frame 内容           # 多行排版显示,带边框
 #    ftEcho    -c     阈值  标题 内容 # 超出阈值使用表格显示内容
+#    ftEcho    -key   按键  说明      # 按键和说明都为字符串格式
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -w|-iow )
@@ -449,6 +450,36 @@ ftEcho()
                      fi
                      ftEcho -e 错误的选择：$dir
                 done
+                break;;
+        -key )
+                local arrayKeys=($(echo $2 | sed 's/ /\n/g'))
+                local arrayKeyContents=($(echo $3 | sed 's/ /\n/g'))
+                local isEchoPlural=true
+                if [ $2 = "-n" ];then
+                    isEchoPlural=false
+                    arrayKeys=($(echo $3 | sed 's/ /\n/g'))
+                    arrayKeyContents=($(echo $4 | sed 's/ /\n/g'))
+                fi
+
+                local keyContentItem keyContentItemArray
+                for (( index = 0; index <${#arrayKeys[@]}; index++ )); do
+                   keyContentItem=${arrayKeyContents[$index]}
+                   keyContentItemArray=($(echo -e ${keyContentItem//\+\+/\\n\+\+\\n}))
+
+                    for (( index2 = 0; index2 <${#keyContentItemArray[@]}; index2++ )); do
+                       [ -z ${keyContentItemArray[$index2]} ] && continue
+                       [[ ${keyContentItemArray[$index2]} == *++* ]]&& keyContentItemArray[$index2]="${arrayKeys[$index]}" && continue
+                       keyContentItem="\033[1;31m${keyContentItemArray[$index2]}\033[0m"
+                       keyContentItemArray[$index2]="${keyContentItem}"
+                    done
+
+                    arrayKeyContents[$index]="${keyContentItemArray[@]}"
+
+                done
+
+                ! $isEchoPlural && echo -e "${arrayKeyContents[@]}"| sed 's/ //g'
+                $isEchoPlural && echo -e "${arrayKeyContents[@]}"| sed 's/ /\n/g'
+
                 break;;
     * )    echo $option ;break;; esac ;done
 }
