@@ -4120,7 +4120,7 @@ ftEdgeTTs()
         local dirPathLocal=$(pwd)
         cd ${dirPathPythonVirtualEnvironment}
         #edge-playback --volume=+100% --rate=-${speedVal}% --text "${playContent}" 
-        edge-tts --volume=+100% --rate=-${speedVal}% --text "${playContent}" --write-media $filePathMediaCache
+        edge-tts --text "${playContent}" --write-media $filePathMediaCache
         cd $dirPathLocal
         ftEcho -s "${filePathMediaCache} is update complete"
     fi
