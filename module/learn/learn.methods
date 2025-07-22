@@ -5,10 +5,10 @@
 ##             学习工具实现                      ##
 ##                                              ##
 ##################################################
-complete -W "-h --help -cet -cit -cpe --compare -sld -ald -sd" ftLearnEnglishRepetionDrillEveryDay
+complete -W "-h -r -t -ht --help -cet -cit -cpe --compare -sld -ald -sd" ftLearnEnglishRepetionDrillEveryDay
 ftLearnEnglishRepetionDrillEveryDay()
 {
-    local ftEffect="English repetion drill"
+    local ftEffect="EnglishRepetionDrill"
     local isEnable=true
 
     #可用性校验
@@ -18,36 +18,25 @@ ftLearnEnglishRepetionDrillEveryDay()
     [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
     local isModeLessonExampleText=false  isModeLessonImitateText=false isModeCompare=false 
     local isModeSentenceListenDrill=false isModeArticleListenDrill=false isModeSentenceDrill=false
-    local isModeTextEditDrill=false isModeHideChineseTitle=false
+    local isModeTextEditDrill=false isModeHideChineseTitle=false isModeRead=false
     local valCount=3 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
-#    #例句翻译练习
-#    ftLearnEnglishRepetionDrillEveryDay -sd
-#    
-#    #查看帮助
-#    ftLearnEnglishRepetionDrillEveryDay -h
-#    
-#    #默认课文默写比对练习
-#    ftLearnEnglishRepetionDrillEveryDay -cet
-#    
-#    #仿造课文默写比对练习
-#    ftLearnEnglishRepetionDrillEveryDay -cit
+#    #可独立使用参数
+#    -h     #查看帮助
+#    -cet   #默认课文默写比对练习
+#    -cpe   #默写结果和对比
+#    -cit   #仿造课文默写比对练习
+#    -sd    #例句翻译练习
+#    -sld   #例句听力练习
 #       
-#    #默写结果和对比
-#    ftLearnEnglishRepetionDrillEveryDay -cpe / --compare
-#    
-#    #例句听力练习
-#    ftLearnEnglishRepetionDrillEveryDay -sld
-#
-#    #同步开启文本编辑器练习,不可单独使用
-#    ftLearnEnglishRepetionDrillEveryDay -t
-#
-#    #隐藏提示练习,不可单独使用
-#    ftLearnEnglishRepetionDrillEveryDay -ht
+#    #不可单独使用参数
+#    -r     #例句阅读模式
+#    -t     #同步开启文本编辑器练习
+#    -ht    #隐藏提示练习
 #========================================================="; return ;;
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -75,18 +64,21 @@ ftLearnEnglishRepetionDrillEveryDay()
             ;;
         -ht ) isModeHideChineseTitle=true
             ;;
+        -r ) isModeRead=true
+            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     case "$1" in
-    -h | --help | -cet | -cit | -cpe | --compare | -ald | -sld | -sd | -t | -ht)
+    -h | --help | -cet | -cit | -cpe | --compare | -ald | -sld | -sd | -t | -ht | -r )
         ;;
     *)   errorContent="${errorContent}\\n无效参数:${1}"
         ;;
     esac
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnEnglishRepetionDrillEveryDay -h && return $resultFail
     [[ -z $(which play) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "sox" && return $resultFail
+    [[ -z $(which xclip) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "xclip" && return $resultFail
 
     local filePathDrillTemp=/tmp/Drill.txt
 
@@ -258,10 +250,21 @@ ftLearnEnglishRepetionDrillEveryDay()
          进度：$(echo "scale=1; $indexArray* 100 / $arrayIndexSortSize" | bc)%\
           时长：${timingChang}"
         filePathItemSentenceEnglishDrillResult="${dirPathItemSentenceEnglishDrillResult}/${indexSort}.result"
-        echo "" > $filePathLearnDrillTemp
+        #清空练习文件
+        echo -n "" > ${filePathLearnDrillTemp}
         #sentenceDrillResltItem="$(cat $filePathItemSentenceEnglishDrillResult)"
 
-        if $isModeSentenceListenDrill; then
+        if $isModeRead;then
+            itemOptionSelect="T"
+            filePathItemAudioFile="${dirPathItemAudioFile}/${indexSort}.mp3"
+            if [[ ! -f $filePathItemAudioFile ]]; then
+                local filePathText=/tmp/audioTemp.text
+                local dirPathMp3=/tmp
+                echo "$englishItem" > $filePathText
+                ftText2Mp3 -fpt "${filePathText}" -dpm "${dirPathMp3}"
+                mv "${dirPathMp3}/1.mp3" "${filePathItemAudioFile}"
+            fi
+        elif $isModeSentenceListenDrill;then
             filePathItemAudioFile="${dirPathItemAudioFile}/${indexSort}.mp3"
             if [[ ! -f $filePathItemAudioFile ]]; then
                 local filePathText=/tmp/audioTemp.text
@@ -272,15 +275,19 @@ ftLearnEnglishRepetionDrillEveryDay()
             fi
             while true; do
                 ftEcho -s ${lessonNameTitle}
+                ftEcho -sn "例句音频：" && echo "${filePathItemAudioFile}"
                 ! $isModeHideChineseTitle && ftEcho -frame $chineseItem
-                echo && ftEcho -key -n "S Q T Y N W 其他任意键" \
+                echo
+                #写入剪贴板
+                echo "${englishItem}"| tr -d '\n'| xclip -sel clip
+                ftEcho -key -n "S Q T Y N W 其他任意键" \
                         "按++保存进度退出 ,++退出 ,++显示提示 ,++已听懂 ,++跳过并进入下一句 ,++上一句 ,++重新播放"
                 play -q $filePathItemAudioFile
-                #ftEdgeTTs --speed 10 --playContent "${englishItem}" --hide
                 read -n 1 playOpt
                 itemOptionSelect=$playOpt
                 case "$playOpt" in
                     s | S ) 
+                        [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
                         (( $indexArray <= 1 )) && ftEcho -s "训练时间过短，放弃保存" && return
                         echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
                         ftIniSetValue $filePathDataBaseRepetionDrill hository lessonName $lessonNameSel  -a
@@ -293,6 +300,7 @@ ftLearnEnglishRepetionDrillEveryDay()
                         ftEcho -s "练习记录已保存"
                         return;;
                     q | Q )
+                        [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
                         (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
                         return;;
                     w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
@@ -316,14 +324,20 @@ ftLearnEnglishRepetionDrillEveryDay()
         (( lessonSize+=1 ))
         if [[ $itemOptionSelect == "y" ]] || [[ $itemOptionSelect == "Y" ]]; then   
             (( drillTrueCount+=1 ))
-            echo "" > $filePathLearnDrillTemp
+        #清空练习文件
+        echo -n "" > ${filePathLearnDrillTemp}
         elif [[ $itemOptionSelect == "t" ]] || [[ $itemOptionSelect == "T" ]]; then
             sentenceDrillResltItem=$(cat $filePathItemSentenceEnglishDrillResult)
             if $isModeSentenceListenDrill; then
                 while true; do
                     clear
                     ftEcho -s ${lessonNameTitle}
+                    ftEcho -sn "例句音频：" && echo "${filePathItemAudioFile}"
                     echo
+                    #写入剪贴板
+                    echo "${englishItem}" | tr -d '\n' | xclip -sel clip
+                    #写入练习文件
+                    # echo "${englishItem}" | sed 's/\n/ /g' >> $filePathLearnDrillTemp
                     echo -e  "${chineseItem}\n${englishItem}"
                     (( $(echo $sentenceDrillResltItem |grep -v ^$|wc -l)>0 )) && echo -e "${sentenceDrillResltItem}"
                     echo
@@ -342,6 +356,7 @@ ftLearnEnglishRepetionDrillEveryDay()
                     read -n 1 sel2
                     case "$sel2" in
                         s | S )
+                            [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
                             (( $indexArray <= 1 )) && ftEcho -s "训练时间过短，放弃保存" && return
                             echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
                             ftIniSetValue $filePathDataBaseRepetionDrill hository lessonName $lessonNameSel  -a
@@ -353,7 +368,8 @@ ftLearnEnglishRepetionDrillEveryDay()
                             ftIniSetValue $filePathDataBaseRepetionDrill hository sctenceIndexArrayError -a -l "$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g')"
                             ftEcho -s "练习记录已保存"
                             return;;
-                        q | Q ) 
+                        q | Q )
+                            [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
                             (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
                             return;;
                         w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
@@ -415,7 +431,8 @@ ftLearnEnglishRepetionDrillEveryDay()
             ftCheckDrillReslt "${filePathLearnDrillTemp}_basic" "${filePathLearnDrillTemp}"
             rm -rf "${filePathLearnDrillTemp}_basic"
             cat "${filePathLearnDrillTemp}" >> "${filePathItemSentenceEnglishDrillResult}"
-            echo "" > "${filePathLearnDrillTemp}"
+            #清空练习文件
+            echo -n "" > ${filePathLearnDrillTemp}
             echo
         fi
 
@@ -454,6 +471,7 @@ ftLearnEnglishRepetionDrillEveryDay()
 
     #删除临时练习记录
     [ -f $filePathDataBaseRepetionDrill ] && rm -rf $filePathDataBaseRepetionDrill
+    [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
 }
 
 complete -W "-h --help --rely_install -p -l" -A file ftOcrRepetionDrill 
@@ -612,10 +630,15 @@ ftLearnLessonManage()
         for lessonGroup in ${learnLessonGroupList[*]} ; do
 
             [[ $lessonGroup = "needRepetionDrill" ]] && continue
+
+            [[ $lessonGroup = "ZTestLessonGroup" ]] && \
+            ftEcho -en "invald lesson group:" &&echo "ZTestLessonGroup" && continue
+
             dirPathLessonGroup="${dirPathTempEng}/${lessonGroup}"
             dirPathArrayLesson=($(ls $dirPathLessonGroup))
-            [[ -z $dirPathArrayLesson ]] &&ftEcho -s "invald lesson group : ${lessonGroup}" && continue
-            echo "load drill result :lesson group name : ${lessonGroup}"
+            [[ -z $dirPathArrayLesson ]] &&\
+            ftEcho -en "invald lesson group:" &&echo "${lessonGroup}" && continue
+            ftEcho -sn "loading lesson group:" && echo "${lessonGroup}"
 
             for lessonName in ${dirPathArrayLesson[*]} ; do
                 dirPathLesson="${dirPathLessonGroup}/${lessonName}"
@@ -642,8 +665,8 @@ ftLearnLessonManage()
                 done
 
             done
-            ftEcho -s "load finish"
         done
+        ftEcho -s "load finish"
         return
     fi
     if $isUpdate; then
