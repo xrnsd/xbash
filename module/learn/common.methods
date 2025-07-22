@@ -89,6 +89,96 @@ ftCutTextNCEChinese()
     done
 }
 
+ftCutTextAnarchyUnbound()
+{
+    #将AnarchyUnbound格式化
+    local filePathTextPartBasicContent=$1
+    local dirPathPartDataStorage=$2
+    local lineSizeTextPartBasicContent=$(awk 'END{print NR}' $filePathTextPartBasicContent)
+
+    if (( $lineSizeTextPartBasicContent==0 ));then
+        ftEcho -e "数据为空"
+        return
+    fi
+
+    local indexArray=1 lineContentFlag=1 PartNumber=1
+    local lineContent lineContentTemp lineContent2
+    local dirPathPart filePathPartEnglish filePathPartChinese dirPathPartAudioEnglish
+    # local isCreatePart=true
+    while (( $indexArray < $lineSizeTextPartBasicContent  )); do
+        lineContent=$(awk 'NR=="'$indexArray'"' $filePathTextPartBasicContent | tr -d '\n')
+        # lineContent2=${lineContent}
+        if [[ -z $lineContent ]];then
+            lineContentFlag=0
+
+            # if ! $isCreatePart;then
+            #     isCreatePart=true # && echo "${indexArray}--------------------"
+            # else
+            #     isCreatePart=false
+
+                if [[ -f $filePathPartEnglish ]];then
+                    cat ${filePathPartEnglish} |tr -s '\n' > ${filePathPartEnglish}2
+                    mv ${filePathPartEnglish}2 ${filePathPartEnglish}
+                    cat ${filePathPartChinese} |tr -s '\n' > ${filePathPartChinese}2
+                    mv ${filePathPartChinese}2 ${filePathPartChinese}
+                fi
+
+                dirPathPart="${dirPathPartDataStorage}/${PartNumber}"
+                filePathPartEnglish="${dirPathPart}/sentence.text_english"
+                filePathPartChinese="${dirPathPart}/sentence.text_chinese"
+                dirPathPartAudioEnglish="${dirPathPart}/sentence.audio_english"
+                mkdir -p "${dirPathPart}" "${dirPathPartAudioEnglish}"
+                # echo "${indexArray}"
+                # echo "${PartNumber}"
+                # echo "================================================="
+                ((PartNumber+=1))
+            # fi
+        elif (( ${#lineContent}>0 ));then
+            if (( $lineContentFlag == 1  ));then
+                lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
+                if (( ${#lineContentTemp}==0 ));then #只有空格的情况
+                    lineContent=
+                else #进行句子切分
+                    lineContentTemp=${lineContent//'.'/'.\n'}
+                    lineContent=${lineContentTemp//'!'/'!\n'}
+                    lineContentTemp=${lineContent//'?'/'?\n'}
+                    lineContentTemp=${lineContent//'. '/'.\n'}
+                    lineContent=${lineContentTemp//'! '/'!\n'}
+                    lineContentTemp=${lineContent//'? '/'?\n'}
+                    lineContent="${lineContentTemp}"
+                fi
+                # echo -e "indexArray=${indexArray}\n${lineContent2}"
+                (( ${#lineContent}>0 )) && echo -e "${lineContent}" >> $filePathPartEnglish
+            elif (( $lineContentFlag == 2  ));then
+                lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
+                if (( ${#lineContentTemp}==0 ));then #只有空格的情况
+                    lineContent=
+                else #进行句子切分
+                    lineContentTemp=${lineContent//'。'/'。\n'}
+                    lineContent=${lineContentTemp//'！'/'！\n'}
+                    lineContentTemp=${lineContent//'？'/'？\n'}
+                    lineContentTemp=${lineContent//'。 '/'。\n'}
+                    lineContent=${lineContentTemp//'！ '/'！\n'}
+                    lineContentTemp=${lineContent//'？ '/'？\n'}
+                    lineContent="${lineContentTemp}"
+                fi
+                (( ${#lineContent}>0 )) && echo -e "${lineContent}" >> $filePathPartChinese
+            fi
+        fi
+
+        # (( $indexArray > 12 )) && break
+        (( indexArray+=1 ))
+        (( lineContentFlag+=1 ))
+
+        if (( $indexArray==$lineSizeTextPartBasicContent  ))&&[[ -f $filePathPartEnglish ]];then
+            cat ${filePathPartEnglish} |tr -s '\n' > ${filePathPartEnglish}2
+            mv ${filePathPartEnglish}2 ${filePathPartEnglish}
+            cat ${filePathPartChinese} |tr -s '\n' > ${filePathPartChinese}2
+            mv ${filePathPartChinese}2 ${filePathPartChinese}
+        fi
+    done
+}
+
 ftBatchText2Mp3()
 {
     #批量将文本转成音频
@@ -121,6 +211,21 @@ ftText2Mp3ByLesson()
     local filePathLessonText="${dirPathTempEng}/${LessonGroupName}/${LessonName}/sentence.text_english"
 
     ftText2Mp3 -fpt "${filePathLessonText}" -dpm "${dirPathLessonAudio}"
+}
+
+ftText2Mp3ByLessonGroup()
+{
+    #批量将文本转成音频
+    #ftText2Mp3ByLessonGroup 课程集
+    local LessonGroupName=$1
+    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
+    local dirPathLessonGroup="${dirPathTempEng}/${LessonGroupName}"
+
+    while read lessonName ;do  #可以在循环外保留变量
+      echo "===============  课程${item}  =========================="
+      ftText2Mp3ByLesson ${LessonGroupName} ${lessonName}
+      sleep 5
+    done < <(echo "$(ls $dirPathLessonGroup)")
 }
 
 ftText2Mp3Apply()
