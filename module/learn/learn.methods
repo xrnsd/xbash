@@ -224,7 +224,9 @@ ftLearnEnglishRepetionDrillEveryDay()
     local fileSizeEnglishBasic=$(sed -n '$=' $filePathEnglishBasic)
     local fileSizeChineseBasic=$(sed -n '$=' $filePathChineseBasic)
     if (($fileSizeChineseBasic!=$fileSizeEnglishBasic)) ; then
-        ftEcho -e "信息文件内容为空或数量不一致"
+        ftEcho -e "信息文件内容为空或数量不一致\n\
+        fileSizeEnglishBasic=${fileSizeEnglishBasic}\n\
+        fileSizeChineseBasic=${fileSizeChineseBasic}"
         return;
     fi
     [ -z $arrayIndexSort ] && arrayIndexSort=($(seq 1 $fileSizeEnglishBasic | sed 's/ /\n/g' | shuf))
@@ -238,6 +240,9 @@ ftLearnEnglishRepetionDrillEveryDay()
     while (( $indexArray < $arrayIndexSortSize  )); do
         timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
         indexSort=${arrayIndexSort[$indexArray]}
+        #阅读模式不使用随机下标
+        $isModeRead && indexSort=$indexArray
+
         englishItem=$(awk 'NR=="'$indexSort'"' $filePathEnglishBasic)
         if [[ -z $englishItem ]];then
             valRepetionDrillInvalidIndex=(${valRepetionDrillInvalidIndex[@]} $indexSort)
@@ -343,8 +348,8 @@ ftLearnEnglishRepetionDrillEveryDay()
                     echo
 
                     if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && [[ $lessonNameSel = $lessonNameRepetionDrill ]]; then
-                        ftEcho -key -n "S Q Y N W D 其他任意键" \
-                        "按++保存进度退出 ,++退出 ,++已听懂 ,++跳过并进入下一句 ,++上一句 ,++删除记录 ,++重新播放"
+                        ftEcho -key -n "Y S Q N E R D W 其他任意键" \
+                        "按++已听懂 ,++保存进度退出 ,++退出 ,++跳过并进入下一句 ,++翻译存疑 ,++读待确认 ,++删除记录 ,++上一句 ,++重新播放"
                     else
                         ftEcho -key -n "S Q N E R D W 其他任意键" \
                         "按++保存进度退出 ,++退出 ,++跳过并进入下一句 ,++翻译存疑 ,++读待确认 ,++待加强 ,++上一句 ,++重新播放"
@@ -377,11 +382,11 @@ ftLearnEnglishRepetionDrillEveryDay()
                         y | Y ) (( drillTrueCount+=1 ))
                             break;;
                         e | E )
-                            [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && break
+                            [[ -n $(grep -e "^${englishItem}$" ${filePathLearnResultProblem}) ]] && ftEcho -s "重复添加记录，取消操作" && break
                             echo -e "\n translator problem:\n   ${lessonNameTitle}\n   ${englishItem}" >> $filePathLearnResultProblem
                             break;;
-                        r | R ) 
-                            [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && break
+                        r | R )
+                            [[ -n $(grep -e "^${englishItem}$" ${filePathLearnResultProblem}) ]] && ftEcho -s "重复添加记录，取消操作" && break
                             echo -e "\n read problem:\n   ${lessonNameTitle}\n   ${englishItem}" >> $filePathLearnResultProblem
                             break;;
                         d | D )
@@ -396,7 +401,7 @@ ftLearnEnglishRepetionDrillEveryDay()
                                 rm $filePathItemAudioFile
                                 break
                             fi
-                            if [[ -z $(grep -rsn "${englishItem}" $filePathLearnResultDrillEnglish) ]]; then
+                            if [[ -z $(grep -e "^${chineseItem}$" ${filePathLearnResultDrillChinese}) ]]; then
                                 echo "${englishItem}" >> $filePathLearnResultDrillEnglish
                                 echo "${chineseItem}" >> $filePathLearnResultDrillChinese
                                 local fileLineSize=$(awk 'END{print NR}' $filePathLearnResultDrillEnglish)
@@ -426,6 +431,7 @@ ftLearnEnglishRepetionDrillEveryDay()
         if [[ -n $(grep -sn "\+\+" "${filePathLearnDrillTemp}") ]] \
             || [[ -n $(grep -sn "\*\*" "${filePathLearnDrillTemp}") ]] \
             && $isModeTextEditDrill;then
+            [[ ! -d "${dirPathItemSentenceEnglishDrillResult}" ]] && mkdir -p "${dirPathItemSentenceEnglishDrillResult}"
             mv "${filePathLearnDrillTemp}" "${filePathLearnDrillTemp}_basic"
             echo -n "例句:${indexSort} 练习结果的"
             ftCheckDrillReslt "${filePathLearnDrillTemp}_basic" "${filePathLearnDrillTemp}"
@@ -461,10 +467,15 @@ ftLearnEnglishRepetionDrillEveryDay()
     #     ftIniSetValue $rFilePathXbashDBUser learnLessonInfo $keyRepetionDrillErrorHository -a -l "$(echo ${valRepetionDrillErrorHositorySort[@]} | sed 's/ /\n/g')"
     # fi
 
-    ftEcho -s "课程集:${lessonGroupNameSel}\n课程:${lessonNameSel}\
-    \n正确率:$(printf "%d%%" $((drillTrueCount*100/lessonSize)))\
-    \n错误行:$(echo ${valRepetionDrillErrorHositorySort[*]})\
-    \n无效行:$(echo ${valRepetionDrillInvalidIndex[*]})"
+    if $isModeRead;then
+        ftEcho -s "课程集:${lessonGroupNameSel}\
+                    \n课程:${lessonNameSel}"
+    else
+        ftEcho -s "课程集:${lessonGroupNameSel}\n课程:${lessonNameSel}\
+        \n正确率:$(printf "%d%%" $((drillTrueCount*100/lessonSize)))\
+        \n错误行:$(echo ${valRepetionDrillErrorHositorySort[*]})\
+        \n无效行:$(echo ${valRepetionDrillInvalidIndex[*]})"
+    fi
 
     #记录练习时间
     echo -n "今日练习：" ;ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
@@ -554,7 +565,7 @@ ftOcrRepetionDrill()
     done 3< $filePath
 }
 
-complete -W "-h --help -acg --ac -u -une" ftLearnLessonManage
+complete -W "-h --help -acg --ac -u -une -m" ftLearnLessonManage
 ftLearnLessonManage()
 {
     local ftEffect=学习课程配置
@@ -564,7 +575,8 @@ ftLearnLessonManage()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local isAddLessonGroup=false isAddLesson=false isUpdate=false isUpdateDrillGroupError=false
-    local valCount=1 errorContent arg arg2
+    local isMergeLessonGroup=false lessonGroupNameMerge
+    local valCount=2 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
@@ -584,6 +596,9 @@ ftLearnLessonManage()
 #
 #    #将课程练习结果生成为needRepetionDrill/error课程
 #    ftLearnLessonManage -une
+#
+#    #合并课程集
+#    ftLearnLessonManage -m
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -acg) isAddLessonGroup=true
@@ -594,21 +609,98 @@ ftLearnLessonManage()
                      ;;
         -une) isUpdateDrillGroupError=true
                      ;;
+        -m) isMergeLessonGroup=true
+            lessonGroupNameMerge="${arg2}"
+                     ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #参数校验
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数数量无效"
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数数量无效"
     case "$1" in
-    -h | --help | -ac | -acg | -u | -une)
+    -h | --help | -ac | -acg | -u | -une | -m)
         ;;
     *)   errorContent="${errorContent}\\n参数无效:${1}"
         ;;
     esac
+    $isMergeLessonGroup && [ -z $lessonGroupNameMerge ] && errorContent="${errorContent}\\n[合并课程集为空]"
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnLessonManage -h && return $resultFail
 
     #实现主体
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local learnLessonGroupList
+
+    if $isMergeLessonGroup;then
+
+        local dirPathLessonGroupMerge="${dirPathTempEng}/${lessonGroupNameMerge}"
+        local dirPathLessonMerge="${dirPathLessonGroupMerge}/merge"
+        local dirPathLessonMergeSDR="${dirPathLessonMerge}/sentence.drill_result"
+        local dirPathLessonMergeSAE="${dirPathLessonMerge}/sentence.audio_english"
+        local filePathLessonMergeSTE="${dirPathLessonMerge}/sentence.text_english"
+        local filePathLessonMergeSTC="${dirPathLessonMerge}/sentence.text_chinese"
+        local lineNum newLineNum filePathLessonMergeSDR filePathLessonMergeSAE
+
+        if [ -d "${dirPathLessonMerge}" ];then
+            ftEcho -y "存在合并课程是否删除(y为删除，回车默认y)"
+            read -n 1 delSel
+            [ -z "${delSel}" ] && delSel=y
+            [[ $delSel != "y" ]] && ftEcho -s "操作取消" && return
+            echo
+        fi
+        rm -rf ${dirPathLessonMerge} && \
+        mkdir -p ${dirPathLessonMergeSAE} ${dirPathLessonMergeSDR} && \
+        touch $filePathLessonMergeSTE
+
+        local dirPathLesson fileArrayAudio
+        local dirParhLessonSDR dirParhLessonSAE filePathLessonSTE filePathLessonSTC
+        local fileSizeLessonSTE fileSizeLessonSTC fileSizeLessonMergeSTE=0
+        local dirPathArrayLesson=($(ls $dirPathLessonGroupMerge|grep -v "merge"))
+        [[ -z $dirPathArrayLesson ]] &&\
+        ftEcho -en "invald lesson group:" &&echo "${lessonGroup}" && return
+        ftEcho -sn "start merge lesson group:" && echo "${lessonGroup}"
+
+        for lessonName in ${dirPathArrayLesson[*]} ; do
+            dirPathLesson="${dirPathLessonGroupMerge}/${lessonName}"
+            dirParhLessonSAE="${dirPathLesson}/sentence.audio_english"
+            dirParhLessonSDR="${dirPathLesson}/sentence.drill_result"
+            filePathLessonSTE="${dirPathLesson}/sentence.text_english"
+            filePathLessonSTC="${dirPathLesson}/sentence.text_chinese"
+
+            [[ ! -f ${filePathLessonSTE} ]] && ftEcho -en "invsald lesson：" && echo "${lessonName} (none sentence)" && continue
+            fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
+            fileSizeLessonSTC=$(sed -n '$=' $filePathLessonSTC)
+
+            (($fileSizeLessonSTE!=$fileSizeLessonSTC)) && ftEcho -en "invsald lesson：" && echo "${lessonName} (sentence line unequal)" && continue
+
+            ftEcho -sn "merge lesson:" && echo "$lessonName"
+            
+            fileSizeLessonMergeSTE=$(sed -n '$=' $filePathLessonMergeSTE)
+
+            cat "${filePathLessonSTE}" |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTE}"
+            cat "${filePathLessonSTC}"  |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTC}"
+
+            fileArrayAudio=($(ls $dirParhLessonSAE))
+
+            local newLineNum
+            for fileName in ${fileArrayAudio[*]} ; do
+                lineNum=${fileName%.*}
+                newLineNum=$((fileSizeLessonMergeSTE+lineNum))
+
+                #建立软连接
+                [ -f "${dirPathLessonMergeSAE}/${newLineNum}.mp3" ] && echo -e "lineNum=${lineNum} \
+                \n newLineNum=${newLineNum} \
+                \n fileSizeLessonSTE=${fileSizeLessonSTE} \
+                \n fileSizeLessonMergeSTE=${fileSizeLessonMergeSTE}" && return
+                ln -s "${dirParhLessonSAE}/${lineNum}.mp3" "${dirPathLessonMergeSAE}/${newLineNum}.mp3"
+                [ -f "${dirParhLessonSDR}/${lineNum}.result" ] && ln -s "${dirParhLessonSDR}/${lineNum}.result" "${dirPathLessonMergeSDR}/${newLineNum}.result"
+            done
+
+            # echo -e "filePathLessonMergeSTE=$(sed -n '$=' $filePathLessonMergeSTE)\
+            #     \n filePathLessonMergeSTC=$(sed -n '$=' $filePathLessonMergeSTC)"
+
+        done
+        ftEcho -s "merge finish"
+        return
+    fi
     if $isUpdateDrillGroupError;then
         local dirPathLessonNeedRepetionDrillError="${dirPathTempEng}/needRepetionDrill/error"
         local dirPathLessonNeedRepetionDrillErrorSDR="${dirPathLessonNeedRepetionDrillError}/sentence.drill_result"
@@ -676,7 +768,7 @@ ftLearnLessonManage()
         learnLessonGroupList=($(ls -d */| sed 's/\///g'))
         for lessonGroup in ${learnLessonGroupList[*]} ; do
             dirPathLessonGroup="${dirPathTempEng}/${lessonGroup}"
-            dirPathArrayLesson=($(ls $dirPathLessonGroup))
+            dirPathArrayLesson=($(ls $dirPathLessonGroup | grep -v repetionDrill.hository))
             [[ -z $dirPathArrayLesson ]] &&ftEcho -s "invald lesson group : ${lessonGroup}" && continue
             echo "lesson group name : ${lessonGroup}"
             echo "lesson list :${dirPathArrayLesson[@]}"
