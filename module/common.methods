@@ -4136,3 +4136,67 @@ ftEdgeTTs()
     # bash -c "espeak -s100 -g20 -p80 -v english-us \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\""
 }
 
+complete -W "-h --help --rely_install -f -n -nn -c" ftTextSetLine
+ftTextSetLine()
+{
+    local ftEffect=TextFileLineContentChange
+    local isEnable=true
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
+    #argument init
+    local filePathText lineNum lineContent
+    local isLineContentNone=false
+    local valCount=6 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # help infoumation ==============
+        -h | --help) ftEcho -rc "${ftEffect}" "use information" "\
+#=========================================================
+#    replace line content 
+#    ftTextSetLine -f filePath -n lineNumber -c lineContent
+#
+#    clear line content
+#    ftTextSetLine -f filePath -nn lineNumber
+#========================================================="; return ;;
+
+        # argument infoumation ==============
+        -f ) filePathText="${arg2}" #"${arg2:-"exampleDef1"}" #"${arg3:-"exampleDef2"}" #"${arg4:-"exampleDef4"}"
+            ;;
+        -n ) lineNum="${arg2}"
+            ;;
+        -c ) lineContent="${arg2}"
+            ;;
+        -nn ) lineNum="${arg2}"
+              isLineContentNone=true
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
+
+    #argument check
+    (( $#>6 )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
+    case "$1" in
+        -h | --help | --rely_install | -f | -n | -nn | -c)
+            ;;
+        *)   errorContent="${errorContent}\\n invalid argument:${1}"
+            ;;
+    esac
+    [ ! -f "${filePathText}" ] && errorContent="${errorContent}\\n[file is not exsit]filePathText=$filePathText"
+    [ -z "${lineNum}" ] && errorContent="${errorContent}\\n[line number is nuknow]"
+    ! $isLineContentNone && [ -z "${lineContent}" ] && errorContent="${errorContent}\\n[line cintent is null]"
+    [ -n "$errorContent" ] && ftEcho -ea "method[${ftEffect}] argument error ：${errorContent}\\nplease read help information:" && ftTextSetLine -h && return $resultFail
+
+    #code main
+    local fileLineCount=$(sed -n '$=' $filePathText)
+    fileLineCount=${fileLineCount:-'1'}
+    echo "fileLineCount=${fileLineCount}"
+    echo "lineNum=${lineNum}"
+    local drillResultTure=1
+
+    if (( $lineNum > $fileLineCount ));then
+        local sizeChange=$(( lineNum-fileLineCount ))
+        echo "sizeChange=${sizeChange}"
+        for (( i = 0; i < $sizeChange; i++ )); do
+            echo -en "\n\n" >> "${filePathText}"
+        done
+    fi
+    $isLineContentNone && sed -i "${lineNum}s/.*//" "${filePathText}" && return
+    sed -i "${lineNum}s/.*/${lineContent}/" "${filePathText}"
+}
