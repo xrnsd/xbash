@@ -5,8 +5,8 @@
 ##             学习工具实现                      ##
 ##                                              ##
 ##################################################
-complete -W "-h -r -t -ht --help -cet -cit -cpe --compare -sld -ald -sd" ftLearnEnglishRepetionDrillEveryDay
-ftLearnEnglishRepetionDrillEveryDay()
+complete -W "-h -r -t -ht --help -cet -cit -cpe --compare -sld -ald -sd" ftLearnRepetionDrill
+ftLearnRepetionDrill()
 {
     local ftEffect="EnglishRepetionDrill"
     local isEnable=true
@@ -45,14 +45,14 @@ ftLearnEnglishRepetionDrillEveryDay()
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -cet ) isModeLessonExampleText=true
-             [[ -z $(which gedit) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "gedit" && return $resultFail
+             [[ -z $(which gedit) ]] && ftLearnRepetionDrill --rely "gedit" && return $resultFail
             ;;
         -cit ) isModeLessonExampleText=true
              isModeLessonImitateText=true
-             [[ -z $(which gedit) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "gedit" && return $resultFail
+             [[ -z $(which gedit) ]] && ftLearnRepetionDrill --rely "gedit" && return $resultFail
             ;;
         -cpe | --compare ) isModeCompare=true
-             [[ -z $(which bcompare) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "bcompare" && return $resultFail
+             [[ -z $(which bcompare) ]] && ftLearnRepetionDrill --rely "bcompare" && return $resultFail
             ;;
         -sld ) isModeSentenceListenDrill=true
             ;;
@@ -76,9 +76,9 @@ ftLearnEnglishRepetionDrillEveryDay()
     *)   errorContent="${errorContent}\\n无效参数:${1}"
         ;;
     esac
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnEnglishRepetionDrillEveryDay -h && return $resultFail
-    [[ -z $(which play) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "sox" && return $resultFail
-    [[ -z $(which xclip) ]] && ftLearnEnglishRepetionDrillEveryDay --rely "xclip" && return $resultFail
+    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnRepetionDrill -h && return $resultFail
+    [[ -z $(which play) ]] && ftLearnRepetionDrill --rely "sox" && return $resultFail
+    [[ -z $(which xclip) ]] && ftLearnRepetionDrill --rely "xclip" && return $resultFail
 
     local filePathDrillTemp=/tmp/Drill.txt
 
@@ -103,8 +103,9 @@ ftLearnEnglishRepetionDrillEveryDay()
 
     local fileNameDataBaseRepetionDrill=repetionDrill.hository
     local filePathDataBaseRepetionDrill="${dirPathTempEng}/${lessonGroupNameSel}/${fileNameDataBaseRepetionDrill}"
-    
+
     #选择课程
+    local filePathDrillResultTure=/tmp/DrillResultTure drillResultTure=1
     local indexArray=0 drillTrueCount=0 arrayIndexSort valRepetionDrillErrorHository #=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  $keyRepetionDrillErrorHository))
     local learnLessonList=($(ftIniGetValue $rFilePathXbashDBUser learnLessonInfo $lessonGroupNameSel))
     [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "空课程集合:${lessonGroupNameSel}" && return
@@ -258,7 +259,6 @@ ftLearnEnglishRepetionDrillEveryDay()
         #清空练习文件
         echo -n "" > ${filePathLearnDrillTemp}
         #sentenceDrillResltItem="$(cat $filePathItemSentenceEnglishDrillResult)"
-
         if $isModeRead;then
             itemOptionSelect="T"
             filePathItemAudioFile="${dirPathItemAudioFile}/${indexSort}.mp3"
@@ -281,6 +281,7 @@ ftLearnEnglishRepetionDrillEveryDay()
             while true; do
                 ftEcho -s ${lessonNameTitle}
                 ftEcho -sn "例句音频：" && echo "${filePathItemAudioFile}"
+                [ -f "${filePathItemSentenceEnglishDrillResult}" ] && echo "存在练习错误记录，请仔细听"
                 ! $isModeHideChineseTitle && ftEcho -frame $chineseItem
                 echo
                 #写入剪贴板
@@ -294,7 +295,8 @@ ftLearnEnglishRepetionDrillEveryDay()
                     s | S ) 
                         [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
                         (( $indexArray <= 1 )) && ftEcho -s "训练时间过短，放弃保存" && return
-                        echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
+                        echo -n "今日练习：" && ftTimeConsuming -s ftLearnRepetionDrill
+                        drillTrueCount=$(cat $filePathDrillResultTure |grep -v ^$|wc -l)
                         ftIniSetValue $filePathDataBaseRepetionDrill hository lessonName $lessonNameSel  -a
                         ftIniSetValue $filePathDataBaseRepetionDrill hository drillType "sentence" -a
                         ftIniSetValue $filePathDataBaseRepetionDrill hository drillTime "$(date +%s -d $(date +"%H:%M:%S"))"  -a
@@ -306,9 +308,11 @@ ftLearnEnglishRepetionDrillEveryDay()
                         return;;
                     q | Q )
                         [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
-                        (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
+                        (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnRepetionDrill
                         return;;
-                    w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
+                    w | W )
+                        ftTextSetLine -f $filePathDrillResultTure -nn $indexArray
+                        (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
                         break;;
                     e | E ) echo -e "\ntranslator problem:\n  ${lessonNameTitle}\n  ${englishItem}" >> $filePathLearnResultProblem
                         break;;
@@ -328,7 +332,7 @@ ftLearnEnglishRepetionDrillEveryDay()
         fi
         (( lessonSize+=1 ))
         if [[ $itemOptionSelect == "y" ]] || [[ $itemOptionSelect == "Y" ]]; then   
-            (( drillTrueCount+=1 ))
+            ftTextSetLine -f $filePathDrillResultTure -n $indexArray -c $drillResultTure
         #清空练习文件
         echo -n "" > ${filePathLearnDrillTemp}
         elif [[ $itemOptionSelect == "t" ]] || [[ $itemOptionSelect == "T" ]]; then
@@ -363,7 +367,8 @@ ftLearnEnglishRepetionDrillEveryDay()
                         s | S )
                             [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
                             (( $indexArray <= 1 )) && ftEcho -s "训练时间过短，放弃保存" && return
-                            echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
+                            echo -n "今日练习：" && ftTimeConsuming -s ftLearnRepetionDrill
+                            drillTrueCount=$(cat $filePathDrillResultTure |grep -v ^$|wc -l)
                             ftIniSetValue $filePathDataBaseRepetionDrill hository lessonName $lessonNameSel  -a
                             ftIniSetValue $filePathDataBaseRepetionDrill hository drillType "sentence" -a
                             ftIniSetValue $filePathDataBaseRepetionDrill hository drillTime "$(date +%s -d $(date +"%H:%M:%S"))"  -a
@@ -375,11 +380,14 @@ ftLearnEnglishRepetionDrillEveryDay()
                             return;;
                         q | Q )
                             [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
-                            (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
+                            (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnRepetionDrill
                             return;;
-                        w | W ) (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
+                        w | W )
+                            ftTextSetLine -f $filePathDrillResultTure -nn $indexArray
+                            (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
                             break;;
-                        y | Y ) (( drillTrueCount+=1 ))
+                        y | Y )
+                            ftTextSetLine -f $filePathDrillResultTure -n $indexArray -c $drillResultTure
                             break;;
                         e | E )
                             [[ -n $(grep -e "^${englishItem}$" ${filePathLearnResultProblem}) ]] && ftEcho -s "重复添加记录，取消操作" && break
@@ -467,6 +475,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     #     ftIniSetValue $rFilePathXbashDBUser learnLessonInfo $keyRepetionDrillErrorHository -a -l "$(echo ${valRepetionDrillErrorHositorySort[@]} | sed 's/ /\n/g')"
     # fi
 
+    drillTrueCount=$(cat $filePathDrillResultTure |grep -v ^$|wc -l)
     if $isModeRead;then
         ftEcho -s "课程集:${lessonGroupNameSel}\
                     \n课程:${lessonNameSel}"
@@ -478,7 +487,7 @@ ftLearnEnglishRepetionDrillEveryDay()
     fi
 
     #记录练习时间
-    echo -n "今日练习：" ;ftTimeConsuming -s ftLearnEnglishRepetionDrillEveryDay
+    echo -n "今日练习：" ;ftTimeConsuming -s ftLearnRepetionDrill
 
     #删除临时练习记录
     [ -f $filePathDataBaseRepetionDrill ] && rm -rf $filePathDataBaseRepetionDrill
