@@ -399,39 +399,69 @@ ftEcho()
                  done <<< $(echo -e ${content})
                  printf "%${border_length}s\n" | tr ' ' '-'
                  break;;
-        -c )    local contentItemSizeFlag=$2
-                local contentTitle=$3
-                shift&&shift&&shift
-                content=($@)
-                [[ -z $content ]] && "echo error" && return $resultFail
+        -c )    local listMainItemSizeFlag=$2
+                local listMainTitle=$3
+                local listMain=($4)
+                local isContentApplyBySuffix=false
+                local applyContent=$6
+                local listApply=($7)
+                local filePathListApply=/tmp/listApply.tmp lessonName
+
+                #check argument
+                [[ -z $listMain ]] && echo "error: conten is null" && return $resultFail
+                if [[ -n $listApply ]];then
+                    if [[ $5 = "-cs" ]];then
+                        isContentApplyBySuffix=true
+                    elif [[ $5 = "-cp" ]];then
+                        isContentApplyBySuffix=false
+                    else
+                         echo "error: argument is invalid" && return $resultFail
+                    fi
+                    echo ${listApply[@]} | sed 's/ /\n/g'> $filePathListApply
+                else
+                    isContentApplyBySuffix=false
+                fi
+
                 export publicSelItemContent=
                 local index=0
-                local contentItemSize=${#content[@]}
-                if (( $contentItemSize<=$contentItemSizeFlag ));then
-                    for contenItem in ${content[*]} ; do
-                        echo "[${index}]${contenItem}"
+                local listMainItemSize=${#listMain[@]}
+                if (( $listMainItemSize<=$listMainItemSizeFlag ));then
+                    for contenItem in ${listMain[*]} ; do
+                        if [[ -n $listApply ]]&&[[ -n $(grep "^$contenItem$" $filePathListApply) ]];then
+                            $isContentApplyBySuffix \
+                            && echo "[${index}]${contenItem}${applyContent}" \
+                            || echo "[${index}]${applyContent}${contenItem}"
+                        else
+                            echo "[${index}]${contenItem}"
+                        fi
                         ((index+=1))
                     done
                 else       
                     local enterFlag=1 fileColumnPathTmp=/tmp/columnContentGroup.tmp
                     rm -rf $fileColumnPathTmp
-                    for contenItem in ${content[*]} ; do
-                        echo -n "[${index}]${contenItem}    " >>$fileColumnPathTmp
+                    for contenItem in ${listMain[*]} ; do
+                        if [[ -n $listApply ]]&&[[ -n $(grep "^$contenItem$" $filePathListApply) ]];then
+                            $isContentApplyBySuffix \
+                            && echo -n "[${index}]${contenItem}${applyContent}    " >>$fileColumnPathTmp \
+                            || echo -n "[${index}]${applyContent}${contenItem}    " >>$fileColumnPathTmp
+                        else
+                            echo -n "[${index}]${contenItem}    " >>$fileColumnPathTmp
+                        fi
                         ((index+=1))
                         ((enterFlag+=1))
-                        ((enterFlag==$contentItemSizeFlag)) && echo -e "\n" >> $fileColumnPathTmp&& enterFlag=1
+                        ((enterFlag==$listMainItemSizeFlag)) && echo -e "\n" >> $fileColumnPathTmp&& enterFlag=1
                     done
                     cat $fileColumnPathTmp | column -t && rm $fileColumnPathTmp
                     echo
                 fi
 
-                (( $contentItemSize == 1 )) && export publicSelItemContent=$content && return
+                (( $listMainItemSize == 1 )) && export publicSelItemContent=$listMain && return
 
-                local dirFlag=$contentItemSize
-                (( $contentItemSize > 9 )) && dirFlag=9
+                local dirFlag=$listMainItemSize
+                (( $listMainItemSize > 9 )) && dirFlag=9
                 while true; do
-                    ftEcho -r  "${contentTitle}[0~$(expr $contentItemSize - 1),q](回车默认0):"
-                    if (( $contentItemSize > 9 ));then
+                    ftEcho -r  "${listMainTitle}[0~$(expr $listMainItemSize - 1),q](回车默认0):"
+                    if (( $listMainItemSize > 9 ));then
                         read dir
                     else
                         read -n 1 dir
@@ -440,16 +470,18 @@ ftEcho()
                      [ ${#dir} == 0 ] && dir=0
                      if [ ${dir} == "q" ]; then
                         return
-                     elif (( $dir>=$contentItemSize  ));then
+                     elif (( $dir>=$listMainItemSize  ));then
                         ftEcho -e "错误的选择：${dir}"
                         continue
                      elif [ -n "$(echo $dir| sed -n "/^[0-$dirFlag]\+$/p")" ];then
-                        export publicSelItemContent=${content[$dir]}
+                        export publicSelItemContent=${listMain[$dir]}
                         echo
                         break
                      fi
                      ftEcho -e 错误的选择：$dir
                 done
+
+                rm -rf $filePathListApply
                 break;;
         -key )
                 local arrayKeys=($(echo $2 | sed 's/ /\n/g'))
