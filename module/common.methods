@@ -4210,7 +4210,7 @@ ftTextSetLine()
         *)   errorContent="${errorContent}\\n invalid argument:${1}"
             ;;
     esac
-    [ ! -f "${filePathText}" ] && errorContent="${errorContent}\\n[file is not exsit]filePathText=$filePathText"
+    [ ! -f "${filePathText}" ] && errorContent="${errorContent}\\n[file is not exist]filePathText=$filePathText"
     [ -z "${lineNum}" ] && errorContent="${errorContent}\\n[line number is nuknow]"
     ! $isLineContentNone && [ -z "${lineContent}" ] && errorContent="${errorContent}\\n[line cintent is null]"
     [ -n "$errorContent" ] && ftEcho -ea "method[${ftEffect}] argument error ：${errorContent}\\nplease read help information:" && ftTextSetLine -h && return $resultFail
