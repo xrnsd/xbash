@@ -94,10 +94,10 @@ ftLearnRepetionDrill()
 
     #选择课程集
     local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=normal
-    local learnLessonGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  lessonGroupList))
+    local learnLessonGroupList=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo lessonGroupList))
     [[ -z $learnLessonGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
     local lessonGroupNameSel
-    
+
     ftEcho -c 10 "请选择课程集" "${learnLessonGroupList[@]}"
     lessonGroupNameSel=$publicSelItemContent
 
@@ -106,8 +106,10 @@ ftLearnRepetionDrill()
 
     #选择课程
     local filePathDrillResultTure=/tmp/DrillResultTure drillResultTure=1
+    echo -n "" > $filePathDrillResultTure
     local indexArray=0 drillTrueCount=0 arrayIndexSort valRepetionDrillErrorHository #=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  $keyRepetionDrillErrorHository))
     local learnLessonList=($(ftIniGetValue $rFilePathXbashDBUser learnLessonInfo $lessonGroupNameSel))
+    local learnLessonListDrilled=($(ftIniGetValue $rFilePathXbashDBUser learnLessonInfo ${lessonGroupNameSel}_Drilled))
     [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "空课程集合:${lessonGroupNameSel}" && return
     local lessonNameSel
      if [ -f $filePathDataBaseRepetionDrill ];then
@@ -119,7 +121,8 @@ ftLearnRepetionDrill()
     fi
     if [ ! -f $filePathDataBaseRepetionDrill ];then
         echo
-        ftEcho -c 10 "请选择课程" "${learnLessonList[@]}"
+        ftEcho -c 10 "请选择课程" "${learnLessonList[@]}" -cs "_Drilled"  "${learnLessonListDrilled[@]}"
+
         lessonNameSel=$publicSelItemContent
     else
         lessonNameSel=$(ftIniGetValue $filePathDataBaseRepetionDrill hository lessonName)
@@ -199,7 +202,7 @@ ftLearnRepetionDrill()
         filePathItemAudioFile="${dirPathItemAudioFile}/1.mp3"
         fileCountAudio=$(ls -l ${dirPathItemAudioFile}|grep "^-"|wc -l )
         if (( ${#fileCountAudio[@]}==0 ));then
-            ftText2Mp3 -txt "${filePathEnglishBasic}" -dpm "${filePathItemAudioFile}"
+            ftText2Mp3 -txt "${filePathEnglishBasic}" -fpm "${filePathItemAudioFile}"
         elif (( ${#fileCountAudio[@]}>1 ));then
             ftEcho -e "存在多个课文音频文件"
             return
@@ -311,7 +314,7 @@ ftLearnRepetionDrill()
                         (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnRepetionDrill
                         return;;
                     w | W )
-                        ftTextSetLine -f $filePathDrillResultTure -nn $indexArray
+                        ftTextSetLine -f $filePathDrillResultTure -nn $indexSort
                         (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
                         break;;
                     e | E ) echo -e "\ntranslator problem:\n  ${lessonNameTitle}\n  ${englishItem}" >> $filePathLearnResultProblem
@@ -332,7 +335,7 @@ ftLearnRepetionDrill()
         fi
         (( lessonSize+=1 ))
         if [[ $itemOptionSelect == "y" ]] || [[ $itemOptionSelect == "Y" ]]; then   
-            ftTextSetLine -f $filePathDrillResultTure -n $indexArray -c $drillResultTure
+            ftTextSetLine -f $filePathDrillResultTure -n $indexSort -c $drillResultTure
         #清空练习文件
         echo -n "" > ${filePathLearnDrillTemp}
         elif [[ $itemOptionSelect == "t" ]] || [[ $itemOptionSelect == "T" ]]; then
@@ -383,11 +386,11 @@ ftLearnRepetionDrill()
                             (( $indexArray > 1 ))&& echo -n "今日练习：" && ftTimeConsuming -s ftLearnRepetionDrill
                             return;;
                         w | W )
-                            ftTextSetLine -f $filePathDrillResultTure -nn $indexArray
+                            ftTextSetLine -f $filePathDrillResultTure -nn $indexSort
                             (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
                             break;;
                         y | Y )
-                            ftTextSetLine -f $filePathDrillResultTure -n $indexArray -c $drillResultTure
+                            ftTextSetLine -f $filePathDrillResultTure -n $indexSort -c $drillResultTure
                             break;;
                         e | E )
                             [[ -n $(grep -e "^${englishItem}$" ${filePathLearnResultProblem}) ]] && ftEcho -s "重复添加记录，取消操作" && break
@@ -448,6 +451,11 @@ ftLearnRepetionDrill()
             #清空练习文件
             echo -n "" > ${filePathLearnDrillTemp}
             echo
+        elif [[ -n $(grep -sn "\+" "${filePathLearnDrillTemp}") ]] \
+            || [[ -n $(grep -sn "\*" "${filePathLearnDrillTemp}") ]] \
+            && $isModeTextEditDrill;then
+              echo "例句:${indexSort} 练习结果格式异常:"
+              ftEcho -e "$(cat $filePathLearnDrillTemp)"  
         fi
 
         englishItem=
@@ -488,6 +496,10 @@ ftLearnRepetionDrill()
 
     #记录练习时间
     echo -n "今日练习：" ;ftTimeConsuming -s ftLearnRepetionDrill
+
+    #记录课程已练习
+    ftIniSetValue $rFilePathXbashDBUser learnLessonInfo "${lessonGroupNameSel}_Drilled" -a -l \
+        "$(echo "${learnLessonListDrilled[@]} $lessonNameSel" | sed 's/ /\n/g'| sort -n)"
 
     #删除临时练习记录
     [ -f $filePathDataBaseRepetionDrill ] && rm -rf $filePathDataBaseRepetionDrill
