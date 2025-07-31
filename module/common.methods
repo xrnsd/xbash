@@ -355,23 +355,26 @@ ftEcho()
         -c )
             listMainItemSizeFlag="${arg2}"
             listMainTitle="${arg3}"
-            listMain=($(echo $arg4 | sed 's/ /\n/g'))
+            [[ -n $arg4 ]] && listMain=($(echo $arg4 | sed 's/ /\n/g'))
             ;;
         -cs )
             isContentApplyBySuffix=true
             applyContent="${arg2}"
-            listApply=($(echo $arg3 | sed 's/ /\n/g'))
+            [[ -n $arg3 ]] && listApply=($(echo $arg3 | sed 's/ /\n/g'))
             ;;
         -cp )
             isContentApplyBySuffix=false
             applyContent="${arg2}"
-            listApply=($(echo $arg3 | sed 's/ /\n/g'))
+            [[ -n $arg3 ]] && listApply=($(echo $arg3 | sed 's/ /\n/g'))
             ;;
         -ch )
             isContentHighlight=true
             highlightContent="${arg2}"
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+        *   )
+            # [[ -z "${arg}" ]] && break 
+            ;; 
+    esac;done
 
     while true; do case $option in
         -e )     echo -e "\033[1;31m$content\033[0m"; break;;
@@ -432,21 +435,27 @@ ftEcho()
                 fi
 
                 export publicSelItemContent=
-                local index=0 indexSelNormal=0
+                local index=0 indexSelNormal=0 itemDisplayInfo
                 local listMainItemSize=${#listMain[@]}
                 if (( $listMainItemSize<=$listMainItemSizeFlag ));then
                     for contenItem in ${listMain[*]} ; do
                         if [[ -n $listApply ]]&&[[ -n $(grep "^$contenItem$" $filePathListApply) ]];then
                             $isContentApplyBySuffix \
-                            && echo "[${index}]${contenItem}${applyContent}" \
-                            || echo "[${index}]${applyContent}${contenItem}"
+                            && itemDisplayInfo="[${index}]${contenItem}${applyContent}" \
+                            || itemDisplayInfo="[${index}]${applyContent}${contenItem}"
                         else
-                            echo "[${index}]${contenItem}"
+                            itemDisplayInfo="[${index}]${contenItem}"
+                        fi
+                        if $isContentHighlight && [[ "${contenItem}" = "${highlightContent}" ]];then
+                            indexSelNormal=$index
+                            echo -e "\033[44m${itemDisplayInfo}\033[m"
+                        else
+                            echo "${itemDisplayInfo}"
                         fi
                         ((index+=1))
                     done
                 else       
-                    local enterFlag=1 fileColumnPathTmp=/tmp/columnContentGroup.tmp itemDisplayInfo
+                    local enterFlag=1 fileColumnPathTmp=/tmp/columnContentGroup.tmp
                     rm -rf $fileColumnPathTmp
                     for contenItem in ${listMain[*]} ; do
                         if [[ -n $listApply ]]&&[[ -n $(grep "^$contenItem$" $filePathListApply) ]];then
@@ -1015,6 +1024,7 @@ ftIniSetValue()
                 isListValue=true
            ;;
         -a )    isAutoAdd=true
+                keyValue="${arg2}"
            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
