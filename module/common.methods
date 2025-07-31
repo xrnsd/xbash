@@ -313,7 +313,12 @@ ftEcho()
         content=${content/ /}
     fi
 
-    local arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; case "${arg}" in
+    #表格显示内容
+    local listMainItemSizeFlag listMainTitle listMain
+    local isContentApplyBySuffix=false applyContent listApply
+    local isContentHighlight=false highlightContent
+
+    local arg arg2 arg3 arg4 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))};eval arg4=\${$((i+3))} ; case "${arg}" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -346,7 +351,27 @@ ftEcho()
                 content="${arg3}"
             fi
             ;;
-    * ) break;;esac;done
+        #使用表格显示内容 ==============
+        -c )
+            listMainItemSizeFlag="${arg2}"
+            listMainTitle="${arg3}"
+            listMain=($(echo $arg4 | sed 's/ /\n/g'))
+            ;;
+        -cs )
+            isContentApplyBySuffix=true
+            applyContent="${arg2}"
+            listApply=($(echo $arg3 | sed 's/ /\n/g'))
+            ;;
+        -cp )
+            isContentApplyBySuffix=false
+            applyContent="${arg2}"
+            listApply=($(echo $arg3 | sed 's/ /\n/g'))
+            ;;
+        -ch )
+            isContentHighlight=true
+            highlightContent="${arg2}"
+            ;;
+    * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     while true; do case $option in
         -e )     echo -e "\033[1;31m$content\033[0m"; break;;
@@ -396,31 +421,18 @@ ftEcho()
                  done <<< $(echo -e ${content})
                  printf "%${border_length}s\n" | tr ' ' '-'
                  break;;
-        -c )    local listMainItemSizeFlag=$2
-                local listMainTitle=$3
-                local listMain=($4)
-                local isContentApplyBySuffix=false
-                local applyContent=$6
-                local listApply=($7)
-                local filePathListApply=/tmp/listApply.tmp lessonName
-
+        -c )
+                local filePathListApply=/tmp/listApply.tmp
                 #check argument
                 [[ -z $listMain ]] && echo "error: conten is null" && return $resultFail
                 if [[ -n $listApply ]];then
-                    if [[ $5 = "-cs" ]];then
-                        isContentApplyBySuffix=true
-                    elif [[ $5 = "-cp" ]];then
-                        isContentApplyBySuffix=false
-                    else
-                         echo "error: argument is invalid" && return $resultFail
-                    fi
                     echo ${listApply[@]} | sed 's/ /\n/g'> $filePathListApply
                 else
                     isContentApplyBySuffix=false
                 fi
 
                 export publicSelItemContent=
-                local index=0
+                local index=0 indexSelNormal=0
                 local listMainItemSize=${#listMain[@]}
                 if (( $listMainItemSize<=$listMainItemSizeFlag ));then
                     for contenItem in ${listMain[*]} ; do
@@ -434,15 +446,21 @@ ftEcho()
                         ((index+=1))
                     done
                 else       
-                    local enterFlag=1 fileColumnPathTmp=/tmp/columnContentGroup.tmp
+                    local enterFlag=1 fileColumnPathTmp=/tmp/columnContentGroup.tmp itemDisplayInfo
                     rm -rf $fileColumnPathTmp
                     for contenItem in ${listMain[*]} ; do
                         if [[ -n $listApply ]]&&[[ -n $(grep "^$contenItem$" $filePathListApply) ]];then
                             $isContentApplyBySuffix \
-                            && echo -n "[${index}]${contenItem}${applyContent}    " >>$fileColumnPathTmp \
-                            || echo -n "[${index}]${applyContent}${contenItem}    " >>$fileColumnPathTmp
+                            && itemDisplayInfo="[${index}]${contenItem}${applyContent}    " \
+                            || itemDisplayInfo="[${index}]${applyContent}${contenItem}    "
                         else
-                            echo -n "[${index}]${contenItem}    " >>$fileColumnPathTmp
+                            itemDisplayInfo="[${index}]${contenItem}    "
+                        fi
+                        if $isContentHighlight && [[ "${contenItem}" = "${highlightContent}" ]];then
+                            indexSelNormal=$index
+                            echo -en "\033[44m${itemDisplayInfo}\033[m" >>$fileColumnPathTmp
+                        else
+                            echo -n "${itemDisplayInfo}" >>$fileColumnPathTmp
                         fi
                         ((index+=1))
                         ((enterFlag+=1))
@@ -457,14 +475,14 @@ ftEcho()
                 local dirFlag=$listMainItemSize
                 (( $listMainItemSize > 9 )) && dirFlag=9
                 while true; do
-                    ftEcho -r  "${listMainTitle}[0~$(expr $listMainItemSize - 1),q](回车默认0):"
+                    ftEcho -r  "${listMainTitle}[0~$(expr $listMainItemSize - 1),q](回车默认${indexSelNormal}):"
                     if (( $listMainItemSize > 9 ));then
                         read dir
                     else
                         read -n 1 dir
                     fi
                     #设定默认值
-                     [ ${#dir} == 0 ] && dir=0
+                     [ ${#dir} == 0 ] && dir=$indexSelNormal
                      if [ ${dir} == "q" ]; then
                         return
                      elif (( $dir>=$listMainItemSize  ));then
@@ -4234,12 +4252,15 @@ ftText2Mp3()
     else
         local fileTextLineCount=$(sed -n '$=' $filePathText)
         local lineIndex=1 lineContent
+        local sleepIndex=0 sleepIndexFlag=4 sleepTime=4
         while (( $lineIndex<=$fileTextLineCount )) ;do
           lineContent=$(awk 'NR=="'$lineIndex'"' $filePathText)
           [[ -z "$lineContent" ]] && ftEcho -s "empty line :${lineIndex}" && (( lineIndex+=1 )) && continue
           ftEcho -s "正在生成line:${lineIndex}=\"${lineContent}\"的音频文件"
           edge-tts --text "${lineContent}" --write-media "${dirPathMp3}/${lineIndex}.mp3"
-            
+
+          (( $sleepIndex==$sleepIndexFlag )) && sleep $sleepTime && sleepIndex=0
+          (( sleepIndex+=1 ))
           (( lineIndex+=1 ))
         done
     fi
