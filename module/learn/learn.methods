@@ -96,15 +96,17 @@ ftLearnRepetionDrill()
     local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=normal
     local learnLessonGroupList="$(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo lessonGroupList)"
     [[ -z $learnLessonGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
-    local lessonGroupNameSel
+    local lessonGroupNameSel lessonGroupNameSelected="$(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo lessonGroupSelected)"
 
     local dirPathLocal=$(pwd)
     cd "${dirPathTempEng}"
     local learnLessonGroupListDrillCache="$(find ./ -type f -name "repetionDrill.hository"  | sed 's/\.\///g'   | sed 's/\/repetionDrill\.hository//g')"
     cd "${dirPathLocal}"
 
-    ftEcho -c 3 "请选择课程集" "${learnLessonGroupList[@]}" -cs "---->Exist_Drill_Cache"  "${learnLessonGroupListDrillCache[@]}"
+    ftEcho -c 3 "请选择课程集" "${learnLessonGroupList[@]}" -cs "---->Exist_Drill_Cache"  "${learnLessonGroupListDrillCache[@]}" -ch "${lessonGroupNameSelected}" 
+    [[ -z $publicSelItemContent ]] && return
     lessonGroupNameSel=$publicSelItemContent
+    ftIniSetValue $rFilePathXbashDBUser learnLessonInfo lessonGroupSelected -a "${lessonGroupNameSel}"
 
     local fileNameDataBaseRepetionDrill=repetionDrill.hository
     local filePathDataBaseRepetionDrill="${dirPathTempEng}/${lessonGroupNameSel}/${fileNameDataBaseRepetionDrill}"
@@ -116,7 +118,8 @@ ftLearnRepetionDrill()
     local learnLessonList="$(ftIniGetValue $rFilePathXbashDBUser learnLessonInfo $lessonGroupNameSel)"
     local learnLessonListDrilled="$(ftIniGetValue $rFilePathXbashDBUser learnLessonInfo ${lessonGroupNameSel}_Drilled)"
     [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "空课程集合:${lessonGroupNameSel}" && return
-    local lessonNameSel
+    local lessonNameSel lessonNameSelected="$(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo lessonSelected)"
+
      if [ -f $filePathDataBaseRepetionDrill ];then
         ftEcho -y "存在训练历史是否使用(y为使用，回车默认y)"
         read -n 1 delSel
@@ -126,8 +129,8 @@ ftLearnRepetionDrill()
     fi
     if [ ! -f $filePathDataBaseRepetionDrill ];then
         echo
-        ftEcho -c 9 "请选择课程" "${learnLessonList[@]}" -cs "_Drilled"  "${learnLessonListDrilled[@]}"
-
+        ftEcho -c 9 "请选择课程" "${learnLessonList[@]}" -cs "_Drilled"  "${learnLessonListDrilled[@]}" -ch "${lessonNameSelected}"
+        [[ -z $publicSelItemContent ]] && return
         lessonNameSel=$publicSelItemContent
     else
         lessonNameSel=$(ftIniGetValue $filePathDataBaseRepetionDrill hository lessonName)
@@ -136,6 +139,7 @@ ftLearnRepetionDrill()
         valRepetionDrillErrorHository=($(ftIniGetValue $filePathDataBaseRepetionDrill hository sctenceIndexArrayError))
         drillTrueCount=($(ftIniGetValue $filePathDataBaseRepetionDrill hository sctenceDrillTrueCount)) 
     fi
+    ftIniSetValue $rFilePathXbashDBUser learnLessonInfo lessonSelected -a "${lessonNameSel}"
 
     ftTimeConsuming -i
 
@@ -177,7 +181,7 @@ ftLearnRepetionDrill()
         filePathEnglishBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_english"
         filePathChineseBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_chinese"
     else
-        ftEcho -e "错误操作，请查看参数配置" && returnentence
+        ftEcho -e "错误操作，请查看参数配置" && return
     fi
 
     if $isModeArticleListenDrill || $isModeSentenceListenDrill; then
@@ -247,7 +251,7 @@ ftLearnRepetionDrill()
 
     #例句练习
     local arrayIndexSortSize=${#arrayIndexSort[@]}
-    while (( $indexArray < $arrayIndexSortSize  )); do
+    while (( $indexArray <= $arrayIndexSortSize  )); do
         timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
         indexSort=${arrayIndexSort[$indexArray]}
         #阅读模式不使用随机下标
@@ -504,20 +508,9 @@ ftLearnRepetionDrill()
         chineseItem=
         (( indexArray+=1 ))
     done
-    
-    # #处理学习结果
-    # if ! $isModeTextEditDrill && [[ -n $(cat $filePathEnglishDrillResult) ]] && [[ -z $( grep -sn 033 $filePathEnglishDrillResult) ]];then
-    #     ftEcho -y "存在练习结果未处理(回车默认y)"
-    #     read -n 1 delSel
-    #     [ -z "${delSel}" ] && delSel=y
-    #     if [[ $delSel = "y" ]];then
-    #      mv "${filePathEnglishDrillResult}" "${filePathEnglishDrillResult}_basic"
-    #      ftCheckDrillReslt "${filePathEnglishDrillResult}_basic" "${filePathEnglishDrillResult}"
-    #     fi
-    # fi
 
     # #排序,去重
-    # local valRepetionDrillErrorHositorySort=$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g' | uniq | sort -n  | xargs echo -n)
+    local valRepetionDrillErrorHositorySort="$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g' | uniq | sort -n  | xargs echo -n)"
     # #记录练习数据
     # if [ -z $valRepetionDrillErrorHositorySort ];then
     #     ftIniDeleteItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $keyRepetionDrillErrorHository
@@ -531,9 +524,9 @@ ftLearnRepetionDrill()
                     \n课程:${lessonNameSel}"
     else
         ftEcho -s "课程集:${lessonGroupNameSel}\n课程:${lessonNameSel}\
-        \n正确率:$(printf "%d%%" $((drillTrueCount*100/lessonSize)))\
-        \n错误行:$(echo ${valRepetionDrillErrorHositorySort[*]})\
-        \n无效行:$(echo ${valRepetionDrillInvalidIndex[*]})"
+        \n正确率:$(printf "%d%%" $((drillTrueCount*100/lessonSize)))"
+        [[ -n $valRepetionDrillErrorHositorySort ]] && ftEcho -s "\n错误行:$(echo ${valRepetionDrillErrorHositorySort[*]})"
+        [[ -n $valRepetionDrillInvalidIndex ]] && ftEcho -s "\n无效行:$(echo ${valRepetionDrillInvalidIndex[*]})"
     fi
 
     #记录练习时间
@@ -862,6 +855,7 @@ ftLearnLessonManage()
         learnLessonGroupList="$(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  lessonGroupList)"
         [[ -z $learnLessonGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
         ftEcho -c 10 "请选择课程集" "${learnLessonGroupList[@]}"
+        [[ -z $publicSelItemContent ]] && return
         lessonGroupNameSel=$publicSelItemContent
 
         ftEcho -r  "请输入课程名称："
