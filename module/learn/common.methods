@@ -222,7 +222,7 @@ ftText2Mp3ByLessonGroup()
     local dirPathLessonGroup="${dirPathTempEng}/${LessonGroupName}"
 
     while read lessonName ;do  #可以在循环外保留变量
-      echo "===============  课程${item}  =========================="
+      echo "===============  课程${lessonName}  =========================="
       ftText2Mp3ByLesson ${LessonGroupName} ${lessonName}
       sleep 5
     done < <(echo "$(ls $dirPathLessonGroup)")
