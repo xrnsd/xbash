@@ -649,7 +649,7 @@ ftLearnLessonManage()
 #    ftLearnLessonManage -une
 #
 #    #合并课程集
-#    ftLearnLessonManage -m
+#    ftLearnLessonManage -m 课程集合名称
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -acg) isAddLessonGroup=true
