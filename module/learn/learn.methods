@@ -15,6 +15,7 @@ ftLearnRepetionDrill()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
+    local filePathLearnDataBase="${dirPathTempEng}/local.database"
     [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
     local isModeLessonExampleText=false  isModeLessonImitateText=false isModeCompare=false 
     local isModeSentenceListenDrill=false isModeArticleListenDrill=false isModeSentenceDrill=false
@@ -94,9 +95,9 @@ ftLearnRepetionDrill()
 
     #选择课程集
     local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=normal
-    local learnLessonGroupList="$(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo lessonGroupList)"
+    local learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
     [[ -z $learnLessonGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
-    local lessonGroupNameSel lessonGroupNameSelected="$(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo lessonGroupSelected)"
+    local lessonGroupNameSel lessonGroupNameSelected="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupSelected)"
 
     local dirPathLocal=$(pwd)
     cd "${dirPathTempEng}"
@@ -106,7 +107,7 @@ ftLearnRepetionDrill()
     ftEcho -c 3 "请选择课程集" "${learnLessonGroupList[@]}" -cs "---->Exist_Drill_Cache"  "${learnLessonGroupListDrillCache[@]}" -ch "${lessonGroupNameSelected}" 
     [[ -z $publicSelItemContent ]] && return
     lessonGroupNameSel=$publicSelItemContent
-    ftIniSetValue $rFilePathXbashDBUser learnLessonInfo lessonGroupSelected -a "${lessonGroupNameSel}"
+    ftIniSetValue $filePathLearnDataBase learnLessonInfo lessonGroupSelected -a "${lessonGroupNameSel}"
 
     local fileNameDataBaseRepetionDrill=repetionDrill.hository
     local filePathDataBaseRepetionDrill="${dirPathTempEng}/${lessonGroupNameSel}/${fileNameDataBaseRepetionDrill}"
@@ -114,11 +115,11 @@ ftLearnRepetionDrill()
     #选择课程
     local filePathDrillResultTure=/tmp/DrillResultTure drillResultTure=1
     echo -n "" > $filePathDrillResultTure
-    local indexArray=0 drillTrueCount=0 arrayIndexSort valRepetionDrillErrorHository #=($(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  $keyRepetionDrillErrorHository))
-    local learnLessonList="$(ftIniGetValue $rFilePathXbashDBUser learnLessonInfo $lessonGroupNameSel)"
-    local learnLessonListDrilled="$(ftIniGetValue $rFilePathXbashDBUser learnLessonInfo ${lessonGroupNameSel}_Drilled)"
+    local indexArray=0 drillTrueCount=0 arrayIndexSort valRepetionDrillErrorHository
+    local learnLessonList="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonList)"
     [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "空课程集合:${lessonGroupNameSel}" && return
-    local lessonNameSel lessonNameSelected="$(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo lessonSelected)"
+    local learnLessonListDrilled="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonDrilled)"
+    local lessonNameSel lessonNameSelected="$(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected)"
 
      if [ -f $filePathDataBaseRepetionDrill ];then
         ftEcho -y "存在训练历史是否使用(y为使用，回车默认y)"
@@ -139,7 +140,7 @@ ftLearnRepetionDrill()
         valRepetionDrillErrorHository=($(ftIniGetValue $filePathDataBaseRepetionDrill hository sctenceIndexArrayError))
         drillTrueCount=($(ftIniGetValue $filePathDataBaseRepetionDrill hository sctenceDrillTrueCount)) 
     fi
-    ftIniSetValue $rFilePathXbashDBUser learnLessonInfo lessonSelected -a "${lessonNameSel}"
+    ftIniSetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected -a "${lessonNameSel}"
 
     ftTimeConsuming -i
 
@@ -298,7 +299,7 @@ ftLearnRepetionDrill()
                 ! $isModeHideChineseTitle && ftEcho -frame $chineseItem
                 echo
                 #写入剪贴板
-                echo "    ${englishItem}"| tr -d '\n'| xclip -sel clip
+                echo "${englishItem}"| tr -d '\n'| xclip -sel clip
                 ftEcho -key -n "S Q T Y N W 其他任意键" \
                         "按++保存进度退出 ,++退出 ,++显示提示 ,++已听懂 ,++跳过并进入下一句 ,++上一句 ,++重新播放"
                 play -q $filePathItemAudioFile
@@ -384,7 +385,7 @@ ftLearnRepetionDrill()
                     ftEcho -sn "例句音频：" && echo "${filePathItemAudioFile}"
                     echo
                     #写入剪贴板
-                    echo "    ${englishItem}" | tr -d '\n' | xclip -sel clip
+                    echo "${englishItem}" | tr -d '\n' | xclip -sel clip
                     #写入练习文件
                     # echo "${englishItem}" | sed 's/\n/ /g' >> $filePathLearnDrillTemp
                     echo -e  "${chineseItem}"
@@ -511,12 +512,6 @@ ftLearnRepetionDrill()
 
     # #排序,去重
     local valRepetionDrillErrorHositorySort="$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g' | uniq | sort -n  | xargs echo -n)"
-    # #记录练习数据
-    # if [ -z $valRepetionDrillErrorHositorySort ];then
-    #     ftIniDeleteItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $keyRepetionDrillErrorHository
-    # else
-    #     ftIniSetValue $rFilePathXbashDBUser learnLessonInfo $keyRepetionDrillErrorHository -a -l "$(echo ${valRepetionDrillErrorHositorySort[@]} | sed 's/ /\n/g')"
-    # fi
 
     drillTrueCount=$(cat $filePathDrillResultTure |grep -v ^$|wc -l)
     if $isModeRead;then
@@ -525,15 +520,15 @@ ftLearnRepetionDrill()
     else
         ftEcho -s "课程集:${lessonGroupNameSel}\n课程:${lessonNameSel}\
         \n正确率:$(printf "%d%%" $((drillTrueCount*100/lessonSize)))"
-        [[ -n $valRepetionDrillErrorHositorySort ]] && ftEcho -s "\n错误行:$(echo ${valRepetionDrillErrorHositorySort[*]})"
-        [[ -n $valRepetionDrillInvalidIndex ]] && ftEcho -s "\n无效行:$(echo ${valRepetionDrillInvalidIndex[*]})"
+        [[ -n $valRepetionDrillErrorHositorySort ]] && ftEcho -s "错误行:$(echo ${valRepetionDrillErrorHositorySort[*]})"
+        [[ -n $valRepetionDrillInvalidIndex ]] && ftEcho -s "无效行:$(echo ${valRepetionDrillInvalidIndex[*]})"
     fi
 
     #记录练习时间
     echo -n "今日练习：" ;ftTimeConsuming -s ftLearnRepetionDrill
 
     #记录课程已练习
-    ftIniSetValue $rFilePathXbashDBUser learnLessonInfo "${lessonGroupNameSel}_Drilled" -a -l \
+    ftIniSetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonDrilled -a -l \
         "$(echo "${learnLessonListDrilled[@]} $lessonNameSel" | sed 's/ /\n/g'| sort -n)"
 
     #删除临时练习记录
@@ -683,6 +678,7 @@ ftLearnLessonManage()
 
     #实现主体
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
+    local filePathLearnDataBase="${dirPathTempEng}/local.database"
     local learnLessonGroupList
 
     if $isMergeLessonGroup;then
@@ -825,13 +821,17 @@ ftLearnLessonManage()
         for lessonGroup in ${learnLessonGroupList[*]} ; do
             dirPathLessonGroup="${dirPathTempEng}/${lessonGroup}"
             dirPathArrayLesson=($(ls $dirPathLessonGroup | grep -v repetionDrill.hository))
-            [[ -z $dirPathArrayLesson ]] &&ftEcho -s "invald lesson group : ${lessonGroup}" && continue
+            if [[ -z $dirPathArrayLesson ]];then
+                ftEcho -s "invald lesson group : ${lessonGroup}"
+                ftIniDeleteTag -p $filePathLearnDataBase -t "${lessonGroup}"
+                continue
+            fi
             echo "lesson group name : ${lessonGroup}"
             echo "lesson list :${dirPathArrayLesson[@]}"
             ftEcho -s "lesson group update finish"
-            ftIniSetValue $rFilePathXbashDBUser learnLessonInfo $lessonGroup -a -l "$(echo ${dirPathArrayLesson[@]} | sed 's/ /\n/g')"
+            ftIniSetValue $filePathLearnDataBase "${lessonGroup}" lessonList -a -l "$(echo ${dirPathArrayLesson[@]} | sed 's/ /\n/g')"
         done
-        ftIniSetValue $rFilePathXbashDBUser learnLessonInfo  lessonGroupList -a -l "$(echo ${learnLessonGroupList[@]} | sed 's/ /\n/g')"
+        ftIniSetValue $filePathLearnDataBase learnLessonInfo  lessonGroupList -a -l "$(echo ${learnLessonGroupList[@]} | sed 's/ /\n/g')"
         cd "${dirPathLocal}"
         ftEcho -s "all lesson update finish"
         return
@@ -841,10 +841,10 @@ ftLearnLessonManage()
         ftEcho -r  "请输入课程集名称："
         read lessonGroupName
         lessonGroupName=$(echo $lessonGroupName |sed s/[[:space:]]//g)
-        learnLessonGroupList="$(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  lessonGroupList)"
+        learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo  lessonGroupList)"
         learnLessonGroupList="${learnLessonGroupList[@]} $lessonGroupName"
-        ftIniSetValue $rFilePathXbashDBUser learnLessonInfo  lessonGroupList ${learnLessonGroupList[@]}
-        ftIniAddItem -p $rFilePathXbashDBUser -t learnLessonInfo -i $lessonGroupName -l "none"
+        ftIniSetValue $filePathLearnDataBase learnLessonInfo  lessonGroupList ${learnLessonGroupList[@]}
+        ftIniAddItem -p $filePathLearnDataBase -t "${lessonGroupName}" -i lessonList -l "none"
         #创建课程文件夹
         mkdir -p "${dirPathTempEng}/${lessonGroupName}"
         return
@@ -852,7 +852,7 @@ ftLearnLessonManage()
     if $isAddLesson; then
         [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
         local lessonGroupNameSel
-        learnLessonGroupList="$(ftIniGetValue  $rFilePathXbashDBUser learnLessonInfo  lessonGroupList)"
+        learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo  lessonGroupList)"
         [[ -z $learnLessonGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
         ftEcho -c 10 "请选择课程集" "${learnLessonGroupList[@]}"
         [[ -z $publicSelItemContent ]] && return
@@ -918,7 +918,7 @@ ftLearnLessonManage()
         if [[ -n $learnLessonList ]]; then
             # echo ${learnLessonList[@]}
             # echo "lessonGroupNameSel=${lessonGroupNameSel}"
-            ftIniSetValue $rFilePathXbashDBUser learnLessonInfo  $lessonGroupNameSel -l "${learnLessonList[*]}"
+            ftIniSetValue $filePathLearnDataBase "${lessonGroupNameSel}"  lessonList -l "${learnLessonList[*]}"
         fi
 
         ftEcho -s "在${lessonGroupNameSel}下已新建课程${lessonName}"
