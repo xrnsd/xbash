@@ -780,15 +780,14 @@ ftIniCreateFileOrTag()
         echo -e ${localContent} > $filePathIni
     fi
 
-    if [ -n "$(cat $filePathIni |grep  $contentTagName)" ];then
-        ftEcho -y "存在旧TAG，是否删除(回车默认y)"
+    if [[ -n $(cat $filePathIni |grep "\[${contentTagName}\]") ]];then
+        ftEcho -y "存在旧TAG:${contentTagName}，是否删除(回车默认y)"
         read -n 1 sel
         [ -z "${sel}" ] && sel=y
         while true; do case "$sel" in
                 y | Y )echo
-                    while [ -n "$(cat $filePathIni |grep  $contentTagName)" ]; do
-                        ftIniDeleteTag -p $filePathIni -t $contentTagName
-                    done; break;;
+                    ftIniDeleteTag -p $filePathIni -t $contentTagName
+                    break;;
                 n | q )  echo ; exit ;;
                 * ) ftEcho -e "错误的选择：$sel"
                     echo "输入n，q，离开";;
@@ -1024,7 +1023,7 @@ ftIniSetValue()
                 isListValue=true
            ;;
         -a )    isAutoAdd=true
-                keyValue="${arg2}"
+                [[ -n $arg2 ]] && keyValue="${arg2}"
            ;;
     * ) [[ -z "${arg}" ]] && break ;; esac;done
 
