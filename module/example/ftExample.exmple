@@ -39,7 +39,8 @@ ftExample()
         # argument infoumation ==============
         -x ) example1="${arg2}" #"${arg2:-"exampleDef1"}" #"${arg3:-"exampleDef2"}" #"${arg4:-"exampleDef4"}"
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
+    # * ) [[ -z "${arg}" ]] && break ;; esac;done
 
     #apply check
     [[ -z $(which exampleTools1) ]] && ftExample --rely "exampleTools1" && return $resultFail
