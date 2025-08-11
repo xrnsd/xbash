@@ -37,7 +37,7 @@ ftBatteryLevelListenerOld()
         --lowFlag) lowFlag="${arg2}" ;;
         --heighFlag) heighFlag="${arg2}" ;;
         --normalFreq) normalFreq="${arg2}" ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #依赖校验
     [[ -z $(which acpi) ]] && ftBatteryLevelListenerOld --rely "fdupes" && return $resultFail
@@ -108,7 +108,7 @@ ftBatteryLevelNotice()
     case "${arg}" in
         # 说明参数解析部分 ==============
         --heighFlag) heighFlag="${arg2}" ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #依赖校验
     [[ -z $(which acpi) ]] && return $resultFail
@@ -164,7 +164,7 @@ ftBatteryLevelListener()
         # 变量参数解析部分 ==============
         --lowFlag) lowFlag="${arg2}" ;;
         --heighFlag) heighFlag="${arg2}" ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #依赖校验
     [[ -z $(which acpi) ]] && ftBatteryLevelListener --rely "fdupes" && return $resultFail
