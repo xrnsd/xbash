@@ -4,15 +4,38 @@
 ##             学习工具通用实现                   ##
 ##                                              ##
 ##################################################
-ftCutTextNCEEnglish()
+complete -W "-h --help" ftFormatLessonContentNewConceptEnglish
+ftFormatLessonContentNewConceptEnglish()
 {
-    #将新概念英文课文格式化
+    local ftEffect=ToFormatNewConceptLessonContentEnglish
+    local isEnable=true
+
+    #argument init
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
+
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # help infoumation ==============
+        -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
+#=========================================================
+#    ftFormatLessonContentNewConceptEnglish filePathTextLessonBasicContent dirPathLessonDataStorage
+#========================================================="; return ;;
+    * ) ;; esac;done
+
+    # argument infoumation ==============
     local filePathTextLessonBasicContent=$1
     local dirPathLessonDataStorage=$2
+
+    #argument check
+    (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
+    [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftFormatLessonContentNewConceptEnglish -h && return $resultFail
+
+    #code main
     local lineSizeTextLessonBasicContent=$(awk 'END{print NR}' $filePathTextLessonBasicContent)
 
     if (( $lineSizeTextLessonBasicContent==0 ));then
-        ftEcho -e "数据为空"
+        ftEcho -e "data is none"
         return
     fi
 
@@ -30,9 +53,9 @@ ftCutTextNCEEnglish()
             mkdir -p "${dirPathLesson}"
         elif (( ${#lineContent}>0 ));then
             lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
-            if (( ${#lineContentTemp}==0 ));then #只有空格的情况
+            if (( ${#lineContentTemp}==0 ));then #there are only space of line content
                 lineContent=
-            else #进行句子切分
+            else #to split sentence content
                 lineContentTemp=${lineContent//'.'/'.\n'}
                 lineContent=${lineContentTemp//'!'/'!\n'}
                 lineContentTemp=${lineContent//'?'/'?\n'}
@@ -45,16 +68,38 @@ ftCutTextNCEEnglish()
     done
 }
 
-ftCutTextNCEChinese()
+complete -W "-h --help" ftFormatLessonContentNewConceptChinese
+ftFormatLessonContentNewConceptChinese()
 {
-    #ftCutTextNCEChinese /home/myname/download/2.txt /home/myname/download/sss
-    #将新概念中文课文格式化
+    local ftEffect=ToFormatNewConceptLessonContentChinese
+    local isEnable=true
+
+    #argument init
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
+
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # help infoumation ==============
+        -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
+#=========================================================
+#    ftFormatLessonContentNewConceptChinese filePathTextLessonBasicContent dirPathLessonDataStorage
+#========================================================="; return ;;
+    * ) ;; esac;done
+
+    # argument infoumation ==============
     local filePathTextLessonBasicContent=$1
     local dirPathLessonDataStorage=$2
+
+    #argument check
+    (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
+    [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftFormatLessonContentNewConceptChinese -h && return $resultFail
+
+    #code main
     local lineSizeTextLessonBasicContent=$(awk 'END{print NR}' $filePathTextLessonBasicContent)
 
     if (( $lineSizeTextLessonBasicContent==0 ));then
-        ftEcho -e "数据为空"
+        ftEcho -e "data is none"
         return
     fi
 
@@ -74,9 +119,9 @@ ftCutTextNCEChinese()
             mkdir -p "${dirPathLesson}"
         elif (( ${#lineContent}>0 ));then
             lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
-            if (( ${#lineContentTemp}==0 ));then #只有空格的情况
+            if (( ${#lineContentTemp}==0 ));then #there are only space of line content
                 lineContent=
-            else #进行句子切分
+            else #to split sentence content
                 lineContentTemp=${lineContent//'.'/'.\n'}
                 lineContent=${lineContentTemp//'!'/'!\n'}
                 lineContentTemp=${lineContent//'?'/'?\n'}
@@ -89,15 +134,37 @@ ftCutTextNCEChinese()
     done
 }
 
-ftCutTextAnarchyUnbound()
+complete -W "-h --help" ftFormatLessonContentAnarchyUnbound
+ftFormatLessonContentAnarchyUnbound()
 {
-    #将AnarchyUnbound格式化
+    local ftEffect=ToFormatLessonContentAnarchyUnbound
+    local isEnable=true
+
+    #argument init
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
+
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # help infoumation ==============
+        -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
+#=========================================================
+#    ftFormatLessonContentAnarchyUnbound filePathTextPartBasicContent dirPathPartDataStorage
+#========================================================="; return ;;
+    * ) ;; esac;done
+
+    # argument infoumation ==============
     local filePathTextPartBasicContent=$1
     local dirPathPartDataStorage=$2
-    local lineSizeTextPartBasicContent=$(awk 'END{print NR}' $filePathTextPartBasicContent)
 
+    #argument check
+    (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
+    [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftFormatLessonContentAnarchyUnbound -h && return $resultFail
+
+    #code main
+    local lineSizeTextPartBasicContent=$(awk 'END{print NR}' $filePathTextPartBasicContent)
     if (( $lineSizeTextPartBasicContent==0 ));then
-        ftEcho -e "数据为空"
+        ftEcho -e "data is none"
         return
     fi
 
@@ -136,9 +203,9 @@ ftCutTextAnarchyUnbound()
         elif (( ${#lineContent}>0 ));then
             if (( $lineContentFlag == 1  ));then
                 lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
-                if (( ${#lineContentTemp}==0 ));then #只有空格的情况
+                if (( ${#lineContentTemp}==0 ));then #there are only space of line content
                     lineContent=
-                else #进行句子切分
+                else #to split sentence content
                     lineContentTemp=${lineContent//'.'/'.\n'}
                     lineContent=${lineContentTemp//'!'/'!\n'}
                     lineContentTemp=${lineContent//'?'/'?\n'}
@@ -151,9 +218,9 @@ ftCutTextAnarchyUnbound()
                 (( ${#lineContent}>0 )) && echo -e "${lineContent}" >> $filePathPartEnglish
             elif (( $lineContentFlag == 2  ));then
                 lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
-                if (( ${#lineContentTemp}==0 ));then #只有空格的情况
+                if (( ${#lineContentTemp}==0 ));then #there are only space of line content
                     lineContent=
-                else #进行句子切分
+                else #to split sentence content
                     lineContentTemp=${lineContent//'。'/'。\n'}
                     lineContent=${lineContentTemp//'！'/'！\n'}
                     lineContentTemp=${lineContent//'？'/'？\n'}
@@ -179,32 +246,34 @@ ftCutTextAnarchyUnbound()
     done
 }
 
-ftBatchText2Mp3()
-{
-    #批量将文本转成音频
-    #ftBatchText2Mp3 /media/data/English/learnData/新概念册2 article.text_english article.audio_english
-    local dirPathLessonGroup=$1
-    local fileNameTextData=$2
-    local dirNameAudio=$3
-    local filePathTextData dirPathAudio lessonNumberTemp
-
-    while read lessonNumber ;do  #可以在循环外保留变量
-      echo "===================== ${lessonNumber} ===================="
-      filePathTextData="${dirPathLessonGroup}/${lessonNumber}/${fileNameTextData}"
-      dirPathAudio="${dirPathLessonGroup}/${lessonNumber}/${dirNameAudio}"
-      #gedit --new-window "${filePathTextData}"
-      ftText2Mp3 -fpt "${filePathTextData}" -dpm "${dirPathAudio}"
-      sleep 5
-    done < <(echo "$(ls $dirPathLessonGroup)")
-}
-
+complete -W "-h --help" ftText2Mp3ByLesson
 ftText2Mp3ByLesson()
 {
-    #批量将文本转成音频
-    #ftText2Mp3ByLesson 课程集 课程名
+    local ftEffect=TextToAudioMediaFileByLessonContent
+    local isEnable=true
+
+    #argument init
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
+
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # help infoumation ==============
+        -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
+#=========================================================
+#    ftText2Mp3ByLesson LessonGroupName LessonName
+#========================================================="; return ;;
+    * ) ;; esac;done
+
+    # argument infoumation ==============
     local LessonGroupName=$1
     local LessonName=$2
 
+    #argument check
+    (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
+    [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftText2Mp3ByLesson -h && return $resultFail
+
+    #code main
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local dirPathLesson="${dirPathTempEng}/${LessonGroupName}/${LessonName}"
     local dirPathLessonAudio="${dirPathTempEng}/${LessonGroupName}/${LessonName}/sentence.audio_english"
@@ -213,11 +282,33 @@ ftText2Mp3ByLesson()
     ftText2Mp3 -fpt "${filePathLessonText}" -dpm "${dirPathLessonAudio}"
 }
 
+complete -W "-h --help" ftText2Mp3ByLessonGroup
 ftText2Mp3ByLessonGroup()
 {
-    #批量将文本转成音频
-    #ftText2Mp3ByLessonGroup 课程集
+    local ftEffect=TextToAudioMediaFileByLessonGroup
+    local isEnable=true
+
+    #argument init
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
+
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # help infoumation ==============
+        -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
+#=========================================================
+#    ftText2Mp3ByLessonGroup LessonGroupName
+#========================================================="; return ;;
+    * ) ;; esac;done
+
+    # argument infoumation ==============
     local LessonGroupName=$1
+
+    #argument check
+    (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
+    [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftText2Mp3ByLessonGroup -h && return $resultFail
+
+    #code main
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local dirPathLessonGroup="${dirPathTempEng}/${LessonGroupName}"
 
@@ -228,10 +319,26 @@ ftText2Mp3ByLessonGroup()
     done < <(echo "$(ls $dirPathLessonGroup)")
 }
 
+complete -W "-h --help" ftText2Mp3Apply
 ftText2Mp3Apply()
 {
-    #将指定行文本转成音频
-    #ftText2Mp3Apply 新概念册2 article.text_english article.audio_english "051" 9
+    local ftEffect=TextToAudioMediaFileByLessonGroup
+    local isEnable=true
+
+    #argument init
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
+
+    local valCount=5 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # help infoumation ==============
+        -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
+#=========================================================
+#    ftText2Mp3Apply dirNameLessonGroup fileNameTextData dirNameAudio lessonNumber lineNumber
+#========================================================="; return ;;
+    * ) ;; esac;done
+
+    # argument infoumation ==============
     local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local dirNameLessonGroup=$1
@@ -239,31 +346,51 @@ ftText2Mp3Apply()
     local dirNameAudio=$3
     local lessonNumber=$4
     local lineNumber=$5
-    local filePathTextData="${dirPathTempEng}/${dirNameLessonGroup}/${lessonNumber}/${fileNameTextData}"
-    local dirPathAudio="${dirPathTempEng}/${dirNameLessonGroup}/${lessonNumber}/${dirNameAudio}"
-    #依赖校验
+
+    #argument check
+    (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
+    [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftText2Mp3Apply -h && return $resultFail
     source ${dirPathPythonVirtualEnvironment}activate
     cd ${dirPathPythonVirtualEnvironment}
     [[ -z $(which xsel) ]] && ftText2Mp3 --rely "xsel" && return $resultFail
     [[ -z $(which edge-playback) ]] && ftText2Mp3 --rely "edge-tts" && return $resultFail
 
+    #code main
+    local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
+    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local lineContent=$(awk 'NR=="'$lineNumber'"' $filePathTextData)
     [[ -z "$lineContent" ]] && ftEcho -s "empty line " && return
     edge-tts --text "${lineContent}" --write-media "${dirPathAudio}/${lineNumber}.mp3"
-
 }
 
-ftCheckDrillReslt()
+complete -W "-h --help" ftTransformDrillReslt
+ftTransformDrillReslt()
 {
-    #处理练习结果将**表示的错误改为可以高亮显示的格式
+    local ftEffect=ToTransformDrillReslt
+    local isEnable=true
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
 
-    # ftCheckDrillReslt /media/data/English/learnData/English-Made-Easy-Volume-2/03/sentence.text_english_drill_result \
-    # /home/myname/download/test2.txt
+    #argument init
+    local valCount=2 errorContent arg arg2
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    case "${arg}" in
+        # help infoumation ==============
+        -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
+#=========================================================
+#    ftTransformDrillReslt dirNameLessonGroup fileNameTextData dirNameAudio lessonNumber lineNumber
+#========================================================="; return ;;
+    * ) ;; esac;done
+
+    # argument infoumation ==============
     local filePathResult=$1
     local filePathResultNew=$2
 
-    [[ -z $(grep -sn "\*\*" $filePathResult) ]] && [[ -z $(grep -sn "\+\+" $filePathResult) ]] && ftEcho -e "无效文件：${filePathResult}" && return
+    #argument check
+    (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
+    [[ -z $(grep -sn "\*\*" $filePathResult) ]] && [[ -z $(grep -sn "\+\+" $filePathResult) ]] && errorContent="${errorContent}\\n无效文件：${filePathResult}" && return
+    [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftTransformDrillReslt -h && return $resultFail
 
+    #code main
     local lineContentTemp
 
     #防止单行内容无法正常读取
