@@ -753,7 +753,7 @@ ftIniCreateFileOrTag()
         -p )   filePathIni="$arg2"                            ;;
         -t )   contentTagName="$arg2"                 ;;
         -l )   contentTagKeyValList="${arg2[@]}" ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
     #参耦校验
     [ -z "$filePathIni" ] && errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]"
     [ -z "$contentTagName" ] && errorContent="${errorContent}\\n[块名为空]contentTagName=$contentTagName"
@@ -813,7 +813,7 @@ ftIniDeleteTag()
         # 变量参数解析部分==============
         -t )   tagName="${arg2}"        ;;
         -p )   filePathIni="${arg2}"     ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
     #参耦校验
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
     [ ! -f "$filePathIni" ] && errorContent="${errorContent}}\\n[文件不存在]filePathIni=$filePathIni"
@@ -857,7 +857,7 @@ ftIniAddItem()
         -t )   tagName="${arg2}"        ;;
         -i )   itemName="${arg2}"       ;;
         -l )   itemContent="$(echo ${arg2[@]} | sed 's/\n/ /g')"    ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
     #参耦校验
     [ -z "$itemContent" ] && errorContent="${errorContent}\\n[缺少必要参数]itemContent=$itemContent"
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
@@ -916,7 +916,7 @@ ftIniDeleteItem()
         -t )   tagName="${arg2}"            ;;
         -i )   itemName="${arg2}"           ;;
         -p )   filePathIni="${arg2}"        ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
     #参耦校验
     [ -z "$itemName" ] && errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName"
     [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
@@ -1025,7 +1025,7 @@ ftIniSetValue()
         -a )    isAutoAdd=true
                 [[ -n $arg2 ]] && keyValue="${arg2}"
            ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #检验参数
     if [ ! -f "$filePath" ];then
@@ -1097,7 +1097,7 @@ ftBashHistory()
             [ -f $filePathBashHistoryArchive ] && cat ${filePathBashHistoryArchive}
             return
            ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
     [ ! -d $dirPathHome ]  && errorContent="${errorContent}\\n[迷路中，请稍等]dirPathHome=$，dirPathHome"
     [ ! -f $filePathBashHistory ] && errorContent="${errorContent}\\n[历史记录为空]"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteItem -h && return $resultFail
@@ -1185,7 +1185,7 @@ ftDevAvailableSpace()
                 dirPathTraget=$2
                 isReturn=$3
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
@@ -1297,7 +1297,7 @@ ftInitDevicesList()
         -s )   devMinAvailableSpace="${arg2:-'0'}"
                 devMinAvailableSpace=${devMinAvailableSpace,,}
            ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
     local devMinAvailableSpaceTemp=$devMinAvailableSpace
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//g/}
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//m/}
@@ -1722,7 +1722,7 @@ ftMtkFlashTool()
             ;;
         --old ) isOldMode=true
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -f "$flashToolPath" ] && errorContent="${errorContent}\\n[mtk下载工具不存在]flashToolPath=$flashToolPath"
     [ -n "$isOldMode" ] && [ ! -f "$flashToolPathOld" ] && errorContent="${errorContent}\\n[mtk下载工具不存在]flashToolPathOld=$flashToolPathOld"
@@ -2250,7 +2250,7 @@ ftMaintainSystem()
         -s )   editType=sdFinish    ;;
         -b )   editType=backup     ;;
         -r )   editType=restore      ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
     #环境校验
     [ "$(whoami)" != "root" ] && ftMaintainSystem --env && return $resultFail
     [[ -z $(which pigz) ]] && ftMaintainSystem --rely "pigz" && return $resultFail
@@ -2544,7 +2544,7 @@ ftDu()
             ;;
         -n ) fileCount="${arg2}"
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
    #参数校验
     dirPathTarget=${dirPathTarget:-"${dirPathLocal}"}
@@ -2806,7 +2806,7 @@ ftCheckCcache()
         # 变量参数解析部分 ==============
         -c ) isChecked=true
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     [[ -z $(which ccache) ]] && ftCheckCcache --rely "ccache" && return $resultFail
     [[ ! -d ${CCACHE_DEV_DIR} ]] && return $resultFail
@@ -3363,7 +3363,7 @@ ftScrcpy()
         # 变量参数解析部分 ==============
         -r ) isReset=true
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -3543,7 +3543,7 @@ ftMD5()
            ;;
         -p )   filePathInfo="${arg2}"
            ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
     #参耦校验
     [ -z "$editType" ] && errorContent="${errorContent}\\n[不知道要干啥]editType=$editType"
     [ "${editType}" != "onlyCreate" ] && [ ! -f "$filePathInfo" ] && errorContent="${errorContent}\\n[没有相关版本信息文件]filePathInfo=$filePathInfo"
@@ -3604,7 +3604,7 @@ ftCreateMoudleDesktop()
             ;;
         -i ) filePathIcon="${arg2}"
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -3658,7 +3658,7 @@ ftXbGetValue()
 #    ftXbGetValue 目标块TAG 键名
 #========================================================="; return ;;
 
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #参数校验
     (( $# > $valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
@@ -3698,7 +3698,7 @@ ftGetPublicIp()
 #
 #    ftGetPublicIp -h 
 #========================================================="; return ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #环境校验
     [[ -z $(which wget) ]] && ftGetPublicIp --rely "wget" && return $resultFail
@@ -3739,7 +3739,7 @@ ftFastbootUnlock()
 #=========================================================
 #    找不到AndroidSDK
 #========================================================="; return ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #环境校验
     [[ -z $(which adb) ]] && ftFastbootUnlock --env && return $resultFail
@@ -3812,7 +3812,7 @@ ftAutoCreateProguardRulesPro()
         -d ) dirPathModule="${arg2}"
                 dirPathModuleJavaSourceCode=${dirPathModule}/src/main/java
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #参数校验
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -3893,7 +3893,7 @@ ftVpnControl()
             ;;
         -ri ) isReInstall=true
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #依赖校验
    [ -z "$isReInstall" ]&& if [[ ! -d "/opt/cisco/anyconnect" ]] || [[ ! -f "$filePathAnyconnect" ]];then ftVpnControl --rely && return $resultFail ; fi
@@ -3985,7 +3985,7 @@ ftDelRepeatFile()
         # 变量参数解析部分 ==============
         -f ) dirPathTarget="${arg2}"
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #依赖校验
     [[ -z $(which fdupes) ]] && ftDelRepeatFile --rely "fdupes" && return $resultFail
@@ -4141,7 +4141,7 @@ ftEdgeTTs()
         --speed) speedVal="${arg2}" ;;
         --hide) isModeHide=true ;;
         --playContent) playContent="${arg2}" ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #依赖校验
     local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
@@ -4230,7 +4230,7 @@ ftText2Mp3()
             ;;
         -fpm ) filePathMp3="${arg2}"
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
     #参数校验
@@ -4309,7 +4309,7 @@ ftTextSetLine()
         -nn ) lineNum="${arg2}"
               isLineContentNone=true
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #argument check
     (( $#>6 )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
