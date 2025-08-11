@@ -62,7 +62,7 @@ ftLearnRepetionDrill()
             ;;
         -r ) isModeRead=true
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
@@ -562,7 +562,7 @@ ftOcrRepetionDrill()
             ;;
         -l ) sentenceHeaderFlag="${arg2}"
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #依赖校验
     [[ -z $(which tesseract) ]] && ftOcrRepetionDrill --rely "tesseract-ocr-eng" && return $resultFail
@@ -653,7 +653,7 @@ ftLearnLessonManage()
         -m) isMergeLessonGroup=true
             lessonGroupNameMerge="${arg2}"
                      ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数数量无效"
