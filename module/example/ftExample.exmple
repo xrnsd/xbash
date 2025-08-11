@@ -3,19 +3,19 @@ ftExample()
 {
     local ftEffect=MethodExample
     local isEnable=false #set true is enable
+    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
     #Debug use
     # trap 'printf "argument debug \e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' DEBUG
     # trap 'printf "argument debug \e[33m %-7s \e[0m \e[31m %-30s \e[0m  \n" [$LINENO]: example1=$example1' ERR
 
     #argument init
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
     local example1
     local valCount=1 errorContent arg arg2 # arg3 # arg4
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     #eval arg3=\${$((i+2))} #; eval arg4=\${$((i+3))}
     case "${arg}" in
         # help infoumation ==============
-        --rely) ftEcho -rc "${ftEffect}" "apply informmation" "\
+        --rely) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
 #=========================================================
 #    ${ftEffect}apply tool: $2
 #    please use ftExample --rely_install apply tool
