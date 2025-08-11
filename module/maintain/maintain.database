@@ -22,6 +22,7 @@ dirPathsExcludeListSys= \
     /home \
     /var/lib/snapd \
     /usr/share/man \
+    /usr/share/icons \
     /swap.img
 
 dirPathsExcludeListExtends= \
