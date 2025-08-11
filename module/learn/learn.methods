@@ -17,8 +17,8 @@ ftLearnRepetionDrill()
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local filePathLearnDataBase="${dirPathTempEng}/local.database"
     [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
-    local isModeLessonExampleText=false  isModeLessonImitateText=false isModeCompare=false 
-    local isModeSentenceListenDrill=false isModeArticleListenDrill=false isModeSentenceDrill=false
+    local isModeLessonExampleText=false  isModeLessonImitateText=false
+    local isModeSentenceListenDrill=false isModeSentenceDrill=false
     local isModeTextEditDrill=false isModeHideChineseTitle=false isModeRead=false
     local valCount=3 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
@@ -28,13 +28,12 @@ ftLearnRepetionDrill()
 #=========================================================
 #    #可独立使用参数
 #    -h     #查看帮助
-#    -cet   #默认课文默写比对练习
-#    -cpe   #默写结果和对比
-#    -cit   #仿造课文默写比对练习
+#    -cet   #课文默写练习
 #    -sd    #例句翻译练习
 #    -sld   #例句听力练习
 #       
 #    #不可单独使用参数
+#    -i     #仿照模式
 #    -r     #例句阅读模式
 #    -t     #同步开启文本编辑器练习
 #    -ht    #隐藏提示练习
@@ -47,19 +46,15 @@ ftLearnRepetionDrill()
         # 变量参数解析部分 ==============
         -cet ) isModeLessonExampleText=true
              [[ -z $(which gedit) ]] && ftLearnRepetionDrill --rely "gedit" && return $resultFail
-            ;;
-        -cit ) isModeLessonExampleText=true
-             isModeLessonImitateText=true
-             [[ -z $(which gedit) ]] && ftLearnRepetionDrill --rely "gedit" && return $resultFail
-            ;;
-        -cpe | --compare ) isModeCompare=true
              [[ -z $(which bcompare) ]] && ftLearnRepetionDrill --rely "bcompare" && return $resultFail
             ;;
         -sld ) isModeSentenceListenDrill=true
+            [[ -z $(which play) ]] && ftLearnRepetionDrill --rely "sox" && return $resultFail
+            [[ -z $(which xclip) ]] && ftLearnRepetionDrill --rely "xclip" && return $resultFail
             ;;
         -sd ) isModeSentenceDrill=true
             ;;
-        -ald ) isModeArticleListenDrill=true
+        -i ) isModeLessonImitateText=true
             ;;
         -t ) isModeTextEditDrill=true
             ;;
@@ -72,14 +67,12 @@ ftLearnRepetionDrill()
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     case "$1" in
-    -h | --help | -cet | -cit | -cpe | --compare | -ald | -sld | -sd | -t | -ht | -r )
+    -h | --help | -cet | -sld | -sd | -t | -ht | -r | -i )
         ;;
     *)   errorContent="${errorContent}\\n无效参数:${1}"
         ;;
     esac
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftLearnRepetionDrill -h && return $resultFail
-    [[ -z $(which play) ]] && ftLearnRepetionDrill --rely "sox" && return $resultFail
-    [[ -z $(which xclip) ]] && ftLearnRepetionDrill --rely "xclip" && return $resultFail
 
     local filePathDrillTemp=/tmp/Drill.txt
 
@@ -87,11 +80,6 @@ ftLearnRepetionDrill()
     local dirPathTemp=/tmp/ExampleTextDrill
     local filePathCompareTempText=${dirPathTemp}/tempTextDrill.txt
     local filePathCompareExampleText=${dirPathTemp}/exampleTextDrill.txt
-    if $isModeCompare; then
-        [[ ! -d $dirPathTemp ]] && ftEcho -e "没有练习记录无法比对" && return
-        bcompare $filePathCompareTempText $filePathCompareExampleText &
-        return
-    fi
 
     #选择课程集
     local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=normal
@@ -147,13 +135,15 @@ ftLearnRepetionDrill()
     #开始课文练习
     if $isModeLessonExampleText; then
         local filePathEnglishExampleText="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_english"
-        [[ "$isModeLessonImitateText" = "true" ]] && filePathEnglishExampleText="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/imitate.text_chinese_english"
+        local filePathChineseExampleText="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_chinese"
+        [[ "$isModeLessonImitateText" = "true" ]] && filePathEnglishExampleText="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/imitate.text_english"
         [[ ! -f $filePathEnglishExampleText ]] && ftEcho -e "当前课程没有录入例文" && return
 
         [[ ! -d $dirPathTemp ]] && mkdir $dirPathTemp
-        echo "" > $filePathCompareTempText
+        cp $filePathChineseExampleText $filePathCompareTempText
         cp $filePathEnglishExampleText $filePathCompareExampleText
-        gedit --new-window $filePathCompareTempText $filePathCompareExampleText &
+
+        gedit --new-window $filePathCompareTempText $filePathCompareExampleText&&bcompare $filePathCompareTempText $filePathCompareExampleText &
         return
     fi
 
@@ -182,7 +172,7 @@ ftLearnRepetionDrill()
         filePathEnglishBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_english"
         filePathChineseBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/sentence.text_chinese"
     else
-        ftEcho -e "错误操作，请查看参数配置" && return
+        ftLearnRepetionDrill -h && return
     fi
 
     if $isModeArticleListenDrill || $isModeSentenceListenDrill; then
