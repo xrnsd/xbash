@@ -1332,7 +1332,7 @@ ftAutoTest()
         -pb)   packageBlackNameList=${arg2}                   ;;
         -d)     dirPathLogRoot=${arg2:-'dirPathLogRoot'}          ;;
         -t)     throttleLong=${arg2}                            ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
     #环境校验
      [[ -z $(which adb) ]] && ftAutoTest --rely && return $resultFail
     #参数校验
@@ -1611,7 +1611,7 @@ ftAutoAsConfigFileAutoCreate()
 # 环境未初始化 或 当前目录不是项目的根目录
 # 使用前,请先初始化[source build/envsetup.sh;lunch xxxx]
 #========================================================="; return ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #依赖校验
     [[ -z $(which make) ]] && ftAutoAsConfigFileAutoCreate --rely "make" && return $resultFail
@@ -1704,7 +1704,7 @@ ftAutoLnCcacheByAosp()
             ;;
         -s ) ccacheMaxSize="${arg2}"
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #依赖校验
     [[ -z $(which ccache) ]] && ftAutoLnCcacheByAosp --rely "ccache" && return $resultFail
