@@ -116,7 +116,7 @@ ftGitLogShell()
         -cl )   findStringContent=${arg2}
                 isChangeList=true
                 ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
     #参耦校验
     [[ -z $(which git) ]] && ftGitLogShell --rely && return $resultFail
     [[ -n "$isAllBranchLogByGitK" ]] && [ -z $(which gitk) ] && ftGitLogShell --rely && return $resultFail
@@ -197,7 +197,7 @@ ftGitPatchAdd2Branches()
                 ;;
         -nsd )  isAutoSyncDef=
                 ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
@@ -1213,7 +1213,7 @@ ftGitTagCreateAppReadMeTemplate()
             ;;
         -v ) versionName="${arg2}"
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitTagCreateAppReadMeTemplate --rely && return $resultFail
     [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
@@ -1279,7 +1279,7 @@ ftGitTagCreateBranchReadMeTemplate()
         -f ) filePathAppReadMe="${arg2}"
             filePathAppReadMe=$(ftPath $filePathAppReadMe)
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     [[ -z $(which todos) ]]|| [[ -z $(which fromdos) ]] && ftGitTagCreateBranchReadMeTemplate --rely && return $resultFail
     [ ! -f "$filePathConfig" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathConfig=$filePathConfig"
@@ -1345,7 +1345,7 @@ ftGitTagCreateVersionTemplateByVersionReadme()
             ;;
         -t ) filePathReadmeTarget="${arg2}"
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -1417,7 +1417,7 @@ ftGitgetParentBranch()
             ;;
         -m ) isMiniPrintf=true
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #依赖校验
     [[ -z $(which git) ]] && ftGitgetParentBranch --rely "git" && return $resultFail
@@ -1460,7 +1460,7 @@ ftGitPullFailForceUpdateHEAD()
         # 变量参数解析部分 ==============
         -p ) projectName="${arg2}"
             ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -1506,7 +1506,7 @@ ftGitAutoClone()
         # 变量参数解析部分==============
         -m ) isActive=true
          ;;
-    * ) [[ -z "${arg}" ]] && break ;; esac;done
+    * ) ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
