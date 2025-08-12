@@ -484,7 +484,7 @@ ftEcho()
                 local dirFlag=$listMainItemSize
                 (( $listMainItemSize > 9 )) && dirFlag=9
                 while true; do
-                    ftEcho -r  "${listMainTitle}[0~$(expr $listMainItemSize - 1),q](回车默认${indexSelNormal}):"
+                    ftEcho -r  "${listMainTitle}[0~$(expr $listMainItemSize - 1),q](press enter normal ${indexSelNormal}):"
                     if (( $listMainItemSize > 9 ));then
                         read dir
                     else
@@ -510,32 +510,25 @@ ftEcho()
         -key )
                 local arrayKeys=($(echo $2 | sed 's/ /\n/g'))
                 local arrayKeyContents=($(echo $3 | sed 's/ /\n/g'))
-                local isEchoPlural=true
-                if [ $2 = "-n" ];then
-                    isEchoPlural=false
-                    arrayKeys=($(echo $3 | sed 's/ /\n/g'))
-                    arrayKeyContents=($(echo $4 | sed 's/ /\n/g'))
+                local argListKeyContents isEchoPlural=true
+                local forceEchoPluralFlag=4 forceEchoPluralIndex=1
+                if [ "${2}" = "-n" ];then
+                  isEchoPlural=false
+                  arrayKeys=($(echo $3 | sed 's/ /\n/g'))
+                  arrayKeyContents=($(echo $4 | sed 's/ /\n/g'))
                 fi
-
-                local keyContentItem keyContentItemArray
-                for (( index = 0; index <${#arrayKeys[@]}; index++ )); do
-                   keyContentItem=${arrayKeyContents[$index]}
-                   keyContentItemArray=($(echo -e ${keyContentItem//\+\+/\\n\+\+\\n}))
-
-                    for (( index2 = 0; index2 <${#keyContentItemArray[@]}; index2++ )); do
-                       [ -z ${keyContentItemArray[$index2]} ] && continue
-                       [[ ${keyContentItemArray[$index2]} == *++* ]]&& keyContentItemArray[$index2]="${arrayKeys[$index]}" && continue
-                       keyContentItem="\033[1;31m${keyContentItemArray[$index2]}\033[0m"
-                       keyContentItemArray[$index2]="${keyContentItem}"
-                    done
-
-                    arrayKeyContents[$index]="${keyContentItemArray[@]}"
-
+                for item in ${arrayKeyContents[@]}; do
+                argListKeyContents="${argListKeyContents}Press \033[31m%-1s\033[0m ${item}"
+                if $isEchoPlural;then
+                  argListKeyContents="${argListKeyContents}\n"
+                else
+                  argListKeyContents="${argListKeyContents} \033[44;37m|\033[0m "
+                  ((forceEchoPluralIndex+=1))
+                  ((forceEchoPluralIndex>forceEchoPluralFlag)) && argListKeyContents="${argListKeyContents}\n" && forceEchoPluralIndex=1
+                fi
                 done
-
-                ! $isEchoPlural && echo -e "${arrayKeyContents[@]}"| sed 's/ //g'
-                $isEchoPlural && echo -e "${arrayKeyContents[@]}"| sed 's/ /\n/g'
-
+                argListKeyContents="${argListKeyContents}\n"
+                printf "${argListKeyContents}" ${arrayKeys[@]}  | sed 's/__/ /g'
                 break;;
     * )    echo $option ;break;; esac ;done
 }
