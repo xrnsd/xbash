@@ -47,7 +47,8 @@ ftExample()
     #env check
     [ -z "${exampleTools2}" ] && ftExample --env && return $resultFail
     #argument check
-    (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
+    #(( $#>$valCount )) && errorContent="${errorContent}\\nThe maximum number of parameters is ${valCount}, now it is $#"
+    (( $#!=$valCount )) && errorContent="${errorContent}\\nThe normal number of parameters is ${valCount}, now it is $#"
     case "$1" in
         -h | --help | --rely_install)
             ;;
