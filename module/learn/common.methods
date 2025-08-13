@@ -418,14 +418,13 @@ ftTransformDrillReslt()
             #end
             lineContent="${lineContentTemp//\+/\\033[0m}"
             echo "${lineContent}" >> $filePathResultNew
+        else
+            echo "" >> $filePathResultNew
         fi
     done
 
     ftEcho -s "高亮格式文本转化完成"
-
-    # cat $filePathResultNew | while read lineContent;do
-    #     echo -e "${lineContent}"
-    # done
+    return
 }
 
 ftTextGeditBackground()
@@ -436,4 +435,35 @@ ftTextGeditBackground()
     local filePathText=$1
     subl "${filePathText}" && trap 'rm -rf $optionLock' SIGINT
     rm -rf $optionLock
+}
+
+ftLearnWriteArticle()
+{
+    local filePathCompareExampleTextChinese=$1
+    local filePathCompareExampleTextEnglish=$2
+    local filePathItemSentenceEnglishDrillResult=$3
+    local filePathTempWriteDrillText=/tmp/TempWriteDrillText
+
+    subl -n $filePathCompareExampleTextChinese
+    gedit --new-window $filePathTempWriteDrillText
+    bcompare $filePathTempWriteDrillText $filePathCompareExampleTextEnglish
+
+    if [[ -n $(grep -sn "\+\+" "${filePathTempWriteDrillText}") ]] \
+            || [[ -n $(grep -sn "\*\*" "${filePathTempWriteDrillText}") ]] \
+            && $isOperateTextEdit;then
+            [[ ! -d "${dirPathItemSentenceEnglishDrillResult}" ]] && mkdir -p "${dirPathItemSentenceEnglishDrillResult}"
+            mv "${filePathTempWriteDrillText}" "${filePathTempWriteDrillText}_basic"
+            echo -n "Sentence:${indexSort} drill results"
+            ftCheckDrillReslt "${filePathTempWriteDrillText}_basic" "${filePathTempWriteDrillText}"
+            rm -rf "${filePathTempWriteDrillText}_basic"
+            cat "${filePathTempWriteDrillText}" >> "${filePathItemSentenceEnglishDrillResult}"
+            #clean drill file
+            echo -n "" > ${filePathTempWriteDrillText}
+            echo
+    elif [[ -n $(grep -sn "\+" "${filePathTempWriteDrillText}") ]] \
+        || [[ -n $(grep -sn "\*" "${filePathTempWriteDrillText}") ]] \
+        && $isOperateTextEdit;then
+          echo "Sentence:${indexSort} drill result from error:"
+          ftEcho -e "$(cat $filePathTempWriteDrillText)"  
+    fi
 }
