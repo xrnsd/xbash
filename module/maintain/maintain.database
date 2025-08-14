@@ -12,17 +12,22 @@ dirPathsExcludeListSys= \
     /snap \
     /.Trash-0 \
     /media \
-    /var/cache \
     /share \
     /code \
+    /run \
+    /root \
+    /home \
+    /var/backups \
+    /var/cache \
     /var/tmp \
     /var/lib/docker \
     /var/log \
-    /root \
-    /home \
+    /var/crash \
+    /var/snap \
     /var/lib/snapd \
     /usr/share/man \
     /usr/share/icons \
+    /usr/lib/debug \
     /swap.img
 
 dirPathsExcludeListExtends= \
@@ -53,13 +58,4 @@ dirPathsExcludeListExtends= \
     /usr/lib/beyondcompare/help \
     /usr/lib/python2.7/dist-packages \
     /usr/lib/libreoffice/share/gallery \
-
-
-
-
-
-
-
-
-
 
