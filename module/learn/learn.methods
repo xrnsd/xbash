@@ -196,9 +196,9 @@ ftLearnRepetionDrill()
     && return
 
     #auto create drill results storge directory
-    if $isModeWrite || $isOperateTextEdit;then
+    #if $isModeWrite || $isOperateTextEdit || $isModeRead;then
         [ ! -d "${dirPathDataItemTextDrillResult}" ] && mkdir "${dirPathDataItemTextDrillResult}"
-    fi
+    #fi
 
     local englishItem chineseItem sentenceDrillResltItem
     local lessonSize=0 indexSort itemOptionSelect
@@ -219,6 +219,9 @@ ftLearnRepetionDrill()
             echo -e "${drillInfomationTips}"
             echo "${chineseItem}"
 
+            #optimise
+            bcompare &
+
             #input drill result
             ftEcho -s "please write translation"
             echo -n "" > ${filePathTempWriteDrillText}
@@ -233,21 +236,21 @@ ftLearnRepetionDrill()
             if [[ -n $(grep -sn "\+\+" "${filePathTempWriteDrillText}") ]] \
                     || [[ -n $(grep -sn "\*\*" "${filePathTempWriteDrillText}") ]] \
                     && $isOperateTextEdit;then
-                    [[ ! -d "${dirPathDataItemTextDrillResult}" ]] && mkdir -p "${dirPathDataItemTextDrillResult}"
                     mv "${filePathTempWriteDrillText}" "${filePathTempWriteDrillText}_basic"
 
                     if ftTransformDrillReslt "${filePathTempWriteDrillText}_basic" "${filePathTempWriteDrillText}" > /dev/null;then
                         echo -e "\033[1;33mDrill results:\033[0m form tranform finished"
                         rm -rf "${filePathTempWriteDrillText}_basic"
-                        local lineNumList=($(awk '/\\033\[/{print NR}' "${filePathTempWriteDrillText}"))
-                        [[ -n $lineNumList ]] && for lineNum in ${lineNumList[@]}; do
+                        local lineNumList="$(awk '/\\033\[/{print NR}' $filePathTempWriteDrillText)"
+                        [[ -n $lineNumList ]] && \
+                        for lineNum in ${lineNumList[@]}; do
                             filePathItemSentenceEnglishDrillResult="${dirPathDataItemTextDrillResult}/${lineNum}.result"
                             awk 'NR=="'$lineNum'"' "${filePathTempWriteDrillText}" >> "${filePathItemSentenceEnglishDrillResult}"
                             #delete repeate item
                             sort -u "${filePathItemSentenceEnglishDrillResult}" > "${filePathItemSentenceEnglishDrillResult}_Sort"
                             mv "${filePathItemSentenceEnglishDrillResult}_Sort" "${filePathItemSentenceEnglishDrillResult}"
-                            printf "Line number \033[31m%-1s\033[0m drill result is saved" $lineNum
-                        done
+                        done && \
+                        printf "Line number \033[31m${lineNumList[@]}\033[0m drill result is saved\n"
                     else
                         echo -e "\033[1;33mDrill results:\033[0m form tranform fail"
                     fi
@@ -295,16 +298,26 @@ ftLearnRepetionDrill()
                 ftEcho -e "error argument config, please enbale tips display"
                 return
             fi
+            local drillInfomationTipsTemp
             while true; do
                 timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
-                drillInfomationTips="${drillInfomationTips}\n\
+                drillInfomationTipsTemp="${drillInfomationTips}\n\
                 \033[1;33mDuration info:\033[0m ${timingChang}"
                 clear
-                echo -e ${drillInfomationTips}
-                echo -e "${englishItem}"
+                echo -e ${drillInfomationTipsTemp}
+                if [ ! "$(ls -A $dirPathDataItemTextDrillResult)" ];then
+                    echo -e "${englishItem}"
+                else
+                    local fileLineCount=$(sed -n '$=' $filePathDataItemTextEnglish)
+                    for (( index = 1; index <= $fileLineCount; index++ )); do
+                       [ -f "${dirPathDataItemTextDrillResult}/${index}.result" ] && \
+                       echo -e $(cat "${dirPathDataItemTextDrillResult}/${index}.result") && continue
+                       echo -e $(awk 'NR=="'$index'"' $filePathDataItemTextEnglish)
+                    done
+                fi
                 ftEcho -continue "Press any key display translator"
                 clear
-                echo -e ${drillInfomationTips}
+                echo -e ${drillInfomationTipsTemp}
                 echo -e "${chineseItem}"
                 ftEcho -key "Q Any__other__key" "to__quit to__display__English"
                 read -n 1 operation
