@@ -950,8 +950,8 @@ ftIniGetValue()
     #可用性校验
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
-    local filePath=$1 blockName=$2 keyName=$3 isReadSilence
-    local valCount=3 errorContent ; for ((i=1;i<=$#;i++)) ; do case "$1" in
+    local filePath=$1 blockName=$2 keyName=$3 isReadSilence isFindItem=false
+    local valCount=4 errorContent ; for ((i=1;i<=$#;i++)) ; do case "$1" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -962,6 +962,9 @@ ftIniGetValue()
 #
 #    #输出异常信息
 #    ftIniGetValue -f [文件路径] [目标块TAG] [键名]
+#
+#    #确认是否存在此项
+#    ftIniGetValue -tf [文件路径] [目标块TAG] [键名]
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -f ) filePath=$2
@@ -969,9 +972,14 @@ ftIniGetValue()
             keyName=$4
             isReadSilence=true
             ;;
+        -tf ) filePath=$2
+            blockName=$3
+            keyName=$4
+            isFindItem=true
+            ;;
     * ) break;;esac;done
 
-    (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
+    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[文件不存在]filePath=$filePath"
     else
         [ -z "${blockName}" ] && errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
@@ -982,10 +990,15 @@ ftIniGetValue()
     [ -n "${isReadSilence}" ]&&[ -n "$errorContent" ] && ftEcho -ea "$errorContent \\n请查看下面说明:" && ftIniGetValue -h && return $resultFail
 
     #实现主体
-    local begin_block=0 end_block=0
-    cat $filePath | while read line ; do
-        [ "X$line" = "X[$blockName]" ] && begin_block=1 && continue
-        (( $begin_block!=1 )) && continue
+
+    local indeStart=$(sed -n "/\[${blockName}\]/=" $filePath)
+
+    local line lineInex=$indeStart
+    while true; do
+        ((lineInex+=1))
+        line=$(awk 'NR=="'$lineInex'"' "$filePath")
+        [[ -z "$line" ]] && break
+        $isFindItem && [[ -n $(echo "${line}" |grep "${keyName}\=") ]] && echo "find it" && return
 
         (( $(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')==1 )) && break
         (( $(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')==1 )) && continue
@@ -1025,15 +1038,15 @@ ftIniSetValue()
 
     #检验参数
     if [ ! -f "$filePath" ];then
-        if $isAutoAdd && [ -n $filePath ]&& [ -n $blockName ]&& [ -n $keyName ]&& [ -n $keyValue ];then
+        if $isAutoAdd && [ -n $filePath ]&& [[ -n $blockName ]]&& [[ -n $keyName ]]&& [[ -n $keyValue ]];then
             ftIniCreateFileOrTag  -a -p $filePath -t $blockName -l "${keyName}=${keyValue}"
             return
         else
             errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
         fi
     else
-        if [ -z "$blockName" ];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
-        elif [ -z "$(cat $filePath|grep $blockNameFlag)" ];then
+        if [[ -z "$blockName" ]];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
+        elif [[ -z "$(cat $filePath|grep $blockNameFlag)" ]];then
             if $isAutoAdd;then
                 ftIniCreateFileOrTag  -a -p $filePath -t $blockName -l "${keyName}=${keyValue}"
                 return
@@ -1041,8 +1054,8 @@ ftIniSetValue()
                 errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName"
             fi
         fi
-        if [ -z "$keyName" ];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
-        elif [ -z "$(cat $filePath|grep $keyNameFlag)" ];then
+        if [[ -z "$keyName" ]];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
+        elif [[ -z $(ftIniGetValue -tf "${filePath}" "${blockName}" "${keyName}" ) ]];then
             if $isAutoAdd;then
                 ftIniAddItem -p $filePath -t $blockName -i $keyName -l "$(echo ${keyValue[@]} | sed 's/ /\n/g')"
                 return
@@ -1050,9 +1063,9 @@ ftIniSetValue()
                 errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName" ;
             fi
         fi
-        [ -z "$keyValue" ] && errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
+        [[ -z "$keyValue" ]] && errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
     fi
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h && return $resultFail
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h && return $resultFail
 
     #实现主体
     [[ "$isListValue" = "true" ]] && return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath`
