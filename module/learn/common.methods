@@ -423,7 +423,7 @@ ftTransformDrillReslt()
         fi
     done
 
-    ftEcho -s "高亮格式文本转化完成"
+    ftEcho -s " the form text tran finished. "
     return
 }
 

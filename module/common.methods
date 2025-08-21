@@ -545,7 +545,8 @@ ftTimeConsuming()
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
-    local contentName=本次骚操作 arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local contentName="the opeartion"
+    local arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         -i ) mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
           ;;
@@ -553,7 +554,7 @@ ftTimeConsuming()
           ;;
         -s ) isModeStopwatch=true
             contentName="${arg2:-"$contentName"}"
-            [ -z "$mTimingStart" ] && ftEcho -e "计时操作错误" && return
+            [ -z "$mTimingStart" ] && ftEcho -e "time opeartion error" && return
           ;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
     [ -z "$mTimingStart" ]||[ "$1" = "-i" ] && mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
@@ -567,7 +568,7 @@ ftTimeConsuming()
         local ftTimeAll=$((ftTimeAdded+ftTimeNormal))
 
         ftIniSetValue $rFilePathXbashDbftTime ${tagName} ${keyName} ${ftTimeAll} -a
-        ftEcho -s "$(printf "%.2f" `echo "scale=2;${ftTimeAll}/3600"|bc`)小时"
+        ftEcho -s "$(printf "%.2f" `echo "scale=2;${ftTimeAll}/3600"|bc`)hours"
         return
     fi
 
@@ -1073,11 +1074,6 @@ ftIniSetValue()
     return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName*=.* $keyName=$keyValue g;}" $filePath`
 }
 
-#########################
-##                     ##
-##    非框架通用实现     ##
-##                     ##
-#########################
 ftBashHistory()
 {
     local ftEffect=处理bash历史记录
