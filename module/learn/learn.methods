@@ -359,7 +359,7 @@ ftLearnRepetionDrill()
         #save drill status
         local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
         ftIniSetValue $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}" -a -l \
-            "$(echo "${learnLessonListDrilled[@]} $lessonNameSel" | sed 's/ /\n/g'| uniq)"
+            "$(echo "${learnLessonListDrilled[@]} $lessonNameSel" | sed 's/ /\n/g'| uniq | sort -u)"
 
         #claer drilling records
         ftIniDeleteItem -p $filePathLearnDataBase -t ${lessonGroupNameSel} -i "lessonDrilling${contentType}${operateMode}_lessonName"
@@ -783,7 +783,7 @@ ftOcrRepetionDrill()
     done 3< $filePath
 }
 
-complete -W "-h --help -acg --ac -u -une -m" ftLearnLessonManage
+complete -W "-h --help -acg -ac -ap -u -une -m" ftLearnLessonManage
 ftLearnLessonManage()
 {
     local ftEffect=学习课程配置
@@ -793,25 +793,26 @@ ftLearnLessonManage()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local isAddLessonGroup=false isAddLesson=false isUpdate=false isUpdateDrillGroupError=false
-    local isMergeLessonGroup=false lessonGroupNameMerge
+    local isMergeLessonGroup=false lessonGroupNameMerge isLessonApply=false
     local valCount=2 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
-#    以下参数全部只能单独使用
-#
-#    ftLearnLessonManage -h / --help   #查看帮助
-#                        -acg          #添加课程集
-#                        -ac           #添加课程集对应的课程
-#                        -u            #课程刷新
-#                        -une          #将课程练习结果生成为needRepetionDrill/error课程
-#                        -m 课程集合名称 #合并课程集
+#    ftLearnLessonManage -h / --help   #view help information
+#                        -acg          #add leesson group
+#                        -ac           #add lesson with lesson group
+#                        -ap           #fill in the missing files or directories of the lesson
+#                        -u            #update lesson list and lesson group list
+#                        -une          #update lesson : needRepetionDrill/error
+#                        -m "lesson group name" #merge lesson group
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -acg) isAddLessonGroup=true
                      ;;
         -ac) isAddLesson=true
+                     ;;
+        -ap) isLessonApply=true
                      ;;
         -u) isUpdate=true
                      ;;
@@ -825,7 +826,7 @@ ftLearnLessonManage()
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数数量无效"
     case "$1" in
-    -h | --help | -ac | -acg | -u | -une | -m)
+    -h | --help | -ac | -ap | -acg | -u | -une | -m)
         ;;
     *)   errorContent="${errorContent}\\n参数无效:${1}"
         ;;
@@ -837,6 +838,51 @@ ftLearnLessonManage()
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local filePathLearnDataBase="${dirPathTempEng}/local.database"
     local learnLessonGroupList
+
+    if $isLessonApply;then
+        local learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
+        [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
+        ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" 
+        [[ -z $publicSelItemContent ]] && return
+        local lessonGroupNameSel=$publicSelItemContent
+
+        local learnLessonList="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonList)"
+        [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
+        echo
+        ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}"
+        [[ -z $publicSelItemContent ]] && return
+        local lessonNameSel=$publicSelItemContent
+
+        local contentTypeList=("article" "sentence" "imitate")
+        local dirPathDataItemBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}"
+        for contentType in ${contentTypeList[@]}; do
+             #extra
+            [[ "$contentType" = "article" ]] && [[ ! -d "${dirPathDataItemBasic}/${contentType}.audio_english" ]] \
+                && ln -sf "${dirPathDataItemBasic}/sentence.audio_english" "${dirPathDataItemBasic}/article.audio_english" \
+                && mkdir "${dirPathDataItemBasic}/${contentType}.audio_english"\
+
+            #basic  
+            [[ ! -d "${dirPathDataItemBasic}/${contentType}.audio_english" ]] \
+                && mkdir "${dirPathDataItemBasic}/${contentType}.audio_english"\
+                && ftEcho -s "mkdir "${contentType}.audio_english""
+
+            [[ ! -d "${dirPathDataItemBasic}/${contentType}.drill_result" ]] \
+                && mkdir "${dirPathDataItemBasic}/${contentType}.drill_result"\
+                && ftEcho -s "mkdir "${contentType}.drill_result""
+
+            [[ ! -f "${dirPathDataItemBasic}/${contentType}.text_chinese" ]] \
+                && touch "${dirPathDataItemBasic}/${contentType}.text_chinese"\
+                && ftEcho -s "touch "${contentType}.text_chinese""
+
+            [[ ! -f "${dirPathDataItemBasic}/${contentType}.text_english" ]] \
+                && touch "${dirPathDataItemBasic}/${contentType}.text_english"\
+                && ftEcho -s "touch "${contentType}.text_english""
+        done
+
+        ftEcho -s "lesson files and directorys are apply finsihed"
+
+        return
+    fi
 
     if $isMergeLessonGroup;then
 
