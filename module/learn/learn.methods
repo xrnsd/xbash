@@ -29,7 +29,7 @@ ftLearnRepetionDrill()
 
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} Disabled, please confirm" && return
     #check argument
-    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
+    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo dirPathRootExampleSentence)
     local filePathLearnDataBase="${dirPathTempEng}/local.database"
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
     local isModeWrite=false isModeListen=false isModeRead=false
@@ -111,12 +111,7 @@ ftLearnRepetionDrill()
     [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
     local lessonGroupNameSel lessonGroupNameSelected="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupSelected)"
 
-    local dirPathLocal=$(pwd)
-    cd "${dirPathTempEng}"
-    local learnLessonGroupListDrillCache="$(find ./ -type f -name "repetionDrill.hository"  | sed 's/\.\///g'   | sed 's/\/repetionDrill\.hository//g')"
-    cd "${dirPathLocal}"
-
-    ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" -cs "---->Exist_Drill_Cache"  "${learnLessonGroupListDrillCache[@]}" -ch "${lessonGroupNameSelected}" 
+    ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" -ch "${lessonGroupNameSelected}" 
     [[ -z $publicSelItemContent ]] && return
     lessonGroupNameSel=$publicSelItemContent
     ftIniSetValue $filePathLearnDataBase learnLessonInfo lessonGroupSelected -a "${lessonGroupNameSel}"
@@ -133,18 +128,20 @@ ftLearnRepetionDrill()
 
     local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
     local learnLessonListDrilled="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}")"
-    local lessonNameSel lessonNameSelected="$(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected)"
+    local lessonNameSelected="$(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected)"
 
     local isUseDrillingRecord=true
-     if [[ -n $(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName") ]];then
+    local lessonNameSel=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName")
+    if [[ -n $lessonNameSel ]];then
         ftEcho -y "There are unfinished drilling records here. Do you want to continue it ? (Press Y/y is use，press enter equal to press y)"
         read -n 1 delSel
         [ -z "${delSel}" ] && delSel=y
         [[ $delSel != "y" ]] && isUseDrillingRecord=false
         echo
+    else
+        isUseDrillingRecord=false
     fi
     if $isUseDrillingRecord;then
-        lessonNameSel=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName")
         indexArray=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray")
         arrayIndexSort=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"))
         valRepetionDrillErrorHository=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"))
@@ -225,10 +222,10 @@ ftLearnRepetionDrill()
             #optimise
             bcompare &
             local windowFlag="bcompare.Beyond Compare" windowId=
-            for ((i=1;i<=10;i++)); do
+            for ((i=1;i<=30;i++)); do
                 windowId=$(wmctrl -xl | grep "${windowFlag}"| awk '{print $1}')
                 [[ -n "$windowId" ]] && break
-                sleep 0.2
+                sleep 0.1
             done
             [[ -z "$windowId" ]] &&ftEcho -e "operate fail" && return
             xdotool windowminimize $windowId
@@ -282,31 +279,44 @@ ftLearnRepetionDrill()
             local sentenceAudioIndex=1 sentenceAudioCount=$(ls -1 ${dirPathDataItemAudioFile} | wc -l)
             ((sentenceAudioCount==0)) && ftEcho -e "Can't find audio file in directory: ${dirPathDataItemAudioFile} " && return $resultFail
 
-            local filePathDataItemTextEnglishTipsTemp=/tmp/EnglishBasicTipsTemp englishItemTips
+            local filePathDataItemTextEnglishTipsTemp=/tmp/EnglishBasicTipsTemp filePathDataItemSoure
+            local englishItemTips isShowChineseTips=false
 
             if $isOperateTextEdit;then
                 ftTextGeditBackground "${filePathLearnDrillTemp}" &
             fi
 
-            cp $filePathDataItemTextEnglish $filePathDataItemTextEnglishTipsTemp
-            cp $filePathDataItemTextEnglish ${filePathDataItemTextEnglishTipsTemp}2
+            while true; do
+                $isShowChineseTips && filePathDataItemSoure="${filePathDataItemTextChinese}" || filePathDataItemSoure="${filePathDataItemTextEnglish}"
+                cp $filePathDataItemSoure $filePathDataItemTextEnglishTipsTemp
+                cp $filePathDataItemSoure ${filePathDataItemTextEnglishTipsTemp}2
+                while (( $sentenceAudioIndex <= $sentenceAudioCount  )); do
+                    timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
+                    filePathItemAudioFile="${dirPathDataItemAudioFile}/${sentenceAudioIndex}.mp3"
+                    [ ! -f "${filePathItemAudioFile}" ] && ftEcho -en "can't find audio file:" && echo "${filePathItemAudioFile}" && continue
 
-            while (( $sentenceAudioIndex <= $sentenceAudioCount  )); do
-                timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
-                filePathItemAudioFile="${dirPathDataItemAudioFile}/${sentenceAudioIndex}.mp3"
-                [ ! -f "${filePathItemAudioFile}" ] && ftEcho -en "can't find audio file:" && echo "${filePathItemAudioFile}" && continue
-
-                englishItem=$(awk 'NR=="'$sentenceAudioIndex'"' "${filePathDataItemTextEnglishTipsTemp}2")
-                [[ -z "$englishItem" ]] && ((sentenceAudioIndex+=1)) && continue
-                englishItemTips="\\\033[1;33m${englishItem}\\\033[0m\\\033[44;37m<<<<<<<<<<\\\033[0m"
-                cp -rf "${filePathDataItemTextEnglishTipsTemp}2" "${filePathDataItemTextEnglishTipsTemp}"
-                sed -i "${indexSort}s/${englishItem}/${englishItemTips}/g" $filePathDataItemTextEnglishTipsTemp
-                clear
-                echo -e "${drillInfomationTips}\n\033[1;33mDuration info:\033[0m ${timingChang}"
-                echo -e "$(cat $filePathDataItemTextEnglishTipsTemp)"
-                play -q $filePathItemAudioFile
-                sleep 1
-                ((sentenceAudioIndex+=1))
+                    englishItem=$(awk 'NR=="'$sentenceAudioIndex'"' "${filePathDataItemTextEnglishTipsTemp}2")
+                    [[ -z "$englishItem" ]] && ((sentenceAudioIndex+=1)) && continue
+                    englishItemTips="\\\033[1;33m${englishItem}\\\033[0m\\\033[44;37m<<<<<<<<<<\\\033[0m"
+                    cp -rf "${filePathDataItemTextEnglishTipsTemp}2" "${filePathDataItemTextEnglishTipsTemp}"
+                    sed -i "${indexSort}s/${englishItem}/${englishItemTips}/g" $filePathDataItemTextEnglishTipsTemp
+                    clear
+                    echo -e "${drillInfomationTips}\n\033[1;33mDuration info:\033[0m ${timingChang}"
+                    echo -e "$(cat $filePathDataItemTextEnglishTipsTemp)"
+                    play -q $filePathItemAudioFile
+                    sleep 1
+                    ((sentenceAudioIndex+=1))
+                done
+                sentenceAudioIndex=1
+                ftEcho -key -n "Q T Any__other__key" "to__quit to__show__tips to__replay"
+                read -n 1 playOpt
+                case "$playOpt" in
+                    q | Q )
+                        break;;
+                    t | T )
+                        $isShowChineseTips && isShowChineseTips=false || isShowChineseTips=true;;
+                    * ) ;;
+                esac
             done
         elif $isModeRead;then
             if $isOperateHideChineseTitle;then
