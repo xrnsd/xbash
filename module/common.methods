@@ -991,14 +991,10 @@ ftIniGetValue()
     [ -n "${isReadSilence}" ]&&[ -n "$errorContent" ] && ftEcho -ea "$errorContent \\n请查看下面说明:" && ftIniGetValue -h && return $resultFail
 
     #实现主体
-
-    local indeStart=$(sed -n "/\[${blockName}\]/=" $filePath)
-
-    local line lineInex=$indeStart
-    while true; do
-        ((lineInex+=1))
-        line=$(awk 'NR=="'$lineInex'"' "$filePath")
-        [[ -z "$line" ]] && break
+    local begin_block=0 end_block=0
+    cat $filePath | while read line ; do
+        [ "X$line" = "X[$blockName]" ] && begin_block=1 && continue
+        (( $begin_block!=1 )) && continue
         $isFindItem && [[ -n $(echo "${line}" |grep "${keyName}\=") ]] && echo "find it" && return
 
         (( $(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')==1 )) && break
