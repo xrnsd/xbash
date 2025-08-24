@@ -109,12 +109,12 @@ ftLearnRepetionDrill()
     local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=normal
     local learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
     [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
-    local lessonGroupNameSel lessonGroupNameSelected="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupSelected)"
+    local lessonGroupNameSel lessonGroupNameSelected="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupSelected${contentType}${operateMode})"
 
     ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" -ch "${lessonGroupNameSelected}" 
     [[ -z $publicSelItemContent ]] && return
     lessonGroupNameSel=$publicSelItemContent
-    ftIniSetValue $filePathLearnDataBase learnLessonInfo lessonGroupSelected -a "${lessonGroupNameSel}"
+    ftIniSetValue $filePathLearnDataBase learnLessonInfo "lessonGroupSelected${contentType}${operateMode}" -a "${lessonGroupNameSel}"
 
     local fileNameDataBaseRepetionDrill=repetionDrill.hository
     local filePathDataBaseRepetionDrill="${dirPathTempEng}/${lessonGroupNameSel}/${fileNameDataBaseRepetionDrill}"
@@ -128,7 +128,7 @@ ftLearnRepetionDrill()
 
     local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
     local learnLessonListDrilled="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}")"
-    local lessonNameSelected="$(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected)"
+    local lessonNameSelected="$(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected${contentType}${operateMode})"
 
     local isUseDrillingRecord=true
     local lessonNameSel=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName")
@@ -152,7 +152,7 @@ ftLearnRepetionDrill()
         [[ -z $publicSelItemContent ]] && return
         lessonNameSel=$publicSelItemContent
     fi
-    ftIniSetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected -a "${lessonNameSel}"
+    ftIniSetValue $filePathLearnDataBase "${lessonGroupNameSel}" "lessonSelected${contentType}${operateMode}" -a "${lessonNameSel}"
 
     ftTimeConsuming -i
 
@@ -280,7 +280,7 @@ ftLearnRepetionDrill()
             ((sentenceAudioCount==0)) && ftEcho -e "Can't find audio file in directory: ${dirPathDataItemAudioFile} " && return $resultFail
 
             local filePathDataItemTextEnglishTipsTemp=/tmp/EnglishBasicTipsTemp filePathDataItemSoure
-            local englishItemTips isShowChineseTips=false
+            local englishItemTips isShowChineseTips=$isOperateHideChineseTitle
 
             if $isOperateTextEdit;then
                 ftTextGeditBackground "${filePathLearnDrillTemp}" &
@@ -339,7 +339,7 @@ ftLearnRepetionDrill()
                     local fileLineCount=$(sed -n '$=' $filePathDataItemTextEnglish)
                     for (( index = 1; index <= $fileLineCount; index++ )); do
                        [ -f "${dirPathDataItemTextDrillResult}/${index}.result" ] && \
-                       echo -e $(cat "${dirPathDataItemTextDrillResult}/${index}.result") && continue
+                       echo -e $(awk 'NR=="'1'"' "${dirPathDataItemTextDrillResult}/${index}.result") && continue
                        echo -e $(awk 'NR=="'$index'"' $filePathDataItemTextEnglish)
                     done
                 fi

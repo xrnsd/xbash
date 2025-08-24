@@ -367,9 +367,8 @@ ftEcho()
             applyContent="${arg2}"
             [[ -n $arg3 ]] && listApply=($(echo $arg3 | sed 's/ /\n/g'))
             ;;
-        -ch )
-            isContentHighlight=true
-            highlightContent="${arg2}"
+        -ch )highlightContent="${arg2}"
+            [[ -n $highlightContent ]] && isContentHighlight=true
             ;;
         *   )
             # [[ -z "${arg}" ]] && break 
