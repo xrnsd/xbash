@@ -2,7 +2,7 @@
 [[ -f "$rFilePathXbashModuleLearnCommon" ]] && source $rFilePathXbashModuleLearnCommon
 ##################################################
 ##                                              ##
-##             学习工具实现                      ##
+##             learn tools                      ##
 ##                                              ##
 ##################################################
 _ftLearnRepetionDrill()
@@ -32,7 +32,8 @@ ftLearnRepetionDrill()
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo dirPathRootExampleSentence)
     local filePathLearnDataBase="${dirPathTempEng}/local.database"
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
-    local isModeWrite=false isModeListen=false isModeRead=false
+    local contentType
+    local isModeInited=false isModeWrite=false isModeListen=false isModeRead=false
     local isOperateTextEdit=false isOperateHideChineseTitle=false isOperateAutoBcompare=false isOperatePlayAudio=false
     local valCount=7 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
@@ -79,6 +80,7 @@ ftLearnRepetionDrill()
                 else
                     errorContent="${errorContent}\\ninvalid mode argument:${operateMode}"
                 fi
+                isModeInited=true
              ;;
         -b ) isOperateAutoBcompare=true
              [[ -z $(which bcompare) ]] && ftLearnRepetionDrill --rely "bcompare" && return $resultFail
@@ -99,7 +101,9 @@ ftLearnRepetionDrill()
     *)   errorContent="${errorContent}\\naregument invalid:${1}"
         ;;
     esac
-    [ -n "$errorContent" ] && ftEcho -ea "[${ftEffect}]‘s arguments exception : ${errorContent}\\n:" && ftLearnRepetionDrill -h && return $resultFail
+    ! $isModeInited && errorContent="${errorContent}\\nmode is not configed"
+    [[ -z "$contentType" ]] && errorContent="${errorContent}\\ncontentType is not configed"
+    [[ -n "$errorContent" ]] && ftEcho -e "${errorContent}:" && ftLearnRepetionDrill -h && return $resultFail
 
     local filePathDrillTemp=/tmp/Drill.txt
     local filePathCompareTempText=/tmp/tempTextDrill.txt
@@ -240,38 +244,38 @@ ftLearnRepetionDrill()
             cp $filePathDataItemTextEnglish $filePathCompareExampleText
             bcompare "${filePathCompareExampleText}" "${filePathTempWriteDrillText}"
 
-            #save drill result
-            if [[ -n $(grep -sn "\+\+" "${filePathTempWriteDrillText}") ]] \
-                    || [[ -n $(grep -sn "\*\*" "${filePathTempWriteDrillText}") ]] \
+            #save drill records
+            if [[ -n $(grep -sn "\+\+" "${filePathCompareExampleText}") ]] \
+                    || [[ -n $(grep -sn "\*\*" "${filePathCompareExampleText}") ]] \
                     && $isOperateTextEdit;then
-                    mv "${filePathTempWriteDrillText}" "${filePathTempWriteDrillText}_basic"
+                    mv "${filePathCompareExampleText}" "${filePathCompareExampleText}_basic"
 
-                    if ftTransformDrillReslt "${filePathTempWriteDrillText}_basic" "${filePathTempWriteDrillText}" > /dev/null;then
+                    if ftTransformDrillReslt "${filePathCompareExampleText}_basic" "${filePathCompareExampleText}" > /dev/null;then
                         echo -e "\033[1;33mDrill results:\033[0m form tranform finished"
-                        rm -rf "${filePathTempWriteDrillText}_basic"
-                        local lineNumList="$(awk '/\\033\[/{print NR}' $filePathTempWriteDrillText)"
+                        rm -rf "${filePathCompareExampleText}_basic"
+                        local lineNumList="$(awk '/\\033\[/{print NR}' $filePathCompareExampleText)"
                         [[ -n $lineNumList ]] && \
                         for lineNum in ${lineNumList[@]}; do
                             filePathItemSentenceEnglishDrillResult="${dirPathDataItemTextDrillResult}/${lineNum}.result"
-                            awk 'NR=="'$lineNum'"' "${filePathTempWriteDrillText}" >> "${filePathItemSentenceEnglishDrillResult}"
+                            awk 'NR=="'$lineNum'"' "${filePathCompareExampleText}" >> "${filePathItemSentenceEnglishDrillResult}"
                             #delete repeate item
                             sort -u "${filePathItemSentenceEnglishDrillResult}" > "${filePathItemSentenceEnglishDrillResult}_Sort"
                             mv "${filePathItemSentenceEnglishDrillResult}_Sort" "${filePathItemSentenceEnglishDrillResult}"
                         done && \
-                        printf "Line number \033[31m${lineNumList[@]}\033[0m drill result is saved\n"
+                        printf "Line number \033[31m${lineNumList[@]}\033[0m drill records is saved\n"
                     else
                         echo -e "\033[1;33mDrill results:\033[0m form tranform fail"
                     fi
 
                     #clean drill file
-                    rm -rf "${filePathTempWriteDrillText}_basic"
-                    echo -n "" > ${filePathTempWriteDrillText}
+                    rm -rf "${filePathCompareExampleText}_basic"
+                    echo -n "" > ${filePathCompareExampleText}
                     echo
-            elif [[ -n $(grep -sn "\+" "${filePathTempWriteDrillText}") ]] \
-                || [[ -n $(grep -sn "\*" "${filePathTempWriteDrillText}") ]] \
+            elif [[ -n $(grep -sn "\+" "${filePathCompareExampleText}") ]] \
+                || [[ -n $(grep -sn "\*" "${filePathCompareExampleText}") ]] \
                 && $isOperateTextEdit;then
                   echo -en "${drillInfomationTips} drill result from error:"
-                  ftEcho -e "$(cat $filePathTempWriteDrillText)"
+                  ftEcho -e "$(cat $filePathCompareExampleText)"
             else 
                 ftEcho -s "cancel translator text from"
             fi
@@ -543,7 +547,7 @@ ftLearnRepetionDrill()
                         "to__save__the__progress__and__exit to__quit  \
                         to__skip__and__go__to__the__next__sentence  \
                         to__translation__doubts  to__grammar__issues  \
-                        to__read__pending__confirmation  to__to__be__strengthened  \
+                        to__read__pending__confirmation  to__be__strengthened  \
                         to__previous__sentence  to__replay"
                     
                     else
@@ -551,7 +555,7 @@ ftLearnRepetionDrill()
                         "to__save__the__progress__and__exit to__quit  \
                         to__skip__and__go__to__the__next__sentence  \
                         to__translation__doubts  to__grammar__issues  \
-                        to__read__pending__confirmation  to__to__be__strengthened  \
+                        to__read__pending__confirmation  to__be__strengthened  \
                         to__previous__sentence"
                     fi
 
@@ -792,17 +796,19 @@ ftLearnLessonManage()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
+    local lessonGroupNameSel lessonNameSel
     local isAddLessonGroup=false isAddLesson=false isUpdate=false isUpdateDrillGroupError=false
     local isMergeLessonGroup=false lessonGroupNameMerge isLessonApply=false
-    local valCount=2 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local valCount=3 errorContent arg arg2 arg3
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))};eval arg3=\${$((i+2))}
     case "${arg}" in
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    ftLearnLessonManage -h / --help   #view help information
 #                        -acg          #add leesson group
 #                        -ac           #add lesson with lesson group
-#                        -ap           #fill in the missing files or directories of the lesson
+                         -ap           #fill in the missing files or directories of the lesson
+#                        -ap lessonGroupName lessonName        
 #                        -u            #update lesson list and lesson group list
 #                        -une          #update lesson : needRepetionDrill/error
 #                        -m "lesson group name" #merge lesson group
@@ -813,6 +819,8 @@ ftLearnLessonManage()
         -ac) isAddLesson=true
                      ;;
         -ap) isLessonApply=true
+             lessonGroupNameSel="${arg2}"
+             lessonNameSel="${arg3}"
                      ;;
         -u) isUpdate=true
                      ;;
@@ -840,21 +848,36 @@ ftLearnLessonManage()
     local learnLessonGroupList
 
     if $isLessonApply;then
-        local learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
-        [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
-        ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" 
-        [[ -z $publicSelItemContent ]] && return
-        local lessonGroupNameSel=$publicSelItemContent
-
-        local learnLessonList="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonList)"
-        [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
-        echo
-        ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}"
-        [[ -z $publicSelItemContent ]] && return
-        local lessonNameSel=$publicSelItemContent
+        ftEcho -s "apply mode"
+        if [[ -z $lessonGroupNameSel ]];then
+            local learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
+            [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
+            ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" 
+            [[ -z $publicSelItemContent ]] && return
+            lessonGroupNameSel=$publicSelItemContent
+        fi
+        if [[ -z $lessonNameSel ]];then
+            local learnLessonList="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonList)"
+            [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
+            echo
+            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}"
+            [[ -z $publicSelItemContent ]] && return
+            lessonNameSel=$publicSelItemContent
+        fi
 
         local contentTypeList=("article" "sentence" "imitate")
         local dirPathDataItemBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}"
+
+        local lessonGroupContentType=$(ftIniGetValue  $filePathLearnDataBase ${lessonGroupNameSel} lessonGroupContentType)
+        if [[ $lessonGroupContentType = "ImitateTraining" ]];then
+            contentTypeList=("imitate")
+            touch "${dirPathDataItemBasic}/${contentTypeList}.drill_result"
+        fi 
+        # if true;then
+        #     echo "contentTypeList=${contentTypeList[@]}"
+        #     return
+        # fi
+
         for contentType in ${contentTypeList[@]}; do
              #extra
             [[ "$contentType" = "article" ]] && [[ ! -d "${dirPathDataItemBasic}/${contentType}.audio_english" ]] \
@@ -1050,80 +1073,71 @@ ftLearnLessonManage()
         ftIniAddItem -p $filePathLearnDataBase -t "${lessonGroupName}" -i lessonList -l "none"
         #创建课程文件夹
         mkdir -p "${dirPathTempEng}/${lessonGroupName}"
+
+        local lessonGroupContentTypeList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo  lessonGroupContentTypeList)"
+        ftEcho -c 10 "please select lesson content type" "${lessonGroupContentTypeList[@]}"
+        [[ -z $publicSelItemContent ]] && return
+        local lessonGroupContentTypeSel=$publicSelItemContent
+        ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} lessonGroupContentType ${lessonGroupContentTypeSel} -a
+
+        ftEcho -s "add lesson update finished"
         return
     fi
     if $isAddLesson; then
         [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
-        local lessonGroupNameSel
+
         learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo  lessonGroupList)"
         [[ -z $learnLessonGroupList ]] && ftEcho -e "当前没有可供选择的课程" && return
-        ftEcho -c 10 "请选择课程集" "${learnLessonGroupList[@]}"
+        ftEcho -c 4 "please select lesson group" "${learnLessonGroupList[@]}"
         [[ -z $publicSelItemContent ]] && return
         lessonGroupNameSel=$publicSelItemContent
 
-        ftEcho -r  "请输入课程名称："
+        ftEcho -r  "please input lesson name："
         read lessonName
         lessonName=$(echo $lessonName |sed s/[[:space:]]//g)
 
         local dirPathLessonGroup="${dirPathTempEng}/${lessonGroupNameSel}"
-        local filePathDataItemTextEnglish="${dirPathLessonGroup}/${lessonName}/sentence.text_english"
-        local filePathDataItemTextChinese="${dirPathLessonGroup}/${lessonName}/sentence.text_chinese"
-        local filePathExampleText="${dirPathLessonGroup}/${lessonName}/article.text_english"
-        local filePathExampleTranslateText="${dirPathLessonGroup}/${lessonName}/article.text_chinese"
-        local filePathImitateText="${dirPathLessonGroup}/${lessonName}/imitate.text_chinese_english"
-        if [[ -f $filePathDataItemTextEnglish ]] || [[ -f $filePathDataItemTextChinese ]]; then
+        
+        mkdir -p "${dirPathLessonGroup}/${lessonName}" && \
+        ftLearnLessonManage -ap "${lessonGroupNameSel}" "${lessonName}"
 
-            #补齐课程默认文件目录
-            touch $filePathDataItemTextEnglish $filePathDataItemTextChinese $filePathExampleText $filePathExampleTranslateText $filePathImitateText
-            mkdir -p "${dirPathLessonGroup}/${lessonName}/article.audio_english" \
-                     "${dirPathLessonGroup}/${lessonName}/article.drill_result" \
-                     "${dirPathLessonGroup}/${lessonName}/sentence.audio_english" \
-                     "${dirPathLessonGroup}/${lessonName}/sentence.drill_result"
-
-            ftEcho -e "课程:${lessonName}已存在"
-            return
-        fi
-
-        mkdir -p "${dirPathLessonGroup}/${lessonName}/article.audio_english" \
-                 "${dirPathLessonGroup}/${lessonName}/article.drill_result" \
-                 "${dirPathLessonGroup}/${lessonName}/sentence.audio_english" \
-                 "${dirPathLessonGroup}/${lessonName}/sentence.drill_result"
-
-        if touch $filePathDataItemTextEnglish $filePathDataItemTextChinese $filePathExampleText $filePathExampleTranslateText $filePathImitateText; then
-            XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $filePathDataItemTextEnglish $filePathDataItemTextChinese $filePathExampleText $filePathImitateText
+        local lessonGroupContentType=$(ftIniGetValue  $filePathLearnDataBase ${lessonGroupNameSel} lessonGroupContentType)
+        
+        # if true;then
+        #     echo "lessonGroupContentType=${lessonGroupContentType}"
+        #     return
+        # fi
+        if [[ $lessonGroupContentType = "ImitateTraining" ]];then
+            XMODIFIERS=gnome-text-editor "${dirPathLessonGroup}/${lessonName}/imitate.text_chinese"
         else
-            ftEcho -ex "创建课程文件失败"
-            return;
-        fi
+            local filePathDataItemTextEnglish="${dirPathLessonGroup}/${lessonName}/sentence.text_english"
+            local filePathDataItemTextChinese="${dirPathLessonGroup}/${lessonName}/sentence.text_chinese"
+            local filePathExampleText="${dirPathLessonGroup}/${lessonName}/article.text_english"
+            local filePathExampleTranslateText="${dirPathLessonGroup}/${lessonName}/article.text_chinese"
 
-        if [[ ! -s $filePathDataItemTextEnglish ]] || [[ ! -s $filePathDataItemTextChinese ]]; then
-            ftEcho -s "在${lessonGroupNameSel}下新建的课程${lessonName}为空，将删除"
-            rm $filePathDataItemTextEnglish $filePathDataItemTextChinese $filePathExampleText $filePathImitateText
-            return
-        fi
-        [[ ! -s $filePathExampleText ]] && ftEcho -e "课程${lessonName}的例文为空"
-        [[ ! -s $filePathImitateText ]] && ftEcho -e "课程${lessonName}的仿例文为空"
-        if [[ ! -s $filePathDataItemTextEnglish ]]; then
-            ftEcho -y "Should any audio file be created?"
-            read -n 1 sel
-            case "$sel" in
-                y | Y )
-                    local filePathText=$filePathDataItemTextEnglish
-                    local dirPathMp3="${dirPathLessonGroup}/${lessonName}/sentence.audio_english"
-                    ftText2Mp3 -fpt "${filePathDataItemTextEnglish}" -dpm "${dirPathMp3}"
-                    ;;
-                * )
-                    ;;
-            esac
-        fi   
+            XMODIFIERS=gnome-text-editor $filePathDataItemTextEnglish $filePathDataItemTextChinese $filePathExampleText
 
-        local learnLessonList=($(ls $dirPathLessonGroup|grep chinese |  awk -F. '{print $1}'))
-        if [[ -n $learnLessonList ]]; then
-            # echo ${learnLessonList[@]}
-            # echo "lessonGroupNameSel=${lessonGroupNameSel}"
-            ftIniSetValue $filePathLearnDataBase "${lessonGroupNameSel}"  lessonList -l "${learnLessonList[*]}"
+            if [[ ! -s $filePathDataItemTextEnglish ]] || [[ ! -s $filePathDataItemTextChinese ]]; then
+                ftEcho -s "在${lessonGroupNameSel}下新建的课程${lessonName}为空，将删除"
+                rm $filePathDataItemTextEnglish $filePathDataItemTextChinese $filePathExampleText
+                return
+            fi
+            [[ ! -s $filePathExampleText ]] && ftEcho -e "课程${lessonName}的例文为空"
+            if [[ ! -s $filePathDataItemTextEnglish ]]; then
+                ftEcho -y "Should any audio file be created?"
+                read -n 1 sel
+                case "$sel" in
+                    y | Y )
+                        local filePathText=$filePathDataItemTextEnglish
+                        local dirPathMp3="${dirPathLessonGroup}/${lessonName}/sentence.audio_english"
+                        ftText2Mp3 -fpt "${filePathDataItemTextEnglish}" -dpm "${dirPathMp3}"
+                        ;;
+                    * )
+                        ;;
+                esac
+            fi
         fi
-
+        ftLearnLessonManage -u > /dev/null
         ftEcho -s "在${lessonGroupNameSel}下已新建课程${lessonName}"
     fi
 }
