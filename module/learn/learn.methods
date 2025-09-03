@@ -120,6 +120,8 @@ ftLearnRepetionDrill()
     lessonGroupNameSel=$publicSelItemContent
     ftIniSetValue $filePathLearnDataBase learnLessonInfo "lessonGroupSelected${contentType}${operateMode}" -a "${lessonGroupNameSel}"
 
+    local lessonGroupContentType=$(ftIniGetValue  $filePathLearnDataBase ${lessonGroupNameSel} lessonGroupContentType)
+
     local fileNameDataBaseRepetionDrill=repetionDrill.hository
     local filePathDataBaseRepetionDrill="${dirPathTempEng}/${lessonGroupNameSel}/${fileNameDataBaseRepetionDrill}"
 
@@ -165,7 +167,7 @@ ftLearnRepetionDrill()
     local filePathLearnDrillTemp=/tmp/LearnDrillTemp.txt
 
     #needRepetionDrill lesson
-    local filePathLearnResultProblem=${dirPathTempEng}/Problem.list
+    local filePathLearnResultProblem=${dirPathTempEng}/needRepetionDrill/Problem.list
     local filePathLearnResultDrillEnglish="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_english"
     local filePathLearnResultDrillChinese="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_chinese"
     local filePathLearnResultDrillAudioBasic="${dirPathTempEng}/needRepetionDrill/normal/sentence.audio_english"
@@ -211,7 +213,7 @@ ftLearnRepetionDrill()
 
     #============= the code port of handle article content ==================
 
-    if [[ "$contentType" = "article" ]]; then
+    if [[ "$contentType" = "article" ]]||[[ "$contentType" = "imitate" ]]; then
 
         chineseItem=$(cat $filePathDataItemTextChinese)
         englishItem=$(cat $filePathDataItemTextEnglish)
@@ -232,12 +234,35 @@ ftLearnRepetionDrill()
                 sleep 0.1
             done
             [[ -z "$windowId" ]] &&ftEcho -e "operate fail" && return
-            xdotool windowminimize $windowId
+            xdotool windowminimize $windowId > /dev/null
 
             #input drill result
             ftEcho -s "please write translation"
             echo -n "" > ${filePathTempWriteDrillText}
             gedit --new-window $filePathTempWriteDrillText
+
+            #alignment drill result
+            if [[ "$contentType" = "imitate" ]]&&\
+                       [[ $lessonGroupContentType = "ImitateTraining" ]];then
+                local fileLineCount=$(sed -n '$=' $filePathTempWriteDrillText)
+                local filePathTempWriteDrillTextAlignment="${filePathTempWriteDrillText}Alignment"
+                echo -n "" > "${filePathTempWriteDrillTextAlignment}"
+                for (( index = 1; index <= $fileLineCount; index++ )); do
+                    awk 'NR=="'$index'"' $filePathTempWriteDrillText >> "${filePathTempWriteDrillTextAlignment}"
+                    awk 'NR=="'$index'"' $filePathDataItemTextEnglish >> "${filePathTempWriteDrillTextAlignment}"
+                done
+                gedit "${filePathTempWriteDrillTextAlignment}"
+                fileLineCount=$(sed -n '$=' "${filePathTempWriteDrillTextAlignment}")
+                for (( index = 0; index <= $fileLineCount; index+=2 )); do
+                    awk 'NR=="'$index'"' "${filePathTempWriteDrillTextAlignment}" >> "${filePathTempWriteDrillTextAlignment}Example"
+                done
+                for (( index = 1; index <= $fileLineCount; index+=2 )); do
+                    awk 'NR=="'$index'"' "${filePathTempWriteDrillTextAlignment}" >> "${filePathTempWriteDrillTextAlignment}Temp"
+                done
+
+                mv "${filePathTempWriteDrillTextAlignment}Temp" "${filePathTempWriteDrillText}"
+                mv "${filePathTempWriteDrillTextAlignment}Example" "${filePathDataItemTextEnglish}"
+            fi
 
             #bcompare drill result
             ftEcho -s "please bcompare translation"
@@ -248,28 +273,36 @@ ftLearnRepetionDrill()
             if [[ -n $(grep -sn "\+\+" "${filePathCompareExampleText}") ]] \
                     || [[ -n $(grep -sn "\*\*" "${filePathCompareExampleText}") ]] \
                     && $isOperateTextEdit;then
-                    mv "${filePathCompareExampleText}" "${filePathCompareExampleText}_basic"
-
-                    if ftTransformDrillReslt "${filePathCompareExampleText}_basic" "${filePathCompareExampleText}" > /dev/null;then
+                    if [[ "$contentType" = "imitate" ]]&&\
+                       [[ $lessonGroupContentType = "ImitateTraining" ]];then
+                        cp -rf -v "${filePathTempWriteDrillText}" "${dirPathDataItemTextDrillResult}"
+                        rm -rf "${filePathDataItemTextEnglish}"
+                        ftTransformDrillReslt "${filePathCompareExampleText}" "${filePathDataItemTextEnglish}" &&\
                         echo -e "\033[1;33mDrill results:\033[0m form tranform finished"
-                        rm -rf "${filePathCompareExampleText}_basic"
-                        local lineNumList="$(awk '/\\033\[/{print NR}' $filePathCompareExampleText)"
-                        [[ -n $lineNumList ]] && \
-                        for lineNum in ${lineNumList[@]}; do
-                            filePathItemSentenceEnglishDrillResult="${dirPathDataItemTextDrillResult}/${lineNum}.result"
-                            awk 'NR=="'$lineNum'"' "${filePathCompareExampleText}" >> "${filePathItemSentenceEnglishDrillResult}"
-                            #delete repeate item
-                            sort -u "${filePathItemSentenceEnglishDrillResult}" > "${filePathItemSentenceEnglishDrillResult}_Sort"
-                            mv "${filePathItemSentenceEnglishDrillResult}_Sort" "${filePathItemSentenceEnglishDrillResult}"
-                        done && \
-                        printf "Line number \033[31m${lineNumList[@]}\033[0m drill records is saved\n"
                     else
-                        echo -e "\033[1;33mDrill results:\033[0m form tranform fail"
-                    fi
+                        mv "${filePathCompareExampleText}" "${filePathCompareExampleText}_basic"
+                        if ftTransformDrillReslt "${filePathCompareExampleText}_basic" "${filePathCompareExampleText}" > /dev/null;then
+                            echo -e "\033[1;33mDrill results:\033[0m form tranform finished"
+                            rm -rf "${filePathCompareExampleText}_basic"
+                            local lineNumList="$(awk '/\\033\[/{print NR}' $filePathCompareExampleText)"
+                            [[ -n $lineNumList ]] && \
+                            for lineNum in ${lineNumList[@]}; do
+                                filePathItemSentenceEnglishDrillResult="${dirPathDataItemTextDrillResult}/${lineNum}.result"
+                                awk 'NR=="'$lineNum'"' "${filePathCompareExampleText}" >> "${filePathItemSentenceEnglishDrillResult}"
+                                #delete repeate item
+                                sort -u "${filePathItemSentenceEnglishDrillResult}" > "${filePathItemSentenceEnglishDrillResult}_Sort"
+                                mv "${filePathItemSentenceEnglishDrillResult}_Sort" "${filePathItemSentenceEnglishDrillResult}"
+                            done && \
+                            printf "Line number \033[31m${lineNumList[@]}\033[0m drill records is saved\n"
+                        else
+                            echo -e "\033[1;33mDrill results:\033[0m form tranform fail"
+                        fi
 
-                    #clean drill file
-                    rm -rf "${filePathCompareExampleText}_basic"
-                    echo -n "" > ${filePathCompareExampleText}
+                        #clean drill file
+                        rm -rf "${filePathCompareExampleText}_basic"
+                        echo -n "" > ${filePathCompareExampleText}
+                    fi
+                    
                     echo
             elif [[ -n $(grep -sn "\+" "${filePathCompareExampleText}") ]] \
                 || [[ -n $(grep -sn "\*" "${filePathCompareExampleText}") ]] \
@@ -279,7 +312,7 @@ ftLearnRepetionDrill()
             else 
                 ftEcho -s "cancel translator text from"
             fi
-        elif $isModeListen;then
+        elif $isModeListen && [[ "$contentType" = "article" ]];then
             local sentenceAudioIndex=1 sentenceAudioCount=$(ls -1 ${dirPathDataItemAudioFile} | wc -l)
             ((sentenceAudioCount==0)) && ftEcho -e "Can't find audio file in directory: ${dirPathDataItemAudioFile} " && return $resultFail
 
@@ -322,7 +355,7 @@ ftLearnRepetionDrill()
                     * ) ;;
                 esac
             done
-        elif $isModeRead;then
+        elif $isModeRead && [[ "$contentType" = "article" ]];then
             if $isOperateHideChineseTitle;then
                 ftEcho -e "error argument config, please enbale tips display"
                 return
@@ -354,6 +387,34 @@ ftLearnRepetionDrill()
                 ftEcho -key "Q Any__other__key" "to__quit to__display__English"
                 read -n 1 operation
                 [[ $operation = "q" ]] || [[ $operation = "Q" ]] && echo && break
+            done
+        elif $isModeRead &&\
+            [[ "$contentType" = "imitate" ]]&&\
+            [[ $lessonGroupContentType = "ImitateTraining" ]];then
+
+            timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
+            drillInfomationTipsTemp="${drillInfomationTips}\n\
+            \033[1;33mDuration info:\033[0m ${timingChang}"
+
+            local fileLineCount=$(sed -n '$=' $filePathDataItemTextEnglish) index=1
+            while true; do
+                clear
+                echo -e ${drillInfomationTipsTemp}
+                echo
+                echo -e "$(awk 'NR=="'$index'"' $filePathDataItemTextChinese)"
+                echo -e "$(awk 'NR=="'$index'"' $filePathDataItemTextEnglish)"
+                echo -e "$(awk 'NR=="'$index'"' $dirPathDataItemTextDrillResult)"
+                echo
+                ftEcho -key "W Q Any__other__key" "to__previous__sentence to__quit to__display__English"
+                read -n 1 operation
+
+                case "$operation" in
+                    q | Q ) echo
+                            break;;
+                    w | W ) (( index>1 )) && (( index-=1 )) || (( index=1 ))
+                            continue;;
+                    * ) ((index < $fileLineCount)) && (( index+=1 )) || ((  index=1 ));;
+                esac
             done
         fi 
 

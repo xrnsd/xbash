@@ -377,7 +377,7 @@ ftTransformDrillReslt()
         # help infoumation ==============
         -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
 #=========================================================
-#    ftTransformDrillReslt dirNameLessonGroup fileNameTextData dirNameAudio lessonNumber lineNumber
+#    ftTransformDrillReslt filePathBasic filePathResult
 #========================================================="; return ;;
     * ) ;; esac;done
 
