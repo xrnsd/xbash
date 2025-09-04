@@ -18,7 +18,7 @@ _ftLearnRepetionDrill()
     elif [[ "$prev" == "--mode" ]]; then
         COMPREPLY=( $(compgen -W "write listen read" -- "$cur") )
     else
-        COMPREPLY=( $(compgen -W "-h -te -ht -b -pl --type --mode --help" -- "$cur") )
+        COMPREPLY=( $(compgen -W "-h -te -ht -b -pl -up --type --mode --help" -- "$cur") )
     fi
 }
 complete -F _ftLearnRepetionDrill ftLearnRepetionDrill
@@ -33,7 +33,7 @@ ftLearnRepetionDrill()
     local filePathLearnDataBase="${dirPathTempEng}/local.database"
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
     local contentType
-    local isModeInited=false isModeWrite=false isModeListen=false isModeRead=false
+    local isModeInited=false isModeWrite=false isModeListen=false isModeRead=false isUsePlan=false
     local isOperateTextEdit=false isOperateHideChineseTitle=false isOperateAutoBcompare=false isOperatePlayAudio=false
     local valCount=7 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
@@ -47,6 +47,7 @@ ftLearnRepetionDrill()
 #                         -ht    #drill by hide title
 #                         -b     #drill result auto bcompare
 #                         -pl    #play audio
+#                         -up    #use plan
 #    #content type
 #    ftLearnRepetionDrill --type article   #using text exercises
 #                                sentence  #using sentence exercises
@@ -91,12 +92,14 @@ ftLearnRepetionDrill()
             ;;
         -pl ) isOperatePlayAudio=true
             ;;
+        -up ) isUsePlan=true
+            ;;
     * ) ;; esac;done
 
     #argument check
     (( $#>$valCount )) && errorContent="${errorContent}\\nThe maximum number of parameters is ${valCount}, now it is $#"
     case "$1" in
-    -h | --help | --type | --mode | -b | -te | -ht | -pl)
+    -h | --help | --type | --mode | -b | -te | -ht | -pl | -up)
         ;;
     *)   errorContent="${errorContent}\\naregument invalid:${1}"
         ;;
@@ -113,9 +116,13 @@ ftLearnRepetionDrill()
     local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=normal
     local learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
     [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
+    local lessonGroupDailyStudyPlanSelected="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupDailyStudyPlanSelected${contentType}${operateMode})"
     local lessonGroupNameSel lessonGroupNameSelected="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupSelected${contentType}${operateMode})"
 
-    ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" -ch "${lessonGroupNameSelected}" 
+    if $isUsePlan && [[ -n $lessonGroupDailyStudyPlanSelected ]];then
+        lessonGroupNameSelected=${lessonGroupDailyStudyPlanSelected}
+    fi
+    ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" -ch "${lessonGroupNameSelected}"
     [[ -z $publicSelItemContent ]] && return
     lessonGroupNameSel=$publicSelItemContent
     ftIniSetValue $filePathLearnDataBase learnLessonInfo "lessonGroupSelected${contentType}${operateMode}" -a "${lessonGroupNameSel}"
@@ -132,8 +139,6 @@ ftLearnRepetionDrill()
     local learnLessonList="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonList)"
     [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
 
-    local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
-    local learnLessonListDrilled="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}")"
     local lessonNameSelected="$(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected${contentType}${operateMode})"
 
     local isUseDrillingRecord=true
@@ -153,8 +158,18 @@ ftLearnRepetionDrill()
         valRepetionDrillErrorHository=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"))
         drillTrueCount=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"))
     else
+        local keyNameDailyStudyPlanLesson="lessonDailyStudyPlan${contentType}${operateMode}"
+        local lessonDailyStudyPlanList=($(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDailyStudyPlanLesson}"))
+
+        local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
+        local learnLessonListDrilled="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}")"
+
         echo
-        ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "_Drilled"  "${learnLessonListDrilled[@]}" -ch "${lessonNameSelected}"
+        if $isUsePlan && [[ -n $lessonDailyStudyPlanList ]];then
+            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "ToBePracticed"  "${lessonDailyStudyPlanList[@]}" -ch "${lessonNameSelected}"
+        else
+            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "Drilled"  "${learnLessonListDrilled[@]}" -ch "${lessonNameSelected}"
+        fi
         [[ -z $publicSelItemContent ]] && return
         lessonNameSel=$publicSelItemContent
     fi
@@ -848,7 +863,7 @@ ftOcrRepetionDrill()
     done 3< $filePath
 }
 
-complete -W "-h --help -acg -ac -ap -u -une -m" ftLearnLessonManage
+complete -W "-h --help -acg -ac -ap -u -une -m -adsp" ftLearnLessonManage
 ftLearnLessonManage()
 {
     local ftEffect=学习课程配置
@@ -859,7 +874,7 @@ ftLearnLessonManage()
     #解参验耦
     local lessonGroupNameSel lessonNameSel
     local isAddLessonGroup=false isAddLesson=false isUpdate=false isUpdateDrillGroupError=false
-    local isMergeLessonGroup=false lessonGroupNameMerge isLessonApply=false
+    local isMergeLessonGroup=false lessonGroupNameMerge isLessonApply=false isAddDailyStudyPlan=false
     local valCount=3 errorContent arg arg2 arg3
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))};eval arg3=\${$((i+2))}
     case "${arg}" in
@@ -868,8 +883,9 @@ ftLearnLessonManage()
 #    ftLearnLessonManage -h / --help   #view help information
 #                        -acg          #add leesson group
 #                        -ac           #add lesson with lesson group
-                         -ap           #fill in the missing files or directories of the lesson
-#                        -ap lessonGroupName lessonName        
+#                        -ap           #fill in the missing files or directories of the lesson
+#                        -ap lessonGroupName lessonName
+#                        -adsp         #add daily study plan
 #                        -u            #update lesson list and lesson group list
 #                        -une          #update lesson : needRepetionDrill/error
 #                        -m "lesson group name" #merge lesson group
@@ -883,6 +899,8 @@ ftLearnLessonManage()
              lessonGroupNameSel="${arg2}"
              lessonNameSel="${arg3}"
                      ;;
+        -adsp) isAddDailyStudyPlan=true
+                     ;;
         -u) isUpdate=true
                      ;;
         -une) isUpdateDrillGroupError=true
@@ -895,7 +913,7 @@ ftLearnLessonManage()
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数数量无效"
     case "$1" in
-    -h | --help | -ac | -ap | -acg | -u | -une | -m)
+    -h | --help | -ac | -ap | -acg | -u | -une | -m | -adsp)
         ;;
     *)   errorContent="${errorContent}\\n参数无效:${1}"
         ;;
@@ -907,6 +925,34 @@ ftLearnLessonManage()
     local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local filePathLearnDataBase="${dirPathTempEng}/local.database"
     local learnLessonGroupList
+
+    if $isAddDailyStudyPlan;then
+        local trainingTypeList="$(ftIniGetValue  $filePathLearnDataBase TrainingInfo typeList)"
+        local learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
+        local learnLessonList operationContent
+        [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
+         
+        for trainingTypeItem in ${trainingTypeList[@]}; do
+            echo -e -n "-----------------------------------\nplease config" && ftEcho -s " ${trainingTypeItem} training"
+            ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" 
+            [[ -z $publicSelItemContent ]] && return
+            lessonGroupNameSel=$publicSelItemContent
+
+            learnLessonList="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonList)"
+            [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
+            echo
+            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}"
+            [[ -z $publicSelItemContent ]] && return
+            lessonNameSel=$publicSelItemContent
+
+            operationContent=$(ftIniGetValue  $filePathLearnDataBase TrainingInfo $trainingTypeItem)
+            ftIniSetValue $filePathLearnDataBase learnLessonInfo "lessonGroupDailyStudyPlanSelected${operationContent}" ${lessonGroupNameSel} -a
+            ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDailyStudyPlan${operationContent}" ${lessonNameSel} -a
+         done
+
+         ftEcho -s "daily study plan added"
+        return
+    fi
 
     if $isLessonApply;then
         ftEcho -s "apply mode"
