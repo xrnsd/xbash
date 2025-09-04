@@ -370,6 +370,8 @@ ftEcho()
         -ch )highlightContent="${arg2}"
             [[ -n $highlightContent ]] && isContentHighlight=true
             ;;
+        -cmc )isMultipleChoice=true
+            ;;
         *   )
             # [[ -z "${arg}" ]] && break 
             ;; 
@@ -487,24 +489,38 @@ ftEcho()
                 (( $listMainItemSize > 9 )) && dirFlag=9
                 while true; do
                     ftEcho -r  "${listMainTitle}[0~$(expr $listMainItemSize - 1),q](press enter normal ${indexSelNormal}):"
-                    if (( $listMainItemSize > 9 ));then
-                        read dir
+                    if (( $listMainItemSize > 9 )) || $isMultipleChoice;then
+                        read choice
                     else
-                        read -n 1 dir
+                        read -n 1 choice
                     fi
                     #设定默认值
-                     [ ${#dir} == 0 ] && dir=$indexSelNormal
-                     if [ ${dir} == "q" ]; then
-                        return
-                     elif (( $dir>=$listMainItemSize  ));then
-                        ftEcho -e "错误的选择：${dir}"
-                        continue
-                     elif [ -n "$(echo $dir| sed -n "/^[0-$dirFlag]\+$/p")" ];then
-                        export publicSelItemContent=${listMain[$dir]}
+                    [ ${#choice} == 0 ] && choice=$indexSelNormal
+                    if $isMultipleChoice;then
+                        local choiceItemList
+                        if (( ${#choice} == 1 ));then
+                            export publicSelItemContent=${listMain[$choice]}
+                        else
+                            for choiceItem in ${choice[@]}; do
+                                [[ -z $choiceItemList ]] && choiceItemList=${listMain[$choiceItem]} && continue
+                                choiceItemList="${choiceItemList[@]} ${listMain[$choiceItem]}"
+                            done
+                            export publicSelItemContent="${choiceItemList[@]}"
+                        fi
                         echo
                         break
-                     fi
-                     ftEcho -e 错误的选择：$dir
+                    fi
+                    if [ ${choice} == "q" ]; then
+                        return
+                    elif (( $choice>=$listMainItemSize  ));then
+                        ftEcho -e "错误的选择：${choice}"
+                        continue
+                    elif [ -n "$(echo $choice| sed -n "/^[0-$choice]\+$/p")" ];then
+                        export publicSelItemContent=${listMain[$choice]}
+                        echo
+                        break
+                    fi
+                    ftEcho -e 错误的选择：$choice
                 done
 
                 rm -rf $filePathListApply

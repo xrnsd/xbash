@@ -123,7 +123,7 @@ ftLearnRepetionDrill()
         lessonGroupNameSelected=${lessonGroupDailyStudyPlanSelected}
     fi
     ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" -ch "${lessonGroupNameSelected}"
-    [[ -z $publicSelItemContent ]] && return
+    [[ -z $publicSelItemContent ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
     lessonGroupNameSel=$publicSelItemContent
     ftIniSetValue $filePathLearnDataBase learnLessonInfo "lessonGroupSelected${contentType}${operateMode}" -a "${lessonGroupNameSel}"
 
@@ -136,7 +136,7 @@ ftLearnRepetionDrill()
     local filePathDrillResultTure=/tmp/DrillResultTure drillResultTure=1
     echo -n "" > $filePathDrillResultTure
     local indexArray=0 drillTrueCount=0 arrayIndexSort valRepetionDrillErrorHository
-    local learnLessonList="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonList)"
+    local learnLessonList="$(ftIniGetValue $filePathLearnDataBase $lessonGroupNameSel lessonList)"
     [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
 
     local lessonNameSelected="$(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected${contentType}${operateMode})"
@@ -173,7 +173,7 @@ ftLearnRepetionDrill()
         [[ -z $publicSelItemContent ]] && return
         lessonNameSel=$publicSelItemContent
     fi
-    ftIniSetValue $filePathLearnDataBase "${lessonGroupNameSel}" "lessonSelected${contentType}${operateMode}" -a "${lessonNameSel}"
+    ftIniSetValue $filePathLearnDataBase $lessonGroupNameSel "lessonSelected${contentType}${operateMode}" -a "${lessonNameSel}"
 
     ftTimeConsuming -i
 
@@ -929,25 +929,30 @@ ftLearnLessonManage()
     if $isAddDailyStudyPlan;then
         local trainingTypeList="$(ftIniGetValue  $filePathLearnDataBase TrainingInfo typeList)"
         local learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
-        local learnLessonList operationContent
+        local learnLessonList operationContent lessonGroupDailyStudyPlanSelected lessonDailyStudyPlanList
         [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
          
         for trainingTypeItem in ${trainingTypeList[@]}; do
+            
+            operationContent=$(ftIniGetValue  $filePathLearnDataBase TrainingInfo $trainingTypeItem)
+            lessonGroupDailyStudyPlanSelected="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupDailyStudyPlanSelected${operationContent})"
+    
             echo -e -n "-----------------------------------\nplease config" && ftEcho -s " ${trainingTypeItem} training"
-            ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" 
+            ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}"  -ch "${lessonGroupDailyStudyPlanSelected}"
             [[ -z $publicSelItemContent ]] && return
             lessonGroupNameSel=$publicSelItemContent
 
-            learnLessonList="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonList)"
+            learnLessonList="$(ftIniGetValue $filePathLearnDataBase $lessonGroupNameSel lessonList)"
             [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
             echo
-            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}"
-            [[ -z $publicSelItemContent ]] && return
-            lessonNameSel=$publicSelItemContent
 
-            operationContent=$(ftIniGetValue  $filePathLearnDataBase TrainingInfo $trainingTypeItem)
+            lessonDailyStudyPlanList="$(ftIniGetValue  $filePathLearnDataBase $lessonGroupNameSel "lessonDailyStudyPlan${operationContent}")"
+            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cmc -cs "ToBePracticed" "${lessonDailyStudyPlanList[@]}"
+            [[ -z $publicSelItemContent ]] && return
+            lessonNameSel="${publicSelItemContent[@]}"
+
             ftIniSetValue $filePathLearnDataBase learnLessonInfo "lessonGroupDailyStudyPlanSelected${operationContent}" ${lessonGroupNameSel} -a
-            ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDailyStudyPlan${operationContent}" ${lessonNameSel} -a
+            ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDailyStudyPlan${operationContent}" -a -l "$(echo ${lessonNameSel[@]} | sed 's/ /\n/g')"
          done
 
          ftEcho -s "daily study plan added"
