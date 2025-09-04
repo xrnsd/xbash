@@ -452,7 +452,7 @@ ftEcho()
                             indexSelNormal=$index
                             echo -e "\033[44m${itemDisplayInfo}\033[m"
                         else
-                            echo "${itemDisplayInfo}"
+                            echo -e "${itemDisplayInfo}"
                         fi
                         ((index+=1))
                     done
@@ -462,8 +462,8 @@ ftEcho()
                     for contenItem in ${listMain[*]} ; do
                         if [[ -n $listApply ]]&&[[ -n $(grep "^$contenItem$" $filePathListApply) ]];then
                             $isContentApplyBySuffix \
-                            && itemDisplayInfo="[${index}]${contenItem}${applyContent}    " \
-                            || itemDisplayInfo="[${index}]${applyContent}${contenItem}    "
+                            && itemDisplayInfo="[${index}]${contenItem}\033[42m${applyContent}\033[m    " \
+                            || itemDisplayInfo="[${index}]\033[42m${applyContent}\033[m${contenItem}    "
                         else
                             itemDisplayInfo="[${index}]${contenItem}    "
                         fi
@@ -471,7 +471,7 @@ ftEcho()
                             indexSelNormal=$index
                             echo -en "\033[44m${itemDisplayInfo}\033[m" >>$fileColumnPathTmp
                         else
-                            echo -n "${itemDisplayInfo}" >>$fileColumnPathTmp
+                            echo -en "${itemDisplayInfo}" >>$fileColumnPathTmp
                         fi
                         ((index+=1))
                         ((enterFlag+=1))
