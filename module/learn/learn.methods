@@ -449,6 +449,12 @@ ftLearnRepetionDrill()
         ftIniDeleteItem -p $filePathLearnDataBase -t ${lessonGroupNameSel} -i "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"
         ftIniDeleteItem -p $filePathLearnDataBase -t ${lessonGroupNameSel} -i "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"
 
+        #clear training records
+        if $isUsePlan;then
+            ftIniDeleteItem -p $filePathLearnDataBase -t learnLessonInfo -i "lessonGroupDailyStudyPlanSelected${contentType}${operateMode}"
+            ftIniDeleteItem -p $filePathLearnDataBase -t ${lessonGroupNameSel} -i "lessonDailyStudyPlan${contentType}${operateMode}" 
+        fi
+
         return
     fi
 
@@ -781,6 +787,12 @@ ftLearnRepetionDrill()
     ftIniDeleteItem -p $filePathLearnDataBase -t ${lessonGroupNameSel} -i "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"
     ftIniDeleteItem -p $filePathLearnDataBase -t ${lessonGroupNameSel} -i "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"
     ftIniDeleteItem -p $filePathLearnDataBase -t ${lessonGroupNameSel} -i "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"
+
+    #clear training records
+    if $isUsePlan;then
+        ftIniDeleteItem -p $filePathLearnDataBase -t learnLessonInfo -i "lessonGroupDailyStudyPlanSelected${contentType}${operateMode}"
+        ftIniDeleteItem -p $filePathLearnDataBase -t ${lessonGroupNameSel} -i "lessonDailyStudyPlan${contentType}${operateMode}" 
+    fi
 }
 
 complete -W "-h --help --rely_install -p -l" -A file ftOcrRepetionDrill 
@@ -927,11 +939,24 @@ ftLearnLessonManage()
     local learnLessonGroupList
 
     if $isAddDailyStudyPlan;then
+        local planFlag="Date:$(date -d "today" +"%Y%m%d")"
+        local filePathLearnPlan="${dirPathTempEng}/learn.text_plan"
+        if [[ -n $(grep -sn "$planFlag" $filePathLearnPlan) ]];then
+            ftEcho -e "plan ${planFlag} has already been created"
+            return
+        fi
+
+        local filePathLearnPlan="${dirPathTempEng}/learn.text_plan"
         local trainingTypeList="$(ftIniGetValue  $filePathLearnDataBase TrainingInfo typeList)"
         local learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
         local learnLessonList operationContent lessonGroupDailyStudyPlanSelected lessonDailyStudyPlanList
         [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
-         
+        
+        
+        #added plan content to file
+        echo -e "\n\nDate:$(date -d "today" +"%Y%m%d")" >> $filePathLearnPlan
+        echo    "=====================================" >> $filePathLearnPlan
+
         for trainingTypeItem in ${trainingTypeList[@]}; do
             
             operationContent=$(ftIniGetValue  $filePathLearnDataBase TrainingInfo $trainingTypeItem)
@@ -953,6 +978,32 @@ ftLearnLessonManage()
 
             ftIniSetValue $filePathLearnDataBase learnLessonInfo "lessonGroupDailyStudyPlanSelected${operationContent}" ${lessonGroupNameSel} -a
             ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDailyStudyPlan${operationContent}" -a -l "$(echo ${lessonNameSel[@]} | sed 's/ /\n/g')"
+
+
+            #added plan content to file
+            echo " TrainingType : ${trainingTypeItem}" >> $filePathLearnPlan
+            echo " Lesson : ${lessonGroupNameSel},${lessonNameSel[@]}" >> $filePathLearnPlan
+            echo " DrillResult:unfished" >> $filePathLearnPlan
+
+            case "$trainingTypeItem" in
+            "Reading")
+                local dailyStudyPlanSentenceIndex=$(ftIniGetValue  $filePathLearnDataBase $lessonGroupNameSel lessonDrillingsentenceread_sctenceIndexArray)
+                local dailyStudyPlanSenteceCount=$(ftIniGetValue  $filePathLearnDataBase $lessonGroupNameSel lessonDailyStudyPlansentencereadSenteceCount)
+                echo " Demand: Read the book "AnarchyUnbound" for ${dailyStudyPlanSenteceCount} sentences:${dailyStudyPlanSentenceIndex}~"$(($dailyStudyPlanSentenceIndex+$dailyStudyPlanSenteceCount)) >> $filePathLearnPlan
+                ;;
+            "WriteSpeak")
+                 local filePathDemand="${dirPathTempEng}/${lessonGroupNameSel}/demand.text"
+                 if [[ -f $filePathDemand ]];then
+                    echo " Demand: " >> $filePathLearnPlan
+                    local fileSize=$(sed -n '$=' $filePathDemand)
+                    for (( i = 1; i <= $fileSize; i++ )); do
+                        echo "  $(awk 'NR=="'$i'"' $filePathDemand)" >> $filePathLearnPlan
+                    done
+                 fi
+                 ;;
+            *) ;;
+            esac
+            echo " ------------------"   >> $filePathLearnPlan
          done
 
          ftEcho -s "daily study plan added"
