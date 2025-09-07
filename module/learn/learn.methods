@@ -236,6 +236,11 @@ ftLearnRepetionDrill()
         if $isModeWrite;then
             local filePathTempWriteDrillText=/tmp/TempWriteDrillText
 
+            if [[ "$contentType" = "imitate" ]] && [ -s "${dirPathDataItemTextDrillResult}" ];then
+                ftEcho -e "This lesson is exist training record"
+                return
+            fi
+
             clear
             echo -e "${drillInfomationTips}"
             echo "${chineseItem}"
@@ -412,15 +417,18 @@ ftLearnRepetionDrill()
             \033[1;33mDuration info:\033[0m ${timingChang}"
 
             local fileLineCount=$(sed -n '$=' $filePathDataItemTextEnglish) index=1
+            local englishItem
             while true; do
                 clear
                 echo -e ${drillInfomationTipsTemp}
                 echo
+                englishItem=$(awk 'NR=="'$index'"' $filePathDataItemTextEnglish)
+                echo "${englishItem}" | tr -d '\n' | xclip -sel clip
                 echo -e "$(awk 'NR=="'$index'"' $filePathDataItemTextChinese)"
-                echo -e "$(awk 'NR=="'$index'"' $filePathDataItemTextEnglish)"
+                echo -e "$englishItem"
                 echo -e "$(awk 'NR=="'$index'"' $dirPathDataItemTextDrillResult)"
                 echo
-                ftEcho -key "W Q Any__other__key" "to__previous__sentence to__quit to__display__English"
+                ftEcho -key "W Q Any__other__key" "to__previous__sentence to__quit to__the__next__sentence"
                 read -n 1 operation
 
                 case "$operation" in
@@ -878,7 +886,7 @@ ftOcrRepetionDrill()
 complete -W "-h --help -acg -ac -ap -u -une -m -adsp" ftLearnLessonManage
 ftLearnLessonManage()
 {
-    local ftEffect=学习课程配置
+    local ftEffect=LessonManageTool
     local isEnable=true
 
     #可用性校验
@@ -1209,7 +1217,7 @@ ftLearnLessonManage()
         learnLessonGroupList=($(ls -d */| sed 's/\///g'))
         for lessonGroup in ${learnLessonGroupList[*]} ; do
             dirPathLessonGroup="${dirPathTempEng}/${lessonGroup}"
-            dirPathArrayLesson=($(ls $dirPathLessonGroup | grep -v repetionDrill.hository))
+            dirPathArrayLesson=($(ls $dirPathLessonGroup | grep -v 'repetionDrill.hository\|demand.text'))
             if [[ -z $dirPathArrayLesson ]];then
                 ftEcho -s "invald lesson group : ${lessonGroup}"
                 ftIniDeleteTag -p $filePathLearnDataBase -t "${lessonGroup}"
