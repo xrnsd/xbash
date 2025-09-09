@@ -424,7 +424,7 @@ ftEcho()
                  printf "%${border_length}s\n" | tr ' ' '-'
                  #printf "| %-${max_length}s |\n" "${content[@]}"
                  while read line;do
-                    printf "| %-${max_length}s |\n" "${line}"
+                    printf "| %-${max_length}s\n" "${line}"
                  done <<< $(echo -e ${content})
                  printf "%${border_length}s\n" | tr ' ' '-'
                  break;;
