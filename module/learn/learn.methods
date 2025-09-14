@@ -16,7 +16,7 @@ _ftLearnRepetionDrill()
     if [[ "$prev" == "--type" ]]; then
         COMPREPLY=( $(compgen -W "article sentence imitate" -- "$cur") )
     elif [[ "$prev" == "--mode" ]]; then
-        COMPREPLY=( $(compgen -W "write listen read preview" -- "$cur") )
+        COMPREPLY=( $(compgen -W "write listen read preview review" -- "$cur") )
     else
         COMPREPLY=( $(compgen -W "-h -te -ht -b -pl -up --type --mode --help" -- "$cur") )
     fi
@@ -33,7 +33,7 @@ ftLearnRepetionDrill()
     local filePathLearnDataBase="${dirPathTempEng}/local.database"
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
     local contentType
-    local isModeInited=false isModeWrite=false isModeListen=false isModeRead=false isModePreview=false isUsePlan=false
+    local isModeInited=false isModeWrite=false isModeListen=false isModeRead=false isModePreview=false isModeReview=false isUsePlan=false
     local isOperateTextEdit=false isOperateHideChineseTitle=false isOperateAutoBcompare=false isOperatePlayAudio=false
     local valCount=7 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
@@ -56,6 +56,7 @@ ftLearnRepetionDrill()
 #    ftLearnRepetionDrill --mode write     #write mode，default by text editor
 #                                read      #read mode
 #                                listen    #listen mode
+#                                review    #review mode
 #                                preview   #preview mode
 #========================================================="; return ;;
         --rely) ftEcho -rc "${ftEffect}" "‘s dependency description" "\
@@ -74,6 +75,10 @@ ftLearnRepetionDrill()
                     isOperateAutoBcompare=true
                 elif [[ "$operateMode" = "read" ]];then
                     isModeRead=true
+                elif [[ "$operateMode" = "review" ]];then
+                    isModeReview=true
+                    isModeListen=true
+                    isOperateTextEdit=true
                 elif [[ "$operateMode" = "preview" ]];then
                     isModePreview=true
                 elif [[ "$operateMode" = "listen" ]];then
@@ -129,53 +134,59 @@ ftLearnRepetionDrill()
     [[ -z $publicSelItemContent ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
     lessonGroupNameSel=$publicSelItemContent
     ftIniSetValue $filePathLearnDataBase learnLessonInfo "lessonGroupSelected${contentType}${operateMode}" -a "${lessonGroupNameSel}"
-
-    local lessonGroupContentType=$(ftIniGetValue  $filePathLearnDataBase ${lessonGroupNameSel} lessonGroupContentType)
-
-    local fileNameDataBaseRepetionDrill=repetionDrill.hository
-    local filePathDataBaseRepetionDrill="${dirPathTempEng}/${lessonGroupNameSel}/${fileNameDataBaseRepetionDrill}"
-
-    #select lesson
-    local filePathDrillResultTure=/tmp/DrillResultTure drillResultTure=1
-    echo -n "" > $filePathDrillResultTure
-    local indexArray=0 drillTrueCount=0 arrayIndexSort valRepetionDrillErrorHository
-    local learnLessonList="$(ftIniGetValue $filePathLearnDataBase $lessonGroupNameSel lessonList)"
-    [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
-
-    local lessonNameSelected="$(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected${contentType}${operateMode})"
-
-    local isUseDrillingRecord=true
-    local lessonNameSel=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName")
-    if [[ -n $lessonNameSel ]];then
-        ftEcho -y "There are unfinished drilling records here. Do you want to continue it ? (Press Y/y is use，press enter equal to press y)"
-        read -n 1 delSel
-        [ -z "${delSel}" ] && delSel=y
-        [[ $delSel != "y" ]] && isUseDrillingRecord=false
-        echo
-    else
-        isUseDrillingRecord=false
+    if $isModeReview;then
+        #recreate review lesson
+        ftLearnLessonManage -unlr "${lessonGroupNameSel}"
+        lessonGroupNameSel=needRepetionDrill
     fi
 
-    local keyNameDailyStudyPlanLesson="lessonDailyStudyPlan${contentType}${operateMode}"
-    local lessonDailyStudyPlanList=($(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDailyStudyPlanLesson}"))
-
-    local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
-    local learnLessonListDrilled="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}")"
-
-    if $isUseDrillingRecord;then
-        indexArray=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray")
-        arrayIndexSort=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"))
-        valRepetionDrillErrorHository=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"))
-        drillTrueCount=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"))
+    local lessonGroupContentType=$(ftIniGetValue  $filePathLearnDataBase ${lessonGroupNameSel} lessonGroupContentType)
+    
+    #select lesson
+    local filePathDrillResultTure=/tmp/DrillResultTure drillResultTure=1
+    local indexArray=0 drillTrueCount=0 arrayIndexSort valRepetionDrillErrorHository
+    echo -n "" > $filePathDrillResultTure
+    if $isModeReview;then
+        lessonNameSel=review
     else
-        echo
-        if $isUsePlan && [[ -n $lessonDailyStudyPlanList ]];then
-            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "ToBePracticed"  "${lessonDailyStudyPlanList[@]}" -ch "${lessonNameSelected}"
+        local learnLessonList="$(ftIniGetValue $filePathLearnDataBase $lessonGroupNameSel lessonList)"
+        [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
+
+        local lessonNameSelected="$(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected${contentType}${operateMode})"
+
+        local isUseDrillingRecord=true
+        local lessonNameSel=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName")
+        if [[ -n $lessonNameSel ]];then
+            ftEcho -y "There are unfinished drilling records here. Do you want to continue it ? (Press Y/y is use，press enter equal to press y)"
+            read -n 1 delSel
+            [ -z "${delSel}" ] && delSel=y
+            [[ $delSel != "y" ]] && isUseDrillingRecord=false
+            echo
         else
-            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "Drilled"  "${learnLessonListDrilled[@]}" -ch "${lessonNameSelected}"
+            isUseDrillingRecord=false
         fi
-        [[ -z $publicSelItemContent ]] && return
-        lessonNameSel=$publicSelItemContent
+
+        local keyNameDailyStudyPlanLesson="lessonDailyStudyPlan${contentType}${operateMode}"
+        local lessonDailyStudyPlanList=($(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDailyStudyPlanLesson}"))
+
+        local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
+        local learnLessonListDrilled="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}")"
+
+        if $isUseDrillingRecord;then
+            indexArray=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray")
+            arrayIndexSort=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"))
+            valRepetionDrillErrorHository=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"))
+            drillTrueCount=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"))
+        else
+            echo
+            if $isUsePlan && [[ -n $lessonDailyStudyPlanList ]];then
+                ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "ToBePracticed"  "${lessonDailyStudyPlanList[@]}" -ch "${lessonNameSelected}"
+            else
+                ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "Drilled"  "${learnLessonListDrilled[@]}" -ch "${lessonNameSelected}"
+            fi
+            [[ -z $publicSelItemContent ]] && return
+            lessonNameSel=$publicSelItemContent
+        fi
     fi
     ftIniSetValue $filePathLearnDataBase $lessonGroupNameSel "lessonSelected${contentType}${operateMode}" -a "${lessonNameSel}"
 
@@ -897,7 +908,7 @@ ftOcrRepetionDrill()
     done 3< $filePath
 }
 
-complete -W "-h --help -alg -al -ap -u -une -m -adsp" ftLearnLessonManage
+complete -W "-h --help -alg -al -ap -u -unle -m -adsp" ftLearnLessonManage
 ftLearnLessonManage()
 {
     local ftEffect=LessonManageTool
@@ -907,7 +918,7 @@ ftLearnLessonManage()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local lessonGroupNameSel lessonNameSel
-    local isAddLessonGroup=false isAddLesson=false isUpdate=false isUpdateDrillGroupError=false
+    local isAddLessonGroup=false isAddLesson=false isUpdate=false isUpdateDrillLessonError=false isUpdateDrillLessonReview=false
     local isMergeLessonGroup=false lessonGroupNameMerge isLessonApply=false isAddDailyStudyPlan=false
     local valCount=3 errorContent arg arg2 arg3
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))};eval arg3=\${$((i+2))}
@@ -919,8 +930,9 @@ ftLearnLessonManage()
 #                     -alg          #add leesson group
 #                     -adsp         #add daily study plan
 #                     -u            #update lesson list and lesson group list
-#                     -une          #update lesson : needRepetionDrill/error                                   
-#                     -m   lessonGroupName #merge lesson group
+#                     -unle         #update lesson : needRepetionDrill/error
+#                     -unlr lessonGroupName #update lesson : needRepetionDrill/review                                    
+#                     -m    lessonGroupName #merge lesson group
 #                          #fill in the missing files or directories of the lesson
 #                     -alp lessonGroupName lessonName
 #========================================================="; return ;;
@@ -937,7 +949,10 @@ ftLearnLessonManage()
                      ;;
         -u) isUpdate=true
                      ;;
-        -une) isUpdateDrillGroupError=true
+        -unle) isUpdateDrillLessonError=true
+                     ;;
+        -unlr) isUpdateDrillLessonReview=true
+               lessonGroupNameMerge="${arg2}"
                      ;;
         -m) isMergeLessonGroup=true
             lessonGroupNameMerge="${arg2}"
@@ -947,7 +962,7 @@ ftLearnLessonManage()
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数数量无效"
     case "$1" in
-    -h | --help | -al | -ap | -alg | -u | -une | -m | -adsp)
+    -h | --help | -al | -ap | -alg | -u | -unle | -unlr | -m | -adsp)
         ;;
     *)   errorContent="${errorContent}\\n参数无效:${1}"
         ;;
@@ -1168,7 +1183,7 @@ ftLearnLessonManage()
         ftEcho -s "merge finish"
         return
     fi
-    if $isUpdateDrillGroupError;then
+    if $isUpdateDrillLessonError;then
         local dirPathLessonNeedRepetionDrillError="${dirPathTempEng}/needRepetionDrill/error"
         local dirPathLessonNeedRepetionDrillErrorSDR="${dirPathLessonNeedRepetionDrillError}/sentence.drill_result"
         local dirPathLessonNeedRepetionDrillErrorSAE="${dirPathLessonNeedRepetionDrillError}/sentence.audio_english"
@@ -1228,8 +1243,84 @@ ftLearnLessonManage()
 
             done
         done
-        ftEcho -s "load finish"
+        ftEcho -s "recreate lesson error finish"
         return
+    fi
+    if $isUpdateDrillLessonReview;then
+        [[ "${lessonGroupNameMerge}" = "needRepetionDrill" ]] && ftEcho -s "cancel recreate lesson" && return
+
+        local lessonReviewSentenceAllCount=$(ftIniGetValue  $filePathLearnDataBase needRepetionDrill lessonReviewSentenceAllCount)
+
+        local dirPathLessonNeedRepetionDrillReview="${dirPathTempEng}/needRepetionDrill/review"
+        local dirPathLessonNeedRepetionDrillReviewSDR="${dirPathLessonNeedRepetionDrillReview}/sentence.drill_result"
+        local dirPathLessonNeedRepetionDrillReviewSAE="${dirPathLessonNeedRepetionDrillReview}/sentence.audio_english"
+        local filePathLessonNeedRepetionDrillReviewSTE="${dirPathLessonNeedRepetionDrillReview}/sentence.text_english"
+        local filePathLessonNeedRepetionDrillReviewSTC="${dirPathLessonNeedRepetionDrillReview}/sentence.text_chinese"
+        local filePathLessonNeedRepetionDrillReviewSTLT="${dirPathLessonNeedRepetionDrillReview}/sentence.text_link_table"
+        local lineIndex=1 lineNum filePathLessonNeedRepetionDrillReviewSDR filePathLessonNeedRepetionDrillReviewSAE
+
+        rm -rf ${dirPathLessonNeedRepetionDrillReview}
+        mkdir -p ${dirPathLessonNeedRepetionDrillReviewSAE} ${dirPathLessonNeedRepetionDrillReviewSDR}
+        touch ${filePathLessonNeedRepetionDrillReviewSTE} ${filePathLessonNeedRepetionDrillReviewSTC} \
+              ${filePathLessonNeedRepetionDrillReviewSTA} ${filePathLessonNeedRepetionDrillReviewSTLT}
+
+        local dirPathLessonGroup dirPathLesson dirPathArrayLesson fileArrayDrillResult
+        local dirParhLessonSDR dirParhLessonSAE filePathLessonSTE filePathLessonSTC filePathLessonSTA
+        local sentenceIndexArrayShuf
+            
+        dirPathLessonGroup="${dirPathTempEng}/${lessonGroupNameMerge}"
+        dirPathArrayLesson=($(find "${dirPathLessonGroup}" -name "sentence.drill_result" | sed "s ${dirPathLessonGroup}/   g" | sed "s /sentence.drill_result   g"))
+        [[ -z $dirPathArrayLesson ]] &&\
+        ftEcho -en "invald lesson group:" &&echo "${lessonGroup}" && continue
+        ftEcho -sn "loading lesson group:" && echo "${lessonGroupNameMerge}"
+
+        local lessonCount=${#dirPathArrayLesson[@]}
+        local lessonIndexFlag=$((lessonCount-1))
+        local lessonIndexArrayShuf=($(seq 0 $lessonIndexFlag | shuf))
+        local fileSizeLessonSTE fileSizeLessonSTC
+        local lessonIndexReal lessonName sentenceIndexReal sentenceLine sentenceLineLoadCount=0 sentenceLineLoadAllCount=0
+        local lessonSentenceLoadCount=$(( $lessonReviewSentenceAllCount/$lessonCount )) sentenceWrodCount
+        (( $(($lessonReviewSentenceAllCount%$lessonCount)) > 0 )) && (( lessonSentenceLoadCount+=1 ))
+
+        local lessonLoadCount=0
+        for (( i = 0; i < $lessonCount; i++ )); do
+            lessonIndexReal=${lessonIndexArrayShuf[$i]}
+            lessonName=${dirPathArrayLesson[$lessonIndexReal]}
+            dirPathLesson="${dirPathLessonGroup}/${lessonName}"
+            dirParhLessonSAE="${dirPathLesson}/sentence.audio_english"
+            dirParhLessonSDR="${dirPathLesson}/sentence.drill_result"
+            filePathLessonSTE="${dirPathLesson}/sentence.text_english"
+            filePathLessonSTC="${dirPathLesson}/sentence.text_chinese"
+            filePathLessonSTA="${dirPathLesson}/sentence.text_analysis"
+
+            #check lesson data valid
+            [[ ! -f ${filePathLessonSTE} ]] || [[ ! -d ${dirParhLessonSDR} ]] && continue
+            fileSizeLessonSTC=$(sed -n '$=' $filePathLessonSTC)
+            fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
+            (( $fileSizeLessonSTC != $fileSizeLessonSTE )) && continue
+
+            sentenceIndexArrayShuf=($(seq 1 $fileSizeLessonSTE | shuf))
+
+            ((lessonLoadCount+=1))
+            for (( sentenceIndex = 0; sentenceIndex < $fileSizeLessonSTE; sentenceIndex++ )); do
+                sentenceIndexReal=${sentenceIndexArrayShuf[$sentenceIndex]}
+                sentenceLine=$(awk 'NR=="'$sentenceIndexReal'"' $filePathLessonSTE)
+                [[ -z $sentenceLine ]] && continue
+                (( $sentenceLineLoadCount == $lessonSentenceLoadCount )) && sentenceLineLoadCount=0 && break
+                (( sentenceLineLoadCount+=1  ))
+                (( sentenceLineLoadAllCount+=1  ))
+
+                echo "${sentenceLine}" >> $filePathLessonNeedRepetionDrillReviewSTE
+                echo $(awk 'NR=="'$sentenceIndexReal'"' $filePathLessonSTC) >> $filePathLessonNeedRepetionDrillReviewSTC
+                [[ -f $filePathLessonSTA ]] && echo $(awk 'NR=="'$sentenceIndexReal'"' $filePathLessonSTA) >> $filePathLessonNeedRepetionDrillReviewSTA
+                echo "${lessonName}:${sentenceIndexReal}" >> $filePathLessonNeedRepetionDrillReviewSTLT
+
+                (( $sentenceLineLoadAllCount == $lessonReviewSentenceAllCount )) && \
+                echo "lessonLoadCount=${lessonLoadCount}" >> $filePathLessonNeedRepetionDrillReviewSTLT && \
+                ftEcho -s "recreate lesson review finish" &&\
+                return
+            done
+        done
     fi
     if $isUpdate; then
         local dirPathLessonGroup dirPathArrayLesson
