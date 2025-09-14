@@ -5,26 +5,35 @@
 [[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
 
 ftDialogShutdown()
-{
+{  
     local timeFreq=$1
     local userPassword=$2
-    local timeOut=$timeFreq; ((timeOut+=2))
-    (
-        #index=0
-        for i in $(seq $timeFreq -1 1); do
-              echo "#按回车键关机，按Esc键取消,倒计时时间: $i 秒"
-              sleep 1
-              #(( index+=20 ))
-              #echo "$index"
-        done
-        #notify-send "超时自动关机"
-        echo $userPassword | sudo   -p '' -S shutdown -h now
-    ) |
-    # percentage是进度条的起始点，auto-close是进度条达到100则自动关闭
-    #zenity --progress --pulsate --percentage=100 --timeout=$timeOut --title="关机" --text="按回车键关机，按Esc键取消,倒计时时间:${timeFreq}秒" && notify-send "主动自动关机"
-    zenity --progress --pulsate --percentage=100 --timeout=$timeOut --title="关机" --text="按回车键关机，按Esc键取消,倒计时时间:${timeFreq}秒" \
-    && echo $userPassword | sudo   -p '' -S shutdown -h now
-      
+    local filePathTime=/tmp/shutdowntime.config
+
+    echo -n "" > $filePathTime
+    zenity --entry --title="关机倒计时(秒)" --text="请输入时长,按Esc键取消" --entry-text="${timeFreq}" > $filePathTime
+
+    timeFreq=$(cat $filePathTime)
+
+    if [[ -z ${timeFreq} ]];then
+      ftEcho -e "时间为空，取消关机"
+      return
+    else
+      local timeOut=$timeFreq; ((timeOut+=2))
+      (
+          #index=0
+          for i in $(seq $timeFreq -1 1); do
+                echo "#按回车键关机，按Esc键取消,倒计时时间: $i 秒"
+                sleep 1
+                #(( index+=20 ))
+                #echo "$index"
+          done
+          #notify-send "超时自动关机"
+          echo $userPassword | sudo   -p '' -S shutdown -h now
+      ) |
+      zenity --progress --pulsate --percentage=100 --timeout=$timeOut --title="关机" --text="按回车键关机，按Esc键取消,倒计时时间:${timeFreq}秒" \
+      && echo $userPassword | sudo   -p '' -S shutdown -h now
+    fi 
 }
 
 ftDialogShutdown $@
