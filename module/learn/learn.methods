@@ -16,7 +16,7 @@ _ftLearnRepetionDrill()
     if [[ "$prev" == "--type" ]]; then
         COMPREPLY=( $(compgen -W "article sentence imitate" -- "$cur") )
     elif [[ "$prev" == "--mode" ]]; then
-        COMPREPLY=( $(compgen -W "write listen read" -- "$cur") )
+        COMPREPLY=( $(compgen -W "write listen read preview" -- "$cur") )
     else
         COMPREPLY=( $(compgen -W "-h -te -ht -b -pl -up --type --mode --help" -- "$cur") )
     fi
@@ -33,7 +33,7 @@ ftLearnRepetionDrill()
     local filePathLearnDataBase="${dirPathTempEng}/local.database"
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
     local contentType
-    local isModeInited=false isModeWrite=false isModeListen=false isModeRead=false isUsePlan=false
+    local isModeInited=false isModeWrite=false isModeListen=false isModeRead=false isModePreview=false isUsePlan=false
     local isOperateTextEdit=false isOperateHideChineseTitle=false isOperateAutoBcompare=false isOperatePlayAudio=false
     local valCount=7 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
@@ -56,6 +56,7 @@ ftLearnRepetionDrill()
 #    ftLearnRepetionDrill --mode write     #write mode，default by text editor
 #                                read      #read mode
 #                                listen    #listen mode
+#                                preview   #preview mode
 #========================================================="; return ;;
         --rely) ftEcho -rc "${ftEffect}" "‘s dependency description" "\
 #=========================================================
@@ -73,6 +74,8 @@ ftLearnRepetionDrill()
                     isOperateAutoBcompare=true
                 elif [[ "$operateMode" = "read" ]];then
                     isModeRead=true
+                elif [[ "$operateMode" = "preview" ]];then
+                    isModePreview=true
                 elif [[ "$operateMode" = "listen" ]];then
                     isModeListen=true
                     isOperatePlayAudio=true
@@ -195,6 +198,8 @@ ftLearnRepetionDrill()
     local filePathDataItemSentenceTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
     local filePathDataItemSentenceTextChinese="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_chinese"
     local filePathDataItemSentenceTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis"
+    local filePathDataItemArticleTextExplain="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_explain"
+    local filePathDataItemArticleVideoExplain="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.mp4"
 
     clear
     if [[ ! -f "$filePathDataItemSentenceTextEnglish" ]]; then
@@ -235,7 +240,11 @@ ftLearnRepetionDrill()
         chineseItem=$(cat $filePathDataItemSentenceTextChinese)
         englishItem=$(cat $filePathDataItemSentenceTextEnglish)
 
-        if $isModeWrite;then
+        if $isModePreview && [[ "$contentType" = "article" ]];then
+            gedit $filePathDataItemArticleTextExplain
+            mpv $filePathDataItemArticleVideoExplain
+
+        elif $isModeWrite;then
             local filePathTempWriteDrillText=/tmp/TempWriteDrillText
 
             if [[ "$contentType" = "imitate" ]] && [ -s "${dirPathDataItemTextDrillResult}" ];then
@@ -530,8 +539,8 @@ ftLearnRepetionDrill()
                 mv "${dirPathMp3}/1.mp3" "${filePathItemAudioFile}"
             fi
             while true; do
-                echo -e ${drillInfomationTipsTemp}
-                ftEcho -sn "Example audio：" && echo "${filePathItemAudioFile}"
+                echo -en ${drillInfomationTipsTemp}
+                ftEcho -sn " Audio：" && echo "${filePathItemAudioFile}" | sed "s ${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/  g"
                 [ -f "${filePathItemSentenceEnglishDrillResult}" ] && echo "There are practice errors recorded, please listen carefully"
                 ! $isOperateHideChineseTitle && ftEcho -frame $chineseItem
                 echo
@@ -614,6 +623,7 @@ ftLearnRepetionDrill()
             echo -n "" > ${filePathLearnDrillTemp}
         elif [[ $itemOptionSelect == "t" ]] || [[ $itemOptionSelect == "T" ]]; then
             sentenceDrillResltItem=$(cat $filePathItemSentenceEnglishDrillResult)
+            local contentAnalysis=$(awk 'NR=="'$indexSort'"' $filePathDataItemSentenceTextAnalysis)
             if $isModeListen || $isModeRead; then
                 while true; do
                     clear
@@ -625,7 +635,7 @@ ftLearnRepetionDrill()
                     echo -e  "${chineseItem}"
                     (( $(echo $sentenceDrillResltItem |grep -v ^$|wc -l)>0 )) && echo -e "${sentenceDrillResltItem}"
                     echo -e  "${englishItem}"
-                    $isModeRead && [ -f ${filePathDataItemSentenceTextAnalysis} ] && ftEcho -frame $(awk 'NR=="'$indexSort'"' $filePathDataItemSentenceTextAnalysis)
+                    $isModeRead && [ -f ${filePathDataItemSentenceTextAnalysis} ] && [[ -n $contentAnalysis ]] && ftEcho -frame "${contentAnalysis}"
 
                     echo
 
@@ -1123,7 +1133,7 @@ ftLearnLessonManage()
             [[ ! -f ${filePathLessonSTE} ]] && ftEcho -en "invsald lesson：" && echo "${lessonName} (none sentence)" && continue
             fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
             fileSizeLessonSTC=$(sed -n '$=' $filePathLessonSTC)
-            fileSizeLessonSTA=$(sed -n '$=' $filePathLessonSTA)
+            [[ -f $filePathLessonSTA ]] && fileSizeLessonSTA=$(sed -n '$=' $filePathLessonSTA)
 
             (($fileSizeLessonSTE!=$fileSizeLessonSTC)) && ftEcho -en "invsald lesson：" && echo "${lessonName} (sentence line unequal)" && continue
 
@@ -1133,7 +1143,7 @@ ftLearnLessonManage()
 
             cat "${filePathLessonSTE}" |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTE}"
             cat "${filePathLessonSTC}"  |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTC}"
-            cat "${filePathLessonSTA}"  |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTA}"
+            [[ -f $filePathLessonSTA ]] && cat "${filePathLessonSTA}"  |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTA}"
 
             fileArrayAudio=($(ls $dirParhLessonSAE))
 
@@ -1228,15 +1238,16 @@ ftLearnLessonManage()
         learnLessonGroupList=($(ls -d */| sed 's/\///g'))
         for lessonGroup in ${learnLessonGroupList[*]} ; do
             dirPathLessonGroup="${dirPathTempEng}/${lessonGroup}"
-            dirPathArrayLesson=($(ls $dirPathLessonGroup | grep -v 'repetionDrill.hository\|bash.text_lesson_create\|demand.text_writespeak'))
+            dirPathArrayLesson=($(ls $dirPathLessonGroup | grep -v 'repetionDrill.hository\|bash.text_lesson_create\|demand.text_writespeak\|demand.text_transcription\|extra_video'))
             if [[ -z $dirPathArrayLesson ]];then
+                ftEcho -s "--------------------------------"
                 ftEcho -s "invald lesson group : ${lessonGroup}"
                 ftIniDeleteTag -p $filePathLearnDataBase -t "${lessonGroup}"
                 continue
             fi
+            ftEcho -s "--------------------------------"
             echo "lesson group name : ${lessonGroup}"
             echo "lesson list :${dirPathArrayLesson[@]}"
-            ftEcho -s "lesson group update finish"
             ftIniSetValue $filePathLearnDataBase "${lessonGroup}" lessonList -a -l "$(echo ${dirPathArrayLesson[@]} | sed 's/ /\n/g')"
         done
         ftIniSetValue $filePathLearnDataBase learnLessonInfo  lessonGroupList -a -l "$(echo ${learnLessonGroupList[@]} | sed 's/ /\n/g')"
