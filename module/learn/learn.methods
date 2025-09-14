@@ -908,7 +908,7 @@ ftOcrRepetionDrill()
     done 3< $filePath
 }
 
-complete -W "-h --help -alg -al -ap -u -unle -m -adsp" ftLearnLessonManage
+complete -W "-h --help -alg -al -ap -u -unle -unlr -m -adsp clt" ftLearnLessonManage
 ftLearnLessonManage()
 {
     local ftEffect=LessonManageTool
@@ -919,7 +919,7 @@ ftLearnLessonManage()
     #解参验耦
     local lessonGroupNameSel lessonNameSel
     local isAddLessonGroup=false isAddLesson=false isUpdate=false isUpdateDrillLessonError=false isUpdateDrillLessonReview=false
-    local isMergeLessonGroup=false lessonGroupNameMerge isLessonApply=false isAddDailyStudyPlan=false
+    local isMergeLessonGroup=false lessonGroupNameMerge isLessonApply=false isAddDailyStudyPlan=false isCreateNewConceptionLessonAiQuestion=false;
     local valCount=3 errorContent arg arg2 arg3
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))};eval arg3=\${$((i+2))}
     case "${arg}" in
@@ -935,6 +935,8 @@ ftLearnLessonManage()
 #                     -m    lessonGroupName #merge lesson group
 #                          #fill in the missing files or directories of the lesson
 #                     -alp lessonGroupName lessonName
+#                          #create new conception lesson analysis content AI question
+#                     -clt lessonGroupName lessonName
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -alg) isAddLessonGroup=true
@@ -949,6 +951,10 @@ ftLearnLessonManage()
                      ;;
         -u) isUpdate=true
                      ;;
+        -clt) isCreateNewConceptionLessonAiQuestion=true
+              lessonGroupNameSel="${arg2}"
+              lessonNameSel="${arg3}"
+                     ;;
         -unle) isUpdateDrillLessonError=true
                      ;;
         -unlr) isUpdateDrillLessonReview=true
@@ -962,7 +968,7 @@ ftLearnLessonManage()
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数数量无效"
     case "$1" in
-    -h | --help | -al | -ap | -alg | -u | -unle | -unlr | -m | -adsp)
+    -h | --help | -al | -ap | -alg | -u | -unle | -unlr | -m | -adsp | -clt)
         ;;
     *)   errorContent="${errorContent}\\n参数无效:${1}"
         ;;
@@ -1107,6 +1113,34 @@ ftLearnLessonManage()
         return
     fi
 
+    if $isCreateNewConceptionLessonAiQuestion;then
+        ftEcho -s "create new conception lesson analysis content AI question mode"
+        if [[ -z $lessonGroupNameSel ]];then
+            local learnLessonGroupList="$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
+            [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
+            ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" 
+            [[ -z $publicSelItemContent ]] && return
+            lessonGroupNameSel=$publicSelItemContent
+        fi
+        if [[ -z $lessonNameSel ]];then
+            local learnLessonList="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" lessonList)"
+            [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
+            echo
+            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}"
+            [[ -z $publicSelItemContent ]] && return
+            lessonNameSel=$publicSelItemContent
+        fi
+        local filePathLessonSTETempAlQuestion="/tmp/tmp.text_ai_question"
+        local dirPathDataItemBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}"
+        local filePathLessonSTE="${dirPathDataItemBasic}/sentence.text_english"
+        local fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
+        local lessonGroupTips=$(ftIniGetValue  $filePathLearnDataBase ${lessonGroupNameSel} lessonGroupTips)
+        cp -rf $filePathLessonSTE $filePathLessonSTETempAlQuestion
+        echo -e "\n上面是${lessonGroupTips}的第${lessonNameSel}篇课文或例句。\n请结合课文强调的知识点对每一行的短语和影响意思理解的语法进行说明。\n请只输出${fileSizeLessonSTE}行说明，每行说明无需原文开头无需添加特殊符号。" >> $filePathLessonSTETempAlQuestion
+        cat ${filePathLessonSTETempAlQuestion}| xclip -sel clip
+        cat ${filePathLessonSTETempAlQuestion}
+        return
+    fi
     if $isMergeLessonGroup;then
 
         local dirPathLessonGroupMerge="${dirPathTempEng}/${lessonGroupNameMerge}"
