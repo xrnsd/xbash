@@ -79,6 +79,7 @@ ftLearnRepetionDrill()
                     isModeReview=true
                     isModeListen=true
                     isOperateTextEdit=true
+                    isOperatePlayAudio=true
                 elif [[ "$operateMode" = "preview" ]];then
                     isModePreview=true
                 elif [[ "$operateMode" = "listen" ]];then
@@ -134,49 +135,49 @@ ftLearnRepetionDrill()
     [[ -z $publicSelItemContent ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
     lessonGroupNameSel=$publicSelItemContent
     ftIniSetValue $filePathLearnDataBase learnLessonInfo "lessonGroupSelected${contentType}${operateMode}" -a "${lessonGroupNameSel}"
+    
+    local lessonGroupContentType=$(ftIniGetValue  $filePathLearnDataBase ${lessonGroupNameSel} lessonGroupContentType)
     if $isModeReview;then
-        #recreate review lesson
-        ftLearnLessonManage -unlr "${lessonGroupNameSel}"
         lessonGroupNameSel=needRepetionDrill
     fi
 
-    local lessonGroupContentType=$(ftIniGetValue  $filePathLearnDataBase ${lessonGroupNameSel} lessonGroupContentType)
-    
     #select lesson
     local filePathDrillResultTure=/tmp/DrillResultTure drillResultTure=1
     local indexArray=0 drillTrueCount=0 arrayIndexSort valRepetionDrillErrorHository
     echo -n "" > $filePathDrillResultTure
-    if $isModeReview;then
-        lessonNameSel=review
+    local learnLessonList="$(ftIniGetValue $filePathLearnDataBase $lessonGroupNameSel lessonList)"
+    [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
+
+    local lessonNameSelected="$(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected${contentType}${operateMode})"
+
+    local isUseDrillingRecord=true
+    local lessonNameSel=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName")
+    if [[ -n $lessonNameSel ]];then
+        ftEcho -y "There are unfinished drilling records here. Do you want to continue it ? (Press Y/y is use，press enter equal to press y)"
+        read -n 1 delSel
+        [ -z "${delSel}" ] && delSel=y
+        [[ $delSel != "y" ]] && isUseDrillingRecord=false
+        echo
     else
-        local learnLessonList="$(ftIniGetValue $filePathLearnDataBase $lessonGroupNameSel lessonList)"
-        [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
+        isUseDrillingRecord=false
+    fi
 
-        local lessonNameSelected="$(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" lessonSelected${contentType}${operateMode})"
+    local keyNameDailyStudyPlanLesson="lessonDailyStudyPlan${contentType}${operateMode}"
+    local lessonDailyStudyPlanList=($(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDailyStudyPlanLesson}"))
 
-        local isUseDrillingRecord=true
-        local lessonNameSel=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName")
-        if [[ -n $lessonNameSel ]];then
-            ftEcho -y "There are unfinished drilling records here. Do you want to continue it ? (Press Y/y is use，press enter equal to press y)"
-            read -n 1 delSel
-            [ -z "${delSel}" ] && delSel=y
-            [[ $delSel != "y" ]] && isUseDrillingRecord=false
-            echo
-        else
-            isUseDrillingRecord=false
-        fi
+    local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
+    local learnLessonListDrilled="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}")"
 
-        local keyNameDailyStudyPlanLesson="lessonDailyStudyPlan${contentType}${operateMode}"
-        local lessonDailyStudyPlanList=($(ftIniGetValue  $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDailyStudyPlanLesson}"))
-
-        local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
-        local learnLessonListDrilled="$(ftIniGetValue $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}")"
-
-        if $isUseDrillingRecord;then
-            indexArray=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray")
-            arrayIndexSort=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"))
-            valRepetionDrillErrorHository=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"))
-            drillTrueCount=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"))
+    if $isUseDrillingRecord;then
+        indexArray=$(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray")
+        arrayIndexSort=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"))
+        valRepetionDrillErrorHository=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"))
+        drillTrueCount=($(ftIniGetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"))
+    else
+        if $isModeReview;then
+            #recreate review lesson
+            ftLearnLessonManage -unlr "${lessonGroupNameSel}"
+            lessonNameSel=review
         else
             echo
             if $isUsePlan && [[ -n $lessonDailyStudyPlanList ]];then
@@ -551,7 +552,7 @@ ftLearnRepetionDrill()
             fi
             while true; do
                 echo -en ${drillInfomationTipsTemp}
-                ftEcho -sn " Audio：" && echo "${filePathItemAudioFile}" | sed "s ${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/  g"
+                $isOperatePlayAudio && ftEcho -sn " Audio：" && echo "${filePathItemAudioFile}" | sed "s ${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/  g"
                 [ -f "${filePathItemSentenceEnglishDrillResult}" ] && echo "There are practice errors recorded, please listen carefully"
                 ! $isOperateHideChineseTitle && ftEcho -frame $chineseItem
                 echo
@@ -559,7 +560,7 @@ ftLearnRepetionDrill()
                 echo "${englishItem}"| tr -d '\n'| xclip -sel clip
                 ftEcho -key -n "S Q T Y N W Any__other__key" "to__save__the__progress__and__exit \
                         to__quit to__show__tips understood to__skip__and__go__to__the__next__sentence to__previous__sentence to__replay"
-                play -q $filePathItemAudioFile
+                $isOperatePlayAudio && play -q $filePathItemAudioFile
                 read -n 1 playOpt
                 itemOptionSelect=$playOpt
                 case "$playOpt" in
