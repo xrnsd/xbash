@@ -1290,6 +1290,7 @@ ftLearnLessonManage()
         local dirPathLessonNeedRepetionDrillReviewSAE="${dirPathLessonNeedRepetionDrillReview}/sentence.audio_english"
         local filePathLessonNeedRepetionDrillReviewSTE="${dirPathLessonNeedRepetionDrillReview}/sentence.text_english"
         local filePathLessonNeedRepetionDrillReviewSTC="${dirPathLessonNeedRepetionDrillReview}/sentence.text_chinese"
+        local filePathLessonNeedRepetionDrillReviewSTA="${dirPathLessonNeedRepetionDrillReview}/sentence.text_analysis"
         local filePathLessonNeedRepetionDrillReviewSTLT="${dirPathLessonNeedRepetionDrillReview}/sentence.text_link_table"
         local lineIndex=1 lineNum filePathLessonNeedRepetionDrillReviewSDR filePathLessonNeedRepetionDrillReviewSAE
 
@@ -1346,8 +1347,17 @@ ftLearnLessonManage()
 
                 echo "${sentenceLine}" >> $filePathLessonNeedRepetionDrillReviewSTE
                 echo $(awk 'NR=="'$sentenceIndexReal'"' $filePathLessonSTC) >> $filePathLessonNeedRepetionDrillReviewSTC
-                [[ -f $filePathLessonSTA ]] && echo $(awk 'NR=="'$sentenceIndexReal'"' $filePathLessonSTA) >> $filePathLessonNeedRepetionDrillReviewSTA
+                if [[ -f $filePathLessonSTA ]];then 
+                    echo $(awk 'NR=="'$sentenceIndexReal'"' $filePathLessonSTA) >> $filePathLessonNeedRepetionDrillReviewSTA
+                else
+                    echo "" >> $filePathLessonNeedRepetionDrillReviewSTA
+                fi
                 echo "${lessonName}:${sentenceIndexReal}" >> $filePathLessonNeedRepetionDrillReviewSTLT
+                #建立软连接
+                [[ -f ${dirParhLessonSAE}/${sentenceIndexReal}.mp3 ]] &&\
+                ln -s "${dirParhLessonSAE}/${sentenceIndexReal}.mp3" "${dirPathLessonNeedRepetionDrillReviewSAE}/${sentenceLineLoadAllCount}.mp3"
+                [[ -f ${dirParhLessonSDR}/${sentenceIndexReal}.result ]] &&\
+                ln -s "${dirParhLessonSDR}/${sentenceIndexReal}.result" "${dirPathLessonNeedRepetionDrillReviewSDR}/${sentenceLineLoadAllCount}.result"
 
                 (( $sentenceLineLoadAllCount == $lessonReviewSentenceAllCount )) && \
                 echo "lessonLoadCount=${lessonLoadCount}" >> $filePathLessonNeedRepetionDrillReviewSTLT && \
