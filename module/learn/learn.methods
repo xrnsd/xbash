@@ -203,19 +203,21 @@ ftLearnRepetionDrill()
     local filePathLearnResultDrillChinese="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_chinese"
     local filePathLearnResultDrillAudioBasic="${dirPathTempEng}/needRepetionDrill/normal/sentence.audio_english"
     local filePathLearnResultDrillResultBasic="${dirPathTempEng}/needRepetionDrill/normal/sentence.drill_result"
+    local filePathLearnResultDrillLinkTable="${dirPathTempEng}/needRepetionDrill/normal/sentence.text_link_table"    
 
     #selected lesson
     local dirPathDataItemAudioFile="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.audio_english"
     local dirPathDataItemTextDrillResult="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.drill_result"
-    local filePathDataItemSentenceTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
-    local filePathDataItemSentenceTextChinese="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_chinese"
-    local filePathDataItemSentenceTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis"
+    local filePathDataItemContentTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
+    local filePathDataItemContentTextChinese="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_chinese"
+    local filePathDataItemContentTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis"
+    local filePathDataItemContentTextLinkTable="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_link_table"
     local filePathDataItemArticleTextExplain="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_explain"
     local filePathDataItemArticleVideoExplain="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.mp4"
 
     clear
-    if [[ ! -f "$filePathDataItemSentenceTextEnglish" ]]; then
-        ftEcho -e "data file not exist :${filePathDataItemSentenceTextEnglish}"
+    if [[ ! -f "$filePathDataItemContentTextEnglish" ]]; then
+        ftEcho -e "data file not exist :${filePathDataItemContentTextEnglish}"
         ftLearnRepetionDrill -h && return
     fi
     if $isModeListen; then
@@ -223,15 +225,15 @@ ftLearnRepetionDrill()
     fi
     local filePathItemAudioFile filePathItemSentenceEnglishDrillResult
 
-    local fileContentEnglishBasic=$(cat $filePathDataItemSentenceTextEnglish)
+    local fileContentEnglishBasic=$(cat $filePathDataItemContentTextEnglish)
     [[ -z $fileContentEnglishBasic ]] && echo -en "Lesson group: ${lessonGroupNameSel}, Lesson: ${lessonNameSel}\
-    \nFile path: ${filePathDataItemSentenceTextEnglish}\
+    \nFile path: ${filePathDataItemContentTextEnglish}\
     \nContent type:" && ftEcho -e " ${contentType} is none" \
     && return
 
-    local fileContentChineseBasic=$(cat $filePathDataItemSentenceTextChinese)
+    local fileContentChineseBasic=$(cat $filePathDataItemContentTextChinese)
     [[ -z $fileContentChineseBasic ]] &&  echo -en "Lesson group: ${lessonGroupNameSel}, Lesson: ${lessonNameSel}\
-    \nFile path: ${filePathDataItemSentenceTextEnglish}\
+    \nFile path: ${filePathDataItemContentTextEnglish}\
     \nContent type:" && ftEcho -e " ${contentType}'s translation is none" \
     && return
 
@@ -249,8 +251,8 @@ ftLearnRepetionDrill()
 
     if [[ "$contentType" = "article" ]]||[[ "$contentType" = "imitate" ]]; then
 
-        chineseItem=$(cat $filePathDataItemSentenceTextChinese)
-        englishItem=$(cat $filePathDataItemSentenceTextEnglish)
+        chineseItem=$(cat $filePathDataItemContentTextChinese)
+        englishItem=$(cat $filePathDataItemContentTextEnglish)
 
         if $isModePreview && [[ "$contentType" = "article" ]];then
             gedit $filePathDataItemArticleTextExplain
@@ -292,7 +294,7 @@ ftLearnRepetionDrill()
                 echo -n "" > "${filePathTempWriteDrillTextAlignment}"
                 for (( index = 1; index <= $fileLineCount; index++ )); do
                     awk 'NR=="'$index'"' $filePathTempWriteDrillText >> "${filePathTempWriteDrillTextAlignment}"
-                    awk 'NR=="'$index'"' $filePathDataItemSentenceTextEnglish >> "${filePathTempWriteDrillTextAlignment}"
+                    awk 'NR=="'$index'"' $filePathDataItemContentTextEnglish >> "${filePathTempWriteDrillTextAlignment}"
                 done
                 gedit "${filePathTempWriteDrillTextAlignment}"
                 fileLineCount=$(sed -n '$=' "${filePathTempWriteDrillTextAlignment}")
@@ -304,12 +306,12 @@ ftLearnRepetionDrill()
                 done
 
                 mv "${filePathTempWriteDrillTextAlignment}Temp" "${filePathTempWriteDrillText}"
-                mv "${filePathTempWriteDrillTextAlignment}Example" "${filePathDataItemSentenceTextEnglish}"
+                mv "${filePathTempWriteDrillTextAlignment}Example" "${filePathDataItemContentTextEnglish}"
             fi
 
             #bcompare drill result
             ftEcho -s "please bcompare translation"
-            cp $filePathDataItemSentenceTextEnglish $filePathCompareExampleText
+            cp $filePathDataItemContentTextEnglish $filePathCompareExampleText
             bcompare "${filePathCompareExampleText}" "${filePathTempWriteDrillText}"
 
             #save drill records
@@ -319,8 +321,8 @@ ftLearnRepetionDrill()
                     if [[ "$contentType" = "imitate" ]]&&\
                        [[ $lessonGroupContentType = "ImitateTraining" ]];then
                         cp -rf -v "${filePathTempWriteDrillText}" "${dirPathDataItemTextDrillResult}"
-                        rm -rf "${filePathDataItemSentenceTextEnglish}"
-                        ftTransformDrillReslt "${filePathCompareExampleText}" "${filePathDataItemSentenceTextEnglish}" &&\
+                        rm -rf "${filePathDataItemContentTextEnglish}"
+                        ftTransformDrillReslt "${filePathCompareExampleText}" "${filePathDataItemContentTextEnglish}" &&\
                         echo -e "\033[1;33mDrill results:\033[0m form tranform finished"
                     else
                         mv "${filePathCompareExampleText}" "${filePathCompareExampleText}_basic"
@@ -359,7 +361,7 @@ ftLearnRepetionDrill()
             local sentenceAudioIndex=1 sentenceAudioCount=$(ls -1 ${dirPathDataItemAudioFile} | wc -l)
             ((sentenceAudioCount==0)) && ftEcho -e "Can't find audio file in directory: ${dirPathDataItemAudioFile} " && return $resultFail
 
-            local filePathDataItemSentenceTextEnglishTipsTemp=/tmp/EnglishBasicTipsTemp filePathDataItemSoure
+            local filePathDataItemContentTextEnglishTipsTemp=/tmp/EnglishBasicTipsTemp filePathDataItemSoure
             local englishItemTips isShowChineseTips=$isOperateHideChineseTitle
 
             if $isOperateTextEdit;then
@@ -367,22 +369,22 @@ ftLearnRepetionDrill()
             fi
 
             while true; do
-                $isShowChineseTips && filePathDataItemSoure="${filePathDataItemSentenceTextChinese}" || filePathDataItemSoure="${filePathDataItemSentenceTextEnglish}"
-                cp $filePathDataItemSoure $filePathDataItemSentenceTextEnglishTipsTemp
-                cp $filePathDataItemSoure ${filePathDataItemSentenceTextEnglishTipsTemp}2
+                $isShowChineseTips && filePathDataItemSoure="${filePathDataItemContentTextChinese}" || filePathDataItemSoure="${filePathDataItemContentTextEnglish}"
+                cp $filePathDataItemSoure $filePathDataItemContentTextEnglishTipsTemp
+                cp $filePathDataItemSoure ${filePathDataItemContentTextEnglishTipsTemp}2
                 while (( $sentenceAudioIndex <= $sentenceAudioCount  )); do
                     timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
                     filePathItemAudioFile="${dirPathDataItemAudioFile}/${sentenceAudioIndex}.mp3"
                     [ ! -f "${filePathItemAudioFile}" ] && ftEcho -en "can't find audio file:" && echo "${filePathItemAudioFile}" && continue
 
-                    englishItem=$(awk 'NR=="'$sentenceAudioIndex'"' "${filePathDataItemSentenceTextEnglishTipsTemp}2")
+                    englishItem=$(awk 'NR=="'$sentenceAudioIndex'"' "${filePathDataItemContentTextEnglishTipsTemp}2")
                     [[ -z "$englishItem" ]] && ((sentenceAudioIndex+=1)) && continue
                     englishItemTips="\\\033[1;33m${englishItem}\\\033[0m\\\033[44;37m<<<<<<<<<<\\\033[0m"
-                    cp -rf "${filePathDataItemSentenceTextEnglishTipsTemp}2" "${filePathDataItemSentenceTextEnglishTipsTemp}"
-                    sed -i "${indexSort}s/${englishItem}/${englishItemTips}/g" $filePathDataItemSentenceTextEnglishTipsTemp
+                    cp -rf "${filePathDataItemContentTextEnglishTipsTemp}2" "${filePathDataItemContentTextEnglishTipsTemp}"
+                    sed -i "${indexSort}s/${englishItem}/${englishItemTips}/g" $filePathDataItemContentTextEnglishTipsTemp
                     clear
                     echo -e "${drillInfomationTips}\n\033[1;33mDuration info:\033[0m ${timingChang}"
-                    echo -e "$(cat $filePathDataItemSentenceTextEnglishTipsTemp)"
+                    echo -e "$(cat $filePathDataItemContentTextEnglishTipsTemp)"
                     play -q $filePathItemAudioFile
                     sleep 1
                     ((sentenceAudioIndex+=1))
@@ -416,11 +418,11 @@ ftLearnRepetionDrill()
                 if [ ! "$(ls -A $dirPathDataItemTextDrillResult)" ];then
                     echo -e "${englishItem}"
                 else
-                    local fileLineCount=$(sed -n '$=' $filePathDataItemSentenceTextEnglish)
+                    local fileLineCount=$(sed -n '$=' $filePathDataItemContentTextEnglish)
                     for (( index = 1; index <= $fileLineCount; index++ )); do
                        [ -f "${dirPathDataItemTextDrillResult}/${index}.result" ] && \
                        echo -e $(awk 'NR=="'1'"' "${dirPathDataItemTextDrillResult}/${index}.result") && continue
-                       echo -e $(awk 'NR=="'$index'"' $filePathDataItemSentenceTextEnglish)
+                       echo -e $(awk 'NR=="'$index'"' $filePathDataItemContentTextEnglish)
                     done
                 fi
                 ftEcho -continue "Press any key display translator"
@@ -439,15 +441,15 @@ ftLearnRepetionDrill()
             drillInfomationTipsTemp="${drillInfomationTips}\n\
             \033[1;33mDuration info:\033[0m ${timingChang}"
 
-            local fileLineCount=$(sed -n '$=' $filePathDataItemSentenceTextEnglish) index=1
+            local fileLineCount=$(sed -n '$=' $filePathDataItemContentTextEnglish) index=1
             local englishItem
             while true; do
                 clear
                 echo -e ${drillInfomationTipsTemp}
                 echo
-                englishItem=$(awk 'NR=="'$index'"' $filePathDataItemSentenceTextEnglish)
+                englishItem=$(awk 'NR=="'$index'"' $filePathDataItemContentTextEnglish)
                 echo "${englishItem}" | tr -d '\n' | xclip -sel clip
-                echo -e "$(awk 'NR=="'$index'"' $filePathDataItemSentenceTextChinese)"
+                echo -e "$(awk 'NR=="'$index'"' $filePathDataItemContentTextChinese)"
                 echo -e "$englishItem"
                 echo -e "$(awk 'NR=="'$index'"' $dirPathDataItemTextDrillResult)"
                 echo
@@ -495,8 +497,8 @@ ftLearnRepetionDrill()
         return
     fi
 
-    local fileSizeDataItemSentenceTextEnglish=$(sed -n '$=' $filePathDataItemSentenceTextEnglish)
-    local fileSizeDataItemSentenceTextChinese=$(sed -n '$=' $filePathDataItemSentenceTextChinese)
+    local fileSizeDataItemSentenceTextEnglish=$(sed -n '$=' $filePathDataItemContentTextEnglish)
+    local fileSizeDataItemSentenceTextChinese=$(sed -n '$=' $filePathDataItemContentTextChinese)
     if (($fileSizeDataItemSentenceTextChinese!=$fileSizeDataItemSentenceTextEnglish)) ; then
         ftEcho -e "Lesson data exception\n\
         fileSizeDataItemSentenceTextEnglish=${fileSizeDataItemSentenceTextEnglish}\n\
@@ -516,14 +518,14 @@ ftLearnRepetionDrill()
         #read mode use order index
         $isModeRead && indexSort=$indexArray
 
-        englishItem=$(awk 'NR=="'$indexSort'"' $filePathDataItemSentenceTextEnglish)
+        englishItem=$(awk 'NR=="'$indexSort'"' $filePathDataItemContentTextEnglish)
         if [[ -z $englishItem ]];then
             valRepetionDrillInvalidIndex=(${valRepetionDrillInvalidIndex[@]} $indexSort)
             (( indexArray+=1 ))
             continue
         fi
 
-        chineseItem=$(awk 'NR=="'$indexSort'"' $filePathDataItemSentenceTextChinese)
+        chineseItem=$(awk 'NR=="'$indexSort'"' $filePathDataItemContentTextChinese)
         local drillInfomationTipsTemp="${drillInfomationTips}\n\033[1;33mSentence index:\033[0m ${indexSort} \
         \033[1;33mProgress number:\033[0m $(echo "scale=1; $indexArray* 100 / $arrayIndexSortSize" | bc)% \
         \033[1;33mDuration info:\033[0m ${timingChang}"
@@ -550,11 +552,17 @@ ftLearnRepetionDrill()
                 ftText2Mp3 -fpt "${filePathText}" -dpm "${dirPathMp3}"
                 mv "${dirPathMp3}/1.mp3" "${filePathItemAudioFile}"
             fi
+            local contentAnalysis linkInfo audioInfo
+            [ -f ${filePathDataItemContentTextAnalysis} ] && contentAnalysis=$(awk 'NR=="'$indexSort'"' $filePathDataItemContentTextAnalysis)
+            [ -f ${filePathDataItemContentTextLinkTable} ] && linkInfo=$(awk 'NR=="'$indexSort'"' ${filePathDataItemContentTextLinkTable})
+            audioInfo=$(echo "${filePathItemAudioFile}" | sed "s ${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/  g")
             while true; do
                 echo -en ${drillInfomationTipsTemp}
-                $isOperatePlayAudio && ftEcho -sn " Audio：" && echo "${filePathItemAudioFile}" | sed "s ${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/  g"
+                [[ -n $linkInfo ]] && ftEcho -sn " Link：" && echo -n $linkInfo
+                $isOperatePlayAudio && ftEcho -sn " Audio：" && echo "${audioInfo}"
                 [ -f "${filePathItemSentenceEnglishDrillResult}" ] && echo "There are practice errors recorded, please listen carefully"
                 ! $isOperateHideChineseTitle && ftEcho -frame $chineseItem
+                ! $isOperateHideChineseTitle && $isModeReview && [[ -n $contentAnalysis ]] && ftEcho -frame "${contentAnalysis}"
                 echo
                 #write to clipboard
                 echo "${englishItem}"| tr -d '\n'| xclip -sel clip
@@ -635,19 +643,24 @@ ftLearnRepetionDrill()
             echo -n "" > ${filePathLearnDrillTemp}
         elif [[ $itemOptionSelect == "t" ]] || [[ $itemOptionSelect == "T" ]]; then
             sentenceDrillResltItem=$(cat $filePathItemSentenceEnglishDrillResult)
-            local contentAnalysis=$(awk 'NR=="'$indexSort'"' $filePathDataItemSentenceTextAnalysis)
-            if $isModeListen || $isModeRead; then
+            local contentAnalysis linkInfo audioInfo
+            [ -f ${filePathDataItemContentTextAnalysis} ] && contentAnalysis=$(awk 'NR=="'$indexSort'"' $filePathDataItemContentTextAnalysis)
+            [ -f ${filePathDataItemContentTextLinkTable} ] && linkInfo=$(awk 'NR=="'$indexSort'"' ${filePathDataItemContentTextLinkTable})
+            audioInfo=$(echo "${filePathItemAudioFile}" | sed "s ${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/  g")
+            if $isModeListen || $isModeRead || $isModeReview; then
                 while true; do
                     clear
-                    ftEcho -s ${drillInfomationTipsTemp}
-                    $isOperatePlayAudio && ftEcho -sn "Audio example：" && echo "${filePathItemAudioFile}"
+                    ftEcho -sn ${drillInfomationTipsTemp}
+                    [[ -n $linkInfo ]] && ftEcho -sn " Link：" && echo -n $linkInfo
+                    $isOperatePlayAudio && ftEcho -sn " Audio：" && echo "${audioInfo}"
                     echo
                     echo "${englishItem}" | tr -d '\n' | xclip -sel clip
                     # echo "${englishItem}" | sed 's/\n/ /g' >> $filePathLearnDrillTemp
                     echo -e  "${chineseItem}"
                     (( $(echo $sentenceDrillResltItem |grep -v ^$|wc -l)>0 )) && echo -e "${sentenceDrillResltItem}"
                     echo -e  "${englishItem}"
-                    $isModeRead && [ -f ${filePathDataItemSentenceTextAnalysis} ] && [[ -n $contentAnalysis ]] && ftEcho -frame "${contentAnalysis}"
+                    #$isModeReview || $isModeRead && 
+                    [[ -n $contentAnalysis ]] && ftEcho -frame "${contentAnalysis}"
 
                     echo
 
@@ -724,14 +737,22 @@ ftLearnRepetionDrill()
                                 read -n 1 delSel
                                 [ -z "${delSel}" ] && delSel=y
                                 [[ $delSel != "y" ]]&&break
-                                sed -i "${indexSort}s/${englishItem}//g" $filePathDataItemSentenceTextEnglish
-                                sed -i "${indexSort}s/${chineseItem}//g" $filePathDataItemSentenceTextChinese
+                                sed -i "${indexSort}s/${englishItem}//g" $filePathDataItemContentTextEnglish
+                                sed -i "${indexSort}s/${chineseItem}//g" $filePathDataItemContentTextChinese
                                 rm $filePathItemAudioFile
                                 break
                             fi
                             if [[ -z $(grep -e "^${chineseItem}$" ${filePathLearnResultDrillChinese}) ]]; then
                                 echo "${englishItem}" >> $filePathLearnResultDrillEnglish
                                 echo "${chineseItem}" >> $filePathLearnResultDrillChinese
+                                if $isModeReview;then
+                                    local linkInfo=$(awk 'NR=="'$indexSort'"' ${filePathDataItemContentTextLinkTable})
+                                    local lessonGroupName=$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupSelected${contentType}${operateMode})
+                                    echo "${lessonGroupName}:${linkInfo}" >> $filePathLearnResultDrillLinkTable
+                                else
+                                    echo "${lessonGroupNameSel}:${lessonNameSel}:${indexSort}" >> $filePathLearnResultDrillLinkTable
+                                fi
+
                                 local fileLineSize=$(awk 'END{print NR}' $filePathLearnResultDrillEnglish)
                                 ln -s $filePathItemAudioFile "${filePathLearnResultDrillAudioBasic}/${fileLineSize}.mp3"
                                 [ -f "${filePathItemSentenceEnglishDrillResult}" ] \
