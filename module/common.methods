@@ -4308,7 +4308,7 @@ ftText2Mp3()
     ftEcho -s "生成完成"
 }
 
-complete -W "-h --help --rely_install -f -n -nn -c" ftTextSetLine
+complete -W "-h --help --rely_install -f -n -nn -c -r" ftTextSetLine
 ftTextSetLine()
 {
     local ftEffect=TextFileLineContentChange
@@ -4316,7 +4316,7 @@ ftTextSetLine()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
     #argument init
     local filePathText lineNum lineContent
-    local isLineContentNone=false
+    local isLineContentNone=false isRemoveEmptyLines=false
     local valCount=6 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
@@ -4328,6 +4328,9 @@ ftTextSetLine()
 #
 #    clear line content
 #    ftTextSetLine -f filePath -nn lineNumber
+#
+#    clear empty lines
+#    ftTextSetLine -f filePath -r
 #========================================================="; return ;;
 
         # argument infoumation ==============
@@ -4340,22 +4343,31 @@ ftTextSetLine()
         -nn ) lineNum="${arg2}"
               isLineContentNone=true
             ;;
+        -r ) isRemoveEmptyLines=true
+
+            ;;
     * ) ;; esac;done
 
     #argument check
     (( $#>6 )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
     case "$1" in
-        -h | --help | --rely_install | -f | -n | -nn | -c)
+        -h | --help | --rely_install | -f | -n | -nn | -c | -r)
             ;;
         *)   errorContent="${errorContent}\\n invalid argument:${1}"
             ;;
     esac
     [ ! -f "${filePathText}" ] && errorContent="${errorContent}\\n[file is not exist]filePathText=$filePathText"
-    [ -z "${lineNum}" ] && errorContent="${errorContent}\\n[line number is nuknow]"
-    ! $isLineContentNone && [ -z "${lineContent}" ] && errorContent="${errorContent}\\n[line cintent is null]"
+    ! $isRemoveEmptyLines && [ -z "${lineNum}" ] && errorContent="${errorContent}\\n[line number is nuknow]"
+    ! $isRemoveEmptyLines && ! $isLineContentNone && [ -z "${lineContent}" ] && errorContent="${errorContent}\\n[line cintent is null]"
     [ -n "$errorContent" ] && ftEcho -ea "method[${ftEffect}] argument error ：${errorContent}\\nplease read help information:" && ftTextSetLine -h && return $resultFail
 
     #code main
+    if $isRemoveEmptyLines;then
+        sed '/^\s*$/d' "${filePathText}" > "${filePathText}_temp"
+        [[ -f "${filePathText}_temp" ]] && mv "${filePathText}_temp" "${filePathText}"
+        return
+    fi
+
     local fileLineCount=$(sed -n '$=' $filePathText)
     fileLineCount=${fileLineCount:-'1'}
     echo "fileLineCount=${fileLineCount}"

@@ -555,7 +555,7 @@ ftLearnRepetionDrill()
                 ftText2Mp3 -fpt "${filePathText}" -dpm "${dirPathMp3}"
                 mv "${dirPathMp3}/1.mp3" "${filePathItemAudioFile}"
             fi
-            local contentAnalysis linkInfo audioInfo
+            local contentAnalysis linkInfo audioInfo timeStart timeHandled
             [ -f ${filePathDataItemContentTextAnalysis} ] && contentAnalysis=$(awk 'NR=="'$indexSort'"' $filePathDataItemContentTextAnalysis)
             [ -f ${filePathDataItemContentTextLinkTable} ] && linkInfo=$(awk 'NR=="'$indexSort'"' ${filePathDataItemContentTextLinkTable})
             audioInfo=$(echo "${filePathItemAudioFile}" | sed "s ${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/  g")
@@ -574,9 +574,12 @@ ftLearnRepetionDrill()
                 echo "${englishItem}"| tr -d '\n'| xclip -sel clip
                 ftEcho -key -n "S Q T Y N W Any__other__key" "to__save__the__progress__and__exit \
                         to__quit to__show__tips understood to__skip__and__go__to__the__next__sentence to__previous__sentence to__replay"
+                
+                timeStart=$(date +%s -d $(date +"%H:%M:%S"))
                 $isOperatePlayAudio && play -q $filePathItemAudioFile
                 read -n 1 -t${readTimeOut} playOpt
-                [[ -z $playOpt ]] && playOpt=n
+                timeHandled=$(date +%s -d $(date +"%H:%M:%S"))
+                (( timeHandled-timeStart >= $readTimeOut)) && [[ -z $playOpt ]] && playOpt=n
                 itemOptionSelect=$playOpt
                 case "$playOpt" in
                     s | S ) 
@@ -738,8 +741,7 @@ ftLearnRepetionDrill()
                             echo -e "\n grammar problem:\n   ${drillInfomationTipsTemp}\n   ${chineseItem}\n   ${englishItem}" >> $filePathLearnResultProblem
                             break;;
                         d | D )
-                            if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] \
-                                && [[ $lessonNameSel = $lessonNameRepetionDrill ]]; then
+                            if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]]; then
                                 ftEcho -y "Are you sure to delete it(press enter normal)"
                                 read -n 1 delSel
                                 [ -z "${delSel}" ] && delSel=y
@@ -770,6 +772,8 @@ ftLearnRepetionDrill()
                                 fi
 
                                 local fileLineSize=$(awk 'END{print NR}' $filePathLearnResultDrillEnglish)
+
+                                [[ -L $filePathItemAudioFile ]] && filePathItemAudioFile=$(ls -l ${filePathItemAudioFile} | awk '{print $11}')
                                 ln -s $filePathItemAudioFile "${filePathLearnResultDrillAudioBasic}/${fileLineSize}.mp3"
                                 [ -f "${filePathItemSentenceEnglishDrillResult}" ] \
                                 && ln -s $filePathItemSentenceEnglishDrillResult "${filePathLearnResultDrillResultBasic}/${fileLineSize}.result"
@@ -1282,7 +1286,9 @@ ftLearnLessonManage()
             echo "${lineContent}" >> "${filePathLessonNeedRepetionDrillNormalSTE}.temp"
             awk 'NR=="'$lineIndex'"' "${filePathLessonNeedRepetionDrillNormalSTA}" >> "${filePathLessonNeedRepetionDrillNormalSTA}.temp" > /dev/null
             awk 'NR=="'$lineIndex'"' "${filePathLessonNeedRepetionDrillNormalSTC}" >> "${filePathLessonNeedRepetionDrillNormalSTC}.temp"
-            awk 'NR=="'$lineIndex'"' "${filePathLessonNeedRepetionDrillNormalSTLT}" >> "${filePathLessonNeedRepetionDrillNormalSTLT}.temp"
+            
+            #awk 'NR=="'$lineIndex'"' "${filePathLessonNeedRepetionDrillNormalSTLT}" >> "${filePathLessonNeedRepetionDrillNormalSTLT}.temp"
+
             mv "$lineAudio" "${dirPathLessonNeedRepetionDrillNormalSAE}.temp/${lineIndexTemp}.mp3"
             [[ -f $lineResult ]] && mv "$lineResult" "${dirPathLessonNeedRepetionDrillNormalSDR}.temp/${lineIndexTemp}.result"
             ((lineIndexTemp+=1))
@@ -1294,7 +1300,30 @@ ftLearnLessonManage()
         mv ${filePathLessonNeedRepetionDrillNormalSTA}.temp ${filePathLessonNeedRepetionDrillNormalSTA}
         mv ${filePathLessonNeedRepetionDrillNormalSTC}.temp ${filePathLessonNeedRepetionDrillNormalSTC}
         mv ${filePathLessonNeedRepetionDrillNormalSTE}.temp ${filePathLessonNeedRepetionDrillNormalSTE}
-        mv ${filePathLessonNeedRepetionDrillNormalSTLT}.temp ${filePathLessonNeedRepetionDrillNormalSTLT}
+        # mv ${filePathLessonNeedRepetionDrillNormalSTLT}.temp ${filePathLessonNeedRepetionDrillNormalSTLT}
+
+        local indexSort=1 lineContent= dirPathLocal=$(pwd) filePath
+        [[ ! -f "${filePathLessonNeedRepetionDrillNormalSTLT}" ]] && touch $filePathLessonNeedRepetionDrillNormalSTLT
+        cd "${dirPathLessonNeedRepetionDrillNormalSAE}"
+        echo -n "" > $filePathLessonNeedRepetionDrillNormalSTLT
+        while read item ;do
+            filePath=$(ls -l $item | awk '{print $11}')
+            if [[ -L "${filePath}" ]];then
+                filePath=$(ls -l $filePath | awk '{print $11}')
+                ln -sf "${filePath}" "${dirPathLessonNeedRepetionDrillNormalSAE}/${item}"
+            fi
+            lineContent=$(echo ${filePath} | sed "s?${dirPathTempEng}/??g" | sed 's?sentence.audio_english/??g' | sed 's?/?:?g'| sed 's?.mp3??g')
+            indexSort=$(echo $item | sed 's?.mp3??g')
+            # echo "line:${indexSort} > ${lineContent}"
+            ftTextSetLine -f $filePathLessonNeedRepetionDrillNormalSTLT -n $indexSort -c "${lineContent}" > /dev/null
+        done < <(echo "$(ls )")
+        cd "${dirPathLocal}"
+
+        #delete empty line
+        ftTextSetLine -f $filePathLessonNeedRepetionDrillNormalSTA -r
+        ftTextSetLine -f $filePathLessonNeedRepetionDrillNormalSTC -r
+        ftTextSetLine -f $filePathLessonNeedRepetionDrillNormalSTE -r
+        ftTextSetLine -f $filePathLessonNeedRepetionDrillNormalSTLT -r
 
         ftEcho -s "update lesson normal finish"
         return
@@ -1457,7 +1486,7 @@ ftLearnLessonManage()
         learnLessonGroupList=($(ls -d */| sed 's/\///g'))
         for lessonGroup in ${learnLessonGroupList[*]} ; do
             dirPathLessonGroup="${dirPathTempEng}/${lessonGroup}"
-            dirPathArrayLesson=($(ls $dirPathLessonGroup | grep -v 'repetionDrill.hository\|bash.text_lesson_create\|demand.text_writespeak\|demand.text_transcription\|extra_video'))
+            dirPathArrayLesson=($(ls $dirPathLessonGroup | grep -v 'repetionDrill.hository\|bash.text_lesson_create\|demand.text_writespeak\|demand.text_transcription\|extra_video\|Problem.list'))
             if [[ -z $dirPathArrayLesson ]];then
                 ftEcho -s "--------------------------------"
                 ftEcho -s "invald lesson group : ${lessonGroup}"
