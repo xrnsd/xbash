@@ -244,7 +244,7 @@ ftLearnRepetionDrill()
     #fi
 
     local englishItem chineseItem sentenceDrillResltItem
-    local lessonSize=0 indexSort itemOptionSelect
+    local lessonSize=0 indexSort itemOptionSelect englishItemLength readTimeOut
     local timingStart=$(date +%s -d $(date +"%H:%M:%S")) timingChang
     local drillInfomationTips="\033[1;33mLesson group name:\033[0m ${lessonGroupNameSel} \033[1;33mLesson name:\033[0m ${lessonNameSel} \033[1;33mContent type:\033[0m ${contentType} \033[1;33mOperate mode:\033[0m ${operateMode}"
 
@@ -254,6 +254,7 @@ ftLearnRepetionDrill()
 
         chineseItem=$(cat $filePathDataItemContentTextChinese)
         englishItem=$(cat $filePathDataItemContentTextEnglish)
+        englishItemLength=${#englishItem}
 
         if $isModePreview && [[ "$contentType" = "article" ]];then
             gedit $filePathDataItemArticleTextExplain
@@ -525,6 +526,7 @@ ftLearnRepetionDrill()
             (( indexArray+=1 ))
             continue
         fi
+        englishItemLength=${#englishItem}
 
         chineseItem=$(awk 'NR=="'$indexSort'"' $filePathDataItemContentTextChinese)
         local drillInfomationTipsTemp="${drillInfomationTips}\n\033[1;33mSentence index:\033[0m ${indexSort} \
@@ -557,10 +559,13 @@ ftLearnRepetionDrill()
             [ -f ${filePathDataItemContentTextAnalysis} ] && contentAnalysis=$(awk 'NR=="'$indexSort'"' $filePathDataItemContentTextAnalysis)
             [ -f ${filePathDataItemContentTextLinkTable} ] && linkInfo=$(awk 'NR=="'$indexSort'"' ${filePathDataItemContentTextLinkTable})
             audioInfo=$(echo "${filePathItemAudioFile}" | sed "s ${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/  g")
+            ((readTimeOut=$englishItemLength+$englishItemLength+$englishItemLength))
             while true; do
                 echo -en ${drillInfomationTipsTemp}
                 [[ -n $linkInfo ]] && ftEcho -sn " Link：" && echo -n $linkInfo
-                $isOperatePlayAudio && ftEcho -sn " Audio：" && echo "${audioInfo}"
+                $isOperatePlayAudio && ftEcho -sn " Audio：" && echo -n "${audioInfo}"
+                ftEcho -sn " Time out: " && echo -n $readTimeOut
+                echo
                 [ -f "${filePathItemSentenceEnglishDrillResult}" ] && echo "There are practice errors recorded, please listen carefully"
                 ! $isOperateHideChineseTitle && ftEcho -frame $chineseItem
                 ! $isOperateHideChineseTitle && $isModeReview && [[ -n $contentAnalysis ]] && ftEcho -frame "${contentAnalysis}"
@@ -570,7 +575,8 @@ ftLearnRepetionDrill()
                 ftEcho -key -n "S Q T Y N W Any__other__key" "to__save__the__progress__and__exit \
                         to__quit to__show__tips understood to__skip__and__go__to__the__next__sentence to__previous__sentence to__replay"
                 $isOperatePlayAudio && play -q $filePathItemAudioFile
-                read -n 1 playOpt
+                read -n 1 -t${readTimeOut} playOpt
+                [[ -z $playOpt ]] && playOpt=n
                 itemOptionSelect=$playOpt
                 case "$playOpt" in
                     s | S ) 
@@ -595,8 +601,8 @@ ftLearnRepetionDrill()
                         (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
                         break;;
                     e | E )
-                            echo -e "\ntranslator problem:\n  ${drillInfomationTipsTemp}\n  ${englishItem}" >> $filePathLearnResultProblem
-                            break;;
+                        echo -e "\ntranslator problem:\n  ${drillInfomationTipsTemp}\n  ${englishItem}" >> $filePathLearnResultProblem
+                        break;;
                     t | T | y | Y | n | N ) break;;
                     * ) ;;
                 esac

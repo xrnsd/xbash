@@ -314,7 +314,7 @@ ftEcho()
     fi
 
     #表格显示内容
-    local listMainItemSizeFlag listMainTitle listMain
+    local listMainItemSizeFlag listMainTitle listMain echoTimeOut
     local isContentApplyBySuffix=false applyContent listApply
     local isContentHighlight=false highlightContent
 
@@ -335,6 +335,7 @@ ftEcho()
 #    ftEcho    -sn    内容       # 执行信息，不换行，对字符串的缩进敏感
 #    ftEcho    -snw   内容       # 执行信息，不换行，对字符串的缩进敏感,循环显示省略号
 #    ftEcho    -rc    内容       # xbash函数的说明显示，对字符串的缩进敏感
+#    ftEcho    -to    时间       # 单位秒，显示超时时间
 #    ftEcho    -w     标题  内容      # 弹窗提示
 #    ftEcho    -iow   标题  内容      # 弹窗交互
 #    ftEcho    -frame 内容           # 多行排版显示,带边框
@@ -350,6 +351,8 @@ ftEcho()
                 title="${arg2}"
                 content="${arg3}"
             fi
+            ;;
+        -to ) echoTimeOut="${arg2}"
             ;;
         #使用表格显示内容 ==============
         -c )
@@ -486,13 +489,25 @@ ftEcho()
                 (( $listMainItemSize == 1 )) && export publicSelItemContent=$listMain && return
 
                 local dirFlag=$listMainItemSize
-                (( $listMainItemSize > 9 )) && dirFlag=9
+                (( $listMainItemSize > 9 )) && dirFlag=9 
+
+                local timeOutInfo
+                [[ -n $echoTimeOut ]]&&timeOutInfo="time out:${echoTimeOut},"
+
                 while true; do
-                    ftEcho -r  "${listMainTitle}[0~$(expr $listMainItemSize - 1),q](press enter normal ${indexSelNormal}):"
+                    ftEcho -r  "${listMainTitle}[0~$(expr $listMainItemSize - 1),q](${timeOutInfo}press enter normal ${indexSelNormal}):"
                     if (( $listMainItemSize > 9 )) || $isMultipleChoice;then
-                        read choice
+                        if [[ -n $echoTimeOut ]];then
+                            read choice -t${echoTimeOut}
+                        else
+                            read choice
+                        fi
                     else
-                        read -n 1 choice
+                        if [[ -n $echoTimeOut ]];then
+                            read -n 1 choice -t${echoTimeOut}
+                        else
+                            read -n 1 choice
+                        fi
                     fi
                     #设定默认值
                     [ ${#choice} == 0 ] && choice=$indexSelNormal
