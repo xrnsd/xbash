@@ -4328,13 +4328,13 @@ ftTextSetLine()
     #code main
     local fileLineCount=$(sed -n '$=' $filePathText)
     fileLineCount=${fileLineCount:-'1'}
-    echo "fileLineCount=${fileLineCount}"
-    echo "lineNum=${lineNum}"
+    # echo "fileLineCount=${fileLineCount}"
+    # echo "lineNum=${lineNum}"
     local drillResultTure=1
 
     if (( $lineNum > $fileLineCount ));then
         local sizeChange=$(( lineNum-fileLineCount ))
-        echo "sizeChange=${sizeChange}"
+        # echo "sizeChange=${sizeChange}"
         for (( i = 0; i < $sizeChange; i++ )); do
             echo -en "\n\n" >> "${filePathText}"
         done
