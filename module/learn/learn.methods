@@ -677,14 +677,14 @@ ftLearnRepetionDrill()
 
                     if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && [[ $lessonNameSel = $lessonNameRepetionDrill ]]; then
                         ftEcho -key -n "Y S Q N E L R D W C Any__other__key" \
-                        "understood ,to__save__the__progress__and__exit to__quit  \
+                        "understood to__save__the__progress__and__exit to__quit  \
                         to__skip__and__go__to__the__next__sentence  to__translation__doubts  \
                         to__grammar__issues  to__read__pending__confirmation  to__to__delete__records  \
                         to__previous__sentence  to__mark__as__connected__sentence  to__replay"
                     
                     elif [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && [[ $lessonNameSel = "review" ]]; then
                         ftEcho -key -n "Y S Q N E L R D W P C Any__other__key" \
-                        "understood ,to__save__the__progress__and__exit to__quit  \
+                        "understood to__save__the__progress__and__exit to__quit  \
                         to__skip__and__go__to__the__next__sentence  to__translation__doubts  \
                         to__grammar__issues  to__read__pending__confirmation  to__to__delete__records  \
                         to__previous__sentence to__be__strengthened to__mark__as__connected__sentence to__replay"
@@ -751,7 +751,11 @@ ftLearnRepetionDrill()
                         c | C )
                             local lineContent="${lessonGroupNameSel}/${lessonNameSel}/${indexSort}"
                             if [[ -z $(grep -e "^${lineContent}$" ${filePathDataItemNeedRepetionDrillLTTSEC}) ]]; then
-                                echo "${lineContent}" >> $filePathDataItemNeedRepetionDrillLTTSEC
+                                if $isModeReview;then
+                                    echo "${linkInfo}" >> $filePathDataItemNeedRepetionDrillLTTSEC
+                                else
+                                    echo "${lineContent}" >> $filePathDataItemNeedRepetionDrillLTTSEC
+                                fi
                                 echo -n "Marked as continuous reading, id is : " && ftEcho -s $(awk 'END{print NR}' $filePathDataItemNeedRepetionDrillLTTSEC)
                                 ftEcho -continue "press any key continue ..."
                             else
@@ -759,7 +763,8 @@ ftLearnRepetionDrill()
                                 ftEcho -s "Cancel operation, repeate data"
                                 ftEcho -continue "press any key continue ..."
                             fi
-                            break;;
+                            #break
+                            ;;
                         d | D )
                             if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]]; then
                                 ftEcho -y "Are you sure to delete it(press enter normal)"
@@ -778,9 +783,7 @@ ftLearnRepetionDrill()
                                 echo "${englishItem}" >> $filePathDataItemNeedRepetionDrillSTE
                                 echo "${chineseItem}" >> $filePathDataItemNeedRepetionDrillSTC
                                 if $isModeReview;then
-                                    local linkInfo=$(awk 'NR=="'$indexSort'"' ${filePathDataItemContentTextLinkTable})
-                                    local lessonGroupName=$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupSelected${contentType}${operateMode})
-                                    echo "${lessonGroupName}/${linkInfo}" >> $filePathDataItemNeedRepetionDrillLTTSE
+                                    echo "${linkInfo}" >> $filePathDataItemNeedRepetionDrillLTTSE
                                 else
                                     echo "${lessonGroupNameSel}/${lessonNameSel}/${indexSort}" >> $filePathDataItemNeedRepetionDrillLTTSE
                                 fi
@@ -805,16 +808,15 @@ ftLearnRepetionDrill()
                                 ftEcho -s "Cancel operation, repeate data"
                                 ftEcho -continue "Press any key continue ..."
                             fi
-                            break;;
+                            #break
+                            ;;
                         p | P )
                             if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]]; then
                                if [[ -z $(grep -e "^${chineseItem}$" ${filePathDataItemNeedRepetionDrillSTC}) ]]; then
                                     echo "${englishItem}" >> $filePathDataItemNeedRepetionDrillSTE
                                     echo "${chineseItem}" >> $filePathDataItemNeedRepetionDrillSTC
                                     if $isModeReview;then
-                                        local linkInfo=$(awk 'NR=="'$indexSort'"' ${filePathDataItemContentTextLinkTable})
-                                        local lessonGroupName=$(ftIniGetValue  $filePathLearnDataBase learnLessonInfo lessonGroupSelected${contentType}${operateMode})
-                                        echo "${lessonGroupName}/${linkInfo}" >> $filePathDataItemNeedRepetionDrillLTTSE
+                                        echo "${linkInfo}" >> $filePathDataItemNeedRepetionDrillLTTSE
                                     else
                                         echo "${lessonGroupNameSel}/${lessonNameSel}/${indexSort}" >> $filePathDataItemNeedRepetionDrillLTTSE
                                     fi
@@ -839,7 +841,7 @@ ftLearnRepetionDrill()
                                     ftEcho -s "cancel operation, repeate data"
                                     ftEcho -continue "press any key continue ..."
                                 fi
-                                break
+                                #break
                             fi
                             ;;
                         n | N ) break;;
@@ -1215,6 +1217,10 @@ ftLearnLessonManage()
             [[ ! -f "${dirPathDataItemBasic}/${contentType}.text_analysis" ]] \
                 && touch "${dirPathDataItemBasic}/${contentType}.text_analysis"\
                 && ftEcho -s "touch "${contentType}.text_analysis""
+
+            [[ ! -f "${dirPathDataItemBasic}/${contentType}.text_problem" ]] \
+                && touch "${dirPathDataItemBasic}/${contentType}.text_problem"\
+                && ftEcho -s "touch "${contentType}.text_problem""
         done
 
         ftEcho -s "lesson files and directorys are apply finsihed"
@@ -1265,6 +1271,7 @@ ftLearnLessonManage()
         local filePathLessonUpdateByLtSTE="${dirPathDataItemBasic}/sentence.text_english"
         local filePathLessonUpdateByLtSTC="${dirPathDataItemBasic}/sentence.text_chinese"
         local filePathLessonUpdateByLtSTA="${dirPathDataItemBasic}/sentence.text_analysis"
+        local filePathLessonUpdateByLtSTP="${dirPathDataItemBasic}/sentence.text_problem"
 
         rm -rf "${dirPathLessonUpdateByLtSAE}" \
                "${dirPathLessonUpdateByLtSDR}" \
@@ -1275,14 +1282,30 @@ ftLearnLessonManage()
         echo "" > "${filePathLessonUpdateByLtSTE}"
         echo "" > "${filePathLessonUpdateByLtSTC}"
         echo "" > "${filePathLessonUpdateByLtSTA}"
+        echo "" > "${filePathLessonUpdateByLtSTP}"
 
-        local fileSizeLessonSLE=$(sed -n '$=' $filePathDataItemSentenceLinkTable) lineContent
-        local lessonLineLindex lessonPathBasic lessonSAE lessonSDR lessonSTE lessonSTC lessonSTA
+        local fileSizeLessonSTE fileSizeLessonSTC fileSizeLessonSLE=$(sed -n '$=' $filePathDataItemSentenceLinkTable) lineContent
+        local lessonLineLindex lessonPathBasic lessonSAE lessonSDR lessonSTE lessonSTC lessonSTA lessonSTP
         for (( lineIndex = 1; lineIndex <= $fileSizeLessonSLE; lineIndex++ )); do
             lineContent=$(awk 'NR=="'$lineIndex'"' "${filePathDataItemSentenceLinkTable}")
 
             lessonPathBasic=$(dirname $lineContent)
             lessonLineLindex=$(basename $lineContent)
+
+            lessonSTE="${dirPathTempEng}/${lessonPathBasic}/sentence.text_english"
+            lessonSTC="${dirPathTempEng}/${lessonPathBasic}/sentence.text_chinese"
+
+            if [[ -f $lessonSTE ]] && [[ -f $lessonSTC ]];then
+                fileSizeLessonSTE=$(sed -n '$=' $lessonSTE)
+                fileSizeLessonSTC=$(sed -n '$=' $lessonSTC)
+
+                (($fileSizeLessonSTE!=$fileSizeLessonSTC)) && ftEcho -en "invalid lesson data：" && echo "${lessonPathBasic}" && continue
+
+                lineContent=$(awk 'NR=="'$lessonLineLindex'"' "${lessonSTE}") && ftTextSetLine -f $filePathLessonUpdateByLtSTE -n $lineIndex -c "${lineContent}" > /dev/null
+                lineContent=$(awk 'NR=="'$lessonLineLindex'"' "${lessonSTC}") && ftTextSetLine -f $filePathLessonUpdateByLtSTC -n $lineIndex -c "${lineContent}" > /dev/null
+            else
+                ftEcho -en "null lesson data：" && echo "${lessonPathBasic}" && continue
+            fi
 
             lessonSAE="${dirPathTempEng}/${lessonPathBasic}/sentence.audio_english/${lessonLineLindex}.mp3"
             [[ -f $lessonSAE ]] && ln -s "${lessonSAE}" "${dirPathLessonUpdateByLtSAE}/${lineIndex}.mp3"
@@ -1291,12 +1314,10 @@ ftLearnLessonManage()
             [[ ! -f $lessonSDR ]] && touch "${lessonSDR}"
             ln -s "${lessonSDR}" "${dirPathLessonUpdateByLtSDR}/${lineIndex}.result"
 
-            lessonSTE="${dirPathTempEng}/${lessonPathBasic}/sentence.text_english"
-            [[ -f $lessonSTE ]] && lineContent=$(awk 'NR=="'$lessonLineLindex'"' "${lessonSTE}") && ftTextSetLine -f $filePathLessonUpdateByLtSTE -n $lineIndex -c "${lineContent}" > /dev/null
-            lessonSTC="${dirPathTempEng}/${lessonPathBasic}/sentence.text_chinese"
-            [[ -f $lessonSTC ]] && lineContent=$(awk 'NR=="'$lessonLineLindex'"' "${lessonSTC}") && ftTextSetLine -f $filePathLessonUpdateByLtSTC -n $lineIndex -c "${lineContent}" > /dev/null
             lessonSTA="${dirPathTempEng}/${lessonPathBasic}/sentence.text_analysis"
             [[ -f $lessonSTA ]] && lineContent=$(awk 'NR=="'$lessonLineLindex'"' "${lessonSTA}") && ftTextSetLine -f $filePathLessonUpdateByLtSTA -n $lineIndex -c "${lineContent}" > /dev/null
+            lessonSTP="${dirPathTempEng}/${lessonPathBasic}/sentence.text_problem"
+            [[ -f $lessonSTP ]] && lineContent=$(awk 'NR=="'$lessonLineLindex'"' "${lessonSTP}") && ftTextSetLine -f $filePathLessonUpdateByLtSTP -n $lineIndex -c "${lineContent}" > /dev/null
 
         done
         ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}" "$(md5sum $filePathDataItemSentenceLinkTable | awk '{print $1}')" -a
@@ -1370,12 +1391,12 @@ ftLearnLessonManage()
             filePathLessonSTC="${dirPathLesson}/sentence.text_chinese"
             filePathLessonSTA="${dirPathLesson}/sentence.text_analysis"
 
-            [[ ! -f ${filePathLessonSTE} ]] && ftEcho -en "invsald lesson：" && echo "${lessonName} (none sentence)" && continue
+            [[ ! -f ${filePathLessonSTE} ]] && ftEcho -en "invalid lesson：" && echo "${lessonName} (none sentence)" && continue
             fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
             fileSizeLessonSTC=$(sed -n '$=' $filePathLessonSTC)
             [[ -f $filePathLessonSTA ]] && fileSizeLessonSTA=$(sed -n '$=' $filePathLessonSTA)
 
-            (($fileSizeLessonSTE!=$fileSizeLessonSTC)) && ftEcho -en "invsald lesson：" && echo "${lessonName} (sentence line unequal)" && continue
+            (($fileSizeLessonSTE!=$fileSizeLessonSTC)) && ftEcho -en "invalid lesson：" && echo "${lessonName} (sentence line unequal)" && continue
 
             ftEcho -sn "merge lesson:" && echo "$lessonName"
             
@@ -1409,118 +1430,25 @@ ftLearnLessonManage()
         return
     fi
     if $isUpdateDrillLessonNormal;then
-        local dirPathLessonNeedRepetionDrillNormal="${dirPathTempEng}/needRepetionDrill/normal"
-        local dirPathLessonNeedRepetionDrillNormalSDR="${dirPathLessonNeedRepetionDrillNormal}/sentence.drill_result"
-        local dirPathLessonNeedRepetionDrillNormalSAE="${dirPathLessonNeedRepetionDrillNormal}/sentence.audio_english"
-        local filePathLessonNeedRepetionDrillNormalSTE="${dirPathLessonNeedRepetionDrillNormal}/sentence.text_english"
-        local filePathLessonNeedRepetionDrillNormalSTC="${dirPathLessonNeedRepetionDrillNormal}/sentence.text_chinese"
-        local filePathLessonNeedRepetionDrillNormalSTA="${dirPathLessonNeedRepetionDrillNormal}/sentence.text_analysis"
-        local filePathLessonNeedRepetionDrillNormalSTLT="${dirPathLessonNeedRepetionDrillNormal}/link_table.txt_sentence_english"
-
-        local fileSizeLessonNeedRepetionDrillNormalSTE=$(sed -n '$=' $filePathLessonNeedRepetionDrillNormalSTE)
-        local lineContent lineIndexTemp=1 lineAudio lineResult
-        local filePathLessonBasicSAE filePathLessonBasicSTE lineIndexBasic lineContentLessonBasicSTE
-
-        # mkdir ${dirPathLessonNeedRepetionDrillNormalSDR}.temp ${dirPathLessonNeedRepetionDrillNormalSAE}.temp
-        echo -n "" > $filePathLessonNeedRepetionDrillNormalSTLT
-
-        for (( lineIndex = 1; lineIndex <= $fileSizeLessonNeedRepetionDrillNormalSTE; lineIndex++ )); do
-            lineContent=$(awk 'NR=="'$lineIndex'"' "${filePathLessonNeedRepetionDrillNormalSTE}")
-            lineAudio=${dirPathLessonNeedRepetionDrillNormalSAE}/${lineIndex}.mp3
-            lineResult=${dirPathLessonNeedRepetionDrillNormalSDR}/${lineIndex}.result
-            [[ -z $lineContent ]] && echo "line${lineIndex} content is null" && continue
-            [[ ! -f $lineAudio ]] && echo "line${lineIndex} audio is null" && continue
-
-            if [[ -L "${lineAudio}" ]];then
-                filePathLessonBasicSAE=$(ls -l $lineAudio | awk '{print $11}')
-                [[ ! -f $filePathLessonBasicSAE ]] && echo "line${lineIndex} audio is not exist" && continue
-                if [[ -L "${filePathLessonBasicSAE}" ]];then
-                    filePathLessonBasicSAE=$(ls -l $filePathLessonBasicSAE | awk '{print $11}')
-                    ln -sf "${filePathLessonBasicSAE}" "${lineAudio}"
-                    echo "line${lineIndex} multi-layer nesting"
-                fi
-                [[ -z $filePathLessonBasicSAE ]] && echo -e "line${lineIndex} lineAudio is invalid\n$(ls -l $lineAudio)" && continue
-                [[ ! -f $filePathLessonBasicSAE ]] && echo "line${lineIndex} audio is not exist" && continue
-
-                # lineIndexBasic=$(echo $(basename $filePathLessonBasicSAE) | sed "s?.mp3??g")
-                # filePathLessonBasicSTE="$(echo $(dirname $filePathLessonBasicSAE) | sed "s?audio?text?g")"
-                # echo "filePathLessonBasicSTE=${filePathLessonBasicSTE}"
-
-                # lineContentLessonBasicSTE=$(awk 'NR=="'$lineIndexBasic'"' "${filePathLessonBasicSTE}")
-                # if [[ $lineContent != $lineContentLessonBasicSTE ]];then
-                #     echo "line${lineIndex} line content and audio is not matching"
-                #     echo "lineAudio=${lineAudio}"
-                #     echo "lineIndexBasic=${lineIndexBasic}"
-                #     echo "filePathLessonBasicSTE=${filePathLessonBasicSTE}"
-                #     echo "--------------"
-                #     echo "lineContent=${lineContent}"
-                #     echo "lineContentLessonBasicSTE=${lineContentLessonBasicSTE}"
-
-                #     ftEcho -y "是否替换掉无效课程数据(y为替换，回车默认y)"
-                #     read -n 1 replaceSel
-                #     [ -z "${replaceSel}" ] && replaceSel=y
-                #     [[ $replaceSel = "y" ]] && ftTextSetLine -f $filePathLessonNeedRepetionDrillNormalSTE -n $lineIndex -c "${lineContentLessonBasicSTE}" > /dev/null
-                #     echo
-                # fi
-
-                ftTextSetLine -f $filePathLessonNeedRepetionDrillNormalSTLT -n $lineIndex -c \
-                "$(echo ${filePathLessonBasicSAE} | sed "s?${dirPathTempEng}/??g" | sed 's?sentence.audio_english/??g' | sed 's?/?:?g'| sed 's?.mp3??g')" > /dev/null
-            fi
-
-            # echo "${lineContent}" >> "${filePathLessonNeedRepetionDrillNormalSTE}.temp"
-            # awk 'NR=="'$lineIndex'"' "${filePathLessonNeedRepetionDrillNormalSTA}" >> "${filePathLessonNeedRepetionDrillNormalSTA}.temp" > /dev/null
-            # awk 'NR=="'$lineIndex'"' "${filePathLessonNeedRepetionDrillNormalSTC}" >> "${filePathLessonNeedRepetionDrillNormalSTC}.temp"
-            
-            awk 'NR=="'$lineIndex'"' "${filePathLessonNeedRepetionDrillNormalSTLT}" >> "${filePathLessonNeedRepetionDrillNormalSTLT}.temp"
-
-            mv "$lineAudio" "${dirPathLessonNeedRepetionDrillNormalSAE}.temp/${lineIndexTemp}.mp3"
-            [[ -f $lineResult ]] && mv "$lineResult" "${dirPathLessonNeedRepetionDrillNormalSDR}.temp/${lineIndexTemp}.result"
-            ((lineIndexTemp+=1))
-        done
-
-        rm -rf ${dirPathLessonNeedRepetionDrillNormalSDR} ${dirPathLessonNeedRepetionDrillNormalSAE}
-        mv ${dirPathLessonNeedRepetionDrillNormalSDR}.temp ${dirPathLessonNeedRepetionDrillNormalSDR}
-        mv ${dirPathLessonNeedRepetionDrillNormalSAE}.temp ${dirPathLessonNeedRepetionDrillNormalSAE}
-        # mv ${filePathLessonNeedRepetionDrillNormalSTA}.temp ${filePathLessonNeedRepetionDrillNormalSTA}
-        # mv ${filePathLessonNeedRepetionDrillNormalSTC}.temp ${filePathLessonNeedRepetionDrillNormalSTC}
-        # mv ${filePathLessonNeedRepetionDrillNormalSTE}.temp ${filePathLessonNeedRepetionDrillNormalSTE}
-        mv ${filePathLessonNeedRepetionDrillNormalSTLT}.temp ${filePathLessonNeedRepetionDrillNormalSTLT}
-
-        #delete empty line
-        # ftTextSetLine -f $filePathLessonNeedRepetionDrillNormalSTA -r
-        # ftTextSetLine -f $filePathLessonNeedRepetionDrillNormalSTC -r
-        # ftTextSetLine -f $filePathLessonNeedRepetionDrillNormalSTE -r
-        # ftTextSetLine -f $filePathLessonNeedRepetionDrillNormalSTLT -r
-
+        ftLearnLessonManage -unlt needRepetionDrill normal
         ftEcho -s "update lesson normal finish"
         return
     fi
     if $isUpdateDrillLessonError;then
+        ftEcho -s "recreate lesson error"
         local dirPathLessonNeedRepetionDrillError="${dirPathTempEng}/needRepetionDrill/error"
-        local dirPathLessonNeedRepetionDrillErrorSDR="${dirPathLessonNeedRepetionDrillError}/sentence.drill_result"
-        local dirPathLessonNeedRepetionDrillErrorSAE="${dirPathLessonNeedRepetionDrillError}/sentence.audio_english"
-        local filePathLessonNeedRepetionDrillErrorSTE="${dirPathLessonNeedRepetionDrillError}/sentence.text_english"
-        local filePathLessonNeedRepetionDrillErrorSTC="${dirPathLessonNeedRepetionDrillError}/sentence.text_chinese"
-        local filePathLessonNeedRepetionDrillErrorSTA="${dirPathLessonNeedRepetionDrillError}/sentence.text_analysis"
         local filePathLessonNeedRepetionDrillErrorSTLT="${dirPathLessonNeedRepetionDrillError}/link_table.txt_sentence_english"
-        local lineIndex=1 lineNum filePathLessonNeedRepetionDrillErrorSDR filePathLessonNeedRepetionDrillErrorSAE
+        echo -n "" > $filePathLessonNeedRepetionDrillErrorSTLT
+        local lineIndex=1 lineNum
 
-        rm -rf ${dirPathLessonNeedRepetionDrillErrorSAE} ${dirPathLessonNeedRepetionDrillErrorSDR} && \
-        mkdir -p ${dirPathLessonNeedRepetionDrillErrorSAE} ${dirPathLessonNeedRepetionDrillErrorSDR}
-        rm -rf ${filePathLessonNeedRepetionDrillErrorSTE} ${filePathLessonNeedRepetionDrillErrorSTC} ${filePathLessonNeedRepetionDrillErrorSTA}&& \
-        touch ${filePathLessonNeedRepetionDrillErrorSTE} ${filePathLessonNeedRepetionDrillErrorSTC} ${filePathLessonNeedRepetionDrillErrorSTA}
-
-        local dirPathLessonGroup dirPathLesson dirPathArrayLesson fileArrayDrillResult
-        local dirParhLessonSDR dirParhLessonSAE filePathLessonSTE filePathLessonSTC filePathLessonSTA
+        local dirPathLessonGroup dirPathLesson dirPathArrayLesson fileArrayDrillResult dirParhLessonSDR
         local dirPathLocal=$(pwd)
         cd "${dirPathTempEng}"
         learnLessonGroupList=($(ls -d */| sed 's/\///g'))
         for lessonGroup in ${learnLessonGroupList[*]} ; do
 
             [[ $lessonGroup = "needRepetionDrill" ]] && continue
-
-            [[ $lessonGroup = "ZTestLessonGroup" ]] && \
-            ftEcho -en "invald lesson group:" &&echo "ZTestLessonGroup" && continue
+            [[ $lessonGroup = "ZTestLessonGroup" ]] && continue
 
             dirPathLessonGroup="${dirPathTempEng}/${lessonGroup}"
             dirPathArrayLesson=($(ls $dirPathLessonGroup))
@@ -1530,33 +1458,20 @@ ftLearnLessonManage()
 
             for lessonName in ${dirPathArrayLesson[*]} ; do
                 dirPathLesson="${dirPathLessonGroup}/${lessonName}"
-                dirParhLessonSAE="${dirPathLesson}/sentence.audio_english"
                 dirParhLessonSDR="${dirPathLesson}/sentence.drill_result"
-                filePathLessonSTE="${dirPathLesson}/sentence.text_english"
-                filePathLessonSTC="${dirPathLesson}/sentence.text_chinese"
-                filePathLessonSTA="${dirPathLesson}/sentence.text_analysis"
-
                 [[ ! -d ${dirParhLessonSDR} ]] && continue
-
                 fileArrayDrillResult=($(ls $dirParhLessonSDR))
-
                 for fileName in ${fileArrayDrillResult[*]} ; do
                     lineNum=${fileName%.*}
 
                     #写入文件
-                    echo $(awk 'NR=="'$lineNum'"' $filePathLessonSTE) >> $filePathLessonNeedRepetionDrillErrorSTE
-                    echo $(awk 'NR=="'$lineNum'"' $filePathLessonSTC) >> $filePathLessonNeedRepetionDrillErrorSTC
-                    echo $(awk 'NR=="'$lineNum'"' $filePathLessonSTA) >> $filePathLessonNeedRepetionDrillErrorSTA
-                    echo "${lessonGroup}:${lessonName}:${lineNum}" >> $filePathLessonNeedRepetionDrillErrorSTLT
-                    #建立软连接
-                    ln -s "${dirParhLessonSAE}/${lineNum}.mp3" "${dirPathLessonNeedRepetionDrillErrorSAE}/${lineIndex}.mp3"
-                    ln -s "${dirParhLessonSDR}/${lineNum}.result" "${dirPathLessonNeedRepetionDrillErrorSDR}/${lineIndex}.result"
-
+                    echo "${lessonGroup}/${lessonName}/${lineNum}" >> $filePathLessonNeedRepetionDrillErrorSTLT
                     ((lineIndex+=1))
                 done
 
             done
         done
+        ftLearnLessonManage -unlt needRepetionDrill error
         ftEcho -s "recreate lesson error finish"
         return
     fi
@@ -1566,18 +1481,12 @@ ftLearnLessonManage()
 
         local lessonReviewSentenceAllCount=$(ftIniGetValue  $filePathLearnDataBase needRepetionDrill lessonReviewSentenceAllCount)
         local dirPathLessonNeedRepetionDrillReview="${dirPathTempEng}/needRepetionDrill/review"
-        local dirPathLessonNeedRepetionDrillReviewSDR="${dirPathLessonNeedRepetionDrillReview}/sentence.drill_result"
-        local dirPathLessonNeedRepetionDrillReviewSAE="${dirPathLessonNeedRepetionDrillReview}/sentence.audio_english"
-        local filePathLessonNeedRepetionDrillReviewSTE="${dirPathLessonNeedRepetionDrillReview}/sentence.text_english"
-        local filePathLessonNeedRepetionDrillReviewSTC="${dirPathLessonNeedRepetionDrillReview}/sentence.text_chinese"
-        local filePathLessonNeedRepetionDrillReviewSTA="${dirPathLessonNeedRepetionDrillReview}/sentence.text_analysis"
         local filePathLessonNeedRepetionDrillReviewSTLT="${dirPathLessonNeedRepetionDrillReview}/link_table.txt_sentence_english"
-        local lineIndex=1 lineNum filePathLessonNeedRepetionDrillReviewSDR filePathLessonNeedRepetionDrillReviewSAE
+        local lineIndex=1 lineNum 
 
         rm -rf ${dirPathLessonNeedRepetionDrillReview}
-        mkdir -p ${dirPathLessonNeedRepetionDrillReviewSAE} ${dirPathLessonNeedRepetionDrillReviewSDR}
-        touch ${filePathLessonNeedRepetionDrillReviewSTE} ${filePathLessonNeedRepetionDrillReviewSTC} \
-              ${filePathLessonNeedRepetionDrillReviewSTA} ${filePathLessonNeedRepetionDrillReviewSTLT}
+        mkdir ${dirPathLessonNeedRepetionDrillReview}
+        touch ${filePathLessonNeedRepetionDrillReviewSTLT}
 
         local dirPathLessonGroup dirPathLesson dirPathArrayLesson fileArrayDrillResult
         local dirParhLessonSDR dirParhLessonSAE filePathLessonSTE filePathLessonSTC filePathLessonSTA
@@ -1587,7 +1496,7 @@ ftLearnLessonManage()
         dirPathArrayLesson=($(find "${dirPathLessonGroup}" -name "sentence.drill_result" | sed "s ${dirPathLessonGroup}/   g" | sed "s /sentence.drill_result   g"))
         [[ -z $dirPathArrayLesson ]] &&\
         ftEcho -en "invald lesson group:" &&echo "${lessonGroup}" && continue
-        ftEcho -sn "loading lesson group:" && echo "${lessonGroupNameMerge}"
+        ftEcho -sn "recreate lesson review by lesson group:" && echo "${lessonGroupNameMerge}"
 
         local lessonCount=${#dirPathArrayLesson[@]}
         local lessonIndexFlag=$((lessonCount-1))
@@ -1602,17 +1511,15 @@ ftLearnLessonManage()
             lessonIndexReal=${lessonIndexArrayShuf[$i]}
             lessonName=${dirPathArrayLesson[$lessonIndexReal]}
             dirPathLesson="${dirPathLessonGroup}/${lessonName}"
-            dirParhLessonSAE="${dirPathLesson}/sentence.audio_english"
             dirParhLessonSDR="${dirPathLesson}/sentence.drill_result"
             filePathLessonSTE="${dirPathLesson}/sentence.text_english"
             filePathLessonSTC="${dirPathLesson}/sentence.text_chinese"
-            filePathLessonSTA="${dirPathLesson}/sentence.text_analysis"
 
             #check lesson data valid
-            [[ ! -f ${filePathLessonSTE} ]] || [[ ! -d ${dirParhLessonSDR} ]] && continue
+            [[ ! -f ${filePathLessonSTE} ]] || [[ ! -d ${dirParhLessonSDR} ]] && ftEcho -e "invalid lesson:${lessonName}" && continue
             fileSizeLessonSTC=$(sed -n '$=' $filePathLessonSTC)
             fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
-            (( $fileSizeLessonSTC != $fileSizeLessonSTE )) && continue
+            (( $fileSizeLessonSTC != $fileSizeLessonSTE )) && ftEcho -e "invalid lesson:${lessonName}" && continue
 
             sentenceIndexArrayShuf=($(seq 1 $fileSizeLessonSTE | shuf))
 
@@ -1625,23 +1532,11 @@ ftLearnLessonManage()
                 (( sentenceLineLoadCount+=1  ))
                 (( sentenceLineLoadAllCount+=1  ))
 
-                echo "${sentenceLine}" >> $filePathLessonNeedRepetionDrillReviewSTE
-                echo $(awk 'NR=="'$sentenceIndexReal'"' $filePathLessonSTC) >> $filePathLessonNeedRepetionDrillReviewSTC
-                if [[ -f $filePathLessonSTA ]];then 
-                    echo $(awk 'NR=="'$sentenceIndexReal'"' $filePathLessonSTA) >> $filePathLessonNeedRepetionDrillReviewSTA
-                else
-                    echo "" >> $filePathLessonNeedRepetionDrillReviewSTA
-                fi
-                echo "${lessonName}:${sentenceIndexReal}" >> $filePathLessonNeedRepetionDrillReviewSTLT
-                #建立软连接
-                [[ -f ${dirParhLessonSAE}/${sentenceIndexReal}.mp3 ]] &&\
-                ln -s "${dirParhLessonSAE}/${sentenceIndexReal}.mp3" "${dirPathLessonNeedRepetionDrillReviewSAE}/${sentenceLineLoadAllCount}.mp3"
-                [[ -f ${dirParhLessonSDR}/${sentenceIndexReal}.result ]] &&\
-                ln -s "${dirParhLessonSDR}/${sentenceIndexReal}.result" "${dirPathLessonNeedRepetionDrillReviewSDR}/${sentenceLineLoadAllCount}.result"
+                echo "${lessonGroupNameMerge}/${lessonName}/${sentenceIndexReal}" >> $filePathLessonNeedRepetionDrillReviewSTLT
 
-                (( $sentenceLineLoadAllCount == $lessonReviewSentenceAllCount )) && \
-                echo "lessonLoadCount=${lessonLoadCount}" >> $filePathLessonNeedRepetionDrillReviewSTLT && \
-                ftEcho -s "recreate lesson review finish" &&\
+                (( $sentenceLineLoadAllCount >= $lessonReviewSentenceAllCount )) && \
+                ftLearnLessonManage -unlt needRepetionDrill review &&\
+                ftEcho -s "recreate review finish" &&\
                 return
             done
         done
