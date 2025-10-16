@@ -4369,6 +4369,7 @@ ftTextSetLine()
     fi
 
     local fileLineCount=$(sed -n '$=' $filePathText)
+    (( lineNum==1 )) && echo "" >> $filePathText
     fileLineCount=${fileLineCount:-'1'}
     # echo "fileLineCount=${fileLineCount}"
     # echo "lineNum=${lineNum}"
