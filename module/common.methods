@@ -1031,7 +1031,7 @@ ftIniGetValue()
         (( $(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')==1 )) && continue
 
         key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
-        [ "X$keyName" = "X$key" ] && echo $(echo $line | awk -F= '{gsub("\t","",$2); print $2}') && break
+        [ "X$keyName" = "X$key" ] && echo $line | awk -F= '{gsub("\t","",$2); print $2}' && break
     done
 }
 
@@ -1081,23 +1081,38 @@ ftIniSetValue()
                 errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName"
             fi
         fi
+
         if [[ -z "$keyName" ]];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
         elif [[ -z $(ftIniGetValue -tf "${filePath}" "${blockName}" "${keyName}" ) ]];then
             if $isAutoAdd;then
                 ftIniAddItem -p $filePath -t $blockName -i $keyName -l "$(echo ${keyValue[@]} | sed 's/ /\n/g')"
                 return
             else
-                errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName" ;
+                errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName"
             fi
         fi
-        [[ -z "$keyValue" ]] && errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
+
+        if [[ -z "$keyValue" ]];then
+            errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
+        fi
     fi
-    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h && return $resultFail
+
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h
 
     #实现主体
-    [[ "$isListValue" = "true" ]] && return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath`
+    if [[ -n $(echo "${blockName}" | grep -sn "\/") ]];then
+        local blockNameTemp=$(echo "${blockName}" |sed s/[[:space:]]//g | sed "s / \/ g" )
+        blockName="${blockNameTemp}"
+    fi
+    if [[ -n $(echo "${keyName}" | grep -sn "\/") ]];then
+        local keyNameTemp=$(echo "${keyName}" |sed s/[[:space:]]//g | sed "s / \/ g" )
+        keyName="${keyNameTemp}"
+    fi
+
+    [[ "$isListValue" = "true" ]] && sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath
     keyValue=$(echo $keyValue |sed s/[[:space:]]//g)
-    return`sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName*=.* $keyName=$keyValue g;}" $filePath`
+    sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName*=.* $keyName=$keyValue g;}" $filePath
+
 }
 
 ftBashHistory()
