@@ -387,7 +387,7 @@ ftTransformDrillReslt()
 
     #argument check
     (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
-    [[ -z $(grep -sn "\*\*" $filePathResult) ]] && [[ -z $(grep -sn "\+\+" $filePathResult) ]] && errorContent="${errorContent}\\n无效文件：${filePathResult}" && return
+    [[ -z $(grep -sn "\*\*" $filePathResult) ]] && [[ -z $(grep -sn "\+\+" $filePathResult) ]] && [[ -z $(grep -sn "\-\-" $filePathResult) ]] && errorContent="${errorContent}\\n无效文件：${filePathResult}" && return
     [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftTransformDrillReslt -h && return $resultFail
 
     #code main
@@ -398,25 +398,23 @@ ftTransformDrillReslt()
 
     cat $filePathResult | while read lineContent;do
         if [[ -n $lineContent ]];then
-            # lineContentTemp="${lineContent// \*\*/ \\033[1;31m}"
-            # lineContentTemp="${lineContent//\'\*\*/\'\\033[1;31m}"
-            # lineContent="${lineContentTemp//\*\* /\\033[0m }"
-            # lineContentTemp="${lineContent//\*\*./\\033[0m }"
-            # lineContent="${lineContentTemp//\*\*?/\\033[0m }"
-            # lineContentTemp="${lineContent//\*\*,/\\033[0m }"
-            # lineContent="${lineContentTemp//\*\*!/\\033[0m }"
-            # lineContentTemp="${lineContent//\*\*\"/\\033[0m }"
-            # lineContent="${lineContentTemp//\*\*/ \\033[1;31m}"
-
+            #=========  error ===========
             #start
             lineContentTemp="${lineContent//\*\*/\\033[1;31m}"
             #end
             lineContent="${lineContentTemp//\*/\\033[0m}"
 
+            #=========  contenct read or can't listen ===========
             #start
             lineContentTemp="${lineContent//\+\+/\\033[1;36m}"
             #end
             lineContent="${lineContentTemp//\+/\\033[0m}"
+
+            #=========  can listen and unknow ===========
+            #start
+            lineContentTemp="${lineContent//\-\-/\\033[41;38m}"
+            #end
+            lineContent="${lineContentTemp//\-/\\033[0m}"
             echo "${lineContent}" >> $filePathResultNew
         else
             echo "" >> $filePathResultNew
