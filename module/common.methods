@@ -951,7 +951,8 @@ ftIniGetValue()
     #可用性校验
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
-    local filePath=$1 blockName=$2 keyName=$3 isReadSilence isFindItem=false
+    local filePath=$1 blockName=$2 blockNameFlag="\[${2}\]" keyName=$3 keyNameFlag="${3}\="
+    local isReadSilence isFindItem=false
     local valCount=4 errorContent ; for ((i=1;i<=$#;i++)) ; do case "$1" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
@@ -963,20 +964,14 @@ ftIniGetValue()
 #
 #    #输出异常信息
 #    ftIniGetValue -f [文件路径] [目标块TAG] [键名]
-#
-#    #确认是否存在此项
-#    ftIniGetValue -tf [文件路径] [目标块TAG] [键名]
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -f ) filePath=$2
             blockName=$3
+            blockNameFlag="\[${3}\]"
             keyName=$4
+            keyNameFlag="\[${4}\]"
             isReadSilence=true
-            ;;
-        -tf ) filePath=$2
-            blockName=$3
-            keyName=$4
-            isFindItem=true
             ;;
     * ) break;;esac;done
 
@@ -991,17 +986,37 @@ ftIniGetValue()
     [ -n "${isReadSilence}" ]&&[ -n "$errorContent" ] && ftEcho -ea "$errorContent \\n请查看下面说明:" && ftIniGetValue -h && return $resultFail
 
     #实现主体
-    local begin_block=0 end_block=0
-    cat $filePath | while read line ; do
-        [ "X$line" = "X[$blockName]" ] && begin_block=1 && continue
-        (( $begin_block!=1 )) && continue
-        $isFindItem && [[ -n $(echo "${line}" |grep "${keyName}\=") ]] && echo "find it" && return
+    # local begin_block=0 end_block=0
+    # cat $filePath | while read line ; do
+    #     [ "X$line" = "X[$blockName]" ] && begin_block=1 && continue
+    #     (( $begin_block!=1 )) && continue
+    #     $isFindItem && [[ -n $(echo "${line}" |grep "${keyName}\=") ]] && echo "find it" && return
 
-        (( $(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')==1 )) && break
-        (( $(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')==1 )) && continue
+    #     (( $(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')==1 )) && break
+    #     (( $(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')==1 )) && continue
 
-        key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
-        [ "X$keyName" = "X$key" ] && echo $line | awk -F= '{gsub("\t","",$2); print $2}' && break
+    #     key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
+    #     [ "X$keyName" = "X$key" ] && echo $line | awk -F= '{gsub("\t","",$2); print $2}' && break
+    # done
+    # local lineNumBlock=$(grep -sn "${blockNameFlag}" $filePath | awk -F: '{gsub("\t","",$1); print $1}')
+
+    grep -sn "${keyNameFlag}" $filePath | awk -F: '{gsub("\t","",$1); print $1}'| while read lineNumKey ; do
+
+        local line lineBlockIndex=$((lineNumKey-1)) isContinue=false
+        while true; do
+            line=$(awk 'NR=="'$lineBlockIndex'"' $filePath)
+            [[ -z $line ]] && isContinue=true && break
+            if [[ "${line}" == "[${blockName}]" ]];then
+                break
+            fi
+            (( lineBlockIndex==1 )) && return
+            ((lineBlockIndex-=1))
+        done
+
+        $isContinue && isContinue=false && continue
+
+        awk 'NR=="'$lineNumKey'"' $filePath| awk -F= '{gsub("\t","",$2); print $2}'
+        break
     done
 }
 
@@ -1039,11 +1054,11 @@ ftIniSetValue()
             ftIniCreateFileOrTag  -a -p $filePath -t $blockName -l "${keyName}=${keyValue}"
             return
         else
-            errorContent="${errorContent}\\n[目标ini文件不存在]filePath=$filePath"
+            errorContent="${errorContent}\\n[目标ini文件不存在,或数据缺失]filePath=$filePath"
         fi
     else
         if [[ -z "$blockName" ]];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
-        elif [[ -z "$(cat $filePath|grep $blockNameFlag)" ]];then
+        elif [[ -z "$(grep -sn $blockNameFlag $filePath)" ]];then
             if $isAutoAdd;then
                 ftIniCreateFileOrTag  -a -p $filePath -t $blockName -l "${keyName}=${keyValue}"
                 return
@@ -1053,7 +1068,8 @@ ftIniSetValue()
         fi
 
         if [[ -z "$keyName" ]];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
-        elif [[ -z $(ftIniGetValue -tf "${filePath}" "${blockName}" "${keyName}" ) ]];then
+        #elif [[ -z $(ftIniGetValue "${filePath}" "${blockName}" "${keyName}" ) ]];then
+        elif [[ -z "$(grep -sn $keyNameFlag $filePath)" ]];then
             if $isAutoAdd;then
                 ftIniAddItem -p $filePath -t $blockName -i $keyName -l "$(echo ${keyValue[@]} | sed 's/ /\n/g')"
                 return
@@ -1067,13 +1083,13 @@ ftIniSetValue()
         fi
     fi
 
-    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h
+    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h && return
 
     #实现主体
-    if [[ -n $(echo "${blockName}" | grep -sn "\/") ]];then
-        local blockNameTemp=$(echo "${blockName}" |sed s/[[:space:]]//g | sed "s / \/ g" )
-        blockName="${blockNameTemp}"
-    fi
+    # if [[ -n $(echo "${blockName}" | grep -sn "\/") ]];then
+    #     local blockNameTemp=$(echo "${blockName}" |sed s/[[:space:]]//g | sed "s / \/ g" )
+    #     blockName="${blockNameTemp}"
+    # fi
     if [[ -n $(echo "${keyName}" | grep -sn "\/") ]];then
         local keyNameTemp=$(echo "${keyName}" |sed s/[[:space:]]//g | sed "s / \/ g" )
         keyName="${keyNameTemp}"
@@ -1081,7 +1097,7 @@ ftIniSetValue()
 
     [[ "$isListValue" = "true" ]] && sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath
     keyValue=$(echo $keyValue |sed s/[[:space:]]//g)
-    sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName*=.* $keyName=$keyValue g;}" $filePath
+    sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName=.* $keyName=$keyValue g;}" $filePath
 
 }
 
