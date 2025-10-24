@@ -1126,8 +1126,8 @@ ftIniSetValue()
     fi
 
     [[ "$isListValue" = "true" ]] && sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath
-    keyValue=$(echo $keyValue |sed s/[[:space:]]//g)
-    sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName=.* $keyName=$keyValue g;}" $filePath
+    #keyValue=$(echo $keyValue |sed s/[[:space:]]//g)
+    sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName=.* $keyName=$keyValue g;}" $filePath > /dev/null
 
 }
 
