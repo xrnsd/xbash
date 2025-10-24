@@ -584,7 +584,6 @@ ftLearnRepetionDrill()
             [ -f ${filePathDataItemContentTextLinkTable} ] && linkInfo=$(awk 'NR=="'$indexSort'"' ${filePathDataItemContentTextLinkTable})
             audioInfo=$(echo "${filePathItemAudioFile}" | sed "s ${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/  g")
             ((readTimeOut=$englishItemLength+$englishItemLength+$englishItemLength))
-            local linkInfoCache isSaveFailTime=false
             while true; do
                 failTime=
                 echo -en ${drillInfomationTipsTemp}
@@ -637,7 +636,8 @@ ftLearnRepetionDrill()
                         break;;
                     n | N )
                         #save fail time
-                        [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime+=1))
+                        [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime+=1)) &&\
+                        ftTextSetLine -f $filePathDataItemTextDrillResultFailTime -n $indexSort -c $failTime  
                         break;;
                     t | T | y | Y ) break;;
                     * ) ;;
@@ -662,8 +662,8 @@ ftLearnRepetionDrill()
                 ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_drillTime" "$(date +%s -d $(date +"%H:%M:%S"))"  -a
                 ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray" $indexArray  -a
                 ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount" $drillTrueCount  -a
-                ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" -a -l "$(echo ${arrayIndexSort[@]} | sed 's/ /\n/g')"
-                ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError" -a -l "$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g')"
+                ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" -a -l "${arrayIndexSort[@]}"
+                ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError" -a -l "${valRepetionDrillErrorHository[@]}"
                 ftEcho -s "The drill records is saved"
                 return
 
@@ -686,7 +686,8 @@ ftLearnRepetionDrill()
             echo -n "" > ${filePathLearnDrillTemp}
             #delete fail time
             #ftIniDeleteItem -p $filePathLearnDataBaseFailTime -t ${failTimeSDR} -i "${linkInfo}"
-            [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime-=1))
+            [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime-=1)) &&\
+            ftTextSetLine -f $filePathDataItemTextDrillResultFailTime -n $indexSort -c $failTime
 
         elif [[ $itemOptionSelect == "t" ]] || [[ $itemOptionSelect == "T" ]]; then
             sentenceDrillResltItem=$(cat $filePathItemSentenceEnglishDrillResult)
@@ -759,9 +760,9 @@ ftLearnRepetionDrill()
                             ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_drillTime" "$(date +%s -d $(date +"%H:%M:%S"))"  -a
                             ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray" $indexArray  -a
                             ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount" $drillTrueCount  -a
-                            ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" -a -l "$(echo ${arrayIndexSort[@]} | sed 's/ /\n/g')"
+                            ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" -a -l "${arrayIndexSort[@]}"
                             [[ -n $valRepetionDrillErrorHository ]] && \
-                            ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError" -a -l "$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g')"
+                            ftIniSetValue $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError" -a -l "${valRepetionDrillErrorHository[@]}"
                             ftEcho -s "The drill records is saved"
                             return;;
                         q | Q )
@@ -777,7 +778,8 @@ ftLearnRepetionDrill()
 
                             #delete fail time
                             #ftIniDeleteItem -p $filePathLearnDataBaseFailTime -t ${failTimeSDR} -i "${linkInfo}"
-                            [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime-=1))
+                            [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime-=1)) &&\
+                            ftTextSetLine -f $filePathDataItemTextDrillResultFailTime -n $indexSort -c $failTime  
                             break;;
                         e | E )
                             [[ -n $(grep -e "^${englishItem}$" ${filePathLearnResultProblem}) ]] && ftEcho -s "cancel operation, repeate data" && break
@@ -806,7 +808,8 @@ ftLearnRepetionDrill()
 
                                 #delete fail time
                                 #ftIniDeleteItem -p $filePathLearnDataBaseFailTime -t ${failTimeSDR} -i "${linkInfo}"
-                                [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime-=1))
+                                [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime-=1)) &&\
+                                ftTextSetLine -f $filePathDataItemTextDrillResultFailTime -n $indexSort -c $failTime
                                 break
                             fi
                             ;;
@@ -842,7 +845,8 @@ ftLearnRepetionDrill()
                                     #ftEcho -continue "press any key continue ..."
 
                                     #save fail time
-                                    [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime+=1)) -a
+                                    [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime+=1)) -a &&\
+                                    ftTextSetLine -f $filePathDataItemTextDrillResultFailTime -n $indexSort -c $failTime
                                 fi
 
                                 sleep 1
@@ -865,7 +869,8 @@ ftLearnRepetionDrill()
                                 #ftEcho -continue "press any key continue ..."
 
                                 #save fail time
-                                [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime+=1)) -a
+                                [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime+=1)) -a &&\
+                                ftTextSetLine -f $filePathDataItemTextDrillResultFailTime -n $indexSort -c $failTime  
                                 
                             fi
 
@@ -874,7 +879,8 @@ ftLearnRepetionDrill()
                             ;;
                         n | N )
                             #save fail time
-                            [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime+=1)) -a
+                            [[ -n $failTime ]] && ftIniSetValue $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}" $((failTime+=1)) -a &&\
+                            ftTextSetLine -f $filePathDataItemTextDrillResultFailTime -n $indexSort -c $failTime  
                             break;;
                         * ) ;;
                     esac
