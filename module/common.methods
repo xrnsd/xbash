@@ -1030,11 +1030,13 @@ ftIniGetValue()
     # done
     # local lineNumBlock=$(grep -sn "${blockNameFlag}" $filePath | awk -F: '{gsub("\t","",$1); print $1}')
 
-    grep -sn "${keyNameFlag}" $filePath | awk -F: '{gsub("\t","",$1); print $1}'| while read lineNumKey ; do
+    local lineNumKeyIndex lineContentAll key
+    grep -sn "${keyNameFlag}" $filePath | awk -F: '{print $1}'| while read lineNumKey ; do
+        # echo "lineNumKey=${lineNumKey}"
 
         local line lineBlockIndex=$((lineNumKey-1)) isContinue=false
         while true; do
-            line=$(awk 'NR=="'$lineBlockIndex'"' $filePath)
+            line=$(awk 'NR=="'$lineBlockIndex'"' $filePath|sed s/[[:space:]]//g)
             [[ -z $line ]] && isContinue=true && break
             if [[ "${line}" == "[${blockName}]" ]];then
                 break
@@ -1045,7 +1047,21 @@ ftIniGetValue()
 
         $isContinue && isContinue=false && continue
 
-        awk 'NR=="'$lineNumKey'"' $filePath| awk -F= '{gsub("\t","",$2); print $2}'
+        lineNumKeyIndex=$lineNumKey
+        line=$(awk 'NR=="'$lineNumKey'"' $filePath)
+        if [[ "$line" = *\\ ]];then
+            lineContentAll=${line%\\}
+            while true; do
+                ((lineNumKeyIndex+=1))
+                line=$(awk 'NR=="'$lineNumKeyIndex'"' $filePath)
+                lineContentAll="${lineContentAll} ${line%\\}"
+                [[ "$line" != *\\ ]] && break
+            done
+        else
+            lineContentAll="${line}"
+        fi
+
+        echo "${lineContentAll}" | awk -F= '{gsub("\t","",$2); print $2}'
         break
     done
 }
