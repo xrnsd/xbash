@@ -3718,10 +3718,12 @@ ftXbGetValue()
 
     #实现主体
     local itemValue=($(ftIniGetValue $rFilePathXbashDBUser $tagName $itemName))
-    [[ -n "$itemValue" ]] && echo ${itemValue[@]} && return $resultFail
+    [[ -n "$itemValue" ]] && echo ${itemValue[@]} && return $resultSuccess
 
     itemValue=($(ftIniGetValue $rFilePathXbashDBBase $tagName $itemName))
-    echo ${itemValue[@]}
+    [[ -n "$itemValue" ]] && echo ${itemValue[@]} && return $resultSuccess
+
+    return $resultSuccess
 }
 
 complete -W "-h --help" ftGetPublicIp
