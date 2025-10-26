@@ -1100,8 +1100,8 @@ ftGitSxtdProjectBranchV2()
         ftIniCreateFileOrTag  -a -p $mFilePathSxtdProjectBranchV2 -t $TagName -l "${mKeyIniBranchNameBase}= ${mKeyIniBranchNameNew}= "
 
         XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $mFilePathSxtdProjectBranchV2
-        local mBranchNameBase=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameBase)
-                mBranchNameNew=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameNew)
+        local mBranchNameBase=$(ftIniEditUtil -r $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameBase)
+                mBranchNameNew=$(ftIniEditUtil -r $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameNew)
         [ -z "${mBranchNameBase}" ] && ftEcho -e "缺失原分支名,请确认是否输入" && return $resultFail
         [ -z "${mBranchNameNew}" ] && ftEcho -e "缺失新分支名,请确认是否输入" && return $resultFail
 
@@ -1131,7 +1131,7 @@ ftGitSxtdProjectBranchV2()
         ftIniCreateFileOrTag  -a -p $mFilePathSxtdProjectBranchV2 -t $TagName -l "${mKeyIniBranchNameDelete}= "
 
         XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $mFilePathSxtdProjectBranchV2 > /dev/null
-        local mBranchNameDelete=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameDelete)
+        local mBranchNameDelete=$(ftIniEditUtil -r $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniBranchNameDelete)
         [ -z "${mBranchNameDelete}" ] && ftEcho -e "缺失待删除分支名,请确认是否输入" && return $resultFail
 
         git branch -D "${mBranchNameDelete}" || return $resultFail
@@ -1164,10 +1164,10 @@ ftGitSxtdProjectBranchV2()
         [[ ! -f "$mFilePathSxtdProjectBranchV2" ]] && ftEcho -e "${TagName}文件创建失败" && return $resultFail
         XMODIFIERS=@im=fcitx GTK_IM_MODULE=xim gedit -s $mFilePathSxtdProjectBranchV2
 
-        local mMotherBoardName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniMotherBoardName) \
-                mProjrctName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniProjrctName) \
-                mClientName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniClientName) \
-                mDemandSignName=$(ftIniGetValue $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniDemandSignName)
+        local mMotherBoardName=$(ftIniEditUtil -r $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniMotherBoardName) \
+                mProjrctName=$(ftIniEditUtil -r $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniProjrctName) \
+                mClientName=$(ftIniEditUtil -r $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniClientName) \
+                mDemandSignName=$(ftIniEditUtil -r $mFilePathSxtdProjectBranchV2 $TagName $mKeyIniDemandSignName)
         [[ -z "$mMotherBoardName" ]] && ftEcho -e "缺失项目主板名信息,请确认是否输入" && return $resultFail
         [[ -z "$mProjrctName" ]] && ftEcho -e "缺失项目名信息,请确认是否输入" && return $resultFail
         [[ -z "$mClientName" ]] && ftEcho -e "缺失项目客户名信息,请确认是否输入" && return $resultFail
@@ -1225,8 +1225,8 @@ ftGitTagCreateAppReadMeTemplate()
 
     #版本说明
     local enterLine="\n"
-    local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
-    content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+    local content="$(ftIniEditUtil -r $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+    content=${content}${enterLine}"记录创建人：$(ftIniEditUtil -r $filePathConfig projectSoftwareReadMeInfo recordCreator)"
     if [[ -n "${branchNameNow}" ]]; then
         content=${content}${enterLine}"分支名[真实]：${branchNameNow}"
         if [[ "${branchNameNow}" != "master" ]]; then
@@ -1291,8 +1291,8 @@ ftGitTagCreateBranchReadMeTemplate()
 
     #版本说明
     local enterLine="\n"
-    local content="$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
-    content=${content}${enterLine}"记录创建人：$(ftIniGetValue $filePathConfig projectSoftwareReadMeInfo recordCreator)"
+    local content="$(ftIniEditUtil -r $filePathConfig projectSoftwareReadMeInfo recordMeTag)"
+    content=${content}${enterLine}"记录创建人：$(ftIniEditUtil -r $filePathConfig projectSoftwareReadMeInfo recordCreator)"
     content=${content}${enterLine}
     content=${content}${enterLine}"硬件项目平台："
     if [[ -n "${branchNameNow}" ]]; then
@@ -1543,7 +1543,7 @@ ftResetSshLocalKey()
     [ -z $(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') ] && echo 123 && return
 
     local tag="GitKeySsh" keyFilePath="filePathLocalPublicKey"
-    local filePathLocalPublicKey=$(ftIniGetValue $rFilePathXbashDBUser $tag $keyFilePath)
+    local filePathLocalPublicKey=$(ftIniEditUtil -r $rFilePathXbashDBUser $tag $keyFilePath)
 
     eval $(ssh-agent)
     ssh-add "${filePathLocalPublicKey}"
