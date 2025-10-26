@@ -274,7 +274,7 @@ ftText2Mp3ByLesson()
     [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftText2Mp3ByLesson -h && return $resultFail
 
     #code main
-    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
+    local dirPathTempEng=$(ftIniEditUtil -r  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local dirPathLesson="${dirPathTempEng}/${LessonGroupName}/${LessonName}"
     local dirPathLessonAudio="${dirPathTempEng}/${LessonGroupName}/${LessonName}/sentence.audio_english"
     local filePathLessonText="${dirPathTempEng}/${LessonGroupName}/${LessonName}/sentence.text_english"
@@ -309,7 +309,7 @@ ftText2Mp3ByLessonGroup()
     [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftText2Mp3ByLessonGroup -h && return $resultFail
 
     #code main
-    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
+    local dirPathTempEng=$(ftIniEditUtil -r  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local dirPathLessonGroup="${dirPathTempEng}/${LessonGroupName}"
 
     while read lessonName ;do  #可以在循环外保留变量
@@ -340,7 +340,7 @@ ftText2Mp3Apply()
 
     # argument infoumation ==============
     local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
-    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
+    local dirPathTempEng=$(ftIniEditUtil -r  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local dirNameLessonGroup=$1
     local fileNameTextData=$2
     local dirNameAudio=$3
@@ -357,7 +357,7 @@ ftText2Mp3Apply()
 
     #code main
     local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
-    local dirPathTempEng=$(ftIniGetValue  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
+    local dirPathTempEng=$(ftIniEditUtil -r  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local lineContent=$(awk 'NR=="'$lineNumber'"' $filePathTextData)
     [[ -z "$lineContent" ]] && ftEcho -s "empty line " && return
     edge-tts --text "${lineContent}" --write-media "${dirPathAudio}/${lineNumber}.mp3"

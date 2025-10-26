@@ -292,7 +292,7 @@ ftGitUpdateVersion()
     [ -z "$branchNameLocal" ] || [ "$branchNameLocal" = "$branchNameMaster" ] && cd "${dirPathLocal}" && return $resultFail
     echo "$(git pull > /dev/null &)" > /dev/null
     cd "${dirPathLocal}"
-    ftIniSetValue $rFilePathXbashDBUser $tagName $keyName $checkUpdateDateNow
+    ftIniEditUtil -w $rFilePathXbashDBUser $tagName $keyName $checkUpdateDateNow
 }
 
 ftEcho()
@@ -489,24 +489,22 @@ ftEcho()
                 (( $listMainItemSize == 1 )) && export publicSelItemContent=$listMain && return
 
                 local dirFlag=$listMainItemSize
-                (( $listMainItemSize > 9 )) && dirFlag=9 
-
+                (( $listMainItemSize > 9 )) && dirFlag=9
                 local timeOutInfo
                 [[ -n $echoTimeOut ]]&&timeOutInfo="time out:${echoTimeOut},"
-
                 while true; do
                     ftEcho -r  "${listMainTitle}[0~$(expr $listMainItemSize - 1),q](${timeOutInfo}press enter normal ${indexSelNormal}):"
                     if (( $listMainItemSize > 9 )) || $isMultipleChoice;then
                         if [[ -n $echoTimeOut ]];then
                             read choice -t${echoTimeOut}
                         else
-                            read choice
+                        read choice
                         fi
                     else
                         if [[ -n $echoTimeOut ]];then
                             read -n 1 choice -t${echoTimeOut}
                         else
-                            read -n 1 choice
+                        read -n 1 choice
                         fi
                     fi
                     #设定默认值
@@ -593,11 +591,11 @@ ftTimeConsuming()
 
     if $isModeStopwatch;then
         local tagName=${contentName} keyName=$(date -d "today" +"%Y%m%d")
-        local ftTimeNormal=$(ftIniGetValue  $rFilePathXbashDbftTime ${tagName} ${keyName})
+        local ftTimeNormal=$(ftIniEditUtil -r $rFilePathXbashDbftTime ${tagName} ${keyName})
         local ftTimeAdded=$((timeNow-mTimingStart))
         local ftTimeAll=$((ftTimeAdded+ftTimeNormal))
 
-        ftIniSetValue $rFilePathXbashDbftTime ${tagName} ${keyName} ${ftTimeAll} -a
+        ftIniEditUtil -w $rFilePathXbashDbftTime ${tagName} ${keyName} ${ftTimeAll}
         ftEcho -s "$(printf "%.2f" `echo "scale=2;${ftTimeAll}/3600"|bc`)hours"
         return
     fi
@@ -704,8 +702,8 @@ ftCheckUserDatabase()
     [[ ! -f ${rFilePathXbashDBUser}  ]] && return $resultFail
 
     local title="用户数据库" tag=informationInThisDb key="versionNum"
-    local versionNumExcepmale=$(ftIniGetValue $rFilePathXbashDBUserExcepmale $tag $key)
-    local versionNumUser=$(ftIniGetValue $rFilePathXbashDBUser $tag $key)
+    local versionNumExcepmale=$(ftIniEditUtil -r $rFilePathXbashDBUserExcepmale $tag $key)
+    local versionNumUser=$(ftIniEditUtil -r $rFilePathXbashDBUser $tag $key)
 
     if [[ -z "${versionNumUser}" ]];then
         ftEcho -e "建议更新${title}配置到:${versionNumExcepmale}"
@@ -813,7 +811,7 @@ ftIniCreateFileOrTag()
         [ -z "${sel}" ] && sel=y
         while true; do case "$sel" in
                 y | Y )echo
-                    ftIniDeleteTag -p $filePathIni -t $contentTagName
+                    ftIniEditUtil -d $filePathIni $contentTagName
                     break;;
                 n | q )  echo ; exit ;;
                 * ) ftEcho -e "错误的选择：$sel"
@@ -822,49 +820,7 @@ ftIniCreateFileOrTag()
     echo  -e "${content}" >> $filePathIni
 }
 
-ftIniDeleteTag()
-{
-    local ftEffect=删除ini文件中对应TAG块
-    local isEnable=sub
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
-    #参数解析
-    local tagName filePathIni
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
-        # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
-#=========================================================
-#    ftIniDeleteTag -p ini文件路径 -t TAG块名
-#========================================================="; return ;;
-        # 变量参数解析部分==============
-        -t )   tagName="${arg2}"        ;;
-        -p )   filePathIni="${arg2}"     ;;
-    * ) ;; esac;done
-    #参耦校验
-    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
-    [ ! -f "$filePathIni" ] && errorContent="${errorContent}}\\n[文件不存在]filePathIni=$filePathIni"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteTag -h && return $resultFail
-
-    #实现主体
-    local index=1 indexEnd indexStart lineCount=$(cat $filePathIni|wc -l)
-    while read -r line ; do
-        if [[ "$line" = "[${tagName}]" ]]||[[ -n "$indexStart" ]]; then
-            [[ -z "$indexStart" ]] && indexStart=$index
-            (($index==$lineCount)) && ((index+=1)) && line=
-
-            if [[ -z "$line" ]]; then
-                indexEnd=$index
-                local lineRange="${indexStart},${indexEnd}d"
-                sed -i $lineRange $filePathIni
-                break
-            fi
-        fi
-        ((index+=1))
-    done < $filePathIni
-}
-
-ftIniAddItem()
+ftIniEditUtil()
 {
     local ftEffect=在ini文件对应TAG中添加指定item
     local isEnable=sub
@@ -872,279 +828,210 @@ ftIniAddItem()
     #可用性校验
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local filePathIni tagName itemName itemContent
+    local filePathIni=$2 tagName=$3 keyName=$4 keyValue="${5}"
+    local tagNameFlag="\[${tagName}\]" keyNameFlag="${keyName}\="
+    local isWriteMode=true isReadMode=false isDeleteMode=false is isWriteMode=false
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
-#    ftIniAddItem -p ini文件路径 -t TAG块名  -i item名 -l \"\$(echo \${keyValueArray[@]} | sed 's/ /\\\n/g')\"
-#========================================================="; return ;;
-        # 变量参数解析部分==============
-        -p )   filePathIni="${arg2}"    ;;
-        -t )   tagName="${arg2}"        ;;
-        -i )   itemName="${arg2}"       ;;
-        -l )   itemContent="$(echo ${arg2[@]} | sed 's/\n/ /g')"    ;;
-    * ) ;; esac;done
-    #参耦校验
-    [ -z "$itemContent" ] && errorContent="${errorContent}\\n[缺少必要参数]itemContent=$itemContent"
-    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
-    [ -z "$itemName" ] && errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName"
-    [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniAddItem -h && return $resultFail
-
-    #实现主体
-    local indexStart=$(sed -n "/\[${tagName}\]/=" $filePathIni)
-    local lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni)
-
-    if [[ "${lineContent}" != "[${tagName}]" ]]; then
-        indexStart=$(grep -wn "${tagName}" $filePathIni | awk -F: '{print $1}')
-        lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni)
-        [[ "${lineContent}" != "[${tagName}]" ]] && ftEcho -e "找不到TAG:${tagName}对应的行" && return
-    fi
-
-    
-    local indexCheck=$indexStart
-    #echo "indexStart=${indexStart}"
-    while true; do
-        ((indexCheck+=1))
-        lineContent=$(awk 'NR=="'$indexCheck'"' $filePathIni)
-        [[ -z $lineContent ]] && break
-    done
-    itemName="${itemName}="
-
-    local fileLineCount=$(sed -n '$=' $filePathIni)
-    local lineCountFlag=$(( $fileLineCount - $indexCheck ))
-    (( $lineCountFlag < 2 )) && echo "" >> $filePathIni 
-
-    sed  -i "${indexCheck}i ${itemName}${itemContent[@]}" $filePathIni
-
-    # echo "fileLineCount=${fileLineCount}"
-    # echo "indexCheck=${indexCheck}"
-    # echo "itemName=${indexCheck}"
-    # echo "itemContent=${itemContent[@]}"
-}
-
-ftIniDeleteItem()
-{
-    local ftEffect=在ini文件对应TAG中删除指定item
-    local isEnable=sub
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
-    #参数解析
-    local tagName itemName filePathIni
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
-        # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
-#=========================================================
-#    ftIniDeleteItem -p ini文件路径 -t TAG块名 -i item名
-#========================================================="; return ;;
-        # 变量参数解析部分==============
-        -t )   tagName="${arg2}"            ;;
-        -i )   itemName="${arg2}"           ;;
-        -p )   filePathIni="${arg2}"        ;;
-    * ) ;; esac;done
-    #参耦校验
-    [ -z "$itemName" ] && errorContent="${errorContent}\\n[缺少必要参数]itemName=$itemName"
-    [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
-    [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
-    [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteItem -h && return $resultFail
-
-    #实现主体
-    local indexStart=$(sed -n "/\[${tagName}\]/=" $filePathIni)
-    local lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni)
-
-    if [[ "${lineContent}" != "[${tagName}]" ]]; then
-        indexStart=$(grep -wn "${tagName}" $filePathIni | awk -F: '{print $1}')
-        lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni)
-        [[ "${lineContent}" != "[${tagName}]" ]] && ftEcho -e "找不到TAG:${tagName}对应的行" && return
-    fi
-
-    local indexCheck=$indexStart
-    #echo "indexStart=${indexStart}"
-    while true; do
-        ((indexCheck+=1))
-        lineContent=$(awk 'NR=="'$indexCheck'"' $filePathIni)
-        [[ -z $lineContent ]] && break
-        if [[ "$lineContent" =~ ^${itemName}* ]]; then
-            sed -i "${indexCheck}d" $filePathIni
-            break
-        fi
-    done
-}
-
-ftIniGetValue()
-{
-    local ftEffect=在ini文件对应TAG中读取指定item
-    local isEnable=sub
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
-    #解参验耦
-    local filePath=$1 blockName=$2 blockNameFlag="\[${2}\]" keyName=$3 keyNameFlag="${3}\="
-    local isReadSilence isFindItem=false
-    local valCount=4 errorContent ; for ((i=1;i<=$#;i++)) ; do case "$1" in
-        # 说明参数解析部分 ==============
-    -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
-#=========================================================
-#    #默认不输出异常信息
-#    ftIniGetValue 文件路径 目标块TAG 键名
-#    value=\$(ftIniGetValue 文件路径 目标块TAG 键名)
-#    value表示key对应的值
+#    #写入数据
+#    ftIniEditUtil -w ini文件路径 TAG块名 key名 key值
 #
-#    #输出异常信息
-#    ftIniGetValue -f [文件路径] [目标块TAG] [键名]
+#    #读取数据
+#    ftIniEditUtil -r ini文件路径 TAG块名 key名
+#
+#    #删除数据
+#    ftIniEditUtil -d ini文件路径 TAG块名 key名
 #========================================================="; return ;;
-        # 变量参数解析部分 ==============
-        -f ) filePath=$2
-            blockName=$3
-            blockNameFlag="\[${3}\]"
-            keyName=$4
-            keyNameFlag="\[${4}\]"
-            isReadSilence=true
-            ;;
-    * ) break;;esac;done
-
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    if [ ! -f "$filePath" ];then    errorContent="${errorContent}\\n[文件不存在]filePath=$filePath"
-    else
-        [ -z "${blockName}" ] && errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
-        [ -z "$(cat $filePath|grep $blockName)" ] && errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName"
-        [ -z "$keyName" ] && errorContent="${errorContent}\\n[目标块TAG为空]keyName=$keyName"
-        [ -z "$(cat $filePath|grep $keyName)" ] && errorContent="${errorContent}\\n[目标块TAG不存在]keyName=$keyName"
-    fi
-    [ -n "${isReadSilence}" ]&&[ -n "$errorContent" ] && ftEcho -ea "$errorContent \\n请查看下面说明:" && ftIniGetValue -h && return $resultFail
+        # 变量参数解析部分==============
+        -w )   isWriteMode=true
+               ;;
+        -r )   isReadMode=true
+               ;;
+        -d )   isDeleteMode=true
+               ;;
+    * ) ;; esac;done
 
     #实现主体
-    # local begin_block=0 end_block=0
-    # cat $filePath | while read line ; do
-    #     [ "X$line" = "X[$blockName]" ] && begin_block=1 && continue
-    #     (( $begin_block!=1 )) && continue
-    #     $isFindItem && [[ -n $(echo "${line}" |grep "${keyName}\=") ]] && echo "find it" && return
+    if $isWriteMode && [[ -n $keyValue ]] && (( $# > 5 ));then
+        shift;shift;shift;shift
+        keyValue="$@"
+    fi
+    if $isDeleteMode;then
+        #参耦校验
+        [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
+        [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
+        #[ -z "$keyName" ] && errorContent="${errorContent}\\n[缺少必要参数]keyName=$keyName"
+        [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
 
-    #     (( $(echo $line | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}')==1 )) && break
-    #     (( $(echo $line | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}')==1 )) && continue
+        local indexStart=$(sed -n "/\[${tagName}\]/=" $filePathIni)
+        [[ -z $indexStart ]] && return
+        local lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni | sed s/[[:space:]]//g)
 
-    #     key=$(echo $line | awk -F= '{gsub(" |\t","",$1); print $1}')
-    #     [ "X$keyName" = "X$key" ] && echo $line | awk -F= '{gsub("\t","",$2); print $2}' && break
-    # done
-    # local lineNumBlock=$(grep -sn "${blockNameFlag}" $filePath | awk -F: '{gsub("\t","",$1); print $1}')
+        if [[ "${lineContent}" != "[${tagName}]" ]]; then
+            indexStart=$(grep -wn "${tagName}" $filePathIni | awk -F: '{print $1}')
+            lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni)
+            [[ "${lineContent}" != "[${tagName}]" ]] && ftEcho -e "找不到TAG:${tagName}对应的行" && return
+        fi
 
-    local lineNumKeyIndex lineContentAll key
-    grep -sn "${keyNameFlag}" $filePath | awk -F: '{print $1}'| while read lineNumKey ; do
-        # echo "lineNumKey=${lineNumKey}"
+        #del tag
+        if [ -z "$keyName" ];then
+            while true; do
+                sed -i "${indexStart}d" $filePathIni
+                [[ -z $(awk 'NR=="'$indexStart'"' $filePathIni) ]] && break
+            done
+            return
+        fi
 
-        local line lineBlockIndex=$((lineNumKey-1)) isContinue=false
+        #del key
+        local indexCheck=$indexStart isDelMultilineFormattedContent=false
         while true; do
-            line=$(awk 'NR=="'$lineBlockIndex'"' $filePath|sed s/[[:space:]]//g)
-            [[ -z $line ]] && isContinue=true && break
-            if [[ "${line}" == "[${blockName}]" ]];then
-                break
+            ! $isDelMultilineFormattedContent && ((indexCheck+=1))
+            lineContent=$(awk 'NR=="'$indexCheck'"' $filePathIni)
+            #echo "lineContent=${lineContent}"
+            [[ -z $lineContent ]] && break
+            if [[ "$lineContent" =~ ^${keyName}=* ]]; then
+                sed -i "${indexCheck}d" $filePathIni
+                
+                if [[ "$lineContent" = *\\ ]];then
+                    isDelMultilineFormattedContent=true
+                else
+                    break
+                fi
+            elif $isDelMultilineFormattedContent;then
+                sed -i "${indexCheck}d" $filePathIni
+                [[ "$lineContent" != *\\ ]] && break
             fi
-            (( lineBlockIndex==1 )) && return
-            ((lineBlockIndex-=1))
         done
 
-        $isContinue && isContinue=false && continue
+        return
+    fi
 
-        lineNumKeyIndex=$lineNumKey
-        line=$(awk 'NR=="'$lineNumKey'"' $filePath)
-        if [[ "$line" = *\\ ]];then
-            lineContentAll=${line%\\}
+    if $isReadMode;then
+        #参耦校验
+        [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
+        [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
+        [ -z "$keyName" ] && errorContent="${errorContent}\\n[缺少必要参数]keyName=$keyName"
+        [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
+
+        #check tag
+        local lineNumTag=$(sed -n "/\[${tagName}\]/=" $filePathIni)
+        [[ -z $lineNumTag ]] && return
+        local lineContent=$(awk 'NR=="'$lineNumTag'"' $filePathIni | sed s/[[:space:]]//g)
+
+        if [[ "${lineContent}" != "[${tagName}]" ]]; then
+            lineNumTag=$(grep -wn "${tagName}" $filePathIni | awk -F: '{print $1}')
+            lineContent=$(awk 'NR=="'$lineNumTag'"' $filePathIni)
+            [[ "${lineContent}" != "[${tagName}]" ]] && return
+        fi
+
+        # #check key
+        keyName=($keyName)
+
+        #single key
+        if (( ${#keyName[@]}==1 ));then
+            [[ -z "$(grep -sn $keyNameFlag $filePathIni)" ]] && return
+
+            local lineNumKey=$lineNumTag
             while true; do
-                ((lineNumKeyIndex+=1))
-                line=$(awk 'NR=="'$lineNumKeyIndex'"' $filePath)
-                lineContentAll="${lineContentAll} ${line%\\}"
-                [[ "$line" != *\\ ]] && break
+                ((lineNumKey+=1))
+                lineContent=$(awk 'NR=="'$lineNumKey'"' $filePathIni)
+                [[ -z $lineContent ]] && break
+                if [[ "$lineContent" =~ ^${keyName}=* ]]; then
+                    if [[ "$lineContent" = *\\ ]];then
+                        local lineContentTemp=${lineContent%\\}
+                        while true; do
+                            ((lineNumKey+=1))
+                            lineContent=$(awk 'NR=="'$lineNumKey'"' $filePathIni)
+                            lineContentTemp="${lineContentTemp} ${lineContent%\\}"
+                            [[ "$lineContent" != *\\ ]] && break
+                        done
+                        lineContent="${lineContentTemp}"
+                    fi
+                    echo "${lineContent}" | awk -F= '{gsub("\t","",$2); print $2}'
+                    break
+                fi
             done
+        #multiple key
         else
-            lineContentAll="${line}"
+            rm -rf ${filePathIni}.temp
+
+            local lineNumKey=$lineNumTag
+            while true; do
+                ((lineNumKey+=1))
+                lineContent=$(awk 'NR=="'$lineNumKey'"' $filePathIni)
+                echo "${lineContent}" >> ${filePathIni}.temp
+                [[ -z $lineContent ]] && break
+            done
+
+            for keyNameItem in ${keyName[@]}; do
+                lineContent=$(grep -sn "${keyNameItem}\=" ${filePathIni}.temp)
+
+                if [[ "$lineContent" = *\\ ]];then
+                        local lineContentTemp=${lineContent%\\}
+                        lineNumKey=$(echo "${lineContent}" | awk -F: '{print $1}')
+                        while true; do
+                            ((lineNumKey+=1))
+                            lineContent=$(awk 'NR=="'$lineNumKey'"' ${filePathIni}.temp)
+                            lineContentTemp="${lineContentTemp} ${lineContent%\\}"
+                            [[ "$lineContent" != *\\ ]] && break
+                        done
+                        lineContent="${lineContentTemp}"
+                fi
+                
+                echo "${lineContent}" | awk -F= '{print $2}'
+            done
+
+            rm ${filePathIni}.temp
         fi
+        return
+    fi
 
-        echo "${lineContentAll}" | awk -F= '{gsub("\t","",$2); print $2}'
-        break
-    done
-}
+    #write mode
+    if $isWriteMode;then
+        #参耦校验
+        [ -z "$filePathIni" ] || [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[找不到文件:${filePathIni}]"
+        [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
+        [ -z "$keyName" ] && errorContent="${errorContent}\\n[缺少必要参数]keyName=$keyName"
+        [ -z "$keyValue" ] && errorContent="${errorContent}\\n[缺少必要参数]keyValue=$keyValue"
+        [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
 
-ftIniSetValue()
-{
-    local ftEffect=在ini文件对应TAG中修改指定item
-    local isEnable=sub
-
-    #可用性校验
-    [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
-    #参数解析
-    local isListValue=false isAutoAdd=false
-    local filePath=$1 blockName=$2 blockNameFlag="\[${2}\]" keyName=$3 keyValue="${4}" keyNameFlag="${3}="
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
-        # 说明参数解析部分==============
-        -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
-#=========================================================
-#    ftIniSetValue [文件路径] [目标块TAG] [键名] [键对应的值]
-#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup 1232
-#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup -l \"\$(echo \${keyValueArray[@]} | sed 's/ /\\\n/g')\"  #写入数组
-#    ftIniSetValue /temp/odbcinst.ini PostgreSQL Setup 1232 -a #Setup不存在时自动添加
-#========================================================="; return ;;
-        # 变量参数解析部分==============
-        -l )    keyValue="$(echo ${arg2[@]} | sed 's/\n/ /g')"
-                isListValue=true
-           ;;
-        -a )    isAutoAdd=true
-                [[ -n $arg2 ]] && keyValue="${arg2}"
-           ;;
-    * ) ;; esac;done
-
-    #检验参数
-    if [ ! -f "$filePath" ];then
-        if $isAutoAdd && [ -n $filePath ]&& [[ -n $blockName ]]&& [[ -n $keyName ]]&& [[ -n $keyValue ]];then
-            ftIniCreateFileOrTag  -a -p $filePath -t $blockName -l "${keyName}=${keyValue}"
+        #add tag
+        if [[ -z $(grep -sn $tagNameFlag $filePathIni) ]];then
+            local enterLine="\n"
+            echo  -e  ${enterLine} \
+                     "[$tagName]"${enterLine} \
+                     "${keyName}=${keyValue}"${enterLine} \
+                      >> $filePathIni
             return
+        #add key
+        elif [[ -z $(ftIniEditUtil -r "${filePathIni}" "${tagName}" "${keyName}") ]];then
+            local indexStart=$(sed -n "/\[${tagName}\]/=" $filePathIni)            
+            local lineContent indexCheck=$indexStart
+            while true; do
+                ((indexCheck+=1))
+                lineContent=$(awk 'NR=="'$indexCheck'"' $filePathIni)
+                [[ -z $lineContent ]] && break
+            done
+            keyName="${keyName}="
+
+            echo -e "\n" >> $filePathIni
+
+            sed  -i "${indexCheck}i ${keyName}${keyValue[@]}" $filePathIni
+        #change key
         else
-            errorContent="${errorContent}\\n[目标ini文件不存在,或数据缺失]filePath=$filePath"
-        fi
-    else
-        if [[ -z "$blockName" ]];then    errorContent="${errorContent}\\n[目标块TAG为空]blockName=$blockName"
-        elif [[ -z "$(grep -sn $blockNameFlag $filePath)" ]];then
-            if $isAutoAdd;then
-                ftIniCreateFileOrTag  -a -p $filePath -t $blockName -l "${keyName}=${keyValue}"
-                return
-            else
-                errorContent="${errorContent}\\n[目标块TAG不存在]blockName=$blockName"
+            if [[ -n $(echo "${keyName}" | grep -sn "\/") ]];then
+                local keyNameTemp=$(echo "${keyName}" |sed s/[[:space:]]//g | sed "s / \/ g" )
+                keyName="${keyNameTemp}"
             fi
+            sed -i "/^\[$tagName\]/,/^\[/ {/^\[$tagName\]/b;/^\[/b;s ^$keyName=.* $keyName=$keyValue g;}" $filePathIni
         fi
 
-        if [[ -z "$keyName" ]];then    errorContent="${errorContent}\\n[目标Key为空]keyName=$keyName"
-        #elif [[ -z $(ftIniGetValue "${filePath}" "${blockName}" "${keyName}" ) ]];then
-        elif [[ -z "$(grep -sn $keyNameFlag $filePath)" ]];then
-            if $isAutoAdd;then
-                ftIniAddItem -p $filePath -t $blockName -i $keyName -l "$(echo ${keyValue[@]} | sed 's/ /\n/g')"
-                return
-            else
-                errorContent="${errorContent}\\n[目标Key不存在]keyName=$keyName"
-            fi
-        fi
-
-        if [[ -z "$keyValue" ]];then
-            errorContent="${errorContent}\\n[目标Key对应的Value为空]keyValue=$keyValue"
-        fi
+        return
     fi
 
-    [[ -n "$errorContent" ]] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniSetValue -h && return
-
-    #实现主体
-    # if [[ -n $(echo "${blockName}" | grep -sn "\/") ]];then
-    #     local blockNameTemp=$(echo "${blockName}" |sed s/[[:space:]]//g | sed "s / \/ g" )
-    #     blockName="${blockNameTemp}"
-    # fi
-    if [[ -n $(echo "${keyName}" | grep -sn "\/") ]];then
-        local keyNameTemp=$(echo "${keyName}" |sed s/[[:space:]]//g | sed "s / \/ g" )
-        keyName="${keyNameTemp}"
-    fi
-
-    [[ "$isListValue" = "true" ]] && sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s:^$keyName*=.*:$keyName=$keyValue:g;}" $filePath
-    #keyValue=$(echo $keyValue |sed s/[[:space:]]//g)
-    sed -i "/^\[$blockName\]/,/^\[/ {/^\[$blockName\]/b;/^\[/b;s ^$keyName=.* $keyName=$keyValue g;}" $filePath > /dev/null
-
+    ftEcho -e "ftIniEditUtil unknow opeartion"
 }
 
 ftBashHistory()
@@ -2321,7 +2208,7 @@ ftMaintainSystem()
     local dirPathLocal=$2 dirPathStore=$3
     [ -d "$dirPathLocal" ] && cd $dirPathLocal
     [ -d "$dirPathStore" ] && rm -rf $dirPathStore
-    ftIniDeleteTag -p $filePathVersionInfo -t $infoVersionName
+    ftIniEditUtil -d $filePathVersionInfo $infoVersionName
     trap SIGINT
     return ;;
         # 变量参数解析部分==============
@@ -2348,7 +2235,7 @@ ftMaintainSystem()
                     local dirPathLocal=${PWD}
                     local filePathVersionInfo=$filePathVersionInfoVersion
                     local infoVersionName=backup_${rUserName}_$(date -d "today" +"%Y%m%d")
-                    local fileNameVersion=${infoVersionName}.$(ftIniGetValue $filePathVersionInfoMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
+                    local fileNameVersion=${infoVersionName}.$(ftIniEditUtil -r $filePathVersionInfoMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
                     # 进入根目录
                         cd /
                     #新建数据库或清理无效版本记录
@@ -2378,10 +2265,10 @@ ftMaintainSystem()
                     #写入版本说明
                         ftMaintainInfoNote -a -p $filePathVersionInfo -v $infoVersionName || return $resultFail
                     #显示当前配置信息
-                        local dirPathStore=$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName  dirPathStore)
+                        local dirPathStore=$(ftIniEditUtil -r  $filePathVersionInfoVersion $infoVersionName  dirPathStore)
                         ftEcho -bh "备份关键信息"
-                        ftEcho -s "生成的备份包：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName fileName)"
-                        ftEcho -s  "备份包的说明：$(ftIniGetValue  $filePathVersionInfoVersion $infoVersionName  backupPackageNote)"
+                        ftEcho -s "生成的备份包：$(ftIniEditUtil -r  $filePathVersionInfoVersion $infoVersionName fileName)"
+                        ftEcho -s  "备份包的说明：$(ftIniEditUtil -r  $filePathVersionInfoVersion $infoVersionName  backupPackageNote)"
                         ftEcho -s  "备份包保存路径：$dirPathStore"
                     #扫描设备,确认是否相同备份
                         # ftBackUpDevScanning -p $filePathVersionInfo -f $fileNameVersion -d "${mXbashModuleDataDevicesList[*]}"
@@ -2393,14 +2280,14 @@ ftMaintainSystem()
                     #版本信息备份
                         ftIniCreateFileOrTag -r -p ${dirPathStore}/version.info -t $infoVersionName -l "\
                                 fileName=$fileNameVersion \
-                                backupType=$(ftIniGetValue  $filePathVersionInfo $infoVersionName backupType) \
-                                dirPathStore=$(ftIniGetValue  $filePathVersionInfo $infoVersionName dirPathStore) \
-                                backupPackageNote=$(ftIniGetValue  $filePathVersionInfo $infoVersionName backupPackageNote) \
-                                MD5=$(ftIniGetValue  $filePathVersionInfo $infoVersionName MD5) \
-                                hwCpu=$(ftIniGetValue  $filePathVersionInfo $infoVersionName hwCpu) \
-                                hwMainboard=$(ftIniGetValue  $filePathVersionInfo $infoVersionName hwMainboard) \
-                                swSystemVersion=$(ftIniGetValue  $filePathVersionInfo $infoVersionName swSystemVersion) \
-                                swSystemType=$(ftIniGetValue  $filePathVersionInfo $infoVersionName swSystemType)" && \
+                                backupType=$(ftIniEditUtil -r  $filePathVersionInfo $infoVersionName backupType) \
+                                dirPathStore=$(ftIniEditUtil -r  $filePathVersionInfo $infoVersionName dirPathStore) \
+                                backupPackageNote=$(ftIniEditUtil -r  $filePathVersionInfo $infoVersionName backupPackageNote) \
+                                MD5=$(ftIniEditUtil -r  $filePathVersionInfo $infoVersionName MD5) \
+                                hwCpu=$(ftIniEditUtil -r  $filePathVersionInfo $infoVersionName hwCpu) \
+                                hwMainboard=$(ftIniEditUtil -r  $filePathVersionInfo $infoVersionName hwMainboard) \
+                                swSystemVersion=$(ftIniEditUtil -r  $filePathVersionInfo $infoVersionName swSystemVersion) \
+                                swSystemType=$(ftIniEditUtil -r  $filePathVersionInfo $infoVersionName swSystemType)" && \
                         chmod 777 ${dirPathStore}/version.info $filePathVersionInfo
                     #把备份同步到不同设备上
                         # ftSynchronous -d "${mXbashModuleDataDevicesList[*]}" -s ".*\.tgz"
@@ -2417,16 +2304,16 @@ ftMaintainSystem()
                                 fileName=null \
                                 dirPathStore=null \
                                 dirPathRestoreExclude=null"
-                        trap 'ftIniDeleteTag -p $filePathVersionInfoMaintain -t $tagNaeMaintain && exit' SIGINT
+                        trap 'ftIniEditUtil -d $filePathVersionInfoMaintain $tagNaeMaintain && exit' SIGINT
                     #选择存放备份包的设备
                         ftSetBackupDevDir -r -p $filePathVersionInfoMaintain -v $tagNaeMaintain
                     #选择备份包
                         ftRestoreChoiceSource -p $filePathVersionInfoVersion -pm $filePathVersionInfoMaintain -t $tagNaeMaintain
                     #检查备份包和当前系统兼容程度
-                        local fileName=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain fileName)
+                        local fileName=$(ftIniEditUtil -r $filePathVersionInfoMaintain $tagNaeMaintain fileName)
                         ftSystemEnv -c -p $filePathVersionInfoVersion -v ${fileName%.*}
                     #检查备份包是否损坏
-                        local dirPathStore=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain dirPathStore)
+                        local dirPathStore=$(ftIniEditUtil -r $filePathVersionInfoMaintain $tagNaeMaintain dirPathStore)
                         ftMD5 -p $filePathVersionInfoVersion -c "${dirPathStore}/${fileName}"
                     #选择备份包覆盖的忽略路径
                         ftSetRestoreOverryList -pm $filePathVersionInfoMaintain -t $tagNaeMaintain
@@ -2434,12 +2321,12 @@ ftMaintainSystem()
                         local versionName=${fileName%.*}
                         ftEcho -bh "还原关键信息"
                         ftEcho -s  "使用的备份包：$fileName"
-                        ftEcho -s  "备份包的说明：$(ftIniGetValue $filePathVersionInfoVersion $versionName backupPackageNote)"
-                        ftEcho -s  "还原时将忽略目录：$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain  dirPathRestoreExclude)"
+                        ftEcho -s  "备份包的说明：$(ftIniEditUtil -r $filePathVersionInfoVersion $versionName backupPackageNote)"
+                        ftEcho -s  "还原时将忽略目录：$(ftIniEditUtil -r $filePathVersionInfoMaintain $tagNaeMaintain  dirPathRestoreExclude)"
                     #执行还原操作
                         ftRestoreOperate -pm $filePathVersionInfoMaintain -t  $tagNaeMaintain -d "/"
                     #删除还原版本信息
-                        ftIniDeleteTag -p $filePathVersionInfoMaintain -t $tagNaeMaintain
+                        ftIniEditUtil -d $filePathVersionInfoMaintain $tagNaeMaintain
                     #还原成功后重启生效
                         while true; do
                         ftEcho -y "是否重启 [回车重启]"
@@ -3641,12 +3528,12 @@ ftMD5()
         setMd5 )
                     ftEcho -s "文件 : ${fileNameVersion} MD5信息正在生成，请稍等"
                     local md5Code=$(md5sum $filePathVersion | awk '{print $1}')
-                    ftIniSetValue $filePathInfo $versionName MD5 $md5Code
+                    ftIniEditUtil -w $filePathInfo $versionName MD5 $md5Code
                     ftEcho -s "文件 : ${fileNameVersion} MD5信息已生成"
                     return;;
         checkMd5 )
                     ftEcho -bh "文件 : ${versionName} MD5检验开始"
-                    local Md5Code=$(ftIniGetValue $filePathInfo $versionName MD5)
+                    local Md5Code=$(ftIniEditUtil -r $filePathInfo $versionName MD5)
                     [[ -z "$Md5Code" ]] && ftEcho -e "文件 : ${versionName}  原始MD5未找到" && exit
                     local Md5CodeNow=$(md5sum $filePathVersion | awk '{print $1}')
                     [ "$Md5CodeNow"x != "$Md5Code"x ] && ftEcho -e "文件 : ${versionName} MD5检验失败" && exit
@@ -3720,7 +3607,7 @@ ftCreateMoudleDesktop()
 complete -W "-h --help -t -i" ftXbGetValue
 ftXbGetValue()
 {
-    local ftEffect=获取xbash数据库中指定TAG中的item[基于ftIniGetValue封装]
+    local ftEffect=获取xbash数据库中指定TAG中的item[基于ftIniEditUtil封装]
     local isEnable=sub
 
     #可用性校验
@@ -3747,12 +3634,11 @@ ftXbGetValue()
     [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftXbGetValue -h && return $resultFail
 
     #实现主体
-    local itemValue=($(ftIniGetValue $rFilePathXbashDBUser $tagName $itemName))
+    local itemValue=($(ftIniEditUtil -r $rFilePathXbashDBUser $tagName $itemName))
     [[ -n "$itemValue" ]] && echo ${itemValue[@]} && return $resultSuccess
 
-    itemValue=($(ftIniGetValue $rFilePathXbashDBBase $tagName $itemName))
+    itemValue=($(ftIniEditUtil -r $rFilePathXbashDBBase $tagName $itemName))
     [[ -n "$itemValue" ]] && echo ${itemValue[@]} && return $resultSuccess
-
     return $resultSuccess
 }
 
@@ -3985,12 +3871,12 @@ ftVpnControl()
 
     #实现主体
     local tag="vpnConfig_anyconnect" keyHostName="hostName"
-    local hostName=$(ftIniGetValue $rFilePathXbashDBUser $tag $keyHostName)
+    local hostName=$(ftIniEditUtil -r $rFilePathXbashDBUser $tag $keyHostName)
 
     if [[ "$isConnect" = "true" ]]; then
         local keyUserName="userName" keyUserPassword="userPassword"
-        local userName=$(ftIniGetValue $rFilePathXbashDBUser $tag $keyUserName)
-        local userPassword=$(ftIniGetValue $rFilePathXbashDBUser $tag $keyUserPassword)
+        local userName=$(ftIniEditUtil -r $rFilePathXbashDBUser $tag $keyUserName)
+        local userPassword=$(ftIniEditUtil -r $rFilePathXbashDBUser $tag $keyUserPassword)
 
         if [[ "$isRestPassword" = "true" ]]; then
             $filePathAnyconnect  -s connect ${hostName}<< EOF
@@ -4164,7 +4050,7 @@ ftLoadGitCompletion()
     if [[ $checkResult == "<" ]]; then
         return
     fi
-    if [[ -f $rFilePathGitBash ]];then source  $rFilePathGitBash && echo 123
+    if [[ -f $rFilePathGitBash ]];then source  $rFilePathGitBash
     else echo -e "\033[1;31m非Xbash自定义的git扩展块加载失败\n${rFilePathGitBash}\033[0m" ;fi
 }
 
@@ -4393,7 +4279,6 @@ ftTextSetLine()
               isLineContentNone=true
             ;;
         -r ) isRemoveEmptyLines=true
-
             ;;
     * ) ;; esac;done
 

@@ -36,9 +36,9 @@ ftRestoreOperate()
     [ -z "${sel}" ] && sel=y
     case "$sel" in
         y | Y )
-            local fileName=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain fileName)
-            local dirPathStore=$(ftIniGetValue $filePathVersionInfoMaintain $tagNaeMaintain dirPathStore)
-            local dirPathRestoreExclude=$(ftIniGetValue $filePathIniMaintain $tagNameMaintain dirPathRestoreExclude)
+            local fileName=$(ftIniEditUtil -r $filePathVersionInfoMaintain $tagNaeMaintain fileName)
+            local dirPathStore=$(ftIniEditUtil -r $filePathVersionInfoMaintain $tagNaeMaintain dirPathStore)
+            local dirPathRestoreExclude=$(ftIniEditUtil -r $filePathIniMaintain $tagNameMaintain dirPathRestoreExclude)
             local filePathVersion=${dirPathStore}/${fileName}
 
             [ ! -f $filePathVersion ] && ftEcho -e 未找到备份包:${filePathVersion} && return $resultFail
@@ -78,8 +78,8 @@ ftRestoreChoiceSource()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftRestoreChoiceSource -h && return $resultFail
 
     #实现主体
-    local suffixName=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
-    local dirPathStore=$(ftIniGetValue $filePathIniMaintain $tagNameMaintain dirPathStore)
+    local suffixName=$(ftIniEditUtil -r $filePathIniMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
+    local dirPathStore=$(ftIniEditUtil -r $filePathIniMaintain $tagNameMaintain dirPathStore)
     local filePathList=($(find ${dirPathStore} -name "*.${suffixName}"))
 
     [ -z "$filePathList" ] && ftEcho -ex 在${dirPathStore}没找到有效的备份包 && exit
@@ -90,7 +90,7 @@ ftRestoreChoiceSource()
     for filePath in ${filePathList[*]} ; do
         local fileName=$(basename $filePath)
         local versionName=${fileName%.*}
-        local note=$(ftIniGetValue $filePathIni $versionName backupPackageNote)
+        local note=$(ftIniEditUtil -r $filePathIni $versionName backupPackageNote)
         note=${note:-'无效版本，无相关记录'}
         printf "[%-2d] %-30s %-50s\n" ${index} ${versionName} ${note}
         ((index+=1))
@@ -248,9 +248,9 @@ ftSetBackupType()
 
     #备份忽略列表
     local dirsExclude index=0
-    local filePatheExclude=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo filePatheExclude)
-    local excludeListSys=($(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo dirPathsExcludeListSys))
-    local excludeListSysExtends=($(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo dirPathsExcludeListExtends))
+    local filePatheExclude=$(ftIniEditUtil -r $filePathIniMaintain ubuntuMaintainConfigInfo filePatheExclude)
+    local excludeListSys=($(ftIniEditUtil -r $filePathIniMaintain ubuntuMaintainConfigInfo dirPathsExcludeListSys))
+    local excludeListSysExtends=($(ftIniEditUtil -r $filePathIniMaintain ubuntuMaintainConfigInfo dirPathsExcludeListExtends))
 
     while true; do
         case $infoBackupType in
@@ -332,11 +332,11 @@ ftBackupOs()
     -c)
         local filePathIni=$2
         local versionName=$3
-        local dirPathStore=$(ftIniGetValue $filePathIni $versionName dirPathStore)
+        local dirPathStore=$(ftIniEditUtil -r $filePathIni $versionName dirPathStore)
         [ -d "$dirPathStore" ] && rm -rf $dirPathStore
         local dirPathStoreParent=$(dirname  $dirPathStore)
         [ -z "$(ls $dirPathStoreParent)" ] && rm -rf $dirPathStoreParent
-        ftIniDeleteTag -p $filePathIni -t $versionName
+        ftIniEditUtil -d $filePathIni $versionName
         return ;;
         # 变量参数解析部分==============
         -p )   filePathIni="$arg2"                        ;;
@@ -350,9 +350,9 @@ ftBackupOs()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBackupOs -h && return $resultFail
 
     #实现主体
-    local fileNameVersion=$(ftIniGetValue $filePathIni  $versionName fileName)
-    local dirPathStore=$(ftIniGetValue $filePathIni $versionName dirPathStore)
-    local fileNameExclude=$(ftIniGetValue $filePathIniMaintain ubuntuMaintainConfigInfo filePatheExclude)
+    local fileNameVersion=$(ftIniEditUtil -r $filePathIni  $versionName fileName)
+    local dirPathStore=$(ftIniEditUtil -r $filePathIni $versionName dirPathStore)
+    local fileNameExclude=$(ftIniEditUtil -r $filePathIniMaintain ubuntuMaintainConfigInfo filePatheExclude)
 
     local filePathVersion=${dirPathStore}/${fileNameVersion}
     local filePathVersionLog=${dirPathStore}/${fileNameVersion%.*}.log
@@ -506,10 +506,10 @@ ftSystemEnv()
 
         ftEcho -bh 检查备份包和当前系统兼容程度
 
-        local infoHwCpuVersion=$(ftIniGetValue  $filePathInfo $versionName $keyCpu)
-        local infoHwMainboardVersion=$(ftIniGetValue  $filePathInfo $versionName $keyMainboard)
-        local infoHwSystemVersion=$(ftIniGetValue  $filePathInfo $versionName $keySystemVersion)
-        local infoHw32x64Version=$(ftIniGetValue  $filePathInfo $versionName $keySystemType)
+        local infoHwCpuVersion=$(ftIniEditUtil -r  $filePathInfo $versionName $keyCpu)
+        local infoHwMainboardVersion=$(ftIniEditUtil -r  $filePathInfo $versionName $keyMainboard)
+        local infoHwSystemVersion=$(ftIniEditUtil -r  $filePathInfo $versionName $keySystemVersion)
+        local infoHw32x64Version=$(ftIniEditUtil -r  $filePathInfo $versionName $keySystemType)
 
         if [ -z "$infoHwCpuVersion" ]\
             ||[ -z "$infoHwMainboardVersion" ]\
@@ -607,7 +607,7 @@ ftBackUpDevScanning()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBackUpDevScanning -h && return $resultFail
 
     #实现主体
-    local dirPathStore=$(ftIniGetValue $filePathIni $versionName dirPathStore)
+    local dirPathStore=$(ftIniEditUtil -r $filePathIni $versionName dirPathStore)
 
     for devDirPath in ${devList[@]}; do
 
@@ -711,10 +711,10 @@ ftCleanUpInvalidRecords()
     for versionName in $(cat $filePathIni|grep "\[backup" ); do
          versionName=${versionName//\[/}
          versionName=${versionName//\]/}
-         MD5=$(ftIniGetValue $filePathIni $versionName MD5)
-         backupPackageNote=$(ftIniGetValue $filePathIni $versionName backupPackageNote)
+         MD5=$(ftIniEditUtil -r $filePathIni $versionName MD5)
+         backupPackageNote=$(ftIniEditUtil -r $filePathIni $versionName backupPackageNote)
         if [[ -z $MD5 ]] || [[ -z $backupPackageNote ]]; then
-            ftIniDeleteTag -p $filePathIni -t $versionName
+            ftIniEditUtil -d $filePathIni $versionName
             result="deleted"
         fi
     done

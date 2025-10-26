@@ -1657,7 +1657,7 @@ ftAutoAsConfigFileAutoCreate()
     local lineNum=${lineNumList[$lineNumCount]}
     lineNum=$(echo $lineNum |sed s/[[:space:]]//g)
 
-    local excludeFolderList=($(ftIniGetValue $rFilePathXbashDBAuto autoAsConfigFileAutoCreateConfig excludeFolderList))
+    local excludeFolderList=($(ftIniEditUtil -r $rFilePathXbashDBAuto autoAsConfigFileAutoCreateConfig excludeFolderList))
     for i in ${excludeFolderList[@]}; do
         echo "<excludeFolder url=\"file://\$MODULE_DIR\$/${i}\" />" >> $filePathExcludeFolderListTemp
     done
@@ -1809,10 +1809,10 @@ ftAutoCdProjectDirectory()
                                 done
 
                                 if [ -n "$projectList" ];then
-                                    local projectListLocal=$(ftIniGetValue $rFilePathXbashDBUser ProjectsInfo ${projectInfoFlag}${projectName})
+                                    local projectListLocal=$(ftIniEditUtil -r $rFilePathXbashDBUser ProjectsInfo ${projectInfoFlag}${projectName})
                                     [[ -z ${projectListLocal} ]] && projectListLocal=$(cat $rFilePathXbashDBUser | grep "${projectInfoFlag}${projectName}=")
                                     if [[ -z ${projectListLocal} ]]; then
-                                        ftIniAddItem -p $rFilePathXbashDBUser -t ProjectsInfo -i ${projectInfoFlag}${projectName} -l "${projectList}"
+                                        ftIniEditUtil $rFilePathXbashDBUser ProjectsInfo ${projectInfoFlag}${projectName} "${projectList}" -a
                                     fi
                                     projectList=""
                                 fi
@@ -1825,8 +1825,8 @@ ftAutoCdProjectDirectory()
                     done < <(echo "$(ls ${path})")
                 done
                 mProjectNameListUpdate=($(echo ${mProjectNameListUpdate[@]} | sed 's/ /\n/g'|sort |uniq))
-                ftIniSetValue $rFilePathXbashDBUser ProjectsInfo ProjectNameList -l "${mProjectNameListUpdate[*]}"
-                ftIniSetValue $rFilePathXbashDBUser ProjectsInfo ProjectGitStorehouseList -l "${mProjectNameListUpdate[*]}"
+                ftIniEditUtil -w $rFilePathXbashDBUser ProjectsInfo ProjectNameList -l "${mProjectNameListUpdate[*]}"
+                ftIniEditUtil -w $rFilePathXbashDBUser ProjectsInfo ProjectGitStorehouseList -l "${mProjectNameListUpdate[*]}"
                 ftEcho -s "项目列表更新完成"
                 return;;
         settings ) dirPathTarget="packages/apps/Settings" ;;

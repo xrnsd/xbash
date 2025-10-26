@@ -117,7 +117,7 @@ alias xcaf='effect=用文件管理器打开Aosp功能目录;ftCdAospDirectory -f
 alias xcdf='effect=用文件管理器切换到不同Aosp项目;ftAutoCdProjectDirectory -fm '
 alias xcdu='effect=快速更新Aosp项目列表配置;ftAutoCdProjectDirectory -u > /dev/null '
 alias xep='effect=打开Eclipse;nohup ${rDirPathTools}/eclipse/eclipse & >/dev/null;exit'
-alias xs2av='effect=android版本查询;ftIniGetValue $rFilePathXbashDBBase androidSDK2Verison'
+alias xs2av='effect=android版本查询;ftIniEditUtil -r $rFilePathXbashDBBase androidSDK2Verison'
 alias xfkc='effect=查找kernel的config说明;_xfkc(){  grep -nr "${1}" --include=Kconfig -C 5 kernel-* ;};_xfkc $1'
 alias xrbp='effect=删除out下面build.prop;rm -rf ${ANDROID_PRODUCT_OUT}/obj/ETC/system_build_prop_intermediates \
          ${ANDROID_PRODUCT_OUT}/system/build.prop'
