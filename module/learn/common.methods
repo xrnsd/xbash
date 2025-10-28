@@ -404,13 +404,13 @@ ftTransformDrillReslt()
             #end
             lineContent="${lineContentTemp//\*/\\033[0m}"
 
-            #=========  contenct read or can't listen ===========
+            #=========  contenct read , can't listen ===========
             #start
             lineContentTemp="${lineContent//\+\+/\\033[1;36m}"
             #end
             lineContent="${lineContentTemp//\+/\\033[0m}"
 
-            #=========  can listen and unknow ===========
+            #=========  can listen and unknow , forget ===========
             #start
             lineContentTemp="${lineContent//\-\-/\\033[41;38m}"
             #end
