@@ -14,7 +14,7 @@ _ftLearnRepetionDrill()
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     if [[ "$prev" == "--type" ]]; then
-        COMPREPLY=( $(compgen -W "article sentence imitate" -- "$cur") )
+        COMPREPLY=( $(compgen -W "article sentence imitate word" -- "$cur") )
     elif [[ "$prev" == "--mode" ]]; then
         COMPREPLY=( $(compgen -W "write listen read preview review" -- "$cur") )
     else
@@ -496,7 +496,7 @@ ftLearnRepetionDrill()
 
         #save drill status
         local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
-        ftIniEditUtil -w $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}" "${learnLessonListDrilled[@]}" #\ #arrayLine
+        ftIniEditUtil -w $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}" "${learnLessonListDrilled[*]}" #\
         # -a -l "$(echo " $lessonNameSel" | sed 's/ /\n/g'| uniq | sort -u)"
 
         #claer drilling records
@@ -618,8 +618,8 @@ ftLearnRepetionDrill()
                         ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_drillTime" "$(date +%s -d $(date +"%H:%M:%S"))"
                         ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray" $indexArray
                         ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount" $drillTrueCount
-                        ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" "${arrayIndexSort[@]}" #arrayLine
-                        [[ -n $valRepetionDrillErrorHository ]] && ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError" "${valRepetionDrillErrorHository[@]}" #arrayLine
+                        ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" "${arrayIndexSort[*]}"
+                        [[ -n $valRepetionDrillErrorHository ]] && ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError" "${valRepetionDrillErrorHository[*]}"
                         ftEcho -s "The drill records is saved"
                         return;;
                     q | Q )
@@ -660,8 +660,8 @@ ftLearnRepetionDrill()
                 ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_drillTime" "$(date +%s -d $(date +"%H:%M:%S"))"
                 ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray" $indexArray
                 ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount" $drillTrueCount
-                ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" "${arrayIndexSort[@]}" #arrayLine
-                ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError" "${valRepetionDrillErrorHository[@]}" #arrayLine
+                ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" "${arrayIndexSort[*]}"
+                ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError" "${valRepetionDrillErrorHository[*]}"
                 ftEcho -s "The drill records is saved"
                 return
 
@@ -757,9 +757,9 @@ ftLearnRepetionDrill()
                             ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_drillTime" "$(date +%s -d $(date +"%H:%M:%S"))"
                             ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray" $indexArray
                             ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount" $drillTrueCount
-                            ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" "${arrayIndexSort[@]}"
+                            ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" "${arrayIndexSort[*]}"
                             [[ -n $valRepetionDrillErrorHository ]] && \
-                            ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError" "${valRepetionDrillErrorHository[@]}" 
+                            ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError" "${valRepetionDrillErrorHository[*]}"
                             ftEcho -s "The drill records is saved"
                             return;;
                         q | Q )
@@ -938,7 +938,7 @@ ftLearnRepetionDrill()
 
     #save drill status
     local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
-    ftIniEditUtil -w $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}" "${learnLessonListDrilled[@]} $lessonNameSel" #-l \
+    ftIniEditUtil -w $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}" "${learnLessonListDrilled[*]} $lessonNameSel" #-l \
         #"$(echo "${learnLessonListDrilled[@]} $lessonNameSel" | sed 's/ /\n/g'| uniq)"
 
     #clean temp drill cache
@@ -1163,7 +1163,7 @@ ftLearnLessonManage()
             lessonNameSel="${publicSelItemContent[@]}"
 
             ftIniEditUtil -w $filePathLearnDataBase learnLessonInfo "lessonGroupDailyStudyPlanSelected${operationContent}" ${lessonGroupNameSel}
-            ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDailyStudyPlan${operationContent}" "${lessonNameSel[@]}" #arrayLine
+            ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDailyStudyPlan${operationContent}" "${lessonNameSel[*]}"
 
             #added plan content to file
             echo " TrainingType : ${trainingTypeItem}" >> $filePathLearnPlan
@@ -1646,9 +1646,9 @@ ftLearnLessonManage()
             ftEcho -s "--------------------------------"
             echo "lesson group name : ${lessonGroup}"
             echo "lesson list :${dirPathArrayLesson[@]}"
-            ftIniEditUtil -w $filePathLearnDataBase "${lessonGroup}" lessonList "${dirPathArrayLesson[@]}" #arrayLine
+            ftIniEditUtil -w $filePathLearnDataBase "${lessonGroup}" lessonList "${dirPathArrayLesson[*]}"
         done
-        ftIniEditUtil -w $filePathLearnDataBase learnLessonInfo  lessonGroupList "${learnLessonGroupList[@]}" #arrayLine
+        ftIniEditUtil -w $filePathLearnDataBase learnLessonInfo  lessonGroupList "${learnLessonGroupList[*]}"
         cd "${dirPathLocal}"
         ftEcho -s "all lesson update finish"
         return
@@ -1660,7 +1660,7 @@ ftLearnLessonManage()
         lessonGroupName=$(echo $lessonGroupName |sed s/[[:space:]]//g)
         learnLessonGroupList="$(ftIniEditUtil -r $filePathLearnDataBase learnLessonInfo  lessonGroupList)"
         learnLessonGroupList="${learnLessonGroupList[@]} $lessonGroupName"
-        ftIniEditUtil -w $filePathLearnDataBase learnLessonInfo  lessonGroupList "${learnLessonGroupList[@]}"
+        ftIniEditUtil -w $filePathLearnDataBase learnLessonInfo  lessonGroupList "${learnLessonGroupList[*]}"
         ftIniEditUtil -w $filePathLearnDataBase "${lessonGroupName}" lessonList "none"
         #创建课程文件夹
         mkdir -p "${dirPathTempEng}/${lessonGroupName}"

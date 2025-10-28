@@ -854,10 +854,6 @@ ftIniEditUtil()
     * ) ;; esac;done
 
     #实现主体
-    if $isWriteMode && [[ -n $keyValue ]] && (( $# > 5 ));then
-        shift;shift;shift;shift
-        keyValue="$@"
-    fi
     if $isDeleteMode;then
         #参耦校验
         [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
@@ -996,6 +992,10 @@ ftIniEditUtil()
         [ -z "$keyName" ] && errorContent="${errorContent}\\n[缺少必要参数]keyName=$keyName"
         [ -z "$keyValue" ] && errorContent="${errorContent}\\n[缺少必要参数]keyValue=$keyValue"
         [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
+        if [[ -n $keyValue ]] && (( $# > 5 ));then
+            shift;shift;shift;shift
+            keyValue="$@"
+        fi
 
         #add tag
         if [[ -z $(grep -sn $tagNameFlag $filePathIni) ]];then
