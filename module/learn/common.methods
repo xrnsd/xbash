@@ -246,7 +246,7 @@ ftFormatLessonContentAnarchyUnbound()
     done
 }
 
-complete -W "-h --help" ftText2Mp3ByLesson
+complete -W "-h --help sentence imitate" ftText2Mp3ByLesson
 ftText2Mp3ByLesson()
 {
     local ftEffect=TextToAudioMediaFileByLessonContent
@@ -255,30 +255,33 @@ ftText2Mp3ByLesson()
     #argument init
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
 
-    local valCount=2 errorContent arg arg2
+    local valCount=3 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # help infoumation ==============
         -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
 #=========================================================
-#    ftText2Mp3ByLesson LessonGroupName LessonName
+#    ftText2Mp3ByLesson LessonGroupName LessonName sentence/imitate
 #========================================================="; return ;;
     * ) ;; esac;done
 
     # argument infoumation ==============
     local LessonGroupName=$1
     local LessonName=$2
+    local contentType=$3
 
     #argument check
     (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
-    [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftText2Mp3ByLesson -h && return $resultFail
+    [ -n "$errorContent" ] && ftEcho -e "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftText2Mp3ByLesson -h && return $resultFail
+    [[ -z $contentType ]] && contentType="sentence"
 
     #code main
     local dirPathTempEng=$(ftIniEditUtil -r  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local dirPathLesson="${dirPathTempEng}/${LessonGroupName}/${LessonName}"
-    local dirPathLessonAudio="${dirPathTempEng}/${LessonGroupName}/${LessonName}/sentence.audio_english"
-    local filePathLessonText="${dirPathTempEng}/${LessonGroupName}/${LessonName}/sentence.text_english"
+    local dirPathLessonAudio="${dirPathTempEng}/${LessonGroupName}/${LessonName}/${contentType}.audio_english"
+    local filePathLessonText="${dirPathTempEng}/${LessonGroupName}/${LessonName}/${contentType}.text_english"
 
+    [[ ! -d $dirPathLessonAudio ]] && mkdir $dirPathLessonAudio
     ftText2Mp3 -fpt "${filePathLessonText}" -dpm "${dirPathLessonAudio}"
 }
 
