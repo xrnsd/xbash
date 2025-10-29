@@ -829,7 +829,7 @@ ftIniEditUtil()
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathIni=$2 tagName=$3 keyName=$4 keyValue="${5}"
-    local tagNameFlag="\[${tagName}\]" keyNameFlag="${keyName}\="
+    local tagNameFlag="^\[${tagName}\]$" keyNameFlag="${keyName}\="
     local isWriteMode=true isReadMode=false isDeleteMode=false is isWriteMode=false
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
         # 说明参数解析部分==============
@@ -861,27 +861,24 @@ ftIniEditUtil()
         #[ -z "$keyName" ] && errorContent="${errorContent}\\n[缺少必要参数]keyName=$keyName"
         [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
 
-        local indexStart=$(sed -n "/\[${tagName}\]/=" $filePathIni)
-        [[ -z $indexStart ]] && return
-        local lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni | sed s/[[:space:]]//g)
-
-        if [[ "${lineContent}" != "[${tagName}]" ]]; then
-            indexStart=$(grep -wn "${tagName}" $filePathIni | awk -F: '{print $1}')
-            lineContent=$(awk 'NR=="'$indexStart'"' $filePathIni)
-            [[ "${lineContent}" != "[${tagName}]" ]] && ftEcho -e "找不到TAG:${tagName}对应的行" && return
-        fi
+        #check tag
+        local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | awk -F: '{print $1}')
+        [[ -z $lineNumTag ]] && return
+        (( ${#lineNumTag} > 1 )) && return
+        local lineContent=$(awk 'NR=="'$lineNumTag'"' $filePathIni | sed s/[[:space:]]//g)
+        [[ -z $lineContent ]] || [[ "${lineContent}" != "[${tagName}]" ]] && return
 
         #del tag
         if [ -z "$keyName" ];then
             while true; do
-                sed -i "${indexStart}d" $filePathIni
-                [[ -z $(awk 'NR=="'$indexStart'"' $filePathIni) ]] && break
+                sed -i "${lineNumTag}d" $filePathIni
+                [[ -z $(awk 'NR=="'$lineNumTag'"' $filePathIni) ]] && break
             done
             return
         fi
 
         #del key
-        local indexCheck=$indexStart isDelMultilineFormattedContent=false
+        local indexCheck=$lineNumTag isDelMultilineFormattedContent=false
         while true; do
             ! $isDelMultilineFormattedContent && ((indexCheck+=1))
             lineContent=$(awk 'NR=="'$indexCheck'"' $filePathIni)
@@ -912,15 +909,10 @@ ftIniEditUtil()
         [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
 
         #check tag
-        local lineNumTag=$(sed -n "/\[${tagName}\]/=" $filePathIni)
-        [[ -z $lineNumTag ]] && return
+        local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | awk -F: '{print $1}')
+        [[ -z $lineNumTag ]] || (( ${#lineNumTag[@]} > 1 ))&& return
         local lineContent=$(awk 'NR=="'$lineNumTag'"' $filePathIni | sed s/[[:space:]]//g)
-
-        if [[ "${lineContent}" != "[${tagName}]" ]]; then
-            lineNumTag=$(grep -wn "${tagName}" $filePathIni | awk -F: '{print $1}')
-            lineContent=$(awk 'NR=="'$lineNumTag'"' $filePathIni)
-            [[ "${lineContent}" != "[${tagName}]" ]] && return
-        fi
+        [[ -z $lineContent ]] || [[ "${lineContent}" != "[${tagName}]" ]] && return
 
         # #check key
         keyName=($keyName)
@@ -992,42 +984,47 @@ ftIniEditUtil()
         [ -z "$keyName" ] && errorContent="${errorContent}\\n[缺少必要参数]keyName=$keyName"
         [ -z "$keyValue" ] && errorContent="${errorContent}\\n[缺少必要参数]keyValue=$keyValue"
         [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
-        if [[ -n $keyValue ]] && (( $# > 5 ));then
-            shift;shift;shift;shift
-            keyValue="$@"
-        fi
+        # if [[ -n $keyValue ]] && (( $# > 5 ));then
+        #     shift;shift;shift;shift
+        #     keyValue="$@"
+        # fi
 
+        local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | awk -F: '{print $1}')
+        
         #add tag
-        if [[ -z $(grep -sn $tagNameFlag $filePathIni) ]];then
+        if [[ -z $lineNumTag ]];then
             local enterLine="\n"
             echo  -e  ${enterLine} \
                      "[$tagName]"${enterLine} \
                      "${keyName}=${keyValue}"${enterLine} \
                       >> $filePathIni
             return
-        #add key
-        elif [[ -z $(ftIniEditUtil -r "${filePathIni}" "${tagName}" "${keyName}") ]];then
-            local indexStart=$(sed -n "/\[${tagName}\]/=" $filePathIni)            
-            local lineContent indexCheck=$indexStart
+        else
+            local lineContent indexCheck=$lineNumTag
             while true; do
                 ((indexCheck+=1))
                 lineContent=$(awk 'NR=="'$indexCheck'"' $filePathIni)
-                [[ -z $lineContent ]] && break
+
+                #add key
+                if [[ -z $lineContent ]];then
+                    echo -e "\n" >> $filePathIni
+                    sed  -i "${indexCheck}i ${keyName}=${keyValue[@]}" $filePathIni
+                    return
+                fi
+
+                #change key
+                if [[ "${lineContent}" =~ ^${keyName}=.* ]];then
+                    [[ "${keyName}" == *"/"* ]] && keyName="$(echo "${keyName}" |sed s/[[:space:]]//g | sed "s / \\\\/ g" )"
+                    [[ "${keyName}" == *":"* ]] && keyName="$(echo "${keyName}" |sed s/[[:space:]]//g | sed "s : \\\: g" )"
+                    [[ "${keyValue}" == *"/"* ]] && keyValue="$(echo "${keyValue}" | sed "s:/:\\\/:g" )"
+                    [[ "${keyValue}" == *":"* ]] && keyValue="$(echo "${keyValue}" | sed s/:/\\\\:/g )"
+
+                    sed -i "/^\[$tagName\]/,/^\[/ {/^\[$tagName\]/b;/^\[/b;s:^$keyName=.*:$keyName=$keyValue:g;}" $filePathIni
+                    return
+                fi
             done
-            keyName="${keyName}="
-
-            echo -e "\n" >> $filePathIni
-
-            sed  -i "${indexCheck}i ${keyName}${keyValue[@]}" $filePathIni
-        #change key
-        else
-            if [[ -n $(echo "${keyName}" | grep -sn "\/") ]];then
-                local keyNameTemp=$(echo "${keyName}" |sed s/[[:space:]]//g | sed "s / \/ g" )
-                keyName="${keyNameTemp}"
-            fi
-            sed -i "/^\[$tagName\]/,/^\[/ {/^\[$tagName\]/b;/^\[/b;s ^$keyName=.* $keyName=$keyValue g;}" $filePathIni
+            ftEcho -e "ftIniEditUtil write mode : unknow opeartion"
         fi
-
         return
     fi
 
