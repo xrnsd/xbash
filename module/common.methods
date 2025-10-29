@@ -863,8 +863,7 @@ ftIniEditUtil()
 
         #check tag
         local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | awk -F: '{print $1}')
-        [[ -z $lineNumTag ]] && return
-        (( ${#lineNumTag} > 1 )) && return
+        [[ -z $lineNumTag ]] || (( ${#lineNumTag[@]} > 1 )) && return
         local lineContent=$(awk 'NR=="'$lineNumTag'"' $filePathIni | sed s/[[:space:]]//g)
         [[ -z $lineContent ]] || [[ "${lineContent}" != "[${tagName}]" ]] && return
 
