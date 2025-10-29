@@ -1050,6 +1050,7 @@ ftLearnLessonManage()
     local isMergeLessonGroup=false lessonGroupNameMerge isLessonApply=false isAddDailyStudyPlan=false \
           isCreateLessonAnalysisAiQuestion=false isCreateLessonImitateAiQuestion=false \
           isUpdateLessonByLinkTable=false
+    local lessonReviewSentenceAllCountCurrent
     local valCount=3 errorContent arg arg2 arg3
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))};eval arg3=\${$((i+2))}
     case "${arg}" in
@@ -1063,7 +1064,7 @@ ftLearnLessonManage()
 #                     -unle         #update lesson : needRepetionDrill/error
 #                     -unln         #update lesson : needRepetionDrill/normal                                
 #                     -m    lessonGroupName             #merge the whole lesson group to a signel lesson
-#                     -unlr lessonGroupName             #update lesson : needRepetionDrill/review
+#                     -unlr lessonGroupName 100         #update lesson : needRepetionDrill/review
 #                     -unlt lessonGroupName lessonName  #update lesson by linkTbale
 #                     -ap   lessonGroupName lessonName  #fill in the missing content of the lesson
 #                     -acla lessonGroupName lessonName  #create lesson analysis content AI question
@@ -1096,6 +1097,7 @@ ftLearnLessonManage()
                      ;;
         -unlr) isUpdateDrillLessonReview=true
                lessonGroupNameMerge="${arg2}"
+               lessonReviewSentenceAllCountCurrent="${arg3}"
                      ;;
         -unlt) isUpdateLessonByLinkTable=true
               lessonGroupNameSel="${arg2}"
@@ -1283,6 +1285,7 @@ ftLearnLessonManage()
         local dirPathDataItemBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}"
 
         for contentType in ${contentTypeList[@]}; do
+            ftEcho -sn "create linktable content : " && echo "${contentType}"
             
             #check
             local filePathDataItemLinkTable="${dirPathDataItemBasic}/${contentType}.link_table"
@@ -1584,84 +1587,97 @@ ftLearnLessonManage()
     if $isUpdateDrillLessonReview;then
         [[ -z $lessonGroupNameMerge ]] && ftEcho -e "lessonGroupName is null" && return
         [[ "${lessonGroupNameMerge}" = "needRepetionDrill" ]] && ftEcho -s "cancel recreate lesson" && return
+        local dirPathLessonGroup="${dirPathTempEng}/${lessonGroupNameMerge}"
+        [[ ! -d "${dirPathLessonGroup}" ]] && ftEcho -s "lesson group ${lessonGroupNameMerge} is not exist" && return
+        
+        ftEcho -sn "recreate lesson review by lesson group:" && echo "${lessonGroupNameMerge}"
 
-        local lessonReviewSentenceAllCount=$(ftIniEditUtil -r  $filePathLearnDataBase needRepetionDrill lessonReviewSentenceAllCount)
+        [[ -z $lessonReviewSentenceAllCountCurrent ]] && lessonReviewSentenceAllCountCurrent=$(ftIniEditUtil -r  $filePathLearnDataBase needRepetionDrill lessonReviewSentenceAllCountNormal)
         local dirPathLessonNeedRepetionDrillReview="${dirPathTempEng}/needRepetionDrill/review"
-        local filePathLessonNeedRepetionDrillReviewSTLT="${dirPathLessonNeedRepetionDrillReview}/sentence.link_table"
-        local lineIndex=1 lineNum 
+        local dirPathLesson dirPathArrayLesson dirParhLessonCDR dirParhLessonCAE filePathLessonCTE filePathLessonCTC filePathLessonCTA filePathLessonCDR
+        local fileSizeLessonCTE fileSizeLessonCTC
+        local lessonIndexReal lessonName itemIndexArrayShuf itemIndexReal itemLine itemLineLoadCount itemLineLoadAllCount
+        local lessonIndexFlag lessonCount lessonSentenceLoadCount lessonLoadCount lessonIndexArrayShuf
+        local filePathLessonReviewCTLT contentTypeList=("sentence imitate")
+        local dirPathLocal=$(pwd)
 
         rm -rf ${dirPathLessonNeedRepetionDrillReview}
         mkdir ${dirPathLessonNeedRepetionDrillReview}
-        touch ${filePathLessonNeedRepetionDrillReviewSTLT}
+        cd ${dirPathLessonGroup}
+        for contentType in ${contentTypeList[@]}; do
 
-        local dirPathLessonGroup dirPathLesson dirPathArrayLesson fileArrayDrillResult
-        local dirParhLessonSDR dirParhLessonSAE filePathLessonSTE filePathLessonSTC filePathLessonSTA
-        local sentenceIndexArrayShuf
-            
-        dirPathLessonGroup="${dirPathTempEng}/${lessonGroupNameMerge}"
-        dirPathArrayLesson=($(find "${dirPathLessonGroup}" -name "sentence.drill_result" | sed "s ${dirPathLessonGroup}/   g" | sed "s /sentence.drill_result   g"))
-        [[ -z $dirPathArrayLesson ]] &&\
-        ftEcho -en "invald lesson group:" &&echo "${lessonGroup}" && continue
-        ftEcho -sn "recreate lesson review by lesson group:" && echo "${lessonGroupNameMerge}"
+            dirPathArrayLesson=($(find . -name "${contentType}.drill_result" | awk -F/ '{gsub("\t","",$2); print $2}'))
+            [[ -z $dirPathArrayLesson ]] &&\
+            ftEcho -en "invald lesson group content type:" &&echo "${contentType}" && continue
 
-        local lessonCount=${#dirPathArrayLesson[@]}
-        local lessonIndexFlag=$((lessonCount-1))
-        local lessonIndexArrayShuf=($(seq 0 $lessonIndexFlag | shuf))
-        local fileSizeLessonSTE fileSizeLessonSTC
-        local lessonIndexReal lessonName sentenceIndexReal sentenceLine sentenceLineLoadCount=0 sentenceLineLoadAllCount=0
-        local lessonSentenceLoadCount=$(( $lessonReviewSentenceAllCount/$lessonCount )) sentenceWrodCount
-        (( $(($lessonReviewSentenceAllCount%$lessonCount)) > 0 )) && (( lessonSentenceLoadCount+=1 ))
+            lessonLoadCount=0
+            itemLineLoadCount=0
+            itemLineLoadAllCount=0
+            lessonCount=${#dirPathArrayLesson[@]}
+            lessonIndexFlag=$((lessonCount-1))
+            lessonIndexArrayShuf=($(seq 0 $lessonIndexFlag | shuf))
+            lessonSentenceLoadCount=$(( $lessonReviewSentenceAllCountCurrent/$lessonCount ))
+            (( $(($lessonReviewSentenceAllCountCurrent%$lessonCount)) > 0 )) && (( lessonSentenceLoadCount+=1 ))
 
-        local lessonLoadCount=0 filePathLessonSDR
-        #echo "lessonCount=${lessonCount}"
-        #echo "lessonIndexFlag=${lessonIndexFlag}"
-        #echo "dirPathArrayLesson=${dirPathArrayLesson[@]}"
-        #echo "lessonIndexArrayShuf=${lessonIndexArrayShuf[@]}"
-        for (( i = 0; i < $lessonCount; i++ )); do
-            lessonIndexReal=${lessonIndexArrayShuf[$i]}
-            lessonName=${dirPathArrayLesson[$lessonIndexReal]}
-            dirPathLesson="${dirPathLessonGroup}/${lessonName}"
+            # echo "lessonCount=${lessonCount}"
+            # echo "lessonSentenceLoadCount=${lessonSentenceLoadCount}"
+ 
+            filePathLessonReviewCTLT="${dirPathLessonNeedRepetionDrillReview}/${contentType}.link_table"
+            touch ${filePathLessonReviewCTLT}
 
-            [[ -n $(find ${dirPathTempEng}/${lessonGroupNameMerge}/${lessonName} -name *.text_chinese |xargs grep -sn "\/") ]] || \
-            [[ -n $(find ${dirPathTempEng}/${lessonGroupNameMerge}/${lessonName} -name *.text_english |xargs grep -sn "\/") ]] && \
-            ftEcho -en "data content is invald:" && ehco " / \nlesson group: ${lessonGroupNameMerge}/${lessonName}" && \
-            break
+            local isFinishLoadConent=false
 
-            #echo "i=${i}"
-            #echo "lessonIndexReal=${lessonIndexReal}"
-            #echo "dirPathLesson=${dirPathLesson}"
-            dirParhLessonSDR="${dirPathLesson}/sentence.drill_result"
-            filePathLessonSTE="${dirPathLesson}/sentence.text_english"
-            filePathLessonSTC="${dirPathLesson}/sentence.text_chinese"
+            for (( i = 0; i < $lessonCount; i++ )); do
+                lessonIndexReal=${lessonIndexArrayShuf[$i]}
+                lessonName=${dirPathArrayLesson[$lessonIndexReal]}
+                dirPathLesson="${dirPathLessonGroup}/${lessonName}"
 
-            #check lesson data valid
-            [[ ! -f ${filePathLessonSTE} ]] && echo -e "invalid lesson:${lessonName}" && continue
-            [[ ! -d ${dirParhLessonSDR} ]] || [[ -z $(ls $dirParhLessonSDR) ]] && echo -e "invalid drll result:${lessonName}\n--------------------------+++++++++++++++++++" && continue
-            fileSizeLessonSTC=$(sed -n '$=' $filePathLessonSTC)
-            fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
-            (( $fileSizeLessonSTC != $fileSizeLessonSTE )) && ftEcho -e "invalid lesson:${lessonName}" && continue
+                [[ -n $(find ${dirPathTempEng}/${lessonGroupNameMerge}/${lessonName} -name *.text_chinese |xargs grep -sn "\/") ]] || \
+                [[ -n $(find ${dirPathTempEng}/${lessonGroupNameMerge}/${lessonName} -name *.text_english |xargs grep -sn "\/") ]] && \
+                ftEcho -en "data content is invald:" && ehco " / \nlesson group: ${lessonGroupNameMerge}/${lessonName}" && \
+                break
 
-            sentenceIndexArrayShuf=($(seq 1 $fileSizeLessonSTE | shuf))
+                dirParhLessonCDR="${dirPathLesson}/${contentType}.drill_result"
+                filePathLessonCTE="${dirPathLesson}/${contentType}.text_english"
+                filePathLessonCTC="${dirPathLesson}/${contentType}.text_chinese"
 
-            ((lessonLoadCount+=1))
-            for (( sentenceIndex = 0; sentenceIndex < $fileSizeLessonSTE; sentenceIndex++ )); do
-                sentenceIndexReal=${sentenceIndexArrayShuf[$sentenceIndex]}
-                sentenceLine=$(awk 'NR=="'$sentenceIndexReal'"' $filePathLessonSTE)
-                [[ -z $sentenceLine ]] && continue
-                filePathLessonSDR=${dirParhLessonSDR}/${sentenceIndexReal}.result
-                [ ! -f "${filePathLessonSDR}" ] || [ ! -s "${filePathLessonSDR}" ] && continue
-                (( $sentenceLineLoadCount == $lessonSentenceLoadCount )) && sentenceLineLoadCount=0 && break
-                (( sentenceLineLoadCount+=1  ))
-                (( sentenceLineLoadAllCount+=1  ))
+                #check lesson data valid
+                [[ ! -f ${filePathLessonCTE} ]] && echo -e "invalid lesson:${lessonName}" && continue
+                [[ ! -d ${dirParhLessonCDR} ]] || [[ -z $(ls $dirParhLessonCDR) ]] &&\
+                    #echo -e "invalid drll result:${lessonName}\n--------------------------+++++++++++++++++++" &&\
+                    continue
+                fileSizeLessonCTC=$(sed -n '$=' $filePathLessonCTC)
+                fileSizeLessonCTE=$(sed -n '$=' $filePathLessonCTE)
+                (( $fileSizeLessonCTC != $fileSizeLessonCTE )) && ftEcho -e "invalid lesson:${lessonName}" && continue
 
-                echo "${lessonGroupNameMerge}/${lessonName}/${sentenceIndexReal}" >> $filePathLessonNeedRepetionDrillReviewSTLT
+                itemIndexArrayShuf=($(seq 1 $fileSizeLessonCTE | shuf))
 
-                (( $sentenceLineLoadAllCount >= $lessonReviewSentenceAllCount )) && \
-                ftLearnLessonManage -unlt needRepetionDrill review &&\
-                ftEcho -s "recreate review finish" &&\
-                return
+                ((lessonLoadCount+=1))
+                for (( itemIndex = 0; itemIndex < $fileSizeLessonCTE; itemIndex++ )); do
+                    itemIndexReal=${itemIndexArrayShuf[$itemIndex]}
+                    itemLine=$(awk 'NR=="'$itemIndexReal'"' $filePathLessonCTE)
+                    [[ -z $itemLine ]] && continue
+                    filePathLessonCDR=${dirParhLessonCDR}/${itemIndexReal}.result
+                    [ ! -f "${filePathLessonCDR}" ] || [ ! -s "${filePathLessonCDR}" ] && continue
+                    (( $itemLineLoadCount == $lessonSentenceLoadCount )) && itemLineLoadCount=0 && break
+                    (( itemLineLoadCount+=1  ))
+                    (( itemLineLoadAllCount+=1  ))
+
+                    echo "${lessonGroupNameMerge}/${lessonName}/${itemIndexReal}" >> $filePathLessonReviewCTLT
+
+                    (( $itemLineLoadAllCount >= $lessonReviewSentenceAllCountCurrent )) && \
+                    isFinishLoadConent=true &&\
+                    break
+                done
+                $isFinishLoadConent && break
             done
+            ftEcho -sn "recreate review's " && echo "${contentType}"
         done
+
+        cd "${dirPathLocal}"
+        ftLearnLessonManage -unlt needRepetionDrill review
+        ftEcho -s "recreate review finished"
+        return
     fi
     if $isUpdate; then
         local dirPathLessonGroup dirPathArrayLesson
