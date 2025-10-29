@@ -934,8 +934,7 @@ ftLearnRepetionDrill()
 
     #save drill status
     local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
-    ftIniEditUtil -w $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}" "${learnLessonListDrilled[*]} $lessonNameSel" #-l \
-        #"$(echo "${learnLessonListDrilled[@]} $lessonNameSel" | sed 's/ /\n/g'| uniq)"
+    ftIniEditUtil -w $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}" "$(echo "${learnLessonListDrilled[*]} $lessonNameSel" | uniq)" #uniq:to del repeating item
 
     #clean temp drill cache
     [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
@@ -1445,7 +1444,7 @@ ftLearnLessonManage()
         \n要求2：文章中每个句子无需原文开头也无需添加特殊符号。\
         \n要求3：文章中每行开头无需原文开头也无需添加特殊符号。\
         \n要求4：文章中不要出现课文没有的语法。\
-        \n要求5：文章的内容尽可能使用和课文内容类似的短语和单词。\
+        \n要求5：文章的内容尽可能使用和课文内容类似但不同的短语和单词。\
         \n要求6：给出英文文章后同时给一个排版一样的简体中文翻译。" >> $filePathLessonSTETempAlQuestion
         cat ${filePathLessonSTETempAlQuestion}| xclip -sel clip
         cat ${filePathLessonSTETempAlQuestion}
