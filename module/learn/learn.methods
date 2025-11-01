@@ -225,7 +225,9 @@ ftLearnRepetionDrill()
     local filePathDataItemContentTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis"
     local filePathDataItemContentTextProblem="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_problem"
     local filePathDataItemContentLinkTable="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.link_table"
+
     local filePathDataItemArticleTextExplain="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_explain"
+    local filePathDataItemArticleMarkDownExplain="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.md"
     local filePathDataItemArticleVideoExplain="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.mp4"
 
     clear
@@ -270,8 +272,19 @@ ftLearnRepetionDrill()
         englishItemLength=${#englishItem}
 
         if $isModePreview && [[ "$contentType" = "article" ]];then
-            gedit $filePathDataItemArticleTextExplain
-            mpv $filePathDataItemArticleVideoExplain
+            if [[ -f $filePathDataItemArticleMarkDownExplain ]];then
+                marktext $filePathDataItemArticleMarkDownExplain
+            elif [[ -f $filePathDataItemArticleTextExplain ]];then
+                gedit $filePathDataItemArticleTextExplain
+            else
+                ftEcho -e "can't find filePathDataItemArticleTextExplain=${filePathDataItemArticleTextExplain}"
+            fi
+
+            if [[ -f $filePathDataItemArticleVideoExplain ]];then
+                mpv $filePathDataItemArticleVideoExplain
+            else
+                ftEcho -e "can't find filePathDataItemArticleVideoExplain=${filePathDataItemArticleVideoExplain}"
+            fi
 
         elif $isModeWrite;then
             local filePathTempWriteDrillText=/tmp/TempWriteDrillText
@@ -552,6 +565,8 @@ ftLearnRepetionDrill()
         #clearn drill files
         echo -n "" > ${filePathLearnDrillTemp}
         #drillResltItem="$(cat $filePathItemSentenceEnglishDrillResult)"
+
+        linkInfo=
         [ -f ${filePathDataItemContentLinkTable} ] && linkInfo=$(awk 'NR=="'$indexSort'"' ${filePathDataItemContentLinkTable})
         [[ -z $linkInfo ]] && $isModeReview && ftEcho -e "invalid item index ${indexSort}" && continue
         [[ -z $linkInfo ]] && linkInfo="${lessonGroupNameSel}/${lessonNameSel}/${indexSort}"
