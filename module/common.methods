@@ -325,6 +325,7 @@ ftEcho()
 #    ftEcho           内容       # 直接显示内容
 #    ftEcho    -b     内容       # 标题，不换行，对字符串的缩进敏感
 #    ftEcho    -bh    内容       # 标题，换行，对字符串的缩进敏感
+#    ftEcho    -bl    内容       # 标题，换行，对字符串的缩进敏感
 #    ftEcho    -e     内容       # 错误信息显示，对字符串的缩进敏感
 #    ftEcho    -en    内容       # 错误信息显示，对字符串的缩进敏感
 #    ftEcho    -ex    内容       # 错误信息显示，显示完退出，对字符串的缩进敏感
@@ -395,6 +396,7 @@ ftEcho()
         -iow )  zenity --entry --title "${title}" --text "${content}" ; break;;
         -b )     echo -e "\e[41;33;1m =========== $content ============= \e[0m"; break;;
         -bh )    echo;echo -e "\e[41;33;1m =========== $content ============= \e[0m";echo; break;;
+        -bl )    echo -e "------------------\n${content}\n------------------"; break;;
         -y )     echo;echo -en "${content}[y/n]"; break;;
         -yn )    echo -en "${content}[y/n]"; break;;
         -ye )    echo -en "${content}[y/n]"; break;;
