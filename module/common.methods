@@ -4156,7 +4156,7 @@ ftEdgeTTs()
     # bash -c "espeak -s100 -g20 -p80 -v english-us \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\""
 }
 
-complete -W "-h --help --rely_install -fpt -dpm -txt -fpm" ftText2Mp3
+complete -W "-h --help --rely -fpt -dpm -txt -fpm -speed" ftText2Mp3
 ftText2Mp3()
 {
     local ftEffect="Text generates audio files"
@@ -4166,10 +4166,10 @@ ftText2Mp3()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local filePathText dirPathMp3
-    local textContxt filePathMp3
-    local valCount=4 errorContent arg arg2 # arg3 # arg4
+    local textContxt filePathMp3 speedVal
+    local valCount=6 errorContent arg arg2 # arg3 # arg4
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -4194,17 +4194,13 @@ ftText2Mp3()
             ;;
         -fpm ) filePathMp3="${arg2}"
             ;;
-    * ) ;; esac;done
+        -speed ) speedVal="${arg2}"
+            ;;
+        * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
-    #参数校验
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
-    case "$1" in
-        -h | --help | --rely_install | -fpt | -dpm | -txt | -fpm)
-            ;;
-        *)   errorContent="${errorContent}\\n无效参数:${1}"
-            ;;
-    esac
 
     [ ! -d "${dirPathMp3}" ] && mkdir -p $dirPathMp3
     [ ! -d "${dirPathPythonVirtualEnvironment}" ] && errorContent="${errorContent}\\n[环境异常,目录不存在]:${dirPathPythonVirtualEnvironment}"
@@ -4230,7 +4226,8 @@ ftText2Mp3()
           lineContent=$(awk 'NR=="'$lineIndex'"' $filePathText)
           [[ -z "$lineContent" ]] && ftEcho -s "empty line :${lineIndex}" && (( lineIndex+=1 )) && continue
           ftEcho -s "正在生成line:${lineIndex}=\"${lineContent}\"的音频文件"
-          edge-tts --text "${lineContent}" --write-media "${dirPathMp3}/${lineIndex}.mp3"
+          [[ -n $speedVal ]] && edge-tts --text "${lineContent}" --rate=${speedVal}%  --write-media "${dirPathMp3}/${lineIndex}.mp3" \
+                             || edge-tts --text "${lineContent}" --write-media "${dirPathMp3}/${lineIndex}.mp3"
 
           (( $sleepIndex==$sleepIndexFlag )) && sleep $sleepTime && sleepIndex=0
           (( sleepIndex+=1 ))

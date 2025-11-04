@@ -30,7 +30,7 @@ ftLearnRepetionDrill()
     local dirPathTempEng=$(ftIniEditUtil -r  $rFilePathXbashDBUser learnConfigInfo dirPathRootExampleSentence)
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
     local contentType operateMode
-    local isShowChineseTips=true isShowEnglishTips=true 
+    local isShowChineseTips=true isShowEnglishTips=true isPlayChineseTips=false
     local isUsePlan=false isOperateTextEdit=false isOperateAutoBcompare=false isOperatePlayAudio=false
     local valCount=7 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
@@ -41,10 +41,10 @@ ftLearnRepetionDrill()
 #    ftLearnRepetionDrill -h/--help     #view help
 #    #standalone operation
 #    ftLearnRepetionDrill -te    #drill by text editor
-#                         -pl    #play audio
 #                         -up    #use plan
 #                         -htc   #drill by hide chinese tips
 #                         -hte   #drill by hide english tips
+#                         -pl    en/cn     #play audio
 #    #content type
 #    ftLearnRepetionDrill --type article   #using text exercises
 #                                sentence  #using sentence exercises
@@ -66,10 +66,11 @@ ftLearnRepetionDrill()
         -te ) isOperateTextEdit=true
               operateMode="${operateMode}T"
             ;;
-        -pl ) isOperatePlayAudio=true
+        -pl ) [[ -z $(which play) ]] && ftLearnRepetionDrill --rely "sox" && return $resultFail
+              [[ -z $(which xclip) ]] && ftLearnRepetionDrill --rely "xclip" && return $resultFail 
+              isOperatePlayAudio=true
               operateMode="${operateMode}L"
-              [[ -z $(which play) ]] && ftLearnRepetionDrill --rely "sox" && return $resultFail
-              [[ -z $(which xclip) ]] && ftLearnRepetionDrill --rely "xclip" && return $resultFail
+              [[ "${arg2}" == "cn" ]] && isPlayChineseTips=true
             ;;
         -up ) isUsePlan=true
             ;;
@@ -81,6 +82,7 @@ ftLearnRepetionDrill()
     (( $#>$valCount )) && errorContent="${errorContent}\\nThe maximum number of parameters is ${valCount}, now it is $#"
     [[ -z "$contentType" ]] && errorContent="${errorContent}\\ncontentType is not configed"
     [[ -n "$errorContent" ]] && ftEcho -e "${errorContent}:" && ftLearnRepetionDrill -h && return $resultFail
+    $isPlayChineseTips && isShowChineseTips=true
 
     local filePathLearnDataBase="${dirPathTempEng}/local.database"
     local filePathLearnDataBaseFailTime="${dirPathTempEng}/fail_time_${contentType}.database"
@@ -171,6 +173,9 @@ ftLearnRepetionDrill()
 
     #selected lesson
     local dirPathDataItemAudioFile="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.audio_english"
+    $isPlayChineseTips && dirPathDataItemAudioFile="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.audio_chinese"
+    $isPlayChineseTips && [[ ! -d $dirPathDataItemAudioFile ]] && mkdir dirPathDataItemAudioFileir $dirPathDataItemAudioFile
+
     local dirPathDataItemTextDrillResult="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.drill_result"
     local dirPathDataItemTextDrillResult="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.drill_result"
     local filePathDataItemContentTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
@@ -543,8 +548,15 @@ ftLearnRepetionDrill()
         if [[ ! -f $filePathItemAudioFile ]]; then
             local filePathText=/tmp/audioTemp.text
             local dirPathMp3=/tmp
-            echo "$englishItem" > $filePathText
-            ftText2Mp3 -fpt "${filePathText}" -dpm "${dirPathMp3}"
+
+            $isPlayChineseTips \
+            && echo "$chineseItem" > $filePathText \
+            || echo "$englishItem" > $filePathText
+
+            $isPlayChineseTips \
+            && ftText2Mp3 -fpt "${filePathText}" -dpm "${dirPathMp3}" -speed +40 \
+            || ftText2Mp3 -fpt "${filePathText}" -dpm "${dirPathMp3}"
+            
             mv "${dirPathMp3}/1.mp3" "${filePathItemAudioFile}"
         fi
         [ -f ${filePathDataItemContentTextAnalysis} ] && contentAnalysis=$(awk 'NR=="'$indexSort'"' $filePathDataItemContentTextAnalysis)
