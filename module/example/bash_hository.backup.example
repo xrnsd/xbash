@@ -1,0 +1,32 @@
+#!/bin/bash
+
+ftBashHistoryBackup()
+{
+    local ftEffect="backup bash's hository"
+
+    #code main
+    [[ -z $(which tail) ]] && echo -e "tail isn't installed" && return
+
+    #local filePathBashHistory=${dirPathHome}/.bash_history
+    local filePathBashHistory=$1
+    #local filePathBackupStorageBashHistory=$(ftXbGetValue xbash filePathBackupStorageBashHistory)
+    local filePathBackupStorageBashHistory=$2
+    [[ -z "$filePathBackupStorageBashHistory" ]] && echo -ea "filePathBackupStorageBashHistory is null" && return $resultFail
+
+    local filePathTempMergeBashHistory=/tmp/bashHistoryTempMerge.txt
+    local countFlag=30 countInex=0
+    tail -f $filePathBashHistory | while read line;do
+        echo "${line}" >> $filePathTempMergeBashHistory
+
+        if (( countInex++ >= countFlag ));then
+            echo "" >> $filePathTempMergeBashHistory
+            cat $filePathBackupStorageBashHistory >> $filePathTempMergeBashHistory
+            sort -u $filePathTempMergeBashHistory > $filePathBackupStorageBashHistory
+
+            echo "" > $filePathTempMergeBashHistory
+            countInex=0
+        fi
+    done
+}
+
+ftBashHistoryBackup "file path bash history" "file path bash history backup" &
