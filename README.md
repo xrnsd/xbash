@@ -38,7 +38,7 @@ bash的简单扩展
           ├── example     -----------------------  用于存放模版,该模块无需在main中初始化
           │    ├── user.config.expmale  ---------  用户xbash配置模版
           │    ├── test.module.example  ---------  测试工具的模版
-          │    ├── multiBranch.module.example ---  添加gitPatch[多分支]的模版
+          │    ├── multi_branch.module.example ---  添加gitPatch[多分支]的模版
           │    ├── user.packaging.module.example   xbash对扩展和内置命令的封装模版
           │    ├── proguard-rules.pro.example --   混淆配置文件模版
           │    └── user.database.example  -------  xbash的用户数据库的模版
@@ -48,7 +48,7 @@ bash的简单扩展
           └── git
                ├── git.methods  -----------------  git自定义的bash扩展
                ├── git_completion.methods  ------  git非自定义的bash扩展
-               └── multiBranch.module.example ---  批量添加patch的工具的示例
+               └── multi_branch.module.example ---  批量添加patch的工具的示例
 
 3.其他说明
 ----------

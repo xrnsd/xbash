@@ -174,7 +174,7 @@ fi
     #加载 git module[非自定义]
     ftLoadGitCompletion
     #处理bash历史记录
-    ftBashHistory
+    #ftBashHistory &
     #校验用户配置和模版版本一致性
     ftCheckUserConfig
     #校验用户数据库和模版版本一致性
