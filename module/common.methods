@@ -89,7 +89,7 @@ ftResetXbash()
     export isResetJdk= isResetGcc= isResetCcache= isResetXbash=true targetSdkVersionForce=
     local dirPathCode dirPathLocal=$(pwd)  filePathHomeBash=~/.bashrc
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}}  ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -130,7 +130,9 @@ ftResetXbash()
             export isResetGcc=true
             export isResetJdk=true
           ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
     [ ! -f "$filePathXbashTragetBashrcConfigProfile" ] && errorContent="${errorContent}\\n[配置文件不存在]filePathXbashTragetBashrcConfigProfile=$filePathXbashTragetBashrcConfigProfile"
     [ ! -f "$filePathHomeBash" ] && errorContent="${errorContent}\\n[bash入口文件不存在]filePathHomeBash=$filePathHomeBash"
@@ -318,7 +320,7 @@ ftEcho()
     local isContentApplyBySuffix=false applyContent listApply
     local isContentHighlight=false highlightContent
 
-    local arg arg2 arg3 arg4 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))};eval arg4=\${$((i+3))} ; case "${arg}" in
+    local arg arg2 arg3 arg4 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))};eval arg4=\${$((i+3))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -577,7 +579,7 @@ ftTimeConsuming()
     #解参验耦
     local contentName="the opeartion"
     local arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         -i ) mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
           ;;
         -r ) contentName="${arg2:-"$contentName"}"
@@ -586,7 +588,9 @@ ftTimeConsuming()
             contentName="${arg2:-"$contentName"}"
             [ -z "$mTimingStart" ] && ftEcho -e "time opeartion error" && return
           ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     [ -z "$mTimingStart" ]||[ "$1" = "-i" ] && mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
 
     local content timeNow=$(date +%s -d $(date +"%H:%M:%S"))
@@ -760,7 +764,7 @@ ftIniCreateFileOrTag()
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathIni editType contentTagName contentTagKeyValList
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -780,7 +784,9 @@ ftIniCreateFileOrTag()
         -p )   filePathIni="$arg2"                            ;;
         -t )   contentTagName="$arg2"                 ;;
         -l )   contentTagKeyValList="${arg2[@]}" ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     #参耦校验
     [ -z "$filePathIni" ] && errorContent="${errorContent}\\n[不知道要去那，请使用-p制定文件路径]"
     [ -z "$contentTagName" ] && errorContent="${errorContent}\\n[块名为空]contentTagName=$contentTagName"
@@ -833,7 +839,7 @@ ftIniEditUtil()
     local filePathIni=$2 tagName=$3 keyName=$4 keyValue="${5}"
     local tagNameFlag="^\[${tagName}\]$" keyNameFlag="${keyName}\="
     local isWriteMode=true isReadMode=false isDeleteMode=false is isWriteMode=false
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -853,7 +859,9 @@ ftIniEditUtil()
                ;;
         -d )   isDeleteMode=true
                ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #实现主体
     if $isDeleteMode;then
@@ -1047,7 +1055,7 @@ ftBashHistory()
     local bashHistorySize filePathBashHistory=${dirPathHome}/.bash_history
     local filePathBashHistoryArchive=${filePathBashHistory}_archive
     local filePathBashHistoryArchiveTemp=${filePathBashHistoryArchive}_temp
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -1060,7 +1068,9 @@ ftBashHistory()
             [ -f $filePathBashHistoryArchive ] && cat ${filePathBashHistoryArchive}
             return
            ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     [ ! -d $dirPathHome ]  && errorContent="${errorContent}\\n[迷路中，请稍等]dirPathHome=$，dirPathHome"
     [ ! -f $filePathBashHistory ] && errorContent="${errorContent}\\n[历史记录为空]"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniDeleteItem -h && return $resultFail
@@ -1125,7 +1135,7 @@ ftDevAvailableSpace()
 
     local dirPathTraget=$1 isReturn=$2 isFormatGbyte
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -1148,7 +1158,9 @@ ftDevAvailableSpace()
                 dirPathTraget=$2
                 isReturn=$3
             ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #可用性校验
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
@@ -1249,7 +1261,7 @@ ftInitDevicesList()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local devMinAvailableSpace=0  # 设备最小可用空间，小于则视为无效.单位M
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -1260,7 +1272,9 @@ ftInitDevicesList()
         -s )   devMinAvailableSpace="${arg2:-'0'}"
                 devMinAvailableSpace=${devMinAvailableSpace,,}
            ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     local devMinAvailableSpaceTemp=$devMinAvailableSpace
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//g/}
     devMinAvailableSpaceTemp=${devMinAvailableSpaceTemp//m/}
@@ -1399,7 +1413,7 @@ ftCleanGarbage()
     #参数解析
     ftInitDevicesList
     local isAutoExit sleepTime isNoEcho
-    local errorContent arg arg2 ;for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local errorContent arg arg2 ;for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
      --exception) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
@@ -1421,7 +1435,9 @@ ftCleanGarbage()
           ;;
         -t ) sleepTime="${arg2}"
           ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     #环境校验
     [[ "$(whoami)" != "$rUserName" ]]||[[ "$(whoami)" = "root" ]] && ftCleanGarbage --exception && return $resultFail
     [ -z "$mXbashModuleDataDevicesList" ] && errorContent="${errorContent}\\n[被清空回收站的设备的目录列表]mXbashModuleDataDevicesList=${mXbashModuleDataDevicesList[@]}"
@@ -1533,7 +1549,7 @@ ftLogcatApplicationByTag()
     #参数解析
     local flagError packageName isUserPackageName isDisTime isMoreTag isUserPackageNameAndTag isKeep isWait
     local tagContent=$1 vContent=$2
-    local arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; case "${arg}" in
+    local arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -1606,7 +1622,9 @@ ftLogcatApplicationByTag()
                 tagContent="${arg2}"
                 vContent="${arg3}"
           ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     #实现主体
     ftAdbConnect
     [[ -z "${autoTestDeviceId}" ]] && return $resultFail
@@ -1664,7 +1682,7 @@ ftMtkFlashTool()
     local isOldMode flashToolPathOld="$(ftXbGetValue MtkSpFlashToolVersion toolsPathOld)"
 
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
@@ -1685,7 +1703,9 @@ ftMtkFlashTool()
             ;;
         --old ) isOldMode=true
             ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
     [ ! -f "$flashToolPath" ] && errorContent="${errorContent}\\n[mtk下载工具不存在]flashToolPath=$flashToolPath"
     [ -n "$isOldMode" ] && [ ! -f "$flashToolPathOld" ] && errorContent="${errorContent}\\n[mtk下载工具不存在]flashToolPathOld=$flashToolPathOld"
@@ -2074,7 +2094,7 @@ ftReNameFile()
     #参数解析
     local isAutoName isAddName isAddNameEnd dirPathFileList  fileNameAddPrefix fileNameAddSuffix fileTagBase fileTagNew fileSuffixTagBase fileSuffixTagNew startNumber
     local fileNameLength=4
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; case "${arg}" in
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -2116,7 +2136,9 @@ ftReNameFile()
         -rs ) fileSuffixTagBase="${arg2}"
                 fileSuffixTagNew="${arg3}"
           ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     [ ! -d "$dirPathFileList" ]||[[ -z "$(ls $dirPathFileList)" ]] && errorContent="${errorContent}\\n[目标目录无效]$dirPathFileList"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftReNameFile -h && return $resultFail
 
@@ -2174,7 +2196,7 @@ ftMaintainSystem()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local editType
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
     --env) ftEcho -rc "${ftEffect}" " 的使用环境说明" "\
 #=========================================================
@@ -2213,7 +2235,9 @@ ftMaintainSystem()
         -s )   editType=sdFinish    ;;
         -b )   editType=backup     ;;
         -r )   editType=restore      ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     #环境校验
     [ "$(whoami)" != "root" ] && ftMaintainSystem --env && return $resultFail
     [[ -z $(which pigz) ]] && ftMaintainSystem --rely "pigz" && return $resultFail
@@ -2379,7 +2403,7 @@ ftFind()
     #参数解析
     local isSuffix nameAll pathTarget="${1}" nameList="${2}" contentKey="${3}"
     local arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -2401,7 +2425,9 @@ ftFind()
               nameList="${3}"
               contentKey="${4}"
           ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     [[ -z "$nameList" ]] && ftEcho -e "参数缺失，请确认" && ftFind -h && return $resultFail
 
@@ -2434,7 +2460,7 @@ ftPdfPasswordClear()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local dirPathTarget passwordNum
-    local valCount=4 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local valCount=4 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -2448,7 +2474,9 @@ ftPdfPasswordClear()
         # 变量参数解析部分==============
         -d ) dirPathTarget="${arg2}"    ;;
         -p ) passwordNum="${arg2}"  ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     #依赖校验
     [[ -z $(which qpdf) ]] && ftPdfPasswordClear --rely "qpdf" && return $resultFail
     #参数校验
@@ -2492,7 +2520,7 @@ ftDu()
         #解参验耦
     local dirPathTarget fileCount dirPathLocal=$(pwd)
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -2507,7 +2535,9 @@ ftDu()
             ;;
         -n ) fileCount="${arg2}"
             ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
    #参数校验
     dirPathTarget=${dirPathTarget:-"${dirPathLocal}"}
@@ -2568,7 +2598,7 @@ ftOpenNemoTab()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local dirPathTarget
-    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
     # 说明参数解析部分==============
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -2594,7 +2624,9 @@ ftOpenNemoTab()
     # 变量参数解析部分==============
     -p ) dirPathTarget="${arg2}"
       ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #依赖校验
     if [[ -z $(which xclip) ]] || [[ -z $(which wmctrl) ]] || [[ -z $(which xdotool) ]] || [[ -z $(which nemo) ]] ;then
@@ -2745,7 +2777,7 @@ ftCheckCcache()
     # 说明参数解析部分
     local isChecked
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -2769,7 +2801,9 @@ ftCheckCcache()
         # 变量参数解析部分 ==============
         -c ) isChecked=true
             ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     [[ -z $(which ccache) ]] && ftCheckCcache --rely "ccache" && return $resultFail
     [[ ! -d ${CCACHE_DEV_DIR} ]] && return $resultFail
@@ -2837,7 +2871,7 @@ ftMtkLog()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local isPull isCheck isSeparation isClearn isStop isPullMini deviceIdLocal filePathLog pathLog dirPathLogStorge fileSizeBaseMillionByte
-    local valCount=3 errorContent arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ;case "${arg}" in
+    local valCount=3 errorContent arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ;[[ $arg =~ ^\- ]] && case "${arg}" in
     # 说明参数解析部分==============
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -2897,7 +2931,9 @@ ftMtkLog()
              fileSizeBaseMillionByte="${arg3}"
              fileSizeBaseMillionByte=${fileSizeBaseMillionByte:-'2M'}
              ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #依赖校验
     [[ -z $(which adb) ]] && ftEcho -e "依赖Android的SDK中的adb,请确认是否可用" && return $resultFail
@@ -3089,7 +3125,7 @@ ftAdbConnect()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local isUseWifi isUpdateDeviceId isElevation isScreenShare isReConnectWifi
-    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
     -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -3145,7 +3181,9 @@ ftAdbConnect()
           ;;
         -e ) isElevation=true
           ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #依赖校验
     if [[ -n "${isScreenShare}" ]]; then
@@ -3311,7 +3349,7 @@ ftScrcpy()
     local isReset
     local valCount=2 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
@@ -3326,7 +3364,9 @@ ftScrcpy()
         # 变量参数解析部分 ==============
         -r ) isReset=true
             ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -3366,7 +3406,7 @@ ftPigz()
     #参数解析
     local isUnzip=false
     local dirPathTargetStorg contentTarget filrNameTarget threadCount dirPathLocal=$(pwd)
-    local valCount=5 errorContent arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; case "${arg}" in
+    local valCount=5 errorContent arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
     # 说明参数解析部分==============
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -3396,7 +3436,9 @@ ftPigz()
       ;;
     -j ) threadCount="${arg2}"
       ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #依赖校验
     [[ -z $(which pigz) ]] && ftPigz --rely "pigz" && return $resultFail
@@ -3435,7 +3477,7 @@ ftDex2Jar()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathDex filePathJar dirPathToolResign=${DIR_PATH_ANDROID_DECOMPILE}/dex2jar-2.0
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -3448,7 +3490,9 @@ ftDex2Jar()
         # 变量参数解析部分==============
         -o ) filePathJar="${arg2}" ; ;;
         -f ) filePathDex="${arg2}" ; ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     #耦合校验
     [[ ! -f "$filePathDex" ]] && errorContent="${errorContent}\\n找不到dex文件:${filePathDex}"
     [[ ! -d "$dirPathToolResign" ]] && errorContent="${errorContent}\\n找不到dex2jar工具:${dirPathToolResign}"
@@ -3475,7 +3519,7 @@ ftMD5()
 
     #参数解析
     local editType filePathVersion filePathInfo
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -3506,7 +3550,9 @@ ftMD5()
            ;;
         -p )   filePathInfo="${arg2}"
            ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
     #参耦校验
     [ -z "$editType" ] && errorContent="${errorContent}\\n[不知道要干啥]editType=$editType"
     [ "${editType}" != "onlyCreate" ] && [ ! -f "$filePathInfo" ] && errorContent="${errorContent}\\n[没有相关版本信息文件]filePathInfo=$filePathInfo"
@@ -3552,7 +3598,7 @@ ftCreateMoudleDesktop()
     #解参验耦
     local exeModuleName filePathExeModule filePathIcon
     local valCount=6 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
@@ -3567,7 +3613,9 @@ ftCreateMoudleDesktop()
             ;;
         -i ) filePathIcon="${arg2}"
             ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #参数校验
     (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -3613,7 +3661,7 @@ ftXbGetValue()
     #解参验耦
     local tagName=$1 itemName=$2
     local valCount=4 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
@@ -3621,7 +3669,9 @@ ftXbGetValue()
 #    ftXbGetValue 目标块TAG 键名
 #========================================================="; return ;;
 
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #参数校验
     (( $# > $valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个"
@@ -3650,7 +3700,7 @@ ftGetPublicIp()
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
     --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
 #    ${ftEffect}依赖包 $2
@@ -3662,7 +3712,9 @@ ftGetPublicIp()
 #
 #    ftGetPublicIp -h 
 #========================================================="; return ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #环境校验
     [[ -z $(which wget) ]] && ftGetPublicIp --rely "wget" && return $resultFail
@@ -3691,7 +3743,7 @@ ftFastbootUnlock()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
@@ -3703,7 +3755,9 @@ ftFastbootUnlock()
 #=========================================================
 #    找不到AndroidSDK
 #========================================================="; return ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #环境校验
     [[ -z $(which adb) ]] && ftFastbootUnlock --env && return $resultFail
@@ -3760,7 +3814,7 @@ ftAutoCreateProguardRulesPro()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
     local dirPathModule dirPathModuleJavaSourceCode
-    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
@@ -3776,7 +3830,9 @@ ftAutoCreateProguardRulesPro()
         -d ) dirPathModule="${arg2}"
                 dirPathModuleJavaSourceCode=${dirPathModule}/src/main/java
             ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #参数校验
     (( $#!=$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
@@ -3826,7 +3882,7 @@ ftVpnControl()
     #解参验耦
     local filePathAnyconnect=/opt/cisco/anyconnect/bin/vpn
     local isConnect isDisConnect isRestPassword isReInstall
-    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; case "${arg}" in
+    local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -3857,7 +3913,9 @@ ftVpnControl()
             ;;
         -ri ) isReInstall=true
             ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #依赖校验
    [ -z "$isReInstall" ]&& if [[ ! -d "/opt/cisco/anyconnect" ]] || [[ ! -f "$filePathAnyconnect" ]];then ftVpnControl --rely && return $resultFail ; fi
@@ -3923,7 +3981,7 @@ ftDelRepeatFile()
     #解参验耦
     local dirPathTarget
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -3949,7 +4007,9 @@ ftDelRepeatFile()
         # 变量参数解析部分 ==============
         -f ) dirPathTarget="${arg2}"
             ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #依赖校验
     [[ -z $(which fdupes) ]] && ftDelRepeatFile --rely "fdupes" && return $resultFail
@@ -4001,7 +4061,7 @@ ftSync()
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     
     local dirPathChangeTarget dirPathStandard isEnableTest
-    local arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; case "${arg}" in
+    local arg arg2 arg3 ; for ((i=1;i<=$#;i++)) ; do  eval arg=\${${i}} ; eval arg2=\${$((i+1))} ;eval arg3=\${$((i+2))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
@@ -4021,7 +4081,9 @@ ftSync()
               dirPathStandard="${arg2}"
               dirPathChangeTarget="${arg3}"
           ;;
-    * ) [[ -z "${arg}" ]] && break  ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     # local dirPathStandardReal=$(readlink -f  "${dirPathStandard}")
     # local dirNameStandard=$(basename "${dirPathStandardReal}")
@@ -4075,7 +4137,7 @@ ftEdgeTTs()
     #解参验耦
     local playContent speedVal= isModeHide=false
     local valCount=2 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分 ==============
         --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
 #=========================================================
@@ -4105,7 +4167,9 @@ ftEdgeTTs()
         --speed) speedVal="${arg2}" ;;
         --hide) isModeHide=true ;;
         --playContent) playContent="${arg2}" ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #依赖校验
     local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
@@ -4249,7 +4313,7 @@ ftTextSetLine()
     local isLineContentNone=false isRemoveEmptyLines=false
     local valCount=6 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # help infoumation ==============
         -h | --help) ftEcho -rc "${ftEffect}" "use information" "\
 #=========================================================
@@ -4275,7 +4339,9 @@ ftTextSetLine()
             ;;
         -r ) isRemoveEmptyLines=true
             ;;
-    * ) ;; esac;done
+    * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+             break
+            ;; esac;done
 
     #argument check
     (( $#>6 )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
