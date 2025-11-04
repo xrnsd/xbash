@@ -2,7 +2,7 @@
 module/maintain/versionInfo.database
 config/user
 module/user
-module/git/multiBranch.module
+module/git/multi_branch.module
 module/test.module
 .java更新条件判断.xls
 module/auto/__pycache__

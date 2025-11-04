@@ -2223,7 +2223,7 @@ ftMaintainSystem()
 
     #实现主体
     source $filePathMaintain
-    local  filePathVersionInfoVersion=${rDirPathXbashModuleUser}/systemVersionPacketInfo.database
+    local  filePathVersionInfoVersion=${rDirPathXbashModuleUser}/system_version_packetInfo.database
     local  filePathVersionInfoMaintain=${rDirPathXbashModuleMaintain}/maintain.database
 
     case "$editType" in

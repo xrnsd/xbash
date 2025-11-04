@@ -209,7 +209,7 @@ ftGitPatchAdd2Branches()
     local filePathFailInfo="/home/wgx/.cache/ftGitPatchAdd2Branches.log" ; [ -f "$filePathFailInfo" ] && rm $filePathFailInfo
     [[ ! -f $filePathAddPatchTool  ]] && ftEcho -e "诶，帮忙看看[${filePathAddPatchTool}]在不在" && return $resultFail
     [ ! -f "$filePathAddPatchTool" ] && [ -f "${filePathAddPatchTool}.example" ] &&\
-        ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multiBranch.module" && return $resultFail
+        ftEcho -e "请参考${filePathAddPatchTool}.example在同目录下新建multi_branch.module" && return $resultFail
 
     #实现主体
     if [[ -n $isAutoSyncDef ]]; then
