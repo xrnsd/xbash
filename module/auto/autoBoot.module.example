@@ -34,10 +34,10 @@ ftBootIndicatorMultiload()
     notify-send "Auto-start：indicator-multiload"
 }
 
-ftBootClash 10
-ftBootIndicatorMultiload 15
 #bash command hository backup
 ~/xbash/module/user/myanme_bash_hository.backup
+ftBootClash 10
+ftBootIndicatorMultiload 15
 #电池电量监测提醒
 #电量超过阈值时提醒用户注意
 ~/xbash/module/auto/battery.module --lowFlag 40 --heighFlag 81
