@@ -4281,7 +4281,8 @@ ftText2Mp3()
 
     #实现主体
     if [[ -n $textContxt ]];then
-        edge-tts --text "${textContxt}" --write-media "${filePathMp3}"
+        [[ -n $speedVal ]] && edge-tts --text "${textContxt}" --rate=${speedVal}%  --write-media "${filePathMp3}" \
+                           || edge-tts --text "${textContxt}" --write-media "${filePathMp3}"
     else
         local fileTextLineCount=$(sed -n '$=' $filePathText)
         local lineIndex=1 lineContent

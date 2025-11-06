@@ -172,15 +172,16 @@ ftLearnRepetionDrill()
     local filePathLearnResultProblem=${dirPathTempEng}/needRepetionDrill/Problem.list
 
     #selected lesson
-    local dirPathDataItemAudioFile="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.audio_english"
-    $isPlayChineseTips && dirPathDataItemAudioFile="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.audio_chinese"
-    $isPlayChineseTips && [[ ! -d $dirPathDataItemAudioFile ]] && mkdir dirPathDataItemAudioFileir $dirPathDataItemAudioFile
+    local playAudioLanguage="english"
+    $isPlayChineseTips && playAudioLanguage="chinese"
+
+    local dirPathDataItemAudioFile="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.audio_${playAudioLanguage}"
+    $isPlayChineseTips && [[ ! -d $dirPathDataItemAudioFile ]] && mkdir $dirPathDataItemAudioFile
 
     local dirPathDataItemTextDrillResult="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.drill_result"
-    local dirPathDataItemTextDrillResult="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.drill_result"
+    local dirPathDataItemContentTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis"
     local filePathDataItemContentTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
     local filePathDataItemContentTextChinese="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_chinese"
-    local filePathDataItemContentTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis"
     local filePathDataItemContentTextProblem="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_problem"
     local filePathDataItemContentLinkTable="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.link_table"
     
@@ -194,7 +195,7 @@ ftLearnRepetionDrill()
         ftLearnRepetionDrill -h && return
     fi
 
-    local filePathItemAudioFile filePathItemSentenceEnglishDrillResult
+    local filePathItemAudioFile filePathItemAudioFileLink filePathItemSentenceEnglishDrillResult
 
     local fileContentEnglishBasic=$(cat $filePathDataItemContentTextEnglish)
     [[ -z $fileContentEnglishBasic ]] && echo -en "Lesson group: ${lessonGroupNameSel}, Lesson: ${lessonNameSel}\
@@ -537,7 +538,7 @@ ftLearnRepetionDrill()
         linkInfo=
         if [[ -f ${filePathDataItemContentLinkTable} ]];then
             linkInfo=$(awk 'NR=="'$indexSort'"' ${filePathDataItemContentLinkTable})
-            [[ -z $linkInfo ]] && ftEcho -e "invalid item index ${indexSort}" && continue
+            [[ -z $linkInfo ]] && ftEcho -e "invalid item index ${indexSort}\n arrayIndexSort=${arrayIndexSort[@]}" && return
         fi
         [[ -z $linkInfo ]] && linkInfo="${lessonGroupNameSel}/${lessonNameSel}/${indexSort}"
         
@@ -545,22 +546,21 @@ ftLearnRepetionDrill()
         [[ -z $failTime ]] && failTime=0
 
         filePathItemAudioFile="${dirPathDataItemAudioFile}/${indexSort}.mp3"
-        if [[ ! -f $filePathItemAudioFile ]]; then
-            local filePathText=/tmp/audioTemp.text
-            local dirPathMp3=/tmp
-
+        [[ -f ${filePathDataItemContentLinkTable} ]] && \
+            filePathItemAudioFileLink="${filePathItemAudioFile}" && \
+            filePathItemAudioFile="${dirPathTempEng}/$(dirname $linkInfo)/${contentType}.audio_${playAudioLanguage}/$(basename $linkInfo).mp3"
+        audioInfo=$(echo "${filePathItemAudioFile}" | sed "s ${dirPathTempEng}/$(dirname $linkInfo)/  g")
+        if $isOperatePlayAudio && [[ -n $audioInfo ]] && [[ ! -f $filePathItemAudioFile ]]; then
+            ftEcho -s "creating audio : ${audioInfo}\n----------------"
+            mkdir -p $(dirname $filePathItemAudioFile)
             $isPlayChineseTips \
-            && echo "$chineseItem" > $filePathText \
-            || echo "$englishItem" > $filePathText
-
-            $isPlayChineseTips \
-            && ftText2Mp3 -fpt "${filePathText}" -dpm "${dirPathMp3}" -speed +40 \
-            || ftText2Mp3 -fpt "${filePathText}" -dpm "${dirPathMp3}"
-            
-            mv "${dirPathMp3}/1.mp3" "${filePathItemAudioFile}"
+                && ftText2Mp3 -txt "${chineseItem}" -fpm "${filePathItemAudioFile}" -speed +40 \
+                || ftText2Mp3 -txt "${englishItem}" -fpm "${filePathItemAudioFile}"
+            [[ -n $filePathItemAudioFileLink ]] && ln -s $filePathItemAudioFile $filePathItemAudioFileLink
         fi
-        [ -f ${filePathDataItemContentTextAnalysis} ] && contentAnalysis=$(awk 'NR=="'$indexSort'"' $filePathDataItemContentTextAnalysis)
-        audioInfo=$(echo "${filePathItemAudioFile}" | sed "s ${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/  g")
+
+        [[ -f "${dirPathDataItemContentTextAnalysis}/${indexSort}.analysis" ]] && \
+        contentAnalysis=$(cat ${dirPathDataItemContentTextAnalysis}/${indexSort}.analysis)
         ((readTimeOut=$englishItemLength+$englishItemLength+$englishItemLength))
 
         drillResltItem=$(cat $filePathItemSentenceEnglishDrillResult)
@@ -1102,8 +1102,8 @@ ftLearnLessonManage()
                 && touch "${dirPathDataItemBasic}/${contentType}.text_english"\
                 && ftEcho -s "touch "${contentType}.text_english""
 
-            [[ ! -f "${dirPathDataItemBasic}/${contentType}.text_analysis" ]] \
-                && touch "${dirPathDataItemBasic}/${contentType}.text_analysis"\
+            [[ ! -d "${dirPathDataItemBasic}/${contentType}.text_analysis" ]] \
+                && mkdir "${dirPathDataItemBasic}/${contentType}.text_analysis"\
                 && ftEcho -s "touch "${contentType}.text_analysis""
 
             [[ ! -f "${dirPathDataItemBasic}/${contentType}.text_problem" ]] \
@@ -1161,24 +1161,24 @@ ftLearnLessonManage()
             #update
             local dirPathLessonUpdateByLtSAE="${dirPathDataItemBasic}/${contentType}.audio_english"
             local dirPathLessonUpdateByLtSDR="${dirPathDataItemBasic}/${contentType}.drill_result"
+            local dirPathLessonUpdateByLtSTA="${dirPathDataItemBasic}/${contentType}.text_analysis" #data synchronization is not achieved
             local filePathLessonUpdateByLtSTE="${dirPathDataItemBasic}/${contentType}.text_english"
             local filePathLessonUpdateByLtSTC="${dirPathDataItemBasic}/${contentType}.text_chinese"
-            local filePathLessonUpdateByLtSTA="${dirPathDataItemBasic}/${contentType}.text_analysis" #data synchronization is not achieved
             local filePathLessonUpdateByLtSTP="${dirPathDataItemBasic}/${contentType}.text_problem" #data synchronization is not achieved
 
             rm -rf "${dirPathLessonUpdateByLtSAE}" \
                    "${dirPathLessonUpdateByLtSDR}" \
                    "${filePathLessonUpdateByLtSTE}" \
                    "${filePathLessonUpdateByLtSTC}" \
-                   "${filePathLessonUpdateByLtSTA}" \
+                   "${dirPathLessonUpdateByLtSTA}" \
                    "${filePathLessonUpdateByLtSTP}"
 
             mkdir "${dirPathLessonUpdateByLtSAE}" \
-                   "${dirPathLessonUpdateByLtSDR}"
+                   "${dirPathLessonUpdateByLtSDR}" \
+                   "${dirPathLessonUpdateByLtSTA}"
 
             touch  "${filePathLessonUpdateByLtSTE}" \
                    "${filePathLessonUpdateByLtSTC}" \
-                   "${filePathLessonUpdateByLtSTA}" \
                    "${filePathLessonUpdateByLtSTP}"
 
             #config database
@@ -1229,9 +1229,10 @@ ftLearnLessonManage()
                 fi
                 [[ ! -f $lessonSDR ]] && touch "${lessonSDR}"
                 ln -s "${lessonSDR}" "${dirPathLessonUpdateByLtSDR}/${lineIndex}.result"
-                
-                lessonSTA="${dirPathTempEng}/${lessonPathBasic}/${contentType}.text_analysis"
-                [[ -f $lessonSTA ]] && lineContent=$(awk 'NR=="'$lessonLineLindex'"' "${lessonSTA}") && ftTextSetLine -f $filePathLessonUpdateByLtSTA -n $lineIndex -c "${lineContent}" > /dev/null
+
+                lessonSTA="${dirPathTempEng}/${lessonPathBasic}/${contentType}.text_analysis/${lessonLineLindex}.analysis"
+                [[ -f $lessonSTA ]] && ln -s "${lessonSTA}" "${dirPathLessonUpdateByLtSTA}/${lineIndex}.analysis"
+
                 lessonSTP="${dirPathTempEng}/${lessonPathBasic}/${contentType}.text_problem"
                 [[ -f $lessonSTP ]] && lineContent=$(awk 'NR=="'$lessonLineLindex'"' "${lessonSTP}") && ftTextSetLine -f $filePathLessonUpdateByLtSTP -n $lineIndex -c "${lineContent}" > /dev/null
 
@@ -1318,9 +1319,9 @@ ftLearnLessonManage()
         local dirPathLessonMerge="${dirPathLessonGroupMerge}/merge"
         local dirPathLessonMergeSDR="${dirPathLessonMerge}/sentence.drill_result"
         local dirPathLessonMergeSAE="${dirPathLessonMerge}/sentence.audio_english"
+        local dirPathLessonMergeSTA="${dirPathLessonMerge}/sentence.text_analysis"
         local filePathLessonMergeSTE="${dirPathLessonMerge}/sentence.text_english"
         local filePathLessonMergeSTC="${dirPathLessonMerge}/sentence.text_chinese"
-        local filePathLessonMergeSTA="${dirPathLessonMerge}/sentence.text_analysis"
         local lineNum newLineNum filePathLessonMergeSDR filePathLessonMergeSAE
 
         [[ -n $(find $dirPathLessonGroupMerge -name *.text_chinese |xargs grep -sn "\/") ]] || \
@@ -1334,60 +1335,66 @@ ftLearnLessonManage()
             [[ $delSel != "y" ]] && ftEcho -s "操作取消" && return
             echo
         fi
-        rm -rf ${dirPathLessonMerge} && \
-        mkdir -p ${dirPathLessonMergeSAE} ${dirPathLessonMergeSDR} && \
-        touch $filePathLessonMergeSTE
+        rm -rf ${dirPathLessonMerge}
 
-        local dirPathLesson fileArrayAudio
-        local dirParhLessonSDR dirParhLessonSAE filePathLessonSTE filePathLessonSTC filePathLessonSTA
-        local fileSizeLessonSTE fileSizeLessonSTC fileSizeLessonSTA fileSizeLessonMergeSTE=0
+        local dirPathLesson
+        local dirParhLessonSDR dirParhLessonSAE filePathLessonSTE filePathLessonSTC dirPathLessonSTA
+        local fileSizeLessonSTE fileSizeLessonSTC fileSizeLessonSTA fileSizeLessonMergeSTE=0 newLineNum
         local dirPathArrayLesson=($(ls $dirPathLessonGroupMerge|grep -v "merge"))
         [[ -z $dirPathArrayLesson ]] &&\
         ftEcho -en "invald lesson group:" &&echo "${lessonGroup}" && return
         ftEcho -sn "start merge lesson group:" && echo "${lessonGroup}"
 
+        local contentTypeList=("sentence imitate article")
         for lessonName in ${dirPathArrayLesson[*]} ; do
             dirPathLesson="${dirPathLessonGroupMerge}/${lessonName}"
-            dirParhLessonSAE="${dirPathLesson}/sentence.audio_english"
-            dirParhLessonSDR="${dirPathLesson}/sentence.drill_result"
-            filePathLessonSTE="${dirPathLesson}/sentence.text_english"
-            filePathLessonSTC="${dirPathLesson}/sentence.text_chinese"
-            filePathLessonSTA="${dirPathLesson}/sentence.text_analysis"
 
-            [[ ! -f ${filePathLessonSTE} ]] && ftEcho -en "invalid lesson：" && echo "${lessonName} (none sentence)" && continue
-            fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
-            fileSizeLessonSTC=$(sed -n '$=' $filePathLessonSTC)
-            [[ -f $filePathLessonSTA ]] && fileSizeLessonSTA=$(sed -n '$=' $filePathLessonSTA)
+            [[ ! -d ${dirPathLesson} ]] && ftEcho -en "invalid lesson：" && echo "${lessonName}" && continue
 
-            (($fileSizeLessonSTE!=$fileSizeLessonSTC)) && ftEcho -en "invalid lesson：" && echo "${lessonName} (sentence line unequal)" && continue
+            for contentType in ${contentTypeList[@]}; do
+                dirParhLessonSAE="${dirPathLesson}/${contentType}.audio_english"
+                dirParhLessonSDR="${dirPathLesson}/${contentType}.drill_result"
+                dirPathLessonSTA="${dirPathLesson}/${contentType}.text_analysis"
+                filePathLessonSTE="${dirPathLesson}/${contentType}.text_english"
+                filePathLessonSTC="${dirPathLesson}/${contentType}.text_chinese"
 
-            ftEcho -sn "merge lesson:" && echo "$lessonName"
-            
-            fileSizeLessonMergeSTE=$(sed -n '$=' $filePathLessonMergeSTE)
+                dirPathLessonMergeSDR="${dirPathLessonMerge}/${contentType}.drill_result"
+                dirPathLessonMergeSAE="${dirPathLessonMerge}/${contentType}.audio_english"
+                dirPathLessonMergeSTA="${dirPathLessonMerge}/${contentType}.text_analysis"
+                filePathLessonMergeSTE="${dirPathLessonMerge}/${contentType}.text_english"
+                filePathLessonMergeSTC="${dirPathLessonMerge}/${contentType}.text_chinese"
 
-            cat "${filePathLessonSTE}" |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTE}"
-            cat "${filePathLessonSTC}"  |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTC}"
-            [[ -f $filePathLessonSTA ]] && cat "${filePathLessonSTA}"  |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTA}"
+                [[ ! -f ${filePathLessonSTE} ]] && ftEcho -en "lesson :${lessonName}’s " && echo "${contentType} is null" && continue
+                fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
+                fileSizeLessonSTC=$(sed -n '$=' $filePathLessonSTC)
 
-            fileArrayAudio=($(ls $dirParhLessonSAE))
+                (($fileSizeLessonSTE!=$fileSizeLessonSTC)) && ftEcho -en "lesson :${lessonName}’s" && echo "${contentType} line count unequal" && continue
 
-            local newLineNum
-            for fileName in ${fileArrayAudio[*]} ; do
-                lineNum=${fileName%.*}
-                newLineNum=$((fileSizeLessonMergeSTE+lineNum))
+                ftEcho -sn "merge lesson :${lessonName}’s " && echo "${contentType}"
 
-                #建立软连接
-                [ -f "${dirPathLessonMergeSAE}/${newLineNum}.mp3" ] && echo -e "lineNum=${lineNum} \
-                \n newLineNum=${newLineNum} \
-                \n fileSizeLessonSTE=${fileSizeLessonSTE} \
-                \n fileSizeLessonMergeSTE=${fileSizeLessonMergeSTE}" && return
-                ln -s "${dirParhLessonSAE}/${lineNum}.mp3" "${dirPathLessonMergeSAE}/${newLineNum}.mp3"
-                [ -f "${dirParhLessonSDR}/${lineNum}.result" ] && ln -s "${dirParhLessonSDR}/${lineNum}.result" "${dirPathLessonMergeSDR}/${newLineNum}.result"
+                mkdir -p $dirPathLessonMergeSAE \
+                         $dirPathLessonMergeSDR \
+                         $dirPathLessonMergeSTA
+
+                touch $filePathLessonMergeSTE
+                fileSizeLessonMergeSTE=$(sed -n '$=' $filePathLessonMergeSTE)
+
+                cat "${filePathLessonSTE}" |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTE}"
+                cat "${filePathLessonSTC}"  |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTC}"
+
+                for (( lineNum=1 ; lineNum <= fileSizeLessonSTE; lineNum++ )); do
+                    newLineNum=$((fileSizeLessonMergeSTE+lineNum))
+
+                    [ -f "${dirPathLessonMergeSAE}/${newLineNum}.mp3" ] && echo -e "lineNum=${lineNum} \
+                    \n newLineNum=${newLineNum} \
+                    \n fileSizeLessonSTE=${fileSizeLessonSTE} \
+                    \n fileSizeLessonMergeSTE=${fileSizeLessonMergeSTE}" && return
+                    [ -f "${dirParhLessonSAE}/${lineNum}.mp3" ] && ln -s "${dirParhLessonSAE}/${lineNum}.mp3" "${dirPathLessonMergeSAE}/${newLineNum}.mp3"
+                    [ -f "${dirParhLessonSDR}/${lineNum}.result" ] && ln -s "${dirParhLessonSDR}/${lineNum}.result" "${dirPathLessonMergeSDR}/${newLineNum}.result"
+                    [ -f "${dirPathLessonSTA}/${lineNum}.analysis" ] && ln -s "${dirPathLessonSTA}/${lineNum}.analysis" "${dirPathLessonMergeSTA}/${newLineNum}.analysis"
+                done
+
             done
-
-            # echo -e "filePathLessonMergeSTE=$(sed -n '$=' $filePathLessonMergeSTE)\
-            #     \n filePathLessonMergeSTC=$(sed -n '$=' $filePathLessonMergeSTC)"
-
         done
         ftEcho -s "merge finish"
         return
@@ -1615,13 +1622,14 @@ ftLearnLessonManage()
         # fi
         local filePathDataItemSentenceTextEnglish="${dirPathLessonGroup}/${lessonName}/sentence.text_english"
         local filePathDataItemSentenceTextChinese="${dirPathLessonGroup}/${lessonName}/sentence.text_chinese"
-        local filePathDataItemSentenceTextAnalysis="${dirPathLessonGroup}/${lessonName}/sentence.text_analysis"
+        local dirPathDataItemSentenceTextAnalysis="${dirPathLessonGroup}/${lessonName}/sentence.text_analysis"
 
         local filePathDataItemArticleTextEnglish="${dirPathLessonGroup}/${lessonName}/article.text_english"
         local filePathDataItemArticleTextChinese="${dirPathLessonGroup}/${lessonName}/article.text_chinese"
 
         if [[ ! -s $filePathDataItemSentenceTextEnglish ]] || [[ ! -s $filePathDataItemSentenceTextChinese ]];then
-            XMODIFIERS=gnome-text-editor $filePathDataItemSentenceTextEnglish $filePathDataItemSentenceTextChinese $filePathDataItemArticleTextEnglish $filePathDataItemSentenceTextAnalysis $filePathDataItemArticleTextChinese
+            XMODIFIERS=gnome-text-editor $filePathDataItemSentenceTextEnglish $filePathDataItemSentenceTextChinese $filePathDataItemArticleTextEnglish $filePathDataItemArticleTextChinese && \
+            mkdir $dirPathDataItemSentenceTextAnalysis
         fi
         if [[ ! -s $filePathDataItemSentenceTextEnglish ]] || [[ ! -s $filePathDataItemSentenceTextChinese ]]; then
             ftEcho -s "在${lessonGroupNameSel}下新建的课程${lessonName}为空，将删除"
