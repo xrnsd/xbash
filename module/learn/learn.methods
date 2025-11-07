@@ -13,11 +13,19 @@ _ftLearnRepetionDrill()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    if [[ "$prev" == "--type" ]]; then
-        COMPREPLY=( $(compgen -W "article sentence imitate" -- "$cur") )
-    else
-        COMPREPLY=( $(compgen -W "-h -te -htc -hte -pl -up --type --help" -- "$cur") )
-    fi
+    case "${prev}" in
+        --type )
+            COMPREPLY=( $(compgen -W "article sentence imitate" -- "$cur") )
+            ;;
+        article | sentence | imitate )
+            COMPREPLY=( $(compgen -W "-te -htc -hte -pl -up" -- "$cur") )
+            ;;
+        * )
+            [[ $prev =~ ^\- ]] && (( $COMP_CWORD>3 )) && COMPREPLY=( $(compgen -W "-te -htc -hte -pl -up" -- "$cur") ) ||\
+            COMPREPLY=( $(compgen -W "-h --type --help" -- "$cur") )
+            ;;
+    esac
+
 }
 complete -F _ftLearnRepetionDrill ftLearnRepetionDrill
 ftLearnRepetionDrill()
