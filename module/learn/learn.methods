@@ -1176,7 +1176,7 @@ ftLearnLessonManage()
             # #diff
             local md5KeyOld=$(ftIniEditUtil -r  $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}_${contentType}")
             local md5KeyNow="$(md5sum $filePathDataItemLinkTable | awk '{print $1}')"
-            # [[ -n $md5KeyOld ]]&&[[ $md5KeyOld = $md5KeyNow ]]&& ftEcho -s "Cancel update, don't changed" && continue
+            [[ -n $md5KeyOld ]]&&[[ $md5KeyOld = $md5KeyNow ]]&& ftEcho -s "Cancel update, don't changed" && continue
 
             #delete file repeate line
             local repeateItem=$(sort $filePathDataItemLinkTable|uniq -dc)
