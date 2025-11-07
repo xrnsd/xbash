@@ -167,7 +167,9 @@ fi
     #加载 input module
     [ -f $rFilePathXbashModuleInput ] && [ "$rFilePathXbashModuleInput" != "$(readlink -f ~/.inputrc)" ] && rm -rf ~/.inputrc && ln -sf $rFilePathXbashModuleInput ~/.inputrc
     #加载 learn module
-    if [[ -f $rFilePathXbashModuleLearn ]];then source  $rFilePathXbashModuleLearn
+    if [[ -f $rFilePathXbashModuleLearn ]];then 
+        export dirPathTempEng=$(ftIniEditUtil -r  $rFilePathXbashDBUser learnConfigInfo dirPathRootExampleSentence)
+        source  $rFilePathXbashModuleLearn
     else echo -e "\033[1;31mXbash的学习扩展块加载失败\n${rFilePathXbashModuleLearn}\033[0m" ;fi
 
 #---------------- 默认启用部分xbash功能 ------------------
@@ -181,6 +183,9 @@ fi
     ftCheckUserDatabase
     #校验用户扩展和模版版本一致性
     ftCheckUserPackaging
+
+#learn
+
 
 # pnpm
 export PNPM_HOME="/home/wds_work/.local/share/pnpm"
