@@ -1250,14 +1250,14 @@ ftLearnLessonManage()
                 [[ -f $lessonSAC ]] && ln -s "${lessonSAC}" "${dirPathLessonUpdateByLtSAC}/${lineIndex}.mp3"
 
                 lessonSDR="${dirPathTempEng}/${lessonPathBasic}/${contentType}.drill_result/${lessonLineLindex}.result"
-                lineContentFailTime=$(grep -sn "${lineContent}\=" $filePathLearnDataBaseFailTime | awk -F= '{print $2}')
-                if [[ -z $lineContentFailTime ]];then
-                    lineContentFailTime=0
-                    local failTime=0
-                    [[ -f $lessonSDR ]] && failTime=$(sed -n '$=' $lessonSDR)
-                    [[ -n $failTime ]] && lineContentFailTime=$failTime
-                    ftIniEditUtil -w $filePathLearnDataBaseFailTime "failTimeSDR" "${lineContent}" $lineContentFailTime
-                fi
+                # lineContentFailTime=$(grep -sn "${lineContent}\=" $filePathLearnDataBaseFailTime | awk -F= '{print $2}')
+                # if [[ -z $lineContentFailTime ]];then
+                #     lineContentFailTime=0
+                #     local failTime=0
+                #     [[ -f $lessonSDR ]] && failTime=$(sed -n '$=' $lessonSDR)
+                #     [[ -n $failTime ]] && lineContentFailTime=$failTime
+                #     ftIniEditUtil -w $filePathLearnDataBaseFailTime "failTimeSDR" "${lineContent}" $lineContentFailTime
+                # fi
                 [[ ! -f $lessonSDR ]] && touch "${lessonSDR}"
                 ln -s "${lessonSDR}" "${dirPathLessonUpdateByLtSDR}/${lineIndex}.result"
 
@@ -1277,7 +1277,7 @@ ftLearnLessonManage()
         done
             
         echo
-        ftEcho -s "update finish"
+        ftEcho -s "update finished"
         return
     fi
 
@@ -1313,7 +1313,7 @@ ftLearnLessonManage()
                 echo -e "\n上面是${lessonGroupTips}的第${lessonNameSel}篇课文或例句。\n请结合课文强调的知识点对每一行的短语和影响意思理解的语法进行说明。\n请只输出${fileSizeLessonSTE}行说明，每行说明无需原文开头无需添加特殊符号。" >> $filePathLessonSTETempAlQuestion
                 cat ${filePathLessonSTETempAlQuestion}| xclip -sel clip
                 cat ${filePathLessonSTETempAlQuestion}
-                break;;
+                ;;
             
             imitate )
                 echo -e "\n上面是${lessonGroupTips}的第${lessonNameSel}篇课文。\
@@ -1326,7 +1326,7 @@ ftLearnLessonManage()
                 \n要求6：给出英文文章后同时给一个排版一样的简体中文翻译。" >> $filePathLessonSTETempAlQuestion
                 cat ${filePathLessonSTETempAlQuestion}| xclip -sel clip
                 cat ${filePathLessonSTETempAlQuestion}
-                break;;
+                ;;
             *)
                 ftEcho -e "create fail,invald lessonContentType=${lessonContentType}"
                 return;;
@@ -1375,7 +1375,7 @@ ftLearnLessonManage()
         done
 
         ftLearnLessonManage -unlt $lessonGroupNameMerge merge
-        ftEcho -s "merge finish"
+        ftEcho -s "merge finished"
         return
     fi
 
@@ -1384,51 +1384,25 @@ ftLearnLessonManage()
         case "$lessonNameSel" in
              "normal" | "connect" | "multiple")
                 ftLearnLessonManage -unlt needRepetionDrill ${lessonNameSel}
-                break;;
+                ;;
              
              "error")
-                local dirPathLessonNeedRepetionDrillError="${dirPathTempEng}/needRepetionDrill/error"
-                local filePathLessonNeedRepetionDrillErrorSTLT="${dirPathLessonNeedRepetionDrillError}/sentence.link_table"
-                echo -n "" > $filePathLessonNeedRepetionDrillErrorSTLT
-                local lineIndex=1 lineNum
-
-                local dirPathLessonGroup dirPathLesson dirPathArrayLesson fileArrayDrillResult dirParhLessonSDR
-                local dirPathLocal=$(pwd)
-                cd "${dirPathTempEng}"
-                learnLessonGroupList=($(ls -d */| sed 's/\///g'))
-                for lessonGroup in ${learnLessonGroupList[*]} ; do
-
-                    [[ $lessonGroup = "needRepetionDrill" ]] && continue
-                    [[ $lessonGroup = "ZTestLessonGroup" ]] && continue
-
-                    dirPathLessonGroup="${dirPathTempEng}/${lessonGroup}"
-
-                    [[ -n $(find $dirPathLessonGroup -name *.text_chinese |xargs grep -sn "\/") ]] || \
-                    [[ -n $(find $dirPathLessonGroup -name *.text_english |xargs grep -sn "\/") ]] && \
-                    ftEcho -en "data content is invald:" && ehco " / \nlesson group: ${lessonGroup}" && continue
-
-                    dirPathArrayLesson=($(ls $dirPathLessonGroup))
-                    [[ -z $dirPathArrayLesson ]] &&\
-                    ftEcho -en "invald lesson group:" &&echo "${lessonGroup}" && continue
-                    ftEcho -sn "loading lesson group:" && echo "${lessonGroup}"
-
-                    for lessonName in ${dirPathArrayLesson[*]} ; do
-                        dirPathLesson="${dirPathLessonGroup}/${lessonName}"
-                        dirParhLessonSDR="${dirPathLesson}/sentence.drill_result"
-                        [[ ! -d ${dirParhLessonSDR} ]] && continue
-                        fileArrayDrillResult=($(ls $dirParhLessonSDR))
-                        for fileName in ${fileArrayDrillResult[*]} ; do
-                            lineNum=${fileName%.*}
-
-                            #写入文件
-                            echo "${lessonGroup}/${lessonName}/${lineNum}" >> $filePathLessonNeedRepetionDrillErrorSTLT
-                            ((lineIndex+=1))
-                        done
-
+                local contentTypeList=("sentence imitate article")
+                local filePathLearnDataBaseFailTime fileSizeLearnDataBaseFailTime filePathLinkeTable
+                for contentType in ${contentTypeList[@]}; do
+                    filePathLearnDataBaseFailTime="${dirPathTempEng}/fail_time_${contentType}.database"
+                    [[ ! -f $filePathLearnDataBaseFailTime ]] && continue
+                    filePathLinkeTable="${dirPathTempEng}/needRepetionDrill/error/${contentType}.link_table"
+                    rm -rf $filePathLinkeTable
+                    fileSizeLearnDataBaseFailTime=$(sed -n '$=' $filePathLearnDataBaseFailTime)
+                    for (( lineIndex = 6; lineIndex <= fileSizeLearnDataBaseFailTime; lineIndex++ )); do     
+                        printf "recreate ${contentType} linktable progress: %d%%\r" $((lineIndex*100/$fileSizeLearnDataBaseFailTime))
+                        awk 'NR=="'$lineIndex'"' $filePathLearnDataBaseFailTime | awk -F= '{print $1}' >> $filePathLinkeTable
                     done
                 done
+                echo
                 ftLearnLessonManage -unlt needRepetionDrill error
-                break;;
+                ;;
 
              "review")
                lessonReviewSentenceAllCountCurrent="${arg3}"
@@ -1531,7 +1505,7 @@ ftLearnLessonManage()
 
                 cd "${dirPathLocal}"
                 ftLearnLessonManage -unlt needRepetionDrill review
-                break;;
+                ;;
 
                *)
                 ftEcho -e "update fail,invald lessonName=${lessonNameSel}"
