@@ -1141,7 +1141,7 @@ ftLearnLessonManage()
         fi
 
         [[ -z $lessonGroupNameSel ]] && ftEcho -e "lessonGroupNameSel is null" && return
-        [[ $lessonGroupNameSel != "needRepetionDrill" ]] && ftEcho -e "invalid lesson group : ${lessonGroupNameSel}" && return
+        #[[ $lessonGroupNameSel != "needRepetionDrill" ]] && ftEcho -e "invalid lesson group : ${lessonGroupNameSel}" && return
 
         if [[ -z $lessonNameSel ]];then
             local learnLessonList="$(ftIniEditUtil -r $filePathLearnDataBase "${lessonGroupNameSel}" lessonList)"
@@ -1154,6 +1154,8 @@ ftLearnLessonManage()
 
         local contentTypeList=("sentence imitate article")
         local dirPathDataItemBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}"
+
+        [[ -z $(find $dirPathDataItemBasic -name *.link_table) ]] && ftEcho -e "invalid lesson : ${lessonGroupNameSel}/${lessonNameSel}, link table isn't exist" && return
 
         for contentType in ${contentTypeList[@]}; do
             #check
@@ -1340,10 +1342,7 @@ ftLearnLessonManage()
 
         local dirPathLessonGroupMerge="${dirPathTempEng}/${lessonGroupNameMerge}"
         local dirPathLessonMerge="${dirPathLessonGroupMerge}/merge"
-        local dirPathLessonMergeSDR dirPathLessonMergeSAE dirPathLessonMergeSAC \
-              dirPathLessonMergeSTA filePathLessonMergeSTE filePathLessonMergeSTC
-        local lineNum newLineNum filePathLessonMergeSDR filePathLessonMergeSAE
-
+        
         [[ -n $(find $dirPathLessonGroupMerge -name *.text_chinese |xargs grep -sn "\/") ]] || \
         [[ -n $(find $dirPathLessonGroupMerge -name *.text_english |xargs grep -sn "\/") ]] && \
         ftEcho -en "lesson group ${lessonGroupNameMerge} 's data content is invald:" && ehco " / " && return
@@ -1356,67 +1355,27 @@ ftLearnLessonManage()
             echo
         fi
         rm -rf ${dirPathLessonMerge}
+        mkdir ${dirPathLessonMerge}
 
-        local dirPathLesson dirParhLessonSDR dirParhLessonSAE dirParhLessonSAC \
-              filePathLessonSTE filePathLessonSTC dirPathLessonSTA
-        local fileSizeLessonSTA fileSizeLessonMergeSTE=0 newLineNum
         local dirPathArrayLesson=($(ls $dirPathLessonGroupMerge|grep -v "merge"))
         [[ -z $dirPathArrayLesson ]] &&\
         ftEcho -en "invald lesson group:" &&echo "${lessonGroup}" && return
         ftEcho -sn "start merge lesson group:" && echo "${lessonGroup}"
 
-        local contentTypeList=("sentence imitate article")
+        local filePathLessonSTE filePathLessonGroupMergeSTLT="${dirPathLessonGroupMerge}/merge/sentence.link_table"
+
         for lessonName in ${dirPathArrayLesson[*]} ; do
-            dirPathLesson="${dirPathLessonGroupMerge}/${lessonName}"
+            filePathLessonSTE="${dirPathLessonGroupMerge}/${lessonName}/sentence.text_english"
+            [[ ! -f ${filePathLessonSTE} ]] && ftEcho -en "invalid lesson：" && echo "${lessonName}" && continue
 
-            [[ ! -d ${dirPathLesson} ]] && ftEcho -en "invalid lesson：" && echo "${lessonName}" && continue
-
-            for contentType in ${contentTypeList[@]}; do
-                dirParhLessonSAE="${dirPathLesson}/${contentType}.audio_english"
-                dirParhLessonSAC="${dirPathLesson}/${contentType}.audio_chinese"
-                dirParhLessonSDR="${dirPathLesson}/${contentType}.drill_result"
-                dirPathLessonSTA="${dirPathLesson}/${contentType}.text_analysis"
-                filePathLessonSTE="${dirPathLesson}/${contentType}.text_english"
-                filePathLessonSTC="${dirPathLesson}/${contentType}.text_chinese"
-
-                dirPathLessonMergeSDR="${dirPathLessonMerge}/${contentType}.drill_result"
-                dirPathLessonMergeSAE="${dirPathLessonMerge}/${contentType}.audio_english"
-                dirPathLessonMergeSAC="${dirPathLessonMerge}/${contentType}.audio_chinese"
-                dirPathLessonMergeSTA="${dirPathLessonMerge}/${contentType}.text_analysis"
-                filePathLessonMergeSTE="${dirPathLessonMerge}/${contentType}.text_english"
-                filePathLessonMergeSTC="${dirPathLessonMerge}/${contentType}.text_chinese"
-
-                [[ ! -f ${filePathLessonSTE} ]] && ftEcho -en "lesson :${lessonName}’s " && echo "${contentType} is null" && continue
-                [[ "$(sed -n '$=' $filePathLessonSTE)" != "$(sed -n '$=' $filePathLessonSTC)"  ]] && \
-                ftEcho -en "lesson :${lessonName}’s" && echo "${contentType} line count unequal" && continue
-
-                ftEcho -sn "merge lesson :${lessonName}’s " && echo "${contentType}"
-
-                mkdir -p $dirPathLessonMergeSAE \
-                         $dirPathLessonMergeSDR \
-                         $dirPathLessonMergeSTA
-
-                touch $filePathLessonMergeSTE
-                fileSizeLessonMergeSTE=$(sed -n '$=' $filePathLessonMergeSTE)
-
-                cat "${filePathLessonSTE}" |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTE}"
-                cat "${filePathLessonSTC}"  |awk '{if(length !=0) print $0}' >> "${filePathLessonMergeSTC}"
-
-                for (( lineNum=1 ; lineNum <= fileSizeLessonSTE; lineNum++ )); do
-                    newLineNum=$((fileSizeLessonMergeSTE+lineNum))
-
-                    [ -f "${dirPathLessonMergeSAE}/${newLineNum}.mp3" ] && echo -e "lineNum=${lineNum} \
-                    \n newLineNum=${newLineNum} \
-                    \n fileSizeLessonSTE=${fileSizeLessonSTE} \
-                    \n fileSizeLessonMergeSTE=${fileSizeLessonMergeSTE}" && return
-                    [ -f "${dirParhLessonSAE}/${lineNum}.mp3" ] && ln -s "${dirParhLessonSAE}/${lineNum}.mp3" "${dirPathLessonMergeSAE}/${newLineNum}.mp3"
-                    [ -f "${dirParhLessonSAC}/${lineNum}.mp3" ] && ln -s "${dirParhLessonSAC}/${lineNum}.mp3" "${dirPathLessonMergeSAC}/${newLineNum}.mp3"
-                    [ -f "${dirParhLessonSDR}/${lineNum}.result" ] && ln -s "${dirParhLessonSDR}/${lineNum}.result" "${dirPathLessonMergeSDR}/${newLineNum}.result"
-                    [ -f "${dirPathLessonSTA}/${lineNum}.analysis" ] && ln -s "${dirPathLessonSTA}/${lineNum}.analysis" "${dirPathLessonMergeSTA}/${newLineNum}.analysis"
-                done
-
+            fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
+            #写入文件
+            [[ -n $fileSizeLessonSTE ]] && for (( lineNum=1 ; lineNum <= fileSizeLessonSTE; lineNum++ )); do
+                echo "${dirPathLessonGroupMerge}/${lessonName}/${lineNum}" >> $filePathLessonGroupMergeSTLT  
             done
         done
+
+        ftLearnLessonManage -unlt $lessonGroupNameMerge merge
         ftEcho -s "merge finish"
         return
     fi
