@@ -981,6 +981,7 @@ ftLearnLessonManage()
                      ;;
         -unl) isUpdateDrillLesson=true
                lessonNameSel="${arg2}"
+               lessonReviewSentenceAllCountCurrent="${arg3}"
                      ;;
         -unlt) isUpdateLessonByLinkTable=true
               lessonGroupNameSel="${arg2}"
@@ -1405,23 +1406,27 @@ ftLearnLessonManage()
                 ;;
 
              "review")
-               lessonReviewSentenceAllCountCurrent="${arg3}"
+               if [[ -z $lessonGroupNameMerge ]];then
+                    local learnLessonGroupList="$(ftIniEditUtil -r  $filePathLearnDataBase learnLessonInfo lessonGroupList)" \
+                          lessonGroupNameMergeSelected="$(ftIniEditUtil -r  $filePathLearnDataBase learnLessonInfo lessonGroupMergeSelected${lessonNameSel})"
+                    [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
+                    ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" -ch "${lessonGroupNameMergeSelected}"
+                    [[ -z $publicSelItemContent ]] && return
+                    lessonGroupNameMerge=$publicSelItemContent
+                fi
 
-                local learnLessonGroupList="$(ftIniEditUtil -r  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
-                [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
-                ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" 
-                [[ -z $publicSelItemContent ]] && ftEcho -e "lessonGroupName is null" && return
-                lessonGroupNameMerge=$publicSelItemContent
+                [[ -z $lessonGroupNameMerge ]] && ftEcho -e "lessonGroupNameSel is null" && return
                 [[ "${lessonGroupNameMerge}" = "needRepetionDrill" ]] && ftEcho -s "cancel recreate lesson" && return
                 local dirPathLessonGroup="${dirPathTempEng}/${lessonGroupNameMerge}"
                 [[ ! -d "${dirPathLessonGroup}" ]] && ftEcho -s "lesson group ${lessonGroupNameMerge} is not exist" && return
                 
                 ftEcho -sn "recreate lesson review by lesson group:" && echo "${lessonGroupNameMerge}"
 
-                lessonReviewSentenceAllCountCurrent=$(ftIniEditUtil -r  $filePathLearnDataBase needRepetionDrill lessonReviewSentenceAllCountNormal)
-                echo -n "please enter review count(press enter normal is ${lessonReviewSentenceAllCountCurrent})" && read count
-                [[ -n count ]] && lessonReviewSentenceAllCountCurrent=$count
-
+                if [[ -z $lessonReviewSentenceAllCountCurrent ]];then
+                    lessonReviewSentenceAllCountCurrent=$(ftIniEditUtil -r  $filePathLearnDataBase needRepetionDrill lessonReviewSentenceAllCountNormal)
+                    echo -n "please enter review count(press enter normal is ${lessonReviewSentenceAllCountCurrent})" && read count
+                    [[ -n count ]] && lessonReviewSentenceAllCountCurrent=$count
+                fi
                 local dirPathLessonNeedRepetionDrillReview="${dirPathTempEng}/needRepetionDrill/review"
                 local dirPathLesson dirPathArrayLesson dirParhLessonCDR dirParhLessonCAE filePathLessonCTE filePathLessonCTC filePathLessonCTA filePathLessonCDR
                 local fileSizeLessonCTE fileSizeLessonCTC
@@ -1505,6 +1510,8 @@ ftLearnLessonManage()
 
                 cd "${dirPathLocal}"
                 ftLearnLessonManage -unlt needRepetionDrill review
+
+                ftIniEditUtil -w $filePathLearnDataBase learnLessonInfo lessonGroupMergeSelected${lessonNameSel} $lessonGroupNameMerge
                 ;;
 
                *)
