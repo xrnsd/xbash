@@ -1,6 +1,6 @@
 #ini
 [informationInThisDb]
-versionNum=v0.1.3.6
+versionNum=v0.1.3.7
 
 #开发用
 [androidDevicePackages]
@@ -23,16 +23,9 @@ mddbDirPathList= \
     system/vendor/etc/mddb
 
 #项目列表和存放信息
-[AospProjectsInfo]
-CodeProjectNameList=
-CodeProjectStoragePathList=
-CodeProjectNameIgnoreList=\
-    lost+found \
-    download \
-    demos
-ProjectGitStorehouseServerAddress=
-ProjectGitStorehouseList=
-ProjectActiveGitStorehouseList=
+[ProjectsInfo]
+ProjectStorageRootPathList=
+ProjectStorageFullPathList=
 
 #项目软件包的下载工具包[客户用]
 [xbashAOSPConfigMTKSoftwareDownloadToool]

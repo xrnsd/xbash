@@ -1515,7 +1515,7 @@ ftAutoFindAospBuildOuts()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
-    local mProjectNameList mProjectStoragePathList
+    local mProjectNameList mProjectStorageRootPathList
     local valCount=1 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     case "${arg}" in
         # 说明参数解析部分 ==============
@@ -1530,28 +1530,28 @@ ftAutoFindAospBuildOuts()
     #参数校验
     ftAutoCdProjectDirectory -u > /dev/null
     mProjectNameList="$(ftXbGetValue ProjectsInfo ProjectNameList)"
-    mProjectStoragePathList="$(ftXbGetValue ProjectsInfo ProjectStoragePathList)"
-    [ -z "$mProjectStoragePathList" ] && errorContent="${errorContent}\\n找不到项目存储路径,请检查数据库:\n${rFilePathXbashDBUser}中的ProjectsInfo"
+    mProjectStorageRootPathList="$(ftXbGetValue ProjectsInfo ProjectStorageRootPathList)"
+    [ -z "$mProjectStorageRootPathList" ] && errorContent="${errorContent}\\n找不到项目存储路径,请检查数据库:\n${rFilePathXbashDBUser}中的ProjectsInfo"
     [ -z "$mProjectNameList" ] && errorContent="${errorContent}\\n找不到项目,请检查数据库:\n${rFilePathXbashDBUser}中的ProjectsInfo"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoFindAospBuildOuts -h && return $resultFail
 
     #实现主体
     #去重，去掉软连接引起的重复
-    local dirPathAospProject mProjectStoragePathListNew
-    for dirPath in ${mProjectStoragePathList[@]}; do
+    local dirPathAospProject mProjectStorageRootPathListNew
+    for dirPath in ${mProjectStorageRootPathList[@]}; do
         [ ! -d "${dirPath}" ] && continue
         for dirNameAospProject in ${mProjectNameList[@]}; do
             dirPathAospProject="${dirPath}/${dirNameAospProject}"
             [ ! -d "${dirPathAospProject}" ] && continue
             dirPathAospProject=$(readlink -f  $dirPathAospProject)
-            mProjectStoragePathListNew=(${mProjectStoragePathListNew[@]} ${dirPathAospProject})
+            mProjectStorageRootPathListNew=(${mProjectStorageRootPathListNew[@]} ${dirPathAospProject})
         done
     done
-    mProjectStoragePathListNew=($(echo ${mProjectStoragePathListNew[@]} | sed 's/ /\n/g'|sort |uniq))
+    mProjectStorageRootPathListNew=($(echo ${mProjectStorageRootPathListNew[@]} | sed 's/ /\n/g'|sort |uniq))
 
     #开始查找
     local filePathResult="/tmp/findOuts"
-    for dirPath in ${mProjectStoragePathListNew[@]}; do
+    for dirPath in ${mProjectStorageRootPathListNew[@]}; do
             echo "" > $filePathResult
 
             local dirPathAospProjectOut="${dirPath}/alps/out"
@@ -1739,15 +1739,15 @@ ftAutoLnCcacheByAosp()
 complete -W "-h --help --rely_install" ftAutoCdProjectDirectory
 ftAutoCdProjectDirectory()
 {
-
     local ftEffect=快速进入不同项目目录
     local isEnable=true
 
     #可用性校验
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
-    local isUserFileManager itemCount mProjectName mProjectStoragePathEffective
-    local mProjectStoragePathList="$(ftXbGetValue ProjectsInfo ProjectStoragePathList)"
+    local isUserFileManager itemCount mProjectName
+    local mProjectStorageRootPathList="$(ftXbGetValue ProjectsInfo ProjectStorageRootPathList)"
+    local mProjectNameList mProjectStorageFullPathList
     local valCount=1 errorContent arg arg2  arg3  arg4
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; eval arg4=\${$((i+3))} ; case "${arg}" in
     # 说明参数解析部分==============
@@ -1770,91 +1770,41 @@ ftAutoCdProjectDirectory()
                 mProjectName="${arg2}"
          ;;
         -n ) mProjectName="${arg2}"
-              #mProjectName有效路径，立即调转
-              [[ $mProjectName == /* ]] && [[ -d $mProjectName ]] && cd ${mProjectName} && return
+            #mProjectName有效路径，立即调转
+            [[ $mProjectName == /* ]] && [[ -d $mProjectName ]] && cd ${mProjectName} && return
          ;;
         -u | --update ) #更新数据库
-                local mProjectNameIgnoreList="$(ftXbGetValue ProjectsInfo ProjectNameIgnoreList)"
-                local mProjectNameListUpdate
-                local dirPathLocal=$(pwd)
-                local key="_PJ("
+            for rootPath in ${mProjectStorageRootPathList[@]}; do
+                [[ ! -d "${rootPath}" ]] && continue
+                while read fullPath ;do
+                    mProjectStorageFullPathList=(${mProjectStorageFullPathList[@]} $(dirname $fullPath))
+                done < <(find ${rootPath} -name .git -type d)
+            done
 
-                for path in ${mProjectStoragePathList[@]}; do
-                    [[ ! -d "${path}" ]] && continue
-                    while read projectName ;do
-                        [[ -n $(echo ${mProjectNameIgnoreList[@]} |grep ${projectName}) ]] && continue
-                        [[ -d "${path}/${projectName}/.git_backup" ]] && continue
-                        [[ -d "${path}/${projectName}/.git_local" ]] && continue
-                        [[ -d "${path}/${projectName}/alps/.git_backup" ]] && continue
-                        [[ -d "${path}/${projectName}/alps/.git_local" ]] && continue
-                        [[ ! -d "${path}/${projectName}" ]] && continue
-                        mProjectNameListUpdate=(${mProjectNameListUpdate[@]} ${projectName})
+            ftIniEditUtil -w $rFilePathXbashDBUser ProjectsInfo ProjectStorageFullPathList "${mProjectStorageFullPathList[*]}"
 
-                        #更新项目中分支的项目号列表
-                        local projectInfoFlag="AospProjectItem_"
-                        local projectDirPathTemp=${path}/${projectName}/.git
-                        [[ ! -d ${projectDirPathTemp} ]] && projectDirPathTemp=${path}/${projectName}/alps/.git
-                        if [[ -d ${projectDirPathTemp} ]] && [[ ! -h ${projectDirPathTemp} ]] ; then
-                            cd $projectDirPathTemp
-                            local brachListProject=$(git branch | sed -e "s:*: :g" | grep $key)
-                            if [ -n "$brachListProject" ]; then
-                                local projectList projectNameTemp
-                                for item in ${brachListProject[@]} ; do
-                                    local itemList=($(echo "${item}"| sed 's?)? ?g'))
-                                    local val=$(echo ${itemList[1]} | grep $key | sed -e "s:$key::g")
-                                    [[ -n $projectNameTemp ]] && [[ $projectNameTemp == $val ]] && continue
-                                    [[ -z $projectNameTemp ]]
-                                    projectList="${val} ${projectList}"
-                                    projectNameTemp=$val
-                                done
-
-                                if [ -n "$projectList" ];then
-                                    local projectListLocal=$(ftIniEditUtil -r $rFilePathXbashDBUser ProjectsInfo ${projectInfoFlag}${projectName})
-                                    [[ -z ${projectListLocal} ]] && projectListLocal=$(cat $rFilePathXbashDBUser | grep "${projectInfoFlag}${projectName}=")
-                                    if [[ -z ${projectListLocal} ]]; then
-                                        ftIniEditUtil $rFilePathXbashDBUser ProjectsInfo ${projectInfoFlag}${projectName} "${projectList}" -a
-                                    fi
-                                    projectList=""
-                                fi
-                            fi
-
-                            cd $dirPathLocal
-                        fi
-
-
-                    done < <(echo "$(ls ${path})")
-                done
-                mProjectNameListUpdate=($(echo ${mProjectNameListUpdate[@]} | sed 's/ /\n/g'|sort |uniq))
-                ftIniEditUtil -w $rFilePathXbashDBUser ProjectsInfo ProjectNameList -l "${mProjectNameListUpdate[*]}"
-                ftIniEditUtil -w $rFilePathXbashDBUser ProjectsInfo ProjectGitStorehouseList -l "${mProjectNameListUpdate[*]}"
-                ftEcho -s "项目列表更新完成"
-                return;;
-        settings ) dirPathTarget="packages/apps/Settings" ;;
+            ftEcho -s "项目列表更新完成"
+            return;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
-    [ -z "$mProjectStoragePathList" ] && errorContent="${errorContent}\\n[项目存放路径列表为空]"
+    [ -z "$mProjectStorageRootPathList" ] && errorContent="${errorContent}\\n[项目存放路径列表为空]"
     [ -z "$mProjectName" ] && errorContent="${errorContent}\\n[未指定项目名]"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCdProjectDirectory -h && return $resultFail
 
     #实现主体
-    local mProjectNameList=($(ftXbGetValue ProjectsInfo ProjectNameList| sed 's/ /\n/g'|sort |uniq |grep -i $mProjectName))
-    #进入分支信息判断
-    if [ -z "$mProjectNameList" ]; then 
-        local projectInfoFlag="AospProjectItem_"
-        local ProjectNameList=$(cat $rFilePathXbashDBUser | grep -i $mProjectName)
-        for line in ${ProjectNameList[@]}; do
-            [ -z "$line" ] && continue
-            [ -z $(echo $line |grep $projectInfoFlag) ] && continue
-            local lineItems=($(echo $line | sed -e "s:=: :g"))
-            local lineNew=$(echo ${lineItems[0]} | sed -e "s:$projectInfoFlag: :g")
-            #将存在匹配分支的项目名放入待选项目列表内
-            mProjectNameList=($lineNew ${mProjectNameList[@]})
-        done
-    fi
-    itemCount=${#mProjectNameList[@]}
+    local mProjectStorageFullSelectPath mProjectStorageFullPathSelectList mProjectStorageFullPathList="$(ftXbGetValue ProjectsInfo ProjectStorageFullPathList)"
+    for fullPath in ${mProjectStorageFullPathList[@]}; do
+        [[ -z $(basename $fullPath |grep -i ^$mProjectName ) ]] && continue
+        mProjectStorageFullPathSelectList=(${mProjectStorageFullPathSelectList[@]} $fullPath)
+    done
+
+    [[ -z "$mProjectStorageFullPathSelectList" ]] && ftEcho -e "找不到项目${mProjectName}" && return
+
+    itemCount=${#mProjectStorageFullPathSelectList[@]}
     if (( $itemCount>1 ));then
         ftEcho -s 对应多个项目,请选择
         local index=0
-        for item in ${mProjectNameList[@]} ; do
+        for item in ${mProjectStorageFullPathSelectList[@]} ; do
+            item=$(basename $item)
             printf "%-4s %-4s\n" [$index] $item
             ((index+=1))
         done
@@ -1865,63 +1815,13 @@ ftAutoCdProjectDirectory()
         #设定默认值
         [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
         (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return $resultFail
-        mProjectName=${mProjectNameList[$tIndex]} && echo
+        mProjectStorageFullSelectPath=${mProjectStorageFullPathSelectList[$tIndex]} && echo
     else
-        mProjectName=$mProjectNameList
+        mProjectStorageFullSelectPath=$mProjectStorageFullPathSelectList
     fi
 
-    local mProjectStoragePathEffectiveList dirPathAll dirPathBase dirPathProjectStorehouseList
-    for path in ${mProjectStoragePathList[@]}; do
-        dirPathBase=${path}/${mProjectName}
-
-        [[ ! -d "${dirPathBase}" ]] && continue
-
-        #默认路径下无git仓库,开始遍历查找仓库
-        if [[ ! -d "${dirPathBase}/.git" ]]; then
-             mProjectStoragePathEffectiveList=${dirPathBase}
-             #dirPathProjectStorehouse=($(find ${dirPathBase} -maxdepth 2  -type d -path '*/.git'))
-             dirPathProjectStorehouse=($(find ${dirPathBase} -maxdepth 2 -path '*/.git'))
-             for pathStorehouse in ${dirPathProjectStorehouse[@]}; do
-                mProjectStoragePathEffectiveList=("${mProjectStoragePathEffectiveList[@]} $(dirname $pathStorehouse)")
-             done
-             continue
-        fi
-
-        dirPathAll=${dirPathBase}/alps
-        if [[ -d "$dirPathAll" ]]; then
-            mProjectStoragePathEffectiveList=("${mProjectStoragePathEffectiveList[@]} $dirPathAll")
-            continue
-        fi
-
-        mProjectStoragePathEffectiveList=("${mProjectStoragePathEffectiveList[@]} $dirPathBase")
-    done
-    [ -z "$mProjectStoragePathEffectiveList" ] && ftEcho -e "找不到${mProjectName}对应项目的有效存放路径" && return $resultFail
-
-    mProjectStoragePathEffectiveList=($(echo "${mProjectStoragePathEffectiveList}"| sed -e "s: ^::g"))
-    mProjectStoragePathEffective=$mProjectStoragePathEffectiveList
-    itemCount=${#mProjectStoragePathEffectiveList[@]}
-    if (( $itemCount>1 ));then
-        ftEcho -s 对应项目有多个存放位置,请选择
-        local index=0
-        for item in ${mProjectStoragePathEffectiveList[@]} ; do
-            printf "%-4s %-4s\n" [$index] $item
-            ((index+=1))
-        done
-
-        local num=$itemCount ; local length=0 ; while (( $num>0 )); do ((num=num/10 )) ; ((length+=1)) ; done
-        ftEcho -r  "请输入对应的序号(回车默认0):"
-        read -n $length tIndex &&echo
-        #设定默认值
-        [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
-        (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return $resultFail
-        mProjectStoragePathEffective=${mProjectStoragePathEffectiveList[$tIndex]}
-    fi
-
-    #项目存在嵌套
-    [[ -d "${mProjectStoragePathEffective}/${mProjectName}" ]] && mProjectStoragePathEffective=${mProjectStoragePathEffective}/${mProjectName}
-
-    [[ -z "$isUserFileManager" ]] && cd $mProjectStoragePathEffective && return $resultFail
-    ftOpenNemoTab -p $mProjectStoragePathEffective
+    [[ -z "$isUserFileManager" ]] && cd $mProjectStorageFullSelectPath && return $resultFail
+    ftOpenNemoTab -p $mProjectStorageFullSelectPath
 }
 
 complete -W "-h -f --help" -A file ftAutoAdbPush
