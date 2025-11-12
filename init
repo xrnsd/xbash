@@ -136,7 +136,7 @@ ftInitMoule()
 {
     local filePathXbashConfigProfileNew=${dirPathLocal}/config/profile.config
     local filePathHomeLocalProfile=${dirPathHomeLocal}/.profile
-    local filePathXbashModuleBashrcNew=${dirPathLocal}/main
+    local filePathXbashModuleBashrcNew=${dirPathLocal}/main.module
     local filePathHomeLocalBashrc=${dirPathHomeLocal}/.bashrc
     local dirPathXbashModuleUser=${dirPathLocal}/module/user
     local filePathXbashModuleUser=${dirPathXbashModuleUser}/${userNameLocal}.module
