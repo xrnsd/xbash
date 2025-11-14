@@ -2,10 +2,10 @@
 #测试模块
 #加载部分模块,便于调试
 [[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
-[[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
 [[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
+[[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
 [[ -f "$rFilePathXbashModuleLearn" ]] && source $rFilePathXbashModuleLearn
-source ${rDirPathXbashModuleMaintain}/${rFileNameXbashModuleMaintain}
+[[ -f "$rFilePathXbashModuleMaintain" ]] && source $rFilePathXbashModuleMaintain
 # =================================================================
 ftEcho -s "#####----------------------测试模式--------------------------#######"
 # =================================================================
