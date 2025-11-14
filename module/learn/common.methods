@@ -246,7 +246,35 @@ ftFormatLessonContentAnarchyUnbound()
     done
 }
 
-complete -W "-h --help sentence imitate" ftText2Mp3ByLesson
+_ftText2Mp3ByLesson()
+{
+    local ftEffect=ftText2Mp3ByLesson\'sArgumentAppend
+    local cur prev words
+
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "${prev}" in
+        --type )
+            COMPREPLY=( $(compgen -W "article sentence imitate" -- "$cur") )
+            ;;
+        --lan )
+            COMPREPLY=( $(compgen -W "en cn" -- "$cur") )
+            ;;
+        * )
+            if (( $COMP_CWORD==1 ));then
+                [[ "$cur" =~ ^\- ]] && COMPREPLY=( $(compgen -W "-h --help" -- "$cur") ) ||\
+                COMPREPLY=( $(compgen -W "$(ls --file-type $dirPathTempEng |grep / | awk -F/ '{print $1}')" -- "$cur") )
+            elif (( $COMP_CWORD==2 )) && [[ -d ${dirPathTempEng}/${prev} ]];then
+                COMPREPLY=( $(compgen -W "$(ls --file-type ${dirPathTempEng}/${prev} |grep / | awk -F/ '{print $1}')" -- "$cur") )
+            else
+                COMPREPLY=( $(compgen -W "--type --lan" -- "$cur") )
+            fi
+            ;;
+    esac
+
+}
+complete -F _ftText2Mp3ByLesson ftText2Mp3ByLesson
 ftText2Mp3ByLesson()
 {
     local ftEffect=TextToAudioMediaFileByLessonContent
@@ -261,7 +289,7 @@ ftText2Mp3ByLesson()
         # help infoumation ==============
         -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
 #=========================================================
-#    ftText2Mp3ByLesson LessonGroupName LessonName sentence/imitate
+#    ftText2Mp3ByLesson LessonGroupName LessonName --type sentence/imitate --lan cn/en
 #========================================================="; return ;;
     * ) ;; esac;done
 
@@ -285,7 +313,33 @@ ftText2Mp3ByLesson()
     ftText2Mp3 -fpt "${filePathLessonText}" -dpm "${dirPathLessonAudio}"
 }
 
-complete -W "-h --help" ftText2Mp3ByLessonGroup
+_ftText2Mp3ByLessonGroup()
+{
+    local ftEffect=ftText2Mp3ByLessonGroup\'sArgumentAppend
+    local cur prev words
+
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "${prev}" in
+        --type )
+            COMPREPLY=( $(compgen -W "article sentence imitate" -- "$cur") )
+            ;;
+        --lan )
+            COMPREPLY=( $(compgen -W "en cn" -- "$cur") )
+            ;;
+        * )
+            if (( $COMP_CWORD==1 ));then
+                [[ "$cur" =~ ^\- ]] && COMPREPLY=( $(compgen -W "-h --help" -- "$cur") ) ||\
+                COMPREPLY=( $(compgen -W "$(ls --file-type $dirPathTempEng |grep / | awk -F/ '{print $1}')" -- "$cur") )
+            else
+                COMPREPLY=( $(compgen -W "--type --lan" -- "$cur") )
+            fi
+            ;;
+    esac
+
+}
+complete -F _ftText2Mp3ByLessonGroup ftText2Mp3ByLessonGroup
 ftText2Mp3ByLessonGroup()
 {
     local ftEffect=TextToAudioMediaFileByLessonGroup
@@ -300,7 +354,7 @@ ftText2Mp3ByLessonGroup()
         # help infoumation ==============
         -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
 #=========================================================
-#    ftText2Mp3ByLessonGroup LessonGroupName
+#    ftText2Mp3ByLessonGroup LessonGroupName --type sentence/imitate --lan cn/en
 #========================================================="; return ;;
     * ) ;; esac;done
 
