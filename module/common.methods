@@ -545,22 +545,31 @@ ftEcho()
         -key )
                 local arrayKeys=($(echo $2 | sed 's/ /\n/g'))
                 local arrayKeyContents=($(echo $3 | sed 's/ /\n/g'))
+                local arrayKeysIgone=($(echo $4 | sed 's/ /\n/g'))
                 local argListKeyContents isEchoPlural=true
                 local forceEchoPluralFlag=4 forceEchoPluralIndex=1
                 if [ "${2}" = "-n" ];then
                   isEchoPlural=false
                   arrayKeys=($(echo $3 | sed 's/ /\n/g'))
                   arrayKeyContents=($(echo $4 | sed 's/ /\n/g'))
+                  arrayKeysIgone=($(echo $5 | sed 's/ /\n/g'))
                 fi
+
+                [[ -n $arrayKeysIgone ]] && for (( index = 0; index <${#arrayKeysIgone[@]}; index++ )); do
+                    for indexKeys in "${!arrayKeys[@]}"; do
+                       [[ "${arrayKeysIgone[$index]}" == "${arrayKeys[$indexKeys]}" ]] && arrayKeys[$indexKeys]="" && arrayKeyContents[$indexKeys]="" && break
+                    done
+                done
+
                 for item in ${arrayKeyContents[@]}; do
-                argListKeyContents="${argListKeyContents}Press \033[31m%-1s\033[0m ${item}"
-                if $isEchoPlural;then
-                  argListKeyContents="${argListKeyContents}\n"
-                else
-                  argListKeyContents="${argListKeyContents} \033[44;37m|\033[0m "
-                  ((forceEchoPluralIndex+=1))
-                  ((forceEchoPluralIndex>forceEchoPluralFlag)) && argListKeyContents="${argListKeyContents}\n" && forceEchoPluralIndex=1
-                fi
+                    argListKeyContents="${argListKeyContents}Press \033[31m%-1s\033[0m ${item}"
+                    if $isEchoPlural;then
+                      argListKeyContents="${argListKeyContents}\n"
+                    else
+                      argListKeyContents="${argListKeyContents} \033[44;37m|\033[0m "
+                      ((forceEchoPluralIndex+=1))
+                      ((forceEchoPluralIndex>forceEchoPluralFlag)) && argListKeyContents="${argListKeyContents}\n" && forceEchoPluralIndex=1
+                    fi
                 done
                 argListKeyContents="${argListKeyContents}\n"
                 printf "${argListKeyContents}" ${arrayKeys[@]}  | sed 's/__/ /g'
