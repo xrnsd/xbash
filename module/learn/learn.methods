@@ -18,7 +18,7 @@ _ftLearnRepetionDrill()
             COMPREPLY=( $(compgen -W "article sentence imitate" -- "$cur") )
             ;;
         article | sentence | imitate )
-            COMPREPLY=( $(compgen -W "-te -htc -hte -pl -up" -- "$cur") )
+            COMPREPLY=( $(compgen -W "-te -htc -hte -pl -up -fq" -- "$cur") )
             ;;
         * )
             [[ $prev =~ ^\- ]] && (( $COMP_CWORD>3 )) && COMPREPLY=( $(compgen -W "-te -htc -hte -pl -up" -- "$cur") ) ||\
@@ -36,8 +36,8 @@ ftLearnRepetionDrill()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} Disabled, please confirm" && return
     #check argument
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
-    local contentType operateMode
-    local isShowChineseTips=true isShowEnglishTips=true isPlayChineseTips=false
+    local contentType operateMode readTimeOut
+    local isShowChineseTips=true isShowEnglishTips=true isPlayChineseTips=false isAutomaticSwitching=false
     local isUsePlan=false isOperateTextEdit=false isOperateAutoBcompare=false isOperatePlayAudio=false
     local valCount=7 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
@@ -58,6 +58,7 @@ ftLearnRepetionDrill()
 #                         -htc     #drill by hide chinese tips
 #                         -hte     #drill by hide english tips
 #                         -pl _/cn #play audio(normal en),enter cn to play chinese audio
+#                         -fq xx   #automatic frequency switching in seconds
 #========================================================="; return ;;
         --rely) ftEcho -rc "${ftEffect}" "‘s dependency description" "\
 #=========================================================
@@ -65,6 +66,14 @@ ftLearnRepetionDrill()
 #========================================================="; return ;;
         # argument check and handle ==============
         --type )  contentType="${arg2}"
+                case "${contentType}" in
+                    article | sentence | imitate )
+                        ;;
+                    * )  [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
+                         errorContent="${errorContent}invalid aregument :${contentType}"
+                         break
+                        ;;
+                esac
             ;;
         -htc ) isShowChineseTips=false
             ;;
@@ -72,6 +81,9 @@ ftLearnRepetionDrill()
             ;;
         -te ) isOperateTextEdit=true
               operateMode="${operateMode}T"
+            ;;
+        -fq ) isAutomaticSwitching=true
+            readTimeOut="${arg2}"
             ;;
         -pl ) [[ -z $(which play) ]] && ftLearnRepetionDrill --rely "sox" && return $resultFail
               [[ -z $(which xclip) ]] && ftLearnRepetionDrill --rely "xclip" && return $resultFail 
@@ -81,14 +93,15 @@ ftLearnRepetionDrill()
             ;;
         -up ) isUsePlan=true
             ;;
-        * )  errorContent="${errorContent}\\naregument invalid:${arg}"
+        * ) [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
+            errorContent="${errorContent}invalid aregument:${arg}"
              break
             ;; esac;done
 
     #argument check
     (( $#>$valCount )) && errorContent="${errorContent}\\nThe maximum number of parameters is ${valCount}, now it is $#"
     [[ -z "$contentType" ]] && errorContent="${errorContent}\\ncontentType is not configed"
-    [[ -n "$errorContent" ]] && ftEcho -e "${errorContent}:" && ftLearnRepetionDrill -h && return $resultFail
+    [[ -n "$errorContent" ]] && ftEcho -e "${errorContent}" && ftLearnRepetionDrill -h && return $resultFail
     $isPlayChineseTips && isShowChineseTips=true
 
     local filePathLearnDataBase="${dirPathTempEng}/local.database"
@@ -221,7 +234,7 @@ ftLearnRepetionDrill()
 
     local failTime autoStorgeToMultipleFailTimeFlag=$(ftIniEditUtil -r $filePathLearnDataBase $groupNameRepetionDrill "autoStorgeToMultipleFailTimeFlag")
     local englishItem chineseItem drillResltItem
-    local lessonSize=0 indexSort itemOptionSelect englishItemLength readTimeOut
+    local lessonSize=0 indexSort englishItemLength
     local timingStart=$(date +%s -d $(date +"%H:%M:%S")) timingChang
     local drillInfomationTips="\033[1;33mLesson group name:\033[0m ${lessonGroupNameSel} \033[1;33mLesson name:\033[0m ${lessonNameSel} \033[1;33mContent type:\033[0m ${contentType} \033[1;33mOperation mode:\033[0m ${operateMode}"
 
@@ -519,12 +532,56 @@ ftLearnRepetionDrill()
     local arrayIndexSortSize=${#arrayIndexSort[@]} linkInfo
     local isShowEnglishTipsSingle=false isShowChineseTipsSingle=false
     local tipsItemsContent contentAnalysis audioInfo timeStart timeHandled
+    
+    local arrayKeys arrayKeyContents arrayKeysIgone
+    if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && [[ $lessonNameSel = $lessonNameRepetionDrill ]]; then
+        arrayKeys="Y S Q N T C W D E Any__other__key"
+        arrayKeyContents="understood to__save__the__progress__and__exit \
+        to__quit to__skip__and__go__to__the__next__item \
+        to__show__tips to__mark__as__connected__item \
+        to__previous__item to__to__delete__records \
+        to__save__problem to__replay"
+
+    elif [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && [[ $lessonNameSel = "connect" ]]; then
+        arrayKeys="Y S Q N T D E W P Any__other__key"
+        arrayKeyContents="understood to__save__the__progress__and__exit \
+        to__quit to__skip__and__go__to__the__next__item \
+        to__show__tips to__to__delete__records \
+        to__save__problem to__previous__item \
+        to__be__strengthened to__replay"
+
+    elif $isOperatePlayAudio && $isShowEnglishTips && $isShowChineseTips;then
+        arrayKeys="S Q N E W P C Any__Other__Key"
+        arrayKeyContents="to__save__the__progress__and__exit to__quit \
+        to__skip__and__go__to__the__next__item  \
+        to__save__problem  to__previous__item \
+        to__be__strengthened to__mark__as__connected__item to__replay"
+
+    elif $isOperatePlayAudio;then
+        arrayKeys="S Q T N E W P C Any__Other__Key"
+        arrayKeyContents="to__save__the__progress__and__exit to__quit  to__show__tips\
+        to__skip__and__go__to__the__next__item  \
+        to__save__problem  to__previous__item \
+        to__be__strengthened to__mark__as__connected__item to__replay"
+
+    else
+        arrayKeys="S Q T N E W P C" \
+        arrayKeyContents="to__save__the__progress__and__exit to__quit to__show__tips \
+        to__skip__and__go__to__the__next__item  \
+        to__save__problem to__previous__item \
+        to__be__strengthened to__mark__as__connected__item"
+    fi
+    if $isShowEnglishTips && $isShowChineseTips;then
+        arrayKeysIgone="T"
+    fi
+
     while (( $indexArray <= $arrayIndexSortSize  )); do
 
         timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
         indexSort=${arrayIndexSort[$indexArray]}
         #read mode use order index
-        [[ "$contentType" = "preview" ]] && indexSort=$indexArray
+        [[ "$contentType" = "sentence" ]] && ! $isOperatePlayAudio && ( $isShowEnglishTips || $isShowChineseTips ) && \
+            indexSort=$indexArray
 
         englishItem=$(awk 'NR=="'$indexSort'"' $filePathDataItemContentTextEnglish)
         if [[ -z $englishItem ]];then
@@ -568,10 +625,19 @@ ftLearnRepetionDrill()
 
         [[ -f "${dirPathDataItemContentTextAnalysis}/${indexSort}.analysis" ]] && \
         contentAnalysis=$(cat ${dirPathDataItemContentTextAnalysis}/${indexSort}.analysis)
-        ((readTimeOut=$englishItemLength+$englishItemLength+$englishItemLength))
+        ! $isAutomaticSwitching && ((readTimeOut=$englishItemLength+$englishItemLength+$englishItemLength))
 
-        drillResltItem=$(cat $filePathItemSentenceEnglishDrillResult)
+        [[ -f $filePathItemSentenceEnglishDrillResult ]] && drillResltItem=$(cat $filePathItemSentenceEnglishDrillResult)
         (( $(echo $drillResltItem |grep -v ^$|wc -l)==0 )) && drillResltItem="${englishItem}"
+
+        tipsItemsContent=
+        ($isShowChineseTips || $isShowChineseTipsSingle) && tipsItemsContent="${chineseItem}"
+        [[ -n $contentAnalysis ]] && tipsItemsContent="${tipsItemsContent}\n${contentAnalysis}" 
+
+        if $isShowEnglishTips || $isShowEnglishTipsSingle;then
+            [[ -n $drillResltItem ]] && tipsItemsContent="${tipsItemsContent}\n${drillResltItem}"\
+                                     || tipsItemsContent="${tipsItemsContent}\n${englishItem}"
+        fi
 
         while true; do
             echo -en ${drillInfomationTipsTemp}
@@ -579,55 +645,24 @@ ftLearnRepetionDrill()
             $isOperatePlayAudio && ftEcho -sn " Audio：" && echo -n "${audioInfo}"
             [[ -n $failTime ]] && echo && ftEcho -sn " Fail time: " && echo -n $failTime
             [[ -n $readTimeOut ]] && ftEcho -sn " Time out: " && echo -n $readTimeOut
-
-            tipsItemsContent=
-            ($isShowChineseTips || $isShowChineseTipsSingle) && tipsItemsContent="${chineseItem}"
-            [[ -n $contentAnalysis ]] && tipsItemsContent="${tipsItemsContent}\n${contentAnalysis}"  
-            ($isShowEnglishTips || $isShowEnglishTipsSingle) && tipsItemsContent="${tipsItemsContent}\n${drillResltItem}"
             [[ -n $tipsItemsContent ]] && echo && ftEcho -bl "${tipsItemsContent}"
+            ftEcho -key -n "${arrayKeys}" "${arrayKeyContents}" "${arrayKeysIgone}"
 
             #write to clipboard
             echo "${englishItem}"| tr -d '\n'| xclip -sel clip
 
-            if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && [[ $lessonNameSel = $lessonNameRepetionDrill ]]; then
-                ftEcho -key -n "Y S Q N T C W D E Any__other__key" \
-                "understood to__save__the__progress__and__exit \
-                to__quit to__skip__and__go__to__the__next__item \
-                to__show__tips to__mark__as__connected__item \
-                to__previous__item to__to__delete__records \
-                to__save__problem to__replay"
-
-            elif [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && [[ $lessonNameSel = "connect" ]]; then
-                ftEcho -key -n "Y S Q N T D E W Any__other__key" \
-                "understood to__save__the__progress__and__exit \
-                to__quit to__skip__and__go__to__the__next__item \
-                to__show__tips to__to__delete__records \
-                to__save__problem to__previous__item \
-                to__replay"
-
-            elif $isOperatePlayAudio;then
-                ftEcho -key -n "S Q T N E W P C Any__Other__Key" \
-                "to__save__the__progress__and__exit to__quit  to__show__tips\
-                to__skip__and__go__to__the__next__item  \
-                to__save__problem  to__previous__item \
-                to__be__strengthened to__mark__as__connected__item to__replay"
-
-            else
-                ftEcho -key -n "S Q T N E W P C" \
-                "to__save__the__progress__and__exit to__quit to__show__tips \
-                to__skip__and__go__to__the__next__item  \
-                to__save__problem to__previous__item \
-                to__be__strengthened to__mark__as__connected__item"
-            fi
-
             timeStart=$(date +%s -d $(date +"%H:%M:%S"))
             $isOperatePlayAudio && play -q $filePathItemAudioFile
 
-            read -n 1 -t${readTimeOut} playOpt
+            [[ -n $readTimeOut ]] && read -n 1 -t${readTimeOut} playOpt || read -n 1 playOpt
+
             timeHandled=$(date +%s -d $(date +"%H:%M:%S"))
-            (( timeHandled-timeStart >= $readTimeOut)) && [[ -z $playOpt ]] && playOpt=n
-            itemOptionSelect=$playOpt
-            
+            if $isAutomaticSwitching;then
+                playOpt=$($isShowEnglishTipsSingle && echo n || echo t)
+            elif ((timeHandled-timeStart >= $readTimeOut));then
+                playOpt=n
+            fi
+
             case "$playOpt" in
             s | S )
                     [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
@@ -739,14 +774,18 @@ ftLearnRepetionDrill()
                 t | T  )
                     isShowChineseTipsSingle=true
                     isShowEnglishTipsSingle=true
+                    tipsItemsContent="${chineseItem}"
+                    [[ -n $contentAnalysis ]] && tipsItemsContent="${tipsItemsContent}\n${contentAnalysis}" 
+                    [[ -n $drillResltItem ]] && tipsItemsContent="${tipsItemsContent}\n${drillResltItem}"\
+                                                 || tipsItemsContent="${tipsItemsContent}\n${englishItem}"
                     ;;
                 * ) ;;
             esac
             clear
         done
 
-        $isShowChineseTipsSingle && isShowChineseTipsSingle=false
-        $isShowEnglishTipsSingle && isShowEnglishTipsSingle=false
+        isShowChineseTipsSingle=false
+        isShowEnglishTipsSingle=false
         valRepetionDrillErrorHository=(${valRepetionDrillErrorHository[@]} $indexSort)
 
         (( lessonSize+=1 ))
@@ -789,6 +828,7 @@ ftLearnRepetionDrill()
             fi
         fi
 
+        drillResltItem=
         englishItem=
         chineseItem=
         (( indexArray+=1 ))
