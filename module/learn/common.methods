@@ -259,7 +259,7 @@ _ftText2Mp3ByLesson()
             COMPREPLY=( $(compgen -W "article sentence imitate" -- "$cur") )
             ;;
         --lan )
-            COMPREPLY=( $(compgen -W "en cn" -- "$cur") )
+            COMPREPLY=( $(compgen -W "english chinese" -- "$cur") )
             ;;
         * )
             if (( $COMP_CWORD==1 ));then
@@ -283,31 +283,38 @@ ftText2Mp3ByLesson()
     #argument init
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
 
-    local valCount=3 errorContent arg arg2
+    local LessonGroupName=$1
+    local LessonName=$2
+    local contentType playAudioLanguage
+    local valCount=6 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # help infoumation ==============
         -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
 #=========================================================
-#    ftText2Mp3ByLesson LessonGroupName LessonName --type sentence/imitate --lan cn/en
+#    ftText2Mp3ByLesson LessonGroupName LessonName --type sentence/imitate --lan english/chinese
 #========================================================="; return ;;
-    * ) ;; esac;done
-
-    # argument infoumation ==============
-    local LessonGroupName=$1
-    local LessonName=$2
-    local contentType=$3
+        # argument infoumation ==============
+        --type ) contentType="${arg2}"
+            ;;
+        --lan ) playAudioLanguage="${arg2}"
+            ;;
+        * ) [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
+            errorContent="${errorContent}invalid aregument:${arg}"
+             break
+            ;; esac;done
 
     #argument check
     (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
     [ -n "$errorContent" ] && ftEcho -e "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftText2Mp3ByLesson -h && return $resultFail
     [[ -z $contentType ]] && contentType="sentence"
+    [[ -z $playAudioLanguage ]] && playAudioLanguage="english"
 
     #code main
     local dirPathTempEng=$(ftIniEditUtil -r  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
     local dirPathLesson="${dirPathTempEng}/${LessonGroupName}/${LessonName}"
-    local dirPathLessonAudio="${dirPathTempEng}/${LessonGroupName}/${LessonName}/${contentType}.audio_english"
-    local filePathLessonText="${dirPathTempEng}/${LessonGroupName}/${LessonName}/${contentType}.text_english"
+    local dirPathLessonAudio="${dirPathTempEng}/${LessonGroupName}/${LessonName}/${contentType}.audio_${playAudioLanguage}"
+    local filePathLessonText="${dirPathTempEng}/${LessonGroupName}/${LessonName}/${contentType}.text_${playAudioLanguage}"
 
     [[ ! -d $dirPathLessonAudio ]] && mkdir $dirPathLessonAudio
     ftText2Mp3 -fpt "${filePathLessonText}" -dpm "${dirPathLessonAudio}"
