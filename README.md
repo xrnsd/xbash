@@ -16,7 +16,6 @@ bash的简单扩展
 2.文件用途说明[部分]
 ----------
     ├── README.md
-    ├── main  -----------------  xbash主入口
     ├── init  -----------------  xbash安装初始化工具
     │
     ├── config  ---------------  工具相关配置
@@ -26,19 +25,27 @@ bash的简单扩展
     └── module  ---------------  脚本实现文件[以文件夹划分功能]
           │
           ├── auto
+          │    ├── tts.methods  -----------------  文字合成语音工具
           │    ├── auto.methods  ----------------  Auto的相关实现
+          │    ├── battery.module  --------------  电池电量监听提醒
+          │    ├── powerMange.module  -----------  定时关机或重启
+          │    ├── autoBoot.module.example  -----  登陆自启动部分工具
           │    └── packet_7731c.module  ---------  7731c的packet打包工具
           ├── base
           │    ├── base.database  ---------------  工具数据
           │    ├── bash_input.module  -----------  配置命令历史适配逻辑
           │    ├── test.module.example  ---------  测试工具的模版
           │    └── packaging.module  ------------  xbash对扩展和内置命令的封装
+          │
           ├── common.methods  -------------------  框架和公用实现
+          ├── test.module  ----------------------  测试工具
+          ├── main.module  ----------------------  xbash主入口
+          ├── init.module  ----------------------  xbash安装初始化工具
           │
           ├── example     -----------------------  用于存放模版,该模块无需在main中初始化
           │    ├── user.config.expmale  ---------  用户xbash配置模版
           │    ├── test.module.example  ---------  测试工具的模版
-          │    ├── multi_branch.module.example ---  添加gitPatch[多分支]的模版
+          │    ├── multi_branch.module.example --  添加gitPatch[多分支]的模版
           │    ├── user.packaging.module.example   xbash对扩展和内置命令的封装模版
           │    ├── proguard-rules.pro.example --   混淆配置文件模版
           │    ├── bash_hository.backup.example -  Bash历史备份模板
@@ -53,10 +60,10 @@ bash的简单扩展
           └── git
                ├── git.methods  -----------------  git自定义的bash扩展
                ├── git_completion.methods  ------  git非自定义的bash扩展
-               └── multi_branch.module.example ---  批量添加patch的工具的示例
+               └── multi_branch.module.example --  批量添加patch的工具的示例
 
 3.其他说明
 ----------
-    01 为了方便使用，部分实现在方法实现之外还加了命令简化封装，所以可能存在两种调用方式
-    02 用户模块[用户名.module]中添加配置会默认覆盖原始配置
-    03 用户模块下定义会覆盖同名的默认定义
+01 为了方便使用，部分实现在方法实现之外还加了命令简化封装，所以可能存在两种调用方式
+02 用户模块[用户名.module]中添加配置会默认覆盖原始配置
+03 用户模块下定义会覆盖同名的默认定义
