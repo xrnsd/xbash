@@ -83,6 +83,7 @@ ftLearnRepetionDrill()
               operateMode="${operateMode}T"
             ;;
         -fq ) isAutomaticSwitching=true
+            [[ -n $arg2 ]] && [[ -n $(echo $arg2| sed -n "/^[0-9]\+$/p") ]] && \
             readTimeOut="${arg2}"
             ;;
         -pl ) [[ -z $(which play) ]] && ftLearnRepetionDrill --rely "sox" && return $resultFail
@@ -111,7 +112,7 @@ ftLearnRepetionDrill()
     local filePathCompareExampleText=/tmp/exampleTextDrill.txt
 
     #select lesson group
-    local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=normal
+    local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=understand
     local learnLessonGroupList="$(ftIniEditUtil -r  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
     [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
     local lessonGroupDailyStudyPlanSelected="$(ftIniEditUtil -r  $filePathLearnDataBase learnLessonInfo lessonGroupDailyStudyPlanSelected${contentType}${operateMode})"
@@ -131,7 +132,7 @@ ftLearnRepetionDrill()
 
     #select lesson
     local filePathDrillResultTure=/tmp/DrillResultTure drillResultTure=1
-    local indexArray=0 drillTrueCount=0 arrayIndexSort valRepetionDrillErrorHository
+    local indexArray=0 drillTrueCount=0 arrayIndexSort
     echo -n "" > $filePathDrillResultTure
     local learnLessonList="$(ftIniEditUtil -r $filePathLearnDataBase $lessonGroupNameSel lessonList)"
     [[ -z $learnLessonList ]] || [[ $learnLessonList == "none" ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
@@ -152,7 +153,6 @@ ftLearnRepetionDrill()
             ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray"
             ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"
             ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"
-            ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"
         fi
         echo
     else
@@ -168,7 +168,6 @@ ftLearnRepetionDrill()
     if $isUseDrillingRecord;then
         indexArray=$(ftIniEditUtil -r $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray")
         arrayIndexSort=($(ftIniEditUtil -r $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"))
-        valRepetionDrillErrorHository=($(ftIniEditUtil -r $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"))
         drillTrueCount=($(ftIniEditUtil -r $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"))
     else
         echo
@@ -218,17 +217,8 @@ ftLearnRepetionDrill()
     local filePathDataItemArticleTextExplain="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.text_explain"
     local filePathDataItemArticleVideoExplain="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/article.mp4"
 
-    local filePathDataItemdRillResultLinkTable="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}_drill_result_$(date -d "today" +"%Y%m%d").link_table"
-    if ! $isUseDrillingRecord && [[ -f $filePathDataItemdRillResultLinkTable ]];then
-        ftEcho -y "There are drill records here. Do you want to delete it ? (Press Y/y is del, enter equal to press y)"
-        read -n 1 delSel
-        [ -z "${delSel}" ] && delSel=y
-        if [[ $delSel != "y" ]];then
-            echo "" > $filePathDataItemdRillResultLinkTable
-        fi
-        echo
-    fi
-
+    local filePathDataItemWordExample="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/word_example.text_english"
+    
     clear
     if [[ ! -f "$filePathDataItemContentTextEnglish" ]]; then
         ftEcho -e "data file not exist :${filePathDataItemContentTextEnglish}"
@@ -423,7 +413,7 @@ ftLearnRepetionDrill()
                     ((sentenceAudioIndex+=1))
                 done
                 sentenceAudioIndex=1
-                ftEcho -key -n "Q T Any__other__key" "to__quit to__show__tips to__replay"
+                ftEcho -key -n "Q T Any_other_key" "to_quit to_show_tips to_replay"
                 read -n 1 playOpt
                 case "$playOpt" in
                     q | Q )
@@ -453,13 +443,13 @@ ftLearnRepetionDrill()
                 echo -e "$englishItem"
                 echo -e "$(awk 'NR=="'$index'"' $dirPathDataItemTextDrillResult)"
                 echo
-                ftEcho -key "W Q Any__other__key" "to__previous__item to__quit to__the__next__item"
+                ftEcho -key "W Q Any_other_key" "go_to_previous_item to_quit to_the_next_item"
                 read -n 1 operation
 
                 case "$operation" in
                     q | Q ) echo
                             break;;
-                    w | W ) (( index>1 )) && (( index-=1 )) || (( index=1 ))
+                    p | P ) (( index>1 )) && (( index-=1 )) || (( index=1 ))
                             continue;;
                     * ) ((index < $fileLineCount)) && (( index+=1 )) || ((  index=1 ));;
                 esac
@@ -494,7 +484,7 @@ ftLearnRepetionDrill()
                 clear
                 echo -e ${drillInfomationTipsTemp}
                 echo -e "${chineseItem}"
-                ftEcho -key "Q Any__other__key" "to__quit to__display__English"
+                ftEcho -key "Q Any_other_key" "to_quit to_display_English"
                 read -n 1 operation
                 [[ $operation = "q" ]] || [[ $operation = "Q" ]] && echo && break
             done
@@ -516,7 +506,6 @@ ftLearnRepetionDrill()
         ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray"
         ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"
         ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"
-        ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"
 
         #clear training records
         if $isUsePlan;then
@@ -550,49 +539,53 @@ ftLearnRepetionDrill()
     fi
 
     local arrayIndexSortSize=${#arrayIndexSort[@]} linkInfo
-    local isShowEnglishTipsSingle=false isShowChineseTipsSingle=false
+    local isShowEnglishTipsSingle=false isShowChineseTipsSingle=false isOperatePlayAudioSingle=false
     local tipsItemsContent contentAnalysis audioInfo timeStart timeHandled
     
-    local arrayKeys arrayKeyContents arrayKeysIgone
-    if [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && [[ $lessonNameSel = $lessonNameRepetionDrill ]]; then
-        arrayKeys="Y S Q N T C W D E Any__other__key"
-        arrayKeyContents="understood to__save__the__progress__and__exit \
-        to__quit to__skip__and__go__to__the__next__item \
-        to__show__tips to__mark__as__connected__item \
-        to__previous__item to__to__delete__records \
-        to__save__problem to__replay"
+    local arrayKeysIgone \
+          arrayKeys="Y N P T D A S E U R W L Any_Other_Key" \
+          arrayKeyContents="understand \
+                          go_to_next_item \
+                          go_to_previous_item \
+                          to_show_tips \
+                          to_delete_records \
+                          to_add_analysis \
+                          to_save_the_progress_and_exit \
+                          to_save_hard_to_express \
+                          to_save_hard_to_understand \
+                          to_save_hard_to_read_aloud \
+                          to_save_word_example \
+                          to_play_audio \
+                          to_replay"
 
-    elif [[ $lessonGroupNameSel = $groupNameRepetionDrill ]] && [[ $lessonNameSel = "connect" ]]; then
-        arrayKeys="Y S Q N T D E W P Any__other__key"
-        arrayKeyContents="understood to__save__the__progress__and__exit \
-        to__quit to__skip__and__go__to__the__next__item \
-        to__show__tips to__to__delete__records \
-        to__save__problem to__previous__item \
-        to__be__strengthened to__replay"
-
-    elif $isOperatePlayAudio && $isShowEnglishTips && $isShowChineseTips;then
-        arrayKeys="S Q N E W P C Any__Other__Key"
-        arrayKeyContents="to__save__the__progress__and__exit to__quit \
-        to__skip__and__go__to__the__next__item  \
-        to__save__problem  to__previous__item \
-        to__be__strengthened to__mark__as__connected__item to__replay"
-
-    elif $isOperatePlayAudio;then
-        arrayKeys="S Q T N E W P C Any__Other__Key"
-        arrayKeyContents="to__save__the__progress__and__exit to__quit  to__show__tips\
-        to__skip__and__go__to__the__next__item  \
-        to__save__problem  to__previous__item \
-        to__be__strengthened to__mark__as__connected__item to__replay"
-
+    if $isOperatePlayAudio;then
+        arrayKeysIgone="${arrayKeysIgone} L"
     else
-        arrayKeys="S Q T N E W P C" \
-        arrayKeyContents="to__save__the__progress__and__exit to__quit to__show__tips \
-        to__skip__and__go__to__the__next__item  \
-        to__save__problem to__previous__item \
-        to__be__strengthened to__mark__as__connected__item"
+        arrayKeysIgone="${arrayKeysIgone} Any_Other_Key"
     fi
+
     if $isShowEnglishTips && $isShowChineseTips;then
-        arrayKeysIgone="T"
+        arrayKeysIgone="${arrayKeysIgone} T"
+    fi
+
+    if [[ $lessonGroupNameSel != $groupNameRepetionDrill ]];then
+        arrayKeysIgone="${arrayKeysIgone} D"
+    else
+        case "$lessonNameSel" in
+            understand )
+                arrayKeysIgone="${arrayKeysIgone} U"
+                ;;
+            express )
+                arrayKeysIgone="${arrayKeysIgone} E"
+                ;;
+            read_aloud )
+                arrayKeysIgone="${arrayKeysIgone} R"
+                ;;
+            word_example )
+                arrayKeysIgone="${arrayKeysIgone} W"
+                ;;
+            *)  ;;
+        esac
     fi
 
     while (( $indexArray <= $arrayIndexSortSize  )); do
@@ -643,8 +636,12 @@ ftLearnRepetionDrill()
             [[ -n $filePathItemAudioFileLink ]] && ln -s $filePathItemAudioFile $filePathItemAudioFileLink
         fi
 
+        contentAnalysis=
         [[ -f "${dirPathDataItemContentTextAnalysis}/${indexSort}.analysis" ]] && \
         contentAnalysis=$(cat ${dirPathDataItemContentTextAnalysis}/${indexSort}.analysis)
+        [[ -z $contentAnalysis ]] && [[ -f $dirPathDataItemContentTextAnalysis ]] && \
+        contentAnalysis=$(awk 'NR=="'$indexSort'"' $dirPathDataItemContentTextAnalysis)
+
         ! $isAutomaticSwitching && ((readTimeOut=$englishItemLength+$englishItemLength+$englishItemLength))
 
         [[ -f $filePathItemSentenceEnglishDrillResult ]] && drillResltItem=$(cat $filePathItemSentenceEnglishDrillResult)
@@ -652,11 +649,12 @@ ftLearnRepetionDrill()
 
         tipsItemsContent=
         ($isShowChineseTips || $isShowChineseTipsSingle) && tipsItemsContent="${chineseItem}"
-        [[ -n $contentAnalysis ]] && tipsItemsContent="${tipsItemsContent}\n${contentAnalysis}" 
 
         if $isShowEnglishTips || $isShowEnglishTipsSingle;then
             [[ -n $drillResltItem ]] && tipsItemsContent="${tipsItemsContent}\n${drillResltItem}"\
                                      || tipsItemsContent="${tipsItemsContent}\n${englishItem}"
+
+        [[ -n $contentAnalysis ]] && tipsItemsContent="${tipsItemsContent}\n${contentAnalysis}" 
         fi
 
         while true; do
@@ -672,7 +670,8 @@ ftLearnRepetionDrill()
             echo "${englishItem}"| tr -d '\n'| xclip -sel clip
 
             timeStart=$(date +%s -d $(date +"%H:%M:%S"))
-            $isOperatePlayAudio && play -q $filePathItemAudioFile
+            ($isOperatePlayAudio || $isOperatePlayAudioSingle) && play -q $filePathItemAudioFile
+            isOperatePlayAudioSingle=false
 
             [[ -n $readTimeOut ]] && read -n 1 -t${readTimeOut} playOpt || read -n 1 playOpt
 
@@ -685,7 +684,7 @@ ftLearnRepetionDrill()
             fi
 
             case "$playOpt" in
-            s | S )
+                s | S )
                     [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
                     (( $indexArray <= 1 )) && ftEcho -s "Today drill time to short, cancel save" && return
                     echo -n "Today drill time：" && ftTimeConsuming -s ftLearnRepetionDrill
@@ -695,15 +694,13 @@ ftLearnRepetionDrill()
                     ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray" $indexArray
                     ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount" $drillTrueCount
                     ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" "${arrayIndexSort[*]}"
-                    [[ -n $valRepetionDrillErrorHository ]] && \
-                    ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError" "${valRepetionDrillErrorHository[*]}"
                     ftEcho -s "The drill records is saved"
                     return;;
-                q | Q )
-                    [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
-                    (( $indexArray > 1 ))&& echo -n "Today drill time：" && ftTimeConsuming -s ftLearnRepetionDrill
-                    return;;
-                w | W )
+                # q | Q )
+                #     [ -f $filePathLearnDrillTemp ] && rm -rf $filePathLearnDrillTemp
+                #     (( $indexArray > 1 ))&& echo -n "Today drill time：" && ftTimeConsuming -s ftLearnRepetionDrill
+                #     return;;
+                p | P )
                     ftTextSetLine -f $filePathDrillResultTure -nn $indexSort
                     (( indexArray>=1 )) && (( indexArray-=2 )) || (( indexArray=0 ))
                     break;;
@@ -732,87 +729,102 @@ ftLearnRepetionDrill()
                         break
                     fi
                     ;;
-                p | P )
-                    if [[ $lessonGroupNameSel != $groupNameRepetionDrill ]]||[[ $lessonNameSel != $lessonNameRepetionDrill ]]; then
-                       local filePathDataItemCLTN="${dirPathTempEng}/needRepetionDrill/normal/${contentType}.link_table"
-                       if [[ -z $linkInfo ]];then
-                            ftEcho -e "Can't add record : linkInfo is null"
-                       elif [[ ! -f $filePathDataItemCLTN ]] || [[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemCLTN}) ]]; then
-                            echo "${linkInfo}" >> $filePathDataItemCLTN
-                            echo
-                            echo -n "The sforzando record is created, id : " && ftEcho -s "$(awk 'END{print NR}' $filePathDataItemCLTN)"
-                            #ftEcho -continue "press any key continue ..."
-                        else
-                            echo
-                            ftEcho -s "Cancel operation, repeate data"
-                            #ftEcho -continue "press any key continue ..."
-
-                            #save fail time
-                            #[[ -n $failTime ]] && local val=$((failTime+=1)) && sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime
-                        fi
-
-                        sleep 1
-                        #break
-                    fi
-                    ;;
-                c | C )
-                    if [[ $lessonGroupNameSel != $groupNameRepetionDrill ]]||[[ $lessonNameSel != "connect" ]]; then
-                        local filePathDataItemCLTC="${dirPathTempEng}/needRepetionDrill/connect/${contentType}.link_table"
-                        if [[ -z $linkInfo ]];then
-                            ftEcho -e "Can't add record : linkInfo is null"
-                        elif [[ ! -f $filePathDataItemCLTC ]] || [[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemCLTC}) ]]; then
-                            echo "${linkInfo}" >> $filePathDataItemCLTC
-                            echo -n "Marked as continuous reading record is created, id : " && ftEcho -s $(awk 'END{print NR}' $filePathDataItemCLTC)
-                        else
-                            echo
-                            ftEcho -s "Cancel operation, repeate data"
-                        fi
-
-                        sleep 1
-                    fi
-                    #break
-                    ;;
-                e | E )
-                    local filePathDataItemPLTC="${dirPathTempEng}/needRepetionDrill/normal/problem.link_table"
-                    local key="${lessonGroupNameSel}/${lessonNameSel}/${indexSort}"
-                    if [[ ! -f $filePathDataItemPLTC ]]||[[ -z $(grep -e "^${key}$" ${filePathDataItemPLTC}) ]]; then
-                        echo "${key}" >> $filePathDataItemPLTC
-                        echo -n "Please enter problem：" && read infomationTips;
-                        [[ ! -f $filePathDataItemContentTextProblem ]] && touch ${filePathDataItemContentTextProblem}
-                        ftTextSetLine -f $filePathDataItemContentTextProblem -n $indexSort -c "$(date -d "today" +"%Y%m%d") : ${infomationTips}" > /dev/null
-                        echo -n "Marked as continuous reading, id is : " && ftEcho -s $(awk 'END{print NR}' $filePathDataItemPLTC)
-                    else
-                        echo
-                        ftEcho -s "Cancel operation, repeate data"
-                    fi
-
-                    sleep 1
-                    ;;
                 n | N )
                     #save fail time
                     [[ -n $failTime ]] && local val=$((failTime+=1)) && sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime
-                    #save linkInfo
-                    [[ -n $linkInfo ]] && if [[ ! -f $filePathDataItemdRillResultLinkTable ]] || [[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemdRillResultLinkTable}) ]]; then
-                        echo "${linkInfo}" >> $filePathDataItemdRillResultLinkTable
-                        echo
-                        echo -n "The drill record is created, id : " && ftEcho -s "$(awk 'END{print NR}' $filePathDataItemdRillResultLinkTable)"
-                        #ftEcho -continue "press any key continue ..."
-                    else
-                        echo
-                        ftEcho -s "Cancel operation, repeate data"
-                        #ftEcho -continue "press any key continue ..."
-
-                        #save fail time
-                        #[[ -n $failTime ]] && local val=$((failTime+=1)) && sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime
-                    fi
                     break;;
                 t | T  )
                     isShowChineseTipsSingle=true
                     isShowEnglishTipsSingle=true
                     tipsItemsContent="${chineseItem}"
-                    [[ -n $contentAnalysis ]] && tipsItemsContent="${tipsItemsContent}\n${contentAnalysis}" 
                     [[ -n $drillResltItem ]] && tipsItemsContent="${tipsItemsContent}\n${drillResltItem}"\
                                                  || tipsItemsContent="${tipsItemsContent}\n${englishItem}"
+                    [[ -n $contentAnalysis ]] && tipsItemsContent="${tipsItemsContent}\n${contentAnalysis}" 
+                    
+                    ;;
+                #To create word examples
+                w | W )
+                    if [[ -f $filePathLearnDrillTemp ]] && [[ -n $(grep -sn "\+\+" "${filePathLearnDrillTemp}") ]];then
+                        mv "${filePathLearnDrillTemp}" "${filePathLearnDrillTemp}_basic"
+                        echo -n "Word example:${indexSort}"
+                        ftTransformDrillReslt "${filePathLearnDrillTemp}_basic" "${filePathLearnDrillTemp}"
+                        rm -rf "${filePathLearnDrillTemp}_basic"
+                        ftTextSetLine -f $filePathDataItemWordExample -n $indexSort -c "$(cat $filePathLearnDrillTemp | sed -e 's:\\:\\\\:g')" > /dev/null
+                        [[ ! -f $filePathItemSentenceEnglishDrillResult ]] && cp $filePathLearnDrillTemp $filePathItemSentenceEnglishDrillResult
+                        echo -n "" > ${filePathLearnDrillTemp}
+                        echo
+
+                        local filePathDataItemCLTC="${dirPathTempEng}/needRepetionDrill/word_example/word_example.link_table"
+                        if [[ -z $linkInfo ]];then
+                            ftEcho -e "Can't add record : linkInfo is null"
+                        elif [[ ! -f $filePathDataItemCLTC ]]||[[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemCLTC}) ]]; then
+                            echo "${linkInfo}" >> $filePathDataItemCLTC
+                            echo -n "The word example record is created, id is : " && ftEcho -s $(awk 'END{print NR}' $filePathDataItemCLTC)
+                        fi
+                    else
+                        ftEcho -s "Cancel operation, invalid file: ${filePathLearnDrillTemp}"
+                    fi
+                    sleep 1
+                    ;;
+                #To create (cn2en) sentences hard to express in English
+                e | E )
+                    local filePathDataItemCLTC="${dirPathTempEng}/needRepetionDrill/express/${contentType}.link_table"
+                    if [[ -z $linkInfo ]];then
+                        ftEcho -e "Can't add record : linkInfo is null"
+                    elif [[ ! -f $filePathDataItemCLTC ]]||[[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemCLTC}) ]]; then
+                        echo "${linkInfo}" >> $filePathDataItemCLTC
+                        echo -n "The hard to express record is created, id is : " && ftEcho -s $(awk 'END{print NR}' $filePathDataItemCLTC)
+                    else
+                        echo
+                        ftEcho -s "Cancel operation, repeate data"
+                    fi
+                    sleep 1
+                    ;;
+                #To create (en2cn) sentences hard to understand
+                u | U )
+                    if [[ $lessonGroupNameSel != $groupNameRepetionDrill ]]||[[ $lessonNameSel != $lessonNameRepetionDrill ]]; then
+                        local filePathDataItemCLTC="${dirPathTempEng}/needRepetionDrill/understand/${contentType}.link_table"
+                        if [[ -z $linkInfo ]];then
+                            ftEcho -e "Can't add record : linkInfo is null"
+                        elif [[ ! -f $filePathDataItemCLTC ]]||[[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemCLTC}) ]]; then
+                            echo "${linkInfo}" >> $filePathDataItemCLTC
+                            echo -n "The hard to understand record is created, id is : " && ftEcho -s $(awk 'END{print NR}' $filePathDataItemCLTC)
+                        else
+                            echo
+                            ftEcho -s "Cancel operation, repeate data"
+                        fi
+                        sleep 1
+                    fi
+                    ;;
+                #To create sentences hard to read aloud
+                r | R )
+                    local filePathDataItemCLTC="${dirPathTempEng}/needRepetionDrill/read_aloud/${contentType}.link_table"
+                    if [[ -z $linkInfo ]];then
+                        ftEcho -e "Can't add record : linkInfo is null"
+                    elif [[ ! -f $filePathDataItemCLTC ]]||[[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemCLTC}) ]]; then
+                        echo "${linkInfo}" >> $filePathDataItemCLTC
+                        echo -n "The hard to read aloud record is created, id is : " && ftEcho -s $(awk 'END{print NR}' $filePathDataItemCLTC)
+                    else
+                        echo
+                        ftEcho -s "Cancel operation, repeate data"
+                    fi
+                    sleep 1
+                    ;;
+                #To add sentences analysis
+                a | A )
+                    local filePathDataItem
+                    if [[ -f $dirPathDataItemContentTextAnalysis ]];then
+                        filePathDataItem=$dirPathDataItemContentTextAnalysis
+                    else
+                        [[ ! -d $dirPathDataItemContentTextAnalysis ]] && mkdir $dirPathDataItemContentTextAnalysis
+                        filePathDataItem="${dirPathDataItemContentTextAnalysis}/${indexSort}.analysis"
+                        [[ ! -f $filePathDataItem ]] && touch $filePathDataItem
+                    fi
+                    gedit2 $filePathDataItem
+                    ;;
+                #To play audio
+                l | L )
+                    isOperatePlayAudioSingle=true
                     ;;
                 * ) ;;
             esac
@@ -821,8 +833,6 @@ ftLearnRepetionDrill()
 
         isShowChineseTipsSingle=false
         isShowEnglishTipsSingle=false
-        valRepetionDrillErrorHository=(${valRepetionDrillErrorHository[@]} $indexSort)
-
         (( lessonSize+=1 ))
 
         clear
@@ -853,7 +863,7 @@ ftLearnRepetionDrill()
 
         #auto save multiple fail record
         if [[ -n $autoStorgeToMultipleFailTimeFlag ]] && [[ -n $failTime ]] && (( $failTime >= $autoStorgeToMultipleFailTimeFlag ));then
-            local filePathDataItemMCLTN="${dirPathTempEng}/needRepetionDrill/multiple/${contentType}.link_table"
+            local filePathDataItemMCLTN="${dirPathTempEng}/needRepetionDrill/multiple/${contentType}.multiple.link_table"
             [[ ! -f $filePathDataItemMCLTN ]] && mkdir -p $(dirname $filePathDataItemMCLTN)
             if [[ ! -f $filePathDataItemMCLTN ]] || [[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemMCLTN}) ]]; then
                 echo "${linkInfo}" >> $filePathDataItemMCLTN
@@ -869,19 +879,11 @@ ftLearnRepetionDrill()
         (( indexArray+=1 ))
     done
 
-    local valRepetionDrillErrorHositorySort="$(echo ${valRepetionDrillErrorHository[@]} | sed 's/ /\n/g' | uniq | uniq  | xargs echo -n)"
-
     drillTrueCount=$(cat $filePathDrillResultTure |grep -v ^$|wc -l)
-    if [[ "$contentType" = "preview" ]];then
-        ftEcho -s "Lesson group name:${lessonGroupNameSel}\
-                    \nLesson name:${lessonNameSel}"
-    else
-        ftEcho -s "Lesson group name:${lessonGroupNameSel}\
-        \nLesson name:${lessonNameSel}\
-        \nAccuracy:$(printf "%d%%" $((drillTrueCount*100/lessonSize)))"
-        [[ -n $valRepetionDrillErrorHositorySort ]] && ftEcho -s "Error item index list:$(echo ${valRepetionDrillErrorHositorySort[*]})"
-        [[ -n $valRepetionDrillInvalidIndex ]] && ftEcho -s "Invalid item index list:$(echo ${valRepetionDrillInvalidIndex[*]})"
-    fi
+    # ftEcho -s "Lesson group name:${lessonGroupNameSel}\
+    # \nLesson name:${lessonNameSel}\
+    # \nAccuracy:$(printf "%d%%" $((drillTrueCount*100/lessonSize)))"
+    # [[ -n $valRepetionDrillInvalidIndex ]] && ftEcho -s "Invalid item index list:$(echo ${valRepetionDrillInvalidIndex[*]})"
 
     #save drill time
     echo -n "Today drill time：" ;ftTimeConsuming -s ftLearnRepetionDrill
@@ -899,7 +901,6 @@ ftLearnRepetionDrill()
     ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray"
     ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"
     ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"
-    ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArrayError"
 
     #clear training records
     if $isUsePlan;then
@@ -1243,10 +1244,13 @@ ftLearnLessonManage()
             lessonNameSel=$publicSelItemContent
         fi
 
-        local contentTypeList=("sentence imitate article")
+        local contentTypeList=("sentence imitate article word_example")
         local dirPathDataItemBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}"
 
         [[ -z $(find $dirPathDataItemBasic -name *.link_table) ]] && ftEcho -e "invalid lesson : ${lessonGroupNameSel}/${lessonNameSel}, link table isn't exist" && return
+
+        local dirPathLocal="$(pwd)"
+        cd $dirPathDataItemBasic && ls ${dirPathDataItemBasic} | grep -v ".link_table" | xargs rm -rf  && cd "${dirPathLocal}"
 
         for contentType in ${contentTypeList[@]}; do
             #check
@@ -1255,7 +1259,7 @@ ftLearnLessonManage()
             [[ -n $(grep -sn ":" "${filePathDataItemLinkTable}") ]] && ftEcho -e "The file linkTable is invalid : ${filePathDataItemLinkTable}" && continue
 
             ftEcho -sn "create linktable content : " && echo "${contentType}"
-            
+
             # #diff
             local md5KeyOld=$(ftIniEditUtil -r  $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}_${contentType}")
             local md5KeyNow="$(md5sum $filePathDataItemLinkTable | awk '{print $1}')"
@@ -1270,18 +1274,10 @@ ftLearnLessonManage()
             local dirPathLessonUpdateByLtSAE="${dirPathDataItemBasic}/${contentType}.audio_english"
             local dirPathLessonUpdateByLtSAC="${dirPathDataItemBasic}/${contentType}.audio_chinese"
             local dirPathLessonUpdateByLtSDR="${dirPathDataItemBasic}/${contentType}.drill_result"
-            local dirPathLessonUpdateByLtSTA="${dirPathDataItemBasic}/${contentType}.text_analysis" #data synchronization is not achieved
+            local dirPathLessonUpdateByLtSTA="${dirPathDataItemBasic}/${contentType}.text_analysis"
             local filePathLessonUpdateByLtSTE="${dirPathDataItemBasic}/${contentType}.text_english"
             local filePathLessonUpdateByLtSTC="${dirPathDataItemBasic}/${contentType}.text_chinese"
-            local filePathLessonUpdateByLtSTP="${dirPathDataItemBasic}/${contentType}.text_problem" #data synchronization is not achieved
-
-            rm -rf "${dirPathLessonUpdateByLtSAE}" \
-                   "${dirPathLessonUpdateByLtSAC}" \
-                   "${dirPathLessonUpdateByLtSDR}" \
-                   "${filePathLessonUpdateByLtSTE}" \
-                   "${filePathLessonUpdateByLtSTC}" \
-                   "${dirPathLessonUpdateByLtSTA}" \
-                   "${filePathLessonUpdateByLtSTP}"
+            local filePathLessonUpdateByLtSTP="${dirPathDataItemBasic}/${contentType}.text_problem"
 
             mkdir "${dirPathLessonUpdateByLtSAE}" \
                    "${dirPathLessonUpdateByLtSAC}" \
@@ -1359,7 +1355,12 @@ ftLearnLessonManage()
             grep -v "^$" $filePathLessonUpdateByLtSTE > ${filePathLessonUpdateByLtSTE}temp && mv ${filePathLessonUpdateByLtSTE}temp $filePathLessonUpdateByLtSTE
             grep -v "^$" $filePathLessonUpdateByLtSTC > ${filePathLessonUpdateByLtSTC}temp && mv ${filePathLessonUpdateByLtSTC}temp $filePathLessonUpdateByLtSTC
         done
-            
+
+        cd $dirPathDataItemBasic
+        find . -type d -empty | xargs rm -rf
+        find ./ -name "*" -type f -size 0c | xargs rm -rf 
+        cd "${dirPathLocal}"
+
         echo
         ftEcho -s "update finished"
         return
@@ -1466,10 +1467,10 @@ ftLearnLessonManage()
     if $isUpdateDrillLesson;then
         ftEcho -s "update needRepetionDrill lesson : ${lessonNameSel}"
         case "$lessonNameSel" in
-             "normal" | "connect" | "multiple")
+             "understand" | "connect" | "multiple")
                 ftLearnLessonManage -unlt needRepetionDrill ${lessonNameSel}
                 ;;
-             
+
              "error")
                 local contentTypeList=("sentence imitate article")
                 local filePathLearnDataBaseFailTime fileSizeLearnDataBaseFailTime filePathLinkeTable
