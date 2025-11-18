@@ -559,12 +559,14 @@ ftEcho()
 
                 [[ -n $arrayKeysIgone ]] && for (( index = 0; index <${#arrayKeysIgone[@]}; index++ )); do
                     for indexKeys in "${!arrayKeys[@]}"; do
-                       [[ "${arrayKeysIgone[$index]}" == "${arrayKeys[$indexKeys]}" ]] && arrayKeys[$indexKeys]="" && arrayKeyContents[$indexKeys]="" && break
+                       [[ "${arrayKeysIgone[$index]}" == "${arrayKeys[$indexKeys]}" ]] && unset arrayKeys[$indexKeys] && unset arrayKeyContents[$indexKeys]
                     done
                 done
 
                 local formatArray contentArray arrayKeysLength=${#arrayKeys[@]}
                 for index in "${!arrayKeys[@]}"; do
+                    # echo "${index}=${arrayKeys[$index]},$([[ -z ${arrayKeys[$index]} ]] && echo is empty)"
+                    # [[ -z ${arrayKeys[$index]} ]] && continue
                     formatArray="${formatArray}Press_\033[31m${arrayKeys[$index]}\033[0m_%s"
                     if $isEchoPlural;then
                         formatArray="${formatArray}\n"
@@ -573,7 +575,7 @@ ftEcho()
                         if ((forceEchoPluralIndex>forceEchoPluralFlag));then
                             formatArray="${formatArray}\n"
                             forceEchoPluralIndex=1
-                        elif ((arrayKeysLength-index>1));then
+                        elif ((arrayKeysLength>index));then
                             formatArray="${formatArray} \033[44;37m|\033[0m "
                         fi
                     fi
