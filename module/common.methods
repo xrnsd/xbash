@@ -607,7 +607,7 @@ ftEcho()
 
                 local formatArray contentArray arrayColumnsLength=${#arrayColumns[@]}
                 for index in "${!arrayColumns[@]}"; do
-                    formatArray="${formatArray}${arrayColumns[$index]}:_\033[31m%s\033[0m"
+                    formatArray="${formatArray}\033[31m${arrayColumns[$index]}\033[0m:_%s"
                     if $isEchoPlural;then
                         formatArray="${formatArray}\n"
                     else
@@ -1057,7 +1057,7 @@ ftIniEditUtil()
         # fi
 
         local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | awk -F: '{print $1}')
-        
+
         #add tag
         if [[ -z $lineNumTag ]];then
             local enterLine="\n"
