@@ -341,9 +341,10 @@ ftEcho()
 #    ftEcho    -to    时间       # 单位秒，显示超时时间
 #    ftEcho    -w     标题  内容      # 弹窗提示
 #    ftEcho    -iow   标题  内容      # 弹窗交互
-#    ftEcho    -frame 内容           # 多行排版显示,带边框
-#    ftEcho    -c     阈值  标题 内容 # 超出阈值使用表格显示内容
-#    ftEcho    -key   按键  说明      # 按键和说明都为字符串格式
+#    ftEcho    -frame 内容            # 多行排版显示,带边框
+#    ftEcho    -c     阈值  标题 内容  # 超出阈值使用表格显示内容
+#    ftEcho    -key   按键  说明      # 对齐高亮显示按键和说明
+#    ftEcho    -column 高亮内容  标题  # 对齐高亮显示内容
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -w|-iow )
@@ -581,6 +582,46 @@ ftEcho()
                     fi
                 done
                 printf "${formatArray}\n" "${arrayKeyContents[@]}" | column -t | sed 's/_/ /g'
+                break;;
+
+        -column )
+                local arrayColumns arrayColumnContents arrayColumnsIgone
+                local argListColumnContents isEchoPlural=false
+                local forceEchoPluralFlag=3 forceEchoPluralIndex=1
+                if [[ -n $2 ]] && [[ -n $(echo $2| sed -n "/^[0-9]\+$/p") ]];then
+                  forceEchoPluralFlag=$2
+                  arrayColumns=($(echo $3 | sed 's/ /\n/g'))
+                  arrayColumnContents=($(echo $4 | sed 's/ /\n/g'))
+                  arrayColumnsIgone=($(echo $5 | sed 's/ /\n/g'))
+                else
+                  arrayColumns=($(echo $2 | sed 's/ /\n/g'))
+                  arrayColumnContents=($(echo $3 | sed 's/ /\n/g'))
+                  arrayColumnsIgone=($(echo $4 | sed 's/ /\n/g'))
+                fi
+
+                [[ -n $arrayColumnsIgone ]] && for (( index = 0; index <${#arrayColumnsIgone[@]}; index++ )); do
+                    for indexColumns in "${!arrayColumns[@]}"; do
+                       [[ "${arrayColumnsIgone[$index]}" == "${arrayColumns[$indexColumns]}" ]] && unset arrayColumns[$indexColumns] && unset arrayColumnContents[$indexColumns]
+                    done
+                done
+
+                local formatArray contentArray arrayColumnsLength=${#arrayColumns[@]}
+                for index in "${!arrayColumns[@]}"; do
+                    formatArray="${formatArray}${arrayColumns[$index]}:_\033[31m%s\033[0m"
+                    if $isEchoPlural;then
+                        formatArray="${formatArray}\n"
+                    else
+                        ((forceEchoPluralIndex+=1))
+                        if ((forceEchoPluralIndex>forceEchoPluralFlag));then
+                            formatArray="${formatArray}\n"
+                            forceEchoPluralIndex=1
+                        else
+                            #formatArray="${formatArray} \033[44;37m|\033[0m "
+                            formatArray="${formatArray} "
+                        fi
+                    fi
+                done
+                printf "${formatArray}\n" "${arrayColumnContents[@]}" | column -t | sed 's/_/ /g'
                 break;;
     * )    echo $option ;break;; esac ;done
 }
