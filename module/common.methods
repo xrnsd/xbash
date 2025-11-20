@@ -575,7 +575,7 @@ ftEcho()
                         if ((forceEchoPluralIndex>forceEchoPluralFlag));then
                             formatArray="${formatArray}\n"
                             forceEchoPluralIndex=1
-                        elif ((arrayKeysLength>index));then
+                        else
                             formatArray="${formatArray} \033[44;37m|\033[0m "
                         fi
                     fi
