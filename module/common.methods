@@ -448,46 +448,46 @@ ftEcho()
 
                 export publicSelItemContent=
                 local index=0 indexSelNormal=0 itemDisplayInfo
-                local listMainItemSize=${#listMain[@]}
+                local listMainItemSize=${#listMain[@]} itemFlag
                 if (( $listMainItemSize<=$listMainItemSizeFlag ));then
                     for contenItem in ${listMain[*]} ; do
-                        if [[ -n $listApply ]]&&[[ -n $(grep "^$contenItem$" $filePathListApply) ]];then
+                        itemFlag="${contenItem}"
+                        if $isContentHighlight && [[ "${contenItem}" = "${highlightContent}" ]];then
+                            indexSelNormal=$index
+                            contenItem="\033[44m${contenItem}\033[m"
+                        fi
+                        if [[ -n $listApply ]]&&[[ -n $(grep "^$itemFlag$" $filePathListApply) ]];then
                             $isContentApplyBySuffix \
-                            && itemDisplayInfo="[${index}]${contenItem}${applyContent}" \
-                            || itemDisplayInfo="[${index}]${applyContent}${contenItem}"
+                            && itemDisplayInfo="[${index}]${contenItem} >>> \033[42m${applyContent}\033[m    " \
+                            || itemDisplayInfo="[${index}]\033[42m${applyContent}\033[m >>> ${contenItem}"
                         else
                             itemDisplayInfo="[${index}]${contenItem}"
                         fi
-                        if $isContentHighlight && [[ "${contenItem}" = "${highlightContent}" ]];then
-                            indexSelNormal=$index
-                            echo -e "\033[44m${itemDisplayInfo}\033[m"
-                        else
-                            echo -e "${itemDisplayInfo}"
-                        fi
+                        echo -e "${itemDisplayInfo}"
                         ((index+=1))
                     done
                 else       
                     local enterFlag=1 fileColumnPathTmp=/tmp/columnContentGroup.tmp
                     rm -rf $fileColumnPathTmp
                     for contenItem in ${listMain[*]} ; do
-                        if [[ -n $listApply ]]&&[[ -n $(grep "^$contenItem$" $filePathListApply) ]];then
+                        itemFlag="${contenItem}"
+                        if $isContentHighlight && [[ "${contenItem}" = "${highlightContent}" ]];then
+                            indexSelNormal=$index
+                            contenItem="\033[44m${contenItem}\033[m"
+                        fi
+                        if [[ -n $listApply ]]&&[[ -n $(grep "^$itemFlag$" $filePathListApply) ]];then
                             $isContentApplyBySuffix \
-                            && itemDisplayInfo="[${index}]${contenItem}\033[42m${applyContent}\033[m    " \
-                            || itemDisplayInfo="[${index}]\033[42m${applyContent}\033[m${contenItem}    "
+                            && itemDisplayInfo="[${index}]${contenItem}_>>>_\033[42m${applyContent}\033[m    " \
+                            || itemDisplayInfo="[${index}]\033[42m${applyContent}\033[m_>>>_${contenItem}    "
                         else
                             itemDisplayInfo="[${index}]${contenItem}    "
                         fi
-                        if $isContentHighlight && [[ "${contenItem}" = "${highlightContent}" ]];then
-                            indexSelNormal=$index
-                            echo -en "\033[44m${itemDisplayInfo}\033[m" >>$fileColumnPathTmp
-                        else
-                            echo -en "${itemDisplayInfo}" >>$fileColumnPathTmp
-                        fi
+                        echo -en "${itemDisplayInfo}" >>$fileColumnPathTmp
                         ((index+=1))
                         ((enterFlag+=1))
                         ((enterFlag==$listMainItemSizeFlag)) && echo -e "\n" >> $fileColumnPathTmp&& enterFlag=1
                     done
-                    cat $fileColumnPathTmp | column -t && rm $fileColumnPathTmp
+                    cat $fileColumnPathTmp | column -t | sed 's/_>>>_/ >>> /g' && rm $fileColumnPathTmp
                     echo
                 fi
 
