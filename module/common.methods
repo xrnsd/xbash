@@ -572,12 +572,11 @@ ftEcho()
                     if $isEchoPlural;then
                         formatArray="${formatArray}\n"
                     else
-                        ((forceEchoPluralIndex+=1))
-                        if ((forceEchoPluralIndex>forceEchoPluralFlag));then
+                        if (($((forceEchoPluralIndex++))>=forceEchoPluralFlag));then
                             formatArray="${formatArray}\n"
                             forceEchoPluralIndex=1
                         else
-                            formatArray="${formatArray} \033[44;37m|\033[0m "
+                            formatArray="${formatArray} \033[44;37m|\033[0m_"
                         fi
                     fi
                 done
@@ -611,8 +610,7 @@ ftEcho()
                     if $isEchoPlural;then
                         formatArray="${formatArray}\n"
                     else
-                        ((forceEchoPluralIndex+=1))
-                        if ((forceEchoPluralIndex>forceEchoPluralFlag));then
+                        if (($((forceEchoPluralIndex++))>=forceEchoPluralFlag));then
                             formatArray="${formatArray}\n"
                             forceEchoPluralIndex=1
                         else
