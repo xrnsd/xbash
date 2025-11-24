@@ -544,7 +544,7 @@ ftEcho()
                 rm -rf $filePathListApply
                 break;;
         -key )
-                local arrayKeys arrayKeyContents arrayKeysIgone
+                local arrayKeys arrayKeyContents arrayKeysIgone arrayKeysHighlight
                 local argListKeyContents isEchoPlural=true
                 local forceEchoPluralFlag=3 forceEchoPluralIndex=1
                 if [ "${2}" = "-n" ];then
@@ -552,10 +552,12 @@ ftEcho()
                   arrayKeys=($(echo $3 | sed 's/ /\n/g'))
                   arrayKeyContents=($(echo $4 | sed 's/ /\n/g'))
                   arrayKeysIgone=($(echo $5 | sed 's/ /\n/g'))
+                  [ "${6}" = "-hl" ] && arrayKeysHighlight=($(echo $7 | sed 's/ /\n/g'))
                 else
                   arrayKeys=($(echo $2 | sed 's/ /\n/g'))
                   arrayKeyContents=($(echo $3 | sed 's/ /\n/g'))
                   arrayKeysIgone=($(echo $4 | sed 's/ /\n/g'))
+                  [ "${5}" = "-hl" ] && arrayKeysHighlight=($(echo $6 | sed 's/ /\n/g'))
                 fi
 
                 [[ -n $arrayKeysIgone ]] && for (( index = 0; index <${#arrayKeysIgone[@]}; index++ )); do
@@ -564,11 +566,17 @@ ftEcho()
                     done
                 done
 
-                local formatArray contentArray arrayKeysLength=${#arrayKeys[@]}
+                local formatArray contentArray arrayKeysLength=${#arrayKeys[@]} arrayKeyContentsFlag
                 for index in "${!arrayKeys[@]}"; do
                     # echo "${index}=${arrayKeys[$index]},$([[ -z ${arrayKeys[$index]} ]] && echo is empty)"
                     # [[ -z ${arrayKeys[$index]} ]] && continue
-                    formatArray="${formatArray}Press_\033[31m${arrayKeys[$index]}\033[0m_%s"
+                    arrayKeyContentsFlag=
+                    [[ -n $arrayKeysHighlight ]] && for indexHl in "${!arrayKeysHighlight[@]}"; do
+                        [[ "${arrayKeys[$index]}" == "${arrayKeysHighlight[$indexHl]}" ]] && \
+                        arrayKeyContentsFlag="\U0001F600"
+                    done
+
+                    formatArray="${formatArray}Press_\033[31m${arrayKeys[$index]}\033[0m_%s${arrayKeyContentsFlag}"
                     if $isEchoPlural;then
                         formatArray="${formatArray}\n"
                     else
