@@ -249,7 +249,7 @@ ftLearnRepetionDrill()
 
     local indexSort lineIndex failTime autoStorgeToMultipleFailTimeFlag=$(ftIniEditUtil -r $filePathLearnDataBase $groupNameRepetionDrill "autoStorgeToMultipleFailTimeFlag")
     local englishItem chineseItem applyItems englishItemLength
-    local drillInfomationTips="Lesson_group Lesson Content_type Operation_mode" drillInfomationTipsGone
+    local drillInfomationTips="Group Lesson Content_type Operation_mode" drillInfomationTipsGone
     local drillInfomationTipsContent="${lessonGroupNameSel} ${lessonNameSel} ${contentType} ${operateMode}"
 
     local timingStart=$(date +%s -d $(date +"%H:%M:%S")) timingChang    
@@ -528,24 +528,30 @@ ftLearnRepetionDrill()
     local isCutChineseTipsSingle=false
     local tipsItemsContent contentAnalysis audioInfo timeStart timeHandled
     
-    local arrayKeysIgone \
+    local arrayKeysHighlight \
+          arrayKeysIgone \
           arrayKeys="Y N P T D I S E L R A W H N_or_Space M Any_Other_Key" \
           arrayKeyContents="is_understand \
-                            go_to_next_item \
-                            go_to_previous_item \
-                            to_show_tips \
-                            to_delete_records \
-                            to_add_analysis \
-                            to_save_progress_&_exit \
-                            to_save_hard_express \
-                            to_save_hard_understand_by_L \
-                            to_save_hard_understand_by_R \
-                            to_save_hard_read_aloud \
-                            to_save_word_example \
-                            to_display_other_info \
-                            go_to_next_item \
-                            to_play_${playAudioLanguage}_audio \
-                            to_replay_${playAudioLanguage}_audio"
+                            next_item \
+                            previous_item \
+                            show_tips \
+                            delete_records \
+                            add_analysis \
+                            save_progress_&_exit \
+                            save_hard_express \
+                            save_hard_understand_L \
+                            save_hard_understand_R \
+                            save_hard_read_aloud \
+                            save_word_example \
+                            display_other_info \
+                            next_item \
+                            play_${playAudioLanguage}_audio \
+                            replay_${playAudioLanguage}_audio" \
+        arrayKeysHighlightLessonFlags=("understand_listen" \
+                                       "understand_read" \
+                                       "express" "read_aloud" \
+                                       "word_example") \
+        arrayKeysHighlightAll=("L" "R" "E" "A" "W")
 
     local operationType drillInfomationTipsTemp drillInfomationTipsContentTemp
 
@@ -702,6 +708,13 @@ ftLearnRepetionDrill()
                 esac
             done
         fi
+        if [[ -n $operationType ]];then
+            arrayKeysHighlight=
+            for indexHl in "${!arrayKeysHighlightLessonFlags[@]}"; do
+                [[ -n $(grep -e "^${linkInfo}$" ${dirPathTempEng}/needRepetionDrill/${arrayKeysHighlightLessonFlags[$indexHl]}/${contentType}.link_table) ]] && \
+                    arrayKeysHighlight="${arrayKeysHighlight} ${arrayKeysHighlightAll[$indexHl]}"
+            done
+        fi
 
         #config drill information
         if [[ -f "${dirPathDataItemContentTextAnalysis}/${lineIndex}.analysis" ]];then
@@ -738,8 +751,8 @@ ftLearnRepetionDrill()
         #drill status information
         drillInfomationTipsTemp="${drillInfomationTips} \
                                  Item_index \
-                                 Progress_number \
-                                 Duration_info \
+                                 Progress \
+                                 Duration \
                                  Mode_type \
                                  Time_out \
                                  Fail_time"
@@ -756,7 +769,7 @@ ftLearnRepetionDrill()
             ( $isShowAudioTipsSingle || $isShowLinkTipsSingle ) && isShowAudioTipsSingle=false && isShowLinkTipsSingle=false && \
             ftEcho -column 2 "Audio Link" "${audioInfo:-unknow} ${linkInfo:-unknow}" "${drillInfomationTipsGone}"
             ftEcho -bl "${tipsItemsContent}"
-            ftEcho -key -n "${arrayKeys}" "${arrayKeyContents}" "${arrayKeysIgone}"
+            ftEcho -key -n "${arrayKeys}" "${arrayKeyContents}" "${arrayKeysIgone}" -hl "${arrayKeysHighlight}"
 
             #write to clipboard
             echo "${englishItem}"| tr -d '\n'| xclip -sel clip
