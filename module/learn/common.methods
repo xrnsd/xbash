@@ -427,7 +427,7 @@ ftText2Mp3Apply()
     edge-tts --text "${lineContent}" --write-media "${dirPathAudio}/${lineNumber}.mp3"
 }
 
-complete -W "-h --help" ftTransformDrillReslt
+complete -W "-h --help -up" ftTransformDrillReslt
 ftTransformDrillReslt()
 {
     local ftEffect=ToTransformDrillReslt
@@ -435,24 +435,33 @@ ftTransformDrillReslt()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
 
     #argument init
-    local valCount=2 errorContent arg arg2
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
+    local filePathResult=$1 filePathResultNew=$2 isUpsideDown=false
+    local valCount=2 errorContent arg arg2 arg3
+    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))}
     case "${arg}" in
         # help infoumation ==============
         -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
 #=========================================================
+#
+#    #basic to height-light results
 #    ftTransformDrillReslt filePathBasic filePathResult
+#    
+#    #height-light results to basic
+#    ftTransformDrillReslt -up filePathBasic filePathResult
 #========================================================="; return ;;
+        # argument infoumation ==============
+        -up) isUpsideDown=true
+             valCount=3
+             filePathResult=${arg2}
+             filePathResultNew=${arg3}
+            ;;
     * ) ;; esac;done
-
-    # argument infoumation ==============
-    local filePathResult=$1
-    local filePathResultNew=$2
 
     #argument check
     (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
-    [[ -z $(grep -sn "\*\*" $filePathResult) ]] && [[ -z $(grep -sn "\+\+" $filePathResult) ]] && [[ -z $(grep -sn "\-\-" $filePathResult) ]] && errorContent="${errorContent}\\n无效文件：${filePathResult}" && return
-    [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftTransformDrillReslt -h && return $resultFail
+    $isUpsideDown && [[ -z $(grep -sn "\\033\[0m" $filePathResult) ]] && errorContent="${errorContent}\\n无效文件：${filePathResult}" && return
+    ! $isUpsideDown && [[ -z $(grep -sn "\*\*" $filePathResult) ]] && [[ -z $(grep -sn "\+\+" $filePathResult) ]] && [[ -z $(grep -sn "\-\-" $filePathResult) ]] && errorContent="${errorContent}\\n无效文件：${filePathResult}" && return
+    [ -n "$errorContent" ] && ftEcho -e "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftTransformDrillReslt -h && return $resultFail
 
     #code main
     local lineContentTemp
@@ -461,7 +470,19 @@ ftTransformDrillReslt()
     echo "" >> $filePathResult
 
     cat $filePathResult | while read lineContent;do
-        if [[ -n $lineContent ]];then
+        [[ -z $lineContent ]] && continue
+            
+        if $isUpsideDown;then
+            #=========  error ===========
+            #error
+            lineContentTemp="${lineContent//\033\[1;31m/**}"
+            #contenct read , can't listen
+            lineContent="${lineContentTemp//\033\[1;36m/++}"
+            #can listen and unknow , forget
+            lineContentTemp="${lineContent//\033\[41;38m/--}"
+            #end
+            lineContent="${lineContentTemp//\033\[0m/*}"
+        else
             #=========  error ===========
             #start
             lineContentTemp="${lineContent//\*\*/\\033[1;31m}"
@@ -479,10 +500,8 @@ ftTransformDrillReslt()
             lineContentTemp="${lineContent//\-\-/\\033[41;38m}"
             #end
             lineContent="${lineContentTemp//\-/\\033[0m}"
-            echo "${lineContent}" >> $filePathResultNew
-        else
-            echo "" >> $filePathResultNew
-        fi
+        fi 
+        echo "${lineContent}" >> $filePathResultNew
     done
 
     ftEcho -s " the form text tran finished. "
