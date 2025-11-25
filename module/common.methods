@@ -458,8 +458,8 @@ ftEcho()
                         fi
                         if [[ -n $listApply ]]&&[[ -n $(grep "^$itemFlag$" $filePathListApply) ]];then
                             $isContentApplyBySuffix \
-                            && itemDisplayInfo="[${index}]${contenItem} >>> \033[42m${applyContent}\033[m    " \
-                            || itemDisplayInfo="[${index}]\033[42m${applyContent}\033[m >>> ${contenItem}"
+                            && itemDisplayInfo="[${index}]${contenItem}\033[42m${applyContent}\033[m    " \
+                            || itemDisplayInfo="[${index}]\033[42m${applyContent}\033[m${contenItem}"
                         else
                             itemDisplayInfo="[${index}]${contenItem}"
                         fi
@@ -477,8 +477,8 @@ ftEcho()
                         fi
                         if [[ -n $listApply ]]&&[[ -n $(grep "^$itemFlag$" $filePathListApply) ]];then
                             $isContentApplyBySuffix \
-                            && itemDisplayInfo="[${index}]${contenItem}_>>>_\033[42m${applyContent}\033[m    " \
-                            || itemDisplayInfo="[${index}]\033[42m${applyContent}\033[m_>>>_${contenItem}    "
+                            && itemDisplayInfo="[${index}]${contenItem}\033[42m${applyContent}\033[m    " \
+                            || itemDisplayInfo="[${index}]\033[42m${applyContent}\033[m${contenItem}    "
                         else
                             itemDisplayInfo="[${index}]${contenItem}    "
                         fi
@@ -487,7 +487,7 @@ ftEcho()
                         ((enterFlag+=1))
                         ((enterFlag==$listMainItemSizeFlag)) && echo -e "\n" >> $fileColumnPathTmp&& enterFlag=1
                     done
-                    cat $fileColumnPathTmp | column -t | sed 's/_>>>_/ >>> /g' && rm $fileColumnPathTmp
+                    cat $fileColumnPathTmp | column -t && rm $fileColumnPathTmp
                     echo
                 fi
 
@@ -573,7 +573,7 @@ ftEcho()
                     arrayKeyContentsFlag=
                     [[ -n $arrayKeysHighlight ]] && for indexHl in "${!arrayKeysHighlight[@]}"; do
                         [[ "${arrayKeys[$index]}" == "${arrayKeysHighlight[$indexHl]}" ]] && \
-                        arrayKeyContentsFlag="\U0001F600"
+                        arrayKeyContentsFlag="\U0002705"
                     done
 
                     formatArray="${formatArray}Press_\033[31m${arrayKeys[$index]}\033[0m_%s${arrayKeyContentsFlag}"
