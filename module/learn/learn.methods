@@ -42,7 +42,6 @@ ftLearnRepetionDrill()
     local contentType operateMode readTimeOut orderType=random
     local isShowChineseTips=true isShowEnglishTips=true isPlayChineseTips=false isAutomaticSwitching=false
     local isUsePlan=false isOperateTextEdit=false isOperateAutoBcompare=false isOperatePlayAudio=false
-    local isShowAudioTipsSingle=false isShowLinkTipsSingle=false
     local valCount=7 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     [[ $arg =~ ^\- ]] && case "${arg}" in
@@ -184,9 +183,9 @@ ftLearnRepetionDrill()
     else
         echo
         if $isUsePlan && [[ -n $lessonDailyStudyPlanList ]];then
-            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "ToBePracticed"  "${lessonDailyStudyPlanList[@]}" -ch "${lessonNameSelected}"
+            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "\U0001F4C3"  "${lessonDailyStudyPlanList[@]}" -ch "${lessonNameSelected}"
         else
-            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "Drilled"  "${learnLessonListDrilled[@]}" -ch "${lessonNameSelected}"
+            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "\U0002705"  "${learnLessonListDrilled[@]}" -ch "${lessonNameSelected}"
         fi
         [[ -z $publicSelItemContent ]] && return
         lessonNameSel=$publicSelItemContent
@@ -530,7 +529,7 @@ ftLearnRepetionDrill()
     
     local arrayKeysHighlight \
           arrayKeysIgone \
-          arrayKeys="Y N P T D I S E L R A W H N_or_Space M Any_Other_Key" \
+          arrayKeys="Y N_or_Space P T D I S E L R A W Space M Any_Other_Key" \
           arrayKeyContents="is_understand \
                             next_item \
                             previous_item \
@@ -543,13 +542,13 @@ ftLearnRepetionDrill()
                             save_hard_understand_R \
                             save_hard_read_aloud \
                             save_word_example \
-                            display_other_info \
-                            next_item \
+                            show_tips_or_next_item \
                             play_${playAudioLanguage}_audio \
                             replay_${playAudioLanguage}_audio" \
         arrayKeysHighlightLessonFlags=("understand_listen" \
                                        "understand_read" \
-                                       "express" "read_aloud" \
+                                       "express" \
+                                       "read_aloud" \
                                        "word_example") \
         arrayKeysHighlightAll=("L" "R" "E" "A" "W")
 
@@ -684,8 +683,8 @@ ftLearnRepetionDrill()
 
         #config key tips
         arrayKeysIgone=
-        $isAutomaticSwitching && arrayKeysIgone="${arrayKeysIgone} N" \
-                              || arrayKeysIgone="${arrayKeysIgone} N_or_Space"
+        $isAutomaticSwitching && arrayKeysIgone="${arrayKeysIgone} N_or_Space" \
+                              || arrayKeysIgone="${arrayKeysIgone} Space"
         $isOperatePlayAudio && arrayKeysIgone="${arrayKeysIgone} M" \
                             || arrayKeysIgone="${arrayKeysIgone} Any_Other_Key"
         $isShowEnglishTips && $isShowChineseTips && arrayKeysIgone="${arrayKeysIgone} T"
@@ -708,13 +707,13 @@ ftLearnRepetionDrill()
                 esac
             done
         fi
-        if [[ -n $operationType ]];then
+        # if [[ -n $operationType ]];then
             arrayKeysHighlight=
             for indexHl in "${!arrayKeysHighlightLessonFlags[@]}"; do
                 [[ -n $(grep -e "^${linkInfo}$" ${dirPathTempEng}/needRepetionDrill/${arrayKeysHighlightLessonFlags[$indexHl]}/${contentType}.link_table) ]] && \
                     arrayKeysHighlight="${arrayKeysHighlight} ${arrayKeysHighlightAll[$indexHl]}"
             done
-        fi
+        # fi
 
         #config drill information
         if [[ -f "${dirPathDataItemContentTextAnalysis}/${lineIndex}.analysis" ]];then
@@ -728,18 +727,17 @@ ftLearnRepetionDrill()
         filePathDataItemContentWordExample="${dirPathDataItemContentWordExample}/${lineIndex}.result"
         filePathDataItemContentDrillResult="${dirPathDataItemContentDrillResult}/${lineIndex}.result"
         [[ -f $filePathDataItemContentDrillResult ]] && \
-            applyItems=$(cat $filePathDataItemContentDrillResult)
-        (( $(echo $applyItems |grep -v ^$|wc -l)==0 )) && \
-            applyItems=
+            applyItems=$(cat $filePathDataItemContentDrillResult) && \
+            (( $(echo $applyItems |grep -v ^$|wc -l)==0 )) && applyItems=
         [[ -s $filePathDataItemContentWordExample ]] && \
-            applyItems="${applyItems}\n$(cat $filePathDataItemContentWordExample)"
+            applyItems="${applyItems}\n$(cat $filePathDataItemContentWordExample)\U0001F9D0"
         tipsItemsContent=
         if ($isShowChineseTips || $isShowChineseTipsSingle);then
             local chineseItemLength
-            $isCutChineseTipsSingle && chineseItemLength=${#chineseItem} && isCutChineseTipsSingle=false
+            $isCutChineseTipsSingle && [[ $operationType != "express" ]] && chineseItemLength=${#chineseItem}
             [[ -n $chineseItemLength ]] && tipsItemsContent="${chineseItem:0:$((chineseItemLength/2+1))}....." \
                                         || tipsItemsContent="${chineseItem}"
-
+            isCutChineseTipsSingle=false
         fi
         if $isShowEnglishTips || $isShowEnglishTipsSingle;then
             [[ -n $applyItems ]] && tipsItemsContent="${tipsItemsContent}\n${applyItems}"\
@@ -755,19 +753,21 @@ ftLearnRepetionDrill()
                                  Duration \
                                  Mode_type \
                                  Time_out \
-                                 Fail_time"
+                                 Fail_time \
+                                 Audio \
+                                 Link"
         drillInfomationTipsContentTemp="${drillInfomationTipsContent} \
                                         ${lineIndex} \
                                         $(echo "scale=1; $indexArray* 100 / $arrayIndexSortSize" | bc)% \
                                         ${timingChang} \
-                                        ${operationType:-unknow}\
-                                        ${readTimeOut:-unknow}\
-                                        ${failTime:-unknow}"
+                                        ${operationType:-unknow} \
+                                        ${readTimeOut:-unknow} \
+                                        ${failTime:-unknow} \
+                                        ${audioInfo:-unknow} \
+                                        ${linkInfo:-unknow}"
 
         while true; do
             ftEcho -column 5 "${drillInfomationTipsTemp}" "${drillInfomationTipsContentTemp}" "${drillInfomationTipsGone}"
-            ( $isShowAudioTipsSingle || $isShowLinkTipsSingle ) && isShowAudioTipsSingle=false && isShowLinkTipsSingle=false && \
-            ftEcho -column 2 "Audio Link" "${audioInfo:-unknow} ${linkInfo:-unknow}" "${drillInfomationTipsGone}"
             ftEcho -bl "${tipsItemsContent}"
             ftEcho -key -n "${arrayKeys}" "${arrayKeyContents}" "${arrayKeysIgone}" -hl "${arrayKeysHighlight}"
 
@@ -824,6 +824,7 @@ ftLearnRepetionDrill()
                         break
                     fi
                     ;;
+                #go to next item
                 n | N )
                     #save fail time
                     [[ -n $failTime ]] && local val=$((failTime+=1)) && sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime
@@ -852,7 +853,16 @@ ftLearnRepetionDrill()
                     ;;
                 #To create word examples
                 w | W )
-                    if [[ $lessonNameSel != "word_example" ]]; then
+                    if [[ -s $filePathDataItemContentWordExample ]];then
+                        rm -rf ${filePathLearnDrillTemp}.Rechange
+                        ftEcho -y "Are you going to reedit word example? (press enter yes)"
+                        read -n 1 optSel && [ -z "${optSel}" ] && optSel=y
+                        [[ $optSel = "y" ]] && ftTransformDrillReslt -up $filePathDataItemContentWordExample ${filePathLearnDrillTemp}.Rechange
+                    fi
+                    if [[ -s ${filePathLearnDrillTemp}.Rechange ]];then
+                        gedit2 ${filePathLearnDrillTemp}.Rechange
+                        ftTransformDrillReslt ${filePathLearnDrillTemp}.Rechange ${filePathDataItemContentWordExample}
+                    elif [[ $lessonNameSel != "word_example" ]]; then
                         if [[ -f $filePathLearnDrillTemp ]] && ([[ -n $(grep -sn "\+\+" "${filePathLearnDrillTemp}") ]] || [[ -n $(grep -sn "\*\*" "${filePathLearnDrillTemp}") ]]);then
                             mv "${filePathLearnDrillTemp}" "${filePathLearnDrillTemp}_basic"
                             echo -n "Word example:${lineIndex}"
@@ -862,7 +872,7 @@ ftLearnRepetionDrill()
                             [[ ! -d $dirPathDataItemContentWordExample ]] && mkdir $dirPathDataItemContentWordExample
                             filePathDataItemWordExample="${dirPathDataItemContentWordExample}/${lineIndex}.result"
                             
-                            if [[ -f $filePathDataItemContentLinkTable ]];then
+                            if [[ -s $filePathDataItemContentLinkTable ]];then
                                 local dirPathDataItemWordExampleLink="${dirPathTempEng}/$(dirname $linkInfo)/${contentType}.word_example"
                                 [[ ! -d $dirPathDataItemWordExampleLink ]] && mkdir -p $dirPathDataItemWordExampleLink
                                 local filePathDataItemWordExampleLink="${dirPathDataItemWordExampleLink}/$(basename $linkInfo).result"
@@ -987,11 +997,7 @@ ftLearnRepetionDrill()
                 m | M )
                     isOperatePlayAudioSingle=true
                     ;;
-                h | H )
-                    isShowLinkTipsSingle=true
-                    isShowAudioTipsSingle=true
-                    ;;
-                * ) ;;
+                * ) [[ -z $playOpt ]] && break;;
             esac
             clear
         done
@@ -1400,35 +1406,46 @@ ftLearnLessonManage()
         ##delete all files and floders except link_tables
         #cd $dirPathDataItemBasic && ls ${dirPathDataItemBasic} | grep -v ".link_t" | xargs rm -rf  && cd "${dirPathLocal}"
 
+        
+        local filePathDataItemLinkTable md5KeyOld md5KeyNow
+        local dirPathLessonUpdateByLtCtAE \
+              dirPathLessonUpdateByLtCtAC \
+              dirPathLessonUpdateByLtCtDR \
+              dirPathLessonUpdateByLtCtTA \
+              dirPathLessonUpdateByLtCtWE \
+              filePathLessonUpdateByLtCtTE \
+              filePathLessonUpdateByLtCtTC \
+              filePathLessonUpdateByLtCtTP
+        local fileSizeLessonSLE lineContent lineContentTE lineContentTC lineContentFailTime lessonLineLindex 
+        local lessonPathBasic lessonCtAE lessonCtAC lessonCtDR lessonCtWE lessonCtTE lessonCtTC lessonCtTA lessonCtTP
+
         for contentType in ${contentTypeList[@]}; do
             #check
-            local filePathDataItemLinkTable="${dirPathDataItemBasic}/${contentType}.link_table"
-            [[ ! -f $filePathDataItemLinkTable ]] && ftEcho -e "The file linkTable is not exist : $(basename $filePathDataItemLinkTable)" && continue
-            [[ -n $(grep -sn ":" "${filePathDataItemLinkTable}") ]] && ftEcho -e "The file linkTable is invalid : ${filePathDataItemLinkTable}" && continue
+            filePathDataItemLinkTable="${dirPathDataItemBasic}/${contentType}.link_table"
+            [[ ! -s $filePathDataItemLinkTable ]] && ftEcho -e "The file linkTable is not exist or invalid : $(basename $filePathDataItemLinkTable)" && continue
 
             ftEcho -sn "create linktable content : " && echo "${contentType}"
 
             #diff
-            local md5KeyOld=$(ftIniEditUtil -r  $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}_${contentType}")
-            local md5KeyNow="$(md5sum $filePathDataItemLinkTable | awk '{print $1}')"
-            [[ -n $md5KeyOld ]]&&[[ $md5KeyOld = $md5KeyNow ]]&& ftEcho -s "Cancel update, don't changed" && continue
+            md5KeyOld=$(ftIniEditUtil -r  $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}_${contentType}")
+            md5KeyNow="$(md5sum $filePathDataItemLinkTable | awk '{print $1}')"
+            [[ -n $md5KeyOld ]]&&[[ $md5KeyOld = $md5KeyNow ]] && ftEcho -s "Cancel update, don't changed" && continue
 
             #delete file repeate line
-            local repeateItem=$(sort $filePathDataItemLinkTable|uniq -dc)
-            [[ $lessonNameSel = "review" ]] && repeateItem=
-            [[ -n $repeateItem ]] && sort -u $filePathDataItemLinkTable > ${filePathDataItemLinkTable}.temp \
-                                  && mv ${filePathDataItemLinkTable}.temp $filePathDataItemLinkTable
+            [[ $lessonNameSel != "review" ]] && [[ -n $(sort $filePathDataItemLinkTable|uniq -dc) ]] && \
+                sort -u $filePathDataItemLinkTable > ${filePathDataItemLinkTable}.temp && \
+                mv ${filePathDataItemLinkTable}.temp $filePathDataItemLinkTable
 
             #update
-            local dirPathLessonUpdateByLtCtAE="${dirPathDataItemBasic}/${contentType}.audio_english"
-            local dirPathLessonUpdateByLtCtAC="${dirPathDataItemBasic}/${contentType}.audio_chinese"
-            local dirPathLessonUpdateByLtCtDR="${dirPathDataItemBasic}/${contentType}.drill_result"
-            local dirPathLessonUpdateByLtCtTA="${dirPathDataItemBasic}/${contentType}.text_analysis"
-            local dirPathLessonUpdateByLtCtWE="${dirPathDataItemBasic}/${contentType}.word_example"
+            dirPathLessonUpdateByLtCtAE="${dirPathDataItemBasic}/${contentType}.audio_english"
+            dirPathLessonUpdateByLtCtAC="${dirPathDataItemBasic}/${contentType}.audio_chinese"
+            dirPathLessonUpdateByLtCtDR="${dirPathDataItemBasic}/${contentType}.drill_result"
+            dirPathLessonUpdateByLtCtTA="${dirPathDataItemBasic}/${contentType}.text_analysis"
+            dirPathLessonUpdateByLtCtWE="${dirPathDataItemBasic}/${contentType}.word_example"
             
-            local filePathLessonUpdateByLtCtTE="${dirPathDataItemBasic}/${contentType}.text_english"
-            local filePathLessonUpdateByLtCtTC="${dirPathDataItemBasic}/${contentType}.text_chinese"
-            local filePathLessonUpdateByLtCtTP="${dirPathDataItemBasic}/${contentType}.text_problem"
+            filePathLessonUpdateByLtCtTE="${dirPathDataItemBasic}/${contentType}.text_english"
+            filePathLessonUpdateByLtCtTC="${dirPathDataItemBasic}/${contentType}.text_chinese"
+            filePathLessonUpdateByLtCtTP="${dirPathDataItemBasic}/${contentType}.text_problem"
 
             rm -rf "${dirPathLessonUpdateByLtCtAE}" \
                    "${dirPathLessonUpdateByLtCtAC}" \
@@ -1451,9 +1468,7 @@ ftLearnLessonManage()
             #config database
             filePathLearnDataBaseFailTime="${dirPathTempEng}/fail_time_${contentType}.database"
 
-            local fileSizeLessonSLE=$(sed -n '$=' $filePathDataItemLinkTable) 
-            local lineContent lineContentTE lineContentTC lineContentFailTime
-            local lessonLineLindex lessonPathBasic lessonCtAE lessonCtAC lessonCtDR lessonCtWE lessonCtTE lessonCtTC lessonCtTA lessonCtTP
+            fileSizeLessonSLE=$(sed -n '$=' $filePathDataItemLinkTable)
             for (( lineIndex = 1; lineIndex <= $fileSizeLessonSLE; lineIndex++ )); do
                 printf "handling progress: %d%%\r" $((lineIndex*100/$fileSizeLessonSLE))
 
@@ -1645,19 +1660,14 @@ ftLearnLessonManage()
         ftEcho -s "update needRepetionDrill lesson : ${lessonNameSel}"
         case "$lessonNameSel" in
              "error")
-                local contentTypeList=("sentence imitate article")
-                local filePathLearnDataBaseFailTime fileSizeLearnDataBaseFailTime filePathLinkeTable
-                for contentType in ${contentTypeList[@]}; do
-                    filePathLearnDataBaseFailTime="${dirPathTempEng}/fail_time_${contentType}.database"
-                    [[ ! -f $filePathLearnDataBaseFailTime ]] && continue
+                local filePathLinkeTable contentType fileSizeLearnDataBaseFailTime
+                cd $(dirname $dirPathTempEng)
+                while read filePathLearnDataBaseFailTime ;do
+                    contentType=$(basename $filePathLearnDataBaseFailTime | awk -F. '{print $1}'| sed 's/fail_time_//g')
                     filePathLinkeTable="${dirPathTempEng}/needRepetionDrill/error/${contentType}.link_table"
-                    rm -rf $filePathLinkeTable
-                    fileSizeLearnDataBaseFailTime=$(sed -n '$=' $filePathLearnDataBaseFailTime)
-                    for (( lineIndex = 6; lineIndex <= fileSizeLearnDataBaseFailTime; lineIndex++ )); do     
-                        printf "recreate ${contentType} linktable progress: %d%%\r" $((lineIndex*100/$fileSizeLearnDataBaseFailTime))
-                        awk 'NR=="'$lineIndex'"' $filePathLearnDataBaseFailTime | awk -F= '{print $1}' >> $filePathLinkeTable
-                    done
-                done
+                    tail -n +6 $filePathLearnDataBaseFailTime | awk -F= '{print $1}' > $filePathLinkeTable
+                    echo "recreate ${contentType} linktable "
+                done < <(find learnData -name fail_time_*.database )
                 echo
                 ftLearnLessonManage -unlt needRepetionDrill error
                 ;;
@@ -1671,7 +1681,7 @@ ftLearnLessonManage()
 
                 local arrayIndexSort arrayIndexSortBeganFlag lineContent lineIndex filePathLinkTableReview filePathLinkTypeReview
                 local filePathLearnDataBaseFailTime fileSizeLearnDataBaseFailTime lessonReviewDataItemSize fileSizeLinkTable
-                local type contentTypeList=("sentence imitate article")
+                local type
                 cd $dirPathTempEng
                 while read filePathLinkTable ;do
                     type=$(basename $(dirname $filePathLinkTable))
