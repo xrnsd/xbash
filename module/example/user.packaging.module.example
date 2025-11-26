@@ -1,7 +1,7 @@
 #!/bin/bash
 #存放命令封装
 #存放xbash扩展封装
-versionNum=v0.0.2.0
+versionNum=v0.0.2.1
 
 alias ..="effect=进入父目录;cd .."
 alias ...="effect=进入爷目录;cd ../.."
@@ -189,6 +189,11 @@ fi
 
 if [[ -n $(which zhcon) ]];then
      alias zhc='effect=enable_support_Chinese_simplified_terminal_environment;zhcon --utf8'
+fi
+
+if [[ -n $(which samba) ]];then
+     alias openSmaba='effect=start_samba_server;sudo systemctl start smbd nmbd'
+     alias closeSmaba='effect=stop_samba_server;sudo systemctl stop smbd nmbd'
 fi
 
 #命令选项快速适配
