@@ -80,11 +80,11 @@ ftLearnRepetionDrill()
                 esac
             ;;
         --sort )  orderType="${arg2}"
-                case "${contentType}" in
+                case "${orderType}" in
                     order | random )
                         ;;
                     * )  [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
-                         errorContent="${errorContent}invalid aregument :${contentType}"
+                         errorContent="${errorContent}invalid aregument :${orderType}"
                          break
                         ;;
                 esac
@@ -854,15 +854,14 @@ ftLearnRepetionDrill()
                 #To create word examples
                 w | W )
                     if [[ -s $filePathDataItemContentWordExample ]];then
-                        rm -rf ${filePathLearnDrillTemp}.Rechange
                         ftEcho -y "Are you going to reedit word example? (press enter yes)"
                         read -n 1 optSel && [ -z "${optSel}" ] && optSel=y
-                        [[ $optSel = "y" ]] && ftTransformDrillReslt -up $filePathDataItemContentWordExample ${filePathLearnDrillTemp}.Rechange
+                        [[ $optSel = "y" ]] && \
+                            echo "" > ${filePathLearnDrillTemp} && \
+                            ftTransformDrillReslt -up $filePathDataItemContentWordExample ${filePathLearnDrillTemp} && \
+                            gedit ${filePathLearnDrillTemp}
                     fi
-                    if [[ -s ${filePathLearnDrillTemp}.Rechange ]];then
-                        gedit2 ${filePathLearnDrillTemp}.Rechange
-                        ftTransformDrillReslt ${filePathLearnDrillTemp}.Rechange ${filePathDataItemContentWordExample}
-                    elif [[ $lessonNameSel != "word_example" ]]; then
+                    if [[ $lessonNameSel != "word_example" ]]; then
                         if [[ -f $filePathLearnDrillTemp ]] && ([[ -n $(grep -sn "\+\+" "${filePathLearnDrillTemp}") ]] || [[ -n $(grep -sn "\*\*" "${filePathLearnDrillTemp}") ]]);then
                             mv "${filePathLearnDrillTemp}" "${filePathLearnDrillTemp}_basic"
                             echo -n "Word example:${lineIndex}"
