@@ -1067,10 +1067,7 @@ ftIniEditUtil()
         #add tag
         if [[ -z $lineNumTag ]];then
             local enterLine="\n"
-            echo  -e  ${enterLine} \
-                     "[$tagName]"${enterLine} \
-                     "${keyName}=${keyValue}"${enterLine} \
-                      >> $filePathIni
+            echo  -e  "${enterLine}[$tagName]${enterLine}${keyName}=${keyValue}${enterLine}" >> $filePathIni
             return
         else
             local lineContent indexCheck=$lineNumTag
@@ -1081,7 +1078,7 @@ ftIniEditUtil()
                 #add key
                 if [[ -z $lineContent ]];then
                     echo -e "\n" >> $filePathIni
-                    sed  -i "${indexCheck}i ${keyName}=${keyValue[@]}" $filePathIni
+                    sed  -i "${indexCheck}i${keyName}=${keyValue[@]}" $filePathIni
                     return
                 fi
 
