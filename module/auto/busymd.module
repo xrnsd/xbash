@@ -46,12 +46,12 @@ fi
 in_code=0
 code_num=0
 
-WIDTH=${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}
+WIDTH=${COLUMNS:-$(tput cols 2>/dev/null || echo -e 80)}
 
 repeat_char() {
     local char=$1 count=$2 result=""
     printf -v result '%*s' "$count"
-    echo "${result// /$char}"
+    echo -e "${result// /$char}"
 }
 
 format_text() {
@@ -97,7 +97,7 @@ format_text() {
         t="${t/"$m"/${BG}${RED} ${BASH_REMATCH[1]} ${R}}"
     done
     
-    echo "$t"
+    echo -e "$t"
 }
 
 inline() {
@@ -182,7 +182,7 @@ inline() {
         t="${t//${PH}${i}${PH}/${replacements[$i]}}"
     done
     
-    echo "$t"
+    echo -e "$t"
 }
 
 render() {
@@ -198,11 +198,11 @@ render() {
                 code_num=0
                 local lang="${BASH_REMATCH[1]}"
                 lang="${lang# }"  # Trim leading space
-                #((prev_empty == 0)) && echo ""
-                [[ -n $lang ]] && echo "${BB}${W} $lang ${R}"
-                echo "${D}${C}┌$(repeat_char ─ $((WIDTH-2)))┐${R}"
+                #((prev_empty == 0)) && echo -e ""
+                [[ -n $lang ]] && echo -e "${BB}${W} $lang ${R}"
+                echo -e "${D}${C}┌$(repeat_char ─ $((WIDTH-2)))┐${R}"
             else
-                echo "${D}${C}└$(repeat_char ─ $((WIDTH-2)))┘${R}"
+                echo -e "${D}${C}└$(repeat_char ─ $((WIDTH-2)))┘${R}"
                 in_code=0
             fi
             continue
@@ -212,16 +212,16 @@ render() {
             ((code_num++))
             local num=$(printf "%3d" $code_num)
             if [[ $line =~ ^[[:space:]]*# ]] || [[ $line =~ ^[[:space:]]*// ]]; then
-                echo "${D}${C}${num}${R} ${D}${C}│${R} ${GR}${line}${R}"
+                echo -e "${D}${C}${num}${R} ${D}${C}│${R} ${GR}${line}${R}"
             else
-                echo "${D}${C}${num}${R} ${D}${C}│${R} ${G}${line}${R}"
+                echo -e "${D}${C}${num}${R} ${D}${C}│${R} ${G}${line}${R}"
             fi
             prev_empty=0
             continue
         fi
         
         if [[ -z $line ]]; then
-            ((prev_empty == 0)) && echo ""
+            ((prev_empty == 0)) && echo -e ""
             prev_empty=1
             continue
         fi
@@ -229,13 +229,13 @@ render() {
         
         # HTML details/summary tags
         if [[ $line =~ ^[[:space:]]*\<details\> ]]; then
-            echo "${D}${C}▼ Details${R}"
+            echo -e "${D}${C}▼ Details${R}"
             continue
         fi
         
         # Summary with content on same line
         if [[ $line =~ ^[[:space:]]*\<summary\>(.+)\</summary\> ]]; then
-            echo "  ${B}${C}${BASH_REMATCH[1]}${R}"
+            echo -e "  ${B}${C}${BASH_REMATCH[1]}${R}"
             continue
         fi
         
@@ -243,7 +243,7 @@ render() {
         if [[ $line =~ ^[[:space:]]*\<summary\>(.*)$ ]]; then
             local content="${BASH_REMATCH[1]}"
             if [[ -n $content ]]; then
-                echo "  ${B}${C}${content}${R}"
+                echo -e "  ${B}${C}${content}${R}"
             fi
             continue
         fi
@@ -252,7 +252,7 @@ render() {
         if [[ $line =~ ^[[:space:]]*(.+)\</summary\>$ ]] || [[ $line =~ ^[[:space:]]*\</summary\>$ ]]; then
             local content="${BASH_REMATCH[1]}"
             if [[ -n $content ]]; then
-                echo "  ${B}${C}${content}${R}"
+                echo -e "  ${B}${C}${content}${R}"
             fi
             continue
         fi
@@ -273,30 +273,30 @@ render() {
         
         # Footnote references: [^1]: text
         if [[ $line =~ ^\[\^([0-9]+)\]:[[:space:]](.+)$ ]]; then
-            echo "${M}[${BASH_REMATCH[1]}]${R} ${D}$(inline "${BASH_REMATCH[2]}")${R}"
+            echo -e "${M}[${BASH_REMATCH[1]}]${R} ${D}$(inline "${BASH_REMATCH[2]}")${R}"
             continue
         fi
         
         # Headers: # through ######
         if [[ $line =~ ^(#{1,6})[[:space:]](.+)$ ]]; then
             local lvl=${#BASH_REMATCH[1]} txt="${BASH_REMATCH[2]}"
-            #echo ""
+            #echo -e ""
             case $lvl in
-                1) echo "${B}${C}$(repeat_char ═ $WIDTH)${R}"
-                   echo "${B}${RED}$txt${R}"
-                   echo "${B}${C}$(repeat_char ═ $WIDTH)${R}" ;;
-                2) echo "${B}${C}$txt${R}"
-                   echo "${C}$(repeat_char ━ ${#txt})${R}" ;;
-                3) echo "${B}${M}$txt${R}" ;;
-                4) echo "${B}${O}▸ $txt${R}" ;;
-                5) echo "${G}● $txt${R}" ;;
-                6) echo "${D}${C}○ $txt${R}" ;;
+                1) echo -e "${B}${C}$(repeat_char ═ $WIDTH)${R}"
+                   echo -e "${B}${RED}$txt${R}"
+                   echo -e "${B}${C}$(repeat_char ═ $WIDTH)${R}" ;;
+                2) echo -e "${B}${C}$txt${R}"
+                   echo -e "${C}$(repeat_char ━ ${#txt})${R}" ;;
+                3) echo -e "${B}${M}$txt${R}" ;;
+                4) echo -e "${B}${O}▸ $txt${R}" ;;
+                5) echo -e "${G}● $txt${R}" ;;
+                6) echo -e "${D}${C}○ $txt${R}" ;;
             esac
             continue
         fi
         
         # Horizontal rule: --- or *** or ___
-        [[ $line =~ ^[*_-]{3,}$ ]] && { echo "${D}${C}$(repeat_char ─ $WIDTH)${R}"; continue; }
+        [[ $line =~ ^[*_-]{3,}$ ]] && { echo -e "${D}${C}$(repeat_char ─ $WIDTH)${R}"; continue; }
         
         # Admonitions: !!! type "title" or ??? type "title"
         if [[ $line =~ ^(\?\?\?|!!![!]*)[[:space:]]+([a-z]+)([[:space:]]+\"([^\"]+)\")? ]]; then
@@ -309,13 +309,13 @@ render() {
                 success|tip) icon="✓" color="$G" ;;
                 info|note) icon="ⓘ" color="$BL" ;;
             esac
-            echo "${B}${color}${icon} ${title}${R}"
+            echo -e "${B}${color}${icon} ${title}${R}"
             continue
         fi
         
         # Blockquote: > text
         if [[ $line =~ ^\>[[:space:]]?(.*)$ ]]; then
-            echo "${O}┃${R} ${I}${O}$(inline "${BASH_REMATCH[1]}")${R}"
+            echo -e "${O}┃${R} ${I}${O}$(inline "${BASH_REMATCH[1]}")${R}"
             continue
         fi
         
@@ -323,9 +323,9 @@ render() {
         if [[ $line =~ ^[[:space:]]*[-*][[:space:]]\[([[:space:]xX])\][[:space:]](.+)$ ]]; then
             local chk="${BASH_REMATCH[1]}" txt="${BASH_REMATCH[2]}"
             if [[ $chk =~ [xX] ]]; then
-                echo "  ${G}✓${R} ${D}$(inline "$txt")${R}"
+                echo -e "  ${G}✓${R} ${D}$(inline "$txt")${R}"
             else
-                echo "  ${BL}○${R} $(inline "$txt")"
+                echo -e "  ${BL}○${R} $(inline "$txt")"
             fi
             continue
         fi
@@ -333,7 +333,7 @@ render() {
         # Ordered list: 1. item
         if [[ $line =~ ^([[:space:]]*)(([0-9]+)\.)[[:space:]](.+)$ ]]; then
             local ind="${BASH_REMATCH[1]}" num="${BASH_REMATCH[3]}" txt="${BASH_REMATCH[4]}"
-            echo "${ind}${C}${num}.${R} $(inline "$txt")"
+            echo -e "${ind}${C}${num}.${R} $(inline "$txt")"
             continue
         fi
         
@@ -345,14 +345,14 @@ render() {
                 1) bullet="○" ;;
                 2) bullet="▪" ;;
             esac
-            echo "${ind}${C}${bullet}${R} $(inline "$txt")"
+            echo -e "${ind}${C}${bullet}${R} $(inline "$txt")"
             continue
         fi
         
         # Tables: | col | col |
         if [[ $line =~ ^\|.*\|$ ]]; then
             if [[ $line =~ ^\|[[:space:]:\|\-]+\|$ ]]; then
-                echo "${C}$(repeat_char ─ $WIDTH)${R}"
+                echo -e "${C}$(repeat_char ─ $WIDTH)${R}"
             else
                 line="${line#|}" line="${line%|}"
                 local output="${C}│${R}" rest="$line" cell
@@ -363,7 +363,7 @@ render() {
                 done
                 # Handle last cell (no trailing |)
                 [[ -n $rest ]] && output+=" $(inline "$rest") ${C}│${R}"
-                echo "$output"
+                echo -e "$output"
             fi
             continue
         fi
@@ -412,7 +412,7 @@ busymd() {
     done
     
     [[ -z $input ]] && { [[ -p /dev/stdin ]] && input="/dev/stdin" || { help; return 0; }; }
-    [[ -f $input ]] || [[ $input == /dev/stdin ]] || { echo "Error: File not found: $input" >&2; return 1; }
+    [[ -f $input ]] || [[ $input == /dev/stdin ]] || { echo -e "Error: File not found: $input" >&2; return 1; }
     
     if ((use_pager == 1)) && [[ -t 1 ]]; then
         # Use -I (uppercase) for BusyBox compatibility, omit -X as it's not supported everywhere
