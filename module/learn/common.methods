@@ -315,7 +315,7 @@ ftText2Mp3ByLesson()
             ;; esac;done
 
     #argument check
-    (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
+    (( $#>$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
     [ -n "$errorContent" ] && ftEcho -e "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftText2Mp3ByLesson -h && return $resultFail
     [[ -z $contentType ]] && contentType="sentence"
     [[ -z $playAudioLanguage ]] && playAudioLanguage="english"
@@ -327,7 +327,9 @@ ftText2Mp3ByLesson()
     local filePathLessonText="${dirPathTempEng}/${LessonGroupName}/${LessonName}/${contentType}.text_${playAudioLanguage}"
 
     [[ ! -d $dirPathLessonAudio ]] && mkdir $dirPathLessonAudio
-    ftText2Mp3 -fpt "${filePathLessonText}" -dpm "${dirPathLessonAudio}" -speed "${playSpeed}" --flag "${flagName}"
+
+    [[ -n $playSpeed ]] && ftText2Mp3 -fpt "${filePathLessonText}" -dpm "${dirPathLessonAudio}" -speed "${playSpeed}" --flag "${flagName}" && return
+    ftText2Mp3 -fpt "${filePathLessonText}" -dpm "${dirPathLessonAudio}"
 }
 
 _ftText2Mp3ByLessonGroup()
