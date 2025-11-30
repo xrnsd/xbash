@@ -21,10 +21,10 @@ _ftLearnRepetionDrill()
             COMPREPLY=( $(compgen -W "order random" -- "$cur") )
             ;;
         article | sentence | imitate )
-            COMPREPLY=( $(compgen -W "-te -htc -hte -pl -up -fq --sort" -- "$cur") )
+            COMPREPLY=( $(compgen -W "-te -htc -hte -pl -fq --sort" -- "$cur") )
             ;;
         * )
-            [[ $prev =~ ^\- ]] && (( $COMP_CWORD>3 )) && COMPREPLY=( $(compgen -W "-te -htc -hte -pl -up --sort" -- "$cur") ) ||\
+            [[ $prev =~ ^\- ]] && (( $COMP_CWORD>3 )) && COMPREPLY=( $(compgen -W "-te -htc -hte -pl --sort" -- "$cur") ) ||\
             COMPREPLY=( $(compgen -W "-h --type --help" -- "$cur") )
             ;;
     esac
@@ -41,7 +41,7 @@ ftLearnRepetionDrill()
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
     local contentType operateMode readTimeOut orderType=random
     local isShowChineseTips=true isShowEnglishTips=true isPlayChineseTips=false isAutomaticSwitching=false
-    local isUsePlan=false isOperateTextEdit=false isOperateAutoBcompare=false isOperatePlayAudio=false
+    local isOperateTextEdit=false isOperateAutoBcompare=false isOperatePlayAudio=false
     local valCount=7 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     [[ $arg =~ ^\- ]] && case "${arg}" in
@@ -57,7 +57,6 @@ ftLearnRepetionDrill()
 #
 #    #multiple-choice parameter
 #    ftLearnRepetionDrill -te      #drill by text editor
-#                         -up      #use plan
 #                         -htc     #drill by hide chinese tips
 #                         -hte     #drill by hide english tips
 #                         -pl _/cn #play audio(normal en),enter cn to play chinese audio
@@ -106,8 +105,6 @@ ftLearnRepetionDrill()
               operateMode="${operateMode}L"
               [[ "${arg2}" == "cn" ]] && isPlayChineseTips=true
             ;;
-        -up ) isUsePlan=true
-            ;;
         * ) [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
             errorContent="${errorContent}invalid aregument:${arg}"
              break
@@ -129,12 +126,8 @@ ftLearnRepetionDrill()
     local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=understand_read
     local learnLessonGroupList="$(ftIniEditUtil -r  $filePathLearnDataBase learnLessonInfo lessonGroupList)"
     [[ -z $learnLessonGroupList ]] && ftEcho -e "There are no lessons available here" && return
-    local lessonGroupDailyStudyPlanSelected="$(ftIniEditUtil -r  $filePathLearnDataBase learnLessonInfo lessonGroupDailyStudyPlanSelected${contentType}${operateMode})"
     local lessonGroupNameSel lessonGroupNameSelected="$(ftIniEditUtil -r  $filePathLearnDataBase learnLessonInfo lessonGroupSelected${contentType}${operateMode})"
 
-    if $isUsePlan && [[ -n $lessonGroupDailyStudyPlanSelected ]];then
-        lessonGroupNameSelected=${lessonGroupDailyStudyPlanSelected}
-    fi
     ftEcho -c 3 "Select lesson group ,please" "${learnLessonGroupList[@]}" -ch "${lessonGroupNameSelected}"
     [[ -z $publicSelItemContent ]] && ftEcho -e "Null lesson group:${lessonGroupNameSel}" && return
     lessonGroupNameSel=$publicSelItemContent
@@ -170,10 +163,6 @@ ftLearnRepetionDrill()
     else
         isUseDrillingRecord=false
     fi
-
-    local keyNameDailyStudyPlanLesson="lessonDailyStudyPlan${contentType}${operateMode}"
-    local lessonDailyStudyPlanList=($(ftIniEditUtil -r  $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDailyStudyPlanLesson}"))
-
     local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
     local learnLessonListDrilled="$(ftIniEditUtil -r $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}")"
 
@@ -182,11 +171,7 @@ ftLearnRepetionDrill()
         arrayIndexSort=($(ftIniEditUtil -r $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"))
     else
         echo
-        if $isUsePlan && [[ -n $lessonDailyStudyPlanList ]];then
-            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "\U0001F4C3"  "${lessonDailyStudyPlanList[@]}" -ch "${lessonNameSelected}"
-        else
-            ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "\U0002705"  "${learnLessonListDrilled[@]}" -ch "${lessonNameSelected}"
-        fi
+        ftEcho -c 9 "Select lesson , please" "${learnLessonList[@]}" -cs "\U0002705"  "${learnLessonListDrilled[@]}" -ch "${lessonNameSelected}"
         [[ -z $publicSelItemContent ]] && return
         lessonNameSel=$publicSelItemContent
     fi
@@ -492,12 +477,6 @@ ftLearnRepetionDrill()
         ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"
         ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"
 
-        #clear training records
-        if $isUsePlan;then
-            ftIniEditUtil -d $filePathLearnDataBase learnLessonInfo "lessonGroupDailyStudyPlanSelected${contentType}${operateMode}"
-            ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDailyStudyPlan${contentType}${operateMode}" 
-        fi
-
         return
     fi
 
@@ -680,7 +659,7 @@ ftLearnRepetionDrill()
 
                     audioInfo=$(echo "${filePathDataItemContentAudio}" | sed "s ${dirPathTempEng}/$(dirname $linkInfo)/  g")
                     if [[ ! -s $filePathDataItemContentAudio ]]; then
-                        ftEcho -s "creating audio : ${audioInfo}\n----------------"
+                        optResultTips="${optResultTips=}\ncreating audio : ${audioInfo}\n----------------"
                         mkdir -p $(dirname $filePathDataItemContentAudio)
                         $isPlayChineseTips \
                             && ftText2Mp3 -txt "${chineseItem}" -fpm "${filePathDataItemContentAudio}" -speed +40 \
@@ -691,10 +670,12 @@ ftLearnRepetionDrill()
 
                     audioInfo=$(echo "${filePathDataItemContentAudioSlow}" | sed "s ${dirPathTempEng}/$(dirname $linkInfo)/  g")
                     if [[ ! -s $filePathDataItemContentAudioSlow ]]; then
-                        ftEcho -s "creating audio slow: ${audioInfo}\n----------------"
+                        optResultTips="${optResultTips=}\ncreating audio slow: ${audioInfo}\n----------------"
                         ftText2Mp3 -txt "${englishItem}" -fpm "${filePathDataItemContentAudioSlow}" -speed -20
                     fi
                     [[ ! -s $filePathDataItemContentAudioSlowLink ]] && ln -s $filePathDataItemContentAudioSlow $filePathDataItemContentAudioSlowLink
+
+                    [[ -n $audioInfo ]] && audioInfo=$(echo $audioInfo | sed 's/_/++/g')
                     
                 else
                     drillInfomationTipsGone="${drillInfomationTipsGone} Audio"
@@ -715,7 +696,7 @@ ftLearnRepetionDrill()
                                          Link"
                 drillInfomationTipsContentTemp="${drillInfomationTipsContent} \
                                                 ${lineIndex} \
-                                                $(echo "scale=1; $indexArray* 100 / $arrayIndexSortSize" | bc)% \
+                                                $(echo "scale=1; $lineIndex* 100 / $arrayIndexSortSize" | bc)% \
                                                 ${timingChang} \
                                                 ${operationType:-unknow} \
                                                 ${readTimeOut:-unknow} \
@@ -727,17 +708,6 @@ ftLearnRepetionDrill()
             if $isRefTipsItemsContent;then
                 tipsItemsContent=
                 rm -rf $filePathLearnDrillInfoTemp
-                if ($isShowChineseTips || $isShowChineseTipsSingle);then
-                    local chineseItemLength
-                    $isCutChineseTipsSingle && [[ $operationType != "express" ]] && \
-                        chineseItemLength=${#chineseItem}
-                    ( $isShowEnglishTips || $isShowEnglishTipsSingle) && unset chineseItemLength
-                    [[ -n $chineseItemLength ]] && echo "${chineseItem:0:$((chineseItemLength/2+1))}....." >> $filePathLearnDrillInfoTemp \
-                                                || echo "${chineseItem}" >> $filePathLearnDrillInfoTemp
-                    isCutChineseTipsSingle=false
-                else
-                    echo "" >> $filePathLearnDrillInfoTemp
-                fi
 
                 filePathDataItemContentTextAnalysis=${dirPathDataItemContentTextAnalysis}/${lineIndex}.md
                 if $isShowEnglishTips || $isShowEnglishTipsSingle;then
@@ -748,7 +718,20 @@ ftLearnRepetionDrill()
                     else
                         echo "${englishItem}" >> $filePathLearnDrillInfoTemp
                     fi
+                else
+                    echo "" >> $filePathLearnDrillInfoTemp
                 fi
+
+                if ($isShowChineseTips || $isShowChineseTipsSingle);then
+                    local chineseItemLength
+                    $isCutChineseTipsSingle && [[ $operationType != "express" ]] && \
+                        chineseItemLength=${#chineseItem}
+                    ( $isShowEnglishTips || $isShowEnglishTipsSingle) && unset chineseItemLength
+                    [[ -n $chineseItemLength ]] && echo "${chineseItem:0:$((chineseItemLength/2+1))}....." >> $filePathLearnDrillInfoTemp \
+                                                || echo "${chineseItem}" >> $filePathLearnDrillInfoTemp
+                    isCutChineseTipsSingle=false
+                fi
+
                 tipsItemsContent="$(cat $filePathLearnDrillInfoTemp)"
                 [[ -z $tipsItemsContent ]] && tipsItemsContent="null content to display，\033[1;33mListen carefully\033[0m."
             fi
@@ -808,8 +791,7 @@ ftLearnRepetionDrill()
 
             timeStart=$(date +%s -d $(date +"%H:%M:%S"))
 
-            if [[ $isOperatePlayAudio || $isOperatePlayAudioSingle ]];then
-                #([[ $operationType = "understand_listen" ]] || (( $englishItemLength > 8 ))) \
+            if $isOperatePlayAudio || $isOperatePlayAudioSingle;then
                 if $isOperatePlayAudioSlow;then
                     [[ -f $filePathDataItemContentAudioSlow ]] && \
                         play -q $filePathDataItemContentAudioSlow || \
@@ -931,13 +913,11 @@ ftLearnRepetionDrill()
                     if [[ -f $filePathDataItemContentLinkTable ]];then
                         local dirPathDataItemContentTextAnalysisLink="${dirPathTempEng}/$(dirname $linkInfo)/${contentType}.text_analysis"
                         [[ ! -d $dirPathDataItemContentTextAnalysisLink ]] && mkdir -p $dirPathDataItemContentTextAnalysisLink
-                        local filePathDataItemContentTextAnalysisLink="${dirPathDataItemContentTextAnalysisLink}/$(basename $linkInfo).analysis"
-                        [[ ! -f $filePathDataItemContentTextAnalysisLink ]] && filePathDataItemContentTextAnalysisLink="${dirPathDataItemContentTextAnalysisLink}/$(basename $linkInfo).md"
+                        local filePathDataItemContentTextAnalysisLink="${dirPathDataItemContentTextAnalysisLink}/$(basename $linkInfo).md"
                         [[ ! -f $filePathDataItemContentTextAnalysisLink ]] && touch $filePathDataItemContentTextAnalysisLink
-                        rm $filePathDataItemOld $filePathDataItemNew
 
                         local dirPathLocal=$(pwd)
-                        cd $dirPathDataItemContentTextAnalysis && ln -sf $filePathDataItemContentTextAnalysisLink && cd $dirPathLocal
+                        [[ ! -s $filePathDataItemContentTextAnalysisLink ]] && cd $dirPathDataItemContentTextAnalysis && ln -sf $filePathDataItemContentTextAnalysisLink && cd $dirPathLocal
                         filePathDataItem=$filePathDataItemContentTextAnalysisLink
                     else
                         filePathDataItem="${dirPathDataItemContentTextAnalysis}/${lineIndex}.md"
@@ -1073,12 +1053,6 @@ ftLearnRepetionDrill()
     ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray"
     ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceDrillTrueCount"
     ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort"
-
-    #clear training records
-    if $isUsePlan;then
-        ftIniEditUtil -d $filePathLearnDataBase learnLessonInfo "lessonGroupDailyStudyPlanSelected${contentType}${operateMode}"
-        ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDailyStudyPlan${contentType}${operateMode}" 
-    fi
 }
 
 complete -W "-h --help --rely_install -p -l" -A file ftOcrRepetionDrill 
@@ -1446,7 +1420,7 @@ ftLearnLessonManage()
             #diff
             md5KeyOld=$(ftIniEditUtil -r  $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}_${contentType}")
             md5KeyNow="$(md5sum $filePathDataItemLinkTable | awk '{print $1}')"
-            [[ -n $md5KeyOld ]]&&[[ $md5KeyOld = $md5KeyNow ]] && ftEcho -s "Cancel update, don't changed" && continue
+            # [[ -n $md5KeyOld ]]&&[[ $md5KeyOld = $md5KeyNow ]] && ftEcho -s "Cancel update, don't changed" && continue
 
             #delete file repeate line
             [[ $lessonNameSel != "review" ]] && [[ -n $(sort $filePathDataItemLinkTable|uniq -dc) ]] && \
@@ -1526,17 +1500,20 @@ ftLearnLessonManage()
                 lessonCtAC="${dirPathTempEng}/${lessonPathBasic}/${contentType}.audio_chinese/${lessonLineLindex}.mp3"
                 [[ -f $lessonCtAC ]] && ln -s "${lessonCtAC}" "${dirPathLessonUpdateByLtCtAC}/${lineIndex}.mp3"
 
-                lessonCtTA="${dirPathTempEng}/${lessonPathBasic}/${contentType}.text_analysis/${lessonLineLindex}.analysis"
-                if [[ ! -f $lessonCtTA ]];then 
-                    lessonCtTA="${dirPathTempEng}/${lessonPathBasic}/${contentType}.text_analysis/${lessonLineLindex}.md"
-                    [[ -f $lessonCtTA ]] && ln -s "${lessonCtTA}" "${dirPathLessonUpdateByLtCtTA}/${lineIndex}.md"
-                else
-                    ln -s "${lessonCtTA}" "${dirPathLessonUpdateByLtCtTA}/${lineIndex}.analysis"
-                fi
+                lessonCtTA="${dirPathTempEng}/${lessonPathBasic}/${contentType}.text_analysis/${lessonLineLindex}.md"
+                [[ -f $lessonCtTA ]] && ln -s "${lessonCtTA}" "${dirPathLessonUpdateByLtCtTA}/${lineIndex}.md"
 
                 #lessonCtTP="${dirPathTempEng}/${lessonPathBasic}/${contentType}.text_problem"
                 #[[ -f $lessonCtTP ]] && lineContent=$(awk 'NR=="'$lessonLineLindex'"' "${lessonCtTP}") && ftTextSetLine -f $filePathLessonUpdateByLtCtTP -n $lineIndex -c "${lineContent}" > /dev/null
 
+
+                # if (( $lineIndex==11  ));then
+                #     echo "lessonPathBasic=${lessonPathBasic}"
+                #     echo "lessonLineLindex=${lessonLineLindex}"
+                #     echo "lessonCtTA=${lessonCtTA}"
+                #     echo "localTA=${dirPathLessonUpdateByLtCtTA}/${lineIndex}.md"
+                #     return
+                # fi
             done
 
             ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}_${contentType}" "$(md5sum $filePathDataItemLinkTable | awk '{print $1}')"
