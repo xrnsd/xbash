@@ -195,7 +195,7 @@ ftLearnRepetionDrill()
     local dirPathDataItemContentDrillResult="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.drill_result" \
           filePathDataItemContentDrillResult
     local dirPathDataItemContentAudio \
-          filePathDataItemContentAudio
+          filePathDataItemContentAudio filePathDataItemContentAudioSlow
     local dirPathDataItemContentTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis" \
           filePathDataItemContentTextAnalysis
     local filePathDataItemContentTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
@@ -522,7 +522,7 @@ ftLearnRepetionDrill()
     fi
 
     local arrayIndexSortSize=${#arrayIndexSort[@]} linkInfo
-    local isShowEnglishTipsSingle=false isShowChineseTipsSingle=false isOperatePlayAudioSingle=false
+    local isShowEnglishTipsSingle=false isShowChineseTipsSingle=false isOperatePlayAudioSingle=false isOperatePlayAudioSlow=false
     local isCutChineseTipsSingle=false
     local tipsItemsContent audioInfo timeStart timeHandled
     
@@ -555,6 +555,7 @@ ftLearnRepetionDrill()
     local operationType drillInfomationTipsTemp drillInfomationTipsContentTemp
     local isSorting sortingType sortingFlag
     local isRefTipsItemsContent isRefKeyTips isRefDrillInfomationTips
+    local optResultTips
 
     while (( $indexArray < $arrayIndexSortSize  )); do
         timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
@@ -639,8 +640,6 @@ ftLearnRepetionDrill()
         while true; do
             #drill status information
             if $isRefDrillInfomationTips;then
-                isRefDrillInfomationTips=false
-
                 englishItem=$(awk 'NR=="'$lineIndex'"' $filePathDataItemContentTextEnglish)
                 [[ -z $englishItem ]] && \
                 ftEcho -column 5 "${drillInfomationTips}" "${drillInfomationTipsContent}" && \
@@ -669,21 +668,34 @@ ftLearnRepetionDrill()
                 fi
 
                 filePathDataItemContentAudio="${dirPathDataItemContentAudio}/${lineIndex}.mp3"
+                filePathDataItemContentAudioSlow="${dirPathDataItemContentAudio}/${lineIndex}_slow.mp3"
                 if $isOperatePlayAudio || $isOperatePlayAudioSingle;then
 
-                    [[ -f ${filePathDataItemContentLinkTable} ]] && \
-                    filePathDataItemContentAudioLink="${filePathDataItemContentAudio}" && \
-                    filePathDataItemContentAudio="${dirPathTempEng}/$(dirname $linkInfo)/${contentType}.audio_${playAudioLanguage}/$(basename $linkInfo).mp3"
+                    if [[ -f ${filePathDataItemContentLinkTable} ]];then
+                        filePathDataItemContentAudioLink="${filePathDataItemContentAudio}"
+                        filePathDataItemContentAudioSlowLink="${filePathDataItemContentAudioSlow}"
+                        filePathDataItemContentAudio="${dirPathTempEng}/$(dirname $linkInfo)/${contentType}.audio_${playAudioLanguage}/$(basename $linkInfo).mp3"
+                        filePathDataItemContentAudioSlow="${filePathDataItemContentAudio%.*}_slow.mp3"
+                    fi
 
                     audioInfo=$(echo "${filePathDataItemContentAudio}" | sed "s ${dirPathTempEng}/$(dirname $linkInfo)/  g")
-                    if [[ -n $audioInfo ]] && [[ ! -f $filePathDataItemContentAudio ]]; then
+                    if [[ ! -s $filePathDataItemContentAudio ]]; then
                         ftEcho -s "creating audio : ${audioInfo}\n----------------"
                         mkdir -p $(dirname $filePathDataItemContentAudio)
                         $isPlayChineseTips \
                             && ftText2Mp3 -txt "${chineseItem}" -fpm "${filePathDataItemContentAudio}" -speed +40 \
                             || ftText2Mp3 -txt "${englishItem}" -fpm "${filePathDataItemContentAudio}"
-                        [[ -n $filePathDataItemContentAudioLink ]] && ln -s $filePathDataItemContentAudio $filePathDataItemContentAudioLink
+                        
                     fi
+                    [[ ! -s $filePathDataItemContentAudioLink ]] && ln -s $filePathDataItemContentAudio $filePathDataItemContentAudioLink
+
+                    audioInfo=$(echo "${filePathDataItemContentAudioSlow}" | sed "s ${dirPathTempEng}/$(dirname $linkInfo)/  g")
+                    if [[ ! -s $filePathDataItemContentAudioSlow ]]; then
+                        ftEcho -s "creating audio slow: ${audioInfo}\n----------------"
+                        ftText2Mp3 -txt "${englishItem}" -fpm "${filePathDataItemContentAudioSlow}" -speed -20
+                    fi
+                    [[ ! -s $filePathDataItemContentAudioSlowLink ]] && ln -s $filePathDataItemContentAudioSlow $filePathDataItemContentAudioSlowLink
+                    
                 else
                     drillInfomationTipsGone="${drillInfomationTipsGone} Audio"
                 fi
@@ -713,8 +725,6 @@ ftLearnRepetionDrill()
             fi
 
             if $isRefTipsItemsContent;then
-                isRefTipsItemsContent=false
-
                 tipsItemsContent=
                 rm -rf $filePathLearnDrillInfoTemp
                 if ($isShowChineseTips || $isShowChineseTipsSingle);then
@@ -745,8 +755,6 @@ ftLearnRepetionDrill()
 
             #config key tips
             if $isRefKeyTips;then
-                isRefKeyTips=false
-
                 arrayKeysIgone=
                 $isAutomaticSwitching && arrayKeysIgone="${arrayKeysIgone} N_or_Space" \
                                       || arrayKeysIgone="${arrayKeysIgone} Space"
@@ -783,26 +791,45 @@ ftLearnRepetionDrill()
                 [[ -f $filePathDataItemContentTextAnalysis ]] && arrayKeysHighlight="${arrayKeysHighlight} I"
             fi
 
-            ftEcho -column 5 "${drillInfomationTipsTemp}" "${drillInfomationTipsContentTemp}" "${drillInfomationTipsGone}"
-            ftEcho -bl "${tipsItemsContent}"
-            ftEcho -key -n "${arrayKeys}" "${arrayKeyContents}" "${arrayKeysIgone}" -hl "${arrayKeysHighlight}" "${arrayKeysHighlightFlag}"
+            if ( $isRefDrillInfomationTips || $isRefTipsItemsContent || $isRefKeyTips );then
+                isRefDrillInfomationTips=false
+                isRefTipsItemsContent=false
+                isRefKeyTips=false
+                clear
+
+                ftEcho -column 5 "${drillInfomationTipsTemp}" "${drillInfomationTipsContentTemp}" "${drillInfomationTipsGone}"
+                ftEcho -bl "${tipsItemsContent}"
+                ftEcho -key -n "${arrayKeys}" "${arrayKeyContents}" "${arrayKeysIgone}" -hl "${arrayKeysHighlight}" "${arrayKeysHighlightFlag}"
+            fi
+            [[ -n $optResultTips ]] && echo -e "-----------------------------------------------\n${optResultTips}"
 
             #write to clipboard
             echo "${englishItem}"| tr -d '\n'| xclip -sel clip
 
             timeStart=$(date +%s -d $(date +"%H:%M:%S"))
-            ($isOperatePlayAudio || $isOperatePlayAudioSingle) && play -q $filePathDataItemContentAudio && isOperatePlayAudioSingle=false
+
+            if [[ $isOperatePlayAudio || $isOperatePlayAudioSingle ]];then
+                #([[ $operationType = "understand_listen" ]] || (( $englishItemLength > 8 ))) \
+                if $isOperatePlayAudioSlow;then
+                    [[ -f $filePathDataItemContentAudioSlow ]] && \
+                        play -q $filePathDataItemContentAudioSlow || \
+                        play -q $filePathDataItemContentAudio tempo 0.85
+                    isOperatePlayAudioSlow=false
+                else
+                    play -q $filePathDataItemContentAudio
+                    isOperatePlayAudioSlow=true
+                fi
+                isOperatePlayAudioSingle=false
+            fi
 
             [[ -n $readTimeOut ]] && read -n 1 -t${readTimeOut} playOpt || read -n 1 playOpt
 
             timeHandled=$(date +%s -d $(date +"%H:%M:%S"))
-            unset isSorting sortingType sortingFlag
+            unset isSorting sortingType sortingFlag optResultTips
 
             if [[ -n $readTimeOut ]] && ((timeHandled-timeStart >= $readTimeOut));then
                 playOpt=n
             fi
-            
-            clear
 
             case "$playOpt" in
                 s | S )
@@ -837,8 +864,6 @@ ftLearnRepetionDrill()
 
                         #delete fail time
                         ftIniEditUtil -d $filePathLearnDataBaseFailTime "failTimeSDR" "${linkInfo}"
-
-                        echo "-----------------------------------------------"
                         break
                     fi
                     ;;
@@ -853,8 +878,7 @@ ftLearnRepetionDrill()
                         [[ ! -f $filePathDataItemMCLTN ]] && mkdir -p $(dirname $filePathDataItemMCLTN)
                         if [[ ! -f $filePathDataItemMCLTN ]] || [[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemMCLTN}) ]]; then
                             echo "${linkInfo}" >> $filePathDataItemMCLTN
-                            echo -n "Marked as multiple fail record is created, id : " && ftEcho -s $(awk 'END{print NR}' $filePathDataItemMCLTN)
-                            echo "-----------------------------------------------"
+                            optResultTips="Marked as multiple fail record is created, id : $(ftEcho -s $(awk 'END{print NR}' $filePathDataItemMCLTN))"
                         fi
                     fi
 
@@ -931,10 +955,8 @@ ftLearnRepetionDrill()
                         # clear
                         # continue
                     else
-                        ftEcho -s "Cancel operation, analysis is null"
-                        echo "-----------------------------------------------"
+                        optResultTips="Cancel operation, analysis is null"
                     fi
-
                     ;;
                 #To play audio
                 m | M )
@@ -953,16 +975,15 @@ ftLearnRepetionDrill()
                 isSorting=false
                 if [[ $lessonNameSel != "${sortingType}" ]]; then
                     if [[ -z $linkInfo ]];then
-                        ftEcho -e "Can't add record : linkInfo is null"
+                        optResultTips="Can't add record : linkInfo is null"
                     else
 
                         local filePathDataItemCLTC="${dirPathTempEng}/needRepetionDrill/${sortingType}/${contentType}.link_table"
                         if [[ ! -s $filePathDataItemCLTC ]]||[[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemCLTC}) ]]; then
                             echo "${linkInfo}" >> $filePathDataItemCLTC
-                            echo -n "The ${sortingType} record is created, id is : " && ftEcho -s $(awk 'END{print NR}' $filePathDataItemCLTC)
+                            optResultTips="The ${sortingType} record is created, id is : $(ftEcho -s $(awk 'END{print NR}' $filePathDataItemCLTC))"
                         else
-                            echo
-                            ftEcho -s "Cancel operation, repeate ${sortingType} record"
+                            optResultTips="Cancel operation, repeate ${sortingType} record"
                         fi
 
                         if [[ ! -s $filePathDataItemContentTextAnalysis ]]||[[ -z $(grep -e "${sortingFlag}$" ${filePathDataItemContentTextAnalysis}) ]]; then
@@ -985,23 +1006,20 @@ ftLearnRepetionDrill()
 
                                 [[ ! -d $dirPathDataItemContentTextAnalysis ]] && mkdir $dirPathDataItemContentTextAnalysis
                                 [[ -d $dirPathDataItemContentTextAnalysis ]] && echo "* ${sortingResultContent} ${sortingFlag}" >> $filePathDataItemContentTextAnalysis && \
-                                    echo "${sortingType}:${lineIndex} add finsih"
+                                    optResultTips="${optResultTips}\n${sortingType}:${lineIndex} add finsih"
                             else
-                                ftEcho -s "Cancel operation, null sign data"
+                                optResultTips="${optResultTips}\nCancel operation, null sign data"
                             fi
                         else
-                            echo
-                            ftEcho -s "Cancel operation, repeate ${sortingType} analysis data"
+                            optResultTips="${optResultTips}\nCancel operation, repeate ${sortingType} analysis data"
                         fi
                     fi
                 else
-                    ftEcho -s "lesson is disable"
+                    optResultTips="lesson is disable"
                 fi
 
                 isRefTipsItemsContent=true
                 isRefKeyTips=true
-
-                echo "-----------------------------------------------"
 
             fi
         done
@@ -1014,16 +1032,15 @@ ftLearnRepetionDrill()
                 && $isOperateTextEdit;then
                 [[ ! -d "${dirPathDataItemContentDrillResult}" ]] && mkdir -p "${dirPathDataItemContentDrillResult}"
                 mv "${filePathLearnDrillTemp}" "${filePathLearnDrillTemp}_basic"
-                echo -n "Sentence:${lineIndex} drill results"
+                optResultTips="${optResultTips}\nSentence:${lineIndex} drill results"
                 ftTransformDrillReslt "${filePathLearnDrillTemp}_basic" "${filePathLearnDrillTemp}"
                 rm -rf "${filePathLearnDrillTemp}_basic"
                 echo "* $(cat $filePathLearnDrillTemp) \U0001F6AB" >> $filePathDataItemContentTextAnalysis
-                echo
             elif [[ -n $(grep -sn "\+" "${filePathLearnDrillTemp}") ]] \
                 || [[ -n $(grep -sn "\*" "${filePathLearnDrillTemp}") ]]\
                 || [[ -n $(grep -sn "\-" "${filePathLearnDrillTemp}") ]] \
                 && $isOperateTextEdit;then
-                  echo "Sentence:${lineIndex} drill result from error:"
+                  optResultTips="${optResultTips}\nSentence:${lineIndex} drill result from error:"
                   ftEcho -e "$(cat $filePathLearnDrillTemp)"  
             fi
             
