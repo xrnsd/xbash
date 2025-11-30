@@ -261,6 +261,12 @@ _ftText2Mp3ByLesson()
         --lan )
             COMPREPLY=( $(compgen -W "english chinese" -- "$cur") )
             ;;
+        --speed )
+            COMPREPLY=( $(compgen -W "+ -" -- "$cur") )
+            ;;
+        --flag )
+            COMPREPLY=( $(compgen -W "_slow" -- "$cur") )
+            ;;
         * )
             if (( $COMP_CWORD==1 ));then
                 [[ "$cur" =~ ^\- ]] && COMPREPLY=( $(compgen -W "-h --help" -- "$cur") ) ||\
@@ -268,7 +274,7 @@ _ftText2Mp3ByLesson()
             elif (( $COMP_CWORD==2 )) && [[ -d ${dirPathTempEng}/${prev} ]];then
                 COMPREPLY=( $(compgen -W "$(ls --file-type ${dirPathTempEng}/${prev} |grep / | awk -F/ '{print $1}')" -- "$cur") )
             else
-                COMPREPLY=( $(compgen -W "--type --lan" -- "$cur") )
+                COMPREPLY=( $(compgen -W "--type --lan --speed --flag" -- "$cur") )
             fi
             ;;
     esac
@@ -285,23 +291,27 @@ ftText2Mp3ByLesson()
 
     local LessonGroupName=$1
     local LessonName=$2
-    local contentType playAudioLanguage
-    local valCount=6 errorContent arg arg2
+    local contentType playAudioLanguage playSpeed flagName
+    local valCount=10 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     [[ $arg =~ ^\- ]] && case "${arg}" in
         # help infoumation ==============
         -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
 #=========================================================
-#    ftText2Mp3ByLesson LessonGroupName LessonName --type sentence/imitate --lan english/chinese
+#    ftText2Mp3ByLesson LessonGroupName LessonName --type sentence/imitate --lan english/chinese --speed -100~+100
 #========================================================="; return ;;
         # argument infoumation ==============
         --type ) contentType="${arg2}"
             ;;
         --lan ) playAudioLanguage="${arg2}"
             ;;
-        * ) [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
-            errorContent="${errorContent}invalid aregument:${arg}"
-             break
+        --speed ) playSpeed="${arg2}"
+            ;;
+        --flag ) flagName="${arg2}"
+            ;;
+        * ) #[[ -n $errorContent ]] && errorContent="${errorContent}\\n"
+            # errorContent="${errorContent}invalid aregument:${arg}"
+            #  break
             ;; esac;done
 
     #argument check
@@ -317,7 +327,7 @@ ftText2Mp3ByLesson()
     local filePathLessonText="${dirPathTempEng}/${LessonGroupName}/${LessonName}/${contentType}.text_${playAudioLanguage}"
 
     [[ ! -d $dirPathLessonAudio ]] && mkdir $dirPathLessonAudio
-    ftText2Mp3 -fpt "${filePathLessonText}" -dpm "${dirPathLessonAudio}"
+    ftText2Mp3 -fpt "${filePathLessonText}" -dpm "${dirPathLessonAudio}" -speed "${playSpeed}" --flag "${flagName}"
 }
 
 _ftText2Mp3ByLessonGroup()
@@ -333,14 +343,20 @@ _ftText2Mp3ByLessonGroup()
             COMPREPLY=( $(compgen -W "article sentence imitate" -- "$cur") )
             ;;
         --lan )
-            COMPREPLY=( $(compgen -W "en cn" -- "$cur") )
+            COMPREPLY=( $(compgen -W "english chinese" -- "$cur") )
+            ;;
+        --speed )
+            COMPREPLY=( $(compgen -W "+ -" -- "$cur") )
+            ;;
+        --flag )
+            COMPREPLY=( $(compgen -W "_slow" -- "$cur") )
             ;;
         * )
             if (( $COMP_CWORD==1 ));then
                 [[ "$cur" =~ ^\- ]] && COMPREPLY=( $(compgen -W "-h --help" -- "$cur") ) ||\
                 COMPREPLY=( $(compgen -W "$(ls --file-type $dirPathTempEng |grep / | awk -F/ '{print $1}')" -- "$cur") )
             else
-                COMPREPLY=( $(compgen -W "--type --lan" -- "$cur") )
+                COMPREPLY=( $(compgen -W "--type --lan --speed --flag" -- "$cur") )
             fi
             ;;
     esac
@@ -355,21 +371,34 @@ ftText2Mp3ByLessonGroup()
     #argument init
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} has disabled" && return
 
-    local valCount=2 errorContent arg arg2
+    local contentType playAudioLanguage playSpeed flagName
+    local valCount=9 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
+    [[ $arg =~ ^\- ]] && case "${arg}" in
         # help infoumation ==============
         -h | --help) ftEcho -rc "\"${ftEffect}\"" "'s help information" "\
 #=========================================================
-#    ftText2Mp3ByLessonGroup LessonGroupName --type sentence/imitate --lan cn/en
+#    ftText2Mp3ByLessonGroup LessonGroupName --type sentence/imitate --lan english/chinese --speed -100~+100 --flag flagName
 #========================================================="; return ;;
-    * ) ;; esac;done
+        # argument infoumation ==============
+        --type ) contentType="${arg2}"
+            ;;
+        --lan ) playAudioLanguage="${arg2}"
+            ;;
+        --speed ) playSpeed="${arg2}"
+            ;;
+        --flag ) flagName="${arg2}"
+            ;;
+        * ) [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
+            errorContent="${errorContent}invalid aregument:${arg}"
+             break
+            ;; esac;done
 
     # argument infoumation ==============
     local LessonGroupName=$1
 
     #argument check
-    (( $#!=$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
+    (( $#>$valCount )) && errorContent="${errorContent}\\nnormal argument count is ${valCount},but now :$#"
     [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftText2Mp3ByLessonGroup -h && return $resultFail
 
     #code main
@@ -378,7 +407,7 @@ ftText2Mp3ByLessonGroup()
 
     while read lessonName ;do  #可以在循环外保留变量
       echo "===============  课程${lessonName}  =========================="
-      ftText2Mp3ByLesson ${LessonGroupName} ${lessonName}
+      ftText2Mp3ByLesson ${LessonGroupName} ${lessonName} --type "$contentType" --lan "${playAudioLanguage}" --speed "${playSpeed}" --flag "${flagName}"
       sleep 5
     done < <(echo "$(ls $dirPathLessonGroup)")
 }
