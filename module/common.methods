@@ -592,7 +592,7 @@ ftEcho()
                         fi
                     fi
                 done
-                printf "${formatArray}\n" "${arrayKeyContents[@]}" | column -t | sed 's/_/ /g'
+                printf "${formatArray}\n" "${arrayKeyContents[@]}" | column -t | sed 's/_/ /g' | sed 's/++/_/g'
                 break;;
 
         -column )
@@ -631,7 +631,7 @@ ftEcho()
                         fi
                     fi
                 done
-                printf "${formatArray}\n" "${arrayColumnContents[@]}" | column -t | sed 's/_/ /g'
+                printf "${formatArray}\n" "${arrayColumnContents[@]}" | column -t | sed 's/_/ /g' | sed 's/++/_/g'
                 break;;
     * )    echo $option ;break;; esac ;done
 }
