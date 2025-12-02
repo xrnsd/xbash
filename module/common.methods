@@ -343,7 +343,8 @@ ftEcho()
 #    ftEcho    -iow   标题  内容      # 弹窗交互
 #    ftEcho    -frame 内容            # 多行排版显示,带边框
 #    ftEcho    -c     阈值  标题 内容  # 超出阈值使用表格显示内容
-#    ftEcho    -key   按键  说明      # 对齐高亮显示按键和说明
+#    ftEcho    -key   -n   按键 说明  # 对齐高亮显示按键和说明
+#    ftEcho    -key   -r1            #读取按键输入
 #    ftEcho    -column 高亮内容  标题  # 对齐高亮显示内容
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
@@ -547,7 +548,38 @@ ftEcho()
                 local arrayKeys arrayKeyContents arrayKeysIgone arrayKeysHighlight arrayKeysHighlightFlag
                 local argListKeyContents isEchoPlural=true
                 local forceEchoPluralFlag=3 forceEchoPluralIndex=1
-                if [ "${2}" = "-n" ];then
+
+                if [ "${2}" = "-r1" ];then
+                    local timeOut=${3} keyVal
+                    while read -sN1 $timeOut key
+                    do
+                      read -sN1 -t 0.0001 k1
+                      read -sN1 -t 0.0001 k2
+                      read -sN1 -t 0.0001 k3
+                      key+=${k1}${k2}${k3}
+
+                      case "$key" in
+                        $'\e[A'|$'\e0A')
+                            keyVal="up"
+                            break;;
+                        $'\e[D'|$'\e0D')
+                            keyVal="left"
+                            break;;
+                        $'\e[B'|$'\e0B')  
+                            keyVal="down"
+                            break;;
+                        $'\e[C'|$'\e0C')  
+                            keyVal="right"
+                            break;;
+                        *)
+                            keyVal="${key}"
+                            break;;
+                      esac
+                    done
+                    export keyValInput=${keyVal}
+                    return
+                
+                elif [ "${2}" = "-n" ];then
                   isEchoPlural=false
                   arrayKeys=($(echo $3 | sed 's/ /\n/g'))
                   arrayKeyContents=($(echo $4 | sed 's/ /\n/g'))
@@ -593,6 +625,8 @@ ftEcho()
                     fi
                 done
                 printf "${formatArray}\n" "${arrayKeyContents[@]}" | column -t | sed 's/_/ /g' | sed 's/++/_/g'
+                
+
                 break;;
 
         -column )
