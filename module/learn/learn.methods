@@ -507,9 +507,8 @@ ftLearnRepetionDrill()
     
     local arrayKeysHighlight \
           arrayKeysIgone \
-          arrayKeys="Left Up Down D I S E L R A W Right" \
-          arrayKeyContents="is_understand \
-                            previous_item \
+          arrayKeys="Up Down D I S E L R A W Right" \
+          arrayKeyContents="previous_item \
                             show_tips_or_next_item \
                             delete_records \
                             add_analysis \
@@ -804,7 +803,7 @@ ftLearnRepetionDrill()
                 isOperatePlayAudioSingle=false
             fi
 
-            [[ -n $readTimeOut ]] && ftEcho -key -r1 -t${readTimeOut} || ftEcho -key -r1
+            [[ -n $readTimeOut ]] && ftEcho -key -r1 ${readTimeOut} || ftEcho -key -r1
             playOpt=$keyValInput
 
             timeHandled=$(date +%s -d $(date +"%H:%M:%S"))
@@ -863,26 +862,33 @@ ftLearnRepetionDrill()
                     fi
 
                     if $isNextItem;then
-                        #save fail time
-                        [[ -n $failTime ]] && local val=$((failTime+=1)) && sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime
+                        ftEcho -key -r1 -tips "Do you understand ? (Press Y/y is understand，press enter equal to press y)"
+                        if [[ $keyValInput = "down" ]] || [[ -z $keyValInput ]];then
+                            #delete fail time
+                            [[ -n $failTime ]] && local val=$((failTime-=1)) && \
+                                sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime && \
+                                optResultTips="To change fail time record : ${linkInfo}=${val} \U0001F4AF"
+                        else
+                            #save fail time
+                            [[ -n $failTime ]] && local val=$((failTime+=1)) && \
+                                sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime && \
+                                optResultTips="To change fail time record : ${linkInfo}=${val} \U0001F4AA"
 
-                        #auto save multiple fail record
-                        if [[ -n $autoStorgeToMultipleFailTimeFlag ]] && [[ -n $failTime ]] && (( $failTime >= $autoStorgeToMultipleFailTimeFlag ));then
-                            local filePathDataItemMCLTN="${dirPathTempEng}/needRepetionDrill/multiple/${contentType}.link_table"
-                            [[ ! -f $filePathDataItemMCLTN ]] && mkdir -p $(dirname $filePathDataItemMCLTN)
-                            if [[ ! -f $filePathDataItemMCLTN ]] || [[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemMCLTN}) ]]; then
-                                echo "${linkInfo}" >> $filePathDataItemMCLTN
-                                optResultTips="The multiple record ${lineIndex} is created, id : $(ftEcho -s $(awk 'END{print NR}' $filePathDataItemMCLTN))"
+                            #auto save multiple fail record
+                            if [[ -n $autoStorgeToMultipleFailTimeFlag ]] && [[ -n $failTime ]] && (( $failTime >= $autoStorgeToMultipleFailTimeFlag ));then
+                                local filePathDataItemMCLTN="${dirPathTempEng}/needRepetionDrill/multiple/${contentType}.link_table"
+                                [[ ! -f $filePathDataItemMCLTN ]] && mkdir -p $(dirname $filePathDataItemMCLTN)
+                                if [[ ! -f $filePathDataItemMCLTN ]] || [[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemMCLTN}) ]]; then
+                                    echo "${linkInfo}" >> $filePathDataItemMCLTN
+                                    optResultTips="${optResultTips}\nThe multiple record : ${linkInfo} is created, id : $(ftEcho -s $(awk 'END{print NR}' $filePathDataItemMCLTN))"
+                                fi
                             fi
                         fi
-
                         break;
                     fi
                     ;;
-                left )
-                    #delete fail time
-                    [[ -n $failTime ]] && local val=$((failTime-=1)) && sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime
-                    break;;
+                # left )
+                #     break;;
                 #To play audio
                 right )isOperatePlayAudioSingle=true
                     ;;
