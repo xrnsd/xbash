@@ -4341,6 +4341,7 @@ ftText2Mp3()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
+    local isModeSingle=false
     local filePathText dirPathMp3
     local textContxt filePathMp3 speedVal flagName
     local valCount=6 errorContent arg arg2 # arg3 # arg4
@@ -4363,12 +4364,16 @@ ftText2Mp3()
 #========================================================="; return ;;
         # 变量参数解析部分 ==============
         -fpt ) filePathText="${arg2}"
+               isModeSingle=false
             ;;
         -dpm ) dirPathMp3="${arg2}"
+               isModeSingle=false
             ;;
         -txt ) textContxt="${arg2}"
+               isModeSingle=true
             ;;
         -fpm ) filePathMp3="${arg2}"
+               isModeSingle=true
             ;;
         -speed ) speedVal="${arg2}"
             ;;
@@ -4379,13 +4384,14 @@ ftText2Mp3()
             ;; esac;done
 
     local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
-
-    [ ! -d "${dirPathMp3}" ] && mkdir -p $dirPathMp3
     [ ! -d "${dirPathPythonVirtualEnvironment}" ] && errorContent="${errorContent}\\n[环境异常,目录不存在]:${dirPathPythonVirtualEnvironment}"
-    [ ! -d "${dirPathMp3}" ] && [[ -z $filePathMp3 ]] && errorContent="${errorContent}\\n[生成文件存放目录不存在]:${dirPathMp3}"
-    [ ! -f "${filePathText}" ] && [[ -z $textContxt ]] && errorContent="${errorContent}\\n[文本数据文件不存在]:${filePathText}"
-    [ -n "$errorContent" ] && ftEcho -e "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftText2Mp3 -h && return $resultFail
 
+    $isModeSingle && [[ -z $textContxt ]] && errorContent="${errorContent}\\n[语音文本内容未设定]"
+    $isModeSingle && [[ -z $filePathMp3 ]] && errorContent="${errorContent}\\n[生成文件存放路径未设定]"
+    ! $isModeSingle && [[ -z $dirPathMp3 ]] && errorContent="${errorContent}\\n[生成文件存放目录未设定]"
+    ! $isModeSingle && [[ ! -s $filePathText ]] && errorContent="${errorContent}\\n[文本数据文件不存在]:${filePathText}"
+    [ -n "$errorContent" ] && ftEcho -e "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftText2Mp3 -h && return $resultFail
+    
     local dirPathLocal=$(pwd)
     #依赖校验
     source ${dirPathPythonVirtualEnvironment}activate
@@ -4394,9 +4400,14 @@ ftText2Mp3()
     [[ -z $(which edge-playback) ]] && ftText2Mp3 --rely "edge-tts" && cd "${dirPathLocal}" && return $resultFail
 
     #实现主体
+     ! $isModeSingle && [[ -n $dirPathMp3 ]] && [ ! -d "${dirPathMp3}" ] && mkdir -p $dirPathMp3
+
     if [[ -n $textContxt ]];then
-        [[ -n $speedVal ]] && edge-tts --text "${textContxt}" --rate=${speedVal}%  --write-media "${filePathMp3}" \
-                           || edge-tts --text "${textContxt}" --write-media "${filePathMp3}"
+        if [[ -n $speedVal ]];then
+            edge-tts --text "${textContxt}" --rate=${speedVal}%  --write-media "${filePathMp3}" && ftEcho -s "生成完成"
+        else
+            edge-tts --text "${textContxt}" --write-media "${filePathMp3}" && ftEcho -s "生成完成"
+        fi
     else
         local fileTextLineCount=$(sed -n '$=' $filePathText)
         local lineIndex=1 lineContent
@@ -4414,7 +4425,6 @@ ftText2Mp3()
         done
     fi
     cd "${dirPathLocal}"
-    ftEcho -s "生成完成"
 }
 
 complete -W "-h --help --rely_install -f -n -nn -c -r" ftTextSetLine
