@@ -180,7 +180,7 @@ ftLearnRepetionDrill()
     local dirPathDataItemContentDrillResult="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.drill_result" \
           filePathDataItemContentDrillResult
     local dirPathDataItemContentAudio \
-          filePathDataItemContentAudio filePathDataItemContentAudioSlow
+          filePathDataItemContentAudio filePathDataItemContentAudioSlow filePathDataItemContentAudioVerySlow
     local dirPathDataItemContentTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis" \
           filePathDataItemContentTextAnalysis
     local filePathDataItemContentTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
@@ -501,24 +501,25 @@ ftLearnRepetionDrill()
     fi
 
     local arrayIndexSortSize=${#arrayIndexSort[@]} linkInfo
-    local isShowEnglishTipsSingle=false isShowChineseTipsSingle=false isOperatePlayAudioSingle=false isOperatePlayAudioSlow=false
+    local isShowEnglishTipsSingle=false isShowChineseTipsSingle=false isOperatePlayAudioSingle=false isOperatePlayAudioSlow=false isOperatePlayAudioVerySlow=false
     local isCutChineseTipsSingle=false
     local tipsItemsContent audioInfo timeStart timeHandled
     
     local arrayKeysHighlight \
           arrayKeysIgone \
-          arrayKeys="Up Down D I S E L R A W Right" \
+          arrayKeys="Up Down Right Left D I S E L R A W " \
           arrayKeyContents="previous_item \
-                            show_tips_or_next_item \
+                            show_tips_or_next_item  \
+                            play_${playAudioLanguage}_audio \
+                            play_audio_very_slow \
                             delete_records \
-                            add_analysis \
+                            change_analysis \
                             save_progress_&_exit \
                             save_hard_express \
                             save_hard_understand_L \
                             save_hard_understand_R \
                             save_hard_read_aloud \
-                            save_word_example \
-                            play_${playAudioLanguage}_audio" \
+                            save_word_example" \
         arrayKeysHighlightLessonFlags=("understand_listen" \
                                        "understand_read" \
                                        "express" \
@@ -791,7 +792,10 @@ ftLearnRepetionDrill()
             timeStart=$(date +%s -d $(date +"%H:%M:%S"))
 
             if $isOperatePlayAudio || $isOperatePlayAudioSingle;then
-                if $isOperatePlayAudioSlow;then
+                if $isOperatePlayAudioVerySlow;then
+                    play -q $filePathDataItemContentAudioVerySlow
+                    isOperatePlayAudioVerySlow=false
+                elif $isOperatePlayAudioSlow;then
                     [[ -f $filePathDataItemContentAudioSlow ]] && \
                         play -q $filePathDataItemContentAudioSlow || \
                         play -q $filePathDataItemContentAudio tempo 0.85
@@ -862,7 +866,7 @@ ftLearnRepetionDrill()
                     fi
 
                     if $isNextItem;then
-                        ftEcho -key -r1 -tips "Do you understand ? (Press Y/y is understand，press enter equal to press y)"
+                        ftEcho -key -r1 -tips "Do you understand ? (Press down/enter is understand)"
                         if [[ $keyValInput = "down" ]] || [[ -z $keyValInput ]];then
                             #delete fail time
                             [[ -n $failTime ]] && local val=$((failTime-=1)) && \
@@ -891,6 +895,18 @@ ftLearnRepetionDrill()
                 #     break;;
                 #To play audio
                 right )isOperatePlayAudioSingle=true
+                    ;;
+                left )
+                    #if ( $isOperatePlayAudioSingle || $isOperatePlayAudio );then
+                        filePathDataItemContentAudioVerySlow=${dirPathTempEng}/needRepetionDrill/audio/very_slow.audio_english/$(echo "${linkInfo}" | sed 's/\//_/g').mp3
+                        [[ ! -s $filePathDataItemContentAudioVerySlow ]] && \
+                             echo "creating ${lineIndex}_very_slow.mp3" && \
+                             ftText2Mp3 -txt "${englishItem}" -fpm $filePathDataItemContentAudioVerySlow -speed -50
+                        [[ -s $filePathDataItemContentAudioVerySlow ]] && \
+                            audioInfo="${lineIndex}_very_slow.mp3" && \
+                            isOperatePlayAudioVerySlow=true \
+                            isOperatePlayAudioSingle=true
+                    #fi
                     ;;
                 #To create word examples
                 w | W )
@@ -1670,7 +1686,7 @@ ftLearnLessonManage()
 
                 local arrayIndexSort arrayIndexSortBeganFlag lineContent lineIndex filePathLinkTableReview filePathLinkTypeReview
                 local filePathLearnDataBaseFailTime fileSizeLearnDataBaseFailTime lessonReviewDataItemSize fileSizeLinkTable
-                local type
+                local type lineFailTimeVal
                 cd $dirPathTempEng
                 while read filePathLinkTable ;do
                     type=$(basename $(dirname $filePathLinkTable))
@@ -1696,8 +1712,15 @@ ftLearnLessonManage()
                     filePathLinkTypeReview="${dirPathLessonNeedRepetionDrillReview}/${contentType}.link_type"
                     arrayIndexSort=($(seq $((1+arrayIndexSortBeganFlag)) $fileSizeLinkTable | sed 's/ /\n/g' | shuf))
                     for (( index = 0; index < ${#arrayIndexSort[@]}; index++ )); do
-                        lineContent=$(awk 'NR=="'${arrayIndexSort[index]}'"' $filePathLinkTable | awk -F= '{print $1}')
-                        [[ -z $lineContent ]] && continue || echo "${lineContent}" >> $filePathLinkTableReview
+                        lineContent=$(awk 'NR=="'${arrayIndexSort[index]}'"' $filePathLinkTable)
+                        [[ -z $lineContent ]] && continue
+                        if [[ $type = "error" ]];then
+                            lineFailTimeVal=$(printf "%s" "${lineContent}" | awk -F= '{print $2}')
+                            lineContent=$(printf "%s" "${lineContent}" | awk -F= '{print $1}')
+                            (( lineFailTimeVal<-4 )) && echo "continue ${lineContent}" && continue
+                        fi
+
+                        echo "${lineContent}" >> $filePathLinkTableReview
                         echo "${type}" >> $filePathLinkTypeReview
                         (( $((lineIndex++)) == lessonReviewDataItemSize )) && break
                     done
