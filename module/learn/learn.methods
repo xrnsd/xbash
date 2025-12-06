@@ -879,12 +879,19 @@ ftLearnRepetionDrill()
                                 optResultTips="To change fail time record : ${linkInfo}=${val} \U0001F4AA"
 
                             #auto save multiple fail record
-                            if [[ -n $autoStorgeToMultipleFailTimeFlag ]] && [[ -n $failTime ]] && (( $failTime >= $autoStorgeToMultipleFailTimeFlag ));then
-                                local filePathDataItemMCLTN="${dirPathTempEng}/needRepetionDrill/multiple/${contentType}.link_table"
+                            if [[ -n $autoStorgeToMultipleFailTimeFlag ]] && [[ -n $failTime ]];then
+                                local hositoryInfo filePathDataItemMCLTN="${dirPathTempEng}/needRepetionDrill/multiple/${contentType}.link_table"
                                 [[ ! -f $filePathDataItemMCLTN ]] && mkdir -p $(dirname $filePathDataItemMCLTN)
-                                if [[ ! -f $filePathDataItemMCLTN ]] || [[ -z $(grep -e "^${linkInfo}$" ${filePathDataItemMCLTN}) ]]; then
-                                    echo "${linkInfo}" >> $filePathDataItemMCLTN
-                                    optResultTips="${optResultTips}\nThe multiple record : ${linkInfo} is created, id : $(ftEcho -s $(awk 'END{print NR}' $filePathDataItemMCLTN))"
+                                [[ -f $filePathDataItemMCLTN ]] && hositoryInfo=$(grep -sn "^${linkInfo}$" ${filePathDataItemMCLTN})
+                                if (( $failTime >= $autoStorgeToMultipleFailTimeFlag ));then
+                                    if [[ -z $hositoryInfo  ]]; then
+                                        echo "${linkInfo}" >> $filePathDataItemMCLTN
+                                        optResultTips="${optResultTips}\nThe multiple record : ${linkInfo} is created, id : $(ftEcho -s $(awk 'END{print NR}' $filePathDataItemMCLTN))"
+                                    fi
+                                elif [[ -n $hositoryInfo ]]; then
+                                    local lineIndexFlag=$(echo "$hositoryInfo" | awk -F: '{print $1}')
+                                    sed -i "${lineIndexFlag}d" $filePathDataItemMCLTN
+                                    optResultTips="${optResultTips}\nThe multiple record : ${linkInfo} is deleted, id : ${lineIndexFlag}"
                                 fi
                             fi
                         fi
