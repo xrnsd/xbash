@@ -41,6 +41,10 @@ if [[ -z ${R+x} ]]; then
 
     BG=$'\033[48;2;39;40;34m'     # #272822 - Monokai background (inline code)
     BB=$'\033[48;2;39;40;34m'     # #272822 - Monokai background (code lang tag)
+
+    ERROR=$'\033[1;31m'
+    LISTEN_ALOUD=$'\033[1;36m'
+    FORGET=$'\033[41;38m'
 fi
 
 in_code=0
@@ -67,6 +71,24 @@ format_text() {
     while [[ $t =~ \*\*([^*]+)\*\* ]]; do
         m="${BASH_REMATCH[0]}"
         t="${t/"$m"/${B}${RED}${BASH_REMATCH[1]}${R}}"
+    done
+    
+    # Bold: **text*
+    while [[ $t =~ \*\*([^*]+)\* ]]; do
+        m="${BASH_REMATCH[0]}"
+        t="${t/"$m"/${B}${ERROR}${BASH_REMATCH[1]}${R}}"
+    done
+    
+    # Bold: ++text+
+    while [[ $t =~ \+\+([^+]+)\+ ]]; do
+        m="${BASH_REMATCH[0]}"
+        t="${t/"$m"/${B}${LISTEN_ALOUD}${BASH_REMATCH[1]}${R}}"
+    done
+
+    # Bold: --text-
+    while [[ $t =~ \-\-([^-]+)\- ]]; do
+        m="${BASH_REMATCH[0]}"
+        t="${t/"$m"/${B}${FORGET}${BASH_REMATCH[1]}${R}}"
     done
     
     while [[ $t =~ __([^_]+)__ ]]; do
