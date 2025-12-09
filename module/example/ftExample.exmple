@@ -24,12 +24,6 @@ ftExample()
             ftEcho -s "start install apply tools"
             sudo apt-get install xxxx
             return ;;
-        -h | --help) ftEcho -rc "${ftEffect}" "help information" "\
-#=========================================================
-#    The following [arguments] can be combined in any order.
-#
-#    ftExample xxxx
-#========================================================="; return ;;
         --env) ftEcho -rc "${ftEffect}" "environment information" "\
 #=========================================================
 #    The environment has not been initialized.
@@ -49,14 +43,8 @@ ftExample()
     #argument check
     #(( $#>$valCount )) && errorContent="${errorContent}\\nThe maximum number of parameters is ${valCount}, now it is $#"
     (( $#!=$valCount )) && errorContent="${errorContent}\\nThe normal number of parameters is ${valCount}, now it is $#"
-    case "$1" in
-        -h | --help | --rely_install)
-            ;;
-        *)   errorContent="${errorContent}\\n invalid argument:${1}"
-            ;;
-    esac
     [ -z "${example1}" ] && errorContent="${errorContent}\\n[help example1]example1=$example1"
-    [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftExample -h && return $resultFail
+    [ -n "$errorContent" ] && ftEcho -e "${ftEffect}${errorContent}\\nplease read help information:" && ftExample -h && return $resultFail
 
     #code main
 }
