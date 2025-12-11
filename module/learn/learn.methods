@@ -230,7 +230,7 @@ ftLearnRepetionDrill()
     #auto create drill results storge directory
     [ ! -d "${dirPathDataItemContentDrillResult}" ] && mkdir "${dirPathDataItemContentDrillResult}"
 
-    local indexSort lineIndex failTime autoStorgeToMultipleFailTimeFlag=$(ftIniEditUtil -r $filePathLearnDataBase $groupNameRepetionDrill "autoStorgeToMultipleFailTimeFlag")
+    local indexSort lineIndex failTime
     local englishItem chineseItem drillReultItems englishItemLength
     local drillInfomationTips="Group Lesson Content_type Operation_mode" drillInfomationTipsGone
     local drillInfomationTipsContent="${lessonGroupNameSel} ${lessonNameSel} ${contentType} ${operateMode}"
@@ -629,7 +629,7 @@ ftLearnRepetionDrill()
                 englishItem=$(awk 'NR=="'$lineIndex'"' $filePathDataItemContentTextEnglish)
                 [[ -z $englishItem ]] && \
                 ftEcho -column 5 "${drillInfomationTips}" "${drillInfomationTipsContent}" && \
-                ftEcho -e "line ${lineIndex} content is null" && return
+                ftEcho -e "line ${lineIndex} content is null" && sleep 1.5 && break
                 englishItemLength=${#englishItem}
 
                 chineseItem=$(awk 'NR=="'$lineIndex'"' $filePathDataItemContentTextChinese)
@@ -674,10 +674,11 @@ ftLearnRepetionDrill()
                         echo " ${statusInfo}"
                         optResultTips="${optResultTips=}\n${statusInfo} finished"
                         [[ ! -d $(dirname $filePathDataItemContentAudio) ]] && mkdir -p $(dirname $filePathDataItemContentAudio)
-                        $isPlayChineseTips \
-                            && ftText2Mp3 -txt "${chineseItem}" -fpm "${filePathDataItemContentAudio}" -speed +40 \
-                            || ftText2Mp3 -txt "${englishItem}" -fpm "${filePathDataItemContentAudio}"
-                        
+                        if $isPlayChineseTips;then
+                            ftText2Mp3 -txt "${chineseItem}" -fpm "${filePathDataItemContentAudio}" -speed +40
+                        else
+                            ftText2Mp3 -txt "${englishItem}" -fpm "${filePathDataItemContentAudio}"
+                        fi
                     fi
                     [[ ! -s $filePathDataItemContentAudioLink ]] && ln -s $filePathDataItemContentAudio $filePathDataItemContentAudioLink
 
@@ -685,13 +686,13 @@ ftLearnRepetionDrill()
                     if [[ ! -s $filePathDataItemContentAudioSlow ]]; then
                         statusInfo="create audio : ${audioInfo}"
                         echo " ${statusInfo}"
-                        optResultTips="${optResultTips=}\n${statusInfo} finished"
-                        ftText2Mp3 -txt "${englishItem}" -fpm "${filePathDataItemContentAudioSlow}" -speed -20
+                        #optResultTips="${optResultTips=}\n${statusInfo} finished"
+                        ftText2Mp3 -txt "${englishItem}" -fpm "${filePathDataItemContentAudioSlow}" -speed -20 &
                     fi
                     [[ ! -s $filePathDataItemContentAudioSlowLink ]] && ln -s $filePathDataItemContentAudioSlow $filePathDataItemContentAudioSlowLink
 
                     [[ -n $audioInfo ]] && audioInfo=$(echo $audioInfo | sed 's/_/++/g')
-                    
+
                 else
                     drillInfomationTipsGone="${drillInfomationTipsGone} Audio"
                 fi
@@ -805,11 +806,11 @@ ftLearnRepetionDrill()
             timeStart=$(date +%s -d $(date +"%H:%M:%S"))
 
             if $isOperatePlayAudio || $isOperatePlayAudioSingle;then
-                if $isOperatePlayAudioVerySlow;then
+                if $isOperatePlayAudioVerySlow && [[ -s $filePathDataItemContentAudioVerySlow ]];then
                     play -q $filePathDataItemContentAudioVerySlow
                     isOperatePlayAudioVerySlow=false
                 elif $isOperatePlayAudioSlow;then
-                    [[ -f $filePathDataItemContentAudioSlow ]] && \
+                    [[ -s $filePathDataItemContentAudioSlow ]] && \
                         play -q $filePathDataItemContentAudioSlow || \
                         play -q $filePathDataItemContentAudio tempo 0.85
                     isOperatePlayAudioSlow=false
@@ -885,41 +886,23 @@ ftLearnRepetionDrill()
                     fi
 
                     if $isNextItem;then
-                        [[ -s $filePathLearnDataBaseFailTime ]] && ftEcho -key -r1 -tips "Do you understand ? (Press down/enter is understand)"
-                        if [[ $keyValInput = "down" ]] || [[ -z $keyValInput ]];then
-                            #delete fail time
-                            [[ -n $failTime ]] && [[ -s $filePathLearnDataBaseFailTime ]] && local val=$((failTime-=1)) && \
-                                sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime && \
-                                optResultTips="To change ${operationType}'s fail time record : ${linkInfo}=${val} \U0001F4AF"
-                        else
-                            #save fail time
-                            [[ -n $failTime ]] && [[ -s $filePathLearnDataBaseFailTime ]] && local val=$((failTime+=1)) && \
-                                sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime && \
-                                optResultTips="To change ${operationType}'s fail time record : ${linkInfo}=${val} \U0001F4AA"
 
-                            #auto save multiple fail record
-                            if [[ -n $autoStorgeToMultipleFailTimeFlag ]] && [[ -n $failTime ]];then
-                                local hositoryInfo filePathDataItemDBFT="${dirPathTempEng}/needRepetionDrill/multiple/${contentType}.database_fail_time"
-                                [[ ! -f $filePathDataItemDBFT ]] && mkdir -p $(dirname $filePathDataItemDBFT)
-                                [[ -f $filePathDataItemDBFT ]] && hositoryInfo=$(grep -sn "^${linkInfo}=" ${filePathDataItemDBFT})
-                                if (( $failTime >= $autoStorgeToMultipleFailTimeFlag ));then
-                                    if [[ -z $hositoryInfo  ]]; then
-                                        echo "${linkInfo}=${failTime}" >> $filePathDataItemDBFT
-                                        optResultTips="${optResultTips}\nThe multiple record : ${linkInfo} is created, id : $(ftEcho -s $(($(awk 'END{print NR}' $filePathDataItemDBFT)-5)))"
-                                    fi
-                                elif [[ -n $hositoryInfo ]]; then
-                                    local lineIndexFlag=$(echo "$hositoryInfo" | awk -F: '{print $1}')
-                                    sed -i "${lineIndexFlag}d" $filePathDataItemDBFT
-                                    #ftIniEditUtil -d $filePathDataItemDBFT "failTimeSDR" "${linkInfo}"
-                                    optResultTips="${optResultTips}\nThe multiple record : ${linkInfo} is deleted, id : ${lineIndexFlag}"
-                                fi
+                        if [[ -n $failTime ]] && [[ -s $filePathLearnDataBaseFailTime ]];then
+                            ftEcho -key -r1 -tips "Do you understand ? (Press down/enter is understand)"
+
+                            #change fail time
+                            local val=$((failTime+1)) icon="\U0001F4AA"
+                            if [[ $keyValInput = "down" ]] || [[ -z $keyValInput ]];then
+                                val=$((failTime-1))
+                                icon="\U0001F4AF"
                             fi
+
+                            sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime
+                            optResultTips="To change ${operationType}'s fail time record : ${linkInfo}=${val} ${icon}"
                         fi
                         break;
                     fi
                     ;;
-                # left )
-                #     break;;
                 #To play audio
                 right )isOperatePlayAudioSingle=true
                     ;;
@@ -1195,7 +1178,7 @@ _ftLearnLessonManage()
 
     case "$prev" in
         -unl )
-            COMPREPLY=( $(compgen -W "$(ls --file-type ${dirPathTempEng}/needRepetionDrill/ |grep / | awk -F/ '{print $1}')" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$(ls --file-type ${dirPathTempEng}/needRepetionDrill/ |grep / | awk -F/ '{print $1}') sentence imitate" -- "$cur") )
             ;;
         -aiq )
             COMPREPLY=( $(compgen -W "analysis imitate" -- "$cur") )
@@ -1225,8 +1208,7 @@ ftLearnLessonManage()
     local isAddLessonGroup=false isAddLesson=false isUpdate=false isUpdateDrillLesson=false
     local isMergeLessonGroup=false lessonGroupNameMerge isLessonApply=false isAddDailyStudyPlan=false \
           isCreateLessonAiQuestion=false isUpdateLessonByLinkTable=false
-    local lessonReviewSentenceAllCountCurrent
-    local valCount=3 errorContent arg arg2 arg3 arg4
+    local valCount=4 errorContent arg arg2 arg3 arg4
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))};eval arg3=\${$((i+2))};eval arg4=\${$((i+3))}
     [[ $arg =~ ^\- ]] && case "${arg}" in
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
@@ -1262,11 +1244,12 @@ ftLearnLessonManage()
                ;;
         -unl)  isUpdateDrillLesson=true
                lessonNameSel="${arg2}"
-               lessonReviewSentenceAllCountCurrent="${arg3}"
+               lessonContentType="${arg3}"
                ;;
         -unlt) isUpdateLessonByLinkTable=true
                lessonGroupNameSel="${arg2}"
                lessonNameSel="${arg3}"
+               lessonContentType="${arg4}"
                ;;
         -m)    isMergeLessonGroup=true
                lessonGroupNameMerge="${arg2}"
@@ -1442,6 +1425,8 @@ ftLearnLessonManage()
         fi
 
         local contentTypeList=("sentence imitate article")
+        [[ -n $lessonContentType ]] && contentTypeList=$lessonContentType
+        
         local dirPathDataItemBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}"
 
         [[ -z $(find $dirPathDataItemBasic -name *.link_table) ]] && ftEcho -e "invalid lesson : ${lessonGroupNameSel}/${lessonNameSel}, link table isn't exist" && return
@@ -1464,9 +1449,9 @@ ftLearnLessonManage()
         for contentType in ${contentTypeList[@]}; do
             #check
             filePathDataItemLinkTable="${dirPathDataItemBasic}/${contentType}.link_table"
-            [[ ! -s $filePathDataItemLinkTable ]] && ftEcho -e "The file linkTable is not exist or invalid : $(basename $filePathDataItemLinkTable)" && continue
-
-            ftEcho -sn "create linktable content : " && echo "${contentType}"
+            printf "\033[1;33mcreate linktable content :\033[0m%s" "${contentType}"
+            [[ ! -s $filePathDataItemLinkTable ]] && ftEcho -e " failed" && continue
+            echo
 
             #diff
             md5KeyOld=$(ftIniEditUtil -r  $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}_${contentType}")
@@ -1715,9 +1700,10 @@ ftLearnLessonManage()
                     fileSizeLinkTable=$(sed -n '$=' $filePathLinkTable)
                     for index in "${!lessonReviewDataItemSizes[@]}"; do
                        sed -n "6,${fileSizeLinkTable}p" $filePathLinkTable | awk -F'=' ${lessonReviewDataItemFailTimeFlags[$index]} > $filePathTempLinkTable
-                       [[ ! -s $filePathTempLinkTable ]] && continue
-                       applyFlags+="${lessonReviewDataItemFailTimeFlags[$index]} "
+                       [[ ! -s $filePathTempLinkTable ]] && applyFlags+="0 " && continue
                        lessonReviewDataItemSize=${lessonReviewDataItemSizes[$index]}
+                       applyFlags+="$lessonReviewDataItemSize "
+                       (( lessonReviewDataItemSize==0 )) && continue
                        fileSizeLinkTableTemp=$(sed -n '$=' $filePathTempLinkTable)
                        arrayIndexSort=($(seq $((1+arrayIndexSortBeganFlag)) $fileSizeLinkTableTemp | sed 's/ /\n/g' | shuf))
 
@@ -1741,8 +1727,8 @@ ftLearnLessonManage()
                     #check line count
                     [[ "$(sed -n '$=' $filePathLinkTableReview)" != "$(sed -n '$=' $filePathLinkTypeReview)"  ]] && \
                     ftEcho -en "exception link tbale" && echo "${filePathLinkTableReview}"
-                done < <(find needRepetionDrill/ -name *.database_fail_time)
-                
+                done < <(find needRepetionDrill/ -name ${lessonContentType}*.database_fail_time)
+
                 #delete end empty line
                 while read filePathLink ;do
                     printf %s "$(< $filePathLink)" > ${filePathLink}temp
@@ -1751,7 +1737,7 @@ ftLearnLessonManage()
                 cd $dirPathLocal
 
                 echo
-                ftLearnLessonManage -unlt needRepetionDrill review
+                ftLearnLessonManage -unlt needRepetionDrill review $lessonContentType
                 ;;
 
                *)
