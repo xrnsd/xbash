@@ -549,46 +549,62 @@ ftEcho()
                 local argListKeyContents isEchoPlural=true
                 local forceEchoPluralFlag=3 forceEchoPluralIndex=1
 
-                if [ "${2}" = "-r1" ];then
-                    local timeOut=${3} tipsContent keyVal
+                if [ "${2}" = "-r1" ] || [ "${2}" = "-r2" ];then
+                    unset keyValInput
+                    local timeOut=${3} tipsContent keyVal keyValCache listenCount=1
+                    local keyClickTimeFLag keyDoubleClickTimeFlag=1
+                    [ "${2}" = "-r2" ] && listenCount=2
                     if  [[ -n $timeOut ]];then
                         [[ -z $(echo $timeOut| sed -n "/^[0-9]\+$/p") ]] && unset timeOut
                         if [ "${3}" = "-tips" ];then
                              tipsContent="${4}"
+                             unset timeOut
                         elif [ "${4}" = "-tips" ];then
                             tipsContent="${5}"
                         fi
-                        # echo "timeOut=${timeOut}"
-                        # return
+                        [[ -n $timeOut ]] && timeOut="-t ${timeOut}"
                     fi
+                    [[ -n $timeOut ]] && [ "${2}" = "-r2" ] && ftEcho -e "invalid argument：timeout" && return
                     [[ -n $tipsContent ]] && echo && echo -en "${tipsContent}[y/n]"
-                    while read -sN1 ${timeOut[@]} key
-                    do
-                      read -sN1 -t 0.0001 k1
-                      read -sN1 -t 0.0001 k2
-                      read -sN1 -t 0.0001 k3
-                      key+=${k1}${k2}${k3}
+                    for (( i = 0; i < $listenCount; i++ )); do
+                        unset keyVal
+                        (( i==1 )) && timeOut="-t 0.5"
+                        while read ${timeOut[@]} -sN1 key
+                        do
+                          read -sN1 -t 0.0001 k1
+                          read -sN1 -t 0.0001 k2
+                          read -sN1 -t 0.0001 k3
+                          key+=${k1}${k2}${k3}
 
-                      case "$key" in
-                        $'\e[A'|$'\e0A')
-                            keyVal="up"
-                            break;;
-                        $'\e[D'|$'\e0D')
-                            keyVal="left"
-                            break;;
-                        $'\e[B'|$'\e0B')  
-                            keyVal="down"
-                            break;;
-                        $'\e[C'|$'\e0C')  
-                            keyVal="right"
-                            break;;
-                        *)
-                            keyVal="${key}"
-                            break;;
-                      esac
+                          case "$key" in
+                            $'\e[A'|$'\e0A')
+                                keyVal="up"
+                                break;;
+                            $'\e[D'|$'\e0D')
+                                keyVal="left"
+                                break;;
+                            $'\e[B'|$'\e0B')  
+                                keyVal="down"
+                                break;;
+                            $'\e[C'|$'\e0C')  
+                                keyVal="right"
+                                break;;
+                            *)
+                                keyVal="${key}"
+                                break;;
+                          esac
+                        done
+
+                        [[ -z $keyVal ]] && unset keyValInput || keyVal=$(echo $keyVal | tr -d '\n')
+                        (( i==1 )) && if [[ -z $keyVal ]];then
+                            keyVal=$keyValCache
+                        else
+                            [[ "$keyVal" = "$keyValCache" ]] && (($(date +%s -d $(date +"%H:%M:%S"))-$keyClickTimeFLag <= $keyDoubleClickTimeFlag)) && keyVal="double_${keyVal}"
+                        fi
+                        keyClickTimeFLag=$(date +%s -d $(date +"%H:%M:%S"))
+                        keyValCache=$keyVal
                     done
-                    [[ -z $keyVal ]] && keyVal="n"
-                    keyVal=$(echo $keyVal | tr -d '\n')
+                    
                     export keyValInput=${keyVal}
                     return
                 
