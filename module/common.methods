@@ -547,7 +547,7 @@ ftEcho()
         -key )
                 local arrayKeys arrayKeyContents arrayKeysIgone arrayKeysHighlight arrayKeysHighlightFlag
                 local argListKeyContents isEchoPlural=true
-                local forceEchoPluralFlag=3 forceEchoPluralIndex=1
+                local forceEchoPluralFlag=4 forceEchoPluralIndex=1
 
                 if [ "${2}" = "-r1" ] || [ "${2}" = "-r2" ];then
                     unset keyValInput
