@@ -110,8 +110,8 @@ ftRestoreChoiceSource()
 
         local fileName=$(basename $filePath)
         local dirPathStore=$(dirname $filePath)
-        ftIniSetValue $filePathIniMaintain $tagNameMaintain fileName "$fileName"
-        ftIniSetValue $filePathIniMaintain $tagNameMaintain dirPathStore "$dirPathStore"
+        ftIniEditUtil -w  $filePathIniMaintain $tagNameMaintain fileName "$fileName"
+        ftIniEditUtil -w  $filePathIniMaintain $tagNameMaintain dirPathStore "$dirPathStore"
         break;
     done
 }
@@ -194,7 +194,7 @@ ftSetBackupDevDir()
                     ;;
     esac
     # 写入数据
-    ftIniSetValue $filePathIni $versionName dirPathStore "$dirPathStoreSource"
+    ftIniEditUtil -w  $filePathIni $versionName dirPathStore "$dirPathStoreSource"
 }
 
 ftSetBackupType()
@@ -244,7 +244,7 @@ ftSetBackupType()
             * )       ftEcho -e 错误的选择：$typeIndex ;echo "输入1,2 选择    输入n，q离开";break;;
     esac;done
     # 写入数据,备份类型
-    ftIniSetValue $filePathIni $versionName backupType $infoBackupType
+    ftIniEditUtil -w  $filePathIni $versionName backupType $infoBackupType
 
     #备份忽略列表
     local dirsExclude index=0
@@ -307,7 +307,7 @@ ftSetRestoreOverryList()
 
         [ ${#typeIndex} == 0 ] && typeIndex=1 #设定默认值
         case $typeIndex in
-            1) ftIniSetValue $filePathIniMaintain $tagNameMaintain dirPathRestoreExclude $rDirPathUserHome;break;;
+            1) ftIniEditUtil -w  $filePathIniMaintain $tagNameMaintain dirPathRestoreExclude $rDirPathUserHome;break;;
             2) break;;
             n | q) exit;;
             * )        ftEcho -e 错误的选择：$typeIndex ;echo "选择输入1,2 离开输入n，q";break;;
@@ -439,7 +439,7 @@ ftMaintainInfoNote()
         fi
         note=$(cat $filePathVersionNote)
         note=$(echo $note |sed s/[[:space:]]/_/g)
-        ftIniSetValue $filePathIni $versionName backupPackageNote "${note:-"默认"}"
+        ftIniEditUtil -w  $filePathIni $versionName backupPackageNote "${note:-"默认"}"
         rm -rf $filePathVersionNote
     fi
 }
@@ -493,10 +493,10 @@ ftSystemEnv()
 
     if [ ${editType} == "add" ]; then
 
-        ftIniSetValue $filePathInfo $versionName $keyCpu $infoHwCpu
-        ftIniSetValue $filePathInfo $versionName $keyMainboard $infoHwMainboard
-        ftIniSetValue $filePathInfo $versionName $keySystemVersion $infoHwSystem
-        ftIniSetValue $filePathInfo $versionName $keySystemType $infoHw32x64
+        ftIniEditUtil -w  $filePathInfo $versionName $keyCpu $infoHwCpu
+        ftIniEditUtil -w  $filePathInfo $versionName $keyMainboard $infoHwMainboard
+        ftIniEditUtil -w  $filePathInfo $versionName $keySystemVersion $infoHwSystem
+        ftIniEditUtil -w  $filePathInfo $versionName $keySystemType $infoHw32x64
 
         ftEcho -sh 版本${versionName}相关系统信息记录完成
         return
