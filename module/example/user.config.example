@@ -1,5 +1,5 @@
 #! /bin/bash
-versionNum=v0.1.8.1
+versionNum=v0.1.8.2
 xEcho(){
     local val1="${1}" val2="${2}" val3="${3}";echo -en "\033[1;33m${val1}\033[0m";echo -en "\033[1;31m${val2}\033[0m";echo -en "\033[1;33m${val3}\033[0m"; echo -e "\033[1;31m does not exist\033[0m"
 }
@@ -283,6 +283,16 @@ filePathPython="$(which python)"
     echo "$pythonFilePath" | sudo -p '' -S update-alternatives --config python >/dev/null
     echo "$python3FilePath" | sudo -p '' -S update-alternatives --config python3 >/dev/null
 else xEcho "Python" "config error : " ${filePathPython}; fi
+
+#Python Vosk
+export isEnableResetPythonVoskConfig=true
+dirPathVosk=${dirPathHomeTools}/Vosk
+dirPathVoskModel=${dirPathVosk}/vosk-model-en-us-0.22-lgraph
+[[ "$isEnableResetPythonVoskConfig" = "true" ]] && if [[ -d "$dirPathVoskModel" ]] ;then
+    source ${dirPathHome}/.venv/bin/activate
+    export dirPathPythonVosk=${dirPathVosk}
+    export dirPathPythonVoskModel=${dirPathVoskModel}
+else xEcho "Python Vosk" "config error : " ${filePathPython}; fi  
 
 #other
 [[ -z $(echo $PATH |grep "/usr/libexec/git-core") ]] && export PATH=$PATH:/usr/libexec/git-core
