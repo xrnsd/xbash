@@ -1793,7 +1793,7 @@ ftAutoCdProjectDirectory()
     #实现主体
     local mProjectStorageFullSelectPath mProjectStorageFullPathSelectList mProjectStorageFullPathList="$(ftXbGetValue ProjectsInfo ProjectStorageFullPathList)"
     for fullPath in ${mProjectStorageFullPathList[@]}; do
-        [[ -z $(basename $fullPath |grep -i ^$mProjectName ) ]] && continue
+        [[ -z $(basename $fullPath |grep -i $mProjectName ) ]] && continue
         mProjectStorageFullPathSelectList=(${mProjectStorageFullPathSelectList[@]} $fullPath)
     done
 
