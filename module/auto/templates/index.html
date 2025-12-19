@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vosk Speech Recognition UI</title>
+
+    <!-- Socket.IO client -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <style>
+        body {
+            font-family: "Courier New", Courier, monospace, "Noto Sans", "Microsoft YaHei", sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            margin: auto;
+        }
+
+        .panel {
+            background: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            overflow-x: auto; /* 横屏时可以左右滚动 */
+        }
+
+        .panel-title {
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #333;
+        }
+
+        #reference {
+            color: #000;
+            white-space: pre-wrap;
+        }
+
+        #partial {
+            color: #0066cc;
+            min-height: 1.2em;
+            white-space: pre-wrap;
+        }
+
+        #final {
+            min-height: 1.2em;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        #status {
+            font-weight: bold;
+        }
+
+        .status-listening {
+            color: #555;
+        }
+
+        .status-success {
+            color: green;
+        }
+
+        .status-fail {
+            color: red;
+        }
+
+        /* diff highlight styles */
+        .ok {
+            color: green;
+        }
+
+        .bad {
+            color: red;
+            font-weight: bold;
+        }
+
+        /* 横屏优化：四栏并排 */
+       /* @media screen and (min-width: 1200px) {
+            .container {
+                flex-direction: row;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+            }
+
+            .panel {
+                flex: 1;
+                margin-right: 10px;
+            }
+
+            .panel:last-child {
+                margin-right: 0;
+            }
+        }*/
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="panel">
+         <div id="reference-container">
+            <span id="reference-label">reference: </span>
+            <span id="reference">none</span>
+        </div>
+         <div id="partial-container">
+            <span id="partial-label">partial: </span>
+            <span id="partial">none</span>
+        </div>
+         <div id="final-container">
+            <span id="final-label">final: </span>
+            <span id="final">none</span>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">Status</div>
+        <div id="status" class="status-listening">LISTENING</div>
+    </div>
+
+</div>
+
+<script>
+    // -----------------------------
+    // Socket.IO connection
+    // -----------------------------
+    const socket = io("http://127.0.0.1:5000", {
+        transports: ["websocket"]
+    });
+
+    const referenceEl = document.getElementById("reference");
+    const partialEl   = document.getElementById("partial");
+    const finalEl     = document.getElementById("final");
+    const statusEl    = document.getElementById("status");
+
+    // -----------------------------
+    // Events from backend
+    // -----------------------------
+    socket.on("connect", () => {
+        console.log("Connected to server");
+    });
+
+    socket.on("disconnect", () => {
+        statusEl.textContent = "DISCONNECTED";
+        statusEl.className = "status-fail";
+    });
+
+    socket.on("reference", data => {
+        if(data && data.text){
+            referenceEl.textContent = data.text;
+        }
+    });
+
+    socket.on("partial", data => {
+        if (!data || !data.text) return;
+        partialEl.textContent = data.text;
+        statusEl.textContent = "LISTENING";
+        statusEl.className = "status-listening";
+    });
+
+    socket.on("final", data => {
+        if (!data) return;
+
+        if (data.diff !== undefined) {
+            finalEl.innerHTML = data.diff;
+        } else if (data.text) {
+            finalEl.textContent = data.text;
+        }
+
+        if (data.match === true) {
+            statusEl.textContent = "MATCH SUCCESS";
+            statusEl.className = "status-success";
+        } else if (data.match === false) {
+            statusEl.textContent = "NO MATCH";
+            statusEl.className = "status-fail";
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -817,7 +817,13 @@ ftLearnRepetionDrill()
                 [[ -f $filePathDataItemContentTextAnalysis ]] && arrayKeysHighlight="${arrayKeysHighlight} I"
             fi
 
-            if ( $isRefDrillInfomationTips || $isRefTipsItemsContent || $isRefKeyTips );then
+            if $isAutoSaveDrillingProgressSingle;then
+                ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray" $indexArray
+                #ftEcho -s "The drill records is saved"
+                unset isAutoSaveDrillingProgressSingle
+            fi
+
+            if ( $isRefDrillInfomationTips || $isRefTipsItemsContent || $isRefKeyTips || $isOperateCollectAudio);then
                 isRefDrillInfomationTips=false
                 isRefTipsItemsContent=false
                 isRefKeyTips=false
@@ -825,22 +831,31 @@ ftLearnRepetionDrill()
                 clear
 
                 ftEcho -column 5 "${drillInfomationTipsTemp}" "${drillInfomationTipsContentTemp}" "${drillInfomationTipsGone}"
-                ftEcho -bl "${tipsItemsContent}"
+                if $isOperateCollectAudio;then
+                    local filePathAudio=$filePathDataItemContentAudio
+                    [[ -s $isOperatePlayAudioSlow ]] && filePathAudio=$isOperatePlayAudioSlow
+                    [[ -s $filePathDataItemContentAudioVerySlow ]] && filePathAudio=$filePathDataItemContentAudioVerySlow
+                    echo "------------------"
+                    ftEcho -s "${tipsItemsContent}"
+                    python3 $rFilePathXbashModuleAutoVoskRemote "${englishItem}" $filePathAudio
+                    echo "------------------"
+                    [[ -n $optResultTips ]] && echo -e "${optResultTips}\n-----------------------------------------------"
+
+                else
+                    ftEcho -bl "${tipsItemsContent}"
+                fi
                 ftEcho -key -n "${arrayKeys}" "${arrayKeyContents}" "${arrayKeysIgone}" -hl "${arrayKeysHighlight}" "${arrayKeysHighlightFlag}"
             fi
-            [[ -n $optResultTips ]] && echo -e "-----------------------------------------------\n${optResultTips}"
+            
+            ! $isOperateCollectAudio && [[ -n $optResultTips ]] && echo -e "-----------------------------------------------\n${optResultTips}"
+
+            $isOperateCollectAudio && isOperateCollectAudio=false
 
             #write to clipboard
             echo "${englishItem}"| tr -d '\n'| xclip -sel clip
 
-            if $isAutoSaveDrillingProgressSingle;then
-                ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray" $indexArray
-                #ftEcho -s "The drill records is saved"
-                unset isAutoSaveDrillingProgressSingle
-            fi
-
             timeStart=$(date +%s -d $(date +"%H:%M:%S"))
-            if $isOperatePlayAudio || $isOperatePlayAudioSingle;then
+            if ! $isOperateCollectAudio && ($isOperatePlayAudio || $isOperatePlayAudioSingle);then
                 if $isOperatePlayAudioVerySlow && [[ -s $filePathDataItemContentAudioVerySlow ]];then
                     play -q $filePathDataItemContentAudioVerySlow
                     isOperatePlayAudioVerySlow=false
@@ -856,13 +871,7 @@ ftLearnRepetionDrill()
                 isOperatePlayAudioSingle=false
             fi
 
-            if $isOperateCollectAudio;then
-                python3 $rFilePathXbashModuleAutoVoskRemote "${englishItem}"
-                keyValInput="down"
-            else
-                ftEcho -key -r2
-            fi
-
+            ftEcho -key -r2
             playOpt=$keyValInput
 
             timeHandled=$(date +%s -d $(date +"%H:%M:%S"))

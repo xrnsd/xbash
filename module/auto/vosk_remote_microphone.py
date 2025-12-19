@@ -6,9 +6,14 @@ import os
 import socket
 import json
 import re
-
+# 禁止 SDL 日志输出
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
+import pygame
 import sounddevice as sd
 from vosk import Model, KaldiRecognizer, SetLogLevel
+import tty
+import termios
+import time
 
 # You can set log level to 0 to enable debug messages
 SetLogLevel(-1)
@@ -26,6 +31,7 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 REFERENCE_TEXT = sys.argv[1].strip().lower()
+REFERENCE_AUDIO = sys.argv[2].strip()
 # =======================
 
 # ANSI 颜色
@@ -33,6 +39,25 @@ RED = "\033[91m"
 GREEN = "\033[92m"
 YELLOW = '\033[93m'
 RESET = "\033[0m"
+
+def get_key():
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch1 = sys.stdin.read(1)
+        if ch1 == '\x1b':  # ESC 开头的控制序列
+            ch2 = sys.stdin.read(1)
+            ch3 = sys.stdin.read(1)
+            return ch1 + ch2 + ch3
+        return ch1
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+def play_audio():
+    pygame.mixer.init()
+    pygame.mixer.music.load(REFERENCE_AUDIO)
+    pygame.mixer.music.play()
 
 def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
@@ -87,9 +112,40 @@ def highlight_diff(reference, recognized):
         elif tag == "replace":
             output.extend([f"{RED}{w}{RESET}" for w in rec_words[j1:j2]])
         elif tag == "delete":
-            output.extend([f"{GREEN}({w}){RESET}" for w in ref_words[i1:i2]])
+            output.extend([f"{GREEN}{w}{RESET}" for w in ref_words[i1:i2]])
 
     return " ".join(output)
+
+def send_server_close(conn):
+    try:
+        msg = "SERVER:close\n"
+        conn.sendall(msg.encode("utf-8"))
+    except Exception as e:
+        print_overwrite("send close notify failed:", e,"\n")
+
+def send_server_request_start_record(conn):
+    try:
+        msg = "SERVER:request client start to record\n"
+        conn.sendall(msg.encode("utf-8"))
+    except Exception as e:
+        print_overwrite("send request start record failed:", e,"\n")
+
+def recognition_finish(conn, tips):
+    print_overwrite(tips)
+    try:
+        msg = f"SERVER:{tips}\n"
+        conn.sendall(msg.encode("utf-8"))
+        time.sleep(0.1)
+        msg = "SERVER:close\n"
+        conn.sendall(msg.encode("utf-8"))
+    except Exception as e:
+        print_overwrite("send close notify failed:", e,"\n")
+    time.sleep(0.1)
+    try:
+        conn.shutdown(socket.SHUT_RDWR)
+        conn.close()
+    except Exception as e:
+        print_overwrite("close connect failed:", e,"\n")
 
 def main():
     #print("Loading model...")
@@ -99,14 +155,26 @@ def main():
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((HOST, PORT))
     server.listen(1)
+    #print("Reference text:",f"{YELLOW}{REFERENCE_TEXT}{RESET}")
+    while True:
+        play_audio()
+        print_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} start to practice, {RED}any key{RESET} cancel practice")
+        key = get_key()
+        if key == '\x1b[B':
+            break
+        elif key != '\x1b[C':
+            print_overwrite("Recognition cancel.\n")
+            server.close
+            sys.exit(1)
+            return
 
     while True:
         #clear_screen()
-        print("Reference text:",f"{YELLOW}{REFERENCE_TEXT}{RESET}")
         #print("Listening... (Ctrl+C to stop)")
-        print_overwrite(f"Waiting for client connect to {HOST}:{PORT}")
+        print_overwrite(f"Waiting for remote microphone connect to {HOST}:{PORT}")
         conn, addr = server.accept()
-        print_overwrite("Connected from:", addr, " (Ctrl+C to stop)")
+        #print_overwrite("Connected from:", addr, " (Ctrl+C to stop)")
+        print_overwrite("Please go on ...")
         
         last_partial = ""
         recognizer = KaldiRecognizer(model, SAMPLE_RATE)
@@ -116,55 +184,52 @@ def main():
                 data = conn.recv(4096)
                 if not data:
                     break
-
-                if recognizer.AcceptWaveform(data):
-                    result = json.loads(recognizer.Result())
-                    text = result.get("text", "")
-                    if text:
-                         # ========= 完全一致 → 成功退出 =========
-                        if is_exact_match(REFERENCE_TEXT, text):
-                            print("\nRecognition successful. Exiting.")
-                            conn.close()
-                            server.close()
-                            sys.exit(0)
-                        #clear_screen()
-                        #print("Reference text:",f"{YELLOW}{REFERENCE_TEXT}{RESET}")
-                        #print("Raw result:",text)
-                        print_overwrite("Diff raw result:",highlight_diff(REFERENCE_TEXT, text))
-                        #print("-" * 60)
+                if "stop record" in data.decode("utf-8", errors="ignore"):
+                    while True:
+                        print_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} practice again, {RED}any key{RESET} exit practice")
+                        key = get_key()
+                        #if key == '\x1b[A': #Up
+                        #if key == '\x1b[B': #Down
+                        #if key == '\x1b[D': #Left
+                        #if key == '\x1b[C': #Right
+                        if key == '\x1b[C':
+                            print_overwrite("The audio is playing.")
+                            play_audio()
+                        elif key == '\x1b[B':
+                            send_server_request_start_record(conn)
+                            print_overwrite("Please go on ...")
+                            break
+                        else:
+                            recognition_finish(conn,"Recognition cancel.\n")
+                            sys.exit(1)
+                            return
                 else:
-                    partial = json.loads(recognizer.PartialResult())
-                    if partial.get("partial") and partial != last_partial:
-                        # print("Partial:", partial["partial"], end="\r")
-
-                         # ========= 完全一致 → 成功退出 =========
-                        if is_exact_match(REFERENCE_TEXT, partial["partial"]):
-                            print("\nRecognition successful. Exiting.")
-                            conn.close()
-                            server.close()
-                            sys.exit(0)
-                        #clear_screen()
-                        #print("Reference text:",f"{YELLOW}{REFERENCE_TEXT}{RESET}")
-                        #print("Partial result:",partial["partial"])
-                        print_overwrite("Diff partial result:",highlight_diff(REFERENCE_TEXT, partial["partial"]))
-                        #print("-" * 60)
-                        last_partial = partial
-
-        except KeyboardInterrupt:
-            pass
-            print("\nRecognition fail. Exiting.")
-            conn.close()
-            server.close()
-            sys.exit(1)
+                    # print_overwrite("data:",data.decode("utf-8", errors="ignore").strip())
+                    if recognizer.AcceptWaveform(data):
+                        result = json.loads(recognizer.Result())
+                        text = result.get("text", "")
+                        if text:
+                            if is_exact_match(REFERENCE_TEXT, text):
+                                recognition_finish(conn,"Raw Result Recognition successful. Exiting.\n")
+                                sys.exit(0)
+                            else :
+                                print_overwrite("raw :",highlight_diff(REFERENCE_TEXT, text))
+                                
+                    else:
+                        partial = json.loads(recognizer.PartialResult())
+                        if partial.get("partial") and partial != last_partial:
+                            if is_exact_match(REFERENCE_TEXT, partial["partial"]):
+                                recognition_finish(conn,"Partial Result Recognition successful. Exiting.\n")
+                                sys.exit(0)
+                            print_overwrite("partial :",highlight_diff(REFERENCE_TEXT, partial["partial"]))
+                            last_partial = partial
         finally:
             conn.close()
-            # server.close()
-            # print("\nServer stopped")
-            # sys.exit(1)
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\nRecognition fail. Exiting.")
+        print_overwrite("Recognition force cancel.\n")
+        server.close()
         sys.exit(1)
