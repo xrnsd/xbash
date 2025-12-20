@@ -130,16 +130,19 @@ def send_server_request_start_record(conn):
     except Exception as e:
         print_overwrite("send request start record failed:", e,"\n")
 
-def recognition_finish(conn, tips):
-    print_overwrite(tips)
+def send_server_request_stop_record(conn):
     try:
-        msg = f"SERVER:{tips}\n"
-        conn.sendall(msg.encode("utf-8"))
-        time.sleep(0.1)
-        msg = "SERVER:close\n"
+        msg = "SERVER:request client stop to record\n"
         conn.sendall(msg.encode("utf-8"))
     except Exception as e:
-        print_overwrite("send close notify failed:", e,"\n")
+        print_overwrite("send request stop record failed:", e,"\n")
+
+def recognition_end(conn, tips):
+    if not tips:
+        print_overwrite(tips)
+    send_server_request_stop_record(conn)
+    time.sleep(0.1)
+    send_server_close(conn)
     time.sleep(0.1)
     try:
         conn.shutdown(socket.SHUT_RDWR)
@@ -156,53 +159,45 @@ def main():
     server.bind((HOST, PORT))
     server.listen(1)
     #print("Reference text:",f"{YELLOW}{REFERENCE_TEXT}{RESET}")
-    while True:
-        play_audio()
-        print_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} start to practice, {RED}any key{RESET} cancel practice")
-        key = get_key()
-        if key == '\x1b[B':
-            break
-        elif key != '\x1b[C':
-            print_overwrite("Recognition cancel.\n")
-            server.close
-            sys.exit(1)
-            return
 
     while True:
-        #clear_screen()
-        #print("Listening... (Ctrl+C to stop)")
+        is_operation_key = True
         print_overwrite(f"Waiting for remote microphone connect to {HOST}:{PORT}")
         conn, addr = server.accept()
         #print_overwrite("Connected from:", addr, " (Ctrl+C to stop)")
-        print_overwrite("Please go on ...")
-        
+        #send_server_request_start_record(conn)
+
         last_partial = ""
         recognizer = KaldiRecognizer(model, SAMPLE_RATE)
 
         try:
             while True:
-                data = conn.recv(4096)
-                if not data:
-                    break
-                if "stop record" in data.decode("utf-8", errors="ignore"):
+                if is_operation_key:
+                    is_operation_key = False
                     while True:
-                        print_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} practice again, {RED}any key{RESET} exit practice")
-                        key = get_key()
+                        play_audio()
+                        print_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} start to practice, {RED}←{RESET} cancel practice")
+                        keyStart = get_key()
                         #if key == '\x1b[A': #Up
                         #if key == '\x1b[B': #Down
                         #if key == '\x1b[D': #Left
                         #if key == '\x1b[C': #Right
-                        if key == '\x1b[C':
-                            print_overwrite("The audio is playing.")
-                            play_audio()
-                        elif key == '\x1b[B':
+                        if keyStart == '\x1b[B':
                             send_server_request_start_record(conn)
-                            print_overwrite("Please go on ...")
+                            print_overwrite("Please start reading aloud")
                             break
-                        else:
-                            recognition_finish(conn,"Recognition cancel.\n")
+                        elif keyStart == '\x1b[D':
+                            recognition_end(conn,"Recognition cancel.\n")
                             sys.exit(1)
                             return
+
+
+                data = conn.recv(4096)
+                if not data:
+                    break
+                if "stop record" in data.decode("utf-8", errors="ignore"):
+                    is_operation_key = True
+                    continue
                 else:
                     # print_overwrite("data:",data.decode("utf-8", errors="ignore").strip())
                     if recognizer.AcceptWaveform(data):
@@ -210,26 +205,30 @@ def main():
                         text = result.get("text", "")
                         if text:
                             if is_exact_match(REFERENCE_TEXT, text):
-                                recognition_finish(conn,"Raw Result Recognition successful. Exiting.\n")
+                                print_overwrite("Raw Result Recognition successful. Exiting.\n")
                                 sys.exit(0)
-                            else :
+                            elif "recognition over" in text :
                                 print_overwrite("raw :",highlight_diff(REFERENCE_TEXT, text))
-                                
+                                send_server_request_stop_record(conn)
+                                is_operation_key = True
+                                continue
+                            else:
+                                print_overwrite("raw :",highlight_diff(REFERENCE_TEXT, text))
                     else:
                         partial = json.loads(recognizer.PartialResult())
                         if partial.get("partial") and partial != last_partial:
                             if is_exact_match(REFERENCE_TEXT, partial["partial"]):
-                                recognition_finish(conn,"Partial Result Recognition successful. Exiting.\n")
+                                print_overwrite("Partial Result Recognition successful. Exiting.\n")
                                 sys.exit(0)
-                            print_overwrite("partial :",highlight_diff(REFERENCE_TEXT, partial["partial"]))
+                            else:
+                                print_overwrite("partial :",highlight_diff(REFERENCE_TEXT, partial["partial"]))
                             last_partial = partial
         finally:
-            conn.close()
+            recognition_end(conn,None)
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print_overwrite("Recognition force cancel.\n")
-        server.close()
+        print_overwrite("Recognition force cancel\n") 
         sys.exit(1)
