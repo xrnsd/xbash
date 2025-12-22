@@ -544,7 +544,7 @@ ftLearnRepetionDrill()
     local operationType drillInfomationTipsTemp drillInfomationTipsContentTemp
     local isSorting sortingType sortingFlag
     local isRefTipsItemsContent isRefKeyTips isRefDrillInfomationTips isAutoSaveDrillingProgressSingle
-    local optResultTips
+    local optResultTips lessonGlobelContent
 
     while (( $indexArray < $arrayIndexSortSize  )); do
         ftTimeConsuming -i
@@ -594,14 +594,14 @@ ftLearnRepetionDrill()
                     isShowChineseTips=true
                     isShowEnglishTips=true
                     isOperatePlayAudio=false
-                    isOperatePlayAudioSingle=true
+                    isOperatePlayAudioSingle=false
                     isOperateCollectAudio=true
                     ;;
                 word_aloud )
                     isShowChineseTips=true
                     isShowEnglishTips=true
                     isOperatePlayAudio=false
-                    isOperatePlayAudioSingle=true
+                    isOperatePlayAudioSingle=false
                     isOperateCollectAudio=true
                     ;;
                 understand_listen )
@@ -642,6 +642,8 @@ ftLearnRepetionDrill()
                     ;;
             esac
         fi
+
+        $isOperateCollectAudio && [[ -z $lessonGlobelContent ]] && lessonGlobelContent=$(cat $filePathDataItemContentTextEnglish)
 
         isRefDrillInfomationTips=true
         isRefTipsItemsContent=true
@@ -686,7 +688,7 @@ ftLearnRepetionDrill()
 
                 filePathDataItemContentAudio="${dirPathDataItemContentAudio}/${lineIndex}.mp3"
                 filePathDataItemContentAudioSlow="${dirPathDataItemContentAudio}/${lineIndex}_slow.mp3"
-                if $isOperatePlayAudio || $isOperatePlayAudioSingle;then
+                if $isOperatePlayAudio || $isOperatePlayAudioSingle || $isOperateCollectAudio;then
 
                     if [[ -f ${filePathDataItemContentLinkTable} ]];then
                         filePathDataItemContentAudioLink="${filePathDataItemContentAudio}"
@@ -720,7 +722,7 @@ ftLearnRepetionDrill()
                     fi
                     [[ ! -s $filePathDataItemContentAudioSlowLink ]] && ln -s $filePathDataItemContentAudioSlow $filePathDataItemContentAudioSlowLink
 
-                    [[ -n $audioInfo ]] && audioInfo=$(echo $audioInfo | sed 's/_/++/g')
+                    [[ -s $filePathDataItemContentAudioSlow ]] && [[ -n $audioInfo ]] && audioInfo=$(echo $audioInfo | sed 's/_/++/g')
 
                 else
                     drillInfomationTipsGone="${drillInfomationTipsGone} Audio"
@@ -772,8 +774,17 @@ ftLearnRepetionDrill()
                     $isCutChineseTipsSingle && chineseItemLength=${#chineseItem}
                     ( $isShowEnglishTips || $isShowEnglishTipsSingle || [[ $operationType == "express" ]] ) && unset chineseItemLength
                     
-                    [[ -n $chineseItemLength ]] && echo "${chineseItem:0:$((chineseItemLength/2+1))}....." >> $filePathLearnDrillInfoTemp \
-                                                || echo "${chineseItem}" >> $filePathLearnDrillInfoTemp
+                    if [[ -n $chineseItemLength ]];then
+                        echo "${chineseItem:0:$((chineseItemLength/2+1))}....." >> $filePathLearnDrillInfoTemp
+                    elif [[ -n $(echo "${chineseItem}" | grep "\+\+") ]] \
+                        || [[ -n $(echo "${chineseItem}" | grep "\*\*" ) ]] \
+                        || [[ -n $(echo "${chineseItem}" | grep "\-\-") ]];then
+                       echo "${chineseItem}" > $filePathLearnDrillTemp
+                       $rFilePathXbashModuleBusy $filePathLearnDrillTemp >> $filePathLearnDrillInfoTemp
+                       echo "" > $filePathLearnDrillTemp
+                    else
+                        echo -e "${chineseItem}" >> $filePathLearnDrillInfoTemp
+                    fi
                     isCutChineseTipsSingle=false
                 fi
 
@@ -833,13 +844,13 @@ ftLearnRepetionDrill()
                 ftEcho -column 5 "${drillInfomationTipsTemp}" "${drillInfomationTipsContentTemp}" "${drillInfomationTipsGone}"
                 if $isOperateCollectAudio;then
                     local filePathAudio=$filePathDataItemContentAudio
-                    [[ -s $isOperatePlayAudioSlow ]] && filePathAudio=$isOperatePlayAudioSlow
+                    [[ -s $filePathDataItemContentAudioSlow ]] && filePathAudio=$filePathDataItemContentAudioSlow
                     [[ -s $filePathDataItemContentAudioVerySlow ]] && filePathAudio=$filePathDataItemContentAudioVerySlow
                     echo "------------------"
-                    ftEcho -s "${tipsItemsContent}"
-                    python3 $rFilePathXbashModuleAutoVoskRemote "${englishItem}" $filePathAudio
-                    echo "------------------"
                     [[ -n $optResultTips ]] && echo -e "${optResultTips}\n-----------------------------------------------"
+                    ftEcho -s "${tipsItemsContent}"
+                    python3 $rFilePathXbashModuleAutoVoskRemote "${englishItem}" $filePathAudio "${lessonGlobelContent}"
+                    echo "------------------"
 
                 else
                     ftEcho -bl "${tipsItemsContent}"
@@ -1015,7 +1026,7 @@ ftLearnRepetionDrill()
                     if [[ -s $filePathDataItem ]];then
                         local filePathDataItemBasic=/tmp/temp.Analysis
                         cp -rf $filePathDataItem $filePathDataItemBasic
-                        gedit2 $filePathDataItem
+                        [[ $operationType = "express" ]] && gedit2 $filePathDataItem $filePathDataItemContentTextChinese || gedit2 $filePathDataItem
 
                         if [[ -n $(diff $filePathDataItemBasic $filePathDataItem) ]];then
                             isRefTipsItemsContent=true

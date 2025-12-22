@@ -6,6 +6,7 @@ import os
 import socket
 import json
 import re
+import string
 # 禁止 SDL 日志输出
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
@@ -14,6 +15,7 @@ from vosk import Model, KaldiRecognizer, SetLogLevel
 import tty
 import termios
 import time
+from adaptive_vosk_recognizer import AdaptiveGrammarRecognizer
 
 # You can set log level to 0 to enable debug messages
 SetLogLevel(-1)
@@ -32,8 +34,7 @@ if len(sys.argv) < 2:
 
 REFERENCE_TEXT = sys.argv[1].strip().lower()
 REFERENCE_AUDIO = sys.argv[2].strip()
-# =======================
-
+# ================================
 # ANSI 颜色
 RED = "\033[91m"
 GREEN = "\033[92m"
@@ -75,6 +76,14 @@ def is_exact_match(reference: str, recognized: str) -> bool:
     if (ref + " ") in rec:
         return True
     if (" " + ref) in rec:
+        return True
+
+    return False
+
+def is_recognition_over(reference: str) -> bool:
+    if reference.endswith("recognition over"):
+        return True
+    if reference.endswith("text over"):
         return True
 
     return False
@@ -130,6 +139,13 @@ def send_server_request_start_record(conn):
     except Exception as e:
         print_overwrite("send request start record failed:", e,"\n")
 
+def send_server_reply_receive_heartbeat(conn):
+    try:
+        msg = "SERVER:reply receive heartbeat\n"
+        conn.sendall(msg.encode("utf-8"))
+    except Exception as e:
+        print_overwrite("send reply receive heartbeat failed:", e,"\n")
+
 def send_server_request_stop_record(conn):
     try:
         msg = "SERVER:request client stop to record\n"
@@ -151,24 +167,22 @@ def recognition_end(conn, tips):
         print_overwrite("close connect failed:", e,"\n")
 
 def main():
-    #print("Loading model...")
-    model = Model(MODEL_PATH)
-
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((HOST, PORT))
     server.listen(1)
     #print("Reference text:",f"{YELLOW}{REFERENCE_TEXT}{RESET}")
 
+    asr = AdaptiveGrammarRecognizer(
+        model_path=MODEL_PATH,
+        sample_rate=SAMPLE_RATE,
+        reference_text=REFERENCE_TEXT
+    )
+
     while True:
         is_operation_key = True
         print_overwrite(f"Waiting for remote microphone connect to {HOST}:{PORT}")
         conn, addr = server.accept()
-        #print_overwrite("Connected from:", addr, " (Ctrl+C to stop)")
-        #send_server_request_start_record(conn)
-
-        last_partial = ""
-        recognizer = KaldiRecognizer(model, SAMPLE_RATE)
 
         try:
             while True:
@@ -187,44 +201,28 @@ def main():
                             print_overwrite("Please start reading aloud")
                             break
                         elif keyStart == '\x1b[D':
-                            recognition_end(conn,"Recognition cancel.\n")
+                            print("\nRecognition cancel")
                             sys.exit(1)
-                            return
 
-
-                data = conn.recv(4096)
+                #data = conn.recv(4096)
+                data = conn.recv(480 * 2)
                 if not data:
                     break
-                if "stop record" in data.decode("utf-8", errors="ignore"):
-                    is_operation_key = True
+                if "Client:Stop record" in data.decode("utf-8", errors="ignore"):
+                    break
+                elif "Client:heartbeat" in data.decode("utf-8", errors="ignore"):
+                    send_server_reply_receive_heartbeat(conn)
                     continue
                 else:
-                    # print_overwrite("data:",data.decode("utf-8", errors="ignore").strip())
-                    if recognizer.AcceptWaveform(data):
-                        result = json.loads(recognizer.Result())
-                        text = result.get("text", "")
-                        if text:
-                            if is_exact_match(REFERENCE_TEXT, text):
-                                print_overwrite("Raw Result Recognition successful. Exiting.\n")
-                                sys.exit(0)
-                            elif "recognition over" in text :
-                                print_overwrite("raw :",highlight_diff(REFERENCE_TEXT, text))
-                                send_server_request_stop_record(conn)
-                                is_operation_key = True
-                                continue
-                            else:
-                                print_overwrite("raw :",highlight_diff(REFERENCE_TEXT, text))
-                    else:
-                        partial = json.loads(recognizer.PartialResult())
-                        if partial.get("partial") and partial != last_partial:
-                            if is_exact_match(REFERENCE_TEXT, partial["partial"]):
-                                print_overwrite("Partial Result Recognition successful. Exiting.\n")
-                                sys.exit(0)
-                            else:
-                                print_overwrite("partial :",highlight_diff(REFERENCE_TEXT, partial["partial"]))
-                            last_partial = partial
+                    # print_overwrite("data:",denoised.decode("utf-8", errors="ignore").strip())
+                    result = asr.accept_audio(data)
+                    if result:
+                        if result.get("success"):
+                            print_overwrite("Partial Result Recognition successful. Exiting.\n")
+                            sys.exit(0)
+                        print_overwrite(highlight_diff(REFERENCE_TEXT, result.get("text", "")))
         finally:
-            recognition_end(conn,None)
+            recognition_end(conn,"")
 
 if __name__ == "__main__":
     try:
