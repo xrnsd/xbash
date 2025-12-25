@@ -27,13 +27,12 @@ MODEL_PATH = os.environ.get("dirPathPythonVoskModel")
 SAMPLE_RATE = 16000
 # ========== 读取终端参数 ==========
 
-if len(sys.argv) < 2:
-    print("Usage:")
-    print("  python speech_diff.py \"reference text here\"")
-    sys.exit(1)
+parser = argparse.ArgumentParser(description="实时语音识别：vosk")
+parser.add_argument("--model_path", type=str, default=f"{MODEL_PATH_SHERPA_ONNX}", help="模型路径")
+parser.add_argument("--peference_audio", type=str, help="音频文件路径")
+parser.add_argument("--peference_text", type=str, help="参考对比文本")
+args = parser.parse_args()
 
-REFERENCE_TEXT = sys.argv[1].strip().lower()
-REFERENCE_AUDIO = sys.argv[2].strip()
 # ================================
 # ANSI 颜色
 RED = "\033[91m"
@@ -57,8 +56,29 @@ def get_key():
 
 def play_audio():
     pygame.mixer.init()
-    pygame.mixer.music.load(REFERENCE_AUDIO)
+    pygame.mixer.music.load(args.peference_audio)
     pygame.mixer.music.play()
+
+def play_audio_blocked(file_path):
+    pygame.mixer.init()
+    result = "/".join(file_path.split("/")[-4:])
+
+    try:
+        pygame.mixer.music.load(file_path)
+        pygame.mixer.music.play()
+        print_overwrite(f"playing : {YELLOW}{result}{RESET} , to press Ctrl+C to exit")
+
+        while pygame.mixer.music.get_busy():
+            time.sleep(0.1) 
+            
+        print_overwrite("play finish")
+
+    except KeyboardInterrupt:
+        print_overwrite("play is stoping...")
+        pygame.mixer.music.stop()
+        
+    finally:
+        pygame.mixer.quit()
 
 def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
@@ -171,12 +191,12 @@ def main():
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((HOST, PORT))
     server.listen(1)
-    #print("Reference text:",f"{YELLOW}{REFERENCE_TEXT}{RESET}")
+    #print("Reference text:",f"{YELLOW}{args.peference_text}{RESET}")
 
     asr = AdaptiveGrammarRecognizer(
         model_path=MODEL_PATH,
         sample_rate=SAMPLE_RATE,
-        reference_text=REFERENCE_TEXT
+        reference_text=args.peference_text
     )
 
     while True:
@@ -189,7 +209,7 @@ def main():
                 if is_operation_key:
                     is_operation_key = False
                     while True:
-                        play_audio()
+                        play_audio_blocked(args.peference_audio)
                         print_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} start to practice, {RED}←{RESET} cancel practice")
                         keyStart = get_key()
                         #if key == '\x1b[A': #Up
@@ -204,13 +224,14 @@ def main():
                             print("\nRecognition cancel")
                             sys.exit(1)
 
-                #data = conn.recv(4096)
-                data = conn.recv(480 * 2)
+                data = conn.recv(4096)
+                # data = conn.recv(480 * 2)
+                # data = conn.recv(512)
                 if not data:
                     break
-                if "Client:Stop record" in data.decode("utf-8", errors="ignore"):
+                if "CLIENT:Stop record" in data.decode("utf-8", errors="ignore"):
                     break
-                elif "Client:heartbeat" in data.decode("utf-8", errors="ignore"):
+                elif "CLIENT:heartbeat" in data.decode("utf-8", errors="ignore"):
                     send_server_reply_receive_heartbeat(conn)
                     continue
                 else:
@@ -220,7 +241,7 @@ def main():
                         if result.get("success"):
                             print_overwrite("Partial Result Recognition successful. Exiting.\n")
                             sys.exit(0)
-                        print_overwrite(highlight_diff(REFERENCE_TEXT, result.get("text", "")))
+                        print_overwrite(highlight_diff(args.peference_text, result.get("text", "")))
         finally:
             recognition_end(conn,"")
 
