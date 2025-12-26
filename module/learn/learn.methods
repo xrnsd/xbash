@@ -20,6 +20,9 @@ _ftLearnRepetionDrill()
         --sort )
             COMPREPLY=( $(compgen -W "order random" -- "$cur") )
             ;;
+        --asr )
+            COMPREPLY=( $(compgen -W "vosk sherpa_onnx" -- "$cur") )
+            ;;
         article | sentence | imitate )
             COMPREPLY=( $(compgen -W "-te -htc -hte -pl -fq --sort" -- "$cur") )
             ;;
@@ -39,7 +42,7 @@ ftLearnRepetionDrill()
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} Disabled, please confirm" && return
     #check argument
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
-    local contentType operateMode readTimeOut orderType=random
+    local contentType operateMode readTimeOut orderType=random asrApiType=sherpa_onnx
     local isShowChineseTips=true isShowEnglishTips=true isPlayChineseTips=false isAutomaticSwitching=false
     local isOperateTextEdit=false isOperateAutoBcompare=false isOperatePlayAudio=false
     local valCount=7 errorContent arg arg2
@@ -62,6 +65,7 @@ ftLearnRepetionDrill()
 #                         -pl _/cn #play audio(normal en),enter cn to play chinese audio
 #                         -fq xx   #automatic frequency switching in seconds
 #                         --sort order/random #sort selection
+#                         --asr  vosk/sherpa_onnx #asr api
 #========================================================="; return ;;
         --rely) ftEcho -rc "${ftEffect}" "‘s dependency description" "\
 #=========================================================
@@ -81,6 +85,16 @@ ftLearnRepetionDrill()
         --sort )  orderType="${arg2}"
                 case "${orderType}" in
                     order | random )
+                        ;;
+                    * )  [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
+                         errorContent="${errorContent}invalid aregument :${orderType}"
+                         break
+                        ;;
+                esac
+            ;;
+        --asr )  asrApiType="${arg2}"
+                case "${orderType}" in
+                    vosk | sherpa_onnx )
                         ;;
                     * )  [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
                          errorContent="${errorContent}invalid aregument :${orderType}"
@@ -192,9 +206,9 @@ ftLearnRepetionDrill()
           filePathDataItemContentTextAnalysis
     local filePathDataItemContentTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
     local filePathDataItemContentTextChinese="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_chinese"
+    local filePathDataItemContentTextChineseLink
     local filePathDataItemContentLinkType="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.link_type"
     local filePathDataItemContentLinkTable="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.link_table"
-
     local filePathLearnDrillTemp=/tmp/LearnDrillTemp.txt
     local filePathLearnDrillInfoTemp=/tmp/LearnDrillTemp.info
     local filePathCollectAudioBackgroundLock=/tmp/collectAudioBackgroundLock
@@ -224,7 +238,7 @@ ftLearnRepetionDrill()
     local playAudioLanguage="english"
     $isPlayChineseTips && playAudioLanguage="chinese"
     dirPathDataItemContentAudio="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.audio_${playAudioLanguage}"
-    local filePathDataItemContentAudio filePathDataItemContentAudioLink
+    local filePathDataItemContentAudio 
     if $isOperatePlayAudio && [[ ! -d $dirPathDataItemContentAudio ]];then
         mkdir $dirPathDataItemContentAudio
         ftEcho -y "Audio is null. Do you want to create it ? (Press Y/y is create, enter equal to press y)"
@@ -544,7 +558,7 @@ ftLearnRepetionDrill()
     local operationType drillInfomationTipsTemp drillInfomationTipsContentTemp
     local isSorting sortingType sortingFlag
     local isRefTipsItemsContent isRefKeyTips isRefDrillInfomationTips isAutoSaveDrillingProgressSingle
-    local optResultTips lessonGlobelContent
+    local optResultTips
 
     while (( $indexArray < $arrayIndexSortSize  )); do
         ftTimeConsuming -i
@@ -643,8 +657,6 @@ ftLearnRepetionDrill()
             esac
         fi
 
-        $isOperateCollectAudio && [[ -z $lessonGlobelContent ]] && lessonGlobelContent=$(cat $filePathDataItemContentTextEnglish)
-
         isRefDrillInfomationTips=true
         isRefTipsItemsContent=true
         isAutoSaveDrillingProgressSingle=true
@@ -667,6 +679,8 @@ ftLearnRepetionDrill()
                     [[ -z $linkInfo ]] && ftEcho -e "invalid item index ${lineIndex}\n arrayIndexSort=${arrayIndexSort[@]}" && return
                 fi
                 [[ -z $linkInfo ]] && linkInfo="${lessonGroupNameSel}/${lessonNameSel}/${lineIndex}"
+
+                filePathDataItemContentTextChineseLink="${dirPathTempEng}/$(dirname $linkInfo)/${contentType}.text_chinese"
 
                 unset failTime
                 if [[ -s $filePathLearnDataBaseFailTime ]];then
@@ -849,7 +863,17 @@ ftLearnRepetionDrill()
                     echo "------------------"
                     [[ -n $optResultTips ]] && echo -e "${optResultTips}\n-----------------------------------------------"
                     ftEcho -s "${tipsItemsContent}"
-                    python3 $rFilePathXbashModuleAutoVoskRemote "${englishItem}" $filePathAudio "${lessonGlobelContent}"
+                    case "$asrApiType" in
+                        vosk )
+                            python3 $rFilePathXbashModuleLearnVoskRemote  --model_path "${dirPathPythonVoskModel}"       --peference_audio $filePathAudio --peference_text "${englishItem}"
+                            ;;
+                        sherpa_onnx )
+                            python3 $rFilePathXbashModuleLearnSherpaOnnx  --model_path "${dirPathPythonSherpaOnnxModel}" --peference_audio $filePathAudio --peference_text "${englishItem}"
+                            ;;
+                        *)
+                            ftEcho -e "invalid asrApiType : ${asrApiType}" && return ;;
+                    esac
+                    
                     echo "------------------"
 
                 else
@@ -1026,7 +1050,7 @@ ftLearnRepetionDrill()
                     if [[ -s $filePathDataItem ]];then
                         local filePathDataItemBasic=/tmp/temp.Analysis
                         cp -rf $filePathDataItem $filePathDataItemBasic
-                        [[ $operationType = "express" ]] && gedit2 $filePathDataItem $filePathDataItemContentTextChinese || gedit2 $filePathDataItem
+                        [[ $operationType = "express" ]] && gedit2 $filePathDataItemContentTextChineseLink $filePathDataItem || gedit2 $filePathDataItem
 
                         if [[ -n $(diff $filePathDataItemBasic $filePathDataItem) ]];then
                             isRefTipsItemsContent=true
@@ -1483,7 +1507,7 @@ ftLearnLessonManage()
         fi
 
         local contentTypeList=("sentence imitate article")
-        [[ -n $lessonContentType ]] && contentTypeList=$lessonContentType
+        [[ -n $lessonContentType ]] && contentTypeList=${lessonContentType[@]}
         
         local dirPathDataItemBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}"
 
@@ -1569,7 +1593,7 @@ ftLearnLessonManage()
                         ftTextSetLine -f $filePathLessonUpdateByLtCtTE -n $lineIndex -c "${lineContentTE}" > /dev/null
                     fi
                 else
-                    ftEcho -en "link info:${lineContent}"; ftEcho -en  " is not exist file:"; echo "${contentType}.text_english\nlessonCtTE=${lessonCtTE}"
+                    ftEcho -en "link info:${lineContent}"; ftEcho -en  " is not exist file:"; echo "${contentType}.text_english\nlessonCtTE=${lessonCtTE}\n------------------------------"
                 fi
 
                 if [[ -f $lessonCtTC ]];then
@@ -1597,7 +1621,6 @@ ftLearnLessonManage()
                 #lessonCtTP="${dirPathTempEng}/${lessonPathBasic}/${contentType}.text_problem"
                 #[[ -f $lessonCtTP ]] && lineContent=$(awk 'NR=="'$lessonLineLindex'"' "${lessonCtTP}") && ftTextSetLine -f $filePathLessonUpdateByLtCtTP -n $lineIndex -c "${lineContent}" > /dev/null
 
-
                 # if (( $lineIndex==11  ));then
                 #     echo "lessonPathBasic=${lessonPathBasic}"
                 #     echo "lessonLineLindex=${lessonLineLindex}"
@@ -1610,8 +1633,8 @@ ftLearnLessonManage()
             ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}_${contentType}" "$(md5sum $filePathDataItemLinkTable | awk '{print $1}')"
 
             #delete empty line
-            [[ -f $filePathLessonUpdateByLtCtTE ]] && grep -v "^$" $filePathLessonUpdateByLtCtTE > ${filePathLessonUpdateByLtCtTE}temp && mv ${filePathLessonUpdateByLtCtTE}temp $filePathLessonUpdateByLtCtTE
-            [[ -f $filePathLessonUpdateByLtCtTC ]] && grep -v "^$" $filePathLessonUpdateByLtCtTC > ${filePathLessonUpdateByLtCtTC}temp && mv ${filePathLessonUpdateByLtCtTC}temp $filePathLessonUpdateByLtCtTC
+            [[ -s $filePathLessonUpdateByLtCtTE ]] && grep -v "^$" $filePathLessonUpdateByLtCtTE > ${filePathLessonUpdateByLtCtTE}temp && mv ${filePathLessonUpdateByLtCtTE}temp $filePathLessonUpdateByLtCtTE
+            [[ -s $filePathLessonUpdateByLtCtTC ]] && grep -v "^$" $filePathLessonUpdateByLtCtTC > ${filePathLessonUpdateByLtCtTC}temp && mv ${filePathLessonUpdateByLtCtTC}temp $filePathLessonUpdateByLtCtTC
         done
 
         #clear empty files or empty floders
@@ -1734,7 +1757,7 @@ ftLearnLessonManage()
                 rm -rf "${dirPathLessonNeedRepetionDrillReview}" && mkdir "${dirPathLessonNeedRepetionDrillReview}"
 
                 local arrayIndexSort arrayIndexSortBeganFlag=0 #5
-                local lineContent lineIndex filePathLinkTableReview filePathLinkTypeReview filePathCutFlagReview
+                local lineContent lineIndex filePathLinkTableReview filePathLinkTypeReview filePathCutFlagReview filePathDataItemContentVoskGrammar
                 local fileSizeLearnDataBaseFailTime lessonReviewDataItemSize lessonReviewDataItemSizes fileSizeLinkTable fileSizeLinkTableTemp applyFlags
                 local type lineFailTimeVal
                 local filePathTempLinkTable=/tmp/tempSort.linkTable
@@ -1754,13 +1777,13 @@ ftLearnLessonManage()
 
                     lessonReviewDataItemSizes=($(ftIniEditUtil -r  $filePathLearnDataBase needRepetionDrill lessonReviewDataItemSize${type}))
                     [[ -z $lessonReviewDataItemSizes ]] && ftEcho -e "${type}'s lessonReviewDataItemSizes is null " && continue
+                    unset applyFlags
+                    fileSizeLinkTable=$(sed -n '$=' $filePathLinkTable)
 
                     filePathLinkTableReview="${dirPathLessonNeedRepetionDrillReview}/${contentType}.link_table"
                     filePathLinkTypeReview="${dirPathLessonNeedRepetionDrillReview}/${contentType}.link_type"
                     #filePathCutFlagReview="${dirPathLessonNeedRepetionDrillReview}/${contentType}.cut_flag"
 
-                    unset applyFlags
-                    fileSizeLinkTable=$(sed -n '$=' $filePathLinkTable)
                     for index in "${!lessonReviewDataItemSizes[@]}"; do
                        sed -n "6,${fileSizeLinkTable}p" $filePathLinkTable | awk -F'=' ${lessonReviewDataItemFailTimeFlags[$index]} > $filePathTempLinkTable
                        [[ ! -s $filePathTempLinkTable ]] && applyFlags+="0   " && continue
@@ -1792,6 +1815,11 @@ ftLearnLessonManage()
                     ftEcho -en "exception link tbale" && echo "${filePathLinkTableReview}"
                 done < <(find needRepetionDrill/ -name ${lessonContentType}*.database_fail_time)
 
+                if [[ -s $filePathDataItemLinkTableVoskGrammar ]];then
+                    awk -F= '!seen[$1]++' $filePathDataItemLinkTableVoskGrammar > ${filePathDataItemLinkTableVoskGrammar}Temp
+                    mv ${filePathDataItemLinkTableVoskGrammar}Temp $filePathDataItemLinkTableVoskGrammar
+                fi
+
                 printf "\ncreate ${lessonContentType} item:\033[1;33m$(sed -n '$=' $filePathLinkTableReview)\033[0m  "
 
                 # #delete end empty line
@@ -1802,7 +1830,7 @@ ftLearnLessonManage()
                 # cd $dirPathLocal
 
                 echo
-                ftLearnLessonManage -unlt needRepetionDrill review $lessonContentType
+                ftLearnLessonManage -unlt needRepetionDrill review "${lessonContentType}"
                 ;;
 
                *)
