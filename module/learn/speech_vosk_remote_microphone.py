@@ -15,7 +15,6 @@ from vosk import Model, KaldiRecognizer, SetLogLevel
 import tty
 import termios
 import time
-from adaptive_vosk_recognizer import AdaptiveGrammarRecognizer
 
 # You can set log level to 0 to enable debug messages
 SetLogLevel(-1)
