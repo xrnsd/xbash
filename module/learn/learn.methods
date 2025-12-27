@@ -202,6 +202,7 @@ ftLearnRepetionDrill()
           filePathDataItemContentDrillResult
     local dirPathDataItemContentAudio \
           filePathDataItemContentAudio filePathDataItemContentAudioSlow filePathDataItemContentAudioVerySlow
+    local filePathDataItemContentAudioShare=/share/ftLearnRepetionDrill_share.mp3
     local dirPathDataItemContentTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis" \
           filePathDataItemContentTextAnalysis
     local filePathDataItemContentTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
@@ -863,12 +864,15 @@ ftLearnRepetionDrill()
                     echo "------------------"
                     [[ -n $optResultTips ]] && echo -e "${optResultTips}\n-----------------------------------------------"
                     ftEcho -s "${tipsItemsContent}"
+                    [[ -s $filePathAudio ]] && cp -rf $filePathAudio $filePathDataItemContentAudioShare
                     case "$asrApiType" in
                         vosk )
-                            python3 $rFilePathXbashModuleLearnVoskRemote  --model_path "${dirPathPythonVoskModel}"       --peference_audio $filePathAudio --peference_text "${englishItem}"
+                            python3 $rFilePathXbashModuleLearnVosk \
+                                --model_path "${dirPathPythonVoskModel}" --peference_audio $filePathAudio --peference_text "${englishItem}"
                             ;;
                         sherpa_onnx )
-                            python3 $rFilePathXbashModuleLearnSherpaOnnx  --model_path "${dirPathPythonSherpaOnnxModel}" --peference_audio $filePathAudio --peference_text "${englishItem}"
+                            python3 $rFilePathXbashModuleLearnSherpaOnnx \
+                                --model_path "${dirPathPythonSherpaOnnxModel}" --peference_audio $filePathAudio --peference_text "${englishItem}"
                             ;;
                         *)
                             ftEcho -e "invalid asrApiType : ${asrApiType}" && return ;;

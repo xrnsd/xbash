@@ -4,17 +4,16 @@ import sys
 import difflib
 import os
 import socket
-import json
 import re
 import string
-# 禁止 SDL 日志输出
-os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
-import pygame
 import sounddevice as sd
 from vosk import Model, KaldiRecognizer, SetLogLevel
 import tty
 import termios
 import time
+import argparse
+import speech_utils
+from adaptive_vosk_recognizer import AdaptiveGrammarRecognizer
 
 # You can set log level to 0 to enable debug messages
 SetLogLevel(-1)
@@ -22,99 +21,23 @@ SetLogLevel(-1)
 # ========== 配置 ==========
 HOST = "0.0.0.0"
 PORT = 2701
-MODEL_PATH = os.environ.get("dirPathPythonVoskModel")
+MODEL_PATH_VOSK = os.environ.get("dirPathPythonVoskModel")
 SAMPLE_RATE = 16000
 # ========== 读取终端参数 ==========
 
 parser = argparse.ArgumentParser(description="实时语音识别：vosk")
-parser.add_argument("--model_path", type=str, default=f"{MODEL_PATH_SHERPA_ONNX}", help="模型路径")
+parser.add_argument("--model_path", type=str, default=f"{MODEL_PATH_VOSK}", help="模型路径")
 parser.add_argument("--peference_audio", type=str, help="音频文件路径")
 parser.add_argument("--peference_text", type=str, help="参考对比文本")
 args = parser.parse_args()
 
-# ================================
-# ANSI 颜色
+# ========== ANSI颜色 ==========
 RED = "\033[91m"
 GREEN = "\033[92m"
 YELLOW = '\033[93m'
 RESET = "\033[0m"
 
-def get_key():
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(fd)
-        ch1 = sys.stdin.read(1)
-        if ch1 == '\x1b':  # ESC 开头的控制序列
-            ch2 = sys.stdin.read(1)
-            ch3 = sys.stdin.read(1)
-            return ch1 + ch2 + ch3
-        return ch1
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-
-def play_audio():
-    pygame.mixer.init()
-    pygame.mixer.music.load(args.peference_audio)
-    pygame.mixer.music.play()
-
-def play_audio_blocked(file_path):
-    pygame.mixer.init()
-    result = "/".join(file_path.split("/")[-4:])
-
-    try:
-        pygame.mixer.music.load(file_path)
-        pygame.mixer.music.play()
-        print_overwrite(f"playing : {YELLOW}{result}{RESET} , to press Ctrl+C to exit")
-
-        while pygame.mixer.music.get_busy():
-            time.sleep(0.1) 
-            
-        print_overwrite("play finish")
-
-    except KeyboardInterrupt:
-        print_overwrite("play is stoping...")
-        pygame.mixer.music.stop()
-        
-    finally:
-        pygame.mixer.quit()
-
-def clear_screen():
-    os.system("cls" if os.name == "nt" else "clear")
-
-def print_overwrite(*args, sep=' ', end='', flush=True):
-    text = sep.join(str(a) for a in args)
-    print(f"\r\033[K{text}", end=end, flush=flush)
-
-def is_exact_match(reference: str, recognized: str) -> bool:
-    ref = normalize_text(reference)
-    rec = normalize_text(recognized)
-
-    if rec == ref:
-        return True
-    if (ref + " ") in rec:
-        return True
-    if (" " + ref) in rec:
-        return True
-
-    return False
-
-def is_recognition_over(reference: str) -> bool:
-    if reference.endswith("recognition over"):
-        return True
-    if reference.endswith("text over"):
-        return True
-
-    return False
-
-def normalize_text(text: str) -> str:
-    # 转小写
-    text = text.lower()
-    # 只保留 字母 / 数字 / 空格
-    text = re.sub(r"[^a-z0-9\s]", "", text)
-    # 合并多空格
-    text = " ".join(text.split())
-    return text
+# ====================
 
 q = queue.Queue()
 
@@ -123,58 +46,37 @@ def audio_callback(indata, frames, time, status):
         print(status, file=sys.stderr)
     q.put(bytes(indata))
 
-def highlight_diff(reference, recognized):
-    ref = normalize_text(reference)
-    rec = normalize_text(recognized)
-    ref_words = ref.split()
-    rec_words = rec.split()
-
-    matcher = difflib.SequenceMatcher(None, ref_words, rec_words)
-    output = []
-
-    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-        if tag == "equal":
-            output.extend(rec_words[j1:j2])
-        elif tag == "insert":
-            output.extend([f"{RED}{w}{RESET}" for w in rec_words[j1:j2]])
-        elif tag == "replace":
-            output.extend([f"{RED}{w}{RESET}" for w in rec_words[j1:j2]])
-        elif tag == "delete":
-            output.extend([f"{GREEN}{w}{RESET}" for w in ref_words[i1:i2]])
-
-    return " ".join(output)
-
 def send_server_close(conn):
     try:
         msg = "SERVER:close\n"
         conn.sendall(msg.encode("utf-8"))
     except Exception as e:
-        print_overwrite("send close notify failed:", e,"\n")
+        speech_utils.print_overwrite("send close notify failed:", e,"\n")
 
 def send_server_request_start_record(conn):
     try:
         msg = "SERVER:request client start to record\n"
         conn.sendall(msg.encode("utf-8"))
     except Exception as e:
-        print_overwrite("send request start record failed:", e,"\n")
+        speech_utils.print_overwrite("send request start record failed:", e,"\n")
 
 def send_server_reply_receive_heartbeat(conn):
     try:
         msg = "SERVER:reply receive heartbeat\n"
         conn.sendall(msg.encode("utf-8"))
     except Exception as e:
-        print_overwrite("send reply receive heartbeat failed:", e,"\n")
+        speech_utils.print_overwrite("send reply receive heartbeat failed:", e,"\n")
 
 def send_server_request_stop_record(conn):
     try:
         msg = "SERVER:request client stop to record\n"
         conn.sendall(msg.encode("utf-8"))
     except Exception as e:
-        print_overwrite("send request stop record failed:", e,"\n")
+        speech_utils.print_overwrite("send request stop record failed:", e,"\n")
 
 def recognition_end(conn, tips):
     if not tips:
-        print_overwrite(tips)
+        speech_utils.print_overwrite(tips)
     send_server_request_stop_record(conn)
     time.sleep(0.1)
     send_server_close(conn)
@@ -183,7 +85,7 @@ def recognition_end(conn, tips):
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
     except Exception as e:
-        print_overwrite("close connect failed:", e,"\n")
+        speech_utils.print_overwrite("close connect failed:", e,"\n")
 
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -193,14 +95,14 @@ def main():
     #print("Reference text:",f"{YELLOW}{args.peference_text}{RESET}")
 
     asr = AdaptiveGrammarRecognizer(
-        model_path=MODEL_PATH,
+        model_path=args.model_path,
         sample_rate=SAMPLE_RATE,
         reference_text=args.peference_text
     )
 
     while True:
         is_operation_key = True
-        print_overwrite(f"Waiting for remote microphone connect to {HOST}:{PORT}")
+        speech_utils.print_overwrite(f"Waiting for remote microphone connect to {HOST}:{PORT}")
         conn, addr = server.accept()
 
         try:
@@ -208,16 +110,16 @@ def main():
                 if is_operation_key:
                     is_operation_key = False
                     while True:
-                        play_audio_blocked(args.peference_audio)
-                        print_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} start to practice, {RED}←{RESET} cancel practice")
-                        keyStart = get_key()
+                        speech_utils.play_audio_blocked(args.peference_audio)
+                        speech_utils.print_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} start to practice, {RED}←{RESET} cancel practice")
+                        keyStart = speech_utils.get_key()
                         #if key == '\x1b[A': #Up
                         #if key == '\x1b[B': #Down
                         #if key == '\x1b[D': #Left
                         #if key == '\x1b[C': #Right
                         if keyStart == '\x1b[B':
                             send_server_request_start_record(conn)
-                            print_overwrite("Please start reading aloud")
+                            speech_utils.print_overwrite("Please start reading aloud")
                             break
                         elif keyStart == '\x1b[D':
                             print("\nRecognition cancel")
@@ -234,13 +136,13 @@ def main():
                     send_server_reply_receive_heartbeat(conn)
                     continue
                 else:
-                    # print_overwrite("data:",denoised.decode("utf-8", errors="ignore").strip())
+                    # speech_utils.print_overwrite("data:",denoised.decode("utf-8", errors="ignore").strip())
                     result = asr.accept_audio(data)
                     if result:
                         if result.get("success"):
-                            print_overwrite("Partial Result Recognition successful. Exiting.\n")
+                            speech_utils.print_overwrite("Partial Result Recognition successful. Exiting.\n")
                             sys.exit(0)
-                        print_overwrite(highlight_diff(args.peference_text, result.get("text", "")))
+                        speech_utils.print_overwrite(speech_utils.highlight_diff(args.peference_text, result.get("text", "")))
         finally:
             recognition_end(conn,"")
 
@@ -248,5 +150,5 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print_overwrite("Recognition force cancel\n") 
+        speech_utils.print_overwrite("Recognition force cancel\n") 
         sys.exit(1)
