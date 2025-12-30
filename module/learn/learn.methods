@@ -44,7 +44,7 @@ ftLearnRepetionDrill()
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
     local contentType operateMode readTimeOut orderType=random asrApiType=sherpa_onnx
     local isShowChineseTips=true isShowEnglishTips=true isPlayChineseTips=false isAutomaticSwitching=false
-    local isOperateTextEdit=false isOperateAutoBcompare=false isOperatePlayAudio=false
+    local isOperateTextEdit=false isOperateAutoBcompare=false isOperatePlayAudio=false isOperateImitateCreate=false
     local valCount=7 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     [[ $arg =~ ^\- ]] && case "${arg}" in
@@ -537,7 +537,7 @@ ftLearnRepetionDrill()
     
     local arrayKeysHighlight \
           arrayKeysIgone \
-          arrayKeys="Up Down Right D I E L R A W " \
+          arrayKeys="Up Down Right D I E L R A W S F" \
           arrayKeyContents="previous_item \
                             show_tips_or_next_item  \
                             play_${playAudioLanguage}_audio \
@@ -547,7 +547,9 @@ ftLearnRepetionDrill()
                             hard_understand_L \
                             hard_understand_R \
                             hard_read_aloud \
-                            word_example" \
+                            word_example \
+                            speech_recognition \
+                            imitate_ai_create" \
         arrayKeysHighlightLessonFlags=("understand_listen" \
                                        "understand_read" \
                                        "express" \
@@ -590,27 +592,13 @@ ftLearnRepetionDrill()
 
             filePathLearnDataBaseFailTime="${dirPathTempEng}/needRepetionDrill/${operationType}/${contentType}.database_fail_time"
             case $operationType in
-                error )
-                    isShowChineseTips=true
-                    isCutChineseTipsSingle=true
-                    isShowEnglishTips=false
-                    isOperatePlayAudio=false
-                    isOperatePlayAudioSingle=true
-                    isOperateCollectAudio=false
-                    ;;
-                multiple )
-                    isShowChineseTips=false
-                    isShowEnglishTips=false
-                    isOperatePlayAudio=false
-                    isOperatePlayAudioSingle=true
-                    isOperateCollectAudio=false
-                    ;;
                 read_aloud )
                     isShowChineseTips=true
                     isShowEnglishTips=true
                     isOperatePlayAudio=false
                     isOperatePlayAudioSingle=false
                     isOperateCollectAudio=true
+                    isOperateImitateCreate=false
                     ;;
                 word_aloud )
                     isShowChineseTips=true
@@ -618,6 +606,7 @@ ftLearnRepetionDrill()
                     isOperatePlayAudio=false
                     isOperatePlayAudioSingle=false
                     isOperateCollectAudio=true
+                    isOperateImitateCreate=false
                     ;;
                 understand_listen )
                     isShowChineseTips=false
@@ -625,6 +614,7 @@ ftLearnRepetionDrill()
                     isOperatePlayAudio=true
                     isOperatePlayAudioSingle=false
                     isOperateCollectAudio=false
+                    isOperateImitateCreate=false
                     ;;
                 express )
                     isShowChineseTips=true
@@ -632,6 +622,7 @@ ftLearnRepetionDrill()
                     isOperatePlayAudio=false
                     isOperatePlayAudioSingle=false
                     isOperateCollectAudio=false
+                    isOperateImitateCreate=true
                     ;;
                 understand_read )
                     isShowChineseTips=false
@@ -639,6 +630,7 @@ ftLearnRepetionDrill()
                     isOperatePlayAudio=false
                     isOperatePlayAudioSingle=false
                     isOperateCollectAudio=false
+                    isOperateImitateCreate=true
                     ;;
                 word_example )
                     isShowChineseTips=false
@@ -646,6 +638,15 @@ ftLearnRepetionDrill()
                     isOperatePlayAudio=false
                     isOperatePlayAudioSingle=false
                     isOperateCollectAudio=false
+                    isOperateImitateCreate=true
+                    ;;
+                read_imitate )
+                    isShowChineseTips=false
+                    isShowEnglishTips=true
+                    isOperatePlayAudio=false
+                    isOperatePlayAudioSingle=false
+                    isOperateCollectAudio=false
+                    isOperateImitateCreate=true
                     ;;
                 *)
                     ftEcho -e "invald operationType:${operationType} \
@@ -809,10 +810,8 @@ ftLearnRepetionDrill()
 
             #config key tips
             if $isRefKeyTips;then
-                arrayKeysIgone=
-                # $isOperatePlayAudio && arrayKeysIgone="${arrayKeysIgone} Space" \
-                #                     || arrayKeysIgone="${arrayKeysIgone} Any_Other_Key"
-                # $isShowEnglishTips && $isShowChineseTips && arrayKeysIgone="${arrayKeysIgone} T"
+                unset arrayKeysHighlight arrayKeysHighlightFlag arrayKeysIgone
+                
                 if [[ $lessonGroupNameSel != $groupNameRepetionDrill ]];then
                     arrayKeysIgone="${arrayKeysIgone} D"
                 else
@@ -833,8 +832,9 @@ ftLearnRepetionDrill()
                     done
                 fi
 
-                arrayKeysHighlight=
-                arrayKeysHighlightFlag=
+                ! $isOperateImitateCreate && arrayKeysIgone="${arrayKeysIgone} F"
+                $isOperateCollectAudio && arrayKeysIgone="${arrayKeysIgone} S"
+
                 for indexHl in "${!arrayKeysHighlightLessonFlags[@]}"; do
                     [[ -n $(grep -e "^${linkInfo}=" ${dirPathTempEng}/needRepetionDrill/${arrayKeysHighlightLessonFlags[$indexHl]}/${contentType}.database_fail_time) ]] && \
                         arrayKeysHighlight="${arrayKeysHighlight} ${arrayKeysHighlightAll[$indexHl]}" && \
@@ -862,8 +862,8 @@ ftLearnRepetionDrill()
                     [[ -s $filePathDataItemContentAudioSlow ]] && filePathAudio=$filePathDataItemContentAudioSlow
                     [[ -s $filePathDataItemContentAudioVerySlow ]] && filePathAudio=$filePathDataItemContentAudioVerySlow
                     echo "------------------"
-                    [[ -n $optResultTips ]] && echo -e "${optResultTips}\n-----------------------------------------------"
-                    ftEcho -s "${tipsItemsContent}"
+                    [[ -n $optResultTips ]] && echo -e "${optResultTips}\n------------------"
+                    [[ -n $tipsItemsContent ]] && [[ $operationType = "word_aloud" ]] && ftEcho -s "${tipsItemsContent}"
                     [[ -s $filePathAudio ]] && cp -rf $filePathAudio $filePathDataItemContentAudioShare
                     case "$asrApiType" in
                         vosk )
@@ -998,6 +998,17 @@ ftLearnRepetionDrill()
                             isOperatePlayAudioSingle=true
                     #fi
                     ;;
+                s | S )
+                    isOperateCollectAudio=true
+                    isRefKeyTips=true
+                    isRefTipsItemsContent=false
+                    unset tipsItemsContent
+                    ;;
+                f | F )
+                    local filePathExample=${dirPathTempEng}/media/data/English/learnData/needRepetionDrill/read_imitate/AICmd.text_example
+                    echo -e "$(cat $filePathExample)\n ${englishItem}"| tr -d '\n'| xclip -sel clip
+                    [[ -s $filePathExample ]] && [[ -n $englishItem ]] && optResultTips="The template has been written to the clipboard !"
+                    ;;
                 #To create word examples
                 w | W )
                     sortingFlag="\U0001F4CC"
@@ -1035,7 +1046,6 @@ ftLearnRepetionDrill()
                     # express \U0001F92F
                     # read_aloud \U0001F444
                     # word_example \U0001F4CC
-                    # error \U0001F6AB
                     local filePathDataItem
                     [[ ! -d $dirPathDataItemContentTextAnalysis ]] && mkdir $dirPathDataItemContentTextAnalysis
                     if [[ -f $filePathDataItemContentLinkTable ]];then
@@ -1059,6 +1069,8 @@ ftLearnRepetionDrill()
                         if [[ -n $(diff $filePathDataItemBasic $filePathDataItem) ]];then
                             isRefTipsItemsContent=true
                             isRefKeyTips=true
+                        else
+                            optResultTips="Cancel operation, analysis isn't change"
                         fi
                         # clear
                         # continue
@@ -1117,12 +1129,11 @@ ftLearnRepetionDrill()
 
                 isRefTipsItemsContent=true
                 isRefKeyTips=true
-
             fi
         done
 
         #handle drill result
-        if [ -s "${filePathLearnDrillTemp}" ];then
+        if false && [ -s "${filePathLearnDrillTemp}" ];then
             if [[ -n $(grep -sn "\+\+" "${filePathLearnDrillTemp}") ]] \
                 || [[ -n $(grep -sn "\*\*" "${filePathLearnDrillTemp}") ]] \
                 || [[ -n $(grep -sn "\-\-" "${filePathLearnDrillTemp}") ]] \
@@ -1591,7 +1602,7 @@ ftLearnLessonManage()
                         ftEcho -en "data content is invald:" && ehco -e " / \nlesson path: ${lessonPathBasic}"
                     else
                         lineContentTE=$(awk 'NR=="'$lessonLineLindex'"' "${lessonCtTE}")
-                        [[ -z $lineContentTE ]] && ftEcho -e "STE line ${lessonLineLindex} content is null"
+                        [[ -z $lineContentTE ]] && ftEcho -e "STE linecontent is null >> ${lineContent}"
                         [[ -n $lineContentTE ]] && \
                         touch $filePathLessonUpdateByLtCtTE && \
                         ftTextSetLine -f $filePathLessonUpdateByLtCtTE -n $lineIndex -c "${lineContentTE}" > /dev/null
@@ -1606,7 +1617,7 @@ ftLearnLessonManage()
                     else
                         lineContentTC=$(awk 'NR=="'$lessonLineLindex'"' "${lessonCtTC}")
                         [[ -z $lineContentTC ]] \
-                                && ftEcho -e "STC line ${lessonLineLindex} content is null" \
+                                && ftEcho -e "STC linecontent is null >> ${lineContent}" \
                                 || ftTextSetLine -f $filePathLessonUpdateByLtCtTC -n $lineIndex -c "${lineContentTC}" > /dev/null
                     fi
                 else

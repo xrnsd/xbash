@@ -40,6 +40,7 @@ def audio_callback(indata, frames, time, status):
     q.put(bytes(indata))
 
 def main():
+    print(f"{YELLOW}{args.peference_text}{RESET}")
     speech_utils.play_audio(args.peference_audio)
     speech_utils.print_overwrite("Loading model ...");
 
@@ -88,11 +89,13 @@ def main():
         #if key == '\x1b[B': #Down
         #if key == '\x1b[D': #Left
         #if key == '\x1b[C': #Right
+        #if key == 'ctrl+c':   #Ctrl+C
         if keyStart == '\x1b[B':
+            speech_utils.print_overwrite("Please start to read aloud ...");
             break
         elif keyStart == '\x1b[C':
             speech_utils.play_audio_blocked(args.peference_audio)
-        elif keyStart == '\x1b[D':
+        elif keyStart == '\x1b[D' or keyStart == "ctrl+c":
             print("\nRecognition cancel")
             sys.exit(1)
 
@@ -105,8 +108,6 @@ def main():
         frames_per_buffer=1600, # 每次处理 0.1 秒音频
         stream_callback=callback
     )
-
-    print(f"\n{YELLOW}{args.peference_text}{RESET}")
     
     last_text = ""
     last_active_time = time.time()
@@ -158,8 +159,14 @@ def main():
                 last_text = ""
                 continue
 
+            #句子累积过长
+            if speech_utils.is_too_long(text):
+                recognizer.reset(stream)
+                last_text = ""
+                continue
+
             # 如果超过 1.5 秒没有新字产出，手动断句
-            if time.time() - last_active_time > 1.5 and last_text != "":
+            if time.time() - last_active_time > 3.5 and last_text != "":
                 recognizer.reset(stream)
                 last_text = ""
                 continue

@@ -16,6 +16,7 @@ import pygame
 import tty
 import termios
 import time
+import shutil
 
 # ========== ANSI 颜色 ==========
 RED = "\033[91m"
@@ -47,22 +48,51 @@ def highlight_diff(reference, recognized):
 
     return " ".join(output)
 
+# def get_key():
+#     fd = sys.stdin.fileno()
+#     old_settings = termios.tcgetattr(fd)
+#     try:
+#         tty.setraw(fd)
+#         ch1 = sys.stdin.read(1)
+#         if ch1 == '\x1b':  # ESC 开头的控制序列
+#             ch2 = sys.stdin.read(1)
+#             ch3 = sys.stdin.read(1)
+#             return ch1 + ch2 + ch3
+#         return ch1
+#     except KeyboardInterrupt:
+#         return "exit"
+#     finally:
+#         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+
+#if key == '\x1b[A': #Up
+#if key == '\x1b[B': #Down
+#if key == '\x1b[D': #Left
+#if key == '\x1b[C': #Right
+#if key == 'ctrl+c':   #Ctrl+C
 def get_key():
+    """获取单个按键，支持方向键并能处理 Ctrl+C"""
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
-        tty.setraw(fd)
-        ch1 = sys.stdin.read(1)
-        if ch1 == '\x1b':  # ESC 开头的控制序列
-            ch2 = sys.stdin.read(1)
-            ch3 = sys.stdin.read(1)
-            return ch1 + ch2 + ch3
-        return ch1
+        tty.setraw(sys.stdin.fileno())
+        ch = sys.stdin.read(1)
+        # 手动处理 Ctrl+C (ASCII 3)
+        if ch == '\x03':
+            raise KeyboardInterrupt
+        # 方向键通常以 \x1b[ 开头（转义序列）
+        if ch == '\x1b':
+            ch += sys.stdin.read(2)
+        return ch
+    except KeyboardInterrupt:
+        return "ctrl+c"
     finally:
+        # 无论发生什么，必须恢复终端设置，否则终端会乱码
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
 def play_audio(file_path):
+    pygame.mixer.pre_init(24000, -16, 1, 4096) 
     pygame.mixer.init()
     pygame.mixer.music.load(file_path)
     pygame.mixer.music.play()
@@ -92,24 +122,44 @@ def play_audio_blocked(file_path):
     finally:
         pygame.mixer.quit()
 
+def get_visual_len(text):
+    """计算字符串在终端显示的实际宽度（剔除 ANSI 转义序列）"""
+    # 这个正则表达式匹配所有 \033[...m 格式的 ANSI 转义序列
+    ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
+    return len(ansi_escape.sub('', text))
+
+def is_too_long(text) -> bool:
+    columns, _ = shutil.get_terminal_size(fallback=(137, 24))
+    limit = columns - 1
+
+    if get_visual_len(text) > limit:
+        return True
+    return False
 
 def print_overwrite(*args, sep=' ', end='', flush=True):
     text = sep.join(str(a) for a in args)
-    
-    # 获取当前终端的实际宽度
-    try:
-        columns = os.get_terminal_size().columns
-    except OSError:
-        columns = 137  # 如果获取失败（如在某些 IDE 中），使用 137 兜底
 
-    # 留出一点余量（比如 -1）防止极少数终端的边界换行 Bug
-    limit = min(columns - 1, 137) 
-    
-    if len(text) > limit:
-        # text = text[:limit]
-        #自动切割：如果超过 137 字符，截断并添加省略标记（可选）
-        #截断到 134 位并加 "..." 凑够 137，或者直接 text[:limit]
-        text = text[:limit-2] + "..." if limit > 2 else text[:limit]
+    # 自动获取宽度，fallback 设为 (137, 24)
+    # 这比 try-except os 模块要可靠得多
+    columns, _ = shutil.get_terminal_size(fallback=(137, 24))
+    # columns = 137
+
+    # 留出 1 个字符的余量，防止某些终端自动换行
+    limit = columns - 1
+
+     # 2. 计算视觉长度
+    v_len = get_visual_len(text)
+
+    # 3. 如果视觉长度超过限制，需要截断
+    if v_len > limit:
+        # 注意：截断带颜色的字符串很复杂，直接截断可能会丢失结尾的 \033[0m 导致后续全变色
+        # 这里演示一个简单的截断逻辑（剔除颜色后截断，再加一个重置符防止溢出）
+        # 更好的做法通常是先计算好截断位置，或者使用专门的库如 'rich'
+        ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
+        plain_text = ansi_escape.sub('', text)
+        text = STRIKETHROUGH+ plain_text[:limit-7] + "..." + RESET
+
+    # \r 回到行首，\033[K 清除从光标位置到行尾的内容
     print(f"\r\033[K{text}", end=end, flush=flush)
 
 def is_exact_match(reference: str, recognized: str) -> bool:
