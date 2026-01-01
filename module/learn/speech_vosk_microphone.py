@@ -37,8 +37,12 @@ def audio_callback(indata, frames, time, status):
         print(status, file=sys.stderr)
     q.put(bytes(indata))
 
+def on_recognition_equal(ref):
+    print("\nRecognition successful. Exiting.")
+    sys.exit(0)
+
 def main():
-    # speech_utils.print_overwrite("Reference text:",f"{YELLOW}{REFERENCE_TEXT}{RESET}")
+    speech_utils.print_overwrite(f"{YELLOW}{args.peference_text}{RESET}")
     while True:
         speech_utils.play_audio_blocked(args.peference_audio)
         speech_utils.print_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} start to practice, {RED}←{RESET} cancel practice")
@@ -48,7 +52,7 @@ def main():
         #if key == '\x1b[D': #Left
         #if key == '\x1b[C': #Right
         if keyStart == '\x1b[B':
-            speech_utils.print_overwrite("Please start reading aloud")
+            speech_utils.print_overwrite(f"{YELLOW}{args.peference_text}{RESET}\nPlease start to read aloud ...");
             break
         elif keyStart == '\x1b[D':
             print("\nRecognition cancel")
@@ -71,14 +75,17 @@ def main():
     ):
         while True:
             data = q.get()
-            data = speech_utils.process_for_vosk_df(data);#deepfilternet降噪
+            # data = speech_utils.process_for_vosk_df(data);#deepfilternet降噪
             data = agc.process_for_vosk(data) # AGC 优化识别效果: 无论你离麦克风近还是远，识别效果都会变得稳定
             result = asr.accept_audio(data)
             if result:
                 if result.get("success"):
                     speech_utils.print_overwrite("Partial Result Recognition successful. Exiting.\n")
                     sys.exit(0)
-                speech_utils.print_overwrite(speech_utils.highlight_diff(args.peference_text, result.get("text", "")))
+                speech_utils.print_multi_overwrite([
+                    speech_utils.highlight_diff(args.peference_text, result.get("text", ""), on_recognition_equal),
+                    result.get("text", "").lower()
+                ])
 
 if __name__ == "__main__":
     try:

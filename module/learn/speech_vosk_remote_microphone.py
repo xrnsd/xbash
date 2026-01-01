@@ -87,6 +87,10 @@ def recognition_end(conn, tips):
     except Exception as e:
         speech_utils.print_overwrite("close connect failed:", e,"\n")
 
+def on_recognition_equal(ref):
+    print("\nRecognition successful. Exiting.")
+    sys.exit(0)
+
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -142,7 +146,7 @@ def main():
                         if result.get("success"):
                             speech_utils.print_overwrite("Partial Result Recognition successful. Exiting.\n")
                             sys.exit(0)
-                        speech_utils.print_overwrite(speech_utils.highlight_diff(args.peference_text, result.get("text", "")))
+                        speech_utils.print_overwrite(speech_utils.highlight_diff(args.peference_text, result.get("text", ""),on_recognition_equal))
         finally:
             recognition_end(conn,"")
 

@@ -25,45 +25,59 @@ YELLOW = '\033[93m'
 RESET = "\033[0m"
 UNDERLINE = "\033[32;4m"  # 下划线
 STRIKETHROUGH = "\033[32;9m"  # 删除线（某些旧终端可能不支持）
+BOLD = "\033[1m"
 
+def highlight_diff(reference, recognized, on_complete=None):
+    # ---------- 初始化静态状态 ----------
+    if not hasattr(highlight_diff, "_state"):
+        highlight_diff._state = {
+            "last_reference": None,
+            "matched_indices": set(),  # reference 中已匹配词的索引
+            "completed": False,  # 是否已 100%
+        }
 
-def highlight_diff(reference, recognized):
+    state = highlight_diff._state
+
     ref = normalize_text(reference)
     rec = normalize_text(recognized)
+
     ref_words = ref.split()
     rec_words = rec.split()
 
-    matcher = difflib.SequenceMatcher(None, ref_words, rec_words)
-    output = []
+    # ---------- reference 变化 → 重置 ----------
+    if ref != state["last_reference"]:
+        state["matched_indices"].clear()
+        state["completed"] = False
+        state["last_reference"] = ref
 
+    matcher = difflib.SequenceMatcher(None, ref_words, rec_words)
+
+    # ---------- 记录匹配的 reference 词 ----------
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
         if tag == "equal":
-            output.extend(rec_words[j1:j2])
-        elif tag == "insert":
-            output.extend([f"{RED}{w}{RESET}" for w in rec_words[j1:j2]])
-        elif tag == "replace":
-            output.extend([f"{RED}{w}{RESET}" for w in rec_words[j1:j2]])
-        elif tag == "delete":
-            output.extend([f"{UNDERLINE}{w}{RESET}" for w in ref_words[i1:i2]])
+            for idx in range(i1, i2):
+                state["matched_indices"].add(idx)
 
-    return " ".join(output)
+    # ---------- 计算匹配度 ----------
+    total = len(ref_words)
+    matched = len(state["matched_indices"])
+    accuracy = int((matched / total) * 100) if total > 0 else 0
 
-# def get_key():
-#     fd = sys.stdin.fileno()
-#     old_settings = termios.tcgetattr(fd)
-#     try:
-#         tty.setraw(fd)
-#         ch1 = sys.stdin.read(1)
-#         if ch1 == '\x1b':  # ESC 开头的控制序列
-#             ch2 = sys.stdin.read(1)
-#             ch3 = sys.stdin.read(1)
-#             return ch1 + ch2 + ch3
-#         return ch1
-#     except KeyboardInterrupt:
-#         return "exit"
-#     finally:
-#         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    # ---------- 100% 回调（只触发一次） ----------
+    if accuracy == 100 and not state["completed"]:
+        state["completed"] = True
+        if callable(on_complete):
+            on_complete(reference)
 
+    # ---------- 构造 reference 高亮输出 ----------
+    output = []
+    for idx, word in enumerate(ref_words):
+        if idx in state["matched_indices"]:
+            output.append(word)  # 已匹配，不高亮
+        else:
+            output.append(f"{RED}{word}{RESET}")  # 未匹配，高亮
+    # ---------- 单行输出 ----------
+    return f"[{accuracy}%] " + " ".join(output)
 
 #if key == '\x1b[A': #Up
 #if key == '\x1b[B': #Down
@@ -102,6 +116,7 @@ def play_audio(file_path):
 
 
 def play_audio_blocked(file_path):
+    pygame.mixer.pre_init(24000, -16, 1, 4096) 
     pygame.mixer.init()
     result = "/".join(file_path.split("/")[-4:])
 
@@ -128,14 +143,6 @@ def get_visual_len(text):
     ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
     return len(ansi_escape.sub('', text))
 
-def is_too_long(text) -> bool:
-    columns, _ = shutil.get_terminal_size(fallback=(137, 24))
-    limit = columns - 1
-
-    if get_visual_len(text) > limit:
-        return True
-    return False
-
 def print_overwrite(*args, sep=' ', end='', flush=True):
     text = sep.join(str(a) for a in args)
 
@@ -161,6 +168,51 @@ def print_overwrite(*args, sep=' ', end='', flush=True):
 
     # \r 回到行首，\033[K 清除从光标位置到行尾的内容
     print(f"\r\033[K{text}", end=end, flush=flush)
+
+def print_multi_overwrite(lines, flush=True):
+    """
+    显示多行内容并确保不换行。
+    :param lines: 字符串列表，每一项代表一行
+    """
+    columns, _ = shutil.get_terminal_size(fallback=(137, 24))
+    limit = columns - 1
+    ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
+
+    processed_lines = []
+    for text in lines:
+        v_len = get_visual_len(text)
+        
+        # 长度限制处理
+        if v_len > limit:
+            # 截断逻辑：为了保证颜色不丢失且不溢出，
+            # 最稳妥做法是提取纯文本截断后重新追加 RESET
+            plain_text = ansi_escape.sub('', text)
+            text = plain_text[:limit-4] + "..." + RESET
+        
+        # 每行添加清除指令 \033[K 确保旧内容不残留
+        processed_lines.append(f"\r\033[K{text}")
+
+    # 1. 打印所有行，行与行之间用换行符连接
+    output = "\n".join(processed_lines)
+    sys.stdout.write(output)
+    
+    if flush:
+        sys.stdout.flush()
+
+    # 2. 关键：将光标向上移动 (行数 - 1) 行，回到第一行的开头
+    # 这样下一次调用该函数时，会从第一行开始覆盖
+    num_lines = len(lines)
+    if num_lines > 1:
+        # \033[F 回到上一行行首，重复执行
+        sys.stdout.write(f"\033[{num_lines - 1}F")
+
+def is_too_long(text) -> bool:
+    columns, _ = shutil.get_terminal_size(fallback=(137, 24))
+    limit = columns - 1
+
+    if get_visual_len(text) > limit:
+        return True
+    return False
 
 def is_exact_match(reference: str, recognized: str) -> bool:
     ref = normalize_text(reference)
@@ -277,3 +329,78 @@ class SimpleAGC:
         # 5. 应用增益并限幅（防止数据超过 1.0 导致模型识别错乱）
         output = samples * self.current_gain
         return np.clip(output, -1.0, 1.0)
+
+
+class SimpleVAD:
+    def __init__(self, threshold=0.02, min_speech_ms=100, sample_rate=16000):
+        self.threshold = threshold
+        self.min_speech_samples = int(min_speech_ms / 1000 * sample_rate)
+        self.speech_counter = 0
+
+    def is_speech(self, samples: np.ndarray) -> bool:
+        """
+        samples: float32 numpy array [-1,1]
+        """
+        energy = np.sqrt(np.mean(samples ** 2))
+        if energy > self.threshold:
+            self.speech_counter += len(samples)
+        else:
+            self.speech_counter = max(0, self.speech_counter - len(samples))
+
+        return self.speech_counter >= self.min_speech_samples
+
+from collections import deque
+
+class AdvancedVAD:
+    def __init__(self,
+                 sample_rate=16000,
+                 frame_ms=20,
+                 enter_threshold=0.03,
+                 exit_threshold=0.015,
+                 min_speech_ms=100,
+                 window_ms=100):
+        """
+        sample_rate: 采样率
+        frame_ms: 每帧长度
+        enter_threshold: 进入语音阈值
+        exit_threshold: 离开语音阈值
+        min_speech_ms: 最小语音长度（ms）
+        window_ms: 滑动窗口大小（ms）
+        """
+        self.sample_rate = sample_rate
+        self.frame_size = int(frame_ms / 1000 * sample_rate)
+        self.enter_threshold = enter_threshold
+        self.exit_threshold = exit_threshold
+        self.min_speech_samples = int(min_speech_ms / 1000 * sample_rate)
+        self.window_size = int(window_ms / 1000 * sample_rate)
+        self.energy_window = deque(maxlen=self.window_size)
+        self.in_speech = False
+        self.speech_counter = 0
+
+    def is_speech(self, samples: np.ndarray) -> bool:
+        """
+        samples: float32 [-1,1]
+        """
+        # 1. 计算当前帧 RMS
+        energy = np.sqrt(np.mean(samples ** 2))
+        self.energy_window.append(energy)
+
+        # 2. 滑动窗口平均
+        avg_energy = np.mean(self.energy_window)
+
+        # 3. 双阈值判断
+        if self.in_speech:
+            if avg_energy < self.exit_threshold:
+                self.in_speech = False
+        else:
+            if avg_energy > self.enter_threshold:
+                self.in_speech = True
+
+        # 4. 最小语音长度计数
+        if self.in_speech:
+            self.speech_counter += len(samples)
+        else:
+            self.speech_counter = max(0, self.speech_counter - len(samples))
+
+        # 5. 返回是否为语音（满足最小语音长度）
+        return self.speech_counter >= self.min_speech_samples

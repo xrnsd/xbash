@@ -12,6 +12,7 @@ import pyaudio
 import sherpa_onnx
 import numpy as np
 import speech_utils
+import threading
 
 
 # ========== 配置 ==========
@@ -40,16 +41,30 @@ def audio_callback(indata, frames, time, status):
     q.put(bytes(indata))
 
 def main():
-    print(f"{YELLOW}{args.peference_text}{RESET}")
     speech_utils.play_audio(args.peference_audio)
     speech_utils.print_overwrite("Loading model ...");
 
+    #构建 Denoiser
+    gtcrn_config = sherpa_onnx.OfflineSpeechDenoiserGtcrnModelConfig(
+        model=f"{args.model_path}/gtcrn_simple.onnx"
+    )
+    model_config = sherpa_onnx.OfflineSpeechDenoiserModelConfig(
+        gtcrn=gtcrn_config,
+        num_threads=2,
+        provider="cpu",
+    )
+    denoiser_config = sherpa_onnx.OfflineSpeechDenoiserConfig(
+        model=model_config
+    )
+    denoiser = sherpa_onnx.OfflineSpeechDenoiser(denoiser_config)
+
+    #构建 OnlineRecognizer
     recognizer = sherpa_onnx.OnlineRecognizer.from_transducer(
         encoder=f"{args.model_path}/encoder.int8.onnx",
         decoder=f"{args.model_path}/decoder.int8.onnx",
         joiner=f"{args.model_path}/joiner.int8.onnx",
         tokens=f"{args.model_path}/tokens.txt",
-        num_threads=6,
+        num_threads=2,
         sample_rate=SAMPLE_RATE,
         feature_dim=80,
         decoding_method="modified_beam_search",
@@ -64,6 +79,13 @@ def main():
     # 初始化 AGC 实例
     agc = speech_utils.SimpleAGC(target_rms=0.18, max_gain=8.0)
 
+    # vad = speech_utils.AdvancedVAD(sample_rate=16000,
+    #               frame_ms=20,
+    #               enter_threshold=0.03,
+    #               exit_threshold=0.015,
+    #               min_speech_ms=100,
+    #               window_ms=100)
+
     # 4. 创建识别流
     stream = recognizer.create_stream()
 
@@ -71,16 +93,36 @@ def main():
     pa = pyaudio.PyAudio()
 
     # 定义麦克风回调函数 (高效处理数据)
+    audio_queue = queue.Queue()
     def callback(in_data, frame_count, time_info, status):
         # 将二进制 PCM16 转换为 float32 归一化数据
         samples = np.frombuffer(in_data, dtype=np.int16).astype(np.float32) / 32768.0
 
-        # AGC 优化识别效果,无论你离麦克风近还是远，识别效果都会变得稳定
-        samples = agc.process(samples)
-       
-        # 喂入识别器
-        stream.accept_waveform(16000, samples)
+        audio_queue.put(samples.copy())
+   
         return (None, pyaudio.paContinue)
+
+    # 3. 独立的识别线程
+    def recognition_worker(stream,vad,denoiser):
+        while True:
+            samples = audio_queue.get() # 阻塞等待新音频
+
+            #降噪
+            result = denoiser(samples, SAMPLE_RATE)
+            samples = np.asarray(result.samples, dtype=np.float32)
+
+            # #讲话
+            # if vad.is_speech(samples):
+            
+            # AGC 优化识别效果,无论你离麦克风近还是远，识别效果都会变得稳定
+            samples = agc.process(samples)
+
+            # 喂入识别器
+            stream.accept_waveform(16000, samples)
+
+    def on_recognition_equal(ref):
+        print("\nRecognition successful. Exiting.")
+        sys.exit(0)
 
     while True:
         speech_utils.print_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} start to practice, {RED}←{RESET} cancel practice")
@@ -91,7 +133,7 @@ def main():
         #if key == '\x1b[C': #Right
         #if key == 'ctrl+c':   #Ctrl+C
         if keyStart == '\x1b[B':
-            speech_utils.print_overwrite("Please start to read aloud ...");
+            speech_utils.print_overwrite(f"{YELLOW}{args.peference_text}{RESET}\nPlease start to read aloud ...");
             break
         elif keyStart == '\x1b[C':
             speech_utils.play_audio_blocked(args.peference_audio)
@@ -103,12 +145,15 @@ def main():
     mic_stream = pa.open(
         format=pyaudio.paInt16,
         channels=1,
-        rate=16000,
+        rate=SAMPLE_RATE,
         input=True,
-        frames_per_buffer=1600, # 每次处理 0.1 秒音频
+        frames_per_buffer=8000, # 每次处理 1600=0.1 秒音频
         stream_callback=callback
     )
-    
+
+    # 打开识别线程
+    threading.Thread(target=recognition_worker, args=(stream,vad,denoiser), daemon=True).start()
+
     last_text = ""
     last_active_time = time.time()
     try:
@@ -146,9 +191,11 @@ def main():
                         recognizer.reset(stream)
                         last_text = ""
                         continue
-                    #speech_utils.print_overwrite(speech_utils.highlight_diff(args.peference_text, new_part))
-                
-                speech_utils.print_overwrite(speech_utils.highlight_diff(args.peference_text, text))
+
+                speech_utils.print_multi_overwrite([
+                    speech_utils.highlight_diff(args.peference_text, text, on_recognition_equal),
+                    text.lower()
+                ])
                 last_text = text
                 last_active_time = time.time()
 
@@ -166,7 +213,7 @@ def main():
                 continue
 
             # 如果超过 1.5 秒没有新字产出，手动断句
-            if time.time() - last_active_time > 3.5 and last_text != "":
+            if time.time() - last_active_time > 2.2 and last_text != "":
                 recognizer.reset(stream)
                 last_text = ""
                 continue

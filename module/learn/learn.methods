@@ -24,10 +24,10 @@ _ftLearnRepetionDrill()
             COMPREPLY=( $(compgen -W "vosk sherpa_onnx" -- "$cur") )
             ;;
         article | sentence | imitate )
-            COMPREPLY=( $(compgen -W "-te -htc -hte -pl -fq --sort" -- "$cur") )
+            COMPREPLY=( $(compgen -W "-te -htc -hte -pl -fq --sort --asr" -- "$cur") )
             ;;
         * )
-            [[ $prev =~ ^\- ]] && (( $COMP_CWORD>3 )) && COMPREPLY=( $(compgen -W "-te -htc -hte -pl --sort" -- "$cur") ) ||\
+            (( $COMP_CWORD>3 )) && COMPREPLY=( $(compgen -W "-te -htc -hte -pl --sort --asr" -- "$cur") ) ||\
             COMPREPLY=( $(compgen -W "-h --type --help" -- "$cur") )
             ;;
     esac
@@ -45,7 +45,7 @@ ftLearnRepetionDrill()
     local contentType operateMode readTimeOut orderType=random asrApiType=sherpa_onnx
     local isShowChineseTips=true isShowEnglishTips=true isPlayChineseTips=false isAutomaticSwitching=false
     local isOperateTextEdit=false isOperateAutoBcompare=false isOperatePlayAudio=false isOperateImitateCreate=false
-    local valCount=7 errorContent arg arg2
+    local valCount=9 errorContent arg arg2
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     [[ $arg =~ ^\- ]] && case "${arg}" in
         # help information ==============
@@ -77,7 +77,7 @@ ftLearnRepetionDrill()
                     article | sentence | imitate )
                         ;;
                     * )  [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
-                         errorContent="${errorContent}invalid aregument :${contentType}"
+                         errorContent="${errorContent}invalid type aregument :${contentType}"
                          break
                         ;;
                 esac
@@ -87,17 +87,17 @@ ftLearnRepetionDrill()
                     order | random )
                         ;;
                     * )  [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
-                         errorContent="${errorContent}invalid aregument :${orderType}"
+                         errorContent="${errorContent}invalid sort aregument :${orderType}"
                          break
                         ;;
                 esac
             ;;
         --asr )  asrApiType="${arg2}"
-                case "${orderType}" in
+                case "${asrApiType}" in
                     vosk | sherpa_onnx )
                         ;;
                     * )  [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
-                         errorContent="${errorContent}invalid aregument :${orderType}"
+                         errorContent="${errorContent}invalid asr aregument :${asrApiType}"
                          break
                         ;;
                 esac
@@ -717,7 +717,7 @@ ftLearnRepetionDrill()
                     audioInfo=$(basename "${filePathDataItemContentAudio}")
                     if [[ ! -s $filePathDataItemContentAudio ]]; then
                         statusInfo="create audio : ${audioInfo}"
-                        echo " ${statusInfo}"
+                        echo " \n${statusInfo}"
                         optResultTips="${optResultTips=}\n${statusInfo} finished"
                         [[ ! -d $(dirname $filePathDataItemContentAudio) ]] && mkdir -p $(dirname $filePathDataItemContentAudio)
                         if $isPlayChineseTips;then
@@ -732,7 +732,7 @@ ftLearnRepetionDrill()
                     if [[ ! -s $filePathDataItemContentAudioSlow ]]; then
                         # statusInfo="create audio : ${audioInfo}"
                         statusInfo="create audio : $(basename $filePathDataItemContentAudioSlow)"
-                        echo " ${statusInfo}"
+                        echo " \n${statusInfo}"
                         #optResultTips="${optResultTips=}\n${statusInfo} finished"
                         ftText2Mp3 -txt "${englishItem}" -fpm "${filePathDataItemContentAudioSlow}" -speed -20 &
                     fi
