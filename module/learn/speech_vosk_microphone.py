@@ -31,11 +31,12 @@ YELLOW = '\033[93m'
 RESET = "\033[0m"
 # =======================
 
-q = queue.Queue()
+audio_queue = queue.Queue()
 def audio_callback(indata, frames, time, status):
     if status:
         print(status, file=sys.stderr)
-    q.put(bytes(indata))
+        return
+    audio_queue.put(indata[:, 0].copy())
 
 def on_recognition_equal(ref):
     print("\nRecognition successful. Exiting.")
@@ -57,8 +58,18 @@ def main():
         elif keyStart == '\x1b[D':
             print("\nRecognition cancel")
             sys.exit(1)
-    
+
+    #构建降噪引擎
+    engine = speech_utils.SherpaRNNoiseEngine()
+
     agc = speech_utils.PydubAGC(sample_rate=SAMPLE_RATE, target_dbfs=-3.0)
+
+    vad = speech_utils.AdvancedVAD(sample_rate=16000,
+                  frame_ms=20,
+                  enter_threshold=0.03,
+                  exit_threshold=0.015,
+                  min_speech_ms=100,
+                  window_ms=100)
 
     asr = AdaptiveGrammarRecognizer(
         model_path=args.model_path,
@@ -66,26 +77,29 @@ def main():
         reference_text=args.peference_text
     )
 
-    with sd.RawInputStream(
-        samplerate=SAMPLE_RATE,
-        blocksize=8000,
-        dtype="int16",
-        channels=1,
-        callback=audio_callback
-    ):
+    with sd.InputStream(samplerate=48000, 
+                            blocksize=480, 
+                            channels=1, 
+                            dtype='float32', 
+                            callback=audio_callback):
         while True:
-            data = q.get()
-            # data = speech_utils.process_for_vosk_df(data);#deepfilternet降噪
-            data = agc.process_for_vosk(data) # AGC 优化识别效果: 无论你离麦克风近还是远，识别效果都会变得稳定
-            result = asr.accept_audio(data)
-            if result:
-                if result.get("success"):
-                    speech_utils.print_overwrite("Partial Result Recognition successful. Exiting.\n")
-                    sys.exit(0)
-                speech_utils.print_multi_overwrite([
-                    speech_utils.highlight_diff(args.peference_text, result.get("text", ""), on_recognition_equal),
-                    result.get("text", "").lower()
-                ])
+            data = audio_queue.get()
+            data = engine.process_and_resample_48k_2_16K(data) #RNNoise降噪
+
+            #确认在讲话
+            if vad.is_speech(data):
+                data = engine.float_to_pcm16(data)
+                # data = speech_utils.process_for_vosk_df(data);#deepfilternet降噪
+                data = agc.process_for_vosk(data) # AGC 优化识别效果: 无论你离麦克风近还是远，识别效果都会变得稳定
+                result = asr.accept_audio(data)
+                if result:
+                    if result.get("success"):
+                        speech_utils.print_overwrite("Partial Result Recognition successful. Exiting.\n")
+                        sys.exit(0)
+                    speech_utils.print_multi_overwrite([
+                        speech_utils.highlight_diff(args.peference_text, result.get("text", ""), on_recognition_equal),
+                        result.get("text", "").lower()
+                    ])
 
 if __name__ == "__main__":
     try:
