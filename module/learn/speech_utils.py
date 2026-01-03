@@ -79,6 +79,85 @@ def highlight_diff(reference, recognized, on_complete=None):
     # ---------- 单行输出 ----------
     return f"[{accuracy}%] " + " ".join(output)
 
+
+def highlight_diff_multi(reference, recognized, on_complete=None):
+    # ---------- 1. 初始化静态状态 (保持原样) ----------
+    if not hasattr(highlight_diff, "_state"):
+        highlight_diff._state = {
+            "last_reference": None,
+            "matched_indices": set(),
+            "completed": False,
+        }
+
+    state = highlight_diff._state
+
+    # 假设 normalize_text 已定义
+    ref = normalize_text(reference)
+    rec = normalize_text(recognized)
+
+    ref_words = ref.split()
+    rec_words = rec.split()
+
+    # ---------- 2. 逻辑处理 (保持原样) ----------
+    if ref != state["last_reference"]:
+        state["matched_indices"].clear()
+        state["completed"] = False
+        state["last_reference"] = ref
+
+    matcher = difflib.SequenceMatcher(None, ref_words, rec_words)
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            for idx in range(i1, i2):
+                state["matched_indices"].add(idx)
+
+    total = len(ref_words)
+    matched = len(state["matched_indices"])
+    accuracy = int((matched / total) * 100) if total > 0 else 0
+
+    if accuracy == 100 and not state["completed"]:
+        state["completed"] = True
+        if callable(on_complete):
+            on_complete(reference)
+
+    # ---------- 3. 自动切分输出逻辑 (新增) ----------
+    columns, _ = shutil.get_terminal_size(fallback=(137, 24))
+    limit = columns - 2
+    
+    prefix = f"[{accuracy}%] "
+    # 使用你定义的 get_visual_len
+    prefix_v_len = get_visual_len(prefix)
+    
+    final_lines = []
+    current_line = prefix
+    current_v_len = prefix_v_len
+
+    for idx, word in enumerate(ref_words):
+        # 构造带颜色的单词
+        styled_word = word if idx in state["matched_indices"] else f"{RED}{word}{RESET}"
+        word_v_len = get_visual_len(styled_word)
+        
+        # 判断：当前行长度 + 空格(1) + 新单词长度 是否超限
+        # 注意：第一行已包含 prefix，后续行需要考虑对齐缩进
+        if current_v_len + 1 + word_v_len > limit:
+            final_lines.append(current_line)
+            # 新行开始：为了美观，通常在百分比标识下方留空对齐
+            indent = " " * prefix_v_len
+            current_line = indent + styled_word
+            current_v_len = prefix_v_len + word_v_len
+        else:
+            # 如果是该行第一个词（除 prefix 外）不加空格，否则加空格
+            spacer = "" if current_v_len == prefix_v_len or current_v_len == 0 else " "
+            current_line += spacer + styled_word
+            current_v_len += (len(spacer) + word_v_len)
+
+    if current_line:
+        final_lines.append(current_line)
+
+    # 返回列表，兼容 print_multi_overwrite
+    return final_lines
+
+
 #if key == '\x1b[A': #Up
 #if key == '\x1b[B': #Down
 #if key == '\x1b[D': #Left
@@ -137,11 +216,38 @@ def play_audio_blocked(file_path):
     finally:
         pygame.mixer.quit()
 
+# 定义 ANSI 颜色提取正则
+ANSI_ESCAPE = re.compile(r'\x1b\[[0-9;]*m')
+
 def get_visual_len(text):
     """计算字符串在终端显示的实际宽度（剔除 ANSI 转义序列）"""
     # 这个正则表达式匹配所有 \033[...m 格式的 ANSI 转义序列
     ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
     return len(ansi_escape.sub('', text))
+
+def split_text_preserving_color(text, limit):
+    """
+    切分文本并尝试为每一行保留颜色。
+    逻辑：提取文本中所有的颜色转义符，包裹在每一个切分后的纯文本段上。
+    """
+    # 1. 提取该行所有的 ANSI 颜色代码
+    colors = ANSI_ESCAPE.findall(text)
+    color_prefix = "".join(colors)  # 合并所有颜色指令作为前缀
+    
+    # 2. 获取纯文本
+    plain_text = ANSI_ESCAPE.sub('', text)
+    
+    if not plain_text: # 处理空行或纯控制符行
+        return [text]
+
+    parts = []
+    # 3. 按照视觉宽度切分纯文本
+    for i in range(0, len(plain_text), limit):
+        chunk = plain_text[i : i + limit]
+        # 为每一段重新包裹颜色前缀和重置后缀
+        parts.append(f"{color_prefix}{chunk}\033[0m")
+    
+    return parts
 
 def print_overwrite(*args, sep=' ', end='', flush=True):
     text = sep.join(str(a) for a in args)
@@ -169,42 +275,56 @@ def print_overwrite(*args, sep=' ', end='', flush=True):
     # \r 回到行首，\033[K 清除从光标位置到行尾的内容
     print(f"\r\033[K{text}", end=end, flush=flush)
 
-def print_multi_overwrite(lines, flush=True):
+def print_multi_overwrite(*args, flush=True):
     """
-    显示多行内容并确保不换行。
-    :param lines: 字符串列表，每一项代表一行
+    修正版：支持混合输入，确保首行 prefix 不丢失。
     """
+    # 1. 扁平化所有输入
+    raw_lines = []
+    for item in args:
+        if isinstance(item, list):
+            raw_lines.extend(item)
+        else:
+            raw_lines.append(str(item))
+
+    # 2. 获取终端宽度
     columns, _ = shutil.get_terminal_size(fallback=(137, 24))
-    limit = columns - 1
-    ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
+    limit = columns - 2
+    
+    # 3. 再次确认每行是否需要物理切分（防止溢出导致终端自动换行破坏光标计算）
+    final_lines = []
+    for line in raw_lines:
+        # 如果这一行视觉长度已经超了，强制按颜色保留方式切分
+        if get_visual_len(line) > limit:
+            final_lines.extend(split_text_preserving_color(line, limit))
+        else:
+            final_lines.append(line)
 
-    processed_lines = []
-    for text in lines:
-        v_len = get_visual_len(text)
-        
-        # 长度限制处理
-        if v_len > limit:
-            # 截断逻辑：为了保证颜色不丢失且不溢出，
-            # 最稳妥做法是提取纯文本截断后重新追加 RESET
-            plain_text = ansi_escape.sub('', text)
-            text = plain_text[:limit-4] + "..." + RESET
-        
-        # 每行添加清除指令 \033[K 确保旧内容不残留
-        processed_lines.append(f"\r\033[K{text}")
+    if not final_lines:
+        return
 
-    # 1. 打印所有行，行与行之间用换行符连接
-    output = "\n".join(processed_lines)
-    sys.stdout.write(output)
+    # 4. 打印：关键在于 \r\033[K 必须紧贴每一行的开头
+    # 这样可以清除掉旧内容，同时从最左侧开始输出
+    processed_output = []
+    for i, line in enumerate(final_lines):
+        # 每一行都强制从行首开始并清除该行
+        processed_output.append(f"\r\033[K{line}")
+
+    # 使用 \n 连接，但最后一行不要加 \n 避免产生多余空行
+    sys.stdout.write("\n".join(processed_output))
     
     if flush:
         sys.stdout.flush()
 
-    # 2. 关键：将光标向上移动 (行数 - 1) 行，回到第一行的开头
-    # 这样下一次调用该函数时，会从第一行开始覆盖
-    num_lines = len(lines)
-    if num_lines > 1:
-        # \033[F 回到上一行行首，重复执行
-        sys.stdout.write(f"\033[{num_lines - 1}F")
+    # 5. 光标回退逻辑
+    actual_num_lines = len(final_lines)
+    if actual_num_lines > 1:
+        # 回到本次打印的第一行行首
+        sys.stdout.write(f"\033[{actual_num_lines - 1}F")
+    
+    # 始终确保光标在当前行（即第一行）的开头，准备下次覆盖
+    sys.stdout.write("\r")
+    sys.stdout.flush()
 
 def is_too_long(text) -> bool:
     columns, _ = shutil.get_terminal_size(fallback=(137, 24))

@@ -43,7 +43,7 @@ def audio_callback(indata, frames, time, status):
 
 def main():
     speech_utils.play_audio(args.peference_audio)
-    speech_utils.print_overwrite("Loading model ...");
+    speech_utils.print_overwrite("Loading Sherpa Onnx model ...");
 
     #构建降噪引擎
     engine = speech_utils.SherpaRNNoiseEngine()
@@ -119,7 +119,10 @@ def main():
         #if key == '\x1b[C': #Right
         #if key == 'ctrl+c':   #Ctrl+C
         if keyStart == '\x1b[B':
-            speech_utils.print_overwrite(f"{YELLOW}{args.peference_text}{RESET}\nPlease start to read aloud ...");
+            speech_utils.print_multi_overwrite([
+                        f"{YELLOW}{args.peference_text}{RESET}",
+                        "Please start to read aloud ..."
+                    ])
             break
         elif keyStart == '\x1b[C':
             speech_utils.play_audio_blocked(args.peference_audio)
@@ -171,10 +174,10 @@ def main():
                             last_text = ""
                             continue
 
-                    speech_utils.print_multi_overwrite([
-                        speech_utils.highlight_diff(args.peference_text, text, on_recognition_equal),
-                        text.lower()
-                    ])
+                    result_lines = speech_utils.highlight_diff_multi(args.peference_text, text, on_recognition_equal)
+                    result_lines.append(text.lower())
+                    speech_utils.print_multi_overwrite(result_lines)
+                    
                     last_text = text
                     last_active_time = time.time()
 
@@ -186,10 +189,10 @@ def main():
                     continue
 
                 #句子累积过长
-                if speech_utils.is_too_long(text):
-                    recognizer.reset(stream)
-                    last_text = ""
-                    continue
+                # if speech_utils.is_too_long(text):
+                #     recognizer.reset(stream)
+                #     last_text = ""
+                #     continue
 
                 # 如果超过 1.5 秒没有新字产出，手动断句
                 if time.time() - last_active_time > 2.2 and last_text != "":
