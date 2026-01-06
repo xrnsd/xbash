@@ -34,13 +34,6 @@ YELLOW = '\033[93m'
 RESET = "\033[0m"
 
 # ====================
-
-q = queue.Queue()
-def audio_callback(indata, frames, time, status):
-    if status:
-        print(status, file=sys.stderr)
-    q.put(bytes(indata))
-
 def main():
     speech_utils.play_audio(args.peference_audio)
     speech_utils.print_overwrite("Loading Sherpa Onnx model ...");
@@ -57,7 +50,7 @@ def main():
         num_threads=2,
         sample_rate=SAMPLE_RATE,
         feature_dim=80,
-        decoding_method="modified_beam_search",
+        decoding_method="greedy_search", #modified_beam_search
         max_active_paths=4,
         rule1_min_trailing_silence=2.4, # 强制断句时间
         rule2_min_trailing_silence=0.8, # 有字后的停顿时间
@@ -69,7 +62,7 @@ def main():
     # 初始化 AGC 实例
     agc = speech_utils.SimpleAGC(target_rms=0.18, max_gain=8.0)
 
-    vad = speech_utils.AdvancedVAD(sample_rate=16000,
+    vad = speech_utils.AdvancedVAD(sample_rate=SAMPLE_RATE,
                   frame_ms=20,
                   enter_threshold=0.03,
                   exit_threshold=0.015,
@@ -80,31 +73,38 @@ def main():
     stream = recognizer.create_stream()
 
     # 5. 初始化 PyAudio
-    pa = pyaudio.PyAudio()
+    # pa = pyaudio.PyAudio()
 
     # 定义麦克风回调函数 (高效处理数据)
     audio_queue = queue.Queue()
-    def audio_callback(indata, frames, time_info, status):
+    def audio_callback(indata, frames, time, status):
+        if status:
+            print(f"麦克风状态异常: {status}", file=sys.stderr)
+            return
+        # indata 的形状是 (blocksize, channels)，取第一声道
         audio_queue.put(indata[:, 0].copy())
    
-        return (None, pyaudio.paContinue)
+        #return (None, pyaudio.paContinue)
 
     # 3. 独立的识别线程
-    def recognition_worker(stream,vad,engine):
+    def recognition_worker(stream,vad):
+    # def recognition_worker(stream,vad,engine):
         while True:
             samples = audio_queue.get() # 阻塞等待新音频
 
-            #降噪
-            samples = engine.process_and_resample_48k_2_16K(samples)
+            # #降噪
+            # samples = engine.process_and_resample_48k_2_16K(samples)
 
-            #确认在讲话
-            if vad.is_speech(samples):
+            # #确认在讲话
+            # if vad.is_speech(samples):
 
-                # AGC 优化识别效果,无论你离麦克风近还是远，识别效果都会变得稳定
-                samples = agc.process(samples)
+            #     # AGC 优化识别效果,无论你离麦克风近还是远，识别效果都会变得稳定
+            #     samples = agc.process(samples)
 
-                # 喂入识别器
-                stream.accept_waveform(16000, samples)
+            #     # 喂入识别器
+            #     stream.accept_waveform(SAMPLE_RATE, samples)
+
+            stream.accept_waveform(SAMPLE_RATE, samples)
 
     def on_recognition_equal(ref):
         print("\nRecognition successful. Exiting.")
@@ -131,11 +131,14 @@ def main():
             sys.exit(1)
 
     # blocksize 必须严格等于 RNNoise 的 480
-    with sd.InputStream(samplerate=SAMPLE_RATE_NOISE_REDUCTION, channels=1, callback=audio_callback, 
-                        blocksize=480, dtype='float32'):
+    # with sd.InputStream(samplerate=SAMPLE_RATE_NOISE_REDUCTION, channels=1, callback=audio_callback, 
+    #                     blocksize=480, dtype='float32'):
+    with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, callback=audio_callback, 
+                        blocksize=None, dtype='float32'):
 
         # 打开识别线程
-        threading.Thread(target=recognition_worker, args=(stream,vad,engine), daemon=True).start()
+        threading.Thread(target=recognition_worker, args=(stream,vad), daemon=True).start()
+        # threading.Thread(target=recognition_worker, args=(stream,vad,engine), daemon=True).start()
 
         last_text = ""
         last_active_time = time.time()
@@ -203,8 +206,8 @@ def main():
                     
         except KeyboardInterrupt:
             speech_utils.print_overwrite("Recognition force cancel\n") 
-        finally:
-            pa.terminate()
+        # finally:
+        #     pa.terminate()
 
 if __name__ == "__main__":
     try:

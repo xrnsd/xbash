@@ -525,69 +525,62 @@ class AdvancedVAD:
         # 5. 返回是否为语音（满足最小语音长度）
         return self.speech_counter >= self.min_speech_samples
 
-import sounddevice as sd
-import ctypes
-import os
-import samplerate  # 处理 48k -> 16k 的重采样
+import numpy as np
+import samplerate  # 确保已安装: pip install samplerate
+from pyrnnoise import RNNoise  # 确保已安装: pip install pyrnnoise
 
 class SherpaRNNoiseEngine:
     def __init__(self, lib_path=None):
-        # 1. 自动定位库文件
-        if lib_path is None:
-            # 优先查找当前目录，其次查找系统目录
-            lib_path = "./librnnoise.so.0" if os.path.exists("./librnnoise.so.0") else "librnnoise.so.0"
-        
+        """
+        适配 2026 年最新版 pyrnnoise 的初始化逻辑
+        """
         try:
-            self.lib = ctypes.cdll.LoadLibrary(lib_path)
-        except OSError as e:
-            raise ImportError(f"无法加载 RNNoise 库。请确保已安装 librnnoise 或将 .so 文件放入当前目录。\n错误信息: {e}")
-
-        self.lib.rnnoise_create.restype = ctypes.c_void_p
-        self.lib.rnnoise_process_frame.argtypes = [
-            ctypes.c_void_p, ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float)
-        ]
-        self.lib.rnnoise_destroy.argtypes = [ctypes.c_void_p]
-        self.st = self.lib.rnnoise_create(None)
-        self.rnnoise_frame_size = 480  # 10ms @ 48kHz
+            # 关键修改：必须传入采样率 48000
+            # 最新版本的 pyrnnoise 构造函数签名通常为: RNNoise(sample_rate)
+            from pyrnnoise import RNNoise
+            self.rnnoise = RNNoise(48000) 
+            self.rnnoise_frame_size = 480 
+        except Exception as e:
+            # 如果依然报错，可能是因为该版本要求 positional 参数
+            try:
+                self.rnnoise = RNNoise(sample_rate=48000)
+            except:
+                raise ImportError(f"无法初始化 RNNoise 引擎。错误信息: {e}")
 
         # --- 2. 初始化重采样器 (48k -> 16k) ---
-        # 比例为 1/3 (16000 / 48000)
+        import samplerate
         self.resampler = samplerate.Resampler('sinc_fastest', channels=1)
         self.ratio = 16000 / 48000
 
     def process_and_resample_48k_2_16K(self, frame_48k):
         """
-        输入: 48kHz 采样点 (480,)
+        输入: 48kHz 采样点 (480,)，float32 范围 [-1.0, 1.0]
         输出: 16kHz 降噪后的采样点 (160,)
         """
-        # A. RNNoise 处理 (要求 ±32768 范围)
-        in_data = (frame_48k * 32768.0).astype(np.float32)
-        in_data = np.ascontiguousarray(in_data)
-        out_buffer = np.zeros(self.rnnoise_frame_size, dtype=np.float32)
+        # A. RNNoise 处理
+        # pyrnnoise 的 process 方法接收 float32 数据，
+        # 但内部通常需要 16位对齐的量级，所以乘以 32768.0
+        # 处理完后再除回 32768.0 得到归一化 float32
+        in_data = frame_48k * 32768.0
         
-        in_ptr = in_data.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
-        out_ptr = out_buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+        # pyrnnoise 内部封装了指针操作，直接传入 ndarray 即可
+        out_data = self.rnnoise.process(in_data)
         
-        self.lib.rnnoise_process_frame(self.st, out_ptr, in_ptr)
+        clean_frame_48k = out_data / 32768.0
         
-        # B. 缩放回归一化范围
-        clean_frame_48k = out_buffer / 32768.0
-        
-        # C. 下采样至 16kHz (480点 -> 160点)
+        # B. 下采样至 16kHz (480点 -> 160点)
         clean_frame_16k = self.resampler.process(clean_frame_48k, self.ratio)
         return clean_frame_16k
 
     def float_to_pcm16(self, audio_float):
         """
-        [独立 API] 将 float32 数组转换为 Vosk 要求的 PCM16 字节流
-        :param audio_float: numpy array, 范围通常在 [-1.0, 1.0]
-        :return: bytes
+        将 float32 数组转换为 PCM16 字节流
         """
-        # 限制范围，防止溢出产生噪音
+        # 限制范围，防止溢出
         audio_float = np.clip(audio_float, -1.0, 1.0)
         # 转换为 int16 (PCM16)
         return (audio_float * 32767).astype(np.int16).tobytes()
 
-    def __del__(self):
-        if hasattr(self, 'st'):
-            self.lib.rnnoise_destroy(self.st)
+    # pyrnnoise 会在对象销毁时自动调用 rnnoise_destroy，
+    # 因此这里不再需要显式的 __del__ 逻辑。
+
