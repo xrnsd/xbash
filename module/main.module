@@ -113,7 +113,7 @@ fi
 #---------------- 初始化xbash变量 ----------------------------------
     [[ -z "$SUDO_USER" ]] && userName=$USER || userName=$SUDO_USER
     export dirNameXbash=xbash
-    export dirPathHome="/home/${userName}"
+    export dirPathHome="/Users/${userName}"
     export dirPathHomeXbash=${dirPathHome}/${dirNameXbash}
 
     [ ! -d "$dirPathHomeXbash" ] && echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeXbash=$dirPathHomeXbash]\033[0m" && return
@@ -181,10 +181,8 @@ fi
 
 
 # pnpm
-export PNPM_HOME="/home/wds_work/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-# pnpm end
-. "$HOME/.cargo/env"
+# export PNPM_HOME="/home/wds_work/.local/share/pnpm"
+# case ":$PATH:" in
+#   *":$PNPM_HOME:"*) ;;
+#   *) export PATH="$PNPM_HOME:$PATH" ;;
+# esac
