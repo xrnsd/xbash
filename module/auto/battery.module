@@ -1,201 +1,45 @@
 #!/opt/homebrew/bin/bash
-#####-----------------------加载依赖--------------------------#######
-[[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
-[[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto
-[[ -f "$rFilePathXbashModuleGit" ]] && source $rFilePathXbashModuleGit
-# =================================================================
-complete -W " --help --lowFlag --heighFlag --normalFreq" ftBatteryLevelListenerOld
-ftBatteryLevelListenerOld()
-{
-    local ftEffect=电池电量监测[遍历实现]
-    local isEnable=true
-    #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-
-    #解参验耦
-    local dirPathTarget lowFlag=30 heighFlag=80 normalFreq=600 heightCriticalFreq=30 lowCriticalFreq=60
-    local valCount=6 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
-        # 说明参数解析部分 ==============
-        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
-#=========================================================
-#    ${ftEffect}依赖包 $2
-#    请尝试使用 ftBatteryLevelListenerOld --rely_install 补全依赖
-#========================================================="; return ;;
-        --rely_install)
-            ftEcho -s "开始补全依赖"
-            sudo apt-get install xxxx
-            return ;;
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
-#=========================================================
-#    以下[参数对]无先后顺序可任意组合
-#
-#    ftBatteryLevelListenerOld --lowFlag 放电电量阈值 --heighFlag 充电电量阈值 --normalFreq 监测频率,单位秒
-#========================================================="; return ;;
-
-        # 变量参数解析部分 ==============
-        --lowFlag) lowFlag="${arg2}" ;;
-        --heighFlag) heighFlag="${arg2}" ;;
-        --normalFreq) normalFreq="${arg2}" ;;
-    * ) ;; esac;done
-
-    #依赖校验
-    [[ -z $(which acpi) ]] && ftBatteryLevelListenerOld --rely "fdupes" && return $resultFail
-    #参数校验
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBatteryLevelListenerOld -h && return $resultFail
-
-    #实现主体
-    local isChargeFull=false isDischargeNull=false
-    while true
-    do
-       export DISPLAY=:0.0
-
-       local battery_level=$(acpi -b | grep -P -o '[0-9]+(?=%)')
-       local isCharging=$(acpi |grep "charged" )
-       if $isCharging; then
-           if [[ ! $isChargeFull ]] && (( $battery_level >= $heighFlag  )); then
-              notify-send "Battery Full Level: ${battery_level}% ， it's recommended to stop charging."
-                 zenity --warning --text="Battery Full Level: ${battery_level}% ，\n it's recommended to stop charging." --ok-label="sure"
-              #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
-              isChargeFull=true
-           fi
-           isDischargeNull=false
-       else
-           if [[ ! $isDischargeNull ]] && (( $battery_level < $lowFlag  )); then
-              notify-send "Battery Low Level: ${battery_level}% ， it's recommended to start charging."
-                 zenity --warning --text="Battery Low Level: ${battery_level}% ，\n it's recommended to start charging." --ok-label="sure"
-              
-              #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
-
-              isDischargeNull=true
-                 isChargeFull=false
-           else
-              isChargeFull=$($battery_level >= $heighFlag)
-           fi
-       fi
-
-       #轮询频率设定，接近阈值时使用特定频率
-       local heighFlagTemp=$heighFlag
-       local lowFlagTemp=$lowFlag
-       (( heighFlagTemp-=battery_level ))
-       (( lowFlagTemp-=battery_level ))
-       if [[ $isCharging ]] && [[ ! $isChargeFull ]] && (( ${heighFlagTemp#-} <= 5  )); then
-            #echo "height critical mode"
-            sleep $heightCriticalFreq
-        else 
-            if [[ ! $isCharging ]] && [[ ! $isDischargeNull ]] && (( ${lowFlagTemp#-} <= 5  )); then
-                #echo "low critical mode"
-                sleep $lowCriticalFreq
-            else
-                #echo "remaining mode"
-                sleep $normalFreq
-            fi
-        fi
-    done
-}
-
-ftBatteryLevelNotice()
-{
-    local ftEffect=电池电量提醒
-    local isEnable=true
-    #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
-
-    #解参验耦
-    local heighFlag=80 batteryLevel
-    local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
-        # 说明参数解析部分 ==============
-        --heighFlag) heighFlag="${arg2}" ;;
-        --batteryLevel) batteryLevel="${arg2}" ;;
-    * ) ;; esac;done
-
-    #依赖校验
-    [[ -z $(which acpi) ]] && return $resultFail
-
-    #实现主体
-    [[ -z $batteryLevel ]] && batteryLevel=$(cat "/sys/class/power_supply/BAT0/capacity") #$(acpi -b | grep -P -o '[0-9]+(?=%)')
-    local isCharging=$(acpi |grep "charged" )
-
-    if [[ -n "$isCharging" ]] && (( $batteryLevel >= $heighFlag  )); then
-      notify-send "Battery Full Level: ${batteryLevel}% ， it's recommended to stop charging."
-      zenity --warning --text="Battery Full Level: ${batteryLevel}% ，\n it's recommended to stop charging." --ok-label="sure"
-      #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
-      #break
-    fi
-
-    if (( $batteryLevel <= $lowFlag  )) && [[ -z $isCharging ]]; then
-      notify-send "Battery Low Level: ${batteryLevel}% ， it's recommended to start charging."
-      zenity --warning --text="Battery Low Level: ${batteryLevel}% ，\n it's recommended to start charging." --ok-label="sure"
-      #paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
-    fi
-}
-
-complete -W " --help --lowFlag --heighFlag" ftBatteryLevelListener
 ftBatteryLevelListener()
 {
-    local ftEffect=电池电量监测[监听实现]
-    local isEnable=true
-    #可用性校验
-    [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
 
-    #解参验耦
-    local dirPathTarget lowFlag=30 heighFlag=80
-    local valCount=6 errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
-    case "${arg}" in
-        # 说明参数解析部分 ==============
-        --rely) ftEcho -rc "${ftEffect}" "的依赖说明" "\
-#=========================================================
-#    ${ftEffect}依赖包 $2
-#    请尝试使用 ftBatteryLevelListener --rely_install 补全依赖
-#========================================================="; return ;;
-        --rely_install)
-            ftEcho -s "开始补全依赖"
-            sudo apt-get install xxxx
-            return ;;
-        -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
-#=========================================================
-#    以下[参数对]无先后顺序可任意组合
-#
-#    ftBatteryLevelListener --lowFlag 放电电量阈值 --heighFlag 充电电量阈值
-#========================================================="; return ;;
+    # 1. 检查电脑是否处于锁屏或活跃状态 (替代无法读取的 powerstate)
+    # 逻辑：如果存在 'CGSSessionScreenIsLocked' 字段，说明已锁屏或黑屏
+    IS_LOCKED=$(python3 -c 'import Quartz; d=Quartz.CGSessionCopyCurrentDictionary(); print(d.get("CGSSessionScreenIsLocked", 0))' 2>/dev/null)
 
-        # 变量参数解析部分 ==============
-        --lowFlag) lowFlag="${arg2}" ;;
-        --heighFlag) heighFlag="${arg2}" ;;
-    * ) ;; esac;done
+    # 如果 IS_LOCKED 为 1，说明屏幕已锁定或熄灭，脚本直接退出
+    if [ "$IS_LOCKED" == "1" ]; then
+        exit 0
+    fi
 
-    #依赖校验
-    [[ -z $(which acpi) ]] && ftBatteryLevelListener --rely "fdupes" && return $resultFail
-    #参数校验
-    (( $#>$valCount )) && errorContent="${errorContent}\\n参数默认有${valCount}个,当前为$#个" 
-    [ -n "$errorContent" ] && ftEcho -ea "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftBatteryLevelListener -h && return $resultFail
+    # 2. 获取电池数据
+    BATT_INFO=$(pmset -g batt)
+    BATT_LEVEL=$(echo "$BATT_INFO" | grep -Eo "\d+%" | cut -d% -f1)
+    CHARGING_STATUS=$(echo "$BATT_INFO" | grep -o "AC Power\|Battery Power")
 
-    #实现主体
-    notify-send "开启电池电量监测提醒"
-    local filePathBatteryCapacity=/sys/class/power_supply/BAT0/capacity
-    local filePathBatteryCapacityCache=/tmp/batteryCapacity.tmp
-    local battery_level=$(cat $filePathBatteryCapacity) batteryLevelCache
+    # 3. Low Battery Logic
+    LOW_LIMIT=$2
+    if [ "$BATT_LEVEL" -le "$LOW_LIMIT" ] && [ "$CHARGING_STATUS" == "Battery Power" ]; then
+        # Voice Alert
+        say "Battery Low, please plug in" &
+        # Side Notification & Center Dialog
+        osascript -e "display notification \"Battery level is at $BATT_LEVEL%. Please connect to power.\" with title \"🔋 Low Battery Alert\"" \
+                  -e "display dialog \"Your battery is low ($BATT_LEVEL%). Please plug in your charger immediately!\" buttons {\"OK\"} default button \"OK\" with icon caution"
+    fi
 
-    rm $filePathBatteryCapacityCache
-    ftBatteryLevelNotice --heighFlag $heighFlag --batteryLevel $battery_level
+    # 4. High Battery Logic
+    HIGH_LIMIT=$1
+    if [ "$BATT_LEVEL" -ge "$HIGH_LIMIT" ] && [ "$CHARGING_STATUS" == "AC Power" ]; then
+        # Only alert if the status is actually 'charging' to avoid repeated alerts when full
+        if echo "$BATT_INFO" | grep -q "charging"; then
+            # Voice Alert
+            say "Battery reached eighty percent" &
+            # Side Notification & Center Dialog
+            osascript -e "display notification \"Battery reached $BATT_LEVEL%. You can unplug the power now.\" with title \"⚡️ Charging Complete\"" \
+                      -e "display dialog \"Battery is charged to $BATT_LEVEL%. To extend battery life, it is recommended to unplug now.\" buttons {\"Got it\"} default button \"Got it\" with icon note"
+        fi
+    fi
 
-    while true; do
-      inotifywait -m -e access $filePathBatteryCapacity | while read events;
-      do
-          export DISPLAY=:0.0
 
-          battery_level=$(cat $filePathBatteryCapacity) #$(acpi -b | grep -P -o '[0-9]+(?=%)')
-          batteryLevelCache=$(cat $filePathBatteryCapacityCache)
-          [ -n "$batteryLevelCache" ] && [[ "$battery_level" == "$batteryLevelCache" ]] && echo "cancel battery_level=${battery_level}"&& break
-
-          echo $battery_level > $filePathBatteryCapacityCache
-          ftBatteryLevelNotice --heighFlag $heighFlag --batteryLevel $battery_level
-
-          break;
-      done
-    done
 }
 
-ftBatteryLevelListener $@
+ftBatteryLevelListener 80 43
