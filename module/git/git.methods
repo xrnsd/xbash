@@ -137,7 +137,7 @@ ftGitLogShell()
     [[ -n "$isChangeList" ]] && git log --pretty=format:"" --name-only  -${branchLogItemCount} && return
 
     if [[ $(ftVersionComparison $gitVersionMin $gitVersionNow) = "<" ]] && [ "$isCustomBranchLog" != "true" ];then
-        branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ad %Cred%<(11,trunc)%an%Creset %Cblue%<(11,trunc)%h%Creset %s %C(yellow) %d'}
+        branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ad %Cred%<(11,trunc)%an%Creset %C(yellow)%<(11,trunc)%h%Creset %s %C(yellow) %d'}
         if [[ -n "$isFindString" ]]; then
             git --no-pager log --date=format-local:'%y-%m-%d' --pretty=format:"$branchLogFormat" -$branchLogItemCount -S"${findStringContent}" ${pathCommand}
             echo ; return $resultSuccess
@@ -150,7 +150,7 @@ ftGitLogShell()
         echo "${hashVal[@]} "
         echo ;return $resultSuccess
     fi
-    branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(13,trunc)%an%Creset %Cblue%<(9,trunc)%h%Creset %s %C(yellow) %d'}
+    branchLogFormat=${branchLogFormat:-'%C(green)%<(21,trunc)%ai%x08%x08%Creset %Cred%<(13,trunc)%an%Creset %C(yellow)%<(9,trunc)%h%Creset %s %C(yellow) %d'}
         if [[ -n "$isFindString" ]]; then
             git --no-pager log --pretty=format:"$branchLogFormat" -$branchLogItemCount -S"${findStringContent}" ${pathCommand}
             echo ; return $resultSuccess
