@@ -550,48 +550,62 @@ ftEcho()
                 local forceEchoPluralFlag=4 forceEchoPluralIndex=1
 
                 if [ "${2}" = "-r1" ] || [ "${2}" = "-r2" ];then
-                    unset keyValInput
-                    local timeOut=${3} tipsContent keyVal keyValCache listenCount=1
-                    local keyClickTimeFLag keyDoubleClickTimeFlag=1
-                    [ "${2}" = "-r2" ] && listenCount=2
-                    if  [[ -n $timeOut ]];then
-                        [[ -z $(echo $timeOut| gsed -n "/^[0-9]\+$/p") ]] && unset timeOut
-                        if [ "${3}" = "-tips" ];then
-                             tipsContent="${4}"
-                             unset timeOut
-                        elif [ "${4}" = "-tips" ];then
-                            tipsContent="${5}"
-                        fi
-                        
+                    # --- 配置 ---
+                    # 双击判定的等待时间（秒），0.2 到 0.3 之间比较舒适
+                    DELAY=0.25
+                    LAST_KEY=""
+
+                    # 设置终端为原始模式，以便逐字符读取
+                    stty -echo -icanon
+
+                    # 1. 读取第一个输入
+                    read -rsn1 char
+
+                    # 处理转义序列 (方向键)
+                    if [[ "$char" == $'\x1b' ]]; then
+                        read -rsn2 rest
+                        key="$char$rest"
+                    else
+                        key="$char"
                     fi
-                    [[ -n $timeOut ]] && [ "${2}" = "-r2" ] && ftEcho -e "invalid argument：timeout" && return
-                    [[ -n $tipsContent ]] && echo && echo -en "${tipsContent}[y/n]"
-                    for (( i = 0; i < $listenCount; i++ )); do
-                        unset keyVal key
-                        if (( i==1 )) ;then
-                            read -rsn3 -t 0.2 key
-                        elif [[ -n $timeOut ]];then
-                            read -rsn3 -t ${timeOut} key
+
+                    # 2. 关键逻辑：等待后续是否有相同的连续输入
+                    # -t 指定超时时间，如果时间内有输入则返回 0，否则返回非 0
+                    if read -rsn1 -t $DELAY next_char; then
+                        # 如果后面还有字符，继续判断是否是转义序列
+                        if [[ "$next_char" == $'\x1b' ]]; then
+                            read -rsn2 next_rest
+                            next_key="$next_char$next_rest"
                         else
-                            read -rsn3 key
+                            next_key="$next_char"
                         fi
-                        case "$key" in
-                            $'\e[A') keyVal="up" ;;
-                            $'\e[B') keyVal="down" ;;
-                            $'\e[C') keyVal="right" ;;
-                            $'\e[D') keyVal="left" ;;   
-                            *) keyVal="${key}" ;;
-                        esac
-                        unset timeOut
-                        [[ -z $keyVal ]] && unset keyValInput || keyVal=$(echo $keyVal | tr -d '\n')
-                        (( i==1 )) && if [[ -z $keyVal ]];then
-                            keyVal=$keyValCache
+
+                        # 3. 判断是否构成双击
+                        if [[ "$key" == "$next_key" ]]; then
+                            # 翻译方向键显示
+                            keyVal=$key
+                            [[ "$key" == $'\x1b[A' ]] && keyVal="up"
+                            [[ "$key" == $'\x1b[B' ]] && keyVal="down"
+                            [[ "$key" == $'\x1b[C' ]] && keyVal="right"
+                            [[ "$key" == $'\x1b[D' ]] && keyVal="left"
+                            
+                            keyVal="double_${keyVal}"
                         else
-                            [[ "$keyVal" = "$keyValCache" ]] && (($(gdate +%s -d $(gdate +"%H:%M:%S"))-$keyClickTimeFLag <= $keyDoubleClickTimeFlag)) && keyVal="double_${keyVal}"
+                            # 如果第二次按的键不一样，可以视作两次不同的单击（此处简单处理）
+                            keyVal=$next_key #$key
                         fi
-                        keyClickTimeFLag=$(gdate +%s -d $(gdate +"%H:%M:%S"))
-                        keyValCache=$keyVal
-                    done
+                    else
+                        # 4. 超时未收到第二次输入，判定为单击
+                        keyVal=$key
+                        [[ "$key" == $'\x1b[A' ]] && keyVal="up"
+                        [[ "$key" == $'\x1b[B' ]] && keyVal="down"
+                        [[ "$key" == $'\x1b[C' ]] && keyVal="right"
+                        [[ "$key" == $'\x1b[D' ]] && keyVal="left"
+                    fi
+
+                    # 还原终端设置
+                    stty echo icanon
+
                     export keyValInput=${keyVal}
                     return
                 
