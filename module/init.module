@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 #####-----------------------变量初始化-----------------------#########
 exceptionContent=
 diaNameLocal="xbash"
@@ -29,8 +29,8 @@ ftInitGitConfig()
         ftInitEcho -s "已自动初始化gitconfig,需要修改的请查看$filePathGitConfig"
 
         #切换到独立分支
-        local brachName="${userNameLocal}_$(date -d "today" +"%y%m%d%H%M%S")"
-        brachName=$(echo $brachName |sed s/[[:space:]]//g)
+        local brachName="${userNameLocal}_$(gdate -d "today" +"%y%m%d%H%M%S")"
+        brachName=$(echo $brachName |gsed s/[[:space:]]//g)
         git checkout -b ${brachName}
     fi
 }
@@ -59,7 +59,7 @@ ftInitUserConfig()
         if [ -n "${userPasswdLocal}" ];then
             local taguserPasswordBase="export\ userPassword="
             local taguserPasswordNew="export\ userPassword=$userPasswdLocal"
-            sed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败\n ${filePathXbashConfigExample} > ${filePathXbashConfigNew}"
+            gsed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败\n ${filePathXbashConfigExample} > ${filePathXbashConfigNew}"
         fi
 
         local tagisAutoUpdateBase="export\ isAutoUpdate=" \
@@ -68,7 +68,7 @@ ftInitUserConfig()
             ftInitEcho -y "是否启用xbash自动更新(回车默认y)"
             read -n 1 sel ; [ -z "${sel}" ] && sel=y
             if [[ "${sel}" = "y" ]];then
-                sed -i "s:$tagisAutoUpdateBase:$tagisAutoUpdateNew:g" $filePathXbashConfigNew||\
+                gsed -i "s:$tagisAutoUpdateBase:$tagisAutoUpdateNew:g" $filePathXbashConfigNew||\
                 exceptionContent="${exceptionContent}\n xbash自动更新启用失败"
             fi
         fi
@@ -79,7 +79,7 @@ ftInitUserConfig()
             ftInitEcho -y "是否启用xbash定义bash的命令行前缀(回车默认y)"
             read -n 1 sel ; [ -z "${sel}" ] && sel=y
             if [[ "${sel}" = "y" ]];then
-                sed -i "s:$tagisUseCustomPS1Base:$tagisUseCustomPS1New:g" $filePathXbashConfigNew||\
+                gsed -i "s:$tagisUseCustomPS1Base:$tagisUseCustomPS1New:g" $filePathXbashConfigNew||\
                 exceptionContent="${exceptionContent}\n 启用xbash定义bash的命令行前缀失败"
             fi
         fi
@@ -90,7 +90,7 @@ ftInitUserConfig()
             ftInitEcho -y "是否启用xbash定义的bash历史记录处理(回车默认y)"
             read -n 1 sel ; [ -z "${sel}" ] && sel=y
             if [[ "${sel}" = "y" ]];then
-                sed -i "s:$tagisUseXbashHistoryBase:$tagisUseXbashHistoryNew:g" $filePathXbashConfigNew||\
+                gsed -i "s:$tagisUseXbashHistoryBase:$tagisUseXbashHistoryNew:g" $filePathXbashConfigNew||\
                 exceptionContent="${exceptionContent}\n xbash定义的bash历史记录处理启用失败"
             fi
         fi
@@ -101,7 +101,7 @@ ftInitUserConfig()
             ftInitEcho -y "是否启用xbash定义的Android开发环境基础配置(回车默认y)"
             read -n 1 sel ; [ -z "${sel}" ] && sel=y
             if [[ "${sel}" = "y" ]];then
-                sed -i "s:$tagisUseCustomAndroidDevEnvConfigBase:$tagisUseCustomAndroidDevEnvConfigNew:g" $filePathXbashConfigNew||\
+                gsed -i "s:$tagisUseCustomAndroidDevEnvConfigBase:$tagisUseCustomAndroidDevEnvConfigNew:g" $filePathXbashConfigNew||\
                 exceptionContent="${exceptionContent}\n xbash定义的Android开发环境基础配置启用失败"
             fi
         fi
@@ -112,7 +112,7 @@ ftInitUserConfig()
             ftInitEcho -y "是否启用xbash定义的Android编译缓存配置(回车默认y)"
             read -n 1 sel ; [ -z "${sel}" ] && sel=y
             if [[ "${sel}" = "y" ]];then
-                sed -i "s:$tagisUseBuildCcacheBase:$tagisUseBuildCcacheNew:g" $filePathXbashConfigNew||\
+                gsed -i "s:$tagisUseBuildCcacheBase:$tagisUseBuildCcacheNew:g" $filePathXbashConfigNew||\
                 exceptionContent="${exceptionContent}\n xbash定义的Android编译缓存配置启用失败"
             fi
         fi
@@ -123,7 +123,7 @@ ftInitUserConfig()
        #     ftInitEcho -y "是否启用xbash定义的Android分布式编译配置(回车默认y)"
        #     read -n 1 sel ; [ -z "${sel}" ] && sel=y
        #     if [[ "${sel}" = "y" ]];then
-       #         sed -i "s:$tagisUseDistccBase:$tagisUseDistccNew:g" $filePathXbashConfigNew||\
+       #         gsed -i "s:$tagisUseDistccBase:$tagisUseDistccNew:g" $filePathXbashConfigNew||\
        #         exceptionContent="${exceptionContent}\n xbash定义的Android分布式编译配置启用失败"
        #     fi
        # fi
@@ -143,7 +143,7 @@ ftInitMoule()
     local dirPathLocal=$(pwd)
 
     [ ! -d "$dirPathXbashModuleUser" ] && mkdir -p $dirPathXbashModuleUser
-    [ ! -f "$filePathXbashModuleUser" ] && echo "#! /bin/bash" > $filePathXbashModuleUser
+    [ ! -f "$filePathXbashModuleUser" ] && echo "#!/opt/homebrew/bin/bash" > $filePathXbashModuleUser
     
     if [ -f "$filePathXbashConfigProfileNew" ]; then
         cd $dirPathHomeLocal
@@ -220,7 +220,7 @@ ftInitEcho()
     local content option=$1 valList=$@
     option=${option:-'未制定显示信息'}
     if [ ${#valList[@]} -eq 2 ];then
-        content=$(echo $content |sed s/[[:space:]]//g)
+        content=$(echo $content |gsed s/[[:space:]]//g)
     else
         #除第一个参数外的所有参数列表，可正常打印数组
         content="${valList[@]/$option/}"

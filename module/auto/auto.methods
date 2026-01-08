@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 #  AOSP项目相关方法实现
 ftAutoInitEnv()
 {
@@ -26,7 +26,7 @@ ftAutoInitEnv()
     if [ -z "$ANDROID_BUILD_TOP" ]\
         ||[ -z "$ANDROID_PRODUCT_OUT" ]\
         ||[ -z "$TARGET_PRODUCT" ];then
-        local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+        local branchName=$(git branch --no-color 2> /dev/null | gsed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
         local dirPathLocal=$(pwd)
         #if [  -d "${dirPathLocal}/out" ] && [ -n "$branchName" ];then
         if [  -d "${dirPathLocal}/out" ] ;then
@@ -43,7 +43,7 @@ ftAutoInitEnv()
                                 export TARGET_BUILD_VARIANT=$AutoEnv_buildType
                                 return
                            fi
-                        done < <(echo "$(ls $dirPathOut)")
+                        done < <(echo "$(gls $dirPathOut)")
             fi
         else
             ftAutoInitEnv --env
@@ -62,7 +62,7 @@ ftAutoInitEnv()
     # 项目平台
     local dirPathVendor=${dirPathCode}/vendor
     if [ -d $dirPathVendor ];then
-            dirList=$(ls $dirPathVendor)
+            dirList=$(gls $dirPathVendor)
             for item in $dirList ; do
                 if [ $item = "sprd" ];then
                      local mnufacturers=sprd
@@ -157,7 +157,7 @@ ftAutoInitEnv()
         local filepathDeviceMtk9ProjectConfig="device/mediateksample/${productName}/ProjectConfig.mk"
         if [[ -f ${filepathDeviceMtk9ProjectConfig} ]]; then
             local keyNameModemConfig="CUSTOM_MODEM"
-            local dirNameModem=$(cat ${filepathDeviceMtk9ProjectConfig} |grep ${keyNameModemConfig} | awk '{print $3}')
+            local dirNameModem=$(cat ${filepathDeviceMtk9ProjectConfig} |grep ${keyNameModemConfig} | gawk '{print $3}')
             export AutoEnv_ModemPath="vendor/mediatek/proprietary/modem/${dirNameModem}"
         fi
     fi
@@ -214,7 +214,7 @@ ftBranchNameResolution()
     local dirPathLocal=$PWD
     cd $dirPathCode
 
-    local branchName=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local branchName=$(git branch --no-color 2> /dev/null | gsed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     local key="branchName="
     local filePathGitConfigInfoLocal=${dirPathOut}/git.info
     if [ -f "$filePathGitConfigInfoLocal" ];then
@@ -339,22 +339,22 @@ ftBuildPropResolution()
     if [[ -n "$deviceSoftVersion" ]];then
             deviceModelName=${deviceModelName//$keyModel/}
             deviceModelName=${deviceModelName// /_}
-            deviceModelName=$(echo $deviceModelName |sed s/[[:space:]]//g)
+            deviceModelName=$(echo $deviceModelName |gsed s/[[:space:]]//g)
             deviceModelName=${deviceModelName:-'null'}
             export AutoEnv_deviceModelName=$deviceModelName
 
             deviceSoftType=${deviceSoftType//$keySoftType/}
-            deviceSoftType=$(echo $deviceSoftType |sed s/[[:space:]]//g)
+            deviceSoftType=$(echo $deviceSoftType |gsed s/[[:space:]]//g)
             deviceSoftType=${deviceSoftType:-'null'}
             export AutoEnv_deviceSoftType=$deviceSoftType
 
             deviceSoftVersion=${deviceSoftVersion//$keySoftVersion/}
-            deviceSoftVersion=$(echo $deviceSoftVersion |sed s/[[:space:]]//g)
+            deviceSoftVersion=$(echo $deviceSoftVersion |gsed s/[[:space:]]//g)
             deviceSoftVersion=${deviceSoftVersion:-'null'}
             export AutoEnv_deviceSoftVersion=$deviceSoftVersion
 
             deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
-            deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
+            deviceSdkVersion=$(echo $deviceSdkVersion |gsed s/[[:space:]]//g)
             deviceSdkVersion=${deviceSdkVersion:-'null'}
             export AutoEnv_deviceSdkVersion=$deviceSdkVersion
             local AndroidVersion=$(ftXbGetValue androidSDK2Verison $deviceSdkVersion)
@@ -414,7 +414,7 @@ ftAutoBackupOrRestoreOuts()
     #分支名
     local buildType=$AutoEnv_buildType versionName=$AutoEnv_versionName branchName="$AutoEnv_branchName"
     local dirNameCodeRootOuts=outs
-    local versionInfoDateTime=$(date -d "today" +"%Y%m%d[%H:%M]")
+    local versionInfoDateTime=$(gdate -d "today" +"%Y%m%d[%H:%M]")
     local dirNameBranchVersion=BuildType[${buildType}]----BranchName[${branchName}]----VersionName[${versionName}]----${versionInfoDateTime}
     [[ -n "$mTagContent" ]] && dirNameBranchVersion=${dirNameBranchVersion}_Tag[${mTagContent}]
 
@@ -432,7 +432,7 @@ ftAutoBackupOrRestoreOuts()
             #lunch生成的out，视为无效
             local excludeConfigInfo=($(ftXbGetValue backupOrRestoreOutsInfo excludeConfig))
             local excludeConfigSize=${#excludeConfigInfo[@]}
-            local dirPathOutLocalInfo=($(ls $dirPathOutLocal))
+            local dirPathOutLocalInfo=($(gls $dirPathOutLocal))
             local dirPathOutLocalSize=${#dirPathOutLocalInfo[@]}
             for item in ${excludeConfigInfo[@]} ; do
                     item=${dirPathOutLocal}/${item}
@@ -447,8 +447,8 @@ ftAutoBackupOrRestoreOuts()
         fi
 
         [[ -n "$filterString" ]] && branchName=$filterString
-        local dirPathOutList=($(ls $dirPathCodeRootOutsLocal|grep $branchName))
-        [[ ${filterString} = "user" ]] && dirPathOutList=($(ls $dirPathCodeRootOutsLocal|grep $branchName |grep -v "userdebug"))
+        local dirPathOutList=($(gls $dirPathCodeRootOutsLocal|grep $branchName))
+        [[ ${filterString} = "user" ]] && dirPathOutList=($(gls $dirPathCodeRootOutsLocal|grep $branchName |grep -v "userdebug"))
         [[ -z "$dirPathOutList" ]] && ftEcho -e "未找到\n分支[$branchName]对应的out" && return $resultFail
 
         local itemCount=${#dirPathOutList[@]}
@@ -586,7 +586,7 @@ ftAutoUpload()
 EOF
         else
             local key="智能机软件"
-            cp -r -b -S _old -v $key $(echo $dirPathServerLocalBase | sed -e "s:/$key::g")
+            cp -r -b -S _old -v $key $(echo $dirPathServerLocalBase | gsed -e "s:/$key::g")
         fi
     else #使用ssh协议
         # 自动添加旧软件的TAG
@@ -720,7 +720,7 @@ ftAutoPacket()
                        [[ ${dirPath} == *${keyDirNameFlag}* ]] && continue
 
                         local dirPathLastTime=$(stat -c %Y $dirPath)
-                        local dirPathFormartDate=$(date '+[%Y%m%d_%H%M%S]' -d @$dirPathLastTime)
+                        local dirPathFormartDate=$(gdate '+[%Y%m%d_%H%M%S]' -d @$dirPathLastTime)
                         local dirPath_old="${dirPath}${keyDirNameFlag}_${dirPathFormartDate}"
                        mv ${dirPath} ${dirPath_old}
                        ftEcho -s "旧软件包已移至${dirPath_old}"
@@ -746,7 +746,7 @@ ftAutoPacket()
             [[ $versionNameDate =~ "." ]] && versionNameDate=${versionNameDate%.*}
             # system.img文件最新修改时间
             if [[ -f "${dirPathOut}/system.img" ]]; then
-                    local fileChangeTime=$(stat -c "%y" ${dirPathOut}/system.img|awk '{print $1}'|sed s/-//g)
+                    local fileChangeTime=$(stat -c "%y" ${dirPathOut}/system.img|awk '{print $1}'|gsed s/-//g)
                     [[ -n "$fileChangeTime" ]] && [ "$versionNameDate" != "${fileChangeTime}" ] && export AutoEnv_SoftwareVersion_BuildTime=buildtime____${fileChangeTime}
             fi
 
@@ -777,7 +777,7 @@ ftAutoPacket()
                         ftEcho -e "未找到 [${TARGET_PRODUCT}] 对应的独立配置,将默认复制全部文件"
                         while read item ;do
                             [[ ! -f "${dirPathOut}/${item}" ]] && continue || fileList=(${fileList[@]} ${item})
-                        done < <(echo "$(ls ${dirPathOut})")
+                        done < <(echo "$(gls ${dirPathOut})")
                     fi
                     if [[ -f "$filePathSystemImage" ]]; then
                         if mkdir -p $dirPathPackage; then
@@ -820,7 +820,7 @@ ftAutoPacket()
                                 local filePath=${item}/${fileName}
                                 [[ -f "${itemPathRoot}/${fileName}" ]] && ((apdbFileCount+=1))
                                 [[ -f "${itemPathRoot}/${fileName}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
-                            done < <(echo "$(ls ${itemPathRoot})")
+                            done < <(echo "$(gls ${itemPathRoot})")
                     done
 
                     for item in ${mddbDirPathList[@]} ; do
@@ -831,7 +831,7 @@ ftAutoPacket()
                                 local filePath=${item}/${fileName}
                                 [[ -f "${itemPathRoot}/${fileName}" ]] && ((mddbFileCount+=1))
                                 [[ -f "${itemPathRoot}/${fileName}" ]] && dataBaseFileList=(${dataBaseFileList[@]} ${filePath})
-                            done < <(echo "$(ls ${itemPathRoot})")
+                            done < <(echo "$(gls ${itemPathRoot})")
                     done
                     [[ -n "$AutoEnv_ModemPath" ]] && cd ${dirPathCode} && while read filePath ;do
                                 [[ -f "${filePath}" ]] && ((mddbFileCount+=1))
@@ -846,7 +846,7 @@ ftAutoPacket()
                                  [[ ! -f "$filePath" ]] && ftEcho -e "找不到 : ${filePath}" && continue
 
                                 fileName=$(basename $filePath)
-                                printf "%-2s %-30s\n" 复制 $(echo $fileName | sed "s ${dirPathOut}  ")
+                                printf "%-2s %-30s\n" 复制 $(echo $fileName | gsed "s ${dirPathOut}  ")
                                 cp -r -f  $filePath $dirPathPackageDataBase
                             done
                         else
@@ -925,7 +925,7 @@ ftAutoPacket()
                 ftMD5 -a ${dirPathVersionSoftware}/${fileNamePackage}
                 local versionPacketMd5Base="版本MD5："
                 local versionPacketMd5Now="${versionPacketMd5Base}${ftMD5Info}"
-                sed -i "s:$versionPacketMd5Base:$versionPacketMd5Now:g" $AutoEnv_filePathReleaseNotes \
+                gsed -i "s:$versionPacketMd5Base:$versionPacketMd5Now:g" $AutoEnv_filePathReleaseNotes \
                 || ftEcho -e "版本说明中的MD5信息写入失败"
 
                 #修改版本包目录结构
@@ -1104,7 +1104,7 @@ ftAutoCreateReadMeBySoftwareVersion()
 
     #使用git仓库相关记录
     local gitCommitList=$(ftGitLogShell -nn 50)
-    local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local branchNameNow=$(git branch --no-color 2> /dev/null | gsed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 
     if [ $AutoEnv_mnufacturers = "sprd" ];then
             # 暗码清单,动画切换暗码
@@ -1115,14 +1115,14 @@ ftAutoCreateReadMeBySoftwareVersion()
                     pawNumInfo=${pawNumInfo//$key/};
                     pawNumInfo=${pawNumInfo//\";/};
                     pawNumInfo=${pawNumInfo//\"/};
-                    pawNumInfo=$(echo $pawNumInfo |sed s/[[:space:]]//g)
+                    pawNumInfo=$(echo $pawNumInfo |gsed s/[[:space:]]//g)
 
                     key="    private static final String LOGO_CHANGE ="
                     local changLogoNumInfo=$(cat $filePathPawInfo|grep "$key")  #动画切换暗码信息
                     changLogoNumInfo=${changLogoNumInfo//$key/};
                     changLogoNumInfo=${changLogoNumInfo//\";/};
                     changLogoNumInfo=${changLogoNumInfo//\"/};
-                    changLogoNumInfo=$(echo $changLogoNumInfo |sed s/[[:space:]]//g)
+                    changLogoNumInfo=$(echo $changLogoNumInfo |gsed s/[[:space:]]//g)
             else
                     ftEcho -e "[工程暗码配置文件不存在:]\n$filePathPawInfo"
             fi
@@ -1144,9 +1144,9 @@ ftAutoCreateReadMeBySoftwareVersion()
                     cameraSizeBackMax=${cameraSizeBackMax//${keySizeFront}$cameraSizeFrontMax/};
                     cameraSizeBackMax=${cameraSizeBackMax//$keySizeBack/};
 
-                    cameraTypeInfo=$(echo $cameraTypeInfo |sed s/[[:space:]]//g)
-                    cameraSizeFrontMax=$(echo $cameraSizeFrontMax |sed s/[[:space:]]//g)
-                    cameraSizeBackMax=$(echo $cameraSizeBackMax |sed s/[[:space:]]//g)
+                    cameraTypeInfo=$(echo $cameraTypeInfo |gsed s/[[:space:]]//g)
+                    cameraSizeFrontMax=$(echo $cameraSizeFrontMax |gsed s/[[:space:]]//g)
+                    cameraSizeBackMax=$(echo $cameraSizeBackMax |gsed s/[[:space:]]//g)
 
                     sizeFcameraList=(real 2M 5M 8M)
                     sizeBcameraList=(real 2M 5M 8M 12M)
@@ -1172,10 +1172,10 @@ ftAutoCreateReadMeBySoftwareVersion()
 
             #git log 列表
             echo -e "﻿$gitCommitList">$filePathChangeListTemplate
-            seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
-            local lineNumIndex=($(awk '/\(tag:/{print NR}' ${filePathChangeListTemplate}.temp))
+            seq 10 | gawk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+            local lineNumIndex=($(gawk '/\(tag:/{print NR}' ${filePathChangeListTemplate}.temp))
             local item="\    \n\    =========================================================================================================\n"
-            [[ -n $lineNumIndex ]] && sed  -i "${lineNumIndex}i ${item}" ${filePathChangeListTemplate}.temp
+            [[ -n $lineNumIndex ]] && gsed  -i "${lineNumIndex}i ${item}" ${filePathChangeListTemplate}.temp
 
             # 合并头部和git log 列表
             echo -e ${content}${enterLine}${enterLine}"修改记录："| cat - ${filePathChangeListTemplate}.temp >$filePathChangeListTemplate
@@ -1226,10 +1226,10 @@ ftAutoCreateReadMeBySoftwareVersion()
             content=${content}${enterLine}
             #git log 列表
             echo -e "﻿$gitCommitList">$filePathChangeListTemplate
-            seq 10 | awk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
-            local lineNumIndex=($(awk '/\(tag:/{print NR}' ${filePathChangeListTemplate}.temp))
+            seq 10 | gawk '{printf("    %02d %s\n", NR, $0)}' $filePathChangeListTemplate >${filePathChangeListTemplate}.temp
+            local lineNumIndex=($(gawk '/\(tag:/{print NR}' ${filePathChangeListTemplate}.temp))
             local item="\    \n\    =========================================================================================================\n"
-            [[ -n $lineNumIndex ]] && sed  -i "${lineNumIndex}i ${item}" ${filePathChangeListTemplate}.temp
+            [[ -n $lineNumIndex ]] && gsed  -i "${lineNumIndex}i ${item}" ${filePathChangeListTemplate}.temp
 
             # 合并头部和git log 列表
             echo -e ${content}${enterLine}${enterLine}"git commit 记录："| cat - ${filePathChangeListTemplate}.temp > $filePathChangeListTemplate
@@ -1386,7 +1386,7 @@ ftAutoTest()
     monkeyConfig=${monkeyConfig}" -v -v -v"
     monkeyConfig=${monkeyConfig}" ${eventCount}"
     #环境清理
-    for folder in $(ls $dirPathLogMonkeyBase); do  [[ ! $folder =~ "done" ]] && rm -rf ${dirPathLogMonkeyBase}/${folder} ;done
+    for folder in $(gls $dirPathLogMonkeyBase); do  [[ ! $folder =~ "done" ]] && rm -rf ${dirPathLogMonkeyBase}/${folder} ;done
     [[ ! -d $dirPathLogMonkey ]] && mkdir -p $dirPathLogMonkey
     adb -s $deviceId logcat -c
     #无效进程清理
@@ -1547,7 +1547,7 @@ ftAutoFindAospBuildOuts()
             mProjectStorageRootPathListNew=(${mProjectStorageRootPathListNew[@]} ${dirPathAospProject})
         done
     done
-    mProjectStorageRootPathListNew=($(echo ${mProjectStorageRootPathListNew[@]} | sed 's/ /\n/g'|sort |uniq))
+    mProjectStorageRootPathListNew=($(echo ${mProjectStorageRootPathListNew[@]} | gsed 's/ /\n/g'|sort |uniq))
 
     #开始查找
     local filePathResult="/tmp/findOuts"
@@ -1556,7 +1556,7 @@ ftAutoFindAospBuildOuts()
 
             local dirPathAospProjectOut="${dirPath}/alps/out"
             if [[ -d "${dirPathAospProjectOut}" ]] \
-                && [ "$(ls -A $dirPathAospProjectOut)" ] \
+                && [ "$(gls -A $dirPathAospProjectOut)" ] \
                 && [ ! -L "${dirPathAospProjectOut}" ]; then
                     echo "${dirPathAospProjectOut}" >> $filePathResult
             fi
@@ -1564,11 +1564,11 @@ ftAutoFindAospBuildOuts()
             local dirPathAospProjectOuts="${dirPath}/outs"
             if [ -d "${dirPathAospProjectOuts}" ] \
                 && [ ! -L "${dirPathAospProjectOuts}" ] \
-                && [ "$(ls -A $dirPathAospProjectOuts)" ]; then
+                && [ "$(gls -A $dirPathAospProjectOuts)" ]; then
                     while read item ;do
                         [ -L "${dirPathAospProjectOuts}/${item}" ] && continue
                         echo "${item}" >> $filePathResult
-                    done < <(echo "$(ls $dirPathAospProjectOuts)")
+                    done < <(echo "$(gls $dirPathAospProjectOuts)")
             fi
 
             [[ -z "$(cat $filePathResult)" ]] && continue
@@ -1650,19 +1650,19 @@ ftAutoAsConfigFileAutoCreate()
     local filePathExcludeFolderListTemp=excludeFolder.list
     [[ ! -f "$filePathAndroidIML" ]] && ftEcho -s "未找到: ${filePathAndroidIML}，放弃更新" && return $resultFail
     ftEcho -s "开始优化 ${filePathAndroidIML}的excludeFolder配置"
-    local lineNumList=($(awk '/excludeFolder/{print NR}' android.iml))
+    local lineNumList=($(gawk '/excludeFolder/{print NR}' android.iml))
     [[ -z $lineNumList ]] && ftEcho -s "在 ${filePathAndroidIML} 中未找到excludeFolder的配置，放弃更新" && return $resultFail
     local lineNumCount=${#lineNumList[@]}
     ((lineNumCount-=1))
     local lineNum=${lineNumList[$lineNumCount]}
-    lineNum=$(echo $lineNum |sed s/[[:space:]]//g)
+    lineNum=$(echo $lineNum |gsed s/[[:space:]]//g)
 
     local excludeFolderList=($(ftIniEditUtil -r $rFilePathXbashDBAuto autoAsConfigFileAutoCreateConfig excludeFolderList))
     for i in ${excludeFolderList[@]}; do
         echo "<excludeFolder url=\"file://\$MODULE_DIR\$/${i}\" />" >> $filePathExcludeFolderListTemp
     done
 
-    sed -i "$lineNum r $filePathExcludeFolderListTemp" $filePathAndroidIML
+    gsed -i "$lineNum r $filePathExcludeFolderListTemp" $filePathAndroidIML
     rm $filePathExcludeFolderListTemp
 
     sudo echo "" || return
@@ -1891,7 +1891,7 @@ ftAutoAdbPush()
     local keySDKVersion="ro.build.version.sdk="
     local deviceSdkVersion=$(adb shell "cat /system/build.prop" |grep ${keySDKVersion})
     deviceSdkVersion=${deviceSdkVersion//$keySDKVersion/}
-    deviceSdkVersion=$(echo $deviceSdkVersion |sed s/[[:space:]]//g)
+    deviceSdkVersion=$(echo $deviceSdkVersion |gsed s/[[:space:]]//g)
     deviceSdkVersion=${deviceSdkVersion:-'null'}
 
     for filePath in ${filePathSourceList[@]}; do
@@ -1914,8 +1914,8 @@ ftAutoAdbPush()
                     fi
                     filePathTemp=$(dirname $filePathTemp)
                 done
-                dirPathTarget=$(echo ${filePath#*${productName}} | sed -e "s:/$fileNameSource::g")
-                (( $deviceSdkVersion>=30 )) && dirPathTarget=$(echo $dirPathTarget | sed -e "s:/system_other::g")
+                dirPathTarget=$(echo ${filePath#*${productName}} | gsed -e "s:/$fileNameSource::g")
+                (( $deviceSdkVersion>=30 )) && dirPathTarget=$(echo $dirPathTarget | gsed -e "s:/system_other::g")
 
                 echo "push ${filePath} > ${dirPathTarget}"
                 adb -s $deviceId push $filePath $dirPathTarget &&  ftEcho -s "${fileNameSource} push to [${dirPathTarget}] finish"
@@ -1987,7 +1987,7 @@ ftAutoApkMergeOdex()
         [[ ! -d "$dirPathTarget" ]] && ftEcho -e "初始化失败,无法新建临时目录:${dirPathTarget}" && return $resultFail
         cd $dirPathTarget
 
-        [[ "$fileNameApk" == *.apk* ]] && fileNameApk=$(echo $fileNameApk| sed -e "s:.apk::g")
+        [[ "$fileNameApk" == *.apk* ]] && fileNameApk=$(echo $fileNameApk| gsed -e "s:.apk::g")
         local dirPathDevices=system/app/${fileNameApk}
         [[ -n $(adb -s $deviceId shell ls system/priv-app|grep $fileNameApk) ]] && dirPathDevices=system/priv-app/${fileNameApk}
 
@@ -1995,7 +1995,7 @@ ftAutoApkMergeOdex()
         filePathOdex=${dirPathTarget}/${fileNameApk}/oat/arm/${fileNameApk}.odex
         dirPathFramework=${dirPathTarget}/framework
 
-        if [[ -n "$(ls ${dirPathFramework})" ]];then
+        if [[ -n "$(gls ${dirPathFramework})" ]];then
             ftEcho -y "存在旧framework, 是否清理(回车默认清理)" && \
             read -n 1 sel && echo
             if [ -z "${sel}" ]||[[ "$sel" = "y" ]];then

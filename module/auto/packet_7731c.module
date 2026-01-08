@@ -327,7 +327,7 @@ sub WriteFileInfoHeader
                 # in download and spupgrade tool.
     my $dwAddrNum;
     my $dwAddr;        # 4*5 bytes
-    my $dwReserved;         # Reserved for future,not used now. 249x4 bytes
+    my $dwReserved;         # Reserved for future,not ugsed now. 249x4 bytes
 
 
     $dwSize = GetDWORD(2580);

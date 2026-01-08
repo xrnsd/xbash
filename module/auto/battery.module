@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 #####-----------------------加载依赖--------------------------#######
 [[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
 [[ -f "$rFilePathXbashModuleAuto" ]] && source $rFilePathXbashModuleAuto

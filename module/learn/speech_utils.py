@@ -529,14 +529,21 @@ import sounddevice as sd
 import ctypes
 import os
 import samplerate  # 处理 48k -> 16k 的重采样
+import platform
 
 class SherpaRNNoiseEngine:
     def __init__(self, lib_path=None):
+        system = platform.system()
         # 1. 自动定位库文件
         if lib_path is None:
-            # 优先查找当前目录，其次查找系统目录
-            lib_path = "./librnnoise.so.0" if os.path.exists("./librnnoise.so.0") else "librnnoise.so.0"
-        
+            if system == "Darwin":  # macOS
+                # 优先查找 Homebrew 默认路径
+                brew_lib = "/opt/homebrew/Caskroom/rnnoise/1.10/macos-rnnoise/ladspa/librnnoise_ladspa.dylib"
+                lib_path = brew_lib if os.path.exists(brew_lib) else "librnnoise.dylib"
+            else:  # Linux
+                # 优先查找当前目录，其次查找系统目录
+                lib_path = "./librnnoise.so.0" if os.path.exists("./librnnoise.so.0") else "librnnoise.so.0"
+
         try:
             self.lib = ctypes.cdll.LoadLibrary(lib_path)
         except OSError as e:

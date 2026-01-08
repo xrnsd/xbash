@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 #####---------------------  说明  ---------------------------#########
 # 不可在此文件中出现不被函数包裹的调用或定义
 # 这里只放函数
@@ -177,7 +177,7 @@ ftSetBackupDevDir()
              [ ${#dir} == 0 ] && dir=0
              if [ ${dir} == "q" ]; then
                 exit
-             elif [ -n "$(echo $dir| sed -n "/^[0-$index]\+$/p")" ];then
+             elif [ -n "$(echo $dir| gsed -n "/^[0-$index]\+$/p")" ];then
                 devTargetDir=${mXbashModuleDataDevicesList[$dir]}
                 echo
                 break;
@@ -335,7 +335,7 @@ ftBackupOs()
         local dirPathStore=$(ftIniEditUtil -r $filePathIni $versionName dirPathStore)
         [ -d "$dirPathStore" ] && rm -rf $dirPathStore
         local dirPathStoreParent=$(dirname  $dirPathStore)
-        [ -z "$(ls $dirPathStoreParent)" ] && rm -rf $dirPathStoreParent
+        [ -z "$(gls $dirPathStoreParent)" ] && rm -rf $dirPathStoreParent
         ftIniEditUtil -d $filePathIni $versionName
         return ;;
         # 变量参数解析部分==============
@@ -438,7 +438,7 @@ ftMaintainInfoNote()
             return;
         fi
         note=$(cat $filePathVersionNote)
-        note=$(echo $note |sed s/[[:space:]]/_/g)
+        note=$(echo $note |gsed s/[[:space:]]/_/g)
         ftIniEditUtil -w  $filePathIni $versionName backupPackageNote "${note:-"默认"}"
         rm -rf $filePathVersionNote
     fi
@@ -476,17 +476,17 @@ ftSystemEnv()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftSystemEnv -h && return $resultFail
 
     #实现主体
-    local infoHwCpu=$(echo $userPassword | sudo  -p '' -S dmidecode |grep -i cpu|grep -i version|awk -F ':' '{print $2}'|sed s/[[:space:]]//g)
-    local infoHwMainboard=$(echo $userPassword | sudo  -p '' -S dmidecode |grep Name |sed s/[[:space:]]//g)
-    local infoHwMainboard=$(echo $infoHwMainboard |sed s/[[:space:]]//g)
-    local infoHw32x64=$(echo $userPassword | sudo  -p '' -S uname -m|sed s/[[:space:]]//g)
-    local infoHwSystem=$(echo $userPassword | sudo  -p '' -S head -n 1 /etc/issue|sed s/[[:space:]]//g)
+    local infoHwCpu=$(echo $userPassword | sudo  -p '' -S dmidecode |grep -i cpu|grep -i version|awk -F ':' '{print $2}'|gsed s/[[:space:]]//g)
+    local infoHwMainboard=$(echo $userPassword | sudo  -p '' -S dmidecode |grep Name |gsed s/[[:space:]]//g)
+    local infoHwMainboard=$(echo $infoHwMainboard |gsed s/[[:space:]]//g)
+    local infoHw32x64=$(echo $userPassword | sudo  -p '' -S uname -m|gsed s/[[:space:]]//g)
+    local infoHwSystem=$(echo $userPassword | sudo  -p '' -S head -n 1 /etc/issue|gsed s/[[:space:]]//g)
     infoHwSystem=${infoHwSystem//"\n\l"/}
     infoHwSystem=${infoHwSystem//"."/}
     infoHwSystem=${infoHwSystem//Ubuntu/Ubuntu__}
 
     if [[ -z "$infoHwCpu" ]]; then
-        infoHwCpu="$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c|sed s/[[:space:]]//g)"
+        infoHwCpu="$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c|gsed s/[[:space:]]//g)"
     fi
 
     local keyCpu=hwCpu keyMainboard=hwMainboard keySystemVersion=swSystemVersion keySystemType=swSystemType

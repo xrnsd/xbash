@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 ##################################################
 ##                                              ##
 ##             框架通用实现                      ##
@@ -30,7 +30,7 @@ ftMain()
     -v | --version )
                 local dirPathLocal=$(pwd) flag="-v beta"
                 cd $rDirPathXbash
-                local branchNameNow=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+                local branchNameNow=$(git branch --no-color 2> /dev/null | gsed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
                 [[ "$branchNameNow" = "master" ]] && flag="-i beta"
                 local tagList=($(git tag |grep ${flag} ))
                 local length=${#tagList[@]}
@@ -59,10 +59,10 @@ ftMain()
                 ftReadAllFt
                 break;;
     -sc )
-                sensors |grep °C | awk '{print $3}'|grep °C|awk '{sum+=$1} END {printf("CPU %s °C \n",sum/NR)}'
+                sensors |grep °C | gawk '{print $3}'|grep °C|awk '{sum+=$1} END {printf("CPU %s °C \n",sum/NR)}'
                 break;;
     -scc )
-                sensors |grep °C | awk '{print $3}'|grep °C
+                sensors |grep °C | gawk '{print $3}'|grep °C
                 break;;
     *) ftMain -h && return;; esac;done
 }
@@ -162,8 +162,8 @@ ftReadAllAlias()
         printf "%s  %${intervalSize}s \n" 命令 说明
         echo -e "========================================================"
         cat $rFilePathXbashPackagingUser $rFilePathXbashModuleUser|grep alias | sort | while read line; do
-                cmdName=$(echo $line | awk '{split($2,b,"=");print  b[1] }')
-                cmdContent=$(echo $line | awk '{split($2,b,"=");print  b[3]}'| awk '{split($0,b,";");print  b[1]}')
+                cmdName=$(echo $line | gawk '{split($2,b,"=");print  b[1] }')
+                cmdContent=$(echo $line | gawk '{split($2,b,"=");print  b[3]}'| gawk '{split($0,b,";");print  b[1]}')
                 [[ -n "$cmdContent" ]] && printf "%${intervalSize}s  %s\n" ${cmdName} ${cmdContent}
         done | column -t
 }
@@ -191,7 +191,7 @@ ftReadAllFt()
         echo -e "========================================================"
 
         local filePath effectName effectItemInfoAll
-        for effectItemInfo in $(grep -rs '^ft.*()$' $rDirPathXbash --binary-files=without-match| sed 's?:? ?g'); do
+        for effectItemInfo in $(grep -rs '^ft.*()$' $rDirPathXbash --binary-files=without-match| gsed 's?:? ?g'); do
             if [[ "$effectItemInfo" =~ ^${rDirPathXbash}.* ]]; then
                 [[ -z filePath ]] || [[ $filePath != $effectItemInfo ]] && filePath=$effectItemInfo
                 continue
@@ -239,7 +239,7 @@ ftTest()
        cp $rFilePathXbashModuleTestExpmale $rFilePathXbashModuleTest
        sudo chmod a+x $rFilePathXbashModuleTest
        [[ -z $(cat ${rDirPathXbash}/.gitignore |grep $rFileNameXbashModuleTestBase) ]] && \
-       echo $(echo $rFilePathXbashModuleTest | sed -e "s:${rDirPathXbash}/::g") >> ${rDirPathXbash}/.gitignore
+       echo $(echo $rFilePathXbashModuleTest | gsed -e "s:${rDirPathXbash}/::g") >> ${rDirPathXbash}/.gitignore
     fi
     local valCount=1 errorContent
     [ ! -d "$rDirPathUserHome" ] && errorContent="${errorContent}\\n[用户路径为空]rDirPathUserHome=$rDirPathUserHome"
@@ -283,13 +283,13 @@ ftGitUpdateVersion()
     #依赖校验
     [[ -z $(which git) ]] && return $resultFail
     #解参验耦
-    local dirPathLocal=$(pwd) checkUpdateDateNow=$(date -d "today" +"%Y%m%d")
+    local dirPathLocal=$(pwd) checkUpdateDateNow=$(gdate -d "today" +"%Y%m%d")
     local tagName=xbashUpdateVersionConfig keyName=checkUpdateDate checkUpdateDateOld=$(ftXbGetValue $tagName $keyName)
     [[ -z "${checkUpdateDateOld}" ]] && ftIniCreateFileOrTag  -a -p $rFilePathXbashDBUser -t $tagName -l "${keyName}=${checkUpdateDateNow}" || \
     [[ "${checkUpdateDateOld}" = "${checkUpdateDateNow}" ]] && return $resultFail
     [[ -n "${rDirPathXbash}" ]] && cd $rDirPathXbash
 
-    local branchNameMaster="master" branchNameLocal=$(git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    local branchNameMaster="master" branchNameLocal=$(git branch --no-color 2> /dev/null | gsed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
     #实现主体
     [ -z "$branchNameLocal" ] || [ "$branchNameLocal" = "$branchNameMaster" ] && cd "${dirPathLocal}" && return $resultFail
     echo "$(git pull > /dev/null &)" > /dev/null
@@ -308,7 +308,7 @@ ftEcho()
     local title content option=$1 valList=$@
     option=${option:-'未制定显示信息'}
         if [ ${#valList[@]} -eq 2 ];then
-        content=$(echo $content |sed s/[[:space:]]//g)
+        content=$(echo $content |gsed s/[[:space:]]//g)
     else
         #除第一个参数外的所有参数列表，可正常打印数组
         content="${valList[@]/$option/}"
@@ -363,17 +363,17 @@ ftEcho()
         -c )
             listMainItemSizeFlag="${arg2}"
             listMainTitle="${arg3}"
-            [[ -n $arg4 ]] && listMain=($(echo $arg4 | sed 's/ /\n/g'))
+            [[ -n $arg4 ]] && listMain=($(echo $arg4 | gsed 's/ /\n/g'))
             ;;
         -cs )
             isContentApplyBySuffix=true
             applyContent="${arg2}"
-            [[ -n $arg3 ]] && listApply=($(echo $arg3 | sed 's/ /\n/g'))
+            [[ -n $arg3 ]] && listApply=($(echo $arg3 | gsed 's/ /\n/g'))
             ;;
         -cp )
             isContentApplyBySuffix=false
             applyContent="${arg2}"
-            [[ -n $arg3 ]] && listApply=($(echo $arg3 | sed 's/ /\n/g'))
+            [[ -n $arg3 ]] && listApply=($(echo $arg3 | gsed 's/ /\n/g'))
             ;;
         -ch )highlightContent="${arg2}"
             [[ -n $highlightContent ]] && isContentHighlight=true
@@ -442,7 +442,7 @@ ftEcho()
                 #check argument
                 [[ -z $listMain ]] && echo "error: conten is null" && return $resultFail
                 if [[ -n $listApply ]];then
-                    echo ${listApply[@]} | sed 's/ /\n/g'> $filePathListApply
+                    echo ${listApply[@]} | gsed 's/ /\n/g'> $filePathListApply
                 else
                     isContentApplyBySuffix=false
                 fi
@@ -534,7 +534,7 @@ ftEcho()
                     elif (( $choice>=$listMainItemSize  ));then
                         ftEcho -e "错误的选择：${choice}"
                         continue
-                    elif [ -n "$(echo $choice| sed -n "/^[0-$choice]\+$/p")" ];then
+                    elif [ -n "$(echo $choice| gsed -n "/^[0-$choice]\+$/p")" ];then
                         export publicSelItemContent=${listMain[$choice]}
                         echo
                         break
@@ -555,74 +555,61 @@ ftEcho()
                     local keyClickTimeFLag keyDoubleClickTimeFlag=1
                     [ "${2}" = "-r2" ] && listenCount=2
                     if  [[ -n $timeOut ]];then
-                        [[ -z $(echo $timeOut| sed -n "/^[0-9]\+$/p") ]] && unset timeOut
+                        [[ -z $(echo $timeOut| gsed -n "/^[0-9]\+$/p") ]] && unset timeOut
                         if [ "${3}" = "-tips" ];then
                              tipsContent="${4}"
                              unset timeOut
                         elif [ "${4}" = "-tips" ];then
                             tipsContent="${5}"
                         fi
-                        [[ -n $timeOut ]] && timeOut="-t ${timeOut}"
+                        
                     fi
                     [[ -n $timeOut ]] && [ "${2}" = "-r2" ] && ftEcho -e "invalid argument：timeout" && return
                     [[ -n $tipsContent ]] && echo && echo -en "${tipsContent}[y/n]"
                     for (( i = 0; i < $listenCount; i++ )); do
-                        unset keyVal
-                        (( i==1 )) && timeOut="-t 0.5"
-                        while read ${timeOut[@]} -sN1 key
-                        do
-                          read -sN1 -t 0.0001 k1
-                          read -sN1 -t 0.0001 k2
-                          read -sN1 -t 0.0001 k3
-                          key+=${k1}${k2}${k3}
-
-                          case "$key" in
-                            $'\e[A'|$'\e0A')
-                                keyVal="up"
-                                break;;
-                            $'\e[D'|$'\e0D')
-                                keyVal="left"
-                                break;;
-                            $'\e[B'|$'\e0B')  
-                                keyVal="down"
-                                break;;
-                            $'\e[C'|$'\e0C')  
-                                keyVal="right"
-                                break;;
-                            *)
-                                keyVal="${key}"
-                                break;;
-                          esac
-                        done
-
+                        unset keyVal key
+                        if (( i==1 )) ;then
+                            read -rsn3 -t 0.2 key
+                        elif [[ -n $timeOut ]];then
+                            read -rsn3 -t ${timeOut} key
+                        else
+                            read -rsn3 key
+                        fi
+                        case "$key" in
+                            $'\e[A') keyVal="up" ;;
+                            $'\e[B') keyVal="down" ;;
+                            $'\e[C') keyVal="right" ;;
+                            $'\e[D') keyVal="left" ;;   
+                            *) keyVal="${key}" ;;
+                        esac
+                        unset timeOut
                         [[ -z $keyVal ]] && unset keyValInput || keyVal=$(echo $keyVal | tr -d '\n')
                         (( i==1 )) && if [[ -z $keyVal ]];then
                             keyVal=$keyValCache
                         else
-                            [[ "$keyVal" = "$keyValCache" ]] && (($(date +%s -d $(date +"%H:%M:%S"))-$keyClickTimeFLag <= $keyDoubleClickTimeFlag)) && keyVal="double_${keyVal}"
+                            [[ "$keyVal" = "$keyValCache" ]] && (($(gdate +%s -d $(gdate +"%H:%M:%S"))-$keyClickTimeFLag <= $keyDoubleClickTimeFlag)) && keyVal="double_${keyVal}"
                         fi
-                        keyClickTimeFLag=$(date +%s -d $(date +"%H:%M:%S"))
+                        keyClickTimeFLag=$(gdate +%s -d $(gdate +"%H:%M:%S"))
                         keyValCache=$keyVal
                     done
-                    
                     export keyValInput=${keyVal}
                     return
                 
                 elif [ "${2}" = "-n" ];then
                   isEchoPlural=false
-                  arrayKeys=($(echo $3 | sed 's/ /\n/g'))
-                  arrayKeyContents=($(echo $4 | sed 's/ /\n/g'))
-                  arrayKeysIgone=($(echo $5 | sed 's/ /\n/g'))
+                  arrayKeys=($(echo $3 | gsed 's/ /\n/g'))
+                  arrayKeyContents=($(echo $4 | gsed 's/ /\n/g'))
+                  arrayKeysIgone=($(echo $5 | gsed 's/ /\n/g'))
                   [ "${6}" = "-hl" ] && \
-                    arrayKeysHighlight=($(echo $7 | sed 's/ /\n/g')) && \
-                    arrayKeysHighlightFlag=($(echo $8 | sed 's/ /\n/g'))
+                    arrayKeysHighlight=($(echo $7 | gsed 's/ /\n/g')) && \
+                    arrayKeysHighlightFlag=($(echo $8 | gsed 's/ /\n/g'))
                 else
-                  arrayKeys=($(echo $2 | sed 's/ /\n/g'))
-                  arrayKeyContents=($(echo $3 | sed 's/ /\n/g'))
-                  arrayKeysIgone=($(echo $4 | sed 's/ /\n/g'))
+                  arrayKeys=($(echo $2 | gsed 's/ /\n/g'))
+                  arrayKeyContents=($(echo $3 | gsed 's/ /\n/g'))
+                  arrayKeysIgone=($(echo $4 | gsed 's/ /\n/g'))
                   [ "${5}" = "-hl" ] && 、
-                    arrayKeysHighlight=($(echo $6 | sed 's/ /\n/g')) && 、
-                    arrayKeysHighlightFlag=($(echo $7 | sed 's/ /\n/g'))
+                    arrayKeysHighlight=($(echo $6 | gsed 's/ /\n/g')) && 、
+                    arrayKeysHighlightFlag=($(echo $7 | gsed 's/ /\n/g'))
                 fi
 
                 [[ -n $arrayKeysIgone ]] && for (( index = 0; index <${#arrayKeysIgone[@]}; index++ )); do
@@ -653,7 +640,7 @@ ftEcho()
                         fi
                     fi
                 done
-                printf "${formatArray}\n" "${arrayKeyContents[@]}" | column -t | sed 's/_/ /g' | sed 's/++/_/g'
+                printf "${formatArray}\n" "${arrayKeyContents[@]}" | column -t | gsed 's/_/ /g' | gsed 's/++/_/g'
                 
 
                 break;;
@@ -662,15 +649,15 @@ ftEcho()
                 local arrayColumns arrayColumnContents arrayColumnsIgone
                 local argListColumnContents isEchoPlural=false
                 local forceEchoPluralFlag=3 forceEchoPluralIndex=1
-                if [[ -n $2 ]] && [[ -n $(echo $2| sed -n "/^[0-9]\+$/p") ]];then
+                if [[ -n $2 ]] && [[ -n $(echo $2| gsed -n "/^[0-9]\+$/p") ]];then
                   forceEchoPluralFlag=$2
-                  arrayColumns=($(echo $3 | sed 's/ /\n/g'))
-                  arrayColumnContents=($(echo $4 | sed 's/ /\n/g'))
-                  arrayColumnsIgone=($(echo $5 | sed 's/ /\n/g'))
+                  arrayColumns=($(echo $3 | gsed 's/ /\n/g'))
+                  arrayColumnContents=($(echo $4 | gsed 's/ /\n/g'))
+                  arrayColumnsIgone=($(echo $5 | gsed 's/ /\n/g'))
                 else
-                  arrayColumns=($(echo $2 | sed 's/ /\n/g'))
-                  arrayColumnContents=($(echo $3 | sed 's/ /\n/g'))
-                  arrayColumnsIgone=($(echo $4 | sed 's/ /\n/g'))
+                  arrayColumns=($(echo $2 | gsed 's/ /\n/g'))
+                  arrayColumnContents=($(echo $3 | gsed 's/ /\n/g'))
+                  arrayColumnsIgone=($(echo $4 | gsed 's/ /\n/g'))
                 fi
 
                 [[ -n $arrayColumnsIgone ]] && for (( index = 0; index <${#arrayColumnsIgone[@]}; index++ )); do
@@ -694,7 +681,7 @@ ftEcho()
                         fi
                     fi
                 done
-                printf "${formatArray}\n" "${arrayColumnContents[@]}" | column -t | sed 's/_/ /g' | sed 's/++/_/g'
+                printf "${formatArray}\n" "${arrayColumnContents[@]}" | column -t | gsed 's/_/ /g' | gsed 's/++/_/g'
                 break;;
     * )    echo $option ;break;; esac ;done
 }
@@ -711,7 +698,7 @@ ftTimeConsuming()
     local contentName="the opeartion"
     local arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))}
     [[ $arg =~ ^\- ]] && case "${arg}" in
-        -i ) mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
+        -i ) mTimingStart=$(gdate +%s -d $(gdate +"%H:%M:%S")) && return 0
           ;;
         -r ) contentName="${arg2:-"$contentName"}"
           ;;
@@ -722,12 +709,12 @@ ftTimeConsuming()
     * )  errorContent="${errorContent}\\naregument invalid:${arg}"
              break
             ;; esac;done
-    [ -z "$mTimingStart" ]||[ "$1" = "-i" ] && mTimingStart=$(date +%s -d $(date +"%H:%M:%S")) && return 0
+    [ -z "$mTimingStart" ]||[ "$1" = "-i" ] && mTimingStart=$(gdate +%s -d $(gdate +"%H:%M:%S")) && return 0
 
-    local content timeNow=$(date +%s -d $(date +"%H:%M:%S"))
+    local content timeNow=$(gdate +%s -d $(gdate +"%H:%M:%S"))
 
     if $isModeStopwatch;then
-        local tagName=${contentName} keyName=$(date -d "today" +"%Y%m%d")
+        local tagName=${contentName} keyName=$(gdate -d "today" +"%Y%m%d")
         local ftTimeNormal=$(ftIniEditUtil -r $rFilePathXbashDbftTime ${tagName} ${keyName})
         local ftTimeAdded=$((timeNow-mTimingStart))
         local ftTimeAll=$((ftTimeAdded+ftTimeNormal))
@@ -968,7 +955,7 @@ ftIniEditUtil()
     [ "$isEnable" != "true" ] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #参数解析
     local filePathIni=$2 tagName=$3 keyName=$4 keyValue="${5}"
-    local tagNameFlag="^\[${tagName}\]$" keyNameFlag="${keyName}\="
+    local tagNameFlag="^\[${tagName}\]" keyNameFlag="${keyName}\="
     local isWriteMode=true isReadMode=false isDeleteMode=false is isWriteMode=false
     local errorContent arg arg2 ; for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; [[ $arg =~ ^\- ]] && case "${arg}" in
         # 说明参数解析部分==============
@@ -1003,16 +990,16 @@ ftIniEditUtil()
         [ -n "$errorContent" ] && ftEcho -e "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
 
         #check tag
-        local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | awk -F: '{print $1}')
+        local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | gawk -F: '{print $1}')
         [[ -z $lineNumTag ]] || (( ${#lineNumTag[@]} > 1 )) && return
-        local lineContent=$(awk 'NR=="'$lineNumTag'"' $filePathIni | sed s/[[:space:]]//g)
+        local lineContent=$(gawk 'NR=="'$lineNumTag'"' $filePathIni | gsed s/[[:space:]]//g)
         [[ -z $lineContent ]] || [[ "${lineContent}" != "[${tagName}]" ]] && return
 
         #del tag
         if [ -z "$keyName" ];then
             while true; do
-                sed -i "${lineNumTag}d" $filePathIni
-                [[ -z $(awk 'NR=="'$lineNumTag'"' $filePathIni) ]] && break
+                gsed -i "${lineNumTag}d" $filePathIni
+                [[ -z $(gawk 'NR=="'$lineNumTag'"' $filePathIni) ]] && break
             done
             return
         fi
@@ -1021,11 +1008,11 @@ ftIniEditUtil()
         local indexCheck=$lineNumTag isDelMultilineFormattedContent=false
         while true; do
             ! $isDelMultilineFormattedContent && ((indexCheck+=1))
-            lineContent=$(awk 'NR=="'$indexCheck'"' $filePathIni)
+            lineContent=$(gawk 'NR=="'$indexCheck'"' $filePathIni)
             #echo "lineContent=${lineContent}"
             [[ -z $lineContent ]] && break
             if [[ "$lineContent" =~ ^${keyName}=* ]]; then
-                sed -i "${indexCheck}d" $filePathIni
+                gsed -i "${indexCheck}d" $filePathIni
                 
                 if [[ "$lineContent" = *\\ ]];then
                     isDelMultilineFormattedContent=true
@@ -1033,7 +1020,7 @@ ftIniEditUtil()
                     break
                 fi
             elif $isDelMultilineFormattedContent;then
-                sed -i "${indexCheck}d" $filePathIni
+                gsed -i "${indexCheck}d" $filePathIni
                 [[ "$lineContent" != *\\ ]] && break
             fi
         done
@@ -1043,16 +1030,22 @@ ftIniEditUtil()
 
     if $isReadMode;then
         #参耦校验
-        [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
+        [ ! -s "$filePathIni" ] && errorContent="${errorContent}\\n[无效文件]filePathIni=$filePathIni"
         [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
         [ -z "$keyName" ] && errorContent="${errorContent}\\n[缺少必要参数]keyName=$keyName"
-        [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
 
         #check tag
-        local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | awk -F: '{print $1}')
-        [[ -z $lineNumTag ]] || (( ${#lineNumTag[@]} > 1 ))&& return
-        local lineContent=$(awk 'NR=="'$lineNumTag'"' $filePathIni | sed s/[[:space:]]//g)
-        [[ -z $lineContent ]] || [[ "${lineContent}" != "[${tagName}]" ]] && return
+        if [ -s "$filePathIni" ] && [ -n "$tagName" ] && [ -n "$tagName" ];then
+            local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | gawk -F: '{print $1}')
+            [[ -z $lineNumTag ]] && errorContent="${errorContent}\\n[无效TAG]filePathIni=${filePathIni}\\n[无效TAG]tagNameFlag=${tagNameFlag}"
+            (( ${#lineNumTag[@]} > 1 )) && errorContent="${errorContent}\\n[匹配多个TAG]filePathIni=${filePathIni}\\nagNameFlag=${tagNameFlag}"
+            local lineContent=$(gawk 'NR=="'$lineNumTag'"' $filePathIni | gsed s/[[:space:]]//g)
+            [[ -z $lineContent ]] || [[ "${lineContent}" != "[${tagName}]" ]] && \
+                errorContent="${errorContent}\\n[匹配TAG异常]filePathIni=${filePathIni}\\ntagNameFlag=${tagNameFlag}"   
+        fi
+
+        #参耦校验
+        [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
 
         # #check key
         keyName=($keyName)
@@ -1064,20 +1057,20 @@ ftIniEditUtil()
             local lineNumKey=$lineNumTag
             while true; do
                 ((lineNumKey+=1))
-                lineContent=$(awk 'NR=="'$lineNumKey'"' $filePathIni)
+                lineContent=$(gawk 'NR=="'$lineNumKey'"' $filePathIni)
                 [[ -z $lineContent ]] && break
                 if [[ "$lineContent" =~ ^${keyName}=* ]]; then
                     if [[ "$lineContent" = *\\ ]];then
                         local lineContentTemp=${lineContent%\\}
                         while true; do
                             ((lineNumKey+=1))
-                            lineContent=$(awk 'NR=="'$lineNumKey'"' $filePathIni)
+                            lineContent=$(gawk 'NR=="'$lineNumKey'"' $filePathIni)
                             lineContentTemp="${lineContentTemp} ${lineContent%\\}"
                             [[ "$lineContent" != *\\ ]] && break
                         done
                         lineContent="${lineContentTemp}"
                     fi
-                    echo "${lineContent}" | awk -F= '{gsub("\t","",$2); print $2}'
+                    echo "${lineContent}" | gawk -F= '{gsub("\t","",$2); print $2}'
                     break
                 fi
             done
@@ -1088,7 +1081,7 @@ ftIniEditUtil()
             local lineNumKey=$lineNumTag
             while true; do
                 ((lineNumKey+=1))
-                lineContent=$(awk 'NR=="'$lineNumKey'"' $filePathIni)
+                lineContent=$(gawk 'NR=="'$lineNumKey'"' $filePathIni)
                 echo "${lineContent}" >> ${filePathIni}.temp
                 [[ -z $lineContent ]] && break
             done
@@ -1098,17 +1091,17 @@ ftIniEditUtil()
 
                 if [[ "$lineContent" = *\\ ]];then
                         local lineContentTemp=${lineContent%\\}
-                        lineNumKey=$(echo "${lineContent}" | awk -F: '{print $1}')
+                        lineNumKey=$(echo "${lineContent}" | gawk -F: '{print $1}')
                         while true; do
                             ((lineNumKey+=1))
-                            lineContent=$(awk 'NR=="'$lineNumKey'"' ${filePathIni}.temp)
+                            lineContent=$(gawk 'NR=="'$lineNumKey'"' ${filePathIni}.temp)
                             lineContentTemp="${lineContentTemp} ${lineContent%\\}"
                             [[ "$lineContent" != *\\ ]] && break
                         done
                         lineContent="${lineContentTemp}"
                 fi
                 
-                echo "${lineContent}" | awk -F= '{print $2}'
+                echo "${lineContent}" | gawk -F= '{print $2}'
             done
 
             rm ${filePathIni}.temp
@@ -1129,7 +1122,7 @@ ftIniEditUtil()
         #     keyValue="$@"
         # fi
 
-        local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | awk -F: '{print $1}')
+        local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | gawk -F: '{print $1}')
 
         #add tag
         if [[ -z $lineNumTag ]];then
@@ -1140,23 +1133,23 @@ ftIniEditUtil()
             local lineContent indexCheck=$lineNumTag
             while true; do
                 ((indexCheck+=1))
-                lineContent=$(awk 'NR=="'$indexCheck'"' $filePathIni)
+                lineContent=$(gawk 'NR=="'$indexCheck'"' $filePathIni)
 
                 #add key
                 if [[ -z $lineContent ]];then
                     echo -e "\n" >> $filePathIni
-                    sed  -i "${indexCheck}i${keyName}=${keyValue[@]}" $filePathIni
+                    gsed  -i "${indexCheck}i${keyName}=${keyValue[@]}" $filePathIni
                     return
                 fi
 
                 #change key
                 if [[ "${lineContent}" =~ ^${keyName}=.* ]];then
-                    [[ "${keyName}" == *"/"* ]] && keyName="$(echo "${keyName}" |sed s/[[:space:]]//g | sed "s / \\\\/ g" )"
-                    [[ "${keyName}" == *":"* ]] && keyName="$(echo "${keyName}" |sed s/[[:space:]]//g | sed "s : \\\: g" )"
-                    [[ "${keyValue}" == *"/"* ]] && keyValue="$(echo "${keyValue}" | sed "s:/:\\\/:g" )"
-                    [[ "${keyValue}" == *":"* ]] && keyValue="$(echo "${keyValue}" | sed s/:/\\\\:/g )"
+                    [[ "${keyName}" == *"/"* ]] && keyName="$(echo "${keyName}" |gsed s/[[:space:]]//g | gsed "s / \\\\/ g" )"
+                    [[ "${keyName}" == *":"* ]] && keyName="$(echo "${keyName}" |gsed s/[[:space:]]//g | gsed "s : \\\: g" )"
+                    [[ "${keyValue}" == *"/"* ]] && keyValue="$(echo "${keyValue}" | gsed "s:/:\\\/:g" )"
+                    [[ "${keyValue}" == *":"* ]] && keyValue="$(echo "${keyValue}" | gsed s/:/\\\\:/g )"
 
-                    sed -i "/^\[$tagName\]/,/^\[/ {/^\[$tagName\]/b;/^\[/b;s:^$keyName=.*:$keyName=$keyValue:g;}" $filePathIni
+                    gsed -i "/^\[$tagName\]/,/^\[/ {/^\[$tagName\]/b;/^\[/b;s:^$keyName=.*:$keyName=$keyValue:g;}" $filePathIni
                     return
                 fi
             done
@@ -1222,8 +1215,8 @@ ftBashHistory()
 
     local fileLineCountNormalFlag=50000
     local fileLineCountMaxFlag=15728640
-    local fileLineCountBashHistory=$(awk 'END{print NR}' $filePathBashHistory)
-    local fileLineCountBashHistoryArchive=$(awk 'END{print NR}' $filePathBashHistoryArchive)
+    local fileLineCountBashHistory=$(gawk 'END{print NR}' $filePathBashHistory)
+    local fileLineCountBashHistoryArchive=$(gawk 'END{print NR}' $filePathBashHistoryArchive)
     (( $fileLineCountBashHistory <= $fileLineCountBashHistoryArchive )) && return
 
     if (( $fileLineCountBashHistory >= $fileLineCountMaxFlag )); then
@@ -1298,8 +1291,8 @@ ftDevAvailableSpace()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftDevAvailableSpace -h && return $resultFail
 
     #实现主体
-     local devAvailableSIzeList=$(df -lh | awk '{print $4}')
-     local devMountDirPathList=($(df -lh | awk '{print $6}'))
+     local devAvailableSIzeList=$(df -lh | gawk '{print $4}')
+     local devMountDirPathList=($(df -lh | gawk '{print $6}'))
      local indexDevName=0 devMountDirPath
      for size in ${devAvailableSIzeList[*]} ; do
         devMountDirPath=${devMountDirPathList[indexDevName]}
@@ -1417,8 +1410,8 @@ ftInitDevicesList()
     local indexDevMount=0 indexDevName=0
     local dirPathHome=$rDirPathUserHome #(${rDirPathUserHome/$rUserName\//$rUserName})
     local sizeHome=$(ftDevAvailableSpace $dirPathHome)
-    local devNameDirPathList=$(df -lh | awk '{print $1}')
-    local devMountDirPathList=($(df -lh | awk '{print $6}'))
+    local devNameDirPathList=$(df -lh | gawk '{print $1}')
+    local devMountDirPathList=($(df -lh | gawk '{print $6}'))
 
     devMinAvailableSpace=${devMinAvailableSpace//b/}
     if [[ $devMinAvailableSpace =~ "g" ]];then
@@ -1461,7 +1454,7 @@ _adb()
                                   ;;
                     install)  COMPREPLY=( $(compgen -W "-l -r -s" -- $curr_arg ) )
                                 # case "${COMP_WORDS[2]}" in
-                                #                 -l|-r|-s)  if [[ -n "$(ls -l |grep ".apk")" ]]; then
+                                #                 -l|-r|-s)  if [[ -n "$(gls -l |grep ".apk")" ]]; then
                                 #                                     COMPREPLY=( $(compgen -o filenames -W "`ls *.apk`" -- ${cur}) );
                                 #                                 fi ;;
                                 # esac
@@ -1645,8 +1638,8 @@ ftKillApplicationByPackageName()
         monkey)     packageName="com.android.commands.monkey"  ;break;;
     * ) break;;esac;done
     
-    # local pidArray=($(adb shell ps | grep "$packageName" | awk '{print $2}'))
-    # local packageArray=($(adb shell ps | grep "$packageName" | awk '{print $9}'))
+    # local pidArray=($(adb shell ps | grep "$packageName" | gawk '{print $2}'))
+    # local packageArray=($(adb shell ps | grep "$packageName" | gawk '{print $9}'))
 
     # if [[ -n "$pidArray" ]]; then
     #     for index in "${!packageArray[@]}"; do
@@ -1659,9 +1652,9 @@ ftKillApplicationByPackageName()
     #      ftEcho -e "包名[${packageName}]不存在，请确认"
     # fi
     
-    if [[ -n "$(adb shell ps | grep $packageName | awk '{print $2}')" ]]; then
+    if [[ -n "$(adb shell ps | grep $packageName | gawk '{print $2}')" ]]; then
         adb -s $deviceId shell am force-stop $packageName || ftEcho -e "am force-stop $packageName fail"
-        for pid in $(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}'); do adb -s $deviceId shell kill $pid&& ftEcho -s "kill pid ${pid}"  ;done
+        for pid in $(adb -s $deviceId shell ps | grep $packageName | gawk '{print $2}'); do adb -s $deviceId shell kill $pid&& ftEcho -s "kill pid ${pid}"  ;done
     elif [[ -z "$(adb -s $deviceId shell pm list packages|grep $packageName)" ]]; then
          ftEcho -e "包名[${packageName}]不存在，请确认"
     fi
@@ -1762,7 +1755,7 @@ ftLogcatApplicationByTag()
     while true; do
         if [[ "$isUserPackageName" = "true" ]]; then
 
-            local pid=$(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}')
+            local pid=$(adb -s $deviceId shell ps | grep $packageName | gawk '{print $2}')
             if [[ -z "$pid" ]]; then
                 if [[ -z "$isWait" ]]; then
                     ftEcho -e "未找到应用 : ${packageName}" && return
@@ -1771,7 +1764,7 @@ ftLogcatApplicationByTag()
                 local timeOut=60
                 local time=0;
                 while true; do
-                    pid=$(adb -s $deviceId shell ps | grep $packageName | awk '{print $2}')
+                    pid=$(adb -s $deviceId shell ps | grep $packageName | gawk '{print $2}')
                     ((time+=1))
 
                     if [[ -z "$pid" ]]; then
@@ -1850,7 +1843,7 @@ ftMtkFlashTool()
     if [[ -z $isEnableWindowMode ]] && [[ -n $ANDROID_BUILD_TOP ]]; then
         local dirPathLocal=$(pwd)
         cd $ANDROID_BUILD_TOP
-        local filePathAndroidScatter="${ANDROID_PRODUCT_OUT}/"$(ls $ANDROID_PRODUCT_OUT |grep "Android_scatter.txt")
+        local filePathAndroidScatter="${ANDROID_PRODUCT_OUT}/"$(gls $ANDROID_PRODUCT_OUT |grep "Android_scatter.txt")
         [[ ! -f $filePathAndroidScatter ]] && ftEcho -e "下载配置文件不存在" && cd "${dirPathLocal}" && return $resultFail
          $flashToolPath -s "${filePathAndroidScatter}" -c download
         cd "${dirPathLocal}"
@@ -1898,7 +1891,7 @@ ftBootAnimation()
         #默认运行前提环境
         #所在文件夹为动画包解压生成的，也就是该参数默认只能重新打包
         local dirNamePackageName=${dirPathAnimation##*/}.zip
-        local fileConfig=$(ls $dirPathAnimation|grep '.txt')
+        local fileConfig=$(gls $dirPathAnimation|grep '.txt')
 
         ftEcho -r  "请输入动画包的包名(回车默认animation):"
         read customPackageName
@@ -1949,10 +1942,10 @@ ftBootAnimation()
         dirPathAnimationSourceRes=$dirPathAnimation
         cd $dirPathAnimationSourceRes
 
-        if [[ -z $(ls $dirPathAnimationSourceRes) ]];then
+        if [[ -z $(gls $dirPathAnimationSourceRes) ]];then
             ftEcho -ex 空的动画资源，请确认[${dirPathAnimationSourceRes}]是否存在动画文件
         else
-            filelist=$(ls $dirPathAnimationSourceRes)
+            filelist=$(gls $dirPathAnimationSourceRes)
             local dirPathLocal=$PWD
             cd $dirPathAnimationSourceRes && trap '[ -d "$dirPathLocal" ] && cd $dirPathLocal && dirPathLocal= && exit' SIGINT
             for file in ${filelist[@]} ; do [ ! -f "$file" ] && ftEcho -ex "动画资源包含错误类型的文件[${file}]，请确认" && break ;done
@@ -1962,7 +1955,7 @@ ftBootAnimation()
 
         dirPathAnimationTraget=/${rDirPathUserHome}/${dirNameAnimation}
 
-        if [ -d $dirPathAnimationTraget ]||[[ -n $(ls $dirPathAnimationTraget) ]] ;then
+        if [ -d $dirPathAnimationTraget ]||[[ -n $(gls $dirPathAnimationTraget) ]] ;then
             while true; do
             ftEcho -y ${ftEffect}的目标文件[${dirPathAnimationTraget}]夹非空，是否删除重建
             read -n 1 sel
@@ -1980,7 +1973,7 @@ ftBootAnimation()
         touch  ${dirPathAnimationTraget}/${fileNameDesc}
 
         #文件名去空格
-        for loop in $(ls -1 | tr ' '  '#') ; do mv  "$(echo $loop | sed 's/#/ /g' )"  "$(echo $loop |sed 's/#//g')"  2> /dev/null ;done
+        for loop in $(gls -1 | tr ' '  '#') ; do mv  "$(echo $loop | gsed 's/#/ /g' )"  "$(echo $loop |gsed 's/#//g')"  2> /dev/null ;done
 
         local file1=${filelist[0]} file1=${file1##*.}
         [ $file1 != "jpg" ] && [ $file1 != "png" ] && ftEcho -e 特殊格式[${file1}]动画资源文件，生成包大小可能异常
@@ -2185,11 +2178,11 @@ ftReduceFileList()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftReduceFileList -h && return $resultFail
 
     #实现主体
-    [[ -z $(ls $dirPathFileList) ]] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
+    [[ -z $(gls $dirPathFileList) ]] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
 
     percentage=$((100 - $percentage))
-    local filelist=$(ls $dirPathFileList)
-    local fileCount=$(ls -l $dirPathFileList| grep "^-" | wc -l)
+    local filelist=$(gls $dirPathFileList)
+    local fileCount=$(gls -l $dirPathFileList| grep "^-" | wc -l)
     local continueThreshold=$(( $percentage * $fileCount ))
     local fileCountDel=$(( $continueThreshold / 100 ))
     local indexFlag=$(( $fileCount*100 / $continueThreshold ))
@@ -2267,11 +2260,11 @@ ftReNameFile()
     * )  errorContent="${errorContent}\\naregument invalid:${arg}"
              break
             ;; esac;done
-    [ ! -d "$dirPathFileList" ]||[[ -z "$(ls $dirPathFileList)" ]] && errorContent="${errorContent}\\n[目标目录无效]$dirPathFileList"
+    [ ! -d "$dirPathFileList" ]||[[ -z "$(gls $dirPathFileList)" ]] && errorContent="${errorContent}\\n[目标目录无效]$dirPathFileList"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftReNameFile -h && return $resultFail
 
     #实现主体
-    [[ -z $(ls $dirPathFileList) ]] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
+    [[ -z $(gls $dirPathFileList) ]] && ftEcho -ex 空的资源目录，请确认[${dirPathFileList}]是否存在资源文件
 
     local index=0 fileName fileSuffixName itemNew
     local dirNameFileListRename=RenameFiles
@@ -2285,7 +2278,7 @@ ftReNameFile()
     [[ -n "${startNumber}" ]] && index=$startNumber
     while read file ;do
         [ "$file" == "$dirNameFileListRename" ] && continue
-        itemNew=$(echo ${file} |sed s/[[:space:]]/_/g)
+        itemNew=$(echo ${file} |gsed s/[[:space:]]/_/g)
         [[ "${file}" != "${itemNew}" ]] && mv "${dirPathFileList}/${file}" "${dirPathFileList}/${itemNew}" && file="${itemNew}"
 
         fileName=${file%.*}
@@ -2301,16 +2294,16 @@ ftReNameFile()
 
         [[ -n "${isAddName}" ]] && fileName="${fileNameAddPrefix}${fileName}"
         [[ -n "${isAddNameEnd}" ]] && fileSuffixName="${fileNameAddSuffix}"
-        #[[ -n "${fileTagBase}" ]] && fileName="$(echo $fileName |sed s/$fileTagBase/$fileTagNew/g)"
+        #[[ -n "${fileTagBase}" ]] && fileName="$(echo $fileName |gsed s/$fileTagBase/$fileTagNew/g)"
         [[ -n "${fileTagBase}" ]] && fileName=$(echo ${fileName/$fileTagBase/$fileTagNew})
         # echo "fileTagBase=${fileTagBase}"
         # echo "fileTagNew=${fileTagNew}"
         # echo "fileName2=${fileName}"
         
-        [[ -n "${fileSuffixTagBase}" ]] && fileSuffixName="$(echo $fileSuffixName |sed s/$fileSuffixTagBase/$fileSuffixTagNew/g)"
+        [[ -n "${fileSuffixTagBase}" ]] && fileSuffixName="$(echo $fileSuffixName |gsed s/$fileSuffixTagBase/$fileSuffixTagNew/g)"
         cp -rf -v "${dirPathFileList}/${file}" ${dirPathFileListRename}/${fileName}.${fileSuffixName}
         ((index+=1))
-    done < <(echo "$(ls $dirPathFileList)")
+    done < <(echo "$(gls $dirPathFileList)")
     cd "${dirPathLocal}"
 }
 
@@ -2384,7 +2377,7 @@ ftMaintainSystem()
         backup )
                     local dirPathLocal=${PWD}
                     local filePathVersionInfo=$filePathVersionInfoVersion
-                    local infoVersionName=backup_${rUserName}_$(date -d "today" +"%Y%m%d")
+                    local infoVersionName=backup_${rUserName}_$(gdate -d "today" +"%Y%m%d")
                     local fileNameVersion=${infoVersionName}.$(ftIniEditUtil -r $filePathVersionInfoMaintain ubuntuMaintainConfigInfo backupPackageSuffixName)
                     # 进入根目录
                         cd /
@@ -2494,8 +2487,8 @@ ftMaintainSystem()
         sdFinish )
                     [[ -z $(which e4defrag) ]] && ftMaintainSystem --rely "e4defrag" && return $resultFail
 
-                    devNameDirPathList=$(df -lh | awk '{print $1}')
-                    devMountDirPathList=($(df -lh | awk '{print $6}'))
+                    devNameDirPathList=$(df -lh | gawk '{print $1}')
+                    devMountDirPathList=($(df -lh | gawk '{print $6}'))
                     indexDevName=0
                     indexDev=0
                     devPathList=
@@ -2561,7 +2554,7 @@ ftFind()
 
     if [[ -n "${isSuffix}" ]]; then
         (( $#<=3 )) && find "${pathTarget}" -name "${nameList}" && return $resultFail
-        nameAll=$(echo "${nameList}" | sed -e "s: :|:g")
+        nameAll=$(echo "${nameList}" | gsed -e "s: :|:g")
         if [[ -n "${contentKey}" ]];then
             find "${pathTarget}" -regextype posix-extended -regex ".*\.(${nameAll})" | xargs grep -e "${contentKey}"
             return
@@ -2570,7 +2563,7 @@ ftFind()
         return
     fi
 
-    nameAll=$(echo "${nameList[@]}" | sed -e "s: ::g")
+    nameAll=$(echo "${nameList[@]}" | gsed -e "s: ::g")
     if [[ -n "${contentKey}" ]];then
         find "${pathTarget}" ! -type d -name ${nameAll}| xargs grep -e "${contentKey}"
         return
@@ -2616,7 +2609,7 @@ ftPdfPasswordClear()
     #实现主体
     local  itemNew
     while read item ;do
-        itemNew=$(echo ${item} |sed s/[[:space:]]/_/g)
+        itemNew=$(echo ${item} |gsed s/[[:space:]]/_/g)
         [[ "${item}" != "${itemNew}" ]] && mv "${dirPathTarget}/${item}" "${dirPathTarget}/${itemNew}" && item="${itemNew}"
         local dirPathTemp="${dirPathTarget}/${item}"
 
@@ -2633,7 +2626,7 @@ ftPdfPasswordClear()
             rm "${filePathTemp}" > /dev/null
 
         fi
-    done < <(echo "$(ls $dirPathTarget)")
+    done < <(echo "$(gls $dirPathTarget)")
 }
 
 
@@ -2712,7 +2705,7 @@ ftUpdateSublimeSnippet()
     cd $dirPathSublimeSnippet
     while read item ;do
        ln -sf ${dirPathConfigSource}/${item}
-    done < <(echo "$(ls $dirPathConfigSource)")
+    done < <(echo "$(gls $dirPathConfigSource)")
     cd $dirPathLocal
 }
 
@@ -2766,7 +2759,7 @@ ftOpenNemoTab()
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftOpenNemoTab -h && return $resultFail
 
     #实现主体
-    local windowId=$(wmctrl -xl | grep "nemo.Nemo"| awk '{print $1}')
+    local windowId=$(wmctrl -xl | grep "nemo.Nemo"| gawk '{print $1}')
     if [ -z "${windowId}" ]; then
         nemo "$dirPathTarget"
     else
@@ -2868,7 +2861,7 @@ ftCdAospDirectory()
                         local dirPathProduct="out/target/product"
                         while read item ;do
                            [[ -f "${dirPathProduct}/${item}/system.img" ]] && dirPathProduct=${dirPathProduct}/${item} && break
-                        done < <(echo "$(ls $dirPathProduct)")
+                        done < <(echo "$(gls $dirPathProduct)")
 
                         [[ "${arg}" = "system" ]] && dirPathTarget="${dirPathProduct}/system"
                         [[ "${arg}" = "productObj" ]] && dirPathTarget="${dirPathProduct}/obj"
@@ -2944,13 +2937,13 @@ ftCheckCcache()
     local keyCacheSizeMax="max cache size"
     local UnitMb="Mbytes" UnitGb="Gbytes"
     local cacheSizeNow=$(ccache -s |grep -v "${keyCacheSizeMax}" |grep "$keyCacheSizeNow")
-    local cacheSizeNowUint=$(echo $cacheSizeNow| awk '{print $4}' )
-            cacheSizeNow=$(echo $cacheSizeNow| awk '{print $3}')
+    local cacheSizeNowUint=$(echo $cacheSizeNow| gawk '{print $4}' )
+            cacheSizeNow=$(echo $cacheSizeNow| gawk '{print $3}')
             cacheSizeNow=${cacheSizeNow%.*}
-    local cacheSizeNowUnit=$(ccache -s |grep -v "${keyCacheSizeMax}" |grep "${keyCacheSizeNow}"| awk '{print $4}')
-    local cacheSizeMax=$(ccache -s |grep "$keyCacheSizeMax" | tr -d "a-zA-Z"|sed s/[[:space:]]//g)
+    local cacheSizeNowUnit=$(ccache -s |grep -v "${keyCacheSizeMax}" |grep "${keyCacheSizeNow}"| gawk '{print $4}')
+    local cacheSizeMax=$(ccache -s |grep "$keyCacheSizeMax" | tr -d "a-zA-Z"|gsed s/[[:space:]]//g)
             cacheSizeMax=${cacheSizeMax%.*}
-    local cacheSizeMaxUnit=$(ccache -s |grep "$keyCacheSizeMax"| awk '{print $5}')
+    local cacheSizeMaxUnit=$(ccache -s |grep "$keyCacheSizeMax"| gawk '{print $5}')
     local ccacheStorageDeviceAvailableSpaceSize=$(ftDevAvailableSpace -g ${CCACHE_DEV_DIR})
             ccacheStorageDeviceAvailableSpaceSize=${ccacheStorageDeviceAvailableSpaceSize%.*}
 
@@ -3087,7 +3080,7 @@ ftMtkLog()
         local dirNameMtkLog=mtklog
         local dirPathLogDevice=/sdcard/mtklog
         local dirPathBuildpropDevice=/system/build.prop
-        local editFlag=$(date -d "today" +"%y%m%d%H%M%S")
+        local editFlag=$(gdate -d "today" +"%y%m%d%H%M%S")
         local dirPathLogStorgeAll=$(ftPath $dirPathLogStorge)/${dirNameMtkLog}/${editFlag}_${deviceId}
 
         if [[ -n $(adb -s $deviceId shell "[ -d $dirPathLogDevice ]&&echo exit") ]]; then
@@ -3110,7 +3103,7 @@ ftMtkLog()
                 ftEcho -s "正在导出mtklog 到 ${dirPathLogStorge}"
 
                 adb -s $deviceId shell ls ${dirPathLogDevice} | while read dirNameLog;do
-                    dirNameLog=$(echo $dirNameLog |sed s/[[:space:]]//g)
+                    dirNameLog=$(echo $dirNameLog |gsed s/[[:space:]]//g)
                     dirPathLog=${dirPathLogStorgeAll}/${dirNameLog}
                     [[ ! -d "${dirPathLog}" ]] && mkdir -p ${dirPathLog}
                     adb -s $deviceId pull ${dirPathLogDevice}/${dirNameLog} ${dirPathLog}
@@ -3133,7 +3126,7 @@ ftMtkLog()
                 ftEcho -s "正在导出部分mtklog 到 ${dirPathLogStorge}"
                 adb -s $deviceId pull ${dirPathLogDevice}/aee_exp ${dirPathLogStorgeAll}/aee_exp
                 adb -s $deviceId shell ls ${dirPathLogDevice}/mobilelog | while read dirNameLog;do
-                    dirPathLog=${dirPathLogStorgeAll}/mobilelog/$(echo $dirNameLog |sed s/[[:space:]]//g)
+                    dirPathLog=${dirPathLogStorgeAll}/mobilelog/$(echo $dirNameLog |gsed s/[[:space:]]//g)
                     [[ ! -d "${dirPathLog}" ]] && mkdir -p $dirPathLog
                     adb -s $deviceId pull ${dirPathLogDevice}/mobilelog/${dirNameLog}/crash_log ${dirPathLog}
                 done
@@ -3330,9 +3323,9 @@ ftAdbConnect()
     local deviceIdDefault=0123456789ABCDEF
     local deviceLogcatBufferCacheMax=100M
     local deviceId=${deviceIdDefault}
-    local deviceIdTarget=$(date -d "today" +"%y%m%d%H%M%S")
+    local deviceIdTarget=$(gdate -d "today" +"%y%m%d%H%M%S")
     local deviceIdList=($(adb devices |grep -v "List of devices attached" |awk '{print $1}'))
-    local deviceIdListUniq=($(echo "${deviceIdList[@]}"  | sed 's/ /\n/g' |sort |uniq))
+    local deviceIdListUniq=($(echo "${deviceIdList[@]}"  | gsed 's/ /\n/g' |sort |uniq))
     local deviceCount=${#deviceIdList[@]}
     local deviceCountUniq=${#deviceIdListUniq[@]}
     local deviceIdold=$autoTestDeviceId
@@ -3424,7 +3417,7 @@ ftAdbConnect()
                 ipAddressList=(${ipAddressList[@]} ${ip})
             done
         else
-             ipAddressList=($(adb shell ifconfig wlan0 |grep -v "wlan0: No such device"| awk '{print $3}'))
+             ipAddressList=($(adb shell ifconfig wlan0 |grep -v "wlan0: No such device"| gawk '{print $3}'))
         fi
         [[ -z ${ipAddressList[@]} ]]||(( ${#ipAddressList[@]}==0 )) && ftEcho -e "无法获取设备wifi相关IP地址" && return $resultFail
 
@@ -3444,7 +3437,7 @@ ftAdbConnect()
     # 自动提权
     if [[ -n "${isElevation}" ]]; then
         local keyAdbVersion="Android Debug Bridge version "
-        local adbVersionCode=$(adb version |grep "${keyAdbVersion}" | sed -e "s:$keyAdbVersion::g")
+        local adbVersionCode=$(adb version |grep "${keyAdbVersion}" | gsed -e "s:$keyAdbVersion::g")
         local result=$(ftVersionComparison $adbVersionCode "1.0.32") resultFlag=">"
 
         [[ ${result} == *$resultFlag* ]] && adb -s $deviceId disable-verity
@@ -3666,7 +3659,7 @@ ftMD5()
         # 变量参数解析部分==============
         -c )   filePathVersion="${arg2}"
                 if [[ -f "${arg2}" ]]; then
-                    echo $(md5sum $filePathVersion | awk '{print $1}')
+                    echo $(md5sum $filePathVersion | gawk '{print $1}')
                     return
                 fi
            ;;
@@ -3695,11 +3688,11 @@ ftMD5()
         onlyCreate )
                     export ftMD5Info=
                     ftEcho -s "生成文件:[$(basename ${filePathVersion})]的MD5"
-                    export ftMD5Info=$(md5sum $filePathVersion | awk '{print $1}')
+                    export ftMD5Info=$(md5sum $filePathVersion | gawk '{print $1}')
                     return;;
         setMd5 )
                     ftEcho -s "文件 : ${fileNameVersion} MD5信息正在生成，请稍等"
-                    local md5Code=$(md5sum $filePathVersion | awk '{print $1}')
+                    local md5Code=$(md5sum $filePathVersion | gawk '{print $1}')
                     ftIniEditUtil -w $filePathInfo $versionName MD5 $md5Code
                     ftEcho -s "文件 : ${fileNameVersion} MD5信息已生成"
                     return;;
@@ -3707,7 +3700,7 @@ ftMD5()
                     ftEcho -bh "文件 : ${versionName} MD5检验开始"
                     local Md5Code=$(ftIniEditUtil -r $filePathInfo $versionName MD5)
                     [[ -z "$Md5Code" ]] && ftEcho -e "文件 : ${versionName}  原始MD5未找到" && exit
-                    local Md5CodeNow=$(md5sum $filePathVersion | awk '{print $1}')
+                    local Md5CodeNow=$(md5sum $filePathVersion | gawk '{print $1}')
                     [ "$Md5CodeNow"x != "$Md5Code"x ] && ftEcho -e "文件 : ${versionName} MD5检验失败" && exit
 
                     ftEcho -s "文件 : ${versionName} MD5检验成功"
@@ -3987,12 +3980,12 @@ ftAutoCreateProguardRulesPro()
     cp -rf ${filePathConfigExamle} ${filePathConfig}
 
     local packageList=($(find ${dirPathModuleJavaSourceCode} -name *.java | xargs cat |grep package))
-    local packageList=($(awk -v RS=' ' '!a[$1]++' <<< ${packageList[@]})) #去重复
+    local packageList=($(gawk -v RS=' ' '!a[$1]++' <<< ${packageList[@]})) #去重复
     for packageName in ${packageList[@]}; do
         if [[ ${packageName} = "package" ]]; then
             continue
         fi
-        packageName=$(echo $packageName | sed -e "s:;::g")
+        packageName=$(echo $packageName | gsed -e "s:;::g")
         echo "-keep class ${packageName}.**  {*;}" >> ${filePathConfig}
     done
 
@@ -4151,7 +4144,7 @@ ftDelRepeatFile()
     local fileNameFileListScanResult=RepeatFileScanResult.list
 
     fdupes -Sr "${dirPathTarget}" > $fileNameFileListScanResult
-    sed '/bytes each/d' ${fileNameFileListScanResult} > ${fileNameFileListScanResult}2
+    gsed '/bytes each/d' ${fileNameFileListScanResult} > ${fileNameFileListScanResult}2
     mv ${fileNameFileListScanResult}2 $fileNameFileListScanResult
     local repeatFileScanResultList=($(cat ${fileNameFileListScanResult})) && rm $fileNameFileListScanResult
     local fileIndex=${#repeatFileScanResultList[@]} fileIndexNext 
@@ -4231,13 +4224,13 @@ ftLoadGitCompletion()
 
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
 
-    local gitVersion=$(git --version)
-    gitVersion=$(echo $gitVersion | sed -e "s:git version::g" |sed s/[[:space:]]//g)
+    local gitVersion=$(git -v)
+    gitVersion=$(echo $gitVersion | gsed -e "s:git version::g" |gsed s/[[:space:]]//g)
 
     local checkResult=$(ftVersionComparison "2.4" "${gitVersion}" )
-    if [[ $checkResult == "<" ]]; then
-        return
-    fi
+    # if [[ $checkResult == "<" ]]; then
+    #     return
+    # fi
     if [[ -f $rFilePathGitBash ]];then source  $rFilePathGitBash
     else echo -e "\033[1;31m非Xbash自定义的git扩展块加载失败\n${rFilePathGitBash}\033[0m" ;fi
 }
@@ -4249,12 +4242,12 @@ ftDf()
 
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
 
-    df -lh |grep -E "Filesystem"| awk '{print "\033[1;33m" $0 "\033[0m"; }'
+    df -lh |grep -E "Filesystem"| gawk '{print "\033[1;33m" $0 "\033[0m"; }'
     df -lh |grep -E "文件系统|/dev/" |grep -v "/snap" |grep -v "/boot/efi" \
-    | awk '{ if ($5 >= 75) print "\033[0;31m" $0 "\033[0m"; else print $0 }'
+    | gawk '{ if ($5 >= 75) print "\033[0;31m" $0 "\033[0m"; else print $0 }'
 }
 
-complete -W "-h --help --rely_install --speed --playContent" ftEdgeTTs
+complete -W "-h --help --speed --playContent" ftEdgeTTs
 ftEdgeTTs()
 {
     local ftEffect=EdgeTts播放工具
@@ -4272,11 +4265,6 @@ ftEdgeTTs()
 #    ${ftEffect}依赖包 $2
 #    请尝试使用 ftEdgeTTs --rely_install 补全依赖
 #========================================================="; return ;;
-        --rely_install)
-            ftEcho -s "开始补全依赖"
-            sudo apt-get install xsel
-            pip install edge-tts
-            return ;;
         -h | --help) ftEcho -rc "${ftEffect}" "的使用示例" "\
 #=========================================================
 #    以下[参数对]无先后顺序可任意组合
@@ -4304,7 +4292,6 @@ ftEdgeTTs()
     [ ! -d "${dirPathPythonVirtualEnvironment}" ] && ftEcho -e "\\n[环境异常,目录不存在]${dirPathPythonVirtualEnvironment}" && return $resultFail
     
     source ${dirPathPythonVirtualEnvironment}activate
-    [[ -z $(which xsel) ]] && ftEdgeTTs --rely "xsel" && return $resultFail
     [[ -z $(which edge-playback) ]] && ftEdgeTTs --rely "edge-tts" && return $resultFail
     [[ -z $(which play) ]] && ftEdgeTTs --rely "sox" && return $resultFail
 
@@ -4317,7 +4304,7 @@ ftEdgeTTs()
         return
     fi
     touch $filePathLock && trap '[ -f "$filePathLock" ] && rm $filePathLock && exit' SIGINT
-    [ -z "${playContent}" ] && playContent="$(xsel | sed -e :a -e 'N;s/\n/ /;ta')"
+    [ -z "${playContent}" ] && playContent="$(pbpaste | gsed -e :a -e 'N;s/\n/ /;ta')"
     [ -z "${playContent}" ] && ftEcho -e "播放内容为空" && return
     ! $isModeHide && ftEcho -s "${playContent}"
 
@@ -4337,15 +4324,11 @@ ftEdgeTTs()
         ftEcho -s "${filePathMediaCache} is update complete"
     fi
 
-    [[ -f $filePathMediaCache ]] && play $filePathMediaCache && export playContentCache=$playContent
+    [[ -f $filePathMediaCache ]] && afplay $filePathMediaCache && export playContentCache=$playContent
     [[ ! -f $filePathMediaCache ]] && ftEcho -e "音频文件不存在" && export playContentCache=
 
     rm $filePathLock
 
-    #echo "(SayText \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\")" | festival  '(voice_cmu_us_slt_arctic_hts)' -
-    #-pipe
-
-    # bash -c "espeak -s100 -g20 -p80 -v english-us \"$(xsel | sed -e :a -e 'N;s/\n/ /;ta')\""
 }
 
 complete -W "-h --help --rely -fpt -dpm -txt -fpm -speed --flag" ftText2Mp3
@@ -4399,8 +4382,8 @@ ftText2Mp3()
              # break
             ;; esac;done
 
-    local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
-    [ ! -d "${dirPathPythonVirtualEnvironment}" ] && errorContent="${errorContent}\\n[环境异常,目录不存在]:${dirPathPythonVirtualEnvironment}"
+    # local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
+    # [ ! -d "${dirPathPythonVirtualEnvironment}" ] && errorContent="${errorContent}\\n[环境异常,目录不存在]:${dirPathPythonVirtualEnvironment}"
 
     $isModeSingle && [[ -z $textContxt ]] && errorContent="${errorContent}\\n[语音文本内容未设定]"
     $isModeSingle && [[ -z $filePathMp3 ]] && errorContent="${errorContent}\\n[生成文件存放路径未设定]"
@@ -4408,11 +4391,11 @@ ftText2Mp3()
     ! $isModeSingle && [[ ! -s $filePathText ]] && errorContent="${errorContent}\\n[文本数据文件不存在]:${filePathText}"
     [ -n "$errorContent" ] && ftEcho -e "函数[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftText2Mp3 -h && return $resultFail
     
-    local dirPathLocal=$(pwd)
-    #依赖校验
-    source ${dirPathPythonVirtualEnvironment}activate
-    cd ${dirPathPythonVirtualEnvironment}
-    [[ -z $(which xsel) ]] && ftText2Mp3 --rely "xsel" && cd "${dirPathLocal}" && return $resultFail
+    # local dirPathLocal=$(pwd)
+    # #依赖校验
+    # source ${dirPathPythonVirtualEnvironment}activate
+    
+    # cd ${dirPathPythonVirtualEnvironment}
     [[ -z $(which edge-playback) ]] && ftText2Mp3 --rely "edge-tts" && cd "${dirPathLocal}" && return $resultFail
 
     #实现主体
@@ -4425,11 +4408,11 @@ ftText2Mp3()
             edge-tts --text "${textContxt}" --write-media "${filePathMp3}" && ftEcho -s "生成完成"
         fi
     else
-        local fileTextLineCount=$(sed -n '$=' $filePathText)
+        local fileTextLineCount=$(gsed -n '$=' $filePathText)
         local lineIndex=1 lineContent
         local sleepIndex=0 sleepIndexFlag=4 sleepTime=4
         while (( $lineIndex<=$fileTextLineCount )) ;do
-          lineContent=$(awk 'NR=="'$lineIndex'"' $filePathText)
+          lineContent=$(gawk 'NR=="'$lineIndex'"' $filePathText)
           [[ -z "$lineContent" ]] && ftEcho -s "empty line :${lineIndex}" && (( lineIndex+=1 )) && continue
           ftEcho -s "正在生成line:${lineIndex}=\"${lineContent}\"的${flagName}音频文件"
           [[ -n $speedVal ]] && edge-tts --text "${lineContent}" --rate=${speedVal}%  --write-media "${dirPathMp3}/${lineIndex}${flagName}.mp3" \
@@ -4440,7 +4423,7 @@ ftText2Mp3()
           (( lineIndex+=1 ))
         done
     fi
-    cd "${dirPathLocal}"
+    # cd "${dirPathLocal}"
 }
 
 complete -W "-h --help --rely_install -f -n -nn -c -r" ftTextSetLine
@@ -4499,12 +4482,12 @@ ftTextSetLine()
 
     #code main
     if $isRemoveEmptyLines;then
-        sed '/^\s*$/d' "${filePathText}" > "${filePathText}_temp"
+        gsed '/^\s*$/d' "${filePathText}" > "${filePathText}_temp"
         [[ -f "${filePathText}_temp" ]] && mv "${filePathText}_temp" "${filePathText}"
         return
     fi
 
-    local fileLineCount=$(sed -n '$=' $filePathText)
+    local fileLineCount=$(gsed -n '$=' $filePathText)
     (( lineNum==1 )) && echo "" >> $filePathText
     fileLineCount=${fileLineCount:-'1'}
     # echo "fileLineCount=${fileLineCount}"
@@ -4518,8 +4501,8 @@ ftTextSetLine()
             echo -en "\n\n" >> "${filePathText}"
         done
     fi
-    $isLineContentNone && sed -i "${lineNum}s/.*//" "${filePathText}" && return
-    sed -i "${lineNum}s/.*/${lineContent}/" "${filePathText}"
+    $isLineContentNone && gsed -i "${lineNum}s/.*//" "${filePathText}" && return
+    gsed -i "${lineNum}s/.*/${lineContent}/" "${filePathText}"
 }
 
 _ftRandomArrayWeightedGeneration()
@@ -4627,7 +4610,7 @@ ftRandomArrayWeightedGeneration()
         ;;
         linear_U-shaped)
             k="${kVal:-0.05}"
-            awk -v k="$k" -v start="$flagStart" -v end="$flagEnd" '
+            gawk -v k="$k" -v start="$flagStart" -v end="$flagEnd" '
             BEGIN {
                 if (end < start) {
                     print "错误：end 必须 >= start" > "/dev/stderr"
@@ -4675,7 +4658,7 @@ ftRandomArrayWeightedGeneration()
             # 记忆曲线参数 k（可以调整）
             k=${kVal-0.02} #0.05
 
-            awk -v k="$k" -v start="$flagStart" -v end="$flagEnd" '
+            gawk -v k="$k" -v start="$flagStart" -v end="$flagEnd" '
             BEGIN {
                     # print end "," start
                 # 参数检查

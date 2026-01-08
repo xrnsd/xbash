@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 ##################################################
 ##                                              ##
 ##             学习工具通用实现                   ##
@@ -32,7 +32,7 @@ ftFormatLessonContentNewConceptEnglish()
     [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftFormatLessonContentNewConceptEnglish -h && return $resultFail
 
     #code main
-    local lineSizeTextLessonBasicContent=$(awk 'END{print NR}' $filePathTextLessonBasicContent)
+    local lineSizeTextLessonBasicContent=$(gawk 'END{print NR}' $filePathTextLessonBasicContent)
 
     if (( $lineSizeTextLessonBasicContent==0 ));then
         ftEcho -e "data is none"
@@ -41,18 +41,18 @@ ftFormatLessonContentNewConceptEnglish()
 
     local indexArray=1 lineContent lineContentTemp LessonNumber dirPathLesson filePathLesson
     while (( $indexArray < $lineSizeTextLessonBasicContent  )); do
-        lineContent=$(awk 'NR=="'$indexArray'"' $filePathTextLessonBasicContent)
+        lineContent=$(gawk 'NR=="'$indexArray'"' $filePathTextLessonBasicContent)
 
         if [[ "$lineContent" =~ ^Lesson* ]];then
             lineContentTemp=${lineContent//Lesson/}
-            lineContent=$(echo $lineContentTemp |sed s/[[:space:]]//g)
+            lineContent=$(echo $lineContentTemp |gsed s/[[:space:]]//g)
             LessonNumber=$(printf "%03d" $lineContent)
             ftEcho -s "create lesson ${LessonNumber} article content"
             dirPathLesson="${dirPathLessonDataStorage}/${LessonNumber}"
             filePathLesson="${dirPathLesson}/article.text_english"
             mkdir -p "${dirPathLesson}"
         elif (( ${#lineContent}>0 ));then
-            lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
+            lineContentTemp=$(echo $lineContent |gsed s/[[:space:]]//g)
             if (( ${#lineContentTemp}==0 ));then #there are only space of line content
                 lineContent=
             else #to split sentence content
@@ -96,7 +96,7 @@ ftFormatLessonContentNewConceptChinese()
     [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftFormatLessonContentNewConceptChinese -h && return $resultFail
 
     #code main
-    local lineSizeTextLessonBasicContent=$(awk 'END{print NR}' $filePathTextLessonBasicContent)
+    local lineSizeTextLessonBasicContent=$(gawk 'END{print NR}' $filePathTextLessonBasicContent)
 
     if (( $lineSizeTextLessonBasicContent==0 ));then
         ftEcho -e "data is none"
@@ -105,20 +105,20 @@ ftFormatLessonContentNewConceptChinese()
 
     local indexArray=1 lineContent lineContentTemp LessonNumber dirPathLesson filePathLesson flag
     while (( $indexArray < $lineSizeTextLessonBasicContent  )); do
-        lineContent=$(awk 'NR=="'$indexArray'"' $filePathTextLessonBasicContent)
+        lineContent=$(gawk 'NR=="'$indexArray'"' $filePathTextLessonBasicContent)
         flag=$(echo "${lineContent}"|grep "第" | grep "课")
 
         if [[ -n $flag ]];then
             lineContentTemp=${lineContent//第/}
             lineContent=${lineContentTemp//课/}
-            lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
+            lineContentTemp=$(echo $lineContent |gsed s/[[:space:]]//g)
             LessonNumber=$(printf "%03d" $lineContentTemp)
             ftEcho -s "create lesson ${LessonNumber} article content"
             dirPathLesson="${dirPathLessonDataStorage}/${LessonNumber}"
             filePathLesson="${dirPathLesson}/article.text_chinese"
             mkdir -p "${dirPathLesson}"
         elif (( ${#lineContent}>0 ));then
-            lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
+            lineContentTemp=$(echo $lineContent |gsed s/[[:space:]]//g)
             if (( ${#lineContentTemp}==0 ));then #there are only space of line content
                 lineContent=
             else #to split sentence content
@@ -162,7 +162,7 @@ ftFormatLessonContentAnarchyUnbound()
     [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftFormatLessonContentAnarchyUnbound -h && return $resultFail
 
     #code main
-    local lineSizeTextPartBasicContent=$(awk 'END{print NR}' $filePathTextPartBasicContent)
+    local lineSizeTextPartBasicContent=$(gawk 'END{print NR}' $filePathTextPartBasicContent)
     if (( $lineSizeTextPartBasicContent==0 ));then
         ftEcho -e "data is none"
         return
@@ -173,7 +173,7 @@ ftFormatLessonContentAnarchyUnbound()
     local dirPathPart filePathPartEnglish filePathPartChinese dirPathPartAudioEnglish
     # local isCreatePart=true
     while (( $indexArray < $lineSizeTextPartBasicContent  )); do
-        lineContent=$(awk 'NR=="'$indexArray'"' $filePathTextPartBasicContent | tr -d '\n')
+        lineContent=$(gawk 'NR=="'$indexArray'"' $filePathTextPartBasicContent | tr -d '\n')
         # lineContent2=${lineContent}
         if [[ -z $lineContent ]];then
             lineContentFlag=0
@@ -202,7 +202,7 @@ ftFormatLessonContentAnarchyUnbound()
             # fi
         elif (( ${#lineContent}>0 ));then
             if (( $lineContentFlag == 1  ));then
-                lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
+                lineContentTemp=$(echo $lineContent |gsed s/[[:space:]]//g)
                 if (( ${#lineContentTemp}==0 ));then #there are only space of line content
                     lineContent=
                 else #to split sentence content
@@ -217,7 +217,7 @@ ftFormatLessonContentAnarchyUnbound()
                 # echo -e "indexArray=${indexArray}\n${lineContent2}"
                 (( ${#lineContent}>0 )) && echo -e "${lineContent}" >> $filePathPartEnglish
             elif (( $lineContentFlag == 2  ));then
-                lineContentTemp=$(echo $lineContent |sed s/[[:space:]]//g)
+                lineContentTemp=$(echo $lineContent |gsed s/[[:space:]]//g)
                 if (( ${#lineContentTemp}==0 ));then #there are only space of line content
                     lineContent=
                 else #to split sentence content
@@ -270,9 +270,9 @@ _ftText2Mp3ByLesson()
         * )
             if (( $COMP_CWORD==1 ));then
                 [[ "$cur" =~ ^\- ]] && COMPREPLY=( $(compgen -W "-h --help" -- "$cur") ) ||\
-                COMPREPLY=( $(compgen -W "$(ls --file-type $dirPathTempEng |grep / | awk -F/ '{print $1}')" -- "$cur") )
+                COMPREPLY=( $(compgen -W "$(gls --file-type $dirPathTempEng |grep / | gawk -F/ '{print $1}')" -- "$cur") )
             elif (( $COMP_CWORD==2 )) && [[ -d ${dirPathTempEng}/${prev} ]];then
-                COMPREPLY=( $(compgen -W "$(ls --file-type ${dirPathTempEng}/${prev} |grep / | awk -F/ '{print $1}')" -- "$cur") )
+                COMPREPLY=( $(compgen -W "$(gls --file-type ${dirPathTempEng}/${prev} |grep / | gawk -F/ '{print $1}')" -- "$cur") )
             else
                 COMPREPLY=( $(compgen -W "--type --lan --speed --flag" -- "$cur") )
             fi
@@ -356,7 +356,7 @@ _ftText2Mp3ByLessonGroup()
         * )
             if (( $COMP_CWORD==1 ));then
                 [[ "$cur" =~ ^\- ]] && COMPREPLY=( $(compgen -W "-h --help" -- "$cur") ) ||\
-                COMPREPLY=( $(compgen -W "$(ls --file-type $dirPathTempEng |grep / | awk -F/ '{print $1}')" -- "$cur") )
+                COMPREPLY=( $(compgen -W "$(gls --file-type $dirPathTempEng |grep / | gawk -F/ '{print $1}')" -- "$cur") )
             else
                 COMPREPLY=( $(compgen -W "--type --lan --speed --flag" -- "$cur") )
             fi
@@ -411,7 +411,7 @@ ftText2Mp3ByLessonGroup()
       echo "===============  课程${lessonName}  =========================="
       ftText2Mp3ByLesson ${LessonGroupName} ${lessonName} --type "$contentType" --lan "${playAudioLanguage}" --speed "${playSpeed}" --flag "${flagName}"
       sleep 5
-    done < <(echo "$(ls $dirPathLessonGroup)")
+    done < <(echo "$(gls $dirPathLessonGroup)")
 }
 
 complete -W "-h --help" ftText2Mp3Apply
@@ -447,13 +447,12 @@ ftText2Mp3Apply()
     [ -n "$errorContent" ] && ftEcho -ea "method [${ftEffect}] argument error ${errorContent}\\nplease read help information:" && ftText2Mp3Apply -h && return $resultFail
     source ${dirPathPythonVirtualEnvironment}activate
     cd ${dirPathPythonVirtualEnvironment}
-    [[ -z $(which xsel) ]] && ftText2Mp3 --rely "xsel" && return $resultFail
     [[ -z $(which edge-playback) ]] && ftText2Mp3 --rely "edge-tts" && return $resultFail
 
     #code main
     local dirPathPythonVirtualEnvironment="${HOME}/.venv/bin/"
     local dirPathTempEng=$(ftIniEditUtil -r  $rFilePathXbashDBUser learnConfigInfo  dirPathRootExampleSentence)
-    local lineContent=$(awk 'NR=="'$lineNumber'"' $filePathTextData)
+    local lineContent=$(gawk 'NR=="'$lineNumber'"' $filePathTextData)
     [[ -z "$lineContent" ]] && ftEcho -s "empty line " && return
     edge-tts --text "${lineContent}" --write-media "${dirPathAudio}/${lineNumber}.mp3"
 }

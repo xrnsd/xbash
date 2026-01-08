@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 
 
 #网络加速工具
@@ -16,7 +16,7 @@ ftBootClash()
         fi
         (( flag+=1 ))
         sleep 3
-        if [[ -z $(wmctrl -xl | grep "clash for windows.Clash for Windows"| awk '{print $1}') ]]; then
+        if [[ -z $(wmctrl -xl | grep "clash for windows.Clash for Windows"| gawk '{print $1}') ]]; then
             break
         fi
     done

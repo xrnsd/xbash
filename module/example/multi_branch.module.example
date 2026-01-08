@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 #####-----------------------固定部分------------------------------#########
 branchName=$1
 git reset --hard&&

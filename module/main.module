@@ -23,14 +23,14 @@ shopt -s histappend
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-# If set, the pattern "**" used in a pathname expansion context will
+# If set, the pattern "**" ugsed in a pathname expansion context will
 # match all files and zero or more directories and subdirectories.
 #shopt -s globstar
 
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
-# set variable identifying the chroot you work in (used in the prompt below)
+# set variable identifying the chroot you work in (ugsed in the prompt below)
 if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
@@ -113,7 +113,7 @@ fi
 #---------------- 初始化xbash变量 ----------------------------------
     [[ -z "$SUDO_USER" ]] && userName=$USER || userName=$SUDO_USER
     export dirNameXbash=xbash
-    export dirPathHome="/home/${userName}"
+    export dirPathHome="/Users/${userName}"
     export dirPathHomeXbash=${dirPathHome}/${dirNameXbash}
 
     [ ! -d "$dirPathHomeXbash" ] && echo -e "\033[1;31mXbash下实现的自定义命令不可用[dirPathHomeXbash=$dirPathHomeXbash]\033[0m" && return
@@ -150,7 +150,7 @@ fi
     #加载 user module
     if [ ! -f $rFilePathXbashModuleUser ]; then
         [ ! -d $rDirPathXbashModuleUser ] && mkdir $rDirPathXbashModuleUser
-        echo "#! /bin/bash" > $rFilePathXbashModuleUser
+        echo "#!/opt/homebrew/bin/bash" > $rFilePathXbashModuleUser
     fi
     if [[ -f $rFilePathXbashModuleUser ]];then source  $rFilePathXbashModuleUser
     else echo -e "\033[1;31mXbash的用户独立模块创建失败:\n${rFilePathXbashModuleUser}\033[0m" ;fi
@@ -187,4 +187,7 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
-. "$HOME/.cargo/env"
+#. "$HOME/.cargo/env"
+
+# Created by `pipx` on 2026-01-05 11:04:05
+export PATH="$PATH:/Users/myname/.local/bin"

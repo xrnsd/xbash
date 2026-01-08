@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 [[ -f "$rFilePathXbashModuleLearnCommon" ]] && source $rFilePathXbashModuleLearnCommon
 ##################################################
 ##                                              ##
@@ -94,7 +94,10 @@ ftLearnRepetionDrill()
             ;;
         --asr )  asrApiType="${arg2}"
                 case "${asrApiType}" in
-                    vosk | sherpa_onnx )
+                    vosk)  [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
+                         errorContent="${errorContent}ASR tool: VOSK is abandoned"
+                        ;;
+                    sherpa_onnx )
                         ;;
                     * )  [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
                          errorContent="${errorContent}invalid asr aregument :${asrApiType}"
@@ -110,11 +113,11 @@ ftLearnRepetionDrill()
               operateMode="${operateMode}T"
             ;;
         -fq ) isAutomaticSwitching=true
-            [[ -n $arg2 ]] && [[ -n $(echo $arg2| sed -n "/^[0-9]\+$/p") ]] && \
+            [[ -n $arg2 ]] && [[ -n $(echo $arg2| gsed -n "/^[0-9]\+$/p") ]] && \
             readTimeOut="${arg2}"
             ;;
-        -pl ) [[ -z $(which play) ]] && ftLearnRepetionDrill --rely "sox" && return $resultFail
-              [[ -z $(which xclip) ]] && ftLearnRepetionDrill --rely "xclip" && return $resultFail 
+        -pl ) [[ -z $(which afplay) ]] && ftLearnRepetionDrill --rely "afplay" && return $resultFail
+              [[ -z $(which pbcopy) ]] && ftLearnRepetionDrill --rely "pbcopy" && return $resultFail 
               isOperatePlayAudio=true
               operateMode="${operateMode}L"
               [[ "${arg2}" == "cn" ]] && isPlayChineseTips=true
@@ -169,7 +172,7 @@ ftLearnRepetionDrill()
         [ -z "${delSel}" ] && delSel=y
         if [[ $delSel != "y" ]] || \
             ( [[ -f $filePathDataItemLinkTable ]] && [[ -z $lessonMd5Cache ]] ) || \
-            ( [[ -f $filePathDataItemLinkTable ]] && [[ "$lessonMd5Cache" != "$(md5sum $filePathDataItemLinkTable | awk '{print $1}')" ]] );then
+            ( [[ -f $filePathDataItemLinkTable ]] && [[ "$lessonMd5Cache" != "$(md5sum $filePathDataItemLinkTable | gawk '{print $1}')" ]] );then
             isUseDrillingRecord=false
             #delete status
             ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName"
@@ -260,7 +263,7 @@ ftLearnRepetionDrill()
     local drillInfomationTips="Group Lesson Content_type Operation_mode" drillInfomationTipsGone
     local drillInfomationTipsContent="${lessonGroupNameSel} ${lessonNameSel} ${contentType} ${operateMode}"
 
-    local timingStart=$(date +%s -d $(date +"%H:%M:%S")) timingChang
+    local timingStart=$(gdate +%s -d $(gdate +"%H:%M:%S")) timingChang
 
     #============= the code port of handle article content ==================
     if [[ "$contentType" = "article" ]]; then
@@ -295,7 +298,7 @@ ftLearnRepetionDrill()
             bcompare &
             local windowFlag="bcompare.Beyond Compare" windowId=
             for ((i=1;i<=30;i++)); do
-                windowId=$(wmctrl -xl | grep "${windowFlag}"| awk '{print $1}')
+                windowId=$(wmctrl -xl | grep "${windowFlag}"| gawk '{print $1}')
                 [[ -n "$windowId" ]] && break
                 sleep 0.1
             done
@@ -310,20 +313,20 @@ ftLearnRepetionDrill()
             #alignment drill result
             if [[ "$contentType" = "imitate" ]]&&\
                        [[ $lessonGroupContentType = "ImitateTraining" ]];then
-                local fileLineCount=$(sed -n '$=' $filePathTempWriteDrillText)
+                local fileLineCount=$(gsed -n '$=' $filePathTempWriteDrillText)
                 local filePathTempWriteDrillTextAlignment="${filePathTempWriteDrillText}Alignment"
                 echo -n "" > "${filePathTempWriteDrillTextAlignment}"
                 for (( index = 1; index <= $fileLineCount; index++ )); do
-                    awk 'NR=="'$index'"' $filePathTempWriteDrillText >> "${filePathTempWriteDrillTextAlignment}"
-                    awk 'NR=="'$index'"' $filePathDataItemContentTextEnglish >> "${filePathTempWriteDrillTextAlignment}"
+                    gawk 'NR=="'$index'"' $filePathTempWriteDrillText >> "${filePathTempWriteDrillTextAlignment}"
+                    gawk 'NR=="'$index'"' $filePathDataItemContentTextEnglish >> "${filePathTempWriteDrillTextAlignment}"
                 done
                 gedit "${filePathTempWriteDrillTextAlignment}"
-                fileLineCount=$(sed -n '$=' "${filePathTempWriteDrillTextAlignment}")
+                fileLineCount=$(gsed -n '$=' "${filePathTempWriteDrillTextAlignment}")
                 for (( index = 0; index <= $fileLineCount; index+=2 )); do
-                    awk 'NR=="'$index'"' "${filePathTempWriteDrillTextAlignment}" >> "${filePathTempWriteDrillTextAlignment}Example"
+                    gawk 'NR=="'$index'"' "${filePathTempWriteDrillTextAlignment}" >> "${filePathTempWriteDrillTextAlignment}Example"
                 done
                 for (( index = 1; index <= $fileLineCount; index+=2 )); do
-                    awk 'NR=="'$index'"' "${filePathTempWriteDrillTextAlignment}" >> "${filePathTempWriteDrillTextAlignment}Temp"
+                    gawk 'NR=="'$index'"' "${filePathTempWriteDrillTextAlignment}" >> "${filePathTempWriteDrillTextAlignment}Temp"
                 done
 
                 mv "${filePathTempWriteDrillTextAlignment}Temp" "${filePathTempWriteDrillText}"
@@ -351,11 +354,11 @@ ftLearnRepetionDrill()
                         if ftTransformDrillReslt "${filePathCompareExampleText}_basic" "${filePathCompareExampleText}" > /dev/null;then
                             echo -e "\033[1;33mDrill results:\033[0m form tranform finished"
                             rm -rf "${filePathCompareExampleText}_basic"
-                            local lineNumList="$(awk '/\\033\[/{print NR}' $filePathCompareExampleText)"
+                            local lineNumList="$(gawk '/\\033\[/{print NR}' $filePathCompareExampleText)"
                             [[ -n $lineNumList ]] && \
                             for lineNum in ${lineNumList[@]}; do
                                 filePathDataItemContentDrillResult="${dirPathDataItemContentDrillResult}/${lineNum}.result"
-                                awk 'NR=="'$lineNum'"' "${filePathCompareExampleText}" >> "${filePathDataItemContentDrillResult}"
+                                gawk 'NR=="'$lineNum'"' "${filePathCompareExampleText}" >> "${filePathDataItemContentDrillResult}"
                                 #delete repeate item
                                 sort -u "${filePathDataItemContentDrillResult}" > "${filePathDataItemContentDrillResult}_Sort"
                                 mv "${filePathDataItemContentDrillResult}_Sort" "${filePathDataItemContentDrillResult}"
@@ -383,7 +386,7 @@ ftLearnRepetionDrill()
         
 
         elif $isOperatePlayAudio ;then
-            local sentenceAudioIndex=1 sentenceAudioCount=$(ls -1 ${dirPathDataItemContentAudio} | wc -l)
+            local sentenceAudioIndex=1 sentenceAudioCount=$(gls -1 ${dirPathDataItemContentAudio} | wc -l)
             ((sentenceAudioCount==0)) && ftEcho -e "Can't find audio file in directory: ${dirPathDataItemContentAudio} " && return $resultFail
 
             local filePathDataItemContentTextEnglishTipsTemp=/tmp/EnglishBasicTipsTemp filePathDataItemSoure
@@ -398,19 +401,19 @@ ftLearnRepetionDrill()
                 cp $filePathDataItemSoure $filePathDataItemContentTextEnglishTipsTemp
                 cp $filePathDataItemSoure ${filePathDataItemContentTextEnglishTipsTemp}2
                 while (( $sentenceAudioIndex <= $sentenceAudioCount  )); do
-                    timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
+                    timingChang=$(( $(gdate +%s -d $(gdate +"%H:%M:%S"))-$timingStart  ))
                     filePathDataItemContentAudio="${dirPathDataItemContentAudio}/${sentenceAudioIndex}.mp3"
                     [ ! -f "${filePathDataItemContentAudio}" ] && ftEcho -en "can't find audio file:" && echo "${filePathDataItemContentAudio}" && continue
 
-                    englishItem=$(awk 'NR=="'$sentenceAudioIndex'"' "${filePathDataItemContentTextEnglishTipsTemp}2")
+                    englishItem=$(gawk 'NR=="'$sentenceAudioIndex'"' "${filePathDataItemContentTextEnglishTipsTemp}2")
                     [[ -z "$englishItem" ]] && ((sentenceAudioIndex+=1)) && continue
                     englishItemTips="\\\033[1;33m${englishItem}\\\033[0m\\\033[44;37m<<<<<<<<<<\\\033[0m"
                     cp -rf "${filePathDataItemContentTextEnglishTipsTemp}2" "${filePathDataItemContentTextEnglishTipsTemp}"
-                    sed -i "${lineIndex}s/${englishItem}/${englishItemTips}/g" $filePathDataItemContentTextEnglishTipsTemp
+                    gsed -i "${lineIndex}s/${englishItem}/${englishItemTips}/g" $filePathDataItemContentTextEnglishTipsTemp
                     clear
                     ftEcho -column 5 "${drillInfomationTips} Duration_info" "${drillInfomationTipsContent} ${timingChang}"
                     echo -e "$(cat $filePathDataItemContentTextEnglishTipsTemp)"
-                    play -q $filePathDataItemContentAudio
+                    afplay $filePathDataItemContentAudio
                     sleep 1
                     ((sentenceAudioIndex+=1))
                 done
@@ -428,19 +431,19 @@ ftLearnRepetionDrill()
 
         elif [[ "$contentType" = "imitate" ]] || [[ $lessonGroupContentType = "ImitateTraining" ]];then
 
-            timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
+            timingChang=$(( $(gdate +%s -d $(gdate +"%H:%M:%S"))-$timingStart  ))
 
-            local fileLineCount=$(sed -n '$=' $filePathDataItemContentTextEnglish) index=1
+            local fileLineCount=$(gsed -n '$=' $filePathDataItemContentTextEnglish) index=1
             local englishItem
             while true; do
                 clear
                 ftEcho -column 5 "${drillInfomationTips} Duration_info" "${drillInfomationTipsContent} ${timingChang}"
                 echo
-                englishItem=$(awk 'NR=="'$index'"' $filePathDataItemContentTextEnglish)
-                echo "${englishItem}" | tr -d '\n' | xclip -sel clip
-                echo -e "$(awk 'NR=="'$index'"' $filePathDataItemContentTextChinese)"
+                englishItem=$(gawk 'NR=="'$index'"' $filePathDataItemContentTextEnglish)
+                echo "${englishItem}" | tr -d '\n' | pbcopy
+                echo -e "$(gawk 'NR=="'$index'"' $filePathDataItemContentTextChinese)"
                 echo -e "$englishItem"
-                echo -e "$(awk 'NR=="'$index'"' $dirPathDataItemContentDrillResult)"
+                echo -e "$(gawk 'NR=="'$index'"' $dirPathDataItemContentDrillResult)"
                 echo
                 ftEcho -key "W Q Any_other_key" "go_to_previous_item to_quit to_the_next_item"
                 read -n 1 operation
@@ -463,17 +466,17 @@ ftLearnRepetionDrill()
                 ftTextGeditBackground "${filePathLearnDrillTemp}" &
             fi
             while true; do
-                timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
+                timingChang=$(( $(gdate +%s -d $(gdate +"%H:%M:%S"))-$timingStart  ))
                 clear
                 ftEcho -column 5 "${drillInfomationTips} Duration_info" "${drillInfomationTipsContent} ${timingChang}"
-                if [ ! "$(ls -A $dirPathDataItemContentDrillResult)" ];then
+                if [ ! "$(gls -A $dirPathDataItemContentDrillResult)" ];then
                     echo -e "${englishItem}"
                 else
-                    local fileLineCount=$(sed -n '$=' $filePathDataItemContentTextEnglish)
+                    local fileLineCount=$(gsed -n '$=' $filePathDataItemContentTextEnglish)
                     for (( index = 1; index <= $fileLineCount; index++ )); do
                        [ -f "${dirPathDataItemContentDrillResult}/${index}.result" ] && \
-                       echo -e $(awk 'NR=="'1'"' "${dirPathDataItemContentDrillResult}/${index}.result") && continue
-                       echo -e $(awk 'NR=="'$index'"' $filePathDataItemContentTextEnglish)
+                       echo -e $(gawk 'NR=="'1'"' "${dirPathDataItemContentDrillResult}/${index}.result") && continue
+                       echo -e $(gawk 'NR=="'$index'"' $filePathDataItemContentTextEnglish)
                     done
                 fi
                 ftEcho -continue "Press any key display translator"
@@ -494,7 +497,7 @@ ftLearnRepetionDrill()
         #save drill status
         local keyNameDrillLesson="lessonDrilled${contentType}${operateMode}"
         ftIniEditUtil -w $filePathLearnDataBase "${lessonGroupNameSel}" "${keyNameDrillLesson}" "${learnLessonListDrilled[*]}" #\
-        # -a -l "$(echo " $lessonNameSel" | sed 's/ /\n/g'| uniq | sort -u)"
+        # -a -l "$(echo " $lessonNameSel" | gsed 's/ /\n/g'| uniq | sort -u)"
 
         #clear drilling records
         ftIniEditUtil -d $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName"
@@ -510,19 +513,19 @@ ftLearnRepetionDrill()
         return
     fi
 
-    local fileSizeDataItemContentTextEnglish=$(sed -n '$=' $filePathDataItemContentTextEnglish)
-    local fileSizeDataItemContentTextChinese=$(sed -n '$=' $filePathDataItemContentTextChinese)
+    local fileSizeDataItemContentTextEnglish=$(gsed -n '$=' $filePathDataItemContentTextEnglish)
+    local fileSizeDataItemContentTextChinese=$(gsed -n '$=' $filePathDataItemContentTextChinese)
     if (($fileSizeDataItemContentTextChinese!=$fileSizeDataItemContentTextEnglish)) ; then
         ftEcho -e "Lesson data exception\n\
         fileSizeDataItemContentTextEnglish=${fileSizeDataItemContentTextEnglish}\n\
         fileSizeDataItemContentTextChinese=${fileSizeDataItemContentTextChinese}"
         return;
     fi
-    [[ -z $arrayIndexSort ]] && arrayIndexSort=($(seq 0 $((fileSizeDataItemContentTextEnglish-1)) | sed 's/ /\n/g' | shuf))
+    [[ -z $arrayIndexSort ]] && arrayIndexSort=($(seq 0 $((fileSizeDataItemContentTextEnglish-1)) | gsed 's/ /\n/g' | shuf))
 
     #save drilling info
     ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName" $lessonNameSel
-    [[ -s $filePathDataItemContentLinkTable ]] && ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_Md5_${lessonNameSel}" "$(md5sum $filePathDataItemContentLinkTable | awk '{print $1}')"
+    [[ -s $filePathDataItemContentLinkTable ]] && ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_Md5_${lessonNameSel}" "$(md5sum $filePathDataItemContentLinkTable | gawk '{print $1}')"
     ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" "${arrayIndexSort[*]}"
 
     if $isOperateTextEdit;then
@@ -565,7 +568,7 @@ ftLearnRepetionDrill()
 
     while (( $indexArray < $arrayIndexSortSize  )); do
         ftTimeConsuming -i
-        timingChang=$(( $(date +%s -d $(date +"%H:%M:%S"))-$timingStart  ))
+        timingChang=$(( $(gdate +%s -d $(gdate +"%H:%M:%S"))-$timingStart  ))
 
         #config next item index
         case $orderType in
@@ -587,7 +590,7 @@ ftLearnRepetionDrill()
         operationType=
         if [[ -s $filePathDataItemContentLinkType ]] || [[ $lessonGroupNameSel = "needRepetionDrill" ]];then
             [[ -f $filePathDataItemContentLinkType ]] && \
-                operationType=$(awk 'NR=="'$lineIndex'"' $filePathDataItemContentLinkType) || \
+                operationType=$(gawk 'NR=="'$lineIndex'"' $filePathDataItemContentLinkType) || \
                 operationType=$lessonNameSeloperationType
 
             filePathLearnDataBaseFailTime="${dirPathTempEng}/needRepetionDrill/${operationType}/${contentType}.database_fail_time"
@@ -667,17 +670,17 @@ ftLearnRepetionDrill()
         while true; do
             #drill status information
             if $isRefDrillInfomationTips;then
-                englishItem=$(awk 'NR=="'$lineIndex'"' $filePathDataItemContentTextEnglish)
+                englishItem=$(gawk 'NR=="'$lineIndex'"' $filePathDataItemContentTextEnglish)
                 [[ -z $englishItem ]] && \
                 ftEcho -column 5 "${drillInfomationTips}" "${drillInfomationTipsContent}" && \
                 ftEcho -e "line ${lineIndex} content is null" && sleep 1.5 && break
                 englishItemLength=${#englishItem}
 
-                chineseItem=$(awk 'NR=="'$lineIndex'"' $filePathDataItemContentTextChinese)
+                chineseItem=$(gawk 'NR=="'$lineIndex'"' $filePathDataItemContentTextChinese)
 
                 unset linkInfo drillInfomationTipsGone
                 if [[ -f ${filePathDataItemContentLinkTable} ]];then
-                    linkInfo=$(awk 'NR=="'$lineIndex'"' ${filePathDataItemContentLinkTable})
+                    linkInfo=$(gawk 'NR=="'$lineIndex'"' ${filePathDataItemContentLinkTable})
                     [[ -z $linkInfo ]] && ftEcho -e "invalid item index ${lineIndex}\n arrayIndexSort=${arrayIndexSort[@]}" && return
                 fi
                 [[ -z $linkInfo ]] && linkInfo="${lessonGroupNameSel}/${lessonNameSel}/${lineIndex}"
@@ -686,16 +689,16 @@ ftLearnRepetionDrill()
 
                 unset failTime
                 if [[ -s $filePathLearnDataBaseFailTime ]];then
-                    failTime=($(grep -sn "${linkInfo}\=" $filePathLearnDataBaseFailTime | awk -F= '{print $2}'))
+                    failTime=($(grep -sn "${linkInfo}\=" $filePathLearnDataBaseFailTime | gawk -F= '{print $2}'))
                     if [[ -z $failTime ]];then
                         failTime=0
                         #写入默认值
-                        [[ $(sed -n '/^$/=' $filePathLearnDataBaseFailTime) = "4" ]] && echo -e "\n" >> $filePathLearnDataBaseFailTime
+                        [[ $(gsed -n '/^$/=' $filePathLearnDataBaseFailTime) = "4" ]] && echo -e "\n" >> $filePathLearnDataBaseFailTime
                         while read failTimeIndex ;do
                           ((failTimeIndex<6))&&continue
-                          sed  -i "${failTimeIndex}i ${linkInfo}=${failTime}" $filePathLearnDataBaseFailTime
+                          gsed  -i "${failTimeIndex}i ${linkInfo}=${failTime}" $filePathLearnDataBaseFailTime
                           break
-                        done < <(sed -n '/^$/=' $filePathLearnDataBaseFailTime)
+                        done < <(gsed -n '/^$/=' $filePathLearnDataBaseFailTime)
                     elif (( ${#failTime[@]} > 1 ));then
                         ftEcho -e  "The ${operationType}‘s ${contentType} record ${linkInfo} is repeated"
                         return
@@ -738,7 +741,7 @@ ftLearnRepetionDrill()
                     fi
                     [[ ! -s $filePathDataItemContentAudioSlowLink ]] && ln -s $filePathDataItemContentAudioSlow $filePathDataItemContentAudioSlowLink
 
-                    [[ -s $filePathDataItemContentAudioSlow ]] && [[ -n $audioInfo ]] && audioInfo=$(echo $audioInfo | sed 's/_/++/g')
+                    [[ -s $filePathDataItemContentAudioSlow ]] && [[ -n $audioInfo ]] && audioInfo=$(echo $audioInfo | gsed 's/_/++/g')
 
                 else
                     drillInfomationTipsGone="${drillInfomationTipsGone} Audio"
@@ -864,7 +867,8 @@ ftLearnRepetionDrill()
                     echo "------------------"
                     [[ -n $optResultTips ]] && echo -e "${optResultTips}\n------------------"
                     [[ -n $tipsItemsContent ]] && [[ $operationType = "word_aloud" ]] && ftEcho -s "${tipsItemsContent}"
-                    [[ -s $filePathAudio ]] && cp -rf $filePathAudio $filePathDataItemContentAudioShare
+                    #[[ -s $filePathAudio ]] && cp -rf $filePathAudio $filePathDataItemContentAudioShare
+                    source "${HOME}/pyenv/sherpa_onnx/bin/activate"
                     case "$asrApiType" in
                         vosk )
                             python3 $rFilePathXbashModuleLearnVosk \
@@ -877,7 +881,7 @@ ftLearnRepetionDrill()
                         *)
                             ftEcho -e "invalid asrApiType : ${asrApiType}" && return ;;
                     esac
-                    
+                    deactivate
                     echo "------------------"
 
                 else
@@ -891,20 +895,20 @@ ftLearnRepetionDrill()
             $isOperateCollectAudio && isOperateCollectAudio=false
 
             #write to clipboard
-            echo "${englishItem}"| tr -d '\n'| xclip -sel clip
+            echo "${englishItem}"| tr -d '\n'| pbcopy
 
-            timeStart=$(date +%s -d $(date +"%H:%M:%S"))
+            timeStart=$(gdate +%s -d $(gdate +"%H:%M:%S"))
             if ! $isOperateCollectAudio && ($isOperatePlayAudio || $isOperatePlayAudioSingle);then
                 if $isOperatePlayAudioVerySlow && [[ -s $filePathDataItemContentAudioVerySlow ]];then
-                    play -q $filePathDataItemContentAudioVerySlow
+                    afplay $filePathDataItemContentAudioVerySlow
                     isOperatePlayAudioVerySlow=false
                 elif $isOperatePlayAudioSlow;then
                     [[ -s $filePathDataItemContentAudioSlow ]] && \
-                        play -q $filePathDataItemContentAudioSlow || \
-                        play -q $filePathDataItemContentAudio tempo 0.85
+                        afplay $filePathDataItemContentAudioSlow || \
+                        afplay -r 0.7 $filePathDataItemContentAudio
                     isOperatePlayAudioSlow=false
                 else
-                    play -q $filePathDataItemContentAudio
+                    afplay $filePathDataItemContentAudio
                     isOperatePlayAudioSlow=true
                 fi
                 isOperatePlayAudioSingle=false
@@ -913,7 +917,7 @@ ftLearnRepetionDrill()
             ftEcho -key -r2
             playOpt=$keyValInput
 
-            timeHandled=$(date +%s -d $(date +"%H:%M:%S"))
+            timeHandled=$(gdate +%s -d $(gdate +"%H:%M:%S"))
             unset isSorting sortingType sortingFlag optResultTips
 
             if [[ -n $readTimeOut ]] && ((timeHandled-timeStart >= $readTimeOut));then
@@ -932,14 +936,14 @@ ftLearnRepetionDrill()
                         #ftTextSetLine -f $filePathDataItemContentTextChinese -nn $lineIndex
 
                         local filePathLinkTable="${dirPathTempEng}/needRepetionDrill/${operationType}/${contentType}.database_fail_time"
-                        local lineIndexFlag=$(grep -sn "^${linkInfo}=" $filePathLinkTable | awk -F: '{print $1}')
-                        sed -i "${lineIndexFlag}d" $filePathLinkTable
+                        local lineIndexFlag=$(grep -sn "^${linkInfo}=" $filePathLinkTable | gawk -F: '{print $1}')
+                        gsed -i "${lineIndexFlag}d" $filePathLinkTable
                         optResultTips="${optResultTips}\nThe ${operationType} record : ${linkInfo} is deleted, id : ${lineIndexFlag}"
                     fi
                     if [[ -n $optResultTips ]];then
                         #save progress
                         ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_lessonName" $lessonNameSel
-                        ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_drillTime" "$(date +%s -d $(date +"%H:%M:%S"))"
+                        ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_drillTime" "$(gdate +%s -d $(gdate +"%H:%M:%S"))"
                         ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceIndexArray" $((indexArray+1))
                         ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonDrilling${contentType}${operateMode}_sctenceArrayIndexSort" "${arrayIndexSort[*]}"
                         break
@@ -978,7 +982,7 @@ ftLearnRepetionDrill()
                                 icon="\U0001F4AF"
                             fi
 
-                            sed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime
+                            gsed -i "/^\[failTimeSDR\]/,/^\[/ {/^\[failTimeSDR\]/b;/^\[/b;s ^$linkInfo=.* $linkInfo=$val g;}" $filePathLearnDataBaseFailTime
                             optResultTips="To change ${operationType}'s fail time record : ${linkInfo}=${val} ${icon}"
                         fi
                         break;
@@ -989,7 +993,7 @@ ftLearnRepetionDrill()
                     ;;
                 double_right )
                     #if ( $isOperatePlayAudioSingle || $isOperatePlayAudio );then
-                        filePathDataItemContentAudioVerySlow=${dirPathTempEng}/needRepetionDrill/audio/very_slow.audio_english/$(echo "${linkInfo}" | sed 's/\//_/g').mp3
+                        filePathDataItemContentAudioVerySlow=${dirPathTempEng}/needRepetionDrill/audio/very_slow.audio_english/$(echo "${linkInfo}" | gsed 's/\//_/g').mp3
                         [[ ! -s $filePathDataItemContentAudioVerySlow ]] && \
                              echo "creating ${lineIndex}_very_slow.mp3" && \
                              ftText2Mp3 -txt "${englishItem}" -fpm $filePathDataItemContentAudioVerySlow -speed -50
@@ -1006,7 +1010,7 @@ ftLearnRepetionDrill()
                     ;;
                 f | F )
                     local filePathExample=${dirPathTempEng}/media/data/English/learnData/needRepetionDrill/read_imitate/AICmd.text_example
-                    echo -e "$(cat $filePathExample)\n ${englishItem}"| tr -d '\n'| xclip -sel clip
+                    echo -e "$(cat $filePathExample)\n ${englishItem}"| tr -d '\n'| pbcopy
                     [[ -s $filePathExample ]] && [[ -n $englishItem ]] && optResultTips="The template has been written to the clipboard !"
                     ;;
                 #To create word examples
@@ -1094,7 +1098,7 @@ ftLearnRepetionDrill()
                         if [[ ! -s $filePathDataItemDBFT ]]||[[ -z $(grep -e "^${linkInfo}=" ${filePathDataItemDBFT}) ]]; then
                             [[ -z $failTime ]] && failTime=0
                             echo "${linkInfo}=${failTime}" >> $filePathDataItemDBFT
-                            optResultTips="The ${sortingType} record ${linkInfo} is created, id : $(ftEcho -s $(($(awk 'END{print NR}' $filePathDataItemDBFT)-5)))"
+                            optResultTips="The ${sortingType} record ${linkInfo} is created, id : $(ftEcho -s $(($(gawk 'END{print NR}' $filePathDataItemDBFT)-5)))"
                         else
                             optResultTips="Cancel operation, repeate ${sortingType} record"
                         fi
@@ -1113,7 +1117,7 @@ ftLearnRepetionDrill()
                                     || [[ -n $(grep -sn "\*\*" "${filePathLearnDrillTemp}" ) ]] \
                                     || [[ -n $(grep -sn "\-\-" "${filePathLearnDrillTemp}") ]]);then
                                 [[ ! -d $dirPathDataItemContentTextAnalysis ]] && mkdir $dirPathDataItemContentTextAnalysis
-                                [[ -d $dirPathDataItemContentTextAnalysis ]] && echo "* $(awk 'NR=="'1'"' $filePathLearnDrillTemp) ${sortingFlag}" >> $filePathDataItemContentTextAnalysis && \
+                                [[ -d $dirPathDataItemContentTextAnalysis ]] && echo "* $(gawk 'NR=="'1'"' $filePathLearnDrillTemp) ${sortingFlag}" >> $filePathDataItemContentTextAnalysis && \
                                     optResultTips="${optResultTips}\n${sortingType}:${lineIndex} add finsih"
                                 echo "" > $filePathLearnDrillTemp
                             else
@@ -1141,7 +1145,7 @@ ftLearnRepetionDrill()
                 [[ ! -d "${dirPathDataItemContentDrillResult}" ]] && \
                     mkdir -p "${dirPathDataItemContentDrillResult}"
                 [[ -d "${dirPathDataItemContentDrillResult}" ]] && \
-                    echo "* $(awk 'NR=="'1'"' $filePathLearnDrillTemp) \U0001F6AB" >> $filePathDataItemContentTextAnalysis
+                    echo "* $(gawk 'NR=="'1'"' $filePathLearnDrillTemp) \U0001F6AB" >> $filePathDataItemContentTextAnalysis
 
             elif [[ -n $(grep -sn "\+" "${filePathLearnDrillTemp}") ]] \
                 || [[ -n $(grep -sn "\*" "${filePathLearnDrillTemp}") ]]\
@@ -1275,16 +1279,16 @@ _ftLearnLessonManage()
 
     case "$prev" in
         -unl )
-            COMPREPLY=( $(compgen -W "$(ls --file-type ${dirPathTempEng}/needRepetionDrill/ |grep / | awk -F/ '{print $1}') sentence imitate" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$(gls --file-type ${dirPathTempEng}/needRepetionDrill/ |grep / | gawk -F/ '{print $1}') sentence imitate" -- "$cur") )
             ;;
         -aiq )
             COMPREPLY=( $(compgen -W "analysis imitate" -- "$cur") )
             ;;
         -m | -unlt | -ap | -aiq)
-            COMPREPLY=( $(compgen -W "$(ls --file-type $dirPathTempEng |grep / | awk -F/ '{print $1}')" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$(gls --file-type $dirPathTempEng |grep / | gawk -F/ '{print $1}')" -- "$cur") )
             ;;
         *)  [[ -d ${dirPathTempEng}/${prev} ]] \
-            && COMPREPLY=( $(compgen -W "$(ls --file-type ${dirPathTempEng}/${prev} |grep / | awk -F/ '{print $1}')" -- "$cur") ) \
+            && COMPREPLY=( $(compgen -W "$(gls --file-type ${dirPathTempEng}/${prev} |grep / | gawk -F/ '{print $1}')" -- "$cur") ) \
             || COMPREPLY=( $(compgen -W "-h --help -al -alg -adsp -u -m -unl -unlt -ap -aiq" -- "$cur") )
             ;;
     esac
@@ -1366,7 +1370,7 @@ ftLearnLessonManage()
     local learnLessonGroupList
 
     if $isAddDailyStudyPlan;then
-        local planFlag="Date:$(date -d "today" +"%Y%m%d")"
+        local planFlag="Date:$(gdate -d "today" +"%Y%m%d")"
         local filePathLearnPlan="${dirPathTempEng}/learn.text_plan"
         if [[ -n $(grep -sn "$planFlag" $filePathLearnPlan) ]];then
             ftEcho -e "plan ${planFlag} has already been created"
@@ -1381,7 +1385,7 @@ ftLearnLessonManage()
         
         
         #added plan content to file
-        echo -e "\n\nDate:$(date -d "today" +"%Y%m%d")" >> $filePathLearnPlan
+        echo -e "\n\nDate:$(gdate -d "today" +"%Y%m%d")" >> $filePathLearnPlan
         echo    "=====================================" >> $filePathLearnPlan
 
         for trainingTypeItem in ${trainingTypeList[@]}; do
@@ -1420,9 +1424,9 @@ ftLearnLessonManage()
             *) local filePathDemand="${dirPathTempEng}/${lessonGroupNameSel}/demand.text_$(echo "$trainingTypeItem" | tr '[A-Z]' '[a-z]')"
                  if [[ -f $filePathDemand ]];then
                     echo " Demand: " >> $filePathLearnPlan
-                    local fileSize=$(sed -n '$=' $filePathDemand)
+                    local fileSize=$(gsed -n '$=' $filePathDemand)
                     for (( i = 1; i <= $fileSize; i++ )); do
-                        echo "  $(awk 'NR=="'$i'"' $filePathDemand)" >> $filePathLearnPlan
+                        echo "  $(gawk 'NR=="'$i'"' $filePathDemand)" >> $filePathLearnPlan
                     done
                  fi;;
             esac
@@ -1552,7 +1556,7 @@ ftLearnLessonManage()
 
             #diff
             md5KeyOld=$(ftIniEditUtil -r  $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}_${contentType}")
-            md5KeyNow="$(md5sum $filePathDataItemLinkTable | awk '{print $1}')"
+            md5KeyNow="$(md5sum $filePathDataItemLinkTable | gawk '{print $1}')"
             # [[ -n $md5KeyOld ]]&&[[ $md5KeyOld = $md5KeyNow ]] && ftEcho -s "Cancel update, don't changed" && continue
 
             #delete file repeate line
@@ -1583,11 +1587,11 @@ ftLearnLessonManage()
             touch  "${filePathLessonUpdateByLtCtTC}" #\
                    #"${filePathLessonUpdateByLtCtTP}"
 
-            fileSizeLessonSLE=$(sed -n '$=' $filePathDataItemLinkTable)
+            fileSizeLessonSLE=$(gsed -n '$=' $filePathDataItemLinkTable)
             for (( lineIndex = 1; lineIndex <= $fileSizeLessonSLE; lineIndex++ )); do
                 printf "handling progress: %d%%\r" $((lineIndex*100/$fileSizeLessonSLE))
 
-                lineContent=$(awk 'NR=="'$lineIndex'"' "${filePathDataItemLinkTable}")
+                lineContent=$(gawk 'NR=="'$lineIndex'"' "${filePathDataItemLinkTable}")
 
                 [[ -z $lineContent ]] && continue
 
@@ -1601,7 +1605,7 @@ ftLearnLessonManage()
                     if [[ -n $(grep -sn "\/" $lessonCtTE) ]];then
                         ftEcho -en "data content is invald:" && ehco -e " / \nlesson path: ${lessonPathBasic}"
                     else
-                        lineContentTE=$(awk 'NR=="'$lessonLineLindex'"' "${lessonCtTE}")
+                        lineContentTE=$(gawk 'NR=="'$lessonLineLindex'"' "${lessonCtTE}")
                         [[ -z $lineContentTE ]] && ftEcho -e "STE linecontent is null >> ${lineContent}"
                         [[ -n $lineContentTE ]] && \
                         touch $filePathLessonUpdateByLtCtTE && \
@@ -1615,7 +1619,7 @@ ftLearnLessonManage()
                     if [[ -n $(grep -sn "\/" $lessonCtTC) ]];then
                         ftEcho -en "data content is invald:" && ehco -e " / \nlesson path: ${lessonPathBasic}"
                     else
-                        lineContentTC=$(awk 'NR=="'$lessonLineLindex'"' "${lessonCtTC}")
+                        lineContentTC=$(gawk 'NR=="'$lessonLineLindex'"' "${lessonCtTC}")
                         [[ -z $lineContentTC ]] \
                                 && ftEcho -e "STC linecontent is null >> ${lineContent}" \
                                 || ftTextSetLine -f $filePathLessonUpdateByLtCtTC -n $lineIndex -c "${lineContentTC}" > /dev/null
@@ -1634,7 +1638,7 @@ ftLearnLessonManage()
                 [[ -f $lessonCtTA ]] && ln -s "${lessonCtTA}" "${dirPathLessonUpdateByLtCtTA}/${lineIndex}.md"
 
                 #lessonCtTP="${dirPathTempEng}/${lessonPathBasic}/${contentType}.text_problem"
-                #[[ -f $lessonCtTP ]] && lineContent=$(awk 'NR=="'$lessonLineLindex'"' "${lessonCtTP}") && ftTextSetLine -f $filePathLessonUpdateByLtCtTP -n $lineIndex -c "${lineContent}" > /dev/null
+                #[[ -f $lessonCtTP ]] && lineContent=$(gawk 'NR=="'$lessonLineLindex'"' "${lessonCtTP}") && ftTextSetLine -f $filePathLessonUpdateByLtCtTP -n $lineIndex -c "${lineContent}" > /dev/null
 
                 # if (( $lineIndex==11  ));then
                 #     echo "lessonPathBasic=${lessonPathBasic}"
@@ -1645,7 +1649,7 @@ ftLearnLessonManage()
                 # fi
             done
 
-            ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}_${contentType}" "$(md5sum $filePathDataItemLinkTable | awk '{print $1}')"
+            ftIniEditUtil -w $filePathLearnDataBase ${lessonGroupNameSel} "lessonGroupMd5Key_${lessonNameSel}_${contentType}" "$(md5sum $filePathDataItemLinkTable | gawk '{print $1}')"
 
             #delete empty line
             [[ -s $filePathLessonUpdateByLtCtTE ]] && grep -v "^$" $filePathLessonUpdateByLtCtTE > ${filePathLessonUpdateByLtCtTE}temp && mv ${filePathLessonUpdateByLtCtTE}temp $filePathLessonUpdateByLtCtTE
@@ -1686,14 +1690,14 @@ ftLearnLessonManage()
         local filePathLessonSTETempAlQuestion="/tmp/tmp.text_ai_question"
         local dirPathDataItemBasic="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}"
         local filePathLessonSTE="${dirPathDataItemBasic}/sentence.text_english"
-        local fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
+        local fileSizeLessonSTE=$(gsed -n '$=' $filePathLessonSTE)
         local lessonGroupTips=$(ftIniEditUtil -r  $filePathLearnDataBase ${lessonGroupNameSel} lessonGroupTips)
         cp -rf $filePathLessonSTE $filePathLessonSTETempAlQuestion      
 
         case "$lessonContentType" in
             analysis )
                 echo -e "\n上面是${lessonGroupTips}的第${lessonNameSel}篇课文或例句。\n请结合课文强调的知识点对每一行的短语和影响意思理解的语法进行说明。\n请只输出${fileSizeLessonSTE}行说明，每行说明无需原文开头无需添加特殊符号。" >> $filePathLessonSTETempAlQuestion
-                cat ${filePathLessonSTETempAlQuestion}| xclip -sel clip
+                cat ${filePathLessonSTETempAlQuestion}| pbcopy
                 cat ${filePathLessonSTETempAlQuestion}
                 ;;
             
@@ -1706,7 +1710,7 @@ ftLearnLessonManage()
                 \n要求4：文章中不要出现课文没有的语法。\
                 \n要求5：文章的内容尽可能使用和课文内容类似但不同的短语和单词。\
                 \n要求6：给出英文文章后同时给一个排版一样的简体中文翻译。" >> $filePathLessonSTETempAlQuestion
-                cat ${filePathLessonSTETempAlQuestion}| xclip -sel clip
+                cat ${filePathLessonSTETempAlQuestion}| pbcopy
                 cat ${filePathLessonSTETempAlQuestion}
                 ;;
             *)
@@ -1738,7 +1742,7 @@ ftLearnLessonManage()
         rm -rf ${dirPathLessonMerge}
         mkdir ${dirPathLessonMerge}
 
-        local dirPathArrayLesson=($(ls $dirPathLessonGroupMerge|grep -v "merge"))
+        local dirPathArrayLesson=($(gls $dirPathLessonGroupMerge|grep -v "merge"))
         [[ -z $dirPathArrayLesson ]] &&\
         ftEcho -en "invald lesson group:" &&echo "${lessonGroup}" && return
         ftEcho -sn "start merge lesson group:" && echo "${lessonGroup}"
@@ -1749,7 +1753,7 @@ ftLearnLessonManage()
             filePathLessonSTE="${dirPathLessonGroupMerge}/${lessonName}/sentence.text_english"
             [[ ! -f ${filePathLessonSTE} ]] && ftEcho -en "invalid lesson：" && echo "${lessonName}" && continue
 
-            fileSizeLessonSTE=$(sed -n '$=' $filePathLessonSTE)
+            fileSizeLessonSTE=$(gsed -n '$=' $filePathLessonSTE)
             #写入文件
             [[ -n $fileSizeLessonSTE ]] && for (( lineNum=1 ; lineNum <= fileSizeLessonSTE; lineNum++ )); do
                 echo "${dirPathLessonGroupMerge}/${lessonName}/${lineNum}" >> $filePathLessonGroupMergeSTLT  
@@ -1793,29 +1797,29 @@ ftLearnLessonManage()
                     lessonReviewDataItemSizes=($(ftIniEditUtil -r  $filePathLearnDataBase needRepetionDrill lessonReviewDataItemSize${type}))
                     [[ -z $lessonReviewDataItemSizes ]] && ftEcho -e "${type}'s lessonReviewDataItemSizes is null " && continue
                     unset applyFlags
-                    fileSizeLinkTable=$(sed -n '$=' $filePathLinkTable)
+                    fileSizeLinkTable=$(gsed -n '$=' $filePathLinkTable)
 
                     filePathLinkTableReview="${dirPathLessonNeedRepetionDrillReview}/${contentType}.link_table"
                     filePathLinkTypeReview="${dirPathLessonNeedRepetionDrillReview}/${contentType}.link_type"
                     #filePathCutFlagReview="${dirPathLessonNeedRepetionDrillReview}/${contentType}.cut_flag"
 
                     for index in "${!lessonReviewDataItemSizes[@]}"; do
-                       sed -n "6,${fileSizeLinkTable}p" $filePathLinkTable | awk -F'=' ${lessonReviewDataItemFailTimeFlags[$index]} > $filePathTempLinkTable
+                       gsed -n "6,${fileSizeLinkTable}p" $filePathLinkTable | gawk -F'=' ${lessonReviewDataItemFailTimeFlags[$index]} > $filePathTempLinkTable
                        [[ ! -s $filePathTempLinkTable ]] && applyFlags+="0   " && continue
                        lessonReviewDataItemSize=${lessonReviewDataItemSizes[$index]}
                        applyFlags+="$lessonReviewDataItemSize   "
                        (( lessonReviewDataItemSize==0 )) && continue
-                       fileSizeLinkTableTemp=$(sed -n '$=' $filePathTempLinkTable)
-                       arrayIndexSort=($(seq $((1+arrayIndexSortBeganFlag)) $fileSizeLinkTableTemp | sed 's/ /\n/g' | shuf))
+                       fileSizeLinkTableTemp=$(gsed -n '$=' $filePathTempLinkTable)
+                       arrayIndexSort=($(seq $((1+arrayIndexSortBeganFlag)) $fileSizeLinkTableTemp | gsed 's/ /\n/g' | shuf))
 
                         lineIndex=1
                         (($((fileSizeLinkTableTemp-arrayIndexSortBeganFlag))<lessonReviewDataItemSize)) && lessonReviewDataItemSize=$((fileSizeLinkTableTemp-arrayIndexSortBeganFlag))
                         for (( indexRead = 0; indexRead < ${#arrayIndexSort[@]}; indexRead++ )); do
-                            lineContent=$(awk 'NR=="'${arrayIndexSort[indexRead]}'"' $filePathTempLinkTable)
+                            lineContent=$(gawk 'NR=="'${arrayIndexSort[indexRead]}'"' $filePathTempLinkTable)
                             [[ -z $lineContent ]] && continue
                             
-                            lineFailTimeVal=$(printf "%s" "${lineContent}" | awk -F= '{print $2}')
-                            lineContent=$(printf "%s" "${lineContent}" | awk -F= '{print $1}')
+                            lineFailTimeVal=$(printf "%s" "${lineContent}" | gawk -F= '{print $2}')
+                            lineContent=$(printf "%s" "${lineContent}" | gawk -F= '{print $1}')
 
                             echo "${lineContent}" >> $filePathLinkTableReview
                             echo "${type}" >> $filePathLinkTypeReview
@@ -1826,16 +1830,16 @@ ftLearnLessonManage()
                     echo -e "\033[1;36m${applyFlags-\U000274E} \033[0m" 
 
                     #check line count
-                    [[ "$(sed -n '$=' $filePathLinkTableReview)" != "$(sed -n '$=' $filePathLinkTypeReview)"  ]] && \
+                    [[ "$(gsed -n '$=' $filePathLinkTableReview)" != "$(gsed -n '$=' $filePathLinkTypeReview)"  ]] && \
                     ftEcho -en "exception link tbale" && echo "${filePathLinkTableReview}"
                 done < <(find needRepetionDrill/ -name ${lessonContentType}*.database_fail_time)
 
                 if [[ -s $filePathDataItemLinkTableVoskGrammar ]];then
-                    awk -F= '!seen[$1]++' $filePathDataItemLinkTableVoskGrammar > ${filePathDataItemLinkTableVoskGrammar}Temp
+                    gawk -F= '!seen[$1]++' $filePathDataItemLinkTableVoskGrammar > ${filePathDataItemLinkTableVoskGrammar}Temp
                     mv ${filePathDataItemLinkTableVoskGrammar}Temp $filePathDataItemLinkTableVoskGrammar
                 fi
 
-                printf "\ncreate ${lessonContentType} item:\033[1;33m$(sed -n '$=' $filePathLinkTableReview)\033[0m  "
+                printf "\ncreate ${lessonContentType} item:\033[1;33m$(gsed -n '$=' $filePathLinkTableReview)\033[0m  "
 
                 # #delete end empty line
                 # while read filePathLink ;do
@@ -1860,10 +1864,10 @@ ftLearnLessonManage()
         local dirPathLessonGroup dirPathArrayLesson
         local dirPathLocal=$(pwd)
         cd "${dirPathTempEng}"
-        learnLessonGroupList=($(ls -d */| sed 's/\///g'))
+        learnLessonGroupList=($(gls -d */| gsed 's/\///g'))
         for lessonGroup in ${learnLessonGroupList[*]} ; do
             dirPathLessonGroup="${dirPathTempEng}/${lessonGroup}"
-            dirPathArrayLesson=($(ls $dirPathLessonGroup | grep -v 'repetionDrill.hository\|bash.text_lesson_create\|demand.text_writespeak\|demand.text_transcription\|extra_video\|Problem.list'))
+            dirPathArrayLesson=($(gls $dirPathLessonGroup | grep -v 'repetionDrill.hository\|bash.text_lesson_create\|demand.text_writespeak\|demand.text_transcription\|extra_video\|Problem.list'))
             if [[ -z $dirPathArrayLesson ]];then
                 ftEcho -s "--------------------------------"
                 ftEcho -s "invald lesson group : ${lessonGroup}"
@@ -1890,7 +1894,7 @@ ftLearnLessonManage()
         [[ -z $dirPathTempEng ]] && ftEcho -e "数据存放路径为空" && return
         ftEcho -r  "请输入课程集名称："
         read lessonGroupName
-        lessonGroupName=$(echo $lessonGroupName |sed s/[[:space:]]//g)
+        lessonGroupName=$(echo $lessonGroupName |gsed s/[[:space:]]//g)
         learnLessonGroupList="$(ftIniEditUtil -r $filePathLearnDataBase learnLessonInfo  lessonGroupList)"
         learnLessonGroupList="${learnLessonGroupList[@]} $lessonGroupName"
         ftIniEditUtil -w $filePathLearnDataBase learnLessonInfo  lessonGroupList "${learnLessonGroupList[*]}"
@@ -1918,7 +1922,7 @@ ftLearnLessonManage()
 
         ftEcho -r  "please input lesson name："
         read lessonName
-        lessonName=$(echo $lessonName |sed s/[[:space:]]//g)
+        lessonName=$(echo $lessonName |gsed s/[[:space:]]//g)
 
         local dirPathLessonGroup="${dirPathTempEng}/${lessonGroupNameSel}"
         

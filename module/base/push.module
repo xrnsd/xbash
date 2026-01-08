@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 # adb自动push的独立终端实现 
 #####-----------------------加载部分模块--------------------------#######
 [[ -f "$rFilePathXbashModuleCommon" ]] && source $rFilePathXbashModuleCommon
@@ -45,7 +45,7 @@ ftAutoAdbPushByTerminal()
         for item in ${newList[@]}; do
             [[ $item != ANDROID_* ]] && continue
             [[ $item == ANDROID_SDK* ]] && continue
-            vallist=($(echo "${item}"| sed 's?=? ?g'))
+            vallist=($(echo "${item}"| gsed 's?=? ?g'))
             unset $vallist
         done
     fi
@@ -57,7 +57,7 @@ ftAutoAdbPushByTerminal()
             [[ ! -f "$filePath" ]] && ftEcho -e "找不到:${filePath}" && continue
             if [[ -n $(echo $filePath |grep system) ]] ;then
                 fileNameSource=$(basename $filePath)
-                dirPathTarget=$(echo /system${filePath#*system} | sed -e "s:/$fileNameSource::g")
+                dirPathTarget=$(echo /system${filePath#*system} | gsed -e "s:/$fileNameSource::g")
                 echo "push ${filePath} > ${dirPathTarget}"
                 adb -s $deviceId push $filePath $dirPathTarget && \
                 ftEcho -s "${fileNameSource} push to [${dirPathTarget}] finish"

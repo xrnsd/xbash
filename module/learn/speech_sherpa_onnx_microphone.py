@@ -42,11 +42,12 @@ def audio_callback(indata, frames, time, status):
     q.put(bytes(indata))
 
 def main():
+    print("args.model_path=",args.model_path)
     speech_utils.play_audio(args.peference_audio)
     speech_utils.print_overwrite("Loading Sherpa Onnx model ...");
 
     #构建降噪引擎
-    engine = speech_utils.SherpaRNNoiseEngine()
+    #engine = speech_utils.SherpaRNNoiseEngine()
 
     #构建 OnlineRecognizer
     recognizer = sherpa_onnx.OnlineRecognizer.from_transducer(
@@ -95,7 +96,7 @@ def main():
             samples = audio_queue.get() # 阻塞等待新音频
 
             #降噪
-            samples = engine.process_and_resample_48k_2_16K(samples)
+            #samples = engine.process_and_resample_48k_2_16K(samples)
 
             #确认在讲话
             if vad.is_speech(samples):

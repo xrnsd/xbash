@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 #存放命令封装
 #存放xbash扩展封装
 versionNum=v0.0.2.1

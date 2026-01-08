@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/opt/homebrew/bin/bash
 versionNum=v0.1.8.2
 xEcho(){
     local val1="${1}" val2="${2}" val3="${3}";echo -en "\033[1;33m${val1}\033[0m";echo -en "\033[1;31m${val2}\033[0m";echo -en "\033[1;33m${val3}\033[0m"; echo -e "\033[1;31m does not exist\033[0m"
@@ -31,7 +31,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
             key="PLATFORM_SDK_VERSION := "
             sdkVersion=$(cat $filePath | grep "$key")
             sdkVersion=${sdkVersion//$key/}
-            sdkVersion=$(echo $sdkVersion |sed s/[[:space:]]//g)
+            sdkVersion=$(echo $sdkVersion |gsed s/[[:space:]]//g)
     fi
     [[ -n "${targetSdkVersionForce}" ]] && sdkVersion=$targetSdkVersionForce
     if [[ -n $sdkVersion ]]; then
@@ -84,7 +84,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
 
         #clean up the java environment item in the PATH environment variable
         PATHLOCAL=
-        newList=($(echo "${PATH}"| sed 's?:? ?g'))
+        newList=($(echo "${PATH}"| gsed 's?:? ?g'))
         for item in ${newList[@]}; do
             [[ -n $(echo $item |egrep -i "java|jdk|jre") ]] && continue
             [[ -z ${PATHLOCAL} ]] && PATHLOCAL="${item}" || PATHLOCAL="${PATHLOCAL}:${item}"
@@ -100,7 +100,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
         #sudo update-alternatives --remove gcc /usr/bin/gcc-x.x
         [[ -z $(update-alternatives --list gcc|grep $gccPath) ]] && sudo -p '' -S  update-alternatives --install /usr/bin/gcc gcc $gccPath 300
         echo "$gccPath" | sudo -p '' -S update-alternatives --config gcc >/dev/null
-        gccPath=$(echo $gccPath | sed "s cc ++ g" )
+        gccPath=$(echo $gccPath | gsed "s cc ++ g" )
         [[ -z $(update-alternatives --list gcc|grep $gccPath) ]] && sudo -p '' -S  update-alternatives --install /usr/bin/g++ g++ $gccPath 300
         echo "$gccPath" | sudo -p '' -S update-alternatives --config g++ >/dev/null
         gcc -v
@@ -131,7 +131,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
 
         #环境更新
         PATHLOCAL=
-        newList=($(echo "${PATH}"| sed 's?:? ?g'))
+        newList=($(echo "${PATH}"| gsed 's?:? ?g'))
         for item in ${newList[@]}; do
             [[ -n $(echo $item |egrep -i "sdk") ]] && continue
             [[ -z ${PATHLOCAL} ]]&&PATHLOCAL="${item}" || PATHLOCAL="${PATHLOCAL}:${item}"
@@ -154,7 +154,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
         export ANDROID_NDK="${dirPathAndroidNdk}"
         #环境更新
         PATHLOCAL=
-        newList=($(echo "${PATH}"| sed 's?:? ?g'))
+        newList=($(echo "${PATH}"| gsed 's?:? ?g'))
         for item in ${newList[@]}; do
             [[ -n $(echo $item |egrep -i "ndk") ]] && continue
             [[ -z ${PATHLOCAL} ]]&&PATHLOCAL="${item}" || PATHLOCAL="${PATHLOCAL}:${item}"
@@ -168,7 +168,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
     [ "$isUseFlutterSdk" = "true" ] && if [[ -d "$dirPathFlutterSDK" ]]; then
         #环境更新
         PATHLOCAL=
-        newList=($(echo "${PATH}"| sed 's?:? ?g'))
+        newList=($(echo "${PATH}"| gsed 's?:? ?g'))
         for item in ${newList[@]}; do
             [[ -n $(echo $item |egrep -i "flutter") ]] && continue
             [[ -z ${PATHLOCAL} ]]&&PATHLOCAL="${item}" || PATHLOCAL="${PATHLOCAL}:${item}"
@@ -188,7 +188,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
     [ "$isUseRepo" = "true" ] && if [[ -d "$dirPathRepo" ]]; then
         #环境更新
         PATHLOCAL=
-        newList=($(echo "${PATH}"| sed 's?:? ?g'))
+        newList=($(echo "${PATH}"| gsed 's?:? ?g'))
         for item in ${newList[@]}; do
             [[ -n $(echo $item |egrep -i "repo") ]] && continue
             [[ -z ${PATHLOCAL} ]]&&PATHLOCAL="${item}" || PATHLOCAL="${PATHLOCAL}:${item}"
@@ -204,7 +204,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
         export GOROOT=${dirPathGo}
         #环境更新
         PATHLOCAL=
-        newList=($(echo "${PATH}"| sed 's?:? ?g'))
+        newList=($(echo "${PATH}"| gsed 's?:? ?g'))
         for item in ${newList[@]}; do
             [[ -n $(echo $item |egrep -i "go") ]] && continue
             [[ -z ${PATHLOCAL} ]]&&PATHLOCAL="${item}" || PATHLOCAL="${PATHLOCAL}:${item}"
@@ -275,10 +275,10 @@ filePathPython="$(which python)"
     if [[ -n $(update-alternatives --list gcc|grep "no alternatives for python") ]]; then
             while read filePath ;do
                 sudo -p '' -S  update-alternatives --install /usr/bin/python python ${filePath} 300
-            done < <(echo "$(ls ${filePathPython}2.*)" |grep -v ".*m")
+            done < <(echo "$(gls ${filePathPython}2.*)" |grep -v ".*m")
             while read filePath ;do
                 sudo -p '' -S  update-alternatives --install /usr/bin/python3 python3 ${filePath} 300
-            done < <(echo "$(ls ${filePathPython}3.*)" |grep -v ".*m")
+            done < <(echo "$(gls ${filePathPython}3.*)" |grep -v ".*m")
     fi
     echo "$pythonFilePath" | sudo -p '' -S update-alternatives --config python >/dev/null
     echo "$python3FilePath" | sudo -p '' -S update-alternatives --config python3 >/dev/null
