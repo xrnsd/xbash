@@ -1,0 +1,63 @@
+#!/opt/homebrew/bin/bash
+
+# ================== 配置 ==================
+DOUBLE_CLICK_INTERVAL=0.23
+# =========================================
+
+ORIGINAL_STTY=$(stty -g)
+
+cleanup() {
+    stty "$ORIGINAL_STTY"
+    printf "\e[?25h" >&2
+}
+trap cleanup INT TERM EXIT HUP
+
+stty -echo -icanon
+printf "\e[?25l" >&2
+
+read_key_blocking() {
+    IFS= read -rsn1 key
+
+    if [[ "$key" == $'\e' ]]; then
+        read -rsn2 rest
+        case "$rest" in
+            '[A') echo -n "up" ;;
+            '[B') echo -n "down" ;;
+            '[C') echo -n "right" ;;
+            '[D') echo -n "left" ;;
+        esac
+    else
+        case "$key" in
+            $'\n') echo "enter" ;;
+            $'\t') echo "tab" ;;
+            ' ')   echo "space" ;;
+            *)     echo "$key" ;;
+        esac
+    fi
+}
+
+unset keyValInput
+# ---------- 第一次：必须阻塞 ----------
+key1=$(read_key_blocking)
+
+# ---------- 第二次：限时阻塞 ----------
+if IFS= read -rsn1 -t "$DOUBLE_CLICK_INTERVAL" key2; then
+    if [[ "$key2" == $'\e' ]]; then
+        read -rsn2 rest
+        case "$rest" in
+            '[A') key2="up" ;;
+            '[B') key2="down" ;;
+            '[C') key2="right" ;;
+            '[D') key2="left" ;;
+        esac
+    fi
+
+    if [[ "$key2" == "$key1" ]]; then
+        echo -n "double_${key1}"
+        exit 0
+    fi
+fi
+
+# ---------- 超时：单击 ----------
+echo -n "$key1"
+exit 0
