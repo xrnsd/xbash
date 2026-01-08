@@ -14,11 +14,9 @@ import numpy as np
 import speech_utils
 import threading
 
-
 # ========== 配置 ==========
 MODEL_PATH_SHERPA_ONNX = os.environ.get("dirPathPythonSherpaOnnxkModel")
 SAMPLE_RATE = 16000
-SAMPLE_RATE_NOISE_REDUCTION = 48000 
 # ========== 参数解析 ==========
 
 parser = argparse.ArgumentParser(description="实时语音识别：SherpaOnnx")
@@ -42,12 +40,23 @@ def audio_callback(indata, frames, time, status):
     q.put(bytes(indata))
 
 def main():
-    print("args.model_path=",args.model_path)
     speech_utils.play_audio(args.peference_audio)
     speech_utils.print_overwrite("Loading Sherpa Onnx model ...");
 
+    #构建 Denoiser
     #构建降噪引擎
-    #engine = speech_utils.SherpaRNNoiseEngine()
+    gtcrn_config = sherpa_onnx.OfflineSpeechDenoiserGtcrnModelConfig(
+        model=f"{args.model_path}/gtcrn_simple.onnx"
+    )
+    model_config = sherpa_onnx.OfflineSpeechDenoiserModelConfig(
+        gtcrn=gtcrn_config,
+        num_threads=2,
+        provider="cpu",
+    )
+    denoiser_config = sherpa_onnx.OfflineSpeechDenoiserConfig(
+        model=model_config
+    )
+    denoiser = sherpa_onnx.OfflineSpeechDenoiser(denoiser_config)
 
     #构建 OnlineRecognizer
     recognizer = sherpa_onnx.OnlineRecognizer.from_transducer(
@@ -63,19 +72,19 @@ def main():
         rule1_min_trailing_silence=2.4, # 强制断句时间
         rule2_min_trailing_silence=0.8, # 有字后的停顿时间
         rule3_min_utterance_length=20,  # 单句最长时间
-        provider="cpu",  # 780M 环境下尝试 "cuda" 或 "rocm"，若报错改用 "cpu"
+        provider="coreml",  # cpu 780M 环境下尝试 "cuda" 或 "rocm"，若报错改用 "cpu"
         debug=False
     )
 
     # 初始化 AGC 实例
     agc = speech_utils.SimpleAGC(target_rms=0.18, max_gain=8.0)
 
-    vad = speech_utils.AdvancedVAD(sample_rate=16000,
-                  frame_ms=20,
-                  enter_threshold=0.03,
-                  exit_threshold=0.015,
-                  min_speech_ms=100,
-                  window_ms=100)
+    # vad = speech_utils.AdvancedVAD(sample_rate=16000,
+    #               frame_ms=20,
+    #               enter_threshold=0.03,
+    #               exit_threshold=0.015,
+    #               min_speech_ms=100,
+    #               window_ms=100)
 
     # 4. 创建识别流
     stream = recognizer.create_stream()
@@ -85,27 +94,35 @@ def main():
 
     # 定义麦克风回调函数 (高效处理数据)
     audio_queue = queue.Queue()
-    def audio_callback(indata, frames, time_info, status):
-        audio_queue.put(indata[:, 0].copy())
+    def callback(in_data, frame_count, time_info, status):
+        # 将二进制 PCM16 转换为 float32 归一化数据
+        samples = np.frombuffer(in_data, dtype=np.int16).astype(np.float32) / 32768.0
+
+        audio_queue.put(samples.copy())
    
         return (None, pyaudio.paContinue)
 
     # 3. 独立的识别线程
-    def recognition_worker(stream,vad,engine):
+    def recognition_worker(stream,agc,denoiser):
+    # def recognition_worker(stream,vad):
+    # def recognition_worker(stream,vad,engine):
+    # def recognition_worker(stream,vad,denoiser):
         while True:
             samples = audio_queue.get() # 阻塞等待新音频
 
             #降噪
+            # result = denoiser(samples, SAMPLE_RATE)
+            # samples = np.asarray(result.samples, dtype=np.float32)
             #samples = engine.process_and_resample_48k_2_16K(samples)
 
             #确认在讲话
-            if vad.is_speech(samples):
+            # if vad.is_speech(samples):
 
-                # AGC 优化识别效果,无论你离麦克风近还是远，识别效果都会变得稳定
-                samples = agc.process(samples)
+            # AGC 优化识别效果,无论你离麦克风近还是远，识别效果都会变得稳定
+            samples = agc.process(samples)
 
-                # 喂入识别器
-                stream.accept_waveform(16000, samples)
+            # 喂入识别器
+            stream.accept_waveform(16000, samples)
 
     def on_recognition_equal(ref):
         print("\nRecognition successful. Exiting.")
@@ -131,63 +148,76 @@ def main():
             print("\nRecognition cancel")
             sys.exit(1)
 
-    # blocksize 必须严格等于 RNNoise 的 480
-    with sd.InputStream(samplerate=SAMPLE_RATE_NOISE_REDUCTION, channels=1, callback=audio_callback, 
-                        blocksize=480, dtype='float32'):
+    ## blocksize 必须严格等于 RNNoise 的 480
+    #with sd.InputStream(samplerate=SAMPLE_RATE_NOISE_REDUCTION, channels=1, callback=audio_callback, 
+                        #blocksize=480, dtype='float32'):
 
-        # 打开识别线程
-        threading.Thread(target=recognition_worker, args=(stream,vad,engine), daemon=True).start()
+    # 打开录音流 (16kHz, 单声道, 16bit)
+    mic_stream = pa.open(
+        format=pyaudio.paInt16,
+        channels=1,
+        rate=SAMPLE_RATE,
+        input=True,
+        frames_per_buffer=8000, # 每次处理 1600=0.1 秒音频
+        stream_callback=callback
+    )
 
-        last_text = ""
-        last_active_time = time.time()
-        try:
-            while True:
-                # 6. 在主线程不断解码并获取结果
-                while recognizer.is_ready(stream):
-                    recognizer.decode_stream(stream)
-                
-                result = recognizer.get_result(stream)
+    # 打开识别线程
+    # threading.Thread(target=recognition_worker, args=(stream,vad,engine), daemon=True).start()
+    threading.Thread(target=recognition_worker, args=(stream,agc,denoiser), daemon=True).start()
+    # threading.Thread(target=recognition_worker, args=(stream,vad,denoiser), daemon=True).start()
 
-                text = result if isinstance(result, str) else result.text
+    last_text = ""
+    last_active_time = time.time()
+    try:
+        while True:
+            # 6. 在主线程不断解码并获取结果
+            while recognizer.is_ready(stream):
+                recognizer.decode_stream(stream)
+            
+            result = recognizer.get_result(stream)
+            
+            # 2025 API 适配：检查 result 是否为字符串或对象
+            text = result if isinstance(result, str) else result.text
 
-                if text and text != last_text:
-                    if speech_utils.is_exact_match(args.peference_text, text):
+            if text and text != last_text:
+                if speech_utils.is_exact_match(args.peference_text, text):
+                    print("\nRecognition successful. Exiting.")
+                    sys.exit(0)
+                if speech_utils.is_recognition_over(text):
+                    print("\nRecognition cancel. Exiting.")
+                    sys.exit(0)
+                if speech_utils.last_two_words_match(args.peference_text,text):
+                    recognizer.reset(stream)
+                    last_text = ""
+                    continue
+
+                new_part = text[len(last_text):]
+                if new_part:
+                    if speech_utils.is_exact_match(args.peference_text, new_part):
                         print("\nRecognition successful. Exiting.")
                         sys.exit(0)
-                    if speech_utils.is_recognition_over(text):
+                    if speech_utils.is_recognition_over(new_part):
                         print("\nRecognition cancel. Exiting.")
                         sys.exit(0)
-                    if speech_utils.last_two_words_match(args.peference_text,text):
+                    if speech_utils.last_two_words_match(args.peference_text,new_part):
                         recognizer.reset(stream)
                         last_text = ""
                         continue
 
-                    new_part = text[len(last_text):]
-                    if new_part:
-                        if speech_utils.is_exact_match(args.peference_text, new_part):
-                            print("\nRecognition successful. Exiting.")
-                            sys.exit(0)
-                        if speech_utils.is_recognition_over(new_part):
-                            print("\nRecognition cancel. Exiting.")
-                            sys.exit(0)
-                        if speech_utils.last_two_words_match(args.peference_text,new_part):
-                            recognizer.reset(stream)
-                            last_text = ""
-                            continue
-
-                    result_lines = speech_utils.highlight_diff_multi(args.peference_text, text, on_recognition_equal)
-                    result_lines.append(text.lower())
-                    speech_utils.print_multi_overwrite(result_lines)
-                    
-                    last_text = text
-                    last_active_time = time.time()
+                result_lines = speech_utils.highlight_diff_multi(args.peference_text, text, on_recognition_equal)
+                result_lines.append(text.lower())
+                speech_utils.print_multi_overwrite(result_lines)
+                
+                last_text = text
+                last_active_time = time.time()
 
 
-                #断句
-                if recognizer.is_endpoint(stream):
-                    recognizer.reset(stream)
-                    last_text = ""
-                    continue
+            #断句
+            if recognizer.is_endpoint(stream):
+                recognizer.reset(stream)
+                last_text = ""
+                continue
 
                 #句子累积过长
                 # if speech_utils.is_too_long(text):
@@ -195,17 +225,19 @@ def main():
                 #     last_text = ""
                 #     continue
 
-                # 如果超过 1.5 秒没有新字产出，手动断句
-                if time.time() - last_active_time > 2.2 and last_text != "":
-                    recognizer.reset(stream)
-                    last_text = ""
-                    continue
+            # 如果超过 1.5 秒没有新字产出，手动断句
+            if time.time() - last_active_time > 2.2 and last_text != "":
+                recognizer.reset(stream)
+                last_text = ""
+                continue
 
-                    
-        except KeyboardInterrupt:
-            speech_utils.print_overwrite("Recognition force cancel\n") 
-        finally:
-            pa.terminate()
+                
+    except KeyboardInterrupt:
+        speech_utils.print_overwrite("Recognition force cancel\n") 
+    finally:
+        mic_stream.stop_stream()
+        mic_stream.close()
+        pa.terminate()
 
 if __name__ == "__main__":
     try:
@@ -213,3 +245,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         speech_utils.print_overwrite("Recognition force cancel\n") 
         sys.exit(1)
+
