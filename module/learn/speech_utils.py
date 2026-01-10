@@ -202,12 +202,17 @@ def play_audio_blocked(file_path):
     try:
         pygame.mixer.music.load(file_path)
         pygame.mixer.music.play()
-        print_overwrite(f"playing : {YELLOW}{result}{RESET} , to press Ctrl+C to exit play")
-
+        print_multi_overwrite([
+                            f"{YELLOW}{result}{RESET}",
+                            "to press Ctrl+C to exit play"
+                        ])
         while pygame.mixer.music.get_busy():
             time.sleep(0.1) 
             
-        print_overwrite("play finish")
+        print_multi_overwrite([
+                            f"{YELLOW}{result}{RESET}",
+                            "play finish"
+                        ])
 
     except KeyboardInterrupt:
         print_overwrite("play is stoping...")

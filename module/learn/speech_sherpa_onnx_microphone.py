@@ -31,8 +31,18 @@ GREEN = "\033[92m"
 YELLOW = '\033[93m'
 RESET = "\033[0m"
 
+# ========== 全局控制状态 ==========
+class State:
+    def __init__(self):
+        self.is_practicing = False
+        self.should_exit = False
+        self.lock = threading.Lock()
+        self.current_result_lines = []
+
+state = State()
 # ====================
 
+result_lines = ""
 q = queue.Queue()
 def audio_callback(indata, frames, time, status):
     if status:
@@ -102,7 +112,7 @@ def main():
    
         return (None, pyaudio.paContinue)
 
-    # 3. 独立的识别线程
+    #独立的识别线程
     def recognition_worker(stream,agc,denoiser):
     # def recognition_worker(stream,vad):
     # def recognition_worker(stream,vad,engine):
@@ -110,47 +120,61 @@ def main():
         while True:
             samples = audio_queue.get() # 阻塞等待新音频
 
-            #降噪
-            # result = denoiser(samples, SAMPLE_RATE)
-            # samples = np.asarray(result.samples, dtype=np.float32)
-            #samples = engine.process_and_resample_48k_2_16K(samples)
+             # 只有当按下 ↓ 键进入练习状态时，才把音频喂给识别器
+            if state.is_practicing:
+                #降噪
+                # result = denoiser(samples, SAMPLE_RATE)
+                # samples = np.asarray(result.samples, dtype=np.float32)
+                #samples = engine.process_and_resample_48k_2_16K(samples)
 
-            #确认在讲话
-            # if vad.is_speech(samples):
+                #确认在讲话
+                # if vad.is_speech(samples):
 
-            # AGC 优化识别效果,无论你离麦克风近还是远，识别效果都会变得稳定
-            samples = agc.process(samples)
+                # AGC 优化识别效果,无论你离麦克风近还是远，识别效果都会变得稳定
+                samples = agc.process(samples)
 
-            # 喂入识别器
-            stream.accept_waveform(16000, samples)
+                # 喂入识别器
+                stream.accept_waveform(16000, samples)
+            else:
+                # 不在练习状态时，清空识别流防止堆积旧数据
+                if recognizer.is_endpoint(stream):
+                    recognizer.reset(stream)
 
     def on_recognition_equal(ref):
         print("\nRecognition successful. Exiting.")
         sys.exit(0)
 
-    while True:
-        speech_utils.print_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} start to practice, {RED}←{RESET} cancel practice")
-        keyStart = speech_utils.get_key()
-        #if key == '\x1b[A': #Up
-        #if key == '\x1b[B': #Down
-        #if key == '\x1b[D': #Left
-        #if key == '\x1b[C': #Right
-        #if key == 'ctrl+c':   #Ctrl+C
-        if keyStart == '\x1b[B':
-            speech_utils.print_multi_overwrite([
-                        f"{YELLOW}{args.peference_text}{RESET}",
-                        "Please start to read aloud ..."
-                    ])
-            break
-        elif keyStart == '\x1b[C':
-            speech_utils.play_audio_blocked(args.peference_audio)
-        elif keyStart == '\x1b[D' or keyStart == "ctrl+c":
-            print("\nRecognition cancel")
-            sys.exit(1)
+    #独立的按键线程
+    def key_listener():
+        speech_utils.print_multi_overwrite(f"{RED}→{RESET} play audio , {RED}↓{RESET} start to practice, {RED}←{RESET} cancel practice")
+        while True:
+            key = speech_utils.get_key()
+            #if key == '\x1b[A': #Up
+            #if key == '\x1b[B': #Down
+            #if key == '\x1b[D': #Left
+            #if key == '\x1b[C': #Right
+            #if key == 'ctrl+c':   #Ctrl+C
+            if key == '\x1b[B': # Down: 开始练习
+                state.is_practicing = True
+            elif key == '\x1b[C': # Right: 暂停练习，开始播放参考音频
+                state.is_practicing = False
+                speech_utils.play_audio_blocked(args.peference_audio)
+                state.is_practicing = True
+            elif key == '\x1b[D' or key == "ctrl+c":
+                state.should_exit = True
+                print("\nRecognition cancel")
+                break
+            # 关键点：播放完后，从 state 中读取主循环生成的最新结果并重新显示
+            with state.lock:
+                if state.current_result_lines:
+                    speech_utils.print_multi_overwrite(state.current_result_lines)
+                else:
+                    speech_utils.print_multi_overwrite([
+                                f"{YELLOW}{args.peference_text}{RESET}",
+                                "Please start to read aloud ..."
+                            ])
 
-    ## blocksize 必须严格等于 RNNoise 的 480
-    #with sd.InputStream(samplerate=SAMPLE_RATE_NOISE_REDUCTION, channels=1, callback=audio_callback, 
-                        #blocksize=480, dtype='float32'):
+    threading.Thread(target=key_listener, daemon=True).start()
 
     # 打开录音流 (16kHz, 单声道, 16bit)
     mic_stream = pa.open(
@@ -163,75 +187,79 @@ def main():
     )
 
     # 打开识别线程
-    # threading.Thread(target=recognition_worker, args=(stream,vad,engine), daemon=True).start()
     threading.Thread(target=recognition_worker, args=(stream,agc,denoiser), daemon=True).start()
-    # threading.Thread(target=recognition_worker, args=(stream,vad,denoiser), daemon=True).start()
 
     last_text = ""
     last_active_time = time.time()
     try:
-        while True:
-            # 6. 在主线程不断解码并获取结果
-            while recognizer.is_ready(stream):
-                recognizer.decode_stream(stream)
-            
-            result = recognizer.get_result(stream)
-            
-            # 2025 API 适配：检查 result 是否为字符串或对象
-            text = result if isinstance(result, str) else result.text
+        while not state.should_exit:
+            # 只有在练习状态下才更新结果
+            if state.is_practicing:
+                # 6. 在主线程不断解码并获取结果
+                while recognizer.is_ready(stream):
+                    recognizer.decode_stream(stream)
+                
+                result = recognizer.get_result(stream)
+                
+                # 2025 API 适配：检查 result 是否为字符串或对象
+                text = result if isinstance(result, str) else result.text
 
-            if text and text != last_text:
-                if speech_utils.is_exact_match(args.peference_text, text):
-                    print("\nRecognition successful. Exiting.")
-                    sys.exit(0)
-                if speech_utils.is_recognition_over(text):
-                    print("\nRecognition cancel. Exiting.")
-                    sys.exit(0)
-                if speech_utils.last_two_words_match(args.peference_text,text):
-                    recognizer.reset(stream)
-                    last_text = ""
-                    continue
-
-                new_part = text[len(last_text):]
-                if new_part:
-                    if speech_utils.is_exact_match(args.peference_text, new_part):
+                if text and text != last_text:
+                    if speech_utils.is_exact_match(args.peference_text, text):
                         print("\nRecognition successful. Exiting.")
                         sys.exit(0)
-                    if speech_utils.is_recognition_over(new_part):
+                    if speech_utils.is_recognition_over(text):
                         print("\nRecognition cancel. Exiting.")
                         sys.exit(0)
-                    if speech_utils.last_two_words_match(args.peference_text,new_part):
+                    if speech_utils.last_two_words_match(args.peference_text,text):
                         recognizer.reset(stream)
                         last_text = ""
                         continue
 
-                result_lines = speech_utils.highlight_diff_multi(args.peference_text, text, on_recognition_equal)
-                result_lines.append(text.lower())
-                speech_utils.print_multi_overwrite(result_lines)
-                
-                last_text = text
-                last_active_time = time.time()
+                    new_part = text[len(last_text):]
+                    if new_part:
+                        if speech_utils.is_exact_match(args.peference_text, new_part):
+                            print("\nRecognition successful. Exiting.")
+                            sys.exit(0)
+                        if speech_utils.is_recognition_over(new_part):
+                            print("\nRecognition cancel. Exiting.")
+                            sys.exit(0)
+                        if speech_utils.last_two_words_match(args.peference_text,new_part):
+                            recognizer.reset(stream)
+                            last_text = ""
+                            continue
+
+                    result_lines = speech_utils.highlight_diff_multi(args.peference_text, text, on_recognition_equal)
+                    result_lines.append(text.lower())
+                    speech_utils.print_multi_overwrite(result_lines)
+                    with state.lock:
+                        state.current_result_lines = result_lines
+
+                    last_text = text
+                    last_active_time = time.time()
 
 
-            #断句
-            if recognizer.is_endpoint(stream):
-                recognizer.reset(stream)
-                last_text = ""
-                continue
+                #断句
+                if recognizer.is_endpoint(stream):
+                    recognizer.reset(stream)
+                    last_text = ""
+                    continue
 
-                #句子累积过长
-                # if speech_utils.is_too_long(text):
-                #     recognizer.reset(stream)
-                #     last_text = ""
-                #     continue
+                    #句子累积过长
+                    # if speech_utils.is_too_long(text):
+                    #     recognizer.reset(stream)
+                    #     last_text = ""
+                    #     continue
 
-            # 如果超过 1.5 秒没有新字产出，手动断句
-            if time.time() - last_active_time > 2.2 and last_text != "":
-                recognizer.reset(stream)
-                last_text = ""
-                continue
+                # 如果超过 1.5 秒没有新字产出，手动断句
+                if time.time() - last_active_time > 2.2 and last_text != "":
+                    recognizer.reset(stream)
+                    last_text = ""
+                    continue
+            else:
+                # 非练习状态，稍微休眠避免空转 CPU
+                time.sleep(0.1)
 
-                
     except KeyboardInterrupt:
         speech_utils.print_overwrite("Recognition force cancel\n") 
     finally:
