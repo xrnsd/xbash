@@ -138,6 +138,7 @@ ftLearnRepetionDrill()
     local filePathDrillTemp=/tmp/Drill.txt
     local filePathCompareTempText=/tmp/tempTextDrill.txt
     local filePathCompareExampleText=/tmp/exampleTextDrill.txt
+    local filePathAloudDrillTempAudio=/tmp/aloud_temp_drill.mp3
 
     #select lesson group
     local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=understand_read
@@ -866,8 +867,10 @@ ftLearnRepetionDrill()
                     [[ -s $filePathDataItemContentAudioVerySlow ]] && filePathAudio=$filePathDataItemContentAudioVerySlow
                     echo "------------------"
                     [[ -n $optResultTips ]] && echo -e "${optResultTips}\n------------------"
-                    [[ -n $tipsItemsContent ]] && [[ $operationType = "word_aloud" ]] && ftEcho -s "${tipsItemsContent}"
-                    #[[ -s $filePathAudio ]] && cp -rf $filePathAudio $filePathDataItemContentAudioShare
+                    [[ -n $tipsItemsContent ]] && ftEcho -s "${tipsItemsContent}"
+                    #[[ -n $tipsItemsContent ]] && [[ $operationType = "word_aloud" ]] && ftEcho -s "${tipsItemsContent}"
+                    [[ -s $filePathAudio ]] && ln -s $filePathAudio $filePathAloudDrillTempAudio
+
                     source "${HOME}/pyenv/sherpa_onnx/bin/activate"
                     case "$asrApiType" in
                         vosk )
@@ -889,13 +892,9 @@ ftLearnRepetionDrill()
                 fi
                 ftEcho -key -n "${arrayKeys}" "${arrayKeyContents}" "${arrayKeysIgone}" -hl "${arrayKeysHighlight}" "${arrayKeysHighlightFlag}"
             fi
-            
+
             ! $isOperateCollectAudio && [[ -n $optResultTips ]] && echo -e "-----------------------------------------------\n${optResultTips}"
-
             $isOperateCollectAudio && isOperateCollectAudio=false
-
-            #write to clipboard
-            echo "${englishItem}"| tr -d '\n'| pbcopy
 
             timeStart=$(gdate +%s -d $(gdate +"%H:%M:%S"))
             if ! $isOperateCollectAudio && ($isOperatePlayAudio || $isOperatePlayAudioSingle);then
@@ -914,15 +913,16 @@ ftLearnRepetionDrill()
                 isOperatePlayAudioSingle=false
             fi
 
-            ftEcho -key -r2
-            playOpt=$keyValInput
+            #write to clipboard
+            echo "${englishItem}"| tr -d '\n'| pbcopy
 
-            timeHandled=$(gdate +%s -d $(gdate +"%H:%M:%S"))
+            #ftEcho -key -r2
             unset isSorting sortingType sortingFlag optResultTips
-
-            if [[ -n $readTimeOut ]] && ((timeHandled-timeStart >= $readTimeOut));then
-                playOpt=n
-            fi
+            playOpt=$($rFilePathXbashModuleKey | tr -d '\033')
+            # timeHandled=$(gdate +%s -d $(gdate +"%H:%M:%S"))
+            # if [[ -n $readTimeOut ]] && ((timeHandled-timeStart >= $readTimeOut));then
+            #     playOpt=n
+            # fi
 
             case "$playOpt" in
                 d | D )
@@ -1068,7 +1068,7 @@ ftLearnRepetionDrill()
                     if [[ -s $filePathDataItem ]];then
                         local filePathDataItemBasic=/tmp/temp.Analysis
                         cp -rf $filePathDataItem $filePathDataItemBasic
-                        [[ $operationType = "express" ]] && gedit2 $filePathDataItemContentTextChineseLink $filePathDataItem || gedit2 $filePathDataItem
+                        [[ $operationType = "express" ]] && open -e $filePathDataItemContentTextChineseLink $filePathDataItem || open -e $filePathDataItem
 
                         if [[ -n $(diff $filePathDataItemBasic $filePathDataItem) ]];then
                             isRefTipsItemsContent=true
