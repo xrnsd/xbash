@@ -138,16 +138,19 @@ fi
     export filePathXbashTragetBashrcConfigProfile=${dirPathHomeXbashConfig}/profile.config
 
 #---------------- 加载扩展 ------------------
-    #加载 common module
+    #加载 common module 10ms
     if [[ -f $rFilePathXbashModuleCommon ]];then source  $rFilePathXbashModuleCommon
     else echo -e "\033[1;31mXbash的框架和公用扩展块加载失败\n${rFilePathXbashModuleCommon}\033[0m" ;return ;fi
-    #加载 auto module
+    
+    # 加载 auto module 16ms
     if [[ -f $rFilePathXbashModuleAuto ]];then source  $rFilePathXbashModuleAuto
     else echo -e "\033[1;31mXbash的Auto扩展块加载失败\n${rFilePathXbashModuleAuto}\033[0m" ;fi
-    #加载 git module
+    
+    #加载 git module 0ms
     if [[ -f $rFilePathXbashModuleGit ]];then source  $rFilePathXbashModuleGit
     else echo -e "\033[1;31mXbash的git扩展块加载失败\n${rFilePathXbashModuleGit}\033[0m" ;fi
-    #加载 user module
+    
+    # 加载 user module 580ms
     if [ ! -f $rFilePathXbashModuleUser ]; then
         [ ! -d $rDirPathXbashModuleUser ] && mkdir $rDirPathXbashModuleUser
         echo "#!/opt/homebrew/bin/bash" > $rFilePathXbashModuleUser
@@ -155,27 +158,28 @@ fi
     if [[ -f $rFilePathXbashModuleUser ]];then source  $rFilePathXbashModuleUser
     else echo -e "\033[1;31mXbash的用户独立模块创建失败:\n${rFilePathXbashModuleUser}\033[0m" ;fi
     [ ! -f $rFilePathXbashPackagingUser ] && [ -f $rFilePathXbashPackagingUserExample ]&& cp -rf $rFilePathXbashPackagingUserExample $rFilePathXbashPackagingUser
-    if [[ -f $rFilePathXbashPackagingUser ]];then source  $rFilePathXbashPackagingUser
+    if [[ -f $rFilePathXbashPackagingUser ]];then source  $rFilePathXbashPackagingUser 
     else echo -e "\033[1;31m用户可自定义命令封装扩展块加载失败\n${rFilePathXbashPackagingUser}\033[0m" ;fi
-    #加载 input module
+    
+    #加载 input module 28ms
     [ -f $rFilePathXbashModuleInput ] && [ "$rFilePathXbashModuleInput" != "$(readlink -f ~/.inputrc)" ] && rm -rf ~/.inputrc && ln -sf $rFilePathXbashModuleInput ~/.inputrc
-    #加载 learn module
+
+    #加载 learn module 110ms
     if [[ -f $rFilePathXbashModuleLearn ]];then 
-        export dirPathTempEng=$(ftIniEditUtil -r  $rFilePathXbashDBUser learnConfigInfo dirPathRootExampleSentence)
         source  $rFilePathXbashModuleLearn
     else echo -e "\033[1;31mXbash的学习扩展块加载失败\n${rFilePathXbashModuleLearn}\033[0m" ;fi
 
 #---------------- 默认启用部分xbash功能 ------------------
-    #加载 git module[非自定义]
-    ftLoadGitCompletion
-    #处理bash历史记录
+    # #处理bash历史记录
     #ftBashHistory &
-    #校验用户配置和模版版本一致性
-    ftCheckUserConfig
-    #校验用户数据库和模版版本一致性
-    ftCheckUserDatabase
-    #校验用户扩展和模版版本一致性
-    ftCheckUserPackaging
+    if [[ -f "~/.bashrc_config_check" ]];then
+        #校验用户配置和模版版本一致性
+        ftCheckUserConfig
+        #校验用户数据库和模版版本一致性
+        ftCheckUserDatabase
+        #校验用户扩展和模版版本一致性
+        ftCheckUserPackaging
+    fi
 
 #learn
 

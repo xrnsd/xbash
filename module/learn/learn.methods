@@ -5,6 +5,13 @@
 ##             learn tools                      ##
 ##                                              ##
 ##################################################
+
+initLearnEnv()
+{
+    [[ -n $dirPathTempEng ]] && return
+    export dirPathTempEng=$(ftIniEditUtil -r  $rFilePathXbashDBUser learnConfigInfo dirPathRootExampleSentence)      
+}
+
 _ftLearnRepetionDrill()
 {
     local ftEffect=ftLearnRepetionDrill\'sArgumentAppend
@@ -41,6 +48,7 @@ ftLearnRepetionDrill()
 
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} Disabled, please confirm" && return
     #check argument
+    initLearnEnv
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
     local contentType operateMode readTimeOut orderType=random asrApiType=sherpa_onnx
     local isShowChineseTips=true isShowEnglishTips=true isPlayChineseTips=false isAutomaticSwitching=false
@@ -1304,6 +1312,7 @@ ftLearnLessonManage()
     #可用性校验
     [[ "$isEnable" != "true" ]] && ftEcho -s "${ftEffect} 已被禁用，请确认" && return
     #解参验耦
+    initLearnEnv
     local filePathDataItemSentenceLinkTable
     local lessonGroupNameSel lessonNameSel
     local isAddLessonGroup=false isAddLesson=false isUpdate=false isUpdateDrillLesson=false

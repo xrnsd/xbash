@@ -77,7 +77,7 @@ ftClearTail()
     trap SIGINT
 }
 
-complete -W "-a --adb -h --help -j -s" ftResetXbash
+complete -W "-a --adb -h --help -j -s --android --asr" ftResetXbash
 ftResetXbash()
 {
     local ftEffect=更新xbash配置
@@ -119,6 +119,11 @@ ftResetXbash()
             targetSdkVersionForce="${arg2}"
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
           ;;
+        --android ) export isUseCustomAndroidDevEnvConfig=true ;;
+        --asr ) export isEnableResetPythonVoskConfig=true;;
+        --edge_tts ) export isEnableResetEdgeTtsConfig=true;;
+
+
         -cj | -jc |-jcc)
             [[ -n "${arg2}" ]] && export targetSdkVersionForce="${arg2}"
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
@@ -557,6 +562,14 @@ ftEcho()
                 local forceEchoPluralFlag=4 forceEchoPluralIndex=1
 
                 if [ "${2}" = "-r1" ] || [ "${2}" = "-r2" ];then
+                    local tipsContent
+                    if [ "${3}" = "-tips" ];then
+                         tipsContent="${4}"
+                         unset timeOut
+                    elif [ "${4}" = "-tips" ];then
+                        tipsContent="${5}"
+                    fi
+                    [[ -n $tipsContent ]] && echo && echo -en "${tipsContent}[y/n]"
                     unset keyValInput
                     export keyValInput=$($rFilePathXbashModuleKey | tr -d '\033')
                     return
@@ -760,24 +773,25 @@ ftCheckUserConfig()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [[ "$isEnable" != "true" ]] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return $resultSuccess
     #实现主体
     [[ ! -f ${rFilePathXbashConfigExample}  ]] && return $resultFail
     [[ ! -f ${rFilePathXbashConfigUser}  ]] && return $resultFail
 
     local title="用户配置" key="versionNum="
-    local versionNumExcepmale=$(cat $rFilePathXbashConfigExample |grep $key)
-    local versionNumUser=$(cat $rFilePathXbashConfigUser |grep $key)
+    local versionNumExcepmale=$(grep -s "${key}" $rFilePathXbashConfigExample)
+    local versionNumUser=$(grep -s "${key}" $rFilePathXbashConfigUser)
 
     versionNumExcepmale=${versionNumExcepmale//$key/}
     versionNumUser=${versionNumUser//$key/}
 
     [[ -z "${versionNumUser}" ]] && ftEcho -e "建议更新${title}到:${versionNumExcepmale}" && return
-    [[ -z "${versionNumExcepmale}" ]] || [[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) != "<"  ]] && return
+    [[ -z "${versionNumExcepmale}" ]] || [[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) != "<"  ]] && return resultSuccess
 
     ftEcho -e "${title}已升级，建议更新: ${versionNumUser} > ${versionNumExcepmale}"
     echo -n "请更新" ; ftEcho -s "：$rFilePathXbashConfigUser"
     echo -n "请参考" ; ftEcho -s "：$rFilePathXbashConfigExample"
+    return $resultFail
 }
 
 ftCheckUserDatabase()
@@ -786,7 +800,7 @@ ftCheckUserDatabase()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" = "false" ]] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [[ "$isEnable" = "false" ]] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return $resultSuccess
     #实现主体
     [[ ! -f ${rFilePathXbashDBUserExcepmale}  ]] && return $resultFail
     [[ ! -f ${rFilePathXbashDBUser}  ]] && return $resultFail
@@ -811,6 +825,7 @@ ftCheckUserDatabase()
             echo -n "模版" && ftEcho -s "：$rFilePathXbashDBUserExcepmale"
         fi
     fi
+    return $resultFail
 }
 
 ftCheckUserPackaging()
@@ -819,24 +834,25 @@ ftCheckUserPackaging()
     local isEnable=true
 
     #可用性校验
-    [[ "$isEnable" != "true" ]] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    [[ "$isEnable" != "true" ]] && [ "$isEnable" != "sub" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return $resultSuccess
     #实现主体
     [[ ! -f ${rFilePathXbashPackagingUserExample}  ]] && return $resultFail
     [[ ! -f ${rFilePathXbashPackagingUser}  ]] && return $resultFail
 
     local title="用户扩展" key="versionNum="
-    local versionNumExcepmale=$(cat $rFilePathXbashPackagingUserExample |grep $key)
-    local versionNumUser=$(cat $rFilePathXbashPackagingUser |grep $key)
+    local versionNumExcepmale=$(grep -s "${key}" $rFilePathXbashPackagingUserExample)
+    local versionNumUser=$(grep -s "${key}" $rFilePathXbashPackagingUser)
 
     versionNumExcepmale=${versionNumExcepmale//$key/}
     versionNumUser=${versionNumUser//$key/}
 
     [[ -z "${versionNumUser}" ]] && ftEcho -e "建议更新${title}到:${versionNumExcepmale}" && return
-    [[ -z "${versionNumExcepmale}" ]] || [[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) != "<"  ]] && return
+    [[ -z "${versionNumExcepmale}" ]] || [[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) != "<"  ]] && return $resultSuccess
 
     ftEcho -e "${title}已升级，建议更新: ${versionNumUser} > ${versionNumExcepmale}"
     echo -n "请更新" ; ftEcho -s "：$rFilePathXbashPackagingUser"
     echo -n "请参考" ; ftEcho -s "：$rFilePathXbashPackagingUserExample"
+    return $resultFail 
 }
 
 ftIniCreateFileOrTag()
@@ -4199,6 +4215,8 @@ ftLoadGitCompletion()
     # fi
     if [[ -f $rFilePathGitBash ]];then source  $rFilePathGitBash
     else echo -e "\033[1;31m非Xbash自定义的git扩展块加载失败\n${rFilePathGitBash}\033[0m" ;fi
+
+    export isLoadGitCompletion=1
 }
 
 ftDf()
