@@ -1010,84 +1010,53 @@ ftIniEditUtil()
         return
     fi
 
-    if $isReadMode;then
+    if $isReadMode; then
         #参耦校验
         [ ! -s "$filePathIni" ] && errorContent="${errorContent}\\n[无效文件]filePathIni=$filePathIni"
         [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
         [ -z "$keyName" ] && errorContent="${errorContent}\\n[缺少必要参数]keyName=$keyName"
 
-        #check tag
-        if [ -s "$filePathIni" ] && [ -n "$tagName" ] && [ -n "$tagName" ];then
-            local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | gawk -F: '{print $1}')
-            [[ -z $lineNumTag ]] && errorContent="${errorContent}\\n[无效TAG]filePathIni=${filePathIni}\\n[无效TAG]tagNameFlag=${tagNameFlag}"
-            (( ${#lineNumTag[@]} > 1 )) && errorContent="${errorContent}\\n[匹配多个TAG]filePathIni=${filePathIni}\\nagNameFlag=${tagNameFlag}"
-            local lineContent=$(gawk 'NR=="'$lineNumTag'"' $filePathIni | gsed s/[[:space:]]//g)
-            [[ -z $lineContent ]] || [[ "${lineContent}" != "[${tagName}]" ]] && \
-                errorContent="${errorContent}\\n[匹配TAG异常]filePathIni=${filePathIni}\\ntagNameFlag=${tagNameFlag}"   
-        fi
-
         #参耦校验
         [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
 
-        # #check key
-        keyName=($keyName)
+        # 1. 提取目标 [TAG] 块内容
+        # 使用 sed 提取从 [tagName] 到下一个 [ 之前的内容，存入变量
+        local sectionContent
+        sectionContent=$(gsed -n "/^\[${tagName}\]/,/^\[/ { /^\[/ { /\[${tagName}\]/ !d }; p }" "$filePathIni" | grep -v "^\[")
 
-        #single key
-        if (( ${#keyName[@]}==1 ));then
-            [[ -z "$(grep -sn $keyNameFlag $filePathIni)" ]] && return
-
-            local lineNumKey=$lineNumTag
-            while true; do
-                ((lineNumKey+=1))
-                lineContent=$(gawk 'NR=="'$lineNumKey'"' $filePathIni)
-                [[ -z $lineContent ]] && break
-                if [[ "$lineContent" =~ ^${keyName}=* ]]; then
-                    if [[ "$lineContent" = *\\ ]];then
-                        local lineContentTemp=${lineContent%\\}
-                        while true; do
-                            ((lineNumKey+=1))
-                            lineContent=$(gawk 'NR=="'$lineNumKey'"' $filePathIni)
-                            lineContentTemp="${lineContentTemp} ${lineContent%\\}"
-                            [[ "$lineContent" != *\\ ]] && break
-                        done
-                        lineContent="${lineContentTemp}"
-                    fi
-                    echo "${lineContent}" | gawk -F= '{gsub("\t","",$2); print $2}'
-                    break
-                fi
-            done
-        #multiple key
-        else
-            rm -rf ${filePathIni}.temp
-
-            local lineNumKey=$lineNumTag
-            while true; do
-                ((lineNumKey+=1))
-                lineContent=$(gawk 'NR=="'$lineNumKey'"' $filePathIni)
-                echo "${lineContent}" >> ${filePathIni}.temp
-                [[ -z $lineContent ]] && break
-            done
-
-            for keyNameItem in ${keyName[@]}; do
-                lineContent=$(grep -sn "${keyNameItem}\=" ${filePathIni}.temp)
-
-                if [[ "$lineContent" = *\\ ]];then
-                        local lineContentTemp=${lineContent%\\}
-                        lineNumKey=$(echo "${lineContent}" | gawk -F: '{print $1}')
-                        while true; do
-                            ((lineNumKey+=1))
-                            lineContent=$(gawk 'NR=="'$lineNumKey'"' ${filePathIni}.temp)
-                            lineContentTemp="${lineContentTemp} ${lineContent%\\}"
-                            [[ "$lineContent" != *\\ ]] && break
-                        done
-                        lineContent="${lineContentTemp}"
-                fi
-                
-                echo "${lineContent}" | gawk -F= '{print $2}'
-            done
-
-            rm ${filePathIni}.temp
+        if [[ -z "$sectionContent" ]]; then
+            return
         fi
+
+        # 2. 遍历 Key 进行读取
+        keyName=($keyName)
+        for key in "${keyName[@]}"; do
+            # 使用 awk 精确匹配 Key 并处理续行
+            echo "$sectionContent" | gawk -v targetKey="$key" '
+                BEGIN { FS="="; found=0 }
+                # 匹配行首为 targetKey 且后面紧跟 = 的行
+                $1 == targetKey {
+                    found=1;
+                    val = substr($0, length($1) + 2); # 获取 = 之后的所有内容
+                    
+                    # 循环处理续行符 \
+                    while (val ~ /\\$/) {
+                        sub(/\\$/, "", val); # 移除结尾的反斜杠
+                        if (getline nextLine > 0) {
+                            # 移除续行中的首尾空格并拼接
+                            gsub(/^[ \t]+|[ \t]+$/, "", nextLine);
+                            val = val " " nextLine;
+                        } else {
+                            break;
+                        }
+                    }
+                    # 最终清理：移除首尾多余空格
+                    gsub(/^[ \t]+|[ \t]+$/, "", val);
+                    print val;
+                    exit; 
+                }
+            '
+        done
         return
     fi
 
@@ -1104,37 +1073,55 @@ ftIniEditUtil()
         #     keyValue="$@"
         # fi
 
-        local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | gawk -F: '{print $1}')
-
+        local lineNumTag=$(sed -n "/${tagNameFlag}/=" "$filePathIni")
         #add tag
         if [[ -z $lineNumTag ]];then
             local enterLine="\n"
             echo  -e  "${enterLine}[$tagName]${enterLine}${keyName}=${keyValue}${enterLine}" >> $filePathIni
             return
         else
-            local lineContent indexCheck=$lineNumTag
-            while true; do
-                ((indexCheck+=1))
-                lineContent=$(gawk 'NR=="'$indexCheck'"' $filePathIni)
+            local lineContent blockContent=$(gawk -v start="$((lineNumTag + 1))" ' 
+            NR < start { next }
+            {
+                if ($0 ~ /^\[/ || $0 == "") exit
+                print
+            }
+            ' "$filePathIni") # 一次性读取 tag 后的有效区块（直到空行或下一个 tag）
 
-                #add key
-                if [[ -z $lineContent ]];then
-                    echo -e "\n" >> $filePathIni
-                    gsed  -i "${indexCheck}i${keyName}=${keyValue[@]}" $filePathIni
+            # 如果 block 为空，等价于原来第一次就读到空行
+            if [[ -z "$blockContent" ]]; then
+                echo -e "\n" >> "$filePathIni"
+                gsed -i "$((lineNumTag + 1))i${keyName}=${keyValue[@]}" "$filePathIni"
+                return
+            fi
+
+            while IFS= read -r lineContent; do
+                ((lineNumTag+=1))
+
+                # change key
+                if [[ "$lineContent" =~ ^${keyName}=.* ]]; then
+                    # 处理 keyName：删除空格，并对 / 和 : 进行转义
+                    keyName="${keyName//[[:space:]]/}"
+                    keyName="${keyName//\//\\/}"
+                    keyName="${keyName//:/\\:}"
+
+                    # 处理 keyValue：对 / 和 : 进行转义
+                    keyValue="${keyValue//\//\\/}"
+                    keyValue="${keyValue//:/\\:}"
+
+                    gsed -i "/^\[$tagName\]/,/^\[/ {
+                        /^\[$tagName\]/b
+                        /^\[/b
+                        s:^$keyName=.*:$keyName=$keyValue:
+                    }" "$filePathIni"
                     return
                 fi
+            done <<< "$blockContent"
 
-                #change key
-                if [[ "${lineContent}" =~ ^${keyName}=.* ]];then
-                    [[ "${keyName}" == *"/"* ]] && keyName="$(echo "${keyName}" |gsed s/[[:space:]]//g | gsed "s / \\\\/ g" )"
-                    [[ "${keyName}" == *":"* ]] && keyName="$(echo "${keyName}" |gsed s/[[:space:]]//g | gsed "s : \\\: g" )"
-                    [[ "${keyValue}" == *"/"* ]] && keyValue="$(echo "${keyValue}" | gsed "s:/:\\\/:g" )"
-                    [[ "${keyValue}" == *":"* ]] && keyValue="$(echo "${keyValue}" | gsed s/:/\\\\:/g )"
+            # block 扫描完仍未找到 key → 追加
+            gsed -i "$((lineNumTag + 1))i${keyName}=${keyValue[@]}" "$filePathIni"
+            return
 
-                    gsed -i "/^\[$tagName\]/,/^\[/ {/^\[$tagName\]/b;/^\[/b;s:^$keyName=.*:$keyName=$keyValue:g;}" $filePathIni
-                    return
-                fi
-            done
             ftEcho -e "ftIniEditUtil write mode : unknow opeartion"
         fi
         return
