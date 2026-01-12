@@ -43,7 +43,7 @@ if [[ -z ${R+x} ]]; then
     BB=$'\033[48;2;39;40;34m'     # #272822 - Monokai background (code lang tag)
 
     ERROR=$'\033[1;31m'
-    LISTEN_ALOUD=$'\033[1;36m'
+    LISTEN_ALOUD=$'\033[1;33m'
     FORGET=$'\033[41;38m'
 fi
 
@@ -434,6 +434,9 @@ busymd() {
     done
     
     [[ -z $input ]] && { [[ -p /dev/stdin ]] && input="/dev/stdin" || { help; return 0; }; }
+    [[ -n $input ]] && (\
+        [[ $input =~ \+\+([^-]+)\+ ]] || [[ $input =~ \-\-([^-]+)\- ]] || [[ $input =~ \*\*([^-]+)\* ]]
+    ) && echo "${input}" > "/tmp/busy.md" && input="/tmp/busy.md"
     [[ -f $input ]] || [[ $input == /dev/stdin ]] || { echo -e "Error: File not found: $input" >&2; return 1; }
     
     if ((use_pager == 1)) && [[ -t 1 ]]; then
