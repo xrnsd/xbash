@@ -77,6 +77,11 @@ ftClearTail()
     trap SIGINT
 }
 
+run_silent_bg() {
+    "$@" </dev/null >/dev/null 2>&1 &
+    disown
+}
+
 complete -W "-a --adb -h --help -j -s --android --asr" ftResetXbash
 ftResetXbash()
 {
