@@ -231,7 +231,7 @@ ftLearnRepetionDrill()
     local filePathLearnDrillInfoTemp=/tmp/LearnDrillTemp.info
     local filePathCollectAudioBackgroundLock=/tmp/collectAudioBackgroundLock
 
-    # clear
+    clear
     [[ -n $operationInfomation ]] && ftEcho -s "${operationInfomation}"
     ftEcho -s "Loading......"
 
@@ -258,7 +258,7 @@ ftLearnRepetionDrill()
     local playAudioLanguage="english"
     $isPlayChineseTips && playAudioLanguage="chinese"
     dirPathDataItemContentAudio="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.audio_${playAudioLanguage}"
-    local filePathDataItemContentAudio 
+    local filePathDataItemContentAudio filePathDataItemContentAudioNormal
     if $isOperatePlayAudio && [[ ! -d $dirPathDataItemContentAudio ]];then
         mkdir $dirPathDataItemContentAudio
         ftEcho -y "Audio is null. Do you want to create it ? (Press Y/y is create, enter equal to press y)"
@@ -418,8 +418,8 @@ ftLearnRepetionDrill()
                 cp $filePathDataItemSoure ${filePathDataItemContentTextEnglishTipsTemp}2
                 while (( $sentenceAudioIndex <= $sentenceAudioCount  )); do
                     timingChang=$(( $(gdate +%s -d $(gdate +"%H:%M:%S"))-$timingStart  ))
-                    filePathDataItemContentAudio="${dirPathDataItemContentAudio}/${sentenceAudioIndex}.mp3"
-                    [ ! -f "${filePathDataItemContentAudio}" ] && ftEcho -en "can't find audio file:" && echo "${filePathDataItemContentAudio}" && continue
+                    filePathDataItemContentAudioNormal="${dirPathDataItemContentAudio}/${sentenceAudioIndex}.mp3"
+                    [ ! -f "${filePathDataItemContentAudioNormal}" ] && ftEcho -en "can't find audio file:" && echo "${filePathDataItemContentAudioNormal}" && continue
 
                     englishItem=$(gawk 'NR=="'$sentenceAudioIndex'"' "${filePathDataItemContentTextEnglishTipsTemp}2")
                     [[ -z "$englishItem" ]] && ((sentenceAudioIndex+=1)) && continue
@@ -429,7 +429,7 @@ ftLearnRepetionDrill()
                     clear
                     ftEcho -column 5 "${drillInfomationTips} Duration_info" "${drillInfomationTipsContent} ${timingChang}"
                     echo -e "$(cat $filePathDataItemContentTextEnglishTipsTemp)"
-                    afplay $filePathDataItemContentAudio
+                    afplay $filePathDataItemContentAudioNormal
                     sleep 1
                     ((sentenceAudioIndex+=1))
                 done
@@ -726,44 +726,28 @@ ftLearnRepetionDrill()
                     fi
                 fi
 
-                filePathDataItemContentAudio="${dirPathDataItemContentAudio}/${lineIndex}.mp3"
-                filePathDataItemContentAudioSlow="${dirPathDataItemContentAudio}/${lineIndex}_slow.mp3"
+                filePathDataItemContentAudioNormal="${dirPathDataItemContentAudio}/${lineIndex}.mp3"
                 if $isOperatePlayAudio || $isOperatePlayAudioSingle || $isOperateCollectAudio;then
 
                     if [[ -f ${filePathDataItemContentLinkTable} ]];then
-                        filePathDataItemContentAudioLink="${filePathDataItemContentAudio}"
-                        filePathDataItemContentAudioSlowLink="${filePathDataItemContentAudioSlow}"
-                        filePathDataItemContentAudio="${dirPathTempEng}/$(dirname $linkInfo)/${contentType}.audio_${playAudioLanguage}/$(basename $linkInfo).mp3"
-                        filePathDataItemContentAudioSlow="${filePathDataItemContentAudio%.*}_slow.mp3"
+                        filePathDataItemContentAudioNormalLink="${filePathDataItemContentAudioNormal}"
+                        filePathDataItemContentAudioNormal="${dirPathTempEng}/$(dirname $linkInfo)/${contentType}.audio_${playAudioLanguage}/$(basename $linkInfo).mp3"
                     fi
 
                     local statusInfo
-                    audioInfo=$(basename "${filePathDataItemContentAudio}")
-                    if [[ ! -s $filePathDataItemContentAudio ]]; then
+                    audioInfo=$(basename "${filePathDataItemContentAudioNormal}")
+                    if [[ ! -s $filePathDataItemContentAudioNormal ]]; then
                         statusInfo="create audio : ${audioInfo}"
                         echo " \n${statusInfo}"
                         optResultTips="${optResultTips=}\n${statusInfo} finished"
-                        [[ ! -d $(dirname $filePathDataItemContentAudio) ]] && mkdir -p $(dirname $filePathDataItemContentAudio)
+                        [[ ! -d $(dirname $filePathDataItemContentAudioNormal) ]] && mkdir -p $(dirname $filePathDataItemContentAudioNormal)
                         if $isPlayChineseTips;then
-                            ftText2Mp3 -txt "${chineseItem}" -fpm "${filePathDataItemContentAudio}" -speed +40
+                            run_silent_bg ftText2Mp3 -txt "${chineseItem}" -fpm "${filePathDataItemContentAudioNormal}" -speed +40
                         else
-                            ftText2Mp3 -txt "${englishItem}" -fpm "${filePathDataItemContentAudio}"
+                            run_silent_bg ftText2Mp3 -txt "${englishItem}" -fpm "${filePathDataItemContentAudioNormal}"
                         fi
                     fi
-                    [[ ! -s $filePathDataItemContentAudioLink ]] && ln -s $filePathDataItemContentAudio $filePathDataItemContentAudioLink
-
-                    # audioInfo=$(basename "${filePathDataItemContentAudioSlow}")
-                    if [[ ! -s $filePathDataItemContentAudioSlow ]]; then
-                        # statusInfo="create audio : ${audioInfo}"
-                        statusInfo="create audio : $(basename $filePathDataItemContentAudioSlow)"
-                        echo " \n${statusInfo}"
-                        #optResultTips="${optResultTips=}\n${statusInfo} finished"
-                        ftText2Mp3 -txt "${englishItem}" -fpm "${filePathDataItemContentAudioSlow}" -speed -20 &
-                    fi
-                    [[ ! -s $filePathDataItemContentAudioSlowLink ]] && ln -s $filePathDataItemContentAudioSlow $filePathDataItemContentAudioSlowLink
-
-                    [[ -s $filePathDataItemContentAudioSlow ]] && [[ -n $audioInfo ]] && audioInfo=$(echo $audioInfo | gsed 's/_/++/g')
-
+                    [[ ! -s $filePathDataItemContentAudioNormalLink ]] && ln -s $filePathDataItemContentAudioNormal $filePathDataItemContentAudioNormalLink
                 else
                     drillInfomationTipsGone="${drillInfomationTipsGone} Audio"
                 fi
@@ -796,7 +780,7 @@ ftLearnRepetionDrill()
                 tipsItemsContent=
                 rm -rf $filePathLearnDrillInfoTemp
 
-                filePathDataItemContentTextAnalysis=${dirPathDataItemContentTextAnalysis}/${lineIndex}.md
+                [[ -z $filePathDataItemContentTextAnalysis ]] && filePathDataItemContentTextAnalysis=${dirPathDataItemContentTextAnalysis}/${lineIndex}.md
                 if $isShowEnglishTips || $isShowEnglishTipsSingle;then
                     if [[ -s "$filePathDataItemContentTextAnalysis" ]];then
                         [[ -z "$(grep -e "\U0001F" $filePathDataItemContentTextAnalysis)" ]] && \
@@ -882,24 +866,23 @@ ftLearnRepetionDrill()
 
                 ftEcho -column 5 "${drillInfomationTipsTemp}" "${drillInfomationTipsContentTemp}" "${drillInfomationTipsGone}"
                 if $isOperateCollectAudio;then
-                    local filePathAudio=$filePathDataItemContentAudio
-                    [[ -s $filePathDataItemContentAudioSlow ]] && filePathAudio=$filePathDataItemContentAudioSlow
-                    [[ -s $filePathDataItemContentAudioVerySlow ]] && filePathAudio=$filePathDataItemContentAudioVerySlow
+                    local filePathDataItemContentAudio=$filePathDataItemContentAudioNormal
+                    [[ -s $filePathDataItemContentAudioVerySlow ]] && filePathDataItemContentAudio=$filePathDataItemContentAudioVerySlow
                     echo "------------------"
                     [[ -n $optResultTips ]] && echo -e "${optResultTips}\n------------------"
                     [[ -n $tipsItemsContent ]] && ftEcho -s "${tipsItemsContent}"
                     #[[ -n $tipsItemsContent ]] && [[ $operationType = "word_aloud" ]] && ftEcho -s "${tipsItemsContent}"
-                    [[ -s $filePathAudio ]] && ln -s $filePathAudio $filePathAloudDrillTempAudio
+                    [[ ! -s $filePathDataItemContentAudio ]] && ftEcho -e "Cancel operation，audio is not exsit : ${filePathDataItemContentAudio}"
 
                     source "${HOME}/pyenv/sherpa_onnx/bin/activate"
                     case "$asrApiType" in
                         vosk )
                             python3 $rFilePathXbashModuleLearnVosk \
-                                --model_path "${dirPathPythonVoskModel}" --peference_audio $filePathAudio --peference_text "${englishItem}"
+                                --model_path "${dirPathPythonVoskModel}" --peference_audio $filePathDataItemContentAudio --peference_text "${englishItem}"
                             ;;
                         sherpa_onnx )
                             python3 $rFilePathXbashModuleLearnSherpaOnnx \
-                                --model_path "${dirPathPythonSherpaOnnxModel}" --peference_audio $filePathAudio --peference_text "${englishItem}"
+                                --model_path "${dirPathPythonSherpaOnnxModel}" --peference_audio $filePathDataItemContentAudio --peference_text "${englishItem}"
                             ;;
                         *)
                             ftEcho -e "invalid asrApiType : ${asrApiType}" && return ;;
@@ -918,19 +901,24 @@ ftLearnRepetionDrill()
 
             timeStart=$(gdate +%s -d $(gdate +"%H:%M:%S"))
             if ! $isOperateCollectAudio && ($isOperatePlayAudio || $isOperatePlayAudioSingle);then
-                if $isOperatePlayAudioVerySlow && [[ -s $filePathDataItemContentAudioVerySlow ]];then
-                    afplay $filePathDataItemContentAudioVerySlow
+                local args
+                if $isOperatePlayAudioVerySlow && [[ -s $filePathDataItemContentAudioVerySlow ]];then  
+                    filePathDataItemContentAudio=$filePathDataItemContentAudioVerySlow
                     isOperatePlayAudioVerySlow=false
                 elif $isOperatePlayAudioSlow;then
-                    [[ -s $filePathDataItemContentAudioSlow ]] && \
-                        afplay $filePathDataItemContentAudioSlow || \
-                        afplay -r 0.7 $filePathDataItemContentAudio
+                    args="-r 0.7"
+                    filePathDataItemContentAudio=$filePathDataItemContentAudioNormal
                     isOperatePlayAudioSlow=false
                 else
-                    afplay $filePathDataItemContentAudio
+                    unset args
+                    filePathDataItemContentAudio=$filePathDataItemContentAudioNormal
                     isOperatePlayAudioSlow=true
                 fi
-                isOperatePlayAudioSingle=false
+                # echo "filePathDataItemContentAudio=${filePathDataItemContentAudio}"
+                [[ ! -s $filePathDataItemContentAudio ]] && ftEcho -e "Cancel operation，audio is not exsit : ${filePathDataItemContentAudio}" \
+                                                         || play_interruptible ${args} $filePathDataItemContentAudio
+                
+                unset isOperatePlayAudioSingle isOperatePlayAudioVerySlow filePathDataItemContentAudio
             fi
 
             #write to clipboard
@@ -1079,28 +1067,28 @@ ftLearnRepetionDrill()
                         [[ ! -f $filePathDataItemContentTextAnalysisLink ]] && touch $filePathDataItemContentTextAnalysisLink
 
                         local dirPathLocal=$(pwd)
+                        [[ ! -f $filePathDataItemContentTextAnalysis ]] && cd $dirPathDataItemContentTextAnalysis && ln -sf $filePathDataItemContentTextAnalysisLink ${lineIndex}.md && cd $dirPathLocal
                         [[ ! -s $filePathDataItemContentTextAnalysisLink ]] && cd $dirPathDataItemContentTextAnalysis && ln -sf $filePathDataItemContentTextAnalysisLink && cd $dirPathLocal
                         filePathDataItem=$filePathDataItemContentTextAnalysisLink
                     else
                         filePathDataItem="${dirPathDataItemContentTextAnalysis}/${lineIndex}.md"
                     fi
 
-                    if [[ -s $filePathDataItem ]];then
+                    # if [[ -s $filePathDataItem ]];then
                         local filePathDataItemBasic=/tmp/temp.Analysis
                         cp -rf $filePathDataItem $filePathDataItemBasic
-                        [[ $operationType = "express" ]] && open -e $filePathDataItemContentTextChineseLink $filePathDataItem || open -e $filePathDataItem
-
+                        [[ $operationType = "express" ]] && openSync -wth $filePathDataItemContentTextChineseLink $filePathDataItem || openSync -wth $filePathDataItem
                         if [[ -n $(diff $filePathDataItemBasic $filePathDataItem) ]];then
                             isRefTipsItemsContent=true
+                            isShowEnglishTipsSingle=true
                             isRefKeyTips=true
                         else
-                            optResultTips="Cancel operation, analysis isn't change"
+                            optResultTips=$($rFilePathXbashModuleBusy "Cancel operation, analysis ++isn't change+")
                         fi
-                        # clear
-                        # continue
-                    else
-                        optResultTips="Cancel operation, analysis is null"
-                    fi
+
+                    # else
+                    #     optResultTips=$($rFilePathXbashModuleBusy "Cancel operation, analysis ++is null+")
+                    # fi
                     ;;
                 * )
                     ;;

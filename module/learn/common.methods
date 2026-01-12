@@ -578,3 +578,20 @@ ftLearnWriteArticle()
           ftEcho -e "$(cat $filePathTempWriteDrillText)"  
     fi
 }
+
+play_interruptible() {
+    (
+        set +m                  # ⭐ 关键：关闭 job control（仅限此 subshell）
+
+        local pid
+
+        afplay "$@" &
+        pid=$!
+
+        # Ctrl+C：只终止 afplay
+        trap 'kill "$pid" 2>/dev/null' INT
+
+        wait "$pid"
+        trap - INT
+    )
+}
