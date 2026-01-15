@@ -28,7 +28,7 @@ _ftLearnRepetionDrill()
             COMPREPLY=( $(compgen -W "order random" -- "$cur") )
             ;;
         --asr )
-            COMPREPLY=( $(compgen -W "vosk sherpa_onnx" -- "$cur") )
+            COMPREPLY=( $(compgen -W "sherpa_onnx and" -- "$cur") )
             ;;
         article | sentence | imitate )
             COMPREPLY=( $(compgen -W "-te -htc -hte -pl -fq --sort --asr" -- "$cur") )
@@ -50,7 +50,7 @@ ftLearnRepetionDrill()
     #check argument
     initLearnEnv
     [[ -z $dirPathTempEng ]] && ftEcho -e "There are not data storge path" && return
-    local contentType operateMode readTimeOut orderType=random asrApiType=sherpa_onnx
+    local contentType operateMode readTimeOut orderType=random asrApiType=and
     local isShowChineseTips=true isShowEnglishTips=true isPlayChineseTips=false isAutomaticSwitching=false
     local isOperateTextEdit=false isOperateAutoBcompare=false isOperatePlayAudio=false isOperateImitateCreate=false
     local valCount=9 errorContent arg arg2
@@ -73,7 +73,7 @@ ftLearnRepetionDrill()
 #                         -pl _/cn #play audio(normal en),enter cn to play chinese audio
 #                         -fq xx   #automatic frequency switching in seconds
 #                         --sort order/random #sort selection
-#                         --asr  vosk/sherpa_onnx #asr api
+#                         --asr  sherpa_onnx/and #asr api
 #========================================================="; return ;;
         --rely) ftEcho -rc "${ftEffect}" "‘s dependency description" "\
 #=========================================================
@@ -102,8 +102,7 @@ ftLearnRepetionDrill()
             ;;
         --asr )  asrApiType="${arg2}"
                 case "${asrApiType}" in
-                    vosk)  [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
-                         errorContent="${errorContent}ASR tool: VOSK is abandoned"
+                    and)
                         ;;
                     sherpa_onnx )
                         ;;
@@ -218,8 +217,7 @@ ftLearnRepetionDrill()
     local dirPathDataItemContentDrillResult="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.drill_result" \
           filePathDataItemContentDrillResult
     local dirPathDataItemContentAudio \
-          filePathDataItemContentAudio filePathDataItemContentAudioSlow filePathDataItemContentAudioVerySlow
-    local filePathDataItemContentAudioShare=/share/ftLearnRepetionDrill_share.mp3
+          filePathDataItemContentAudio filePathDataItemContentAudioVerySlow
     local dirPathDataItemContentTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis" \
           filePathDataItemContentTextAnalysis
     local filePathDataItemContentTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
@@ -780,7 +778,7 @@ ftLearnRepetionDrill()
                 tipsItemsContent=
                 rm -rf $filePathLearnDrillInfoTemp
 
-                [[ -z $filePathDataItemContentTextAnalysis ]] && filePathDataItemContentTextAnalysis=${dirPathDataItemContentTextAnalysis}/${lineIndex}.md
+                filePathDataItemContentTextAnalysis=${dirPathDataItemContentTextAnalysis}/${lineIndex}.md
                 if $isShowEnglishTips || $isShowEnglishTipsSingle;then
                     if [[ -s "$filePathDataItemContentTextAnalysis" ]];then
                         [[ -z "$(grep -e "\U0001F" $filePathDataItemContentTextAnalysis)" ]] && \
@@ -857,6 +855,9 @@ ftLearnRepetionDrill()
                 unset isAutoSaveDrillingProgressSingle
             fi
 
+            #write to clipboard
+            echo "${englishItem}"| tr -d '\n'| pbcopy
+
             if ( $isRefDrillInfomationTips || $isRefTipsItemsContent || $isRefKeyTips || $isOperateCollectAudio);then
                 isRefDrillInfomationTips=false
                 isRefTipsItemsContent=false
@@ -874,20 +875,24 @@ ftLearnRepetionDrill()
                     #[[ -n $tipsItemsContent ]] && [[ $operationType = "word_aloud" ]] && ftEcho -s "${tipsItemsContent}"
                     [[ ! -s $filePathDataItemContentAudio ]] && ftEcho -e "Cancel operation，audio is not exsit : ${filePathDataItemContentAudio}"
 
-                    source "${HOME}/pyenv/sherpa_onnx/bin/activate"
+                    # saved_stty=$(stty -g)
                     case "$asrApiType" in
-                        vosk )
-                            python3 $rFilePathXbashModuleLearnVosk \
-                                --model_path "${dirPathPythonVoskModel}" --peference_audio $filePathDataItemContentAudio --peference_text "${englishItem}"
+                        and )
+                            AppleNativeASR -pa $filePathDataItemContentAudio -pt "${englishItem}"
                             ;;
                         sherpa_onnx )
+                            source "${HOME}/pyenv/sherpa_onnx/bin/activate" #加载python虚拟环境
                             python3 $rFilePathXbashModuleLearnSherpaOnnx \
                                 --model_path "${dirPathPythonSherpaOnnxModel}" --peference_audio $filePathDataItemContentAudio --peference_text "${englishItem}"
+                            deactivate #退出python虚拟环境
+                            #重置tty，防止终端显示按键等功能异常
+                            # stty "$saved_stty"
+                            stty sane
+                            # tput reset
                             ;;
                         *)
                             ftEcho -e "invalid asrApiType : ${asrApiType}" && return ;;
                     esac
-                    deactivate
                     echo "------------------"
 
                 else
@@ -897,8 +902,7 @@ ftLearnRepetionDrill()
             fi
 
             ! $isOperateCollectAudio && [[ -n $optResultTips ]] && echo -e "-----------------------------------------------\n${optResultTips}"
-            $isOperateCollectAudio && isOperateCollectAudio=false
-
+            
             timeStart=$(gdate +%s -d $(gdate +"%H:%M:%S"))
             if ! $isOperateCollectAudio && ($isOperatePlayAudio || $isOperatePlayAudioSingle);then
                 local args
@@ -916,13 +920,13 @@ ftLearnRepetionDrill()
                 fi
                 # echo "filePathDataItemContentAudio=${filePathDataItemContentAudio}"
                 [[ ! -s $filePathDataItemContentAudio ]] && ftEcho -e "Cancel operation，audio is not exsit : ${filePathDataItemContentAudio}" \
-                                                         || play_interruptible ${args} $filePathDataItemContentAudio
+                                                         || afplay ${args} $filePathDataItemContentAudio
+                                                         #|| play_interruptible ${args} $filePathDataItemContentAudio
                 
                 unset isOperatePlayAudioSingle isOperatePlayAudioVerySlow filePathDataItemContentAudio
             fi
 
-            #write to clipboard
-            echo "${englishItem}"| tr -d '\n'| pbcopy
+            $isOperateCollectAudio && isOperateCollectAudio=false
 
             #ftEcho -key -r2
             unset isSorting sortingType sortingFlag optResultTips
@@ -1077,7 +1081,7 @@ ftLearnRepetionDrill()
                     # if [[ -s $filePathDataItem ]];then
                         local filePathDataItemBasic=/tmp/temp.Analysis
                         cp -rf $filePathDataItem $filePathDataItemBasic
-                        [[ $operationType = "express" ]] && openSync -wth $filePathDataItemContentTextChineseLink $filePathDataItem || openSync -wth $filePathDataItem
+                        [[ $operationType = "express" ]] && openSync -wht -t $filePathDataItemContentTextChineseLink $filePathDataItem 2>/dev/null || openSync -wht -t $filePathDataItem 2>/dev/null
                         if [[ -n $(diff $filePathDataItemBasic $filePathDataItem) ]];then
                             isRefTipsItemsContent=true
                             isShowEnglishTipsSingle=true

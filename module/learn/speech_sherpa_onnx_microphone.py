@@ -49,6 +49,15 @@ def audio_callback(indata, frames, time, status):
         print(status, file=sys.stderr)
     q.put(bytes(indata))
 
+def restore_terminal():
+    try:
+        fd = sys.stdin.fileno()
+        termios.tcsetattr(fd, termios.TCSADRAIN, termios.tcgetattr(fd))
+    except Exception:
+        pass
+    print()  # 强制换行，结束 overwrite 状态
+    sys.stdout.flush()
+
 def main():
     speech_utils.play_audio(args.peference_audio)
     speech_utils.print_overwrite("Loading Sherpa Onnx model ...");
@@ -77,7 +86,7 @@ def main():
         num_threads=2,
         sample_rate=SAMPLE_RATE,
         feature_dim=80,
-        decoding_method="modified_beam_search",
+        decoding_method="greedy_search", #modified_beam_search
         max_active_paths=4,
         rule1_min_trailing_silence=2.4, # 强制断句时间
         rule2_min_trailing_silence=0.8, # 有字后的停顿时间
@@ -266,6 +275,7 @@ def main():
         mic_stream.stop_stream()
         mic_stream.close()
         pa.terminate()
+        restore_terminal()
 
 if __name__ == "__main__":
     try:

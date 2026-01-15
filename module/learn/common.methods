@@ -541,10 +541,15 @@ ftTransformDrillReslt()
 ftTextGeditBackground()
 {
     local optionLock="/tmp/textGeditBackgroundLock"
-    [[ -f $optionLock ]] && ftEcho -e "ftTextGeditBackground is locking" && return
+    if [[ -z $(pgrep -x "openSync") ]];then
+        rm -rf $optionLock
+    elif [[ -f $optionLock ]];then
+        ftEcho -e "ftTextGeditBackground is locking"
+        return
+    fi
     touch $optionLock
     local filePathText=$1
-    subl "${filePathText}" && trap 'rm -rf $optionLock' SIGINT
+    openSync -whb "${filePathText}" 2>/dev/null && trap 'rm -rf $optionLock' SIGINT
     rm -rf $optionLock
 }
 
