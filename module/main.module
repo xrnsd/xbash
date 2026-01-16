@@ -200,3 +200,7 @@ export PATH="$PATH:/Users/myname/.local/bin"
 if [ "$TERM_PROGRAM" == "Apple_Terminal" ] && [ -f /etc/bashrc_Apple_Terminal ]; then
     . /etc/bashrc_Apple_Terminal
 fi
+
+#config lang env
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
