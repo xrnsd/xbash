@@ -222,7 +222,7 @@ ftLearnRepetionDrill()
           filePathDataItemContentTextAnalysis
     local filePathDataItemContentTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
     local filePathDataItemContentTextChinese="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_chinese"
-    local filePathDataItemContentTextChineseLink
+    local filePathDataItemContentTextChineseLink filePathDataItemContentTextEnglishLink
     local filePathDataItemContentLinkType="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.link_type"
     local filePathDataItemContentLinkTable="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.link_table"
     local filePathLearnDrillTemp=/tmp/LearnDrillTemp.txt
@@ -704,6 +704,7 @@ ftLearnRepetionDrill()
                 fi
                 [[ -z $linkInfo ]] && linkInfo="${lessonGroupNameSel}/${lessonNameSel}/${lineIndex}"
 
+                filePathDataItemContentTextEnglishLink="${dirPathTempEng}/$(dirname $linkInfo)/${contentType}.text_english"
                 filePathDataItemContentTextChineseLink="${dirPathTempEng}/$(dirname $linkInfo)/${contentType}.text_chinese"
 
                 unset failTime
@@ -1081,7 +1082,7 @@ ftLearnRepetionDrill()
                     # if [[ -s $filePathDataItem ]];then
                         local filePathDataItemBasic=/tmp/temp.Analysis
                         cp -rf $filePathDataItem $filePathDataItemBasic
-                        [[ $operationType = "express" ]] && openSync -wht -t $filePathDataItemContentTextChineseLink $filePathDataItem 2>/dev/null || openSync -wht -t $filePathDataItem 2>/dev/null
+                        openSync -wht -t $filePathDataItemContentTextEnglishLink $filePathDataItemContentTextChineseLink $filePathDataItem 2>/dev/null #|| openSync -wht -t $filePathDataItem 2>/dev/null
                         if [[ -n $(diff $filePathDataItemBasic $filePathDataItem) ]];then
                             isRefTipsItemsContent=true
                             isShowEnglishTipsSingle=true
