@@ -217,7 +217,7 @@ ftLearnRepetionDrill()
     local dirPathDataItemContentDrillResult="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.drill_result" \
           filePathDataItemContentDrillResult
     local dirPathDataItemContentAudio \
-          filePathDataItemContentAudio filePathDataItemContentAudioVerySlow
+          filePathDataItemContentAudio #filePathDataItemContentAudioVerySlow
     local dirPathDataItemContentTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis" \
           filePathDataItemContentTextAnalysis
     local filePathDataItemContentTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
@@ -553,7 +553,7 @@ ftLearnRepetionDrill()
 
     local arrayIndexSortSize=${#arrayIndexSort[@]} linkInfo
     local isShowEnglishTipsSingle=false isShowChineseTipsSingle=false
-    local isOperatePlayAudioSingle=false isOperatePlayAudioSlow=false isOperatePlayAudioVerySlow=false isOperateCollectAudio=false
+    local isOperatePlayAudioSingle=false isOperatePlayAudioSlow=false isOperateCollectAudio=false #isOperatePlayAudioVerySlow=false 
     local isCutChineseTipsSingle=false
     local tipsItemsContent audioInfo timeStart timeHandled
     
@@ -869,7 +869,7 @@ ftLearnRepetionDrill()
                 ftEcho -column 5 "${drillInfomationTipsTemp}" "${drillInfomationTipsContentTemp}" "${drillInfomationTipsGone}"
                 if $isOperateCollectAudio;then
                     local filePathDataItemContentAudio=$filePathDataItemContentAudioNormal
-                    [[ -s $filePathDataItemContentAudioVerySlow ]] && filePathDataItemContentAudio=$filePathDataItemContentAudioVerySlow
+                    #[[ -s $filePathDataItemContentAudioVerySlow ]] && filePathDataItemContentAudio=$filePathDataItemContentAudioVerySlow
                     echo "------------------"
                     [[ -n $optResultTips ]] && echo -e "${optResultTips}\n------------------"
                     [[ -n $tipsItemsContent ]] && ftEcho -s "${tipsItemsContent}"
@@ -907,10 +907,11 @@ ftLearnRepetionDrill()
             timeStart=$(gdate +%s -d $(gdate +"%H:%M:%S"))
             if ! $isOperateCollectAudio && ($isOperatePlayAudio || $isOperatePlayAudioSingle);then
                 local args
-                if $isOperatePlayAudioVerySlow && [[ -s $filePathDataItemContentAudioVerySlow ]];then  
-                    filePathDataItemContentAudio=$filePathDataItemContentAudioVerySlow
-                    isOperatePlayAudioVerySlow=false
-                elif $isOperatePlayAudioSlow;then
+                # if $isOperatePlayAudioVerySlow && [[ -s $filePathDataItemContentAudioVerySlow ]];then  
+                #     filePathDataItemContentAudio=$filePathDataItemContentAudioVerySlow
+                #     isOperatePlayAudioVerySlow=false
+                # el
+                if $isOperatePlayAudioSlow;then
                     args="-r 0.7"
                     filePathDataItemContentAudio=$filePathDataItemContentAudioNormal
                     isOperatePlayAudioSlow=false
@@ -924,7 +925,7 @@ ftLearnRepetionDrill()
                                                          || afplay ${args} $filePathDataItemContentAudio
                                                          #|| play_interruptible ${args} $filePathDataItemContentAudio
                 
-                unset isOperatePlayAudioSingle isOperatePlayAudioVerySlow filePathDataItemContentAudio
+                unset isOperatePlayAudioSingle filePathDataItemContentAudio #isOperatePlayAudioVerySlow
             fi
 
             $isOperateCollectAudio && isOperateCollectAudio=false
@@ -1004,17 +1005,17 @@ ftLearnRepetionDrill()
                 #To play audio
                 right )isOperatePlayAudioSingle=true
                     ;;
-                double_right )
-                    #if ( $isOperatePlayAudioSingle || $isOperatePlayAudio );then
-                        filePathDataItemContentAudioVerySlow=${dirPathTempEng}/needRepetionDrill/audio/very_slow.audio_english/$(echo "${linkInfo}" | gsed 's/\//_/g').mp3
-                        [[ ! -s $filePathDataItemContentAudioVerySlow ]] && \
-                             echo "creating ${lineIndex}_very_slow.mp3" && \
-                             ftText2Mp3 -txt "${englishItem}" -fpm $filePathDataItemContentAudioVerySlow -speed -50
-                        [[ -s $filePathDataItemContentAudioVerySlow ]] && \
-                            isOperatePlayAudioVerySlow=true \
-                            isOperatePlayAudioSingle=true
-                    #fi
-                    ;;
+                # double_right )
+                #     #if ( $isOperatePlayAudioSingle || $isOperatePlayAudio );then
+                #         filePathDataItemContentAudioVerySlow=${dirPathTempEng}/needRepetionDrill/audio/very_slow.audio_english/$(echo "${linkInfo}" | gsed 's/\//_/g').mp3
+                #         [[ ! -s $filePathDataItemContentAudioVerySlow ]] && \
+                #              echo "creating ${lineIndex}_very_slow.mp3" && \
+                #              ftText2Mp3 -txt "${englishItem}" -fpm $filePathDataItemContentAudioVerySlow -speed -50
+                #         [[ -s $filePathDataItemContentAudioVerySlow ]] && \
+                #             isOperatePlayAudioVerySlow=true \
+                #             isOperatePlayAudioSingle=true
+                #     #fi
+                #     ;;
                 s | S )
                     isOperateCollectAudio=true
                     isRefKeyTips=true
