@@ -1019,7 +1019,11 @@ ftLearnRepetionDrill()
                 s | S )
                     isOperateCollectAudio=true
                     isRefKeyTips=true
-                    isRefTipsItemsContent=false
+
+                    isRefTipsItemsContent=true
+                    isShowChineseTipsSingle=false
+                    isShowEnglishTipsSingle=true
+
                     unset tipsItemsContent
                     ;;
                 f | F )
