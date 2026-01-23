@@ -92,7 +92,10 @@ ftLearnRepetionDrill()
             ;;
         --sort )  orderType="${arg2}"
                 case "${orderType}" in
-                    order | random )
+                    order )
+                        isOperateOnlyCreateAudio=true
+                        ;;
+                    random )
                         ;;
                     * )  [[ -n $errorContent ]] && errorContent="${errorContent}\\n"
                          errorContent="${errorContent}invalid sort aregument :${orderType}"
@@ -553,7 +556,7 @@ ftLearnRepetionDrill()
 
     local arrayIndexSortSize=${#arrayIndexSort[@]} linkInfo
     local isShowEnglishTipsSingle=false isShowChineseTipsSingle=false
-    local isOperatePlayAudioSingle=false isOperatePlayAudioSlow=false isOperateCollectAudio=false #isOperatePlayAudioVerySlow=false 
+    local isOperatePlayAudioSingle=false isOperateOnlyCreateAudio=false SingleisOperatePlayAudioSlow=false isOperateCollectAudio=false #isOperatePlayAudioVerySlow=false 
     local isCutChineseTipsSingle=false
     local tipsItemsContent audioInfo timeStart timeHandled
     
@@ -726,7 +729,7 @@ ftLearnRepetionDrill()
                 fi
 
                 filePathDataItemContentAudioNormal="${dirPathDataItemContentAudio}/${lineIndex}.mp3"
-                if $isOperatePlayAudio || $isOperatePlayAudioSingle || $isOperateCollectAudio;then
+                if $isOperatePlayAudio || $isOperatePlayAudioSingle || $isOperateCollectAudio || $isOperateOnlyCreateAudio;then
 
                     if [[ -f ${filePathDataItemContentLinkTable} ]];then
                         filePathDataItemContentAudioNormalLink="${filePathDataItemContentAudioNormal}"
@@ -1091,7 +1094,7 @@ ftLearnRepetionDrill()
 
                     # if [[ -s $filePathDataItem ]];then
                         local filePathDataItemBasic=/tmp/temp.Analysis
-                        cp -rf $filePathDataItem $filePathDataItemBasic
+                        cp -rf $filePathDataIt em $filePathDataItemBasic
                         openSync -wht -t $filePathDataItemContentTextEnglishLink $filePathDataItemContentTextChineseLink $filePathDataItem 2>/dev/null #|| openSync -wht -t $filePathDataItem 2>/dev/null
                         if [[ -n $(diff $filePathDataItemBasic $filePathDataItem) ]];then
                             isRefTipsItemsContent=true
