@@ -175,7 +175,7 @@ ftReadAllAlias()
                 cmdName=$(echo $line | gawk '{split($2,b,"=");print  b[1] }')
                 cmdContent=$(echo $line | gawk '{split($2,b,"=");print  b[3]}'| gawk '{split($0,b,";");print  b[1]}')
                 [[ -n "$cmdContent" ]] && printf "%${intervalSize}s  %s\n" ${cmdName} ${cmdContent}
-        done | column -t
+        done | gcolumn -t
 }
 
 ftReadAllFt()
@@ -224,7 +224,7 @@ ftReadAllFt()
             printf "%${intervalSize}s  " ${effectName//()/}
             [[ "$effectDescriptionEnable" = "false" ]] && ftEcho -s "[暂时关闭]" && continue
             echo ${effectDescription}
-        done | column -t
+        done | gcolumn -t
 }
 
 ftTest()
@@ -505,7 +505,8 @@ ftEcho()
                         ((enterFlag+=1))
                         ((enterFlag==$listMainItemSizeFlag)) && echo -e "\n" >> $fileColumnPathTmp&& enterFlag=1
                     done
-                    cat $fileColumnPathTmp | column -t && rm $fileColumnPathTmp
+                    cat $fileColumnPathTmp | gcolumn -t && rm $fileColumnPathTmp
+                    #/Users/myname/.local/bin/gcolumn@ -> /opt/homebrew/opt/util-linux/bin/column
                     echo
                 fi
 
@@ -624,7 +625,7 @@ ftEcho()
                         fi
                     fi
                 done
-                printf "${formatArray}\n" "${arrayKeyContents[@]}" | column -t | gsed 's/_/ /g' | gsed 's/++/_/g'
+                printf "${formatArray}\n" "${arrayKeyContents[@]}" | gcolumn -t | gsed 's/_/ /g' | gsed 's/++/_/g'
                 
 
                 break;;
@@ -665,7 +666,7 @@ ftEcho()
                         fi
                     fi
                 done
-                printf "${formatArray}\n" "${arrayColumnContents[@]}" | column -t | gsed 's/_/ /g' | gsed 's/++/_/g'
+                printf "${formatArray}\n" "${arrayColumnContents[@]}" | gcolumn -t | gsed 's/_/ /g' | gsed 's/++/_/g'
                 break;;
     * )    echo $option ;break;; esac ;done
 }
