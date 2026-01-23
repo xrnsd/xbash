@@ -1036,30 +1036,35 @@ ftLearnRepetionDrill()
                     sortingFlag="\U0001F4CC"
                     sortingType="word_example"
                     isSorting=true
+                    isOperatePlayAudioSingle=false
                     ;;
                 #To create (cn2en) sentences hard to express in English
                 e | E )
                     sortingFlag="\U0001F92F"
                     sortingType="express"
                     isSorting=true
+                    isOperatePlayAudioSingle=false
                     ;;
                 #To create (en2cn) sentences hard to understand
                 l | L )
                     sortingFlag="\U0001F9BB"
                     sortingType="understand_listen"
                     isSorting=true
+                    isOperatePlayAudioSingle=false
                     ;;
                 #To create (en2cn) sentences hard to understand
                 r | R )
                     sortingFlag="\U0001F648"
                     sortingType="understand_read"
                     isSorting=true
+                    isOperatePlayAudioSingle=false
                     ;;
                 #To create sentences hard to read aloud
                 a | A )
                     sortingFlag="\U0001F444"
                     sortingType="read_aloud"
                     isSorting=true
+                    isOperatePlayAudioSingle=false
                     ;;
                 #To add sentences analysis
                 i | I )
@@ -1099,6 +1104,7 @@ ftLearnRepetionDrill()
                     # else
                     #     optResultTips=$($rFilePathXbashModuleBusy "Cancel operation, analysis ++is null+")
                     # fi
+                    isOperatePlayAudioSingle=false
                     ;;
                 * )
                     ;;
