@@ -924,9 +924,12 @@ ftLearnRepetionDrill()
                     isOperatePlayAudioSlow=true
                 fi
                 # echo "filePathDataItemContentAudio=${filePathDataItemContentAudio}"
-                [[ ! -s $filePathDataItemContentAudio ]] && ftEcho -e "Cancel operation，audio is not exsit : ${filePathDataItemContentAudio}" \
-                                                         || afplay ${args} $filePathDataItemContentAudio
-                                                         #|| play_interruptible ${args} $filePathDataItemContentAudio
+                if [[ ! -s $filePathDataItemContentAudio ]];then
+                    [[ -n $englishItem ]] && say -v Samantha "${englishItem}"
+                    #ftEcho -e "Cancel operation，audio is not exsit : ${filePathDataItemContentAudio}"
+                else
+                    afplay ${args} $filePathDataItemContentAudio
+                fi
                 
                 unset isOperatePlayAudioSingle filePathDataItemContentAudio #isOperatePlayAudioVerySlow
             fi
