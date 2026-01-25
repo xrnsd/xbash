@@ -125,7 +125,7 @@ ftResetXbash()
             [[ -z "$isUseCustomAndroidDevEnvConfig" ]] && ftEcho -e "xbash定义的Android开发环境基础配置,未启用" && return $resultFail
           ;;
         --android ) export isUseCustomAndroidDevEnvConfig=true ;;
-        --asr ) export isEnableResetPythonVoskConfig=true;;
+        # --asr ) export isEnableResetPythonVoskConfig=true;;
         --edge_tts ) export isEnableResetEdgeTtsConfig=true;;
 
 
@@ -969,100 +969,89 @@ ftIniEditUtil()
              break
             ;; esac;done
 
-    #实现主体
-    if $isDeleteMode;then
-        #参耦校验
-        [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
-        [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
-        #[ -z "$keyName" ] && errorContent="${errorContent}\\n[缺少必要参数]keyName=$keyName"
-        [ -n "$errorContent" ] && ftEcho -e "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
-
-        #check tag
-        local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | gawk -F: '{print $1}')
-        [[ -z $lineNumTag ]] || (( ${#lineNumTag[@]} > 1 )) && return
-        local lineContent=$(gawk 'NR=="'$lineNumTag'"' $filePathIni | gsed s/[[:space:]]//g)
-        [[ -z $lineContent ]] || [[ "${lineContent}" != "[${tagName}]" ]] && return
-
-        #del tag
-        if [ -z "$keyName" ];then
-            while true; do
-                gsed -i "${lineNumTag}d" $filePathIni
-                [[ -z $(gawk 'NR=="'$lineNumTag'"' $filePathIni) ]] && break
-            done
-            return
-        fi
-
-        #del key
-        local indexCheck=$lineNumTag isDelMultilineFormattedContent=false
-        while true; do
-            ! $isDelMultilineFormattedContent && ((indexCheck+=1))
-            lineContent=$(gawk 'NR=="'$indexCheck'"' $filePathIni)
-            #echo "lineContent=${lineContent}"
-            [[ -z $lineContent ]] && break
-            if [[ "$lineContent" =~ ^${keyName}=* ]]; then
-                gsed -i "${indexCheck}d" $filePathIni
-                
-                if [[ "$lineContent" = *\\ ]];then
-                    isDelMultilineFormattedContent=true
-                else
-                    break
-                fi
-            elif $isDelMultilineFormattedContent;then
-                gsed -i "${indexCheck}d" $filePathIni
-                [[ "$lineContent" != *\\ ]] && break
-            fi
-        done
-
-        return
-    fi
-
     if $isReadMode; then
-        #参耦校验
         [ ! -s "$filePathIni" ] && errorContent="${errorContent}\\n[无效文件]filePathIni=$filePathIni"
         [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
         [ -z "$keyName" ] && errorContent="${errorContent}\\n[缺少必要参数]keyName=$keyName"
 
-        #参耦校验
-        [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
-
-        # 1. 提取目标 [TAG] 块内容
-        # 使用 sed 提取从 [tagName] 到下一个 [ 之前的内容，存入变量
-        local sectionContent
-        sectionContent=$(gsed -n "/^\[${tagName}\]/,/^\[/ { /^\[/ { /\[${tagName}\]/ !d }; p }" "$filePathIni" | grep -v "^\[")
-
-        if [[ -z "$sectionContent" ]]; then
-            return
+        if [ -n "$errorContent" ]; then
+            ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:"
+            ftIniEditUtil -h
+            return $resultFail
         fi
 
-        # 2. 遍历 Key 进行读取
-        keyName=($keyName)
-        for key in "${keyName[@]}"; do
-            # 使用 awk 精确匹配 Key 并处理续行
-            echo "$sectionContent" | gawk -v targetKey="$key" '
-                BEGIN { FS="="; found=0 }
-                # 匹配行首为 targetKey 且后面紧跟 = 的行
-                $1 == targetKey {
-                    found=1;
-                    val = substr($0, length($1) + 2); # 获取 = 之后的所有内容
-                    
-                    # 循环处理续行符 \
-                    while (val ~ /\\$/) {
-                        sub(/\\$/, "", val); # 移除结尾的反斜杠
-                        if (getline nextLine > 0) {
-                            # 移除续行中的首尾空格并拼接
-                            gsub(/^[ \t]+|[ \t]+$/, "", nextLine);
-                            val = val " " nextLine;
-                        } else {
-                            break;
-                        }
-                    }
-                    # 最终清理：移除首尾多余空格
-                    gsub(/^[ \t]+|[ \t]+$/, "", val);
-                    print val;
-                    exit; 
+        local sectionContent
+        sectionContent=$(
+            gsed -n "/^\[${tagName}\]/,/^\[/ {
+                /^\[/ {
+                    /\[${tagName}\]/ !d
                 }
-            '
-        done
+                p
+            }" "$filePathIni" | grep -v "^\["
+        )
+
+        [[ -z "$sectionContent" ]] && return
+
+        gawk -v keys="$keyName" '
+            BEGIN {
+                FS="="
+                split(keys, keyArr, /[ \t]+/)
+                for (i = 1; i <= length(keyArr); i++) {
+                    wanted[keyArr[i]] = i
+                }
+            }
+
+            $1 in wanted {
+                key = $1
+                val = substr($0, length($1) + 2)
+                gsub(/^[ \t]+|[ \t]+$/, "", val)
+
+                # ---------- 格式 1：普通单行值（直接读取） ----------
+                if (val !~ /^\[/ && val !~ /\\[ \t]*$/) {
+                    # 什么都不做，直接使用 val
+                }
+
+                # ---------- 格式 2：JSON 数组 ----------
+                else if (val ~ /^\[/) {
+                    while (val !~ /\][ \t]*$/) {
+                        if (getline line > 0) {
+                            gsub(/^[ \t]+|[ \t]+$/, "", line)
+                            val = val " " line
+                        } else break
+                    }
+                    gsub(/[\[\]"]/, "", val)
+                    gsub(/,/, " ", val)
+                }
+
+                # ---------- 格式 3：反斜杠续行 ----------
+                else if (val ~ /\\[ \t]*$/) {
+                    while (val ~ /\\[ \t]*$/) {
+                        sub(/\\[ \t]*$/, "", val)
+                        if (getline line > 0) {
+                            gsub(/^[ \t]+|[ \t]+$/, "", line)
+                            val = val " " line
+                        } else break
+                    }
+                }
+
+                # ---------- 统一清理 ----------
+                gsub(/[ \t]+/, " ", val)
+                gsub(/^[ \t]+|[ \t]+$/, "", val)
+
+                result[key] = val
+                found[key] = 1
+            }
+
+            END {
+                # 按 keyName 原顺序输出
+                for (i = 1; i <= length(keyArr); i++) {
+                    k = keyArr[i]
+                    if (found[k]) {
+                        print result[k]
+                    }
+                }
+            }
+        ' <<< "$sectionContent"
         return
     fi
 
@@ -1130,6 +1119,53 @@ ftIniEditUtil()
 
             ftEcho -e "ftIniEditUtil write mode : unknow opeartion"
         fi
+        return
+    fi
+
+    #实现主体
+    if $isDeleteMode;then
+        #参耦校验
+        [ ! -f "$filePathIni" ] && errorContent="${errorContent}\\n[文件不存在]filePathIni=$filePathIni"
+        [ -z "$tagName" ] && errorContent="${errorContent}\\n[缺少必要参数]tagName=$tagName"
+        #[ -z "$keyName" ] && errorContent="${errorContent}\\n[缺少必要参数]keyName=$keyName"
+        [ -n "$errorContent" ] && ftEcho -e "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftIniEditUtil -h && return $resultFail
+
+        #check tag
+        local lineNumTag=$(grep -sn "${tagNameFlag}" $filePathIni | gawk -F: '{print $1}')
+        [[ -z $lineNumTag ]] || (( ${#lineNumTag[@]} > 1 )) && return
+        local lineContent=$(gawk 'NR=="'$lineNumTag'"' $filePathIni | gsed s/[[:space:]]//g)
+        [[ -z $lineContent ]] || [[ "${lineContent}" != "[${tagName}]" ]] && return
+
+        #del tag
+        if [ -z "$keyName" ];then
+            while true; do
+                gsed -i "${lineNumTag}d" $filePathIni
+                [[ -z $(gawk 'NR=="'$lineNumTag'"' $filePathIni) ]] && break
+            done
+            return
+        fi
+
+        #del key
+        local indexCheck=$lineNumTag isDelMultilineFormattedContent=false
+        while true; do
+            ! $isDelMultilineFormattedContent && ((indexCheck+=1))
+            lineContent=$(gawk 'NR=="'$indexCheck'"' $filePathIni)
+            #echo "lineContent=${lineContent}"
+            [[ -z $lineContent ]] && break
+            if [[ "$lineContent" =~ ^${keyName}=* ]]; then
+                gsed -i "${indexCheck}d" $filePathIni
+                
+                if [[ "$lineContent" = *\\ ]];then
+                    isDelMultilineFormattedContent=true
+                else
+                    break
+                fi
+            elif $isDelMultilineFormattedContent;then
+                gsed -i "${indexCheck}d" $filePathIni
+                [[ "$lineContent" != *\\ ]] && break
+            fi
+        done
+
         return
     fi
 
