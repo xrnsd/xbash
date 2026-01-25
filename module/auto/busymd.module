@@ -44,9 +44,9 @@ if [[ -z ${R+x} ]]; then
 
     # echo -e "\033[4;37m白字并带下划线\033[0m"
     # printf "\033[4;43;37m%s\033[0m\n" "黄底白字并下划线"
-    ERROR=$'\033[40;37m'
+    ERROR=$'\033[44;37m'
     LISTEN_ALOUD=$'\033[1;33m'
-    FORGET=$'\033[41;38m'
+    FORGET=$'\033[45;38m'
 fi
 
 in_code=0
