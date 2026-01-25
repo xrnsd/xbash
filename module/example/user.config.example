@@ -1,5 +1,5 @@
 #!/opt/homebrew/bin/bash
-versionNum=v0.1.8.2
+versionNum=v0.1.8.3
 xEcho(){
     local val1="${1}" val2="${2}" val3="${3}";echo -en "\033[1;33m${val1}\033[0m";echo -en "\033[1;31m${val2}\033[0m";echo -en "\033[1;33m${val3}\033[0m"; echo -e "\033[1;31m does not exist\033[0m"
 }
@@ -12,7 +12,7 @@ export PROMPT_COMMAND='ftSetBashPs1ByGitBranch;history -a'
 export isUseXbashHistory=
 #----------------    Android development environment config    ---------------------------
 export isUseCustomAndroidDevEnvConfig=
-if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
+if [[ -n "$isUseCustomAndroidDevEnvConfig" ]]; then
         # dirPathOracleJdk6=${rDirPathTools}/jdk/1.6.038
     dirPathOpenJdk7=/usr/lib/jvm/java-7-openjdk-amd64
     dirPathOpenJdk8=/usr/lib/jvm/java-8-openjdk-amd64
@@ -141,12 +141,6 @@ if [[ "$isUseCustomAndroidDevEnvConfig" = "true" ]]; then
         [[ -d "${dirPathPlatformTools}" ]] && export PATH=${PATH}:${dirPathPlatformTools}
 
     else xEcho "Android SDK " "config error : " ${dirPathAndroidSdk}; fi
-
-    #Android JACK
-    # isConfigAndroidJACK=
-    # if [[ -n "$isConfigAndroidJACK" ]]; then
-    #     export JACK_SERVER_VM_ARGUMENTS=”${JACK_SERVER_VM_ARGUMENTS:=-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx7144M}”
-    # else xEcho "Android SDK " "config error : " ${dirPathAndroidSdk}; fi
 
     #Android NDK
     dirPathAndroidNdk=${dirPathHomeTools}/ndk/android-ndk-r12b
@@ -285,7 +279,7 @@ filePathPython="$(which python)"
 else xEcho "Python" "config error : " ${filePathPython}; fi
 
 #Python Vosk
-export isEnableResetPythonVoskConfig=true
+# export isEnableResetPythonVoskConfig=true
 dirPathVosk=${dirPathHomeTools}/Vosk
 dirPathVoskModel=${dirPathVosk}/vosk-model-en-us-0.22-lgraph
 [[ "$isEnableResetPythonVoskConfig" = "true" ]] && if [[ -d "$dirPathVoskModel" ]] ;then
