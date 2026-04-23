@@ -145,10 +145,6 @@ ftLearnRepetionDrill()
 
     local filePathLearnDataBase="${dirPathTempEng}/local.database"
     local filePathLearnDataBaseFailTime
-    local filePathDrillTemp=/tmp/Drill.txt
-    local filePathCompareTempText=/tmp/tempTextDrill.txt
-    local filePathCompareExampleText=/tmp/exampleTextDrill.txt
-    local filePathAloudDrillTempAudio=/tmp/aloud_temp_drill.mp3
 
     #select lesson group
     local groupNameRepetionDrill=needRepetionDrill lessonNameRepetionDrill=understand_read
@@ -221,8 +217,9 @@ ftLearnRepetionDrill()
           filePathDataItemContentDrillResult
     local dirPathDataItemContentAudio \
           filePathDataItemContentAudio #filePathDataItemContentAudioVerySlow
-    local dirPathDataItemContentTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis" \
-          filePathDataItemContentTextAnalysis
+    local dirPathDataItemContentTextAnalysis="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis"
+    local dirPathDataItemContentTextAnalysisAuto="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_analysis_auto"
+    local filePathDataItemContentTextAnalysis filePathDataItemContentTextAnalysisAuto
     local filePathDataItemContentTextEnglish="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_english"
     local filePathDataItemContentTextChinese="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.text_chinese"
     local filePathDataItemContentTextChineseLink filePathDataItemContentTextEnglishLink
@@ -230,7 +227,10 @@ ftLearnRepetionDrill()
     local filePathDataItemContentLinkTable="${dirPathTempEng}/${lessonGroupNameSel}/${lessonNameSel}/${contentType}.link_table"
     local filePathLearnDrillTemp=/tmp/LearnDrillTemp.txt
     local filePathLearnDrillInfoTemp=/tmp/LearnDrillTemp.info
-    local filePathCollectAudioBackgroundLock=/tmp/collectAudioBackgroundLock
+    local filePathCollectAudioBackgroundLock=/tmp/collectAudioBackgroundLock 
+    local filePathDrillTemp=/tmp/Drill.txt
+    local filePathCompareTempText=/tmp/tempTextDrill.txt
+    local filePathCompareExampleText=/tmp/exampleTextDrill.txt
 
     clear
     [[ -n $operationInfomation ]] && ftEcho -s "${operationInfomation}"
@@ -562,19 +562,19 @@ ftLearnRepetionDrill()
     
     local arrayKeysHighlight \
           arrayKeysIgone \
-          arrayKeys="Up Down Right D I E L R A W S F" \
+          arrayKeys="Up Down Right D I S F E L R A W" \
           arrayKeyContents="previous_item \
-                            show_tips_or_next_item  \
+                            show_next_item  \
                             play_${playAudioLanguage}_audio \
                             delete_records \
                             change_analysis \
+                            speech_recognition \
+                            imitate_ai_create \
                             hard_express \
                             hard_understand_L \
                             hard_understand_R \
                             hard_read_aloud \
-                            word_example \
-                            speech_recognition \
-                            imitate_ai_create" \
+                            word_example" \
         arrayKeysHighlightLessonFlags=("understand_listen" \
                                        "understand_read" \
                                        "express" \
@@ -783,7 +783,24 @@ ftLearnRepetionDrill()
                 rm -rf $filePathLearnDrillInfoTemp
 
                 filePathDataItemContentTextAnalysis=${dirPathDataItemContentTextAnalysis}/${lineIndex}.md
+                filePathDataItemContentTextAnalysisAuto=${dirPathDataItemContentTextAnalysisAuto}/${lineIndex}.md
                 if $isShowEnglishTips || $isShowEnglishTipsSingle;then
+                    if [[ -s $filePathDataItemContentTextAnalysisAuto ]];then
+                        if [[ ! -f $filePathDataItemContentTextAnalysis ]];then
+                            local filePathT="${dirPathTempEng}/$(dirname $linkInfo)/sentence.text_analysis/$(basename $linkInfo).md"
+                            echo "" > $filePathT
+                            ln -s $filePathT $filePathDataItemContentTextAnalysis
+                        fi
+                        if [[ ! -s $filePathDataItemContentTextAnalysis ]] || [[ -z $(grep -sn ">" $filePathDataItemContentTextAnalysis) ]];then
+                            echo -e "\n-----------------------------------------------"
+                            ftEcho -key -r1 -tips "Do you insert analysis content here? (Press down/enter to insert)"
+                            if [[ $keyValInput = "down" ]] || [[ -z "$keyValInput" ]];then
+                                local tmp=${filePathDataItemContentTextAnalysis}Temp
+                                cat ${filePathDataItemContentTextAnalysisAuto} ${filePathDataItemContentTextAnalysis} > "$tmp" && mv "$tmp" $(readlink $filePathDataItemContentTextAnalysis)
+                            fi
+                        fi
+                    fi
+
                     if [[ -s "$filePathDataItemContentTextAnalysis" ]];then
                         [[ -z "$(grep -e "\U0001F" $filePathDataItemContentTextAnalysis)" ]] && \
                          [[ $operationType != "word_aloud" ]] && \
@@ -882,7 +899,7 @@ ftLearnRepetionDrill()
                     # saved_stty=$(stty -g)
                     case "$asrApiType" in
                         and )
-                            AppleNativeASR -pa $filePathDataItemContentAudio -pt "${englishItem}"
+                            AppleNativeASR -pa $filePathDataItemContentAudio -pt "${englishItem}"  -la en-GB
                             ;;
                         sherpa_onnx )
                             source "${HOME}/pyenv/sherpa_onnx/bin/activate" #加载python虚拟环境
@@ -1097,7 +1114,7 @@ ftLearnRepetionDrill()
 
                     # if [[ -s $filePathDataItem ]];then
                         local filePathDataItemBasic=/tmp/temp.Analysis
-                        cp -rf $filePathDataIt em $filePathDataItemBasic
+                        cp -rf $filePathDataItem $filePathDataItemBasic
                         openSync -wht -t $filePathDataItemContentTextEnglishLink $filePathDataItemContentTextChineseLink $filePathDataItem 2>/dev/null #|| openSync -wht -t $filePathDataItem 2>/dev/null
                         if [[ -n $(diff $filePathDataItemBasic $filePathDataItem) ]];then
                             isRefTipsItemsContent=true

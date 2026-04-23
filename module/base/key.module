@@ -28,7 +28,7 @@ read_key_blocking() {
         esac
     else
         case "$key" in
-            $'\n') echo "enter" ;;
+            $'\n'| $'\r') echo "enter" ;;
             $'\t') echo "tab" ;;
             ' ')   echo "space" ;;
             *)     echo "$key" ;;

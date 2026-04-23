@@ -82,7 +82,7 @@ run_silent_bg() {
     disown
 }
 
-complete -W "-a --adb -h --help -j -s --android --asr" ftResetXbash
+complete -W "-a --adb -h --help -j -s --android --asr --edge_tts --conda" ftResetXbash
 ftResetXbash()
 {
     local ftEffect=更新xbash配置
@@ -110,11 +110,19 @@ ftResetXbash()
 #    更新 jdk配置 / gcc配置 / jdk和gcc配置 / jdk和gcc和ccache配置
 #    ftResetXbash -j / -c / -jc / -jcc
 #
-#    加载学习模块相关
-#    ftResetXbash -l / --learn
+#    加载Android开发相关
+#    ftResetXbash --android
+#
+#    加载edge_tts相关
+#    ftResetXbash --edge_tts
+#
+#    加载conda模块相关
+#    ftResetXbash --conda
 #========================================================="; return ;;
         # 变量参数解析部分==============
         -a |--adb) ftAdbConnect -r && return
+          ;;
+        --conda ) export isEnableConda=true && return
           ;;
         -j ) export isResetJdk=true
             targetSdkVersionForce="${arg2}"
