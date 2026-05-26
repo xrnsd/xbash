@@ -11,7 +11,7 @@ resultSuccess=0 resultFail=1
 ftInitGitConfig()
 {
 
-    if [[ -z $(which git) ]];then
+    if ! command -v git >/dev/null 2>&1; then
         ftInitEcho -e "git没有安装，请手动安装"
         exceptionContent="${exceptionContent}\n git配置初始化失败"
         return $resultFail

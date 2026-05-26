@@ -179,7 +179,7 @@ ftReadAllAlias()
         echo -e "========================================================="
         printf "%s  %${intervalSize}s \n" 命令 说明
         echo -e "========================================================"
-        cat $rFilePathXbashPackagingUser $rFilePathXbashModuleUser|grep alias | sort | while read line; do
+        grep -h alias "$rFilePathXbashPackagingUser" "$rFilePathXbashModuleUser" | sort | while read line; do
                 cmdName=$(echo $line | gawk '{split($2,b,"=");print  b[1] }')
                 cmdContent=$(echo $line | gawk '{split($2,b,"=");print  b[3]}'| gawk '{split($0,b,";");print  b[1]}')
                 [[ -n "$cmdContent" ]] && printf "%${intervalSize}s  %s\n" ${cmdName} ${cmdContent}
