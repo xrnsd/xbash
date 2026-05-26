@@ -1802,10 +1802,34 @@ ftAutoCdProjectDirectory()
     itemCount=${#mProjectStorageFullPathSelectList[@]}
     if (( $itemCount>1 ));then
         ftEcho -s 对应多个项目,请选择
+        local colorYellowStart=$'\033[1;33m'
+        local colorReset=$'\033[0m'
         local index=0
         for item in ${mProjectStorageFullPathSelectList[@]} ; do
-            item=$(basename $item)
-            printf "%-4s %-4s\n" [$index] $item
+            local itemName=$(basename $item)
+            local itemNameCount=0 itemPathCommonPrefix itemPathDisplay=
+            local itemPathCompare
+            for itemPathCompare in ${mProjectStorageFullPathSelectList[@]} ; do
+                [[ "$(basename $itemPathCompare)" != "$itemName" ]] && continue
+                ((itemNameCount+=1))
+            done
+
+            if (( itemNameCount>1 )); then
+                itemPathCommonPrefix=$item
+                for itemPathCompare in ${mProjectStorageFullPathSelectList[@]} ; do
+                    [[ "$(basename $itemPathCompare)" != "$itemName" ]] && continue
+                    while [[ -n "$itemPathCommonPrefix" ]] && [[ "$itemPathCompare" != "$itemPathCommonPrefix"* ]]; do
+                        itemPathCommonPrefix=${itemPathCommonPrefix%/*}
+                    done
+                done
+                [[ "$itemPathCommonPrefix" != "/" ]] && itemPathCommonPrefix="${itemPathCommonPrefix%/}/"
+                itemPathDisplay="${colorYellowStart}.../${item#$itemPathCommonPrefix}${colorReset}"
+            fi
+            if [[ -n "$itemPathDisplay" ]]; then
+                printf "%-4s %-20s %s\n" [$index] $itemName $itemPathDisplay
+            else
+                printf "%-4s %-20s\n" [$index] $itemName
+            fi
             ((index+=1))
         done
 
