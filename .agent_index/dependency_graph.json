@@ -1,0 +1,218 @@
+{
+  "module_dependencies": [
+    {
+      "module": "init bootstrap",
+      "depends_on": [
+        "module/init.module",
+        "module/example/user.config.example",
+        "module/example/test.module.example",
+        "module/example/user.packaging.module.example"
+      ]
+    },
+    {
+      "module": "shell startup",
+      "depends_on": [
+        "config/profile.config",
+        "config/common.config",
+        "module/main.module",
+        "module/common.methods",
+        "module/auto/auto.methods",
+        "module/git/git.methods",
+        "module/base/bash_input.module",
+        "module/learn/learn.methods",
+        "module/user/*.module",
+        "module/user/*.packaging.module"
+      ]
+    },
+    {
+      "module": "module/common.methods",
+      "depends_on": [
+        "bash builtins",
+        "git",
+        "gsed",
+        "gawk",
+        "column",
+        "adb",
+        "python helpers",
+        "ftIniEditUtil",
+        "ftXbGetValue"
+      ]
+    },
+    {
+      "module": "module/auto/auto.methods",
+      "depends_on": [
+        "module/common.methods",
+        "module/git/git.methods",
+        "git",
+        "adb",
+        "Android build env vars"
+      ]
+    },
+    {
+      "module": "module/git/git.methods",
+      "depends_on": [
+        "module/common.methods",
+        "git",
+        "gitk",
+        "gsed",
+        "git completion"
+      ]
+    },
+    {
+      "module": "module/learn/learn.methods",
+      "depends_on": [
+        "module/learn/common.methods",
+        "module/learn/speech_utils.py",
+        "module/learn/adaptive_vosk_recognizer.py",
+        "sounddevice",
+        "vosk",
+        "pyaudio",
+        "sherpa_onnx",
+        "numpy",
+        "afplay",
+        "pbcopy"
+      ]
+    },
+    {
+      "module": "module/maintain/maintain.methods",
+      "depends_on": [
+        "module/common.methods",
+        "module/maintain/maintain.database",
+        "ftIniEditUtil",
+        "tar",
+        "pigz",
+        "nfs mount tools"
+      ]
+    },
+    {
+      "module": "module/user extensions",
+      "depends_on": [
+        "module/common.methods",
+        "module/auto/auto.methods",
+        "module/git/git.methods",
+        "module/maintain/maintain.methods"
+      ]
+    }
+  ],
+  "package_dependencies": [
+    "bash",
+    "git",
+    "gsed",
+    "gawk",
+    "grep",
+    "column",
+    "adb",
+    "gitk",
+    "git completion",
+    "python3",
+    "numpy",
+    "pygame",
+    "pyaudio",
+    "sounddevice",
+    "vosk",
+    "sherpa_onnx",
+    "afplay",
+    "pbcopy",
+    "zenity",
+    "notify-send",
+    "flameshot",
+    "rsync",
+    "sshpass",
+    "pigz",
+    "pv",
+    "nmap",
+    "ffplay",
+    "sublime-text",
+    "gnome-text-editor",
+    "perl",
+    "tar",
+    "nfs mount"
+  ],
+  "import_relationships": [
+    {
+      "from": "init",
+      "to": "module/init.module",
+      "kind": "symlink"
+    },
+    {
+      "from": "module/main.module",
+      "to": "config/common.config",
+      "kind": "source"
+    },
+    {
+      "from": "module/main.module",
+      "to": "module/common.methods",
+      "kind": "source"
+    },
+    {
+      "from": "module/main.module",
+      "to": "module/auto/auto.methods",
+      "kind": "source"
+    },
+    {
+      "from": "module/main.module",
+      "to": "module/git/git.methods",
+      "kind": "source"
+    },
+    {
+      "from": "module/main.module",
+      "to": "module/user/myname.module",
+      "kind": "source"
+    },
+    {
+      "from": "module/main.module",
+      "to": "module/user/myname.packaging.module",
+      "kind": "source"
+    },
+    {
+      "from": "module/main.module",
+      "to": "module/user/wds_work.module",
+      "kind": "source"
+    },
+    {
+      "from": "module/main.module",
+      "to": "module/user/wds_work.packaging.module",
+      "kind": "source"
+    },
+    {
+      "from": "module/main.module",
+      "to": "module/base/bash_input.module",
+      "kind": "source"
+    },
+    {
+      "from": "module/main.module",
+      "to": "module/learn/learn.methods",
+      "kind": "source"
+    },
+    {
+      "from": "module/test.module",
+      "to": "module/common.methods",
+      "kind": "source"
+    },
+    {
+      "from": "module/test.module",
+      "to": "module/auto/auto.methods",
+      "kind": "source"
+    },
+    {
+      "from": "module/test.module",
+      "to": "module/git/git.methods",
+      "kind": "source"
+    },
+    {
+      "from": "module/test.module",
+      "to": "module/learn/learn.methods",
+      "kind": "source"
+    },
+    {
+      "from": "module/test.module",
+      "to": "module/maintain/maintain.methods",
+      "kind": "source"
+    },
+    {
+      "from": "module/base/push.module",
+      "to": "module/common.methods",
+      "kind": "source"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "generation_timestamp": "2026-06-05T15:34:06Z",
+  "indexed_commit": "cd49c44785ef070caa3b33191584c4b0024f285f",
+  "changed_files": [
+    ".agent_index/project_manifest.json",
+    ".agent_index/file_index.json",
+    ".agent_index/symbol_index.json",
+    ".agent_index/dependency_graph.json",
+    ".agent_index/call_graph.json",
+    ".agent_index/feature_map.json",
+    ".agent_index/config_map.json",
+    ".agent_index/test_map.json",
+    ".agent_index/change_log_index.json",
+    ".agent_index/README.md"
+  ],
+  "affected_modules": [
+    "repository metadata",
+    "bootstrap index"
+  ]
+}

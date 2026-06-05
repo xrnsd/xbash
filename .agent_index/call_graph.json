@@ -1,0 +1,31 @@
+{
+  "startup_flow": [
+    "init -> module/init.module:ftInitXbash",
+    "ftInitXbash -> ftInitGitConfig -> ftInitUserConfig -> ftInitMoule -> ftInitInputrc",
+    "config/profile.config -> config/common.config -> module/main.module",
+    "module/main.module -> module/common.methods -> module/auto/auto.methods -> module/git/git.methods -> module/user/*.module -> module/user/*.packaging.module -> module/base/bash_input.module -> module/learn/learn.methods"
+  ],
+  "service_lifecycle": [
+    "module/learn/speech_sherpa_onnx_server.py:main -> socket.accept -> play_audio_blocked -> send_server_request_start_record -> AdaptiveGrammarRecognizer.accept_audio -> highlight_diff -> recognition_end",
+    "module/learn/speech_sherpa_onnx_client.py:main -> socket.connect -> receive recognition stream -> highlight_diff_multi -> exit on match",
+    "module/learn/speech_vosk_microphone.py:main -> audio_callback -> AdaptiveGrammarRecognizer.accept_audio -> highlight_diff"
+  ],
+  "networking_flow": [
+    "module/auto/auto.methods:ftAutoUpload -> dependency checks -> server config lookup -> upload loop",
+    "module/auto/auto.methods:ftAutoAdbPush -> ftAdbConnect -> adb push -> optional reboot",
+    "module/learn/speech_vosk_remote_microphone.py <-> module/learn/speech_sherpa_onnx_server.py socket exchange"
+  ],
+  "database_flow": [
+    "module/common.methods:ftIniEditUtil / ftIniCreateFileOrTag -> *.database files",
+    "module/auto/auto.methods -> module/auto/auto.database",
+    "module/maintain/maintain.methods -> module/maintain/maintain.database",
+    "module/user/*.module -> module/user/*.database"
+  ],
+  "user_interaction_flow": [
+    "module/common.methods:ftEcho / ftInitEcho -> interactive prompts and menus",
+    "module/common.methods:ftMain -> help / version / test dispatch",
+    "module/auto/auto.methods:ftAutoBackupOrRestoreOuts -> backup/restore selection prompts",
+    "module/learn/learn.methods:ftLearnRepetionDrill -> lesson and drill selection",
+    "module/git/git.methods:ftGitLogShell / ftGitPatchAdd2Branches -> log browsing and patch application"
+  ]
+}

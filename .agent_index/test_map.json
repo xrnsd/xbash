@@ -1,0 +1,24 @@
+{
+  "test_files": [
+    "module/test.module"
+  ],
+  "covered_modules": [
+    "module/common.methods",
+    "module/auto/auto.methods",
+    "module/git/git.methods",
+    "module/learn/learn.methods",
+    "module/maintain/maintain.methods"
+  ],
+  "execution_commands": [
+    "./init --help",
+    "source module/main.module && xb -h",
+    "source module/main.module && ftTest",
+    "source module/main.module && ftGitLogShell -h",
+    "source module/main.module && ftAutoInitEnv --env"
+  ],
+  "uncovered_areas": [
+    "No automated CI or unit test harness is present.",
+    "Interactive prompts, device-dependent Android flows, and network upload flows require manual verification.",
+    "Python speech stack and user-specific extensions are currently smoke-tested only by manual execution."
+  ]
+}

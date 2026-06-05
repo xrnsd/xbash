@@ -1,0 +1,54 @@
+{
+  "manifests": [
+    ".gitignore",
+    "README.md"
+  ],
+  "permissions": [
+    "README.md initialization note: chmod -R a+x module/ config/ init",
+    "init symlink points to module/init.module and is executable"
+  ],
+  "package_managers": [
+    "apt/apt-fast",
+    "brew",
+    "pip",
+    "pipx",
+    "pnpm",
+    "git",
+    "adb toolchains",
+    "perl"
+  ],
+  "environment_variables": [
+    "rEnvValInited",
+    "rUserName",
+    "rDirPathXbash",
+    "rDirPathXbashConfig",
+    "rDirPathXbashModule",
+    "dirPathHome",
+    "dirPathHomeXbash",
+    "dirPathHomeTools",
+    "dirPathHomeXbashConfigUser",
+    "PNPM_HOME",
+    "LANG",
+    "LC_ALL",
+    "ANDROID_BUILD_TOP",
+    "ANDROID_PRODUCT_OUT",
+    "TARGET_PRODUCT",
+    "TARGET_BUILD_VARIANT",
+    "AutoEnv_*",
+    "MODEL_PATH_VOSK",
+    "MODEL_PATH_SHERPA_ONNX",
+    "dirPathPythonVoskModel",
+    "dirPathPythonSherpaOnnxkModel"
+  ],
+  "configuration_files": [
+    "config/common.config",
+    "config/profile.config",
+    ".gitignore",
+    "module/auto/auto.database",
+    "module/base/base.database",
+    "module/maintain/maintain.database",
+    "module/user/*.database",
+    "module/user/*.packaging.module",
+    "module/example/*.example"
+  ]
+}

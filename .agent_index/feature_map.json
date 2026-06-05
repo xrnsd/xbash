@@ -1,0 +1,217 @@
+{
+  "features": [
+    {
+      "feature": "shell bootstrap and environment setup",
+      "files": [
+        "config/profile.config",
+        "config/common.config",
+        "module/main.module",
+        "module/common.methods",
+        "module/user/*.module",
+        "module/user/*.packaging.module"
+      ],
+      "core_symbols": [
+        "ftMain",
+        "ftEcho",
+        "ftLoadGitCompletion",
+        "ftCheckUserConfig",
+        "ftCheckUserDatabase",
+        "ftCheckUserPackaging"
+      ],
+      "dependencies": [
+        "bash",
+        "git",
+        "user home paths",
+        "config/common.config env exports"
+      ],
+      "tests": [
+        "./init --help",
+        "source module/main.module && xb -h"
+      ]
+    },
+    {
+      "feature": "installation and first-run bootstrap",
+      "files": [
+        "init",
+        "module/init.module",
+        "README.md",
+        "module/example/user.config.example",
+        "module/example/user.packaging.module.example"
+      ],
+      "core_symbols": [
+        "ftInitXbash",
+        "ftInitGitConfig",
+        "ftInitUserConfig",
+        "ftInitMoule",
+        "ftInitInputrc"
+      ],
+      "dependencies": [
+        "chmod",
+        "git",
+        "ln",
+        "cp",
+        "gnome-session-quit"
+      ],
+      "tests": [
+        "./init --userconfig",
+        "./init --module"
+      ]
+    },
+    {
+      "feature": "android automation and build environment helpers",
+      "files": [
+        "module/auto/auto.methods",
+        "module/auto/auto.database",
+        "module/base/push.module",
+        "module/user/wds_work.module",
+        "module/user/wds_work.packaging.module"
+      ],
+      "core_symbols": [
+        "ftAutoInitEnv",
+        "ftBranchNameResolution",
+        "ftBuildPropResolution",
+        "ftAutoBackupOrRestoreOuts",
+        "ftAutoUpload",
+        "ftAutoAdbPush",
+        "ftAutoPacket",
+        "ftAutoApkSignature"
+      ],
+      "dependencies": [
+        "adb",
+        "git",
+        "Android build tree",
+        "zip/tar/pigz",
+        "nmap/sshpass/pv"
+      ],
+      "tests": [
+        "source module/main.module && ftAutoInitEnv --env",
+        "source module/main.module && ftAutoBackupOrRestoreOuts -h"
+      ]
+    },
+    {
+      "feature": "git navigation, logs, tags, and patch workflows",
+      "files": [
+        "module/git/git.methods",
+        "module/git/git_completion.methods",
+        "module/user/myname.packaging.module",
+        "module/user/wds_work.packaging.module"
+      ],
+      "core_symbols": [
+        "ftSetBashPs1ByGitBranch",
+        "ftGitLogShell",
+        "ftGitPatchAdd2Branches",
+        "ftGitSelectBranch",
+        "ftGitCheckoutBranch",
+        "ftGitTag",
+        "ftGitPullFailForceUpdateHEAD"
+      ],
+      "dependencies": [
+        "git",
+        "gitk",
+        "gsed",
+        "completion helpers"
+      ],
+      "tests": [
+        "source module/main.module && ftGitLogShell -h",
+        "source module/main.module && ftGitPatchAdd2Branches -h"
+      ]
+    },
+    {
+      "feature": "learning drills and speech recognition tooling",
+      "files": [
+        "module/learn/learn.methods",
+        "module/learn/common.methods",
+        "module/learn/speech_utils.py",
+        "module/learn/adaptive_vosk_recognizer.py",
+        "module/learn/speech_sherpa_onnx_client.py",
+        "module/learn/speech_sherpa_onnx_microphone.py",
+        "module/learn/speech_sherpa_onnx_server.py",
+        "module/learn/speech_vosk_microphone.py",
+        "module/learn/speech_vosk_remote_microphone.py",
+        "module/user/ftTime.database",
+        "module/user/myname.module"
+      ],
+      "core_symbols": [
+        "ftLearnRepetionDrill",
+        "ftOcrRepetionDrill",
+        "ftLearnLessonManage",
+        "ftText2Mp3ByLesson",
+        "highlight_diff",
+        "highlight_diff_multi",
+        "AdaptiveGrammarRecognizer",
+        "GrammarHistory",
+        "StableOutputFilter"
+      ],
+      "dependencies": [
+        "python3",
+        "numpy",
+        "pygame",
+        "pyaudio",
+        "sounddevice",
+        "vosk",
+        "sherpa_onnx"
+      ],
+      "tests": [
+        "python3 module/learn/speech_utils.py",
+        "python3 module/learn/speech_vosk_microphone.py --help"
+      ]
+    },
+    {
+      "feature": "backup, restore, and maintenance operations",
+      "files": [
+        "module/maintain/maintain.methods",
+        "module/maintain/maintain.database",
+        "module/user/systemVersionPacketInfo.database",
+        "module/user/wds_work.database"
+      ],
+      "core_symbols": [
+        "ftRestoreOperate",
+        "ftRestoreChoiceSource",
+        "ftSetBackupDevDir",
+        "ftSetBackupType",
+        "ftBackupOs",
+        "ftMaintainInfoNote",
+        "ftCleanUpInvalidRecords"
+      ],
+      "dependencies": [
+        "tar",
+        "pigz",
+        "mount",
+        "ftIniEditUtil",
+        "device lists"
+      ],
+      "tests": [
+        "source module/main.module && ftMaintainSystem -h"
+      ]
+    },
+    {
+      "feature": "utility renderers and desktop helpers",
+      "files": [
+        "module/auto/busymd.module",
+        "module/auto/powerMange.module",
+        "module/auto/daily_backup.sh",
+        "module/user/shot.module",
+        "module/user/olp"
+      ],
+      "core_symbols": [
+        "busymd",
+        "render",
+        "inline",
+        "format_text",
+        "ftDialogShutdown",
+        "cleanup",
+        "read_key_blocking"
+      ],
+      "dependencies": [
+        "bash",
+        "zenity",
+        "flameshot",
+        "rsync"
+      ],
+      "tests": [
+        "bash module/auto/busymd.module README.md",
+        "bash module/auto/powerMange.module"
+      ]
+    }
+  ]
+}

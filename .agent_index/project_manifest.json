@@ -1,0 +1,90 @@
+{
+  "project_name": "xbash",
+  "repository_type": "bash extension and initialization toolkit",
+  "primary_languages": [
+    "Bash",
+    "Python",
+    "Perl",
+    "INI/config",
+    "HTML"
+  ],
+  "frameworks": [
+    "Bash shell scripts",
+    "Git",
+    "Android adb tooling",
+    "Python speech stack"
+  ],
+  "modules": [
+    {
+      "name": "config",
+      "purpose": "global and user shell environment configuration"
+    },
+    {
+      "name": "module/main.module",
+      "purpose": "interactive shell startup loader"
+    },
+    {
+      "name": "module/init.module",
+      "purpose": "repository bootstrap and installation helper"
+    },
+    {
+      "name": "module/common.methods",
+      "purpose": "shared command helpers and wrapper utilities"
+    },
+    {
+      "name": "module/base",
+      "purpose": "lower-level shell helpers and input mappings"
+    },
+    {
+      "name": "module/auto",
+      "purpose": "Android and automation workflows"
+    },
+    {
+      "name": "module/git",
+      "purpose": "git-specific extensions and completion"
+    },
+    {
+      "name": "module/learn",
+      "purpose": "learning drills and speech tooling"
+    },
+    {
+      "name": "module/maintain",
+      "purpose": "backup, restore, and system maintenance workflows"
+    },
+    {
+      "name": "module/user",
+      "purpose": "user-specific command bundles, databases, and templates"
+    },
+    {
+      "name": "module/example",
+      "purpose": "template and sample files"
+    }
+  ],
+  "build_commands": [
+    "chmod -R a+x module/ config/ init",
+    "./init"
+  ],
+  "test_commands": [
+    "./init --help",
+    "source module/main.module && xb -h",
+    "source module/main.module && ftTest",
+    "source module/main.module && ftGitLogShell -h"
+  ],
+  "startup_entry_points": [
+    "init",
+    "module/main.module",
+    "config/profile.config",
+    "module/test.module"
+  ],
+  "important_directories": [
+    "config",
+    "module",
+    "module/auto",
+    "module/base",
+    "module/example",
+    "module/git",
+    "module/learn",
+    "module/maintain",
+    "module/user"
+  ]
+}

@@ -1,0 +1,581 @@
+{
+  "files": [
+    {
+      "path": ".gitignore",
+      "module": "root",
+      "language": "ini",
+      "role": "ignore rules",
+      "size": 257,
+      "hash": "e8dfd38a5bec5e9b462be5b6bef920536e9bbbd675872b0d8d96a8a1491c31ce",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "AGENTS.md",
+      "module": "root",
+      "language": "markdown",
+      "role": "repo instructions",
+      "size": 1771,
+      "hash": "febc241f8074b1f0bd94e0ff2d1cc15903a1e9dc59c843daaced74d15bb3b7cf",
+      "last_modified": 1779773122
+    },
+    {
+      "path": "LICENSE",
+      "module": "root",
+      "language": "markdown",
+      "role": "data",
+      "size": 1062,
+      "hash": "7f8f632acaaba4f84425c606e3107ebe61f1bc84927ef2d91772720c0684d93e",
+      "last_modified": 1720841329
+    },
+    {
+      "path": "README.md",
+      "module": "root",
+      "language": "markdown",
+      "role": "project overview",
+      "size": 3604,
+      "hash": "5480c7c003425d27a3c6a731416e534eee5f25c41b13ab486f87e8f81742e57f",
+      "last_modified": 1779784122
+    },
+    {
+      "path": "config/common.config",
+      "module": "config",
+      "language": "ini",
+      "role": "configuration",
+      "size": 7684,
+      "hash": "a12b4c52de0ef084061bc03160c9595ab3e04b78eb2e8f47cc957653a152d5ca",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "config/profile.config",
+      "module": "config",
+      "language": "ini",
+      "role": "configuration",
+      "size": 3219,
+      "hash": "7d2ad72ac3524e3bbd701d6f818597946d6935911cd43d88185c79d810661854",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "config/user/myname.config",
+      "module": "config",
+      "language": "ini",
+      "role": "configuration",
+      "size": 5188,
+      "hash": "92dcc207e908fc2320c906e0c171b695b71043abd1113ece26bbbb185acdfc5e",
+      "last_modified": 1779341781
+    },
+    {
+      "path": "config/user/systemVersionPacketInfo.database",
+      "module": "config",
+      "language": "ini",
+      "role": "configuration database",
+      "size": 17336,
+      "hash": "652a00423d8014c3d695ad54e9c10655bed919725531ebe68880411a5039f444",
+      "last_modified": 1753014601
+    },
+    {
+      "path": "config/user/wds_work.config",
+      "module": "config",
+      "language": "ini",
+      "role": "configuration",
+      "size": 12994,
+      "hash": "d1ad071b4952d1417059992cbb8283907b7a5c3c3125f83152e4b3329f9e7413",
+      "last_modified": 1777321037
+    },
+    {
+      "path": "init",
+      "module": "root",
+      "language": "bash",
+      "role": "startup symlink",
+      "size": 13514,
+      "hash": "0384dfec517db864a66bf84caec21da3f9c569eeb13c33596e437c732c97fe93",
+      "last_modified": 1779779628,
+      "symlink_target": "module/init.module"
+    },
+    {
+      "path": "module/auto/__pycache__/edge_tts.cpython-312.pyc",
+      "module": "module",
+      "language": "text",
+      "role": "data",
+      "size": 790,
+      "hash": "f2bda114129714d5304db4426de61aa3c3b661ab865e8f00f05ce0bf6977398f",
+      "last_modified": 1720939863
+    },
+    {
+      "path": "module/auto/auto.database",
+      "module": "module",
+      "language": "ini",
+      "role": "configuration database",
+      "size": 655,
+      "hash": "0567f78178cbaaaabe405a4699859d2c5cebf4740c481808f41107e85a1c4cb3",
+      "last_modified": 1767507113
+    },
+    {
+      "path": "module/auto/auto.methods",
+      "module": "module",
+      "language": "bash",
+      "role": "automation module",
+      "size": 109000,
+      "hash": "1e18f0c4b5acc8c0e9d8f7a396d765e0eb57706ce4b1aaa634384192fb4316b4",
+      "last_modified": 1779779306
+    },
+    {
+      "path": "module/auto/autoBoot.module.example",
+      "module": "module",
+      "language": "text",
+      "role": "template",
+      "size": 1097,
+      "hash": "1f1bf99db190b94bc14d99a4057c04bb4e5520141e1765cb929901b2a8394f2e",
+      "last_modified": 1768545868
+    },
+    {
+      "path": "module/auto/busymd.module",
+      "module": "module",
+      "language": "bash",
+      "role": "automation utility",
+      "size": 15839,
+      "hash": "f0f44bd30e7979f51d3bae15e3749ae8942fa5a05ff243fb22be80c59ea2b942",
+      "last_modified": 1769143626
+    },
+    {
+      "path": "module/auto/daily_backup.sh",
+      "module": "module",
+      "language": "bash",
+      "role": "shell utility",
+      "size": 553,
+      "hash": "dcd02a23364ed8032bf1c3e89160f660a2c949d9b35fe7a86d1d0bcc6f2739e4",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/auto/librnnoise.so",
+      "module": "module",
+      "language": "binary",
+      "role": "native dependency",
+      "size": 3683664,
+      "hash": "4e6ff07caebf3385e947985c785707b613fbc45f401ba8b324774056bf0023af",
+      "last_modified": 1767778591
+    },
+    {
+      "path": "module/auto/packet_7731c.module",
+      "module": "module",
+      "language": "bash",
+      "role": "automation utility",
+      "size": 17206,
+      "hash": "23de627d165433bce8bc50433d3271eeaae8826fec93116388d5ba71e9f1a545",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/auto/powerMange.module",
+      "module": "module",
+      "language": "bash",
+      "role": "automation utility",
+      "size": 1370,
+      "hash": "92a5b599aeacac8c8183ac93b071b129ec815ca8d6df59d90b57076c53082ce2",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/auto/templates/index.html",
+      "module": "module",
+      "language": "html",
+      "role": "template",
+      "size": 4538,
+      "hash": "2a53de4ffdedd4ebad19a651f1054cfaec1c44ab32654dba39166c9148d5547f",
+      "last_modified": 1767778591
+    },
+    {
+      "path": "module/auto/tts.module",
+      "module": "module",
+      "language": "bash",
+      "role": "automation utility",
+      "size": 401,
+      "hash": "909ede1f11024232142f5dcdf5a8ddb064925b6fb040bad5f1f712c59e9d5a99",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/base/base.database",
+      "module": "module",
+      "language": "ini",
+      "role": "base support",
+      "size": 4527,
+      "hash": "63f33c3cf5b915f39756990770a485eaff14e573bd2902b6317760fae5c66ae3",
+      "last_modified": 1720841329
+    },
+    {
+      "path": "module/base/bash_input.module",
+      "module": "module",
+      "language": "bash",
+      "role": "base support",
+      "size": 122,
+      "hash": "6deb88d07f0da4758b912fc5046581a61e3890facd137d05ed3bddfbc8d116cf",
+      "last_modified": 1720841329
+    },
+    {
+      "path": "module/base/key.module",
+      "module": "module",
+      "language": "bash",
+      "role": "base support",
+      "size": 1391,
+      "hash": "93b3fc95645c107da97ef6b73f5f687683f1df64f34aeaf46603b14fc73cd4ca",
+      "last_modified": 1769361813
+    },
+    {
+      "path": "module/base/push.module",
+      "module": "module",
+      "language": "bash",
+      "role": "base support",
+      "size": 3309,
+      "hash": "000ecb09f9311c8a1951c6a9196682c7da038c0b30c7afe7cee39fae40d2d75e",
+      "last_modified": 1768545868
+    },
+    {
+      "path": "module/common.methods",
+      "module": "module",
+      "language": "bash",
+      "role": "bash source",
+      "size": 210714,
+      "hash": "f6b2fcfd1e0691b0b50c064d65f5bf2b3323147ea1167ca13905a45c59eaa9e2",
+      "last_modified": 1779779622
+    },
+    {
+      "path": "module/example/bash_hository.backup.example",
+      "module": "module",
+      "language": "text",
+      "role": "template",
+      "size": 1209,
+      "hash": "ab878ba9178960617b5ea93267a508d8bd3b73d315f22ec7e9ee93269b16fc13",
+      "last_modified": 1768545868
+    },
+    {
+      "path": "module/example/ftExample.exmple",
+      "module": "module",
+      "language": "text",
+      "role": "template",
+      "size": 2415,
+      "hash": "e7555b0b62b6ae59ad0bf722feaf637c00ae4b973772dfacf240811816c61620",
+      "last_modified": 1768545868
+    },
+    {
+      "path": "module/example/multi_branch.module.example",
+      "module": "module",
+      "language": "text",
+      "role": "template",
+      "size": 616,
+      "hash": "d6a09e12dd4811627c3d4b83f78246250e1e0f68070b9d7d4b6ee648651b9117",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/example/proguard-rules.pro.example",
+      "module": "module",
+      "language": "text",
+      "role": "template",
+      "size": 398,
+      "hash": "9854c1dcfe0950b04bda34a4fafe4ce09524cfe9897531a1d594efb36a3d1053",
+      "last_modified": 1767507113
+    },
+    {
+      "path": "module/example/test.module.example",
+      "module": "module",
+      "language": "text",
+      "role": "template",
+      "size": 670,
+      "hash": "b4d94464e9edcfaf5d7ecd7e68b0e1925e01a14d0c1a8f774c826e27b71bd031",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/example/user.config.example",
+      "module": "module",
+      "language": "text",
+      "role": "template",
+      "size": 13173,
+      "hash": "ae0a558980484d91de2d7855278b2b177809fb06dcd22ca32c6f34ec5fbb2d18",
+      "last_modified": 1769344059
+    },
+    {
+      "path": "module/example/user.database.example",
+      "module": "module",
+      "language": "text",
+      "role": "template",
+      "size": 1751,
+      "hash": "278f04f6998b5b5845296a8554a3a5214f72dae405159e25a2cf9609742843e2",
+      "last_modified": 1767778591
+    },
+    {
+      "path": "module/example/user.packaging.module.example",
+      "module": "module",
+      "language": "text",
+      "role": "template",
+      "size": 11162,
+      "hash": "3feb47d85b0d7926fbabff165337aa9083053b115c571ba33214183665652ca9",
+      "last_modified": 1768545868
+    },
+    {
+      "path": "module/git/git.methods",
+      "module": "module",
+      "language": "bash",
+      "role": "git extension",
+      "size": 73154,
+      "hash": "38e003bb5d736393a41fde0629410844b6246c404b47fed59a3e38a1f34b6ff4",
+      "last_modified": 1769001504
+    },
+    {
+      "path": "module/git/git_completion.methods",
+      "module": "module",
+      "language": "bash",
+      "role": "git extension",
+      "size": 94716,
+      "hash": "d77e3f579048227fdc3ffd7f5475761b26dc63399cb815ba714587edfc66e62f",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/init.module",
+      "module": "module",
+      "language": "bash",
+      "role": "installer bootstrap",
+      "size": 13514,
+      "hash": "0384dfec517db864a66bf84caec21da3f9c569eeb13c33596e437c732c97fe93",
+      "last_modified": 1779779628
+    },
+    {
+      "path": "module/learn/__pycache__/adaptive_vosk_recognizer.cpython-314.pyc",
+      "module": "module",
+      "language": "text",
+      "role": "data",
+      "size": 10503,
+      "hash": "107ca97d268972529484fdf7d608e267b0d1482b8f4588aeb67c63621ca8fbc9",
+      "last_modified": 1767688328
+    },
+    {
+      "path": "module/learn/__pycache__/speech_utils.cpython-314.pyc",
+      "module": "module",
+      "language": "text",
+      "role": "data",
+      "size": 27608,
+      "hash": "3fc4542665db7c0b292cc79823151f9326c80bd23af56c9f98b01896430b269d",
+      "last_modified": 1768030792
+    },
+    {
+      "path": "module/learn/adaptive_vosk_recognizer.py",
+      "module": "module",
+      "language": "python",
+      "role": "speech learning utility",
+      "size": 6568,
+      "hash": "c30482298e631025357d47bc15fdd08363813a6730b3cfff81a595526f2b267f",
+      "last_modified": 1767778591
+    },
+    {
+      "path": "module/learn/common.methods",
+      "module": "module",
+      "language": "bash",
+      "role": "learning module",
+      "size": 25953,
+      "hash": "feee342b809a88610c704e4da61f3dc16c7e0eb714c1215938ea421912ee57cb",
+      "last_modified": 1768545868
+    },
+    {
+      "path": "module/learn/learn.methods",
+      "module": "module",
+      "language": "bash",
+      "role": "learning module",
+      "size": 110985,
+      "hash": "31eb540d61e403ee31c257d6ef179a6fb2499533c2c558788ba79461c87c764a",
+      "last_modified": 1769867422
+    },
+    {
+      "path": "module/learn/speech_sherpa_onnx_client.py",
+      "module": "module",
+      "language": "python",
+      "role": "speech learning utility",
+      "size": 3183,
+      "hash": "466ea10690a1a48ba46cb1ebd43fe56c1e5e9e6ccf7694f1f44d1468d5c72db1",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/learn/speech_sherpa_onnx_microphone.py",
+      "module": "module",
+      "language": "python",
+      "role": "speech learning utility",
+      "size": 10505,
+      "hash": "e7d98e882a72fcb2c0ae48116990ac8b53e07b0f4ca4b78e9dc0bbe49cf031f4",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/learn/speech_sherpa_onnx_server.py",
+      "module": "module",
+      "language": "python",
+      "role": "speech learning utility",
+      "size": 9590,
+      "hash": "dbb5f60f58b4a9a7a2854d0af63bc10e306d3902d6343bf2d78fe4b92f7c9777",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/learn/speech_utils.py",
+      "module": "module",
+      "language": "python",
+      "role": "speech learning utility",
+      "size": 20913,
+      "hash": "d77d07fbaace814b5dbd31371d8baddf0e94027ed625fb44e3b348ac7c254381",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/learn/speech_vosk_microphone.py",
+      "module": "module",
+      "language": "python",
+      "role": "speech learning utility",
+      "size": 3562,
+      "hash": "b0efa8883104a1ac69bf53ea72a73d233d15a59469efeddc1b6753f46afff39a",
+      "last_modified": 1768545794
+    },
+    {
+      "path": "module/learn/speech_vosk_remote_microphone.py",
+      "module": "module",
+      "language": "python",
+      "role": "speech learning utility",
+      "size": 5541,
+      "hash": "13b4b5543905b07961e9ea92b055fa0818e0985b6524c6c86d39a837a35df0c5",
+      "last_modified": 1767778591
+    },
+    {
+      "path": "module/main.module",
+      "module": "module",
+      "language": "bash",
+      "role": "bash startup loader",
+      "size": 8055,
+      "hash": "20d2555d20ce312cc54ae15c4375d6c51dbb2221fc54515af2b22a7174c02699",
+      "last_modified": 1779779637
+    },
+    {
+      "path": "module/maintain/maintain.database",
+      "module": "module",
+      "language": "ini",
+      "role": "maintenance module",
+      "size": 1444,
+      "hash": "190c1bf3af91e453e1ad05727523f9d800db486044b27bc5d890680e8902aa25",
+      "last_modified": 1767778591
+    },
+    {
+      "path": "module/maintain/maintain.methods",
+      "module": "module",
+      "language": "bash",
+      "role": "maintenance module",
+      "size": 34276,
+      "hash": "2b601273eeb41dd8dbe1e0572f6449cef2857780a8c395096901c1ad5f9be39d",
+      "last_modified": 1768545868
+    },
+    {
+      "path": "module/maintain/system_version_packetInfo.database.example",
+      "module": "module",
+      "language": "text",
+      "role": "maintenance module",
+      "size": 139,
+      "hash": "69fe8110f3358d6ce2df8c459dab7420cdece8bf52cbc11b9631024d6a527a71",
+      "last_modified": 1767778591
+    },
+    {
+      "path": "module/test.module",
+      "module": "module",
+      "language": "bash",
+      "role": "smoke test entry",
+      "size": 795,
+      "hash": "7180f93071a4199f96374b7b88d804c6b07f5d1b22394c3900fa29d77f6622e7",
+      "last_modified": 1770912172
+    },
+    {
+      "path": "module/user/LearnNoteLessonReadme.Example",
+      "module": "module",
+      "language": "text",
+      "role": "user data or template",
+      "size": 256,
+      "hash": "8e8e11571e888c0db8fccdbd72ceca5118c50ccc2a24927e6c668b96c3ba75c3",
+      "last_modified": 1727337835
+    },
+    {
+      "path": "module/user/ftTime.database",
+      "module": "module",
+      "language": "ini",
+      "role": "user database",
+      "size": 751,
+      "hash": "38bda964c62447c7e256b51b8dd2dd70dad681f719a633b39ba4396f77bdd1ea",
+      "last_modified": 1773462097
+    },
+    {
+      "path": "module/user/myname.database",
+      "module": "module",
+      "language": "ini",
+      "role": "user database",
+      "size": 4573,
+      "hash": "4ec2de123d1b49344fd7d0396f04d2c4ac3910a1c867d1df3fcc84b3d0b52325",
+      "last_modified": 1780323923
+    },
+    {
+      "path": "module/user/myname.module",
+      "module": "module",
+      "language": "bash",
+      "role": "user extension",
+      "size": 2450,
+      "hash": "81a8154e7c47dfc5f27d1bd4fe9656832fe9e0750c7f8deb3c6d3535d1c51854",
+      "last_modified": 1769091602
+    },
+    {
+      "path": "module/user/myname.packaging.module",
+      "module": "module",
+      "language": "bash",
+      "role": "user extension",
+      "size": 10299,
+      "hash": "a45f41536f9f6abafc482670db22a0d796c12018e0f6b334300c3db3a58e52bb",
+      "last_modified": 1779194522
+    },
+    {
+      "path": "module/user/olp",
+      "module": "module",
+      "language": "bash",
+      "role": "user data or template",
+      "size": 257,
+      "hash": "6867548f0da8da3885537b3c8db3db510c2e72f05916cee6fc0408f9b0590822",
+      "last_modified": 1749609410
+    },
+    {
+      "path": "module/user/shot.module",
+      "module": "module",
+      "language": "bash",
+      "role": "user extension",
+      "size": 26,
+      "hash": "b66ebd433a26034cf6747abb56f8cffd3e86b99c0da2368fc522f7026fdb8ebe",
+      "last_modified": 1724473420
+    },
+    {
+      "path": "module/user/systemVersionPacketInfo.database",
+      "module": "module",
+      "language": "ini",
+      "role": "user database",
+      "size": 13205,
+      "hash": "07f318179a37959e14807a5d5ae47e81737527ed4b20a56ed6df1f01468546c9",
+      "last_modified": 1720840542
+    },
+    {
+      "path": "module/user/wds_work.database",
+      "module": "module",
+      "language": "ini",
+      "role": "user database",
+      "size": 5462,
+      "hash": "eec1c09df74e1a57bcb647040e2aeecfa8c8c31adc0da69ca9b94cff87a6c5f8",
+      "last_modified": 1701175486
+    },
+    {
+      "path": "module/user/wds_work.module",
+      "module": "module",
+      "language": "bash",
+      "role": "user extension",
+      "size": 16773,
+      "hash": "b8fb1520f573699efd2649cbdf4090f8d6a4539cd8997bfdd1826a4e314db754",
+      "last_modified": 1681812872
+    },
+    {
+      "path": "module/user/wds_work.packaging.module",
+      "module": "module",
+      "language": "bash",
+      "role": "user extension",
+      "size": 11068,
+      "hash": "d9448e8edeb79ee93a0f6dfaf13e516b0a6dba94ac67f17d029f83876ec05833",
+      "last_modified": 1724123451
+    }
+  ]
+}
