@@ -12,6 +12,7 @@ _xbash_load_conda_cache()
     local conda_env_name="${2:-base}"
     local conda_root
     local conda_history
+    local cache_module
     local cache_dir
     local cache_key
     local cache_file
@@ -23,6 +24,7 @@ _xbash_load_conda_cache()
 
     conda_root=$(cd "$(dirname "$conda_exe")/.." && pwd -P) || return 1
     conda_history="${conda_root}/conda-meta/history"
+    cache_module="${BASH_SOURCE[0]}"
     cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/xbash/conda"
 
     # The activation output contains PATH, PS1, and Conda state.  Include all
@@ -37,6 +39,7 @@ _xbash_load_conda_cache()
             "${CONDA_SHLVL-__XBASH_UNSET__}" \
             "${CONDA_PREFIX-__XBASH_UNSET__}"
         stat -f '%m' "$conda_exe" "$conda_history" 2>/dev/null
+        stat -f '%m' "$cache_module" 2>/dev/null
     } | cksum | awk '{print $1 "-" $2}') || return 1
     cache_file="${cache_dir}/bash-${cache_key}.module"
 
