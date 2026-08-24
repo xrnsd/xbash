@@ -4258,14 +4258,582 @@ ftLoadGitCompletion()
 
 ftDf()
 {
-    local ftEffect=Df高亮显示封装
-    local isEnable=true
+    local force_refresh=false
+    local skip_scan=false
+    local arg
 
-    [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
+    for arg in "$@"; do
+        case "$arg" in
+            -r|--refresh)
+                force_refresh=true
+                ;;
+            --no-scan)
+                skip_scan=true
+                ;;
+            -h|--help)
+                printf '%s\n' \
+                    'Usage: ftDf [--refresh] [--no-scan]' \
+                    '  --refresh  强制重新扫描目录' \
+                    '  --no-scan  仅显示磁盘，不扫描目录'
+                return 0
+                ;;
+            *)
+                printf 'ftDf: 未知参数：%s\n' "$arg" >&2
+                return 2
+                ;;
+        esac
+    done
 
-    df -lh |grep -E "Filesystem"| gawk '{print "\033[1;33m" $0 "\033[0m"; }'
-    df -lh |grep -E "文件系统|/dev/" |grep -v "/snap" |grep -v "/boot/efi" \
-    | gawk '{ if ($5 >= 75) print "\033[0;31m" $0 "\033[0m"; else print $0 }'
+    command -v diskutil >/dev/null 2>&1 || {
+        printf 'ftDf: 仅支持 macOS，需要 diskutil。\n' >&2
+        return 1
+    }
+
+    local GREEN=$'\033[32m'
+    local YELLOW=$'\033[33m'
+    local RED=$'\033[31m'
+    local DIM=$'\033[2m'
+    local RESET=$'\033[0m'
+
+    local tmpdir
+    local cache_file
+
+    tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/ftDf.XXXXXX") || return 1
+    cache_file="${TMPDIR:-/tmp}/ftDf-${UID}.cache"
+
+    # =========================================================
+    # 系统 APFS Container
+    # =========================================================
+
+    local disk_info
+    local root_device
+    local root_container
+    local sys_device
+    local sys_total
+    local sys_used
+    local sys_free
+    local sys_pct
+
+    disk_info=$(LC_ALL=C diskutil info / 2>/dev/null)
+
+    root_device=$(
+        df -kP / 2>/dev/null |
+        awk 'NR==2 {print $1}'
+    )
+
+    root_container=$(
+        printf '%s\n' "$disk_info" |
+        awk -F': *' \
+            '/APFS Container Reference/ {
+                gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2);
+                print $2;
+                exit
+            }'
+    )
+
+    sys_total=$(
+        printf '%s\n' "$disk_info" |
+        sed -nE \
+            's/.*Container Total Space:.*\(([0-9]+) Bytes\).*/\1/p' |
+        head -n 1
+    )
+
+    sys_free=$(
+        printf '%s\n' "$disk_info" |
+        sed -nE \
+            's/.*Container Free Space:.*\(([0-9]+) Bytes\).*/\1/p' |
+        head -n 1
+    )
+
+    if [[ -n "$root_container" ]]; then
+        sys_device="/dev/$root_container"
+    else
+        # /dev/disk3s1s1 -> /dev/disk3
+        sys_device=$(
+            printf '%s\n' "$root_device" |
+            sed -E 's/s[0-9].*$//'
+        )
+    fi
+
+    if [[ "$sys_total" =~ ^[0-9]+$ &&
+          "$sys_free" =~ ^[0-9]+$ &&
+          "$sys_total" -gt 0 ]]; then
+
+        sys_used=$((sys_total - sys_free))
+        sys_pct=$(( (sys_used * 100 + sys_total / 2) / sys_total ))
+    else
+        # APFS 信息获取失败时退回 df
+        local root_line
+        local root_blocks
+        local root_used
+        local root_avail
+        local root_cap
+        local root_mount
+
+        root_line=$(
+            df -kP / 2>/dev/null |
+            awk '
+                NR==2 {
+                    mount=$6;
+                    for (i=7; i<=NF; i++)
+                        mount=mount " " $i;
+
+                    printf "%s\t%s\t%s\t%s\t%s\t%s\n",
+                        $1, $2, $3, $4, $5, mount
+                }
+            '
+        )
+
+        IFS=$'\t' read -r \
+            sys_device \
+            root_blocks \
+            root_used \
+            root_avail \
+            root_cap \
+            root_mount <<< "$root_line"
+
+        sys_total=$((root_blocks * 1024))
+        sys_used=$((root_used * 1024))
+        sys_free=$((root_avail * 1024))
+        sys_pct=${root_cap%%%}
+    fi
+
+    # =========================================================
+    # 容量格式化
+    # =========================================================
+
+    local h_total
+    local h_used
+    local h_free
+
+    h_total=$(
+        awk -v b="$sys_total" \
+            'BEGIN {
+                split("B KiB MiB GiB TiB PiB", u, " ");
+                i=1;
+                while (b>=1024 && i<6) {
+                    b/=1024;
+                    i++
+                }
+                if (i==1 || b>=10)
+                    printf "%.0f%s", b, u[i];
+                else
+                    printf "%.1f%s", b, u[i]
+            }'
+    )
+
+    h_used=$(
+        awk -v b="$sys_used" \
+            'BEGIN {
+                split("B KiB MiB GiB TiB PiB", u, " ");
+                i=1;
+                while (b>=1024 && i<6) {
+                    b/=1024;
+                    i++
+                }
+                if (i==1 || b>=10)
+                    printf "%.0f%s", b, u[i];
+                else
+                    printf "%.1f%s", b, u[i]
+            }'
+    )
+
+    h_free=$(
+        awk -v b="$sys_free" \
+            'BEGIN {
+                split("B KiB MiB GiB TiB PiB", u, " ");
+                i=1;
+                while (b>=1024 && i<6) {
+                    b/=1024;
+                    i++
+                }
+                if (i==1 || b>=10)
+                    printf "%.0f%s", b, u[i];
+                else
+                    printf "%.1f%s", b, u[i]
+            }'
+    )
+
+    local color=$GREEN
+
+    if (( sys_pct >= 85 )); then
+        color=$RED
+    elif (( sys_pct >= 70 )); then
+        color=$YELLOW
+    fi
+
+    # =========================================================
+    # 磁盘表格
+    # =========================================================
+
+    printf '┌──────────────────┬────────────────────┬─────────┬─────────┬─────────┬───────┐\n'
+    printf '│ %-16s │ %-18s │ %7s │ %7s │ %7s │ %5s │\n' \
+        'Disk' 'Mount' 'Size' 'Used' 'Free' 'Use%'
+    printf '├──────────────────┼────────────────────┼─────────┼─────────┼─────────┼───────┤\n'
+
+    printf '│ %-16.16s │ %-18.18s │ %7s │ %7s │ %7s │ %b%5s%b │\n' \
+        "$sys_device" \
+        '/' \
+        "$h_total" \
+        "$h_used" \
+        "$h_free" \
+        "$color" \
+        "${sys_pct}%" \
+        "$RESET"
+
+    # =========================================================
+    # 其他已挂载物理磁盘
+    # =========================================================
+
+    local device
+    local blocks
+    local used
+    local avail
+    local cap
+    local mount
+    local volume_info
+    local volume_container
+    local bytes_total
+    local bytes_used
+    local bytes_free
+    local pct
+    local mount_label
+
+    while IFS=$'\t' read -r \
+        device blocks used avail cap mount
+    do
+        [[ -n "$device" ]] || continue
+
+        [[ "$mount" == "/" ]] && continue
+        [[ "$mount" == /System/Volumes/* ]] && continue
+        [[ "$mount" == "/private/var/vm" ]] && continue
+
+        # Xcode Simulator / MobileAsset
+        [[ "$mount" == /Library/Developer/CoreSimulator/* ]] && continue
+        [[ "$mount" == /System/Library/AssetsV2/* ]] && continue
+        [[ "$mount" == /private/var/folders/* ]] && continue
+
+        volume_info=$(
+            LC_ALL=C diskutil info "$device" 2>/dev/null
+        )
+
+        # 排除 DMG、Simulator Runtime 等虚拟磁盘
+        printf '%s\n' "$volume_info" |
+            grep -Eq \
+                '^[[:space:]]*(Virtual|Disk Image):[[:space:]]+Yes' &&
+            continue
+
+        # 排除属于系统 APFS Container 的其他卷
+        volume_container=$(
+            printf '%s\n' "$volume_info" |
+            awk -F': *' \
+                '/APFS Container Reference/ {
+                    gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2);
+                    print $2;
+                    exit
+                }'
+        )
+
+        if [[ -n "$root_container" &&
+              "$volume_container" == "$root_container" ]]; then
+            continue
+        fi
+
+        bytes_total=$((blocks * 1024))
+        bytes_used=$((used * 1024))
+        bytes_free=$((avail * 1024))
+        pct=${cap%%%}
+
+        h_total=$(
+            awk -v b="$bytes_total" \
+                'BEGIN {
+                    split("B KiB MiB GiB TiB PiB", u, " ");
+                    i=1;
+                    while (b>=1024 && i<6) {
+                        b/=1024;
+                        i++
+                    }
+                    if (i==1 || b>=10)
+                        printf "%.0f%s", b, u[i];
+                    else
+                        printf "%.1f%s", b, u[i]
+                }'
+        )
+
+        h_used=$(
+            awk -v b="$bytes_used" \
+                'BEGIN {
+                    split("B KiB MiB GiB TiB PiB", u, " ");
+                    i=1;
+                    while (b>=1024 && i<6) {
+                        b/=1024;
+                        i++
+                    }
+                    if (i==1 || b>=10)
+                        printf "%.0f%s", b, u[i];
+                    else
+                        printf "%.1f%s", b, u[i]
+                }'
+        )
+
+        h_free=$(
+            awk -v b="$bytes_free" \
+                'BEGIN {
+                    split("B KiB MiB GiB TiB PiB", u, " ");
+                    i=1;
+                    while (b>=1024 && i<6) {
+                        b/=1024;
+                        i++
+                    }
+                    if (i==1 || b>=10)
+                        printf "%.0f%s", b, u[i];
+                    else
+                        printf "%.1f%s", b, u[i]
+                }'
+        )
+
+        mount_label=${mount##*/}
+
+        [[ -n "$mount_label" ]] ||
+            mount_label="$mount"
+
+        color=$GREEN
+
+        if (( pct >= 85 )); then
+            color=$RED
+        elif (( pct >= 70 )); then
+            color=$YELLOW
+        fi
+
+        printf '│ %-16.16s │ %-18.18s │ %7s │ %7s │ %7s │ %b%5s%b │\n' \
+            "$device" \
+            "$mount_label" \
+            "$h_total" \
+            "$h_used" \
+            "$h_free" \
+            "$color" \
+            "${pct}%" \
+            "$RESET"
+
+    done < <(
+        df -kP 2>/dev/null |
+        awk '
+            NR>1 && $1 ~ /^\/dev\/disk/ {
+                mount=$6;
+
+                for (i=7; i<=NF; i++)
+                    mount=mount " " $i;
+
+                printf "%s\t%s\t%s\t%s\t%s\t%s\n",
+                    $1, $2, $3, $4, $5, mount
+            }
+        '
+    )
+
+    printf '└──────────────────┴────────────────────┴─────────┴─────────┴─────────┴───────┘\n'
+
+    if [[ "$skip_scan" == true ]]; then
+        rm -rf "$tmpdir"
+        return 0
+    fi
+
+    # =========================================================
+    # 目录扫描缓存
+    # =========================================================
+
+    local cache_valid=false
+
+    if [[ "$force_refresh" == false &&
+          -s "$cache_file" ]]; then
+
+        local now
+        local mtime
+
+        now=$(date +%s)
+
+        mtime=$(
+            stat -f '%m' "$cache_file" 2>/dev/null ||
+            printf '0'
+        )
+
+        if (( now - mtime < 600 )); then
+            cache_valid=true
+        fi
+    fi
+
+    # =========================================================
+    # 大目录扫描
+    # =========================================================
+
+    if [[ "$cache_valid" == false ]]; then
+        local -a scan_dirs
+
+        scan_dirs=(
+            "$HOME/Library/Application Support"
+            "$HOME/Library/Developer"
+            "$HOME/Library/Caches"
+            "$HOME/Library/Containers"
+            "$HOME/Library/Group Containers"
+            "$HOME/.cache"
+            "$HOME/.local"
+            "$HOME/.conda"
+            "$HOME/Downloads"
+            "$HOME/Documents"
+            "$HOME/Movies"
+            "$HOME/Music"
+            "$HOME/Pictures"
+            "$HOME/Models"
+        )
+
+        local result_file="$tmpdir/directories.tsv"
+        local total_dirs=0
+        local current=0
+        local dir
+
+        : > "$result_file"
+
+        for dir in "${scan_dirs[@]}"; do
+            [[ -d "$dir" ]] &&
+                total_dirs=$((total_dirs + 1))
+        done
+
+        local scan_start
+        local scan_seconds
+        local du_file
+        local pid
+        local spin_index
+        local size_kb
+        local display_path
+        local -a spinner
+
+        spinner=('|' '/' '-' $'\\')
+        scan_start=$(date +%s)
+
+        for dir in "${scan_dirs[@]}"; do
+            [[ -d "$dir" ]] || continue
+
+            current=$((current + 1))
+            du_file="$tmpdir/du-$current"
+            display_path=${dir/#$HOME/\~}
+
+            du -sk "$dir" > "$du_file" 2>/dev/null &
+            pid=$!
+            spin_index=0
+
+            while kill -0 "$pid" 2>/dev/null; do
+                printf '\r\033[K%s扫描目录 %d/%d %s %s%s' \
+                    "$DIM" \
+                    "$current" \
+                    "$total_dirs" \
+                    "${spinner[$spin_index]}" \
+                    "$display_path" \
+                    "$RESET" >&2
+
+                spin_index=$(( (spin_index + 1) % 4 ))
+                sleep 0.2
+            done
+
+            wait "$pid" 2>/dev/null
+
+            size_kb=$(
+                awk 'NR==1 {print $1}' \
+                    "$du_file" 2>/dev/null
+            )
+
+            if [[ "$size_kb" =~ ^[0-9]+$ &&
+                  "$size_kb" -gt 0 ]]; then
+
+                printf '%s\t%s\n' \
+                    "$size_kb" \
+                    "$display_path" \
+                    >> "$result_file"
+            fi
+        done
+
+        scan_seconds=$(( $(date +%s) - scan_start ))
+
+        printf '\r\033[K%s目录扫描完成：%ss%s\n' \
+            "$DIM" \
+            "$scan_seconds" \
+            "$RESET" >&2
+
+        sort -nr -k1,1 \
+            "$result_file" \
+            > "$cache_file"
+    else
+        printf '%s目录大小：使用10分钟内缓存%s\n' \
+            "$DIM" \
+            "$RESET" >&2
+    fi
+
+    # =========================================================
+    # 大目录表格
+    # =========================================================
+
+    printf '\n┌──────────────────────────────────┬──────────┐\n'
+    printf '│ %-32s │ %8s │\n' \
+        'Directory' \
+        'Size'
+    printf '├──────────────────────────────────┼──────────┤\n'
+
+    local shown=0
+    local size_kb
+    local path
+    local human_size
+
+    while IFS=$'\t' read -r size_kb path; do
+        [[ "$size_kb" =~ ^[0-9]+$ ]] ||
+            continue
+
+        human_size=$(
+            awk -v b="$((size_kb * 1024))" \
+                'BEGIN {
+                    split("B KiB MiB GiB TiB PiB", u, " ");
+                    i=1;
+                    while (b>=1024 && i<6) {
+                        b/=1024;
+                        i++
+                    }
+                    if (i==1 || b>=10)
+                        printf "%.0f%s", b, u[i];
+                    else
+                        printf "%.1f%s", b, u[i]
+                }'
+        )
+
+        printf '│ %-32.32s │ %8s │\n' \
+            "$path" \
+            "$human_size"
+
+        shown=$((shown + 1))
+
+        (( shown >= 8 )) &&
+            break
+    done < "$cache_file"
+
+    if (( shown == 0 )); then
+        printf '│ %-32s │ %8s │\n' \
+            'No directory data' \
+            '-'
+    fi
+
+    printf '└──────────────────────────────────┴──────────┘\n'
+
+    # =========================================================
+    # Time Machine 本地快照
+    # =========================================================
+
+    local snapshots
+
+    snapshots=$(
+        tmutil listlocalsnapshots / 2>/dev/null |
+        grep -c '^com\.apple\.TimeMachine\.' ||
+        true
+    )
+
+    printf 'Snapshots: %s\n' "${snapshots:-0}"
+
+    rm -rf "$tmpdir"
 }
 
 complete -W "-h --help --speed --playContent" ftEdgeTTs
