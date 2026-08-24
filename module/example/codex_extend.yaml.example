@@ -1,0 +1,10 @@
+rules:
+  - DOMAIN,ws.chatgpt.com,🧲 海外AI
+  - DOMAIN-SUFFIX,chatgpt.com,🧲 海外AI
+  - DOMAIN-SUFFIX,auth.openai.com,🧲 海外AI
+  - DOMAIN-SUFFIX,openai.com,🧲 海外AI
+  - DOMAIN-SUFFIX,oaistatsig.com,🧲 海外AI
+  - DOMAIN-SUFFIX,oaistatic.com,🧲 海外AI
+  - DOMAIN-SUFFIX,oaiusercontent.com,🧲 海外AI
+  - DOMAIN,desktop.chat.openai.com,🧲 海外AI
+  - DOMAIN,chat.openai.com,🧲 海外AI
