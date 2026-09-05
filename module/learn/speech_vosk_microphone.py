@@ -96,10 +96,8 @@ def main():
                     if result.get("success"):
                         speech_utils.print_overwrite("Partial Result Recognition successful. Exiting.\n")
                         sys.exit(0)
-                    speech_utils.print_multi_overwrite([
-                        speech_utils.highlight_diff(args.peference_text, result.get("text", ""), on_recognition_equal),
-                        result.get("text", "").lower()
-                    ])
+
+                    speech_utils.print_multi_overwrite(speech_utils.highlight_diff(args.peference_text, result.get("text", ""), on_recognition_equal),result.get("text", "").lower())
 
 if __name__ == "__main__":
     try:
