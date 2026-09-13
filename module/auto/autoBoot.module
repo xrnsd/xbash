@@ -1,0 +1,9 @@
+#!/bin/bash
+# 在此处填写开机需要默认禁用的 CPU 核心列表，用空格隔开
+CPUS_TO_DISABLE="6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23"
+
+for cpu in $CPUS_TO_DISABLE; do
+    if [ -f "/sys/devices/system/cpu/cpu${cpu}/online" ]; then
+        echo 0 | sudo tee "/sys/devices/system/cpu/cpu${cpu}/online"
+    fi
+done
