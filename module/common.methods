@@ -2099,10 +2099,13 @@ ftPowerManagement()
     [ "$isEnable" != "true" ] && ftEcho -s "${ftEffect} 已停用，请确认" && return
     #解参验耦
     local edittype=$1 timeLong=$2 userPassword=$3 filePathFlag=/tmp/xbashPowerManagementFlag
+    if [[ -z $userPassword ]];then
+        userPassword=$(ftIniEditUtil -r $rFilePathXbashDBUser userInfo p)
+    fi
     timeLong=${timeLong:-$2}
     timeLong=${timeLong:-'10'}
     local errorContent
-    [ -z "$userPassword" ] && sudo echo "" || return # errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword"
+    [ -n "$userPassword" ] && echo $userPassword | sudo -p '' -S echo "" || return # errorContent="${errorContent}\\n[用户密码为空]userPassword=$userPassword"
     [ -z "$edittype" ] && errorContent="${errorContent}\\n[操作参数为空]edittype=$edittype"
     ( ! echo -n $timeLong | grep -q -e "^[0-9][0-9]*$" ) && errorContent="${errorContent}\\n[倒计时时长无效]timeLong=$timeLong"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftPowerManagement -h && return $resultFail

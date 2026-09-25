@@ -190,3 +190,6 @@ esac
 
 alias ls='ls --color=never'
 . "$HOME/.cargo/env"
+
+# Added by cua-driver-rs installer — see https://github.com/trycua/cua
+export PATH="/home/myserver/.local/bin:$PATH"
