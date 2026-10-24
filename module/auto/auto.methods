@@ -1747,7 +1747,8 @@ ftAutoCdProjectDirectory()
     #参数解析
     local isUserFileManager itemCount mProjectName
     local mProjectStorageRootPathList="$(ftXbGetValue ProjectsInfo ProjectStorageRootPathList)"
-    local mProjectNameList mProjectStorageFullPathList
+    local mProjectNameList
+    local -a mProjectStorageFullPathList=()
     local valCount=1 errorContent arg arg2  arg3  arg4
     for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; eval arg4=\${$((i+3))} ; case "${arg}" in
     # 说明参数解析部分==============
@@ -1776,12 +1777,12 @@ ftAutoCdProjectDirectory()
         -u | --update ) #更新数据库
             for rootPath in ${mProjectStorageRootPathList[@]}; do
                 [[ ! -d "${rootPath}" ]] && continue
-                while read fullPath ;do
-                    mProjectStorageFullPathList=(${mProjectStorageFullPathList[@]} $(dirname $fullPath))
-                done < <(find ${rootPath} -name .git -type d)
+                while IFS= read -r fullPath ;do
+                    mProjectStorageFullPathList+=("${fullPath%/.git}")
+                done < <(find "${rootPath}" -type d -name .git -prune -print)
             done
 
-            ftIniEditUtil -w $rFilePathXbashDBUser ProjectsInfo ProjectStorageFullPathList "${mProjectStorageFullPathList[*]}"
+            ftIniEditUtil -w "$rFilePathXbashDBUser" ProjectsInfo ProjectStorageFullPathList "${mProjectStorageFullPathList[*]}"
 
             ftEcho -s "项目列表更新完成"
             return;;
