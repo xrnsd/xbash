@@ -4701,6 +4701,8 @@ ftDf()
         local scan_seconds
         local du_file
         local pid
+        local -a scan_pids scan_paths
+        local running
         local spin_index
         local size_kb
         local display_path
@@ -4709,44 +4711,57 @@ ftDf()
         spinner=('|' '/' '-' $'\\')
         scan_start=$(date +%s)
 
+        scan_pids=()
+        scan_paths=()
+
         for dir in "${scan_dirs[@]}"; do
             [[ -d "$dir" ]] || continue
 
             current=$((current + 1))
             du_file="$tmpdir/du-$current"
             display_path=${dir/#$HOME/\~}
+            scan_paths+=("$display_path")
 
             du -sk "$dir" > "$du_file" 2>/dev/null &
-            pid=$!
-            spin_index=0
+            scan_pids+=("$!")
 
-            while kill -0 "$pid" 2>/dev/null; do
-                printf '\r\033[K%s扫描目录 %d/%d %s %s%s' \
-                    "$DIM" \
-                    "$current" \
-                    "$total_dirs" \
-                    "${spinner[$spin_index]}" \
-                    "$display_path" \
-                    "$RESET" >&2
+            if (( ${#scan_pids[@]} == 4 || current == total_dirs )); then
+                spin_index=0
+                while :; do
+                    running=false
+                    for pid in "${scan_pids[@]}"; do
+                        if kill -0 "$pid" 2>/dev/null; then
+                            running=true
+                            break
+                        fi
+                    done
+                    [[ "$running" == true ]] || break
 
-                spin_index=$(( (spin_index + 1) % 4 ))
-                sleep 0.2
-            done
+                    printf '\r\033[K%s扫描目录 %d/%d %s %s%s' \
+                        "$DIM" \
+                        "$current" \
+                        "$total_dirs" \
+                        "${spinner[$spin_index]}" \
+                        "$display_path" \
+                        "$RESET" >&2
+                    spin_index=$(( (spin_index + 1) % 4 ))
+                    sleep 0.2
+                done
 
-            wait "$pid" 2>/dev/null
+                for pid in "${scan_pids[@]}"; do
+                    wait "$pid" 2>/dev/null
+                done
+                scan_pids=()
+            fi
+        done
 
-            size_kb=$(
-                awk 'NR==1 {print $1}' \
-                    "$du_file" 2>/dev/null
-            )
+        for ((current=1; current<=total_dirs; current++)); do
+            du_file="$tmpdir/du-$current"
+            size_kb=$(awk 'NR==1 {print $1}' "$du_file" 2>/dev/null)
 
-            if [[ "$size_kb" =~ ^[0-9]+$ &&
-                  "$size_kb" -gt 0 ]]; then
-
-                printf '%s\t%s\n' \
-                    "$size_kb" \
-                    "$display_path" \
-                    >> "$result_file"
+            if [[ "$size_kb" =~ ^[0-9]+$ && "$size_kb" -gt 0 ]]; then
+                display_path=${scan_paths[current-1]}
+                printf '%s\t%s\n' "$size_kb" "$display_path" >> "$result_file"
             fi
         done
 
