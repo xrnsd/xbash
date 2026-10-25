@@ -180,7 +180,9 @@ fi
         #校验用户扩展和模版版本一致性
         ftCheckUserPackaging
     fi
-    ftAutoConfigOpenAIEnv
+    if declare -F ftAutoConfigOpenAIEnv > /dev/null; then
+        ftAutoConfigOpenAIEnv
+    fi
 
 #learn
 
