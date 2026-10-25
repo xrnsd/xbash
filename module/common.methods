@@ -800,7 +800,7 @@ ftCheckUserConfig()
     versionNumUser=${versionNumUser//$key/}
 
     [[ -z "${versionNumUser}" ]] && ftEcho -e "建议更新${title}到:${versionNumExcepmale}" && return
-    [[ -z "${versionNumExcepmale}" ]] || [[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) != "<"  ]] && return resultSuccess
+    [[ -z "${versionNumExcepmale}" ]] || [[ $(ftVersionComparison $versionNumUser $versionNumExcepmale) != "<"  ]] && return $resultSuccess
 
     ftEcho -e "${title}已升级，建议更新: ${versionNumUser} > ${versionNumExcepmale}"
     echo -n "请更新" ; ftEcho -s "：$rFilePathXbashConfigUser"
