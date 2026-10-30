@@ -1,5 +1,5 @@
 #!/opt/homebrew/bin/bash
-[[ -f "$rFilePathXbashModuleLearnCommon" ]] && source $rFilePathXbashModuleLearnCommon
+[[ -f "$rFilePathXbashModuleLearnCommon" ]] && source "$rFilePathXbashModuleLearnCommon"
 ##################################################
 ##                                              ##
 ##             learn tools                      ##

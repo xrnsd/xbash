@@ -15,7 +15,7 @@ class StartupTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix='xbash-test-')
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name).resolve()
         self.home = self.root / 'home with spaces'
         self.home.mkdir()
         self.repo = self.root / 'repo with spaces'
@@ -35,9 +35,9 @@ ftAutoConfigOpenAIEnv() { launchctl setenv AUDIT value; }
 ''')
         (self.repo / 'module/user/test.packaging.module').write_text("alias xdf='ftDf'\n")
 
-    def shell(self, body, interactive=True, env=None, adapter=True):
+    def shell(self, body, interactive=True, env=None, adapter=False):
         environment = dict(PATH='/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin',
-                           HOME=str(self.home), USER='myname', TERM='dumb', LC_ALL='C',
+                           HOME=str(self.home), USER='test', TERM='dumb', LC_ALL='C',
                            TEST_REPO=str(self.repo), EVENTS=str(self.root / 'events'))
         environment.update(env or {})
         prelude = '''
@@ -87,6 +87,16 @@ source() { local file="$1"; shift; echo "${file#"$TEST_REPO/"}" >> "$EVENTS"; bu
                 elif kind == 'file': self.assertEqual(path.read_text(), 'user inputrc')
                 elif kind == 'directory': self.assertEqual((path / 'keep').read_text(), 'user data')
                 else: self.assertFalse(path.exists() or path.is_symlink())
+
+    def test_context_and_symlink(self):
+        (self.home / '.bashrc').symlink_to(self.repo / 'module/main.module')
+        p = self.shell('source "$HOME/.bashrc" >/dev/null; printf "%s\\n" "$dirPathHomeXbash" "$rDirPathXbash" "$rDirPathUserHome" "$rUserName"', env={'SUDO_USER':'someone_else'})
+        self.assertEqual(p.stdout.splitlines(), [str(self.repo), str(self.repo), str(self.home), 'test'])
+
+    def test_child_context_is_revalidated(self):
+        self.user.write_text('true\n')
+        p = self.shell("""source "$TEST_REPO/module/main.module" >/dev/null; export -p | grep -q " rEnvValInited=" && exit 7; "$BASH" --noprofile --norc -ic 'source "$TEST_REPO/module/main.module" >/dev/null; [[ "$rDirPathUserHome" == "$HOME" ]]'""")
+        self.assertNotIn('readonly variable', p.stderr)
 
     def test_noninteractive_skips(self):
         p = self.shell('source "$TEST_REPO/module/main.module"; echo "${dirPathHomeXbash-unset}"', interactive=False)
