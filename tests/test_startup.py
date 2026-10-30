@@ -147,6 +147,40 @@ source() { local file="$1"; shift; echo "${file#"$TEST_REPO/"}" >> "$EVENTS"; bu
         extra.write_text('return 0\n')
         self.shell('source "$TEST_REPO/module/main.module"; _ftXbashLoadModule "$TEST_REPO/module/cycle.module"; [[ ${_xbash_module_states[$TEST_REPO/module/cycle.module]} == loaded ]]')
 
+    def test_path_helpers_preserve_literal_items(self):
+        p = self.shell('''source "$TEST_REPO/module/base/environment.module"
+PATH=':/a path/bin:*literal:/opt/sdk-cache::'
+ftXbashPathAdd '/a path/bin'
+ftXbashPathAdd '*literal'
+ftXbashPathRemove '/missing'
+printf '%s\\n' "$PATH"
+ftXbashPathRemove '*literal'
+printf '%s\\n' "$PATH"
+PATH=''; ftXbashPathAdd '/first'; printf '%s\\n' "$PATH"
+''', interactive=False)
+        self.assertEqual(p.stdout.splitlines(), [':/a path/bin:*literal:/opt/sdk-cache::', ':/a path/bin:/opt/sdk-cache::', ':/first'])
+
+    def test_environment_refresh_removes_only_owned_paths(self):
+        self.config.write_text('''ftXbashApplyUserEnvironment() {
+    if [[ "${FEATURE:-true}" == true ]]; then ftXbashPathAdd '/feature path/bin' || return $?; fi
+    return 0
+}
+''')
+        self.shell('''source "$TEST_REPO/module/main.module"
+source "$TEST_REPO/module/main.module"
+source "$TEST_REPO/module/main.module"
+[[ "$PATH" == *'/feature path/bin'* ]] || exit 2
+FEATURE=false
+source "$TEST_REPO/module/main.module"
+[[ "$PATH" != *'/feature path/bin'* ]] || exit 3
+[[ "$PATH" != *"$HOME/.local/bin:$HOME/.local/bin"* ]] || exit 4
+''')
+
+    def test_template_does_not_run_system_changes_on_startup(self):
+        self.config.write_text((self.repo / 'module/example/user.config.example').read_text())
+        self.shell('source "$TEST_REPO/module/main.module"; [[ $? == 0 ]]')
+        self.assertNotIn('unexpected_sudo', (self.root / 'events').read_text())
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

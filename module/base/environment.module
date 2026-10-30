@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Environment values are applied in the caller; these helpers do no system writes.
+declare -gA _xbash_owned_path_entries
+
+ftXbashPathRemove()
+{
+    local target="$1" remainder="${PATH-}" item
+    local -a kept=()
+    while :; do
+        item=${remainder%%:*}
+        [[ "$item" == "$target" ]] || kept+=("$item")
+        [[ "$remainder" == *:* ]] || break
+        remainder=${remainder#*:}
+    done
+    local IFS=:
+    export PATH="${kept[*]}"
+}
+
+ftXbashPathAdd()
+{
+    local entry="$1" placement="${2:-append}"
+    [[ -n "$entry" && "$entry" != *:* ]] || return 1
+    case ":${PATH-}:" in *":$entry:"*) return 0;; esac
+    if [[ ! ${PATH+x} ]]; then
+        PATH=$entry
+    elif [[ "$placement" == prepend ]]; then
+        PATH="$entry:$PATH"
+    else
+        PATH="$PATH:$entry"
+    fi
+    export PATH
+    _xbash_owned_path_entries["$entry"]=1
+}
+
+_ftXbashResetOwnedPaths()
+{
+    local entry
+    for entry in "${!_xbash_owned_path_entries[@]}"; do
+        ftXbashPathRemove "$entry"
+    done
+    _xbash_owned_path_entries=()
+}
+
+return 0
