@@ -1,0 +1,59 @@
+{
+  "runs": 7,
+  "summary": {
+    "source_ms": {
+      "median": 34.35,
+      "max": 35.537
+    },
+    "first_prompt_ms": {
+      "median": 7.131,
+      "max": 8.277
+    },
+    "steady_prompt_ms": {
+      "median": 1.308,
+      "max": 1.691
+    }
+  },
+  "counts_per_run": {
+    "common_definition_loads": 1,
+    "git_queries": 2,
+    "session_writes": 0
+  },
+  "samples": [
+    {
+      "source_ms": 35.537,
+      "first_prompt_ms": 8.277,
+      "steady_prompt_ms": 1.691
+    },
+    {
+      "source_ms": 34.861,
+      "first_prompt_ms": 7.504,
+      "steady_prompt_ms": 1.308
+    },
+    {
+      "source_ms": 33.944,
+      "first_prompt_ms": 7.266,
+      "steady_prompt_ms": 1.449
+    },
+    {
+      "source_ms": 35.261,
+      "first_prompt_ms": 7.131,
+      "steady_prompt_ms": 1.307
+    },
+    {
+      "source_ms": 34.35,
+      "first_prompt_ms": 7.127,
+      "steady_prompt_ms": 1.216
+    },
+    {
+      "source_ms": 33.371,
+      "first_prompt_ms": 6.872,
+      "steady_prompt_ms": 1.367
+    },
+    {
+      "source_ms": 34.05,
+      "first_prompt_ms": 7.089,
+      "steady_prompt_ms": 1.254
+    }
+  ]
+}

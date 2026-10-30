@@ -86,7 +86,6 @@ complete -W "-a --adb -h --help -j -c -jc -jcc --android --edge_tts --conda --re
 ftResetXbash()
 {
     local refresh_status=0 original_pwd=$PWD run_system=false
-    local sdk_arg=
     declare -gA _xbash_refresh_overrides=()
     _xbash_force_reload=false
     while (( $# )); do
@@ -136,7 +135,11 @@ ftResetXbash()
     source "$rDirPathXbash/module/main.module"
     refresh_status=$?
     if (( refresh_status == 0 )) && [[ "$run_system" == true ]]; then
-        if declare -F ftXbashApplySystemConfig >/dev/null; then
+        if [[ ${isResetJdk:-false} == true || ${isResetGcc:-false} == true ]] &&
+           [[ ${isUseCustomAndroidDevEnvConfig:-false} != true ]]; then
+            printf 'xbash: Android tool configuration is disabled\n' >&2
+            refresh_status=1
+        elif declare -F ftXbashApplySystemConfig >/dev/null; then
             ftXbashApplySystemConfig
             refresh_status=$?
         else
@@ -152,7 +155,7 @@ ftResetXbash()
 
 ftXbashSyncSessionEnvironment()
 {
-    local key
+    local key current
     command -v launchctl >/dev/null 2>&1 || {
         printf 'xbash: session environment sync requires launchctl\n' >&2
         return 1
@@ -161,6 +164,8 @@ ftXbashSyncSessionEnvironment()
         [[ -n ${!key} ]] || { printf 'xbash: session sync requires %s\n' "$key" >&2; return 1; }
     done
     for key in OPENAI_BASE_URL OPENAI_API_KEY OPENAI_MODEL; do
+        current=$(launchctl getenv "$key" 2>/dev/null) || current=
+        [[ "$current" != "${!key}" ]] || continue
         launchctl setenv "$key" "${!key}" || return $?
     done
     return 0
@@ -781,7 +786,6 @@ ftVersionComparison()
     [[ "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1" ]] && echo ">" && return
     [[ "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1" ]] && echo "<" && return
     [[ "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" == "$1" ]] && echo "<=" && return
-    [[ "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1" ]] && echo ">=" && return
 }
 
 ftCheckUserConfig()

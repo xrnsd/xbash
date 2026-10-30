@@ -24,12 +24,12 @@ export isUseGo=
 # This hook applies only the current shell environment. System resets are explicit.
 ftXbashApplyUserEnvironment()
 {
-    local filePath key sdkVersion PATHLOCAL item newList config path index
+    local filePath key sdkVersion
 #----------------    update config  ------------------
 #----------------    PS1 config  ------------------
 #----------------    bash history config  ------------------
 #----------------    Android development environment config    ---------------------------
-if [[ -n "$isUseCustomAndroidDevEnvConfig" ]]; then
+if [[ "$isUseCustomAndroidDevEnvConfig" == true ]]; then
         # dirPathOracleJdk6=${rDirPathTools}/jdk/1.6.038
     dirPathOpenJdk7=/usr/lib/jvm/java-7-openjdk-amd64
     dirPathOpenJdk8=/usr/lib/jvm/java-8-openjdk-amd64
@@ -85,7 +85,7 @@ if [[ -n "$isUseCustomAndroidDevEnvConfig" ]]; then
     else xEcho "Java " "env config error : " ${jdkHomePath}; fi
 
     #Android Studio KeyStore
-    if [[ -n "$isConfigAndroidStudioKeyStore" ]]; then
+    if [[ "$isConfigAndroidStudioKeyStore" == true ]]; then
         #normal app
         export ANDROID_KEY_STORE_FLLE_PATH=
         export ANDROID_KEY_STORE_PASSWORD=
@@ -143,7 +143,7 @@ if [[ -n "$isUseCustomAndroidDevEnvConfig" ]]; then
         export GOPATH=$HOME/.gopath
         export GOROOT=${dirPathGo}
         ftXbashPathAdd "$dirPathGo" || return $?
-        [[ ! -d "$GOPATH" ]] && mkdir ${GOPATH}
+        [[ ! -d "$GOPATH" ]] && mkdir -p -- "$GOPATH" || return $?
     else xEcho "go " "config error : " ${dirPathGo}; fi
 fi
 
@@ -153,7 +153,7 @@ if [ "$isUseBuildCcache" = "true" ]&&[[ -n $(which ccache) ]]; then
     export CCACHE_DEV_DIR=xxxx
     if [[ -d "${CCACHE_DEV_DIR}" ]]; then
         dirPathCache=${CCACHE_DEV_DIR}/.ccache
-        [ ! -d $dirPathCache  ]&& mkdir $dirPathCache
+        if [[ ! -d "$dirPathCache" ]]; then mkdir -p -- "$dirPathCache" || return $?; fi
         if [[ -d "${dirPathCache}" ]]; then
             export CCACHE_EXE=/usr/local/bin/ccache
             export CCACHE_DIR=$dirPathCache
@@ -196,7 +196,7 @@ dirPathVoskModel=${dirPathVosk}/vosk-model-en-us-0.22-lgraph
     source "${dirPathHome}/.venv/bin/activate" || return $?
     export dirPathPythonVosk=${dirPathVosk}
     export dirPathPythonVoskModel=${dirPathVoskModel}
-else xEcho "Python Vosk" "config error : " ${filePathPython}; fi  
+else xEcho "Python Vosk" "config error : " ${filePathPython}; fi
 
 #other
 ftXbashPathAdd "/usr/libexec/git-core" || return $?
@@ -208,7 +208,7 @@ export DIR_PATH_ANDROID_DECOMPILE=${rDirPathUserHome}/xconfig/decompile
 export DIR_PATH_ANDROID_DECOMPILE_TOOLS=${DIR_PATH_ANDROID_DECOMPILE}/tools
 
 #pyenv
-if [[ -n "$isInitPyenv" ]]; then   
+if [[ "$isInitPyenv" == true ]]; then
     export PYENV_ROOT="$HOME/.pyenv"
     ftXbashPathAdd "$PYENV_ROOT/bin" prepend || return $?
     if command -v pyenv 1>/dev/null 2>&1; then
@@ -221,68 +221,45 @@ fi
 # Call explicitly through ftResetXbash; never executed by ordinary startup.
 ftXbashApplySystemConfig()
 {
-    local path config index filePathJavaList configList
-        [[ "$isResetJdk" = "true" ]] && if [[ -f "$filePathJava" ]]; then
-            filePathJavaList=($filePathJava ${filePathJava}c ${filePathJava}p ${filePathJava}ws ${filePathJava}doc ${filePathJava}h)
-            configList=(java javac javap javaws javadoc javah)
-
-            ftEcho -s "upadte jdk config"
-            sudo echo "" || return #echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
-            for index in "${!filePathJavaList[@]}"; do
-                path=${filePathJavaList[$index]}
-                config=${configList[$index]}
-                if [[ ! -f "${path}" ]] ;then
-                    [[ "$isResetJdk" = "true" ]]  && xEcho "${config} "  "config skip : " ${path}
-                    continue
-                fi
-                [[ -z $(update-alternatives --list $config|grep $path) ]] && sudo -p '' -S  update-alternatives --install /usr/bin/${config} $config $path 300
-                echo "$path" | sudo -p '' -S update-alternatives --config $config >/dev/null
-            done
-            java -version
-        else xEcho "Java " "local config error : " ${filePathJava}; fi
-
-
-    #GCC&G++
-    [[ "$isResetGcc" = "true" ]] && if [[ -f "$gccPath" ]] ;then
-        ftEcho -s "update gcc&g++ config"
-        sudo echo "" || return #echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
-        #sudo update-alternatives --remove gcc /usr/bin/gcc-x.x
-        [[ -z $(update-alternatives --list gcc|grep $gccPath) ]] && sudo -p '' -S  update-alternatives --install /usr/bin/gcc gcc $gccPath 300
-        echo "$gccPath" | sudo -p '' -S update-alternatives --config gcc >/dev/null
-        gccPath=$(echo $gccPath | gsed "s cc ++ g" )
-        [[ -z $(update-alternatives --list gcc|grep $gccPath) ]] && sudo -p '' -S  update-alternatives --install /usr/bin/g++ g++ $gccPath 300
-        echo "$gccPath" | sudo -p '' -S update-alternatives --config g++ >/dev/null
-        gcc -v
-    else xEcho "GCC & G++ " "config error : " ${gccPath}; fi
-
-
-if [ "$isUseFlashcache" = "true" ]&&[[ -n "$(which flashcache_load)" ]] ;then
-    sudo echo "" || return # echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
-    sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.new_style_write_merge=1 >/dev/null
-    sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.skip_seq_thresh_kb=512 >/dev/null
-    sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.fast_remove=1 >/dev/null
-    sudo -p '' -S  sysctl -w dev.flashcache.sdb1+sdc1.reclaim_policy=1 >/dev/null
-fi
-
-
-local filePathPython="$(command -v python)"
-[[ "$isEnableResetPythonConfig" = "true" ]] && if [[ -n "$filePathPython" ]] ;then
-    ftEcho -s "update Python config"
-    pythonFilePath=
-    python3FilePath=
-    sudo echo "" || return # echo "$(echo "$userPassword" | sudo -S -p '' echo " " > /dev/null)" >/dev/null
-    if [[ -n $(update-alternatives --list gcc|grep "no alternatives for python") ]]; then
-            while read filePath ;do
-                sudo -p '' -S  update-alternatives --install /usr/bin/python python ${filePath} 300
-            done < <(echo "$(gls ${filePathPython}2.*)" |grep -v ".*m")
-            while read filePath ;do
-                sudo -p '' -S  update-alternatives --install /usr/bin/python3 python3 ${filePath} 300
-            done < <(echo "$(gls ${filePathPython}3.*)" |grep -v ".*m")
+    local name executable flag value
+    if [[ ${isResetJdk:-false} == true || ${isResetGcc:-false} == true || ${isEnableResetPythonConfig:-false} == true ]]; then
+        command -v update-alternatives >/dev/null 2>&1 || return 1
+        sudo -v || return $?
     fi
-    echo "$pythonFilePath" | sudo -p '' -S update-alternatives --config python >/dev/null
-    echo "$python3FilePath" | sudo -p '' -S update-alternatives --config python3 >/dev/null
-else xEcho "Python" "config error : " ${filePathPython}; fi
-
+    if [[ ${isResetJdk:-false} == true ]]; then
+        for name in java javac javap javaws javadoc javah; do
+            executable="${JAVA_HOME}/bin/$name"
+            [[ -x "$executable" ]] || continue
+            sudo update-alternatives --install "/usr/bin/$name" "$name" "$executable" 300 || return $?
+            sudo update-alternatives --set "$name" "$executable" || return $?
+        done
+        [[ -x "${JAVA_HOME}/bin/java" ]] || return 1
+    fi
+    if [[ ${isResetGcc:-false} == true ]]; then
+        [[ -x "$gccPath" && -x "${gccPath/gcc/g++}" ]] || return 1
+        for name in gcc g++; do
+            executable=$gccPath
+            [[ "$name" != g++ ]] || executable=${gccPath/gcc/g++}
+            sudo update-alternatives --install "/usr/bin/$name" "$name" "$executable" 300 || return $?
+            sudo update-alternatives --set "$name" "$executable" || return $?
+        done
+    fi
+    if [[ ${isEnableResetPythonConfig:-false} == true ]]; then
+        # An explicit executable is required; never scan or guess system interpreters.
+        for name in python python3; do
+            executable=${pythonFilePath-}
+            [[ "$name" != python3 ]] || executable=${python3FilePath-}
+            [[ -x "$executable" ]] || return 1
+            sudo update-alternatives --install "/usr/bin/$name" "$name" "$executable" 300 || return $?
+            sudo update-alternatives --set "$name" "$executable" || return $?
+        done
+    fi
+    if [[ ${isUseFlashcache:-false} == true ]]; then
+        for flag in new_style_write_merge skip_seq_thresh_kb fast_remove reclaim_policy; do
+            case "$flag" in skip_seq_thresh_kb) value=512;; *) value=1;; esac
+            sudo sysctl -w "dev.flashcache.sdb1+sdc1.$flag=$value" || return $?
+        done
+    fi
     return 0
 }
 return 0

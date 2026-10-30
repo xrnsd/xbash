@@ -3,7 +3,7 @@
 _ftXbashCapturePrompt()
 {
     if [[ ${PROMPT_COMMAND-} == _ftXbashPromptDispatch ]]; then
-        _xbash_prompt_previous=("${_xbash_prompt_hooks[@]}")
+        _xbash_prompt_previous=("${_xbash_prompt_external[@]}")
     else
         _xbash_prompt_previous=("${PROMPT_COMMAND[@]}")
     fi
@@ -13,6 +13,7 @@ _ftXbashConfigurePrompt()
 {
     local hook existing duplicate
     local -a candidates=("${_xbash_prompt_previous[@]}" "${PROMPT_COMMAND[@]}")
+    _xbash_prompt_external=("${_xbash_prompt_previous[@]}")
     _xbash_prompt_hooks=()
     for hook in "${candidates[@]}"; do
         case "$hook" in
@@ -32,8 +33,13 @@ _ftXbashConfigurePrompt()
 
 _ftXbashPromptDispatch()
 {
-    local command_status=$? hook
-    for hook in "${_xbash_prompt_hooks[@]}"; do eval "$hook"; done
+    local command_status=$? hook hook_status
+    hook_status=$command_status
+    for hook in "${_xbash_prompt_hooks[@]}"; do
+        # Enter eval with the same $? an ordinary PROMPT_COMMAND would observe.
+        if _ftXbashPromptStatus "$hook_status"; then eval "$hook"; else eval "$hook"; fi
+        hook_status=$?
+    done
     if [[ ${_xbash_module_states[$rFilePathXbashModuleGit]-} == loaded ]] &&
        declare -F ftSetBashPs1ByGitBranch >/dev/null; then
         ftSetBashPs1ByGitBranch
@@ -41,5 +47,7 @@ _ftXbashPromptDispatch()
     history -a
     return "$command_status"
 }
+
+_ftXbashPromptStatus() { return "$1"; }
 
 return 0

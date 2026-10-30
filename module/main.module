@@ -100,6 +100,7 @@ alias l='ls -CF'
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
+if [[ ${_xbash_native_pid-} != "$BASHPID" || ${_xbash_force_reload:-false} == true ]]; then
 if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
@@ -113,6 +114,9 @@ if ! shopt -oq posix; then
   elif [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
   fi
+fi
+
+    _xbash_native_pid=$BASHPID
 fi
 
 # xbash loading stages return to this wrapper; failures never close the shell.
@@ -251,8 +255,10 @@ ftXbashPathAdd "$PNPM_HOME" prepend || return $?
 ftXbashPathAdd "$HOME/.local/bin" || return $?
 
 # 针对 macOS Terminal.app 的路径跟随修复
-if [ "$TERM_PROGRAM" == "Apple_Terminal" ] && [ -f /etc/bashrc_Apple_Terminal ]; then
-    . /etc/bashrc_Apple_Terminal
+if [[ ${TERM_PROGRAM-} == Apple_Terminal && -r /etc/bashrc_Apple_Terminal &&
+      ${_xbash_apple_terminal_pid-} != "$BASHPID" ]]; then
+    . /etc/bashrc_Apple_Terminal || return $?
+    _xbash_apple_terminal_pid=$BASHPID
 fi
 
 #config lang env

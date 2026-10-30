@@ -35,32 +35,13 @@ ftAutoConfigOpenAIEnv() { launchctl setenv AUDIT value; }
 ''')
         (self.repo / 'module/user/test.packaging.module').write_text("alias xdf='ftDf'\n")
 
-    def shell(self, body, interactive=True, env=None, adapter=False):
+    def shell(self, body, interactive=True, env=None):
         environment = dict(PATH='/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin',
                            HOME=str(self.home), USER='test', TERM='dumb', LC_ALL='C',
                            TEST_REPO=str(self.repo), EVENTS=str(self.root / 'events'))
         environment.update(env or {})
         prelude = '''
-launchctl() { echo launchctl >> "$EVENTS"; }
-sudo() { echo unexpected_sudo >> "$EVENTS"; return 111; }
-source() {
-    local file="$1"; shift
-    case "$file" in
-      */config/common.config)
-        userName=test
-        export dirPathHome="$HOME" dirPathHomeXbash="$TEST_REPO"
-        export dirPathHomeTools="$HOME/tools"
-        export dirPathHomeXbashConfig="$TEST_REPO/config"
-        export dirPathHomeXbashConfigUser="$TEST_REPO/config/user"
-        file="$TEST_REPO/config/common.config";;
-    esac
-    echo "${file#"$TEST_REPO/"}" >> "$EVENTS"
-    builtin source "$file" "$@"
-}
-'''
-        if not adapter:
-            prelude = '''
-launchctl() { echo launchctl >> "$EVENTS"; }
+launchctl() { [[ "$1" != setenv ]] || echo launchctl >> "$EVENTS"; return 0; }
 sudo() { echo unexpected_sudo >> "$EVENTS"; return 111; }
 source() { local file="$1"; shift; echo "${file#"$TEST_REPO/"}" >> "$EVENTS"; builtin source "$file" "$@"; }
 '''
@@ -272,6 +253,96 @@ ftResetXbash --system-config
 [[ $? == 23 && "$PWD" == "$before" && ! ${isResetXbash+x} ]]
 ''')
         self.assertEqual(p.stdout.strip(), 'SYSTEM_ACTION')
+
+    def test_config_prompt_changes_replace_previous_config_hook(self):
+        self.config.write_text('PROMPT_COMMAND="echo config_one"\n')
+        p = self.shell('''PROMPT_COMMAND='echo external'
+source "$TEST_REPO/module/main.module"
+printf 'PROMPT_COMMAND="echo config_two"\\n' > "$TEST_REPO/config/user/test.config"
+ftResetXbash
+_ftXbashPromptDispatch
+''')
+        self.assertEqual(p.stdout.splitlines(), ['external', 'config_two'])
+
+    def test_prompt_hooks_observe_original_exit_status(self):
+        p = self.shell('''PROMPT_COMMAND='printf "observed=%s\\n" "$?"'
+source "$TEST_REPO/module/main.module"
+isUseCustomPS1=false
+false
+_ftXbashPromptDispatch
+[[ $? == 1 ]]
+''')
+        self.assertEqual(p.stdout.strip(), 'observed=1')
+
+    def test_relative_symlink_and_changed_home_rejection(self):
+        (self.home / '.bashrc').symlink_to('../repo with spaces/module/main.module')
+        self.shell('''source "$HOME/.bashrc"
+old_home=$HOME; mkdir new-home
+HOME="$PWD/new-home"
+source "$TEST_REPO/module/main.module"
+[[ $? != 0 && "$rDirPathUserHome" == "$old_home" ]]
+''')
+
+    def test_readonly_home_startup_does_not_create_files(self):
+        self.home.chmod(0o555)
+        try:
+            self.shell('source "$TEST_REPO/module/main.module"; [[ $? == 0 ]]')
+            self.assertEqual(list(self.home.iterdir()), [])
+        finally:
+            self.home.chmod(0o755)
+
+    def test_failed_module_retries_in_same_shell(self):
+        (self.repo / 'module/retry.module').write_text('return 23\n')
+        self.shell('''source "$TEST_REPO/module/main.module"
+_ftXbashLoadModule "$TEST_REPO/module/retry.module"
+[[ $? == 23 ]] || exit 2
+printf 'return 0\\n' > "$TEST_REPO/module/retry.module"
+_ftXbashLoadModule "$TEST_REPO/module/retry.module"
+[[ $? == 0 && ${_xbash_module_states[$TEST_REPO/module/retry.module]} == loaded ]]
+''')
+
+    def test_session_sync_opt_in_and_missing_launchctl(self):
+        self.config.write_text('isAutoSyncOpenAIEnv=true\nOPENAI_BASE_URL=stub; OPENAI_API_KEY=stub; OPENAI_MODEL=stub\n')
+        self.shell('source "$TEST_REPO/module/main.module"; [[ $? == 0 ]]')
+        self.assertEqual((self.root / 'events').read_text().splitlines().count('launchctl'), 3)
+        self.config.write_text('true\n')
+        self.shell('''source "$TEST_REPO/module/main.module"
+unset -f launchctl
+PATH=/absent
+ftXbashSyncSessionEnvironment
+[[ $? != 0 ]]
+''')
+
+    def test_missing_git_executable_is_safe(self):
+        self.shell('''source "$TEST_REPO/module/main.module"
+type() { return 1; }
+_ftXbashPromptDispatch >/dev/null
+[[ "$PS1" != *branchName* ]]
+''')
+
+    def test_template_system_failure_is_not_masked(self):
+        self.config.write_text((self.repo / 'module/example/user.config.example').read_text())
+        self.shell('''source "$TEST_REPO/module/main.module"
+command() { [[ "$1 $2" == '-v update-alternatives' ]] && return 0; builtin command "$@"; }
+sudo() { return 23; }
+ftResetXbash --android -j
+[[ $? == 23 && ! ${isResetJdk+x} ]]
+''')
+
+    def test_session_sync_writes_only_changed_values(self):
+        self.shell('''source "$TEST_REPO/module/main.module"
+declare -A session=()
+launchctl() {
+    case "$1" in
+        getenv) printf '%s' "${session[$2]-}";;
+        setenv) session[$2]=$3; echo launchctl >> "$EVENTS";;
+    esac
+}
+export OPENAI_BASE_URL=stub OPENAI_API_KEY=stub OPENAI_MODEL=stub
+ftResetXbash --sync-session
+ftResetXbash --sync-session
+''')
+        self.assertEqual((self.root / 'events').read_text().splitlines().count('launchctl'), 3)
 
 
 if __name__ == '__main__':

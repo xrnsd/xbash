@@ -1,5 +1,10 @@
 bash的简单扩展
 =====
+
+交互式加载入口 `module/main.module` 要求 Bash 4.3+（macOS 请使用 Homebrew Bash）。
+`ftResetXbash` 刷新配置与环境，`ftResetXbash --reload` 同时重载定义；会话环境同步改为显式执行 `ftResetXbash --sync-session`。
+普通启动保留已有 inputrc，不创建缺失的用户脚本。用户环境和系统操作的 hook、验证方法以及分阶段回滚见 [main 修复记录](docs/main-repair-results.md)。
+
 1.配置说明
 ----------
     1.初始化
