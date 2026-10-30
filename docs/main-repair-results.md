@@ -88,3 +88,20 @@ Git 不会恢复上述忽略文件。回到某个阶段后，需匹配本机快�
 | 3 或更早 | `local-backups/main-repair/` 的原始相对路径 |
 
 恢复前先保存之后新增的个人修改。恢复相应快照中的 `config/user/myname.config` 和 `module/user/myname.module` 到仓库同名路径，然后新开 Bash 验证。旧 Shell 仍持有旧定义和 readonly 路径，不能仅靠 git revert 更新其内存状态。
+
+## 后续核对：xr 与旧用户文件
+
+2026-10-31 再次核对，当前 `myname.packaging.module` 中 `xr` 仍为 `effect=更新xbash配置;ftResetXbash`，与仓库模板一致。真实 PTY 中执行实际别名 `xr` 和 `xr --reload`，均返回 0、状态 ready；没有触发 sudo 或会话写入。新增别名层回归还验证了帮助、参数转发和失败返回码。
+
+| 文件 | 当前迁移状态 |
+| --- | --- |
+| `config/user/myname.config` | 已迁移：环境 hook、精确 PATH、统一提示符管理、默认显式会话同步 |
+| `module/user/myname.module` | 已迁移：统一依赖加载、受检查的会话同步入口 |
+| `config/user/myname_air.config` | 未迁移：保留旧 PROMPT_COMMAND 和 PATH 循环 |
+| `config/user/wds_work.config` | 未迁移：保留旧配置及顶层环境应用 |
+| `module/user/sts.module` | 未迁移：保留直接 source 的依赖及原测试语句 |
+| `module/user/wds_work.module` | 未迁移：函数内仍有直接 source 的依赖 |
+| `module/user/*.packaging.module` | 保留原版本；xr 别名本身兼容新实现，补全列表仍为旧参数 |
+| `module/user/shot.module` 及其他数据/独立工具 | 未修改；不属于此次 main 加载迁移 |
+
+用户已明确本次只核对，不修改这些旧文件。不能将“主框架已修复”理解为所有 Git 忽略的个人版本均已迁移。xr 的手动调用正常，但原补全列表仍包含旧选项、未列出全部新选项；本次保留该现状。

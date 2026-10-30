@@ -344,6 +344,38 @@ ftResetXbash --sync-session
 ''')
         self.assertEqual((self.root / 'events').read_text().splitlines().count('launchctl'), 3)
 
+    def install_xr_alias(self):
+        # Exercise the public alias, not just its ftResetXbash implementation.
+        template = (self.repo / 'module/example/user.packaging.module.example').read_text()
+        alias = next(line for line in template.splitlines() if line.startswith('alias xr='))
+        (self.repo / 'module/user/test.packaging.module').write_text(alias + '\n')
+
+    def test_xr_alias_refresh_reload_and_help(self):
+        self.install_xr_alias()
+        p = self.shell('''source "$TEST_REPO/module/main.module"
+eval 'xr' || exit 2
+eval 'xr --reload' || exit 3
+eval 'xr --help' || exit 4
+[[ "$_xbash_startup_state" == ready && "$effect" == 更新xbash配置 ]]
+''')
+        self.assertIn('--reload', p.stdout)
+        events = (self.root / 'events').read_text().splitlines()
+        self.assertEqual(events.count('module/common.methods'), 2)
+        self.assertNotIn('launchctl', events)
+
+    def test_xr_alias_forwards_options_and_failure_status(self):
+        self.install_xr_alias()
+        self.config.write_text('''isEnableConda=false
+ftXbashApplyUserEnvironment() { [[ "$isEnableConda" == true ]] && echo OVERRIDE_APPLIED; return 0; }
+''')
+        p = self.shell('''source "$TEST_REPO/module/main.module"
+eval 'xr --conda' || exit 2
+printf 'xbashConfigStatus=1; return 1\\n' > "$TEST_REPO/config/user/test.config"
+eval 'xr'
+[[ $? == 1 && "$_xbash_startup_state" == failed && ! ${isResetXbash+x} ]]
+''')
+        self.assertEqual(p.stdout.strip(), 'OVERRIDE_APPLIED')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
