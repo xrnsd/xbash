@@ -188,10 +188,15 @@ ftReadAllAlias()
         printf "%s  %${intervalSize}s \n" 命令 说明
         echo -e "========================================================"
         grep -h alias "$rFilePathXbashPackagingUser" "$rFilePathXbashModuleUser" | sort | while read line; do
-                cmdName=$(echo $line | gawk '{split($2,b,"=");print  b[1] }')
-                cmdContent=$(echo $line | gawk '{split($2,b,"=");print  b[3]}'| gawk '{split($0,b,";");print  b[1]}')
-                [[ -n "$cmdContent" ]] && printf "%${intervalSize}s  %s\n" ${cmdName} ${cmdContent}
-        done | gcolumn -t
+            printf '%s\n' "$line"
+        done | gawk -v width="$intervalSize" '
+            {
+                split($2, parts, "=")
+                split(parts[3], description, ";")
+                if (description[1] != "")
+                    printf "%*s  %s\n", width, parts[1], description[1]
+            }
+        ' | gcolumn -t
 }
 
 ftReadAllFt()
@@ -216,31 +221,50 @@ ftReadAllFt()
         printf "%s%${intervalSize}s" 命令 说明 && ftEcho -s " [ 查看对应命令的具体说明: 命令 -h ]"
         echo -e "========================================================"
 
-        local filePath effectName effectItemInfoAll
-        for effectItemInfo in $(grep -rs '^ft.*()$' $rDirPathXbash --binary-files=without-match| gsed 's?:? ?g'); do
-            if [[ "$effectItemInfo" =~ ^${rDirPathXbash}.* ]]; then
-                [[ -z filePath ]] || [[ $filePath != $effectItemInfo ]] && filePath=$effectItemInfo
-                continue
-            fi
-            effectName=$effectItemInfo
-
-            effectItemInfoAll="$(grep -C 3 "$effectName" --no-filename $filePath)"
-            effectDescription=$(echo "${effectItemInfoAll}"|grep "$key")
-            effectDescription=${effectDescription//$key/}
-            effectDescription=${effectDescription// /}
-
-            effectDescriptionEnable=$(echo "${effectItemInfoAll}"|grep "$keyEnable")
-            effectDescriptionEnable=${effectDescriptionEnable//$keyEnable/}
-            effectDescriptionEnable=${effectDescriptionEnable// /}
-
-            [[ -z "${effectDescription}" ]] && continue #用户添加非标准方法
-            [[ -z "${isEchoDefFt}" ]] && [[ "$effectDescriptionEnable" = "def" ]] && continue #内部流程方法
-            [[ -z "${isEchoSubF}" ]] && [[ "$effectDescriptionEnable" = "sub" ]] && continue #内部工具方法,不适合独立被外部调用
-
-            printf "%${intervalSize}s  " ${effectName//()/}
-            [[ "$effectDescriptionEnable" = "false" ]] && ftEcho -s "[暂时关闭]" && continue
-            echo ${effectDescription}
-        done | gcolumn -t
+        # Preserve grep -C 3 semantics while reading each file only once.
+        grep -rl --binary-files=without-match '^ft.*()$' "$rDirPathXbash" | while IFS= read -r filePath; do
+            printf '%s\0' "$filePath"
+        done | xargs -0 gawk -v show_sub="${isEchoSubF:-}" -v width="$intervalSize" '
+            function process_file(    f, i, j, first, last, covered, line, description, enabled) {
+                for (f = 1; f <= function_count; f++) {
+                    delete selected
+                    for (i = 1; i <= line_count; i++) {
+                        if (index(lines[i], names[f] "()") == 0) continue
+                        first = (i > 3 ? i - 3 : 1)
+                        last = (i + 3 < line_count ? i + 3 : line_count)
+                        for (j = first; j <= last; j++) selected[j] = 1
+                    }
+                    description = enabled = ""
+                    for (i = 1; i <= line_count; i++) {
+                        if (!selected[i]) continue
+                        line = lines[i]
+                        if (index(line, "local ftEffect=") != 0) {
+                            gsub(/local ftEffect=/, "", line)
+                            gsub(/ /, "", line)
+                            description = description (description == "" ? "" : " ") line
+                        }
+                        line = lines[i]
+                        if (index(line, "local isEnable=") != 0) {
+                            gsub(/local isEnable=/, "", line)
+                            gsub(/ /, "", line)
+                            enabled = enabled (enabled == "" ? "" : "\n") line
+                        }
+                    }
+                    if (description == "" || enabled == "def" || (show_sub == "" && enabled == "sub")) continue
+                    printf "%*s  %s\n", width, names[f], (enabled == "false" ? "\033[1;33m[暂时关闭]\033[0m" : description)
+                }
+                delete lines; delete names
+                line_count = function_count = 0
+            }
+            FNR == 1 { if (NR > 1) process_file() }
+            { lines[++line_count] = $0 }
+            /^ft.*\(\)$/ {
+                name = $0
+                sub(/\(\)$/, "", name)
+                names[++function_count] = name
+            }
+            END { process_file() }
+        ' | gcolumn -t
 }
 
 ftTest()
