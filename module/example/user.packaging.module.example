@@ -98,6 +98,7 @@ fi
 
 alias xb='effect=xbash主入口[旧];ftMain'
 alias xbp='effect=系统维护;ftMaintainSystem'
+
 alias xr='effect=更新xbash配置;ftResetXbash'
 alias xd='effect=MTK下载工具;ftMtkFlashTool'
 alias xdf='effect=普通磁盘空间;ftDf'
@@ -198,7 +199,7 @@ fi
 
 #命令选项快速适配
 complete -F _ftMainVal xb
-complete -W " -a --adb -j -h -s" xr
+complete -W " -a --adb --reload -j -h -s" xr
 complete -F _cdAospDirectory xca
 complete -F _cdAospDirectory xcaf
 complete -W "--backup --restore --sd_finish -b -r -s" xbp
