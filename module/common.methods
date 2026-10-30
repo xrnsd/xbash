@@ -4243,17 +4243,17 @@ ftLoadGitCompletion()
 
     [[ "$isEnable" = "false" ]] && ftEcho -s "${ftEffect} 已停用，请确认" && return
 
-    local gitVersion=$(git -v)
-    gitVersion=$(echo $gitVersion | gsed -e "s:git version::g" |gsed s/[[:space:]]//g)
-
-    local checkResult=$(ftVersionComparison "2.4" "${gitVersion}" )
-    # if [[ $checkResult == "<" ]]; then
-    #     return
-    # fi
-    if [[ -f $rFilePathGitBash ]];then source  $rFilePathGitBash
-    else echo -e "\033[1;31m非Xbash自定义的git扩展块加载失败\n${rFilePathGitBash}\033[0m" ;fi
-
-    export isLoadGitCompletion=1
+    if complete -p git >/dev/null 2>&1 &&
+       { declare -F __git_main >/dev/null || declare -F _git >/dev/null; }; then
+        return 0
+    fi
+    [[ -r "$rFilePathGitBash" ]] || return 1
+    source "$rFilePathGitBash" || return $?
+    complete -p git >/dev/null 2>&1 || return 1
+    declare -F __git_main >/dev/null || declare -F _git >/dev/null || return 1
+    isLoadGitCompletion=1
+    export -n isLoadGitCompletion
+    return 0
 }
 
 ftDf()

@@ -202,6 +202,8 @@ fi
     _ftXbashSource "$filePathXbashTragetBashrcConfigBase" || return $?
     _ftXbashLoadModule "$rFilePathXbashModuleCommon" || return $?
     _ftXbashLoadModule "$rDirPathXbashModuleBase/environment.module" || return $?
+    _ftXbashLoadModule "$rDirPathXbashModuleBase/prompt.module" || return $?
+    _ftXbashCapturePrompt
     _ftXbashResetOwnedPaths
     unset -f ftXbashApplyUserEnvironment
     filePathUserConfig="$rFilePathXbashConfigUser"
@@ -220,6 +222,8 @@ fi
     _ftXbashLoadModule "$rFilePathXbashModuleUser" optional || return $?
     _ftXbashSource "$rFilePathXbashPackagingUser" optional || return $?
     _ftXbashLoadModule "$rFilePathXbashModuleLearn" optional || return $?
+
+    _ftXbashConfigurePrompt
 
     # Readline configuration belongs to the user. Startup never replaces it.
     if [[ -f "$HOME/.bashrc_config_check" ]]; then

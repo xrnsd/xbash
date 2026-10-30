@@ -181,6 +181,45 @@ source "$TEST_REPO/module/main.module"
         self.shell('source "$TEST_REPO/module/main.module"; [[ $? == 0 ]]')
         self.assertNotIn('unexpected_sudo', (self.root / 'events').read_text())
 
+    def test_prompt_preserves_callbacks_without_duplication(self):
+        p = self.shell('''PROMPT_COMMAND=('echo user_hook' 'printf "array;literal\\n"')
+source "$TEST_REPO/module/main.module"
+source "$TEST_REPO/module/main.module"
+isUseCustomPS1=false
+_ftXbashPromptDispatch
+''')
+        self.assertEqual(p.stdout.count('user_hook'), 1)
+        self.assertEqual(p.stdout.count('array;literal'), 1)
+
+    def test_missing_git_keeps_a_safe_prompt(self):
+        self.user.write_text('true\n')
+        (self.repo / 'module/git/git.methods').unlink()
+        p = self.shell('source "$TEST_REPO/module/main.module"; _ftXbashPromptDispatch')
+        self.assertNotIn('command not found', p.stderr)
+
+    def test_git_prompt_normal_unborn_detached_and_outside(self):
+        self.shell('''source "$TEST_REPO/module/main.module"
+mkdir project; cd project
+git init -q -b audit
+ftSetBashPs1ByGitBranch >/dev/null
+[[ "$PS1" == *'audit'* ]] || exit 2
+git -c user.name=Audit -c user.email=audit@example.invalid -c commit.gpgsign=false commit --allow-empty -qm initial
+git checkout -q --detach HEAD
+ftSetBashPs1ByGitBranch >/dev/null
+[[ "$PS1" == *'detached:'* ]] || exit 3
+cd ..
+ftSetBashPs1ByGitBranch >/dev/null
+[[ "$PS1" != *'branchName'* ]] || exit 4
+''')
+
+    def test_completion_ignores_inherited_marker(self):
+        self.shell('''source "$TEST_REPO/module/main.module"
+export isLoadGitCompletion=1
+git() { [[ "$1" == symbolic-ref ]] && echo audit; }
+ftSetBashPs1ByGitBranch >/dev/null
+complete -p git >/dev/null && declare -F __git_main >/dev/null
+''')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

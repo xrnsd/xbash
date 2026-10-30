@@ -17,13 +17,11 @@ ftSetBashPs1ByGitBranch()
 
     type -P git > /dev/null || return $resultFail
 
-    local branchName= branchLine
-    while IFS= read -r branchLine; do
-        if [[ $branchLine == \*\ * ]]; then
-            branchName=${branchLine:2}
-            break
-        fi
-    done < <(git branch --no-color 2> /dev/null)
+    local branchName= commitName
+    branchName=$(git symbolic-ref --quiet --short HEAD 2>/dev/null) || branchName=
+    if [[ -z "$branchName" ]]; then
+        commitName=$(git rev-parse --short HEAD 2>/dev/null) && branchName="detached:$commitName"
+    fi
     local branchNameAll
     if [ -n "$branchName" ] && [ "$editType" != "-b" ];then
         local ps1=${PWD}${branchName}
@@ -33,8 +31,13 @@ ftSetBashPs1ByGitBranch()
         local dirName=${PWD##*/}
         [[ -z $dirName ]] && dirName=/
         [[ "$isEnableCustomTitle" == "true" ]] && echo -en "\033]0;bash > ${dirName} : ${branchName}\007"
-        [[ -z $isLoadGitCompletion ]] && ftLoadGitCompletion
+        if ! complete -p git >/dev/null 2>&1; then
+            ftLoadGitCompletion || :
+        elif ! declare -F __git_main >/dev/null && ! declare -F _git >/dev/null; then
+            ftLoadGitCompletion || :
+        fi
     fi
+    return 0
 }
 
 ftGitLogShell()

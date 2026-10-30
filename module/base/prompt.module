@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Keep user callbacks as opaque commands, including array entries with semicolons.
+_ftXbashCapturePrompt()
+{
+    if [[ ${PROMPT_COMMAND-} == _ftXbashPromptDispatch ]]; then
+        _xbash_prompt_previous=("${_xbash_prompt_hooks[@]}")
+    else
+        _xbash_prompt_previous=("${PROMPT_COMMAND[@]}")
+    fi
+}
+
+_ftXbashConfigurePrompt()
+{
+    local hook existing duplicate
+    local -a candidates=("${_xbash_prompt_previous[@]}" "${PROMPT_COMMAND[@]}")
+    _xbash_prompt_hooks=()
+    for hook in "${candidates[@]}"; do
+        case "$hook" in
+            ''|_ftXbashPromptDispatch|ftSetBashPs1ByGitBranch|'history -a'|\
+            'ftSetBashPs1ByGitBranch;history -a'|'ftSetBashPs1ByGitBranch; history -a') continue;;
+        esac
+        duplicate=false
+        for existing in "${_xbash_prompt_hooks[@]}"; do
+            [[ "$existing" == "$hook" ]] && duplicate=true
+        done
+        [[ "$duplicate" == true ]] || _xbash_prompt_hooks+=("$hook")
+    done
+    unset PROMPT_COMMAND
+    PROMPT_COMMAND=_ftXbashPromptDispatch
+    export -n PROMPT_COMMAND
+}
+
+_ftXbashPromptDispatch()
+{
+    local command_status=$? hook
+    for hook in "${_xbash_prompt_hooks[@]}"; do eval "$hook"; done
+    if [[ ${_xbash_module_states[$rFilePathXbashModuleGit]-} == loaded ]] &&
+       declare -F ftSetBashPs1ByGitBranch >/dev/null; then
+        ftSetBashPs1ByGitBranch
+    fi
+    history -a
+    return "$command_status"
+}
+
+return 0
