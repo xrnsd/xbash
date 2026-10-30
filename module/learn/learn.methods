@@ -1,5 +1,9 @@
 #!/opt/homebrew/bin/bash
-[[ -f "$rFilePathXbashModuleLearnCommon" ]] && source "$rFilePathXbashModuleLearnCommon"
+if declare -F _ftXbashLoadModule >/dev/null; then
+    _ftXbashLoadModule "$rFilePathXbashModuleLearnCommon" || return $?
+else
+    source "$rFilePathXbashModuleLearnCommon" || return $?
+fi
 ##################################################
 ##                                              ##
 ##             learn tools                      ##

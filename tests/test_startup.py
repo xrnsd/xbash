@@ -28,9 +28,9 @@ class StartupTests(unittest.TestCase):
         self.config.write_text('isUseCustomPS1=true\nPROMPT_COMMAND="ftSetBashPs1ByGitBranch;history -a"\n')
         self.user = self.repo / 'module/user/test.module'
         self.user.write_text('''
-source "$rFilePathXbashModuleCommon"
-source "$rFilePathXbashModuleAuto"
-source "$rFilePathXbashModuleGit"
+_ftXbashLoadModule "$rFilePathXbashModuleCommon" || return $?
+_ftXbashLoadModule "$rFilePathXbashModuleAuto" || return $?
+_ftXbashLoadModule "$rFilePathXbashModuleGit" || return $?
 ftAutoConfigOpenAIEnv() { launchctl setenv AUDIT value; }
 ''')
         (self.repo / 'module/user/test.packaging.module').write_text("alias xdf='ftDf'\n")
@@ -133,6 +133,19 @@ source() { local file="$1"; shift; echo "${file#"$TEST_REPO/"}" >> "$EVENTS"; bu
         self.user.write_text('true\n')
         (self.repo / 'module/auto/auto.methods').unlink()
         self.shell('source "$TEST_REPO/module/main.module"; [[ $? == 0 ]]')
+
+    def test_definitions_load_once_across_refreshes(self):
+        self.shell('source "$TEST_REPO/module/main.module"; source "$TEST_REPO/module/main.module"')
+        events = (self.root / 'events').read_text().splitlines()
+        for file in ['module/common.methods', 'module/auto/auto.methods', 'module/git/git.methods', 'module/learn/common.methods', 'module/user/test.module']:
+            self.assertEqual(events.count(file), 1, file)
+
+    def test_cycle_and_failed_module_retry(self):
+        extra = self.repo / 'module/cycle.module'
+        extra.write_text('_ftXbashLoadModule "${BASH_SOURCE[0]}"\n')
+        self.shell('source "$TEST_REPO/module/main.module"; _ftXbashLoadModule "$TEST_REPO/module/cycle.module"; [[ $? != 0 ]] && [[ ${_xbash_module_states[$TEST_REPO/module/cycle.module]} == failed ]]')
+        extra.write_text('return 0\n')
+        self.shell('source "$TEST_REPO/module/main.module"; _ftXbashLoadModule "$TEST_REPO/module/cycle.module"; [[ ${_xbash_module_states[$TEST_REPO/module/cycle.module]} == loaded ]]')
 
 
 if __name__ == '__main__':

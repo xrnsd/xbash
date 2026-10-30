@@ -8,6 +8,12 @@ case $- in
       *) return;;
 esac
 
+# The loader uses process-local associative state (Homebrew Bash on macOS).
+if (( BASH_VERSINFO[0] < 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] < 3) )); then
+    printf 'xbash requires Bash 4.3 or newer\n' >&2
+    return 1
+fi
+
 # don't put duplicate lines in the history. See bash(1) for more options
 # ... or force ignoredups and ignorespace
 HISTCONTROL=ignoredups:ignorespace
@@ -166,9 +172,35 @@ fi
         fi
         return 0
     }
+    if [[ ${_xbash_modules_pid-} != "$BASHPID" ]]; then
+        declare -gA _xbash_module_states=()
+        _xbash_modules_pid=$BASHPID
+        export -n _xbash_modules_pid _xbash_module_states
+    fi
+    _ftXbashLoadModule()
+    {
+        local module_file="$1" requirement="${2:-required}" module_status
+        case "${_xbash_module_states[$module_file]-}" in
+            loaded) return 0;;
+            loading) printf 'xbash: circular dependency: %s\n' "$module_file" >&2; return 1;;
+        esac
+        if [[ ! -r "$module_file" && "$requirement" == optional ]]; then
+            _xbash_module_states[$module_file]=unavailable
+            return 0
+        fi
+        _xbash_module_states[$module_file]=loading
+        _ftXbashSource "$module_file" "$requirement"
+        module_status=$?
+        if (( module_status != 0 )); then
+            _xbash_module_states[$module_file]=failed
+            return "$module_status"
+        fi
+        _xbash_module_states[$module_file]=loaded
+        return 0
+    }
     filePathXbashTragetBashrcConfigBase="$dirPathHomeXbashConfig/common.config"
     _ftXbashSource "$filePathXbashTragetBashrcConfigBase" || return $?
-    _ftXbashSource "$rFilePathXbashModuleCommon" || return $?
+    _ftXbashLoadModule "$rFilePathXbashModuleCommon" || return $?
     filePathUserConfig="$rFilePathXbashConfigUser"
     xbashConfigStatus=0
     _ftXbashSource "$filePathUserConfig" required config || return $?
@@ -177,11 +209,11 @@ fi
 #---------------- 加载扩展 ------------------
     # Optional absent modules provide no capabilities; an existing broken module
     # is an error rather than a successful but partly initialized environment.
-    _ftXbashSource "$rFilePathXbashModuleAuto" optional || return $?
-    _ftXbashSource "$rFilePathXbashModuleGit" optional || return $?
-    _ftXbashSource "$rFilePathXbashModuleUser" optional || return $?
+    _ftXbashLoadModule "$rFilePathXbashModuleAuto" optional || return $?
+    _ftXbashLoadModule "$rFilePathXbashModuleGit" optional || return $?
+    _ftXbashLoadModule "$rFilePathXbashModuleUser" optional || return $?
     _ftXbashSource "$rFilePathXbashPackagingUser" optional || return $?
-    _ftXbashSource "$rFilePathXbashModuleLearn" optional || return $?
+    _ftXbashLoadModule "$rFilePathXbashModuleLearn" optional || return $?
 
     # Readline configuration belongs to the user. Startup never replaces it.
     if [[ -f "$HOME/.bashrc_config_check" ]]; then
