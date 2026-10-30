@@ -1506,6 +1506,31 @@ ftAutoLnOut()
     cd "${dirPathLocal}"
 }
 
+_ftAutoParseProjectPaths()
+{
+    # 旧配置按空格分隔；以 | 开头的配置使用百分号转义和 | 分隔路径。
+    local value=$1 entry
+    local -n projectPathsOut=$2
+    projectPathsOut=()
+    if [[ $value == \|* ]]; then
+        local -a encodedPaths=()
+        IFS='|' read -r -a encodedPaths <<< "${value#|}"
+        for entry in "${encodedPaths[@]}"; do
+            entry=${entry//%0A/$'\n'}
+            entry=${entry//%0D/$'\r'}
+            entry=${entry//%09/$'\t'}
+            entry=${entry//%20/ }
+            entry=${entry//%7C/|}
+            entry=${entry//%26/\&}
+            entry=${entry//%5C/\\}
+            entry=${entry//%25/%}
+            [[ -n $entry ]] && projectPathsOut+=("$entry")
+        done
+    else
+        read -r -a projectPathsOut <<< "$value"
+    fi
+}
+
 complete -W "-h --help" ftAutoFindAospBuildOuts
 ftAutoFindAospBuildOuts()
 {
@@ -1736,7 +1761,7 @@ ftAutoLnCcacheByAosp()
     # [[ "$(type -t ftCheckCcache)" = "function" ]] && ftCheckCcache
 }
 
-complete -W "-h --help --rely_install" ftAutoCdProjectDirectory
+complete -W "-h --help -u --update -a -r -d -n -fm" ftAutoCdProjectDirectory
 ftAutoCdProjectDirectory()
 {
     local ftEffect=快速进入不同项目目录
@@ -1747,16 +1772,24 @@ ftAutoCdProjectDirectory()
     #参数解析
     local isUserFileManager itemCount mProjectName
     local mProjectStorageRootPathList="$(ftXbGetValue ProjectsInfo ProjectStorageRootPathList)"
-    local mProjectNameList
-    local -a mProjectStorageFullPathList=()
-    local valCount=1 errorContent arg arg2  arg3  arg4
-    for ((i=1;i<=$#;i++)) ; do eval arg=\${${i}} ; eval arg2=\${$((i+1))} ; eval arg3=\${$((i+2))} ; eval arg4=\${$((i+3))} ; case "${arg}" in
+    local -a mProjectStorageRootPaths=() mProjectStorageFullPathList=()
+    _ftAutoParseProjectPaths "$mProjectStorageRootPathList" mProjectStorageRootPaths
+    local valCount=1 errorContent arg arg2 nextIndex
+    for ((i=1;i<=$#;i++)) ; do
+    nextIndex=$((i+1))
+    arg=${!i}
+    arg2=${!nextIndex}
+    case "${arg}" in
     # 说明参数解析部分==============
         -h | --help) ftEcho -rc "${ftEffect}" " 的使用示例" "\
 #=========================================================
 #
 #    自动更新项目列表
 #    ftAutoCdProjectDirectory -u
+#
+#    将当前目录加入或移出项目列表
+#    ftAutoCdProjectDirectory -a
+#    ftAutoCdProjectDirectory -r/-d
 #
 #    切换终端路径
 #    ftAutoCdProjectDirectory -n 项目名
@@ -1774,51 +1807,143 @@ ftAutoCdProjectDirectory()
             #mProjectName有效路径，立即调转
             [[ $mProjectName == /* ]] && [[ -d $mProjectName ]] && cd ${mProjectName} && return
          ;;
-        -u | --update ) #更新数据库
-            for rootPath in ${mProjectStorageRootPathList[@]}; do
-                [[ ! -d "${rootPath}" ]] && continue
-                while IFS= read -r fullPath ;do
-                    mProjectStorageFullPathList+=("${fullPath%/.git}")
-                done < <(find "${rootPath}" -type d -name .git -prune -print)
+        -u | --update | -a | -r | -d) #更新数据库
+            local fullPath rootPath existingPath scannedPath found
+            local storedPaths="$(ftXbGetValue ProjectsInfo ProjectStorageFullPathList)"
+            local storedManualPaths="$(ftXbGetValue ProjectsInfoManual ProjectStorageManualPathList)"
+            local -a existingPaths=() manualPaths=() scannedPaths=() updatedManualPaths=()
+            _ftAutoParseProjectPaths "$storedPaths" existingPaths
+            _ftAutoParseProjectPaths "$storedManualPaths" manualPaths
+
+            # 旧列表没有来源标记：保留仍存在且未被当前扫描发现的路径。
+            if [[ -z $storedManualPaths || $arg == -u || $arg == --update ]]; then
+                for rootPath in "${mProjectStorageRootPaths[@]}"; do
+                    [[ ! -d "$rootPath" ]] && continue
+                    while IFS= read -r -d '' fullPath; do
+                        scannedPaths+=("${fullPath%/.git}")
+                    done < <(find "$rootPath" -type d -name .git -prune -print0)
+                done
+            fi
+            if [[ -z $storedManualPaths ]]; then
+                for existingPath in "${existingPaths[@]}"; do
+                    [[ ! -d $existingPath ]] && continue
+                    found=false
+                    for scannedPath in "${scannedPaths[@]}"; do
+                        [[ $existingPath == "$scannedPath" ]] && found=true && break
+                    done
+                    [[ $found == false ]] && manualPaths+=("$existingPath")
+                done
+            fi
+
+            for existingPath in "${manualPaths[@]}"; do
+                if [[ $arg == -u || $arg == --update ]]; then
+                    [[ ! -d $existingPath ]] && continue
+                elif [[ $arg == -r || $arg == -d ]]; then
+                    [[ $existingPath == "$PWD" ]] && continue
+                fi
+                updatedManualPaths+=("$existingPath")
+            done
+            if [[ $arg == -a ]]; then
+                found=false
+                for existingPath in "${updatedManualPaths[@]}"; do
+                    [[ $existingPath == "$PWD" ]] && found=true && break
+                done
+                [[ $found == false ]] && updatedManualPaths+=("$PWD")
+            fi
+
+            if [[ $arg == -u || $arg == --update ]]; then
+                mProjectStorageFullPathList=("${scannedPaths[@]}")
+                for existingPath in "${updatedManualPaths[@]}"; do
+                    found=false
+                    for scannedPath in "${scannedPaths[@]}"; do
+                        [[ $existingPath == "$scannedPath" ]] && found=true && break
+                    done
+                    [[ $found == false ]] && mProjectStorageFullPathList+=("$existingPath")
+                done
+            else
+                for existingPath in "${existingPaths[@]}"; do
+                    if [[ $arg == -r || $arg == -d ]]; then
+                        [[ $existingPath == "$PWD" ]] && continue
+                    fi
+                    mProjectStorageFullPathList+=("$existingPath")
+                done
+                if [[ $arg == -a ]]; then
+                    found=false
+                    for existingPath in "${mProjectStorageFullPathList[@]}"; do
+                        [[ $existingPath == "$PWD" ]] && found=true && break
+                    done
+                    [[ $found == false ]] && mProjectStorageFullPathList+=("$PWD")
+                fi
+            fi
+
+            local encodedPath encodedPathList pathListName keyName sectionName
+            for pathListName in updatedManualPaths mProjectStorageFullPathList; do
+                local -n pathsToWrite=$pathListName
+                encodedPathList=
+                for fullPath in "${pathsToWrite[@]}"; do
+                    encodedPath=${fullPath//%/%25}
+                    encodedPath=${encodedPath//|/%7C}
+                    encodedPath=${encodedPath//&/%26}
+                    encodedPath=${encodedPath//\\/%5C}
+                    encodedPath=${encodedPath// /%20}
+                    encodedPath=${encodedPath//$'\t'/%09}
+                    encodedPath=${encodedPath//$'\r'/%0D}
+                    encodedPath=${encodedPath//$'\n'/%0A}
+                    encodedPathList+="|${encodedPath}"
+                done
+                if [[ $pathListName == updatedManualPaths ]]; then
+                    sectionName=ProjectsInfoManual
+                    keyName=ProjectStorageManualPathList
+                else
+                    sectionName=ProjectsInfo
+                    keyName=ProjectStorageFullPathList
+                fi
+                ftIniEditUtil -w "$rFilePathXbashDBUser" "$sectionName" "$keyName" "${encodedPathList:-|}" || return $resultFail
+                unset -n pathsToWrite
             done
 
-            ftIniEditUtil -w "$rFilePathXbashDBUser" ProjectsInfo ProjectStorageFullPathList "${mProjectStorageFullPathList[*]}"
-
-            ftEcho -s "项目列表更新完成"
+            case $arg in
+                -a) ftEcho -s "当前目录已加入项目列表" ;;
+                -r | -d) ftEcho -s "当前目录已从项目列表移除" ;;
+                *) ftEcho -s "项目列表更新完成" ;;
+            esac
             return;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
-    [ -z "$mProjectStorageRootPathList" ] && errorContent="${errorContent}\\n[项目存放路径列表为空]"
     [ -z "$mProjectName" ] && errorContent="${errorContent}\\n[未指定项目名]"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCdProjectDirectory -h && return $resultFail
 
     #实现主体
-    local mProjectStorageFullSelectPath mProjectStorageFullPathSelectList mProjectStorageFullPathList="$(ftXbGetValue ProjectsInfo ProjectStorageFullPathList)"
-    for fullPath in ${mProjectStorageFullPathList[@]}; do
-        [[ -z $(basename $fullPath |grep -i $mProjectName ) ]] && continue
-        mProjectStorageFullPathSelectList=(${mProjectStorageFullPathSelectList[@]} $fullPath)
+    local mProjectStorageFullSelectPath mProjectStorageFullPathList="$(ftXbGetValue ProjectsInfo ProjectStorageFullPathList)"
+    local -a mProjectStorageFullSelectPathList=() mProjectStorageFullPaths=()
+    _ftAutoParseProjectPaths "$mProjectStorageFullPathList" mProjectStorageFullPaths
+    local projectBaseName
+    for fullPath in "${mProjectStorageFullPaths[@]}"; do
+        projectBaseName=${fullPath##*/}
+        [[ ${projectBaseName,,} != *"${mProjectName,,}"* ]] && continue
+        mProjectStorageFullSelectPathList+=("$fullPath")
     done
 
-    [[ -z "$mProjectStorageFullPathSelectList" ]] && ftEcho -e "找不到项目${mProjectName}" && return
+    (( ${#mProjectStorageFullSelectPathList[@]} == 0 )) && ftEcho -e "找不到项目${mProjectName}" && return
 
-    itemCount=${#mProjectStorageFullPathSelectList[@]}
+    itemCount=${#mProjectStorageFullSelectPathList[@]}
     if (( $itemCount>1 ));then
         ftEcho -s 对应多个项目,请选择
         local colorYellowStart=$'\033[1;33m'
         local colorReset=$'\033[0m'
         local index=0
-        for item in ${mProjectStorageFullPathSelectList[@]} ; do
-            local itemName=$(basename $item)
+        for item in "${mProjectStorageFullSelectPathList[@]}" ; do
+            local itemName=${item##*/}
             local itemNameCount=0 itemPathCommonPrefix itemPathDisplay=
             local itemPathCompare
-            for itemPathCompare in ${mProjectStorageFullPathSelectList[@]} ; do
-                [[ "$(basename $itemPathCompare)" != "$itemName" ]] && continue
+            for itemPathCompare in "${mProjectStorageFullSelectPathList[@]}" ; do
+                [[ "${itemPathCompare##*/}" != "$itemName" ]] && continue
                 ((itemNameCount+=1))
             done
 
             if (( itemNameCount>1 )); then
                 itemPathCommonPrefix=$item
-                for itemPathCompare in ${mProjectStorageFullPathSelectList[@]} ; do
-                    [[ "$(basename $itemPathCompare)" != "$itemName" ]] && continue
+                for itemPathCompare in "${mProjectStorageFullSelectPathList[@]}" ; do
+                    [[ "${itemPathCompare##*/}" != "$itemName" ]] && continue
                     while [[ -n "$itemPathCommonPrefix" ]] && [[ "$itemPathCompare" != "$itemPathCommonPrefix"* ]]; do
                         itemPathCommonPrefix=${itemPathCommonPrefix%/*}
                     done
@@ -1840,13 +1965,13 @@ ftAutoCdProjectDirectory()
         #设定默认值
         [ ${#tIndex} == 0 ] && tIndex=0 #设定默认值
         (( $itemCount<=$tIndex ))||(( $tIndex<0 ))||( ! echo -n $tIndex | grep -q -e "^[0-9][0-9]*$") && ftEcho -e "\n无效的序号:${tIndex}" && return $resultFail
-        mProjectStorageFullSelectPath=${mProjectStorageFullPathSelectList[$tIndex]} && echo
+        mProjectStorageFullSelectPath=${mProjectStorageFullSelectPathList[$tIndex]} && echo
     else
-        mProjectStorageFullSelectPath=$mProjectStorageFullPathSelectList
+        mProjectStorageFullSelectPath=${mProjectStorageFullSelectPathList[0]}
     fi
 
-    [[ -z "$isUserFileManager" ]] && cd $mProjectStorageFullSelectPath && return $resultFail
-    ftOpenNemoTab -p $mProjectStorageFullSelectPath
+    [[ -z "$isUserFileManager" ]] && cd "$mProjectStorageFullSelectPath" && return
+    ftOpenNemoTab -p "$mProjectStorageFullSelectPath"
 }
 
 complete -W "-h -f --help" -A file ftAutoAdbPush
