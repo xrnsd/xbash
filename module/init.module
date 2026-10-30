@@ -1,13 +1,35 @@
-#!/opt/homebrew/bin/bash
+#!/bin/bash
 #####-----------------------变量初始化-----------------------#########
 exceptionContent=
 diaNameLocal="xbash"
 dirPathLocal=$(cd "$(dirname "$0")";pwd)
 [[ -z "$SUDO_USER" ]] && userNameLocal=$USER || userNameLocal=$SUDO_USER
-dirPathHomeLocal=/home/${userNameLocal}
+if [[ -z "$SUDO_USER" ]]; then
+    dirPathHomeLocal=$HOME
+else
+    dirPathHomeLocal=$(dscacheutil -q user -a name "$userNameLocal" | sed -n 's/^dir: //p')
+    if [[ -z "$dirPathHomeLocal" ]]; then
+        echo "无法获取用户[$userNameLocal]的主目录" >&2
+        exit 1
+    fi
+fi
 resultSuccess=0 resultFail=1
 
 #####-----------------------公共方法-----------------------#########
+# 不依赖 GNU readlink -f，兼容 macOS 自带的 BSD readlink。
+ftInitRealPath()
+(
+    local filePath=$1 linkCount=0
+    while [[ -L "$filePath" ]]; do
+        ((linkCount += 1))
+        [[ $linkCount -gt 40 ]] && return 1
+        cd -P "$(dirname "$filePath")" || return 1
+        filePath=$(readlink "$filePath") || return 1
+    done
+    cd -P "$(dirname "$filePath")" || return 1
+    printf '%s/%s\n' "$PWD" "$(basename "$filePath")"
+)
+
 ftInitGitConfig()
 {
 
@@ -18,9 +40,9 @@ ftInitGitConfig()
     fi
 
     filePathGitIgnore=${dirPathLocal}/.gitignore
-    [ ! -f "$filePathGitIgnore" ] && touch $filePathGitIgnore
+    [ ! -f "$filePathGitIgnore" ] && touch "$filePathGitIgnore"
 
-    filePathGitConfig=/home/${userNameLocal}/.gitconfig
+    filePathGitConfig=${dirPathHomeLocal}/.gitconfig
     if [ ! -f "$filePathGitConfig" ];then
         echo -en "请输入git用户名:"
         read gitName&&git config --global user.name "$gitName"
@@ -29,8 +51,8 @@ ftInitGitConfig()
         ftInitEcho -s "已自动初始化gitconfig,需要修改的请查看$filePathGitConfig"
 
         #切换到独立分支
-        local brachName="${userNameLocal}_$(gdate -d "today" +"%y%m%d%H%M%S")"
-        brachName=$(echo $brachName |gsed s/[[:space:]]//g)
+        local brachName="${userNameLocal}_$(date +"%y%m%d%H%M%S")"
+        brachName=$(echo $brachName |sed s/[[:space:]]//g)
         git checkout -b ${brachName}
     fi
 }
@@ -52,14 +74,14 @@ ftInitUserConfig()
         exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败,${filePathXbashConfigProfile}未找到"
     fi
 
-    [ ! -d "$dirPathXbashConfigBashrcUser" ] && mkdir $dirPathXbashConfigBashrcUser
+    [ ! -d "$dirPathXbashConfigBashrcUser" ] && mkdir "$dirPathXbashConfigBashrcUser"
     if [[ -f "$filePathXbashConfigExample" ]]; then
-        cp $filePathXbashConfigExample $filePathXbashConfigNew
+        cp "$filePathXbashConfigExample" "$filePathXbashConfigNew"
 
         if [ -n "${userPasswdLocal}" ];then
             local taguserPasswordBase="export\ userPassword="
             local taguserPasswordNew="export\ userPassword=$userPasswdLocal"
-            gsed -i "s:$taguserPasswordBase:$taguserPasswordNew:g" $filePathXbashConfigNew||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败\n ${filePathXbashConfigExample} > ${filePathXbashConfigNew}"
+            sed -i '' "s:$taguserPasswordBase:$taguserPasswordNew:g" "$filePathXbashConfigNew"||exceptionContent="${exceptionContent}\n xbash的用户信息配置初始化失败\n ${filePathXbashConfigExample} > ${filePathXbashConfigNew}"
         fi
 
         local tagisAutoUpdateBase="export\ isAutoUpdate=" \
@@ -68,7 +90,7 @@ ftInitUserConfig()
             ftInitEcho -y "是否启用xbash自动更新(回车默认y)"
             read -n 1 sel ; [ -z "${sel}" ] && sel=y
             if [[ "${sel}" = "y" ]];then
-                gsed -i "s:$tagisAutoUpdateBase:$tagisAutoUpdateNew:g" $filePathXbashConfigNew||\
+                sed -i '' "s:$tagisAutoUpdateBase:$tagisAutoUpdateNew:g" "$filePathXbashConfigNew"||\
                 exceptionContent="${exceptionContent}\n xbash自动更新启用失败"
             fi
         fi
@@ -79,7 +101,7 @@ ftInitUserConfig()
             ftInitEcho -y "是否启用xbash定义bash的命令行前缀(回车默认y)"
             read -n 1 sel ; [ -z "${sel}" ] && sel=y
             if [[ "${sel}" = "y" ]];then
-                gsed -i "s:$tagisUseCustomPS1Base:$tagisUseCustomPS1New:g" $filePathXbashConfigNew||\
+                sed -i '' "s:$tagisUseCustomPS1Base:$tagisUseCustomPS1New:g" "$filePathXbashConfigNew"||\
                 exceptionContent="${exceptionContent}\n 启用xbash定义bash的命令行前缀失败"
             fi
         fi
@@ -90,7 +112,7 @@ ftInitUserConfig()
             ftInitEcho -y "是否启用xbash定义的bash历史记录处理(回车默认y)"
             read -n 1 sel ; [ -z "${sel}" ] && sel=y
             if [[ "${sel}" = "y" ]];then
-                gsed -i "s:$tagisUseXbashHistoryBase:$tagisUseXbashHistoryNew:g" $filePathXbashConfigNew||\
+                sed -i '' "s:$tagisUseXbashHistoryBase:$tagisUseXbashHistoryNew:g" "$filePathXbashConfigNew"||\
                 exceptionContent="${exceptionContent}\n xbash定义的bash历史记录处理启用失败"
             fi
         fi
@@ -101,7 +123,7 @@ ftInitUserConfig()
             ftInitEcho -y "是否启用xbash定义的Android开发环境基础配置(回车默认y)"
             read -n 1 sel ; [ -z "${sel}" ] && sel=y
             if [[ "${sel}" = "y" ]];then
-                gsed -i "s:$tagisUseCustomAndroidDevEnvConfigBase:$tagisUseCustomAndroidDevEnvConfigNew:g" $filePathXbashConfigNew||\
+                sed -i '' "s:$tagisUseCustomAndroidDevEnvConfigBase:$tagisUseCustomAndroidDevEnvConfigNew:g" "$filePathXbashConfigNew"||\
                 exceptionContent="${exceptionContent}\n xbash定义的Android开发环境基础配置启用失败"
             fi
         fi
@@ -112,7 +134,7 @@ ftInitUserConfig()
             ftInitEcho -y "是否启用xbash定义的Android编译缓存配置(回车默认y)"
             read -n 1 sel ; [ -z "${sel}" ] && sel=y
             if [[ "${sel}" = "y" ]];then
-                gsed -i "s:$tagisUseBuildCcacheBase:$tagisUseBuildCcacheNew:g" $filePathXbashConfigNew||\
+                sed -i '' "s:$tagisUseBuildCcacheBase:$tagisUseBuildCcacheNew:g" "$filePathXbashConfigNew"||\
                 exceptionContent="${exceptionContent}\n xbash定义的Android编译缓存配置启用失败"
             fi
         fi
@@ -123,7 +145,7 @@ ftInitUserConfig()
        #     ftInitEcho -y "是否启用xbash定义的Android分布式编译配置(回车默认y)"
        #     read -n 1 sel ; [ -z "${sel}" ] && sel=y
        #     if [[ "${sel}" = "y" ]];then
-       #         gsed -i "s:$tagisUseDistccBase:$tagisUseDistccNew:g" $filePathXbashConfigNew||\
+       #         sed -i '' "s:$tagisUseDistccBase:$tagisUseDistccNew:g" "$filePathXbashConfigNew"||\
        #         exceptionContent="${exceptionContent}\n xbash定义的Android分布式编译配置启用失败"
        #     fi
        # fi
@@ -142,29 +164,29 @@ ftInitMoule()
     local filePathXbashModuleUser=${dirPathXbashModuleUser}/${userNameLocal}.module
     local dirPathLocal=$(pwd)
 
-    [ ! -d "$dirPathXbashModuleUser" ] && mkdir -p $dirPathXbashModuleUser
-    [ ! -f "$filePathXbashModuleUser" ] && echo "#!/opt/homebrew/bin/bash" > $filePathXbashModuleUser
+    [ ! -d "$dirPathXbashModuleUser" ] && mkdir -p "$dirPathXbashModuleUser"
+    [ ! -f "$filePathXbashModuleUser" ] && echo "#!/bin/bash" > "$filePathXbashModuleUser"
     
     if [ -f "$filePathXbashConfigProfileNew" ]; then
-        cd $dirPathHomeLocal
-        [[ -f "$filePathHomeLocalProfile" ]] && [ $(readlink -f  $filePathHomeLocalProfile) != $filePathXbashConfigProfileNew ] \
-             && mv ${filePathHomeLocalProfile} ${filePathHomeLocalProfile}_backup
-        ln -sf ${filePathXbashConfigProfileNew} ${filePathHomeLocalProfile} \
+        cd "$dirPathHomeLocal"
+        [[ -f "$filePathHomeLocalProfile" ]] && [[ "$(ftInitRealPath "$filePathHomeLocalProfile")" != "$filePathXbashConfigProfileNew" ]] \
+             && mv "${filePathHomeLocalProfile}" "${filePathHomeLocalProfile}_backup"
+        ln -sf "${filePathXbashConfigProfileNew}" "${filePathHomeLocalProfile}" \
              || exceptionContent="${exceptionContent}\n xbash基础配置添加失败"
     else
         exceptionContent="${exceptionContent}\n xbash基础配置添加失败,文件不存在:${filePathXbashConfigProfileNew}"
     fi
     
     if [ -f "$filePathXbashModuleBashrcNew" ]; then
-        cd $dirPathHomeLocal
-        [[ ! -f ${filePathHomeLocalBashrc}_backup ]] && [[ ! -L "$filePathHomeLocalBashrc" ]] \
-        && mv ${filePathHomeLocalBashrc} ${filePathHomeLocalBashrc}_backup
-        ln -sf $filePathXbashModuleBashrcNew .bashrc || exceptionContent="${exceptionContent}\n xbash模块初始化配置添加失败"
+        cd "$dirPathHomeLocal"
+        [[ ! -f "${filePathHomeLocalBashrc}_backup" ]] && [[ ! -L "$filePathHomeLocalBashrc" ]] \
+        && mv "${filePathHomeLocalBashrc}" "${filePathHomeLocalBashrc}_backup"
+        ln -sf "$filePathXbashModuleBashrcNew" .bashrc || exceptionContent="${exceptionContent}\n xbash模块初始化配置添加失败"
     else
         exceptionContent="${exceptionContent}\n xbash模块初始化配置添加失败,文件不存在:${filePathXbashModuleBashrcNew}"
     fi
     
-    cd $dirPathLocal
+    cd "$dirPathLocal"
 }
 
 ftInitInputrc()
@@ -177,13 +199,13 @@ ftInitInputrc()
     [ -z "${isUseXbashHistory}" ] && return $resultFail
     [[ !  -f "$filePathXbashModuleBashrcInputrc" ]] && exceptionContent="${exceptionContent}\n xbash配置的命令历史适配逻辑初始化失败" && return $resultFail
 
-    cd $dirPathHomeLocal
+    cd "$dirPathHomeLocal"
 
-    [[ -f "$filePathHomeLocalConfigInputrc" ]] && [ $(readlink -f  $filePathHomeLocalConfigInputrc) != $filePathXbashModuleBashrcInputrc ] &&\
-        mv ${filePathHomeLocalConfigInputrc} ${filePathHomeLocalConfigInputrc}_backup
-    ln -s $filePathXbashModuleBashrcInputrc $fileNameXbashModuleBashrcInputrcTraget
+    [[ -f "$filePathHomeLocalConfigInputrc" ]] && [[ "$(ftInitRealPath "$filePathHomeLocalConfigInputrc")" != "$filePathXbashModuleBashrcInputrc" ]] &&\
+        mv "${filePathHomeLocalConfigInputrc}" "${filePathHomeLocalConfigInputrc}_backup"
+    ln -s "$filePathXbashModuleBashrcInputrc" "$fileNameXbashModuleBashrcInputrcTraget"
 
-    cd $dirPathLocal
+    cd "$dirPathLocal"
 }
 
 # ftinitUserPassword()
@@ -220,7 +242,7 @@ ftInitEcho()
     local content option=$1 valList=$@
     option=${option:-'未制定显示信息'}
     if [ ${#valList[@]} -eq 2 ];then
-        content=$(echo $content |gsed s/[[:space:]]//g)
+        content=$(echo $content |sed s/[[:space:]]//g)
     else
         #除第一个参数外的所有参数列表，可正常打印数组
         content="${valList[@]/$option/}"
@@ -269,7 +291,7 @@ ftInitXbash()
             ftInitEcho -y "Xbash初始化成功,但需要注销重新登录才能生效，是否注销(回车默认y)"
             read -n 1 sel && echo ; [ -z "${sel}" ] && sel=y
             case "$sel" in
-                y|Y) /usr/bin/gnome-session-quit --logout --force
+                y|Y) osascript -e 'tell application "loginwindow" to «event aevtrlgo»'
                      break;;
                 n|N|q|Q)  exit;;
                 *) ftInitEcho -e 错误的选择：$sel ;echo "输入n，q，退出";;
@@ -295,4 +317,4 @@ ftInitXbash()
 }
 
 #####-----------------------开始初始化-----------------------#########
-ftInitXbash $@
+ftInitXbash "$@"
