@@ -161,8 +161,7 @@ fi
     if [[ -f $rFilePathXbashPackagingUser ]];then source  $rFilePathXbashPackagingUser 
     else echo -e "\033[1;31m用户可自定义命令封装扩展块加载失败\n${rFilePathXbashPackagingUser}\033[0m" ;fi
     
-    #加载 input module 28ms
-    [ -f $rFilePathXbashModuleInput ] && [ "$rFilePathXbashModuleInput" != "$(readlink -f ~/.inputrc)" ] && rm -rf ~/.inputrc && ln -sf $rFilePathXbashModuleInput ~/.inputrc
+    # Readline configuration belongs to the user. Startup never replaces it.
 
     #加载 learn module 110ms
     if [[ -f $rFilePathXbashModuleLearn ]];then 
