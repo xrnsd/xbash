@@ -1770,7 +1770,7 @@ ftAutoLnCcacheByAosp()
     # [[ "$(type -t ftCheckCcache)" = "function" ]] && ftCheckCcache
 }
 
-complete -W "-h --help --rely_install" ftAutoCdProjectDirectory
+complete -W "-h --help -u --update -a -r -n -fm" ftAutoCdProjectDirectory
 ftAutoCdProjectDirectory()
 {
     local ftEffect=快速进入不同项目目录
@@ -1796,6 +1796,10 @@ ftAutoCdProjectDirectory()
 #    自动更新项目列表
 #    ftAutoCdProjectDirectory -u
 #
+#    将当前目录加入或移出项目列表
+#    ftAutoCdProjectDirectory -a
+#    ftAutoCdProjectDirectory -r
+#
 #    切换终端路径
 #    ftAutoCdProjectDirectory -n 项目名
 #
@@ -1812,13 +1816,29 @@ ftAutoCdProjectDirectory()
             #mProjectName有效路径，立即调转
             [[ $mProjectName == /* ]] && [[ -d $mProjectName ]] && cd "$mProjectName" && return
          ;;
-        -u | --update ) #更新数据库
-            for rootPath in "${mProjectStorageRootPaths[@]}"; do
-                [[ ! -d "${rootPath}" ]] && continue
-                while IFS= read -r -d '' fullPath ;do
-                    mProjectStorageFullPathList+=("${fullPath%/.git}")
-                done < <(find "${rootPath}" -type d -name .git -prune -print0)
-            done
+        -u | --update | -a | -r ) #更新数据库
+            local fullPath rootPath currentPath existingPath found=false
+            if [[ $arg == -a || $arg == -r ]]; then
+                currentPath=$PWD
+                local storedPaths="$(ftXbGetValue ProjectsInfo ProjectStorageFullPathList)"
+                local -a existingPaths=()
+                _ftAutoParseProjectPaths "$storedPaths" existingPaths
+                for existingPath in "${existingPaths[@]}"; do
+                    if [[ $existingPath == "$currentPath" ]]; then
+                        found=true
+                        [[ $arg == -r ]] && continue
+                    fi
+                    mProjectStorageFullPathList+=("$existingPath")
+                done
+                [[ $arg == -a && $found == false ]] && mProjectStorageFullPathList+=("$currentPath")
+            else
+                for rootPath in "${mProjectStorageRootPaths[@]}"; do
+                    [[ ! -d "${rootPath}" ]] && continue
+                    while IFS= read -r -d '' fullPath ;do
+                        mProjectStorageFullPathList+=("${fullPath%/.git}")
+                    done < <(find "${rootPath}" -type d -name .git -prune -print0)
+                done
+            fi
 
             local encodedPath encodedPathList=
             for fullPath in "${mProjectStorageFullPathList[@]}"; do
@@ -1834,10 +1854,13 @@ ftAutoCdProjectDirectory()
             done
             ftIniEditUtil -w "$rFilePathXbashDBUser" ProjectsInfo ProjectStorageFullPathList "${encodedPathList:-|}" || return $resultFail
 
-            ftEcho -s "项目列表更新完成"
+            case $arg in
+                -a) ftEcho -s "当前目录已加入项目列表" ;;
+                -r) ftEcho -s "当前目录已从项目列表移除" ;;
+                *) ftEcho -s "项目列表更新完成" ;;
+            esac
             return;;
     * ) [[ -z "${arg}" ]] && break  ;; esac;done
-    [ -z "$mProjectStorageRootPathList" ] && errorContent="${errorContent}\\n[项目存放路径列表为空]"
     [ -z "$mProjectName" ] && errorContent="${errorContent}\\n[未指定项目名]"
     [ -n "$errorContent" ] && ftEcho -ea "命令[${ftEffect}]的参数错误${errorContent}\\n请查看下面说明:" && ftAutoCdProjectDirectory -h && return $resultFail
 
