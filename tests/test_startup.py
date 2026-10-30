@@ -102,6 +102,38 @@ source() { local file="$1"; shift; echo "${file#"$TEST_REPO/"}" >> "$EVENTS"; bu
         p = self.shell('source "$TEST_REPO/module/main.module"; echo "${dirPathHomeXbash-unset}"', interactive=False)
         self.assertEqual(p.stdout.strip(), 'unset')
 
+    def test_config_has_helpers_and_false_tail_is_compatible(self):
+        self.config.write_text('declare -F ftEcho >/dev/null || return 23\n[[ -n "" ]]\n')
+        self.shell('source "$TEST_REPO/module/main.module"; [[ $? == 0 ]]')
+
+    def test_required_failures_stop_dependencies(self):
+        for contents in ['return 23\n', 'if then\n']:
+            with self.subTest(contents=contents):
+                (self.repo / 'module/common.methods').write_text(contents)
+                p = self.shell('source "$TEST_REPO/module/main.module"; echo "status=$?"')
+                self.assertNotIn('status=0', p.stdout)
+                events = (self.root / 'events').read_text().splitlines()
+                self.assertNotIn('module/auto/auto.methods', events)
+        (self.repo / 'module/common.methods').unlink()
+        p = self.shell('source "$TEST_REPO/module/main.module"; echo "status=$?"')
+        self.assertNotIn('status=0', p.stdout)
+
+    def test_missing_config_is_noninteractive_failure_without_writes(self):
+        self.config.unlink()
+        p = self.shell('source "$TEST_REPO/module/main.module"; echo "status=$?"')
+        self.assertNotIn('status=0', p.stdout)
+        self.assertFalse(self.config.exists())
+
+    def test_config_explicit_failure_protocol(self):
+        self.config.write_text('xbashConfigStatus=1\nreturn 1\n')
+        p = self.shell('source "$TEST_REPO/module/main.module"; echo "status=$?"')
+        self.assertIn('status=1', p.stdout)
+
+    def test_missing_optional_module_is_skipped(self):
+        self.user.write_text('true\n')
+        (self.repo / 'module/auto/auto.methods').unlink()
+        self.shell('source "$TEST_REPO/module/main.module"; [[ $? == 0 ]]')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

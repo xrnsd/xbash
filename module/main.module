@@ -140,70 +140,58 @@ fi
     }
     _ftXbashResolveContext "${BASH_SOURCE[0]}" || return 1
 
-#---------------- 加载xbash配置 ------------------
-    # 加载common配置
-    filePathXbashTragetBashrcConfigBase=${dirPathHomeXbashConfig}/common.config
-    if [[ -f "$filePathXbashTragetBashrcConfigBase" ]];then  source "$filePathXbashTragetBashrcConfigBase"
-    else echo -e "\033[1;31mXbash需要的基础配置\n${filePathXbashTragetBashrcConfigBase}\033[0m不存在" ;return ;fi
-    # 加载用户配置
-    filePathUserConfig=${dirPathHomeXbashConfigUser}/${userName}.config
-    if [ ! -f "$filePathUserConfig" ];then
-        [ ! -f "$rFilePathXbashConfigExample" ] && echo -e "\033[1;31m用户${userName}独立配置创建失败,缺少模版:\n $rFilePathXbashConfigExample\033[0m" && return
-        echo -e "\033[1;33m初始化用户[${userName}]的xbash配置\n\033[0m"
-        ${dirPathHomeXbash}/init --userconfig
-    fi
-    if [[ -f "$filePathUserConfig" ]];then source "$filePathUserConfig"
-    else echo -e "\033[1;31用户[${userName}]的xbash配置不存在:\n${filePathUserConfig}\033[0m" ;fi
-    export filePathXbashTragetBashrcConfigProfile=${dirPathHomeXbashConfig}/profile.config
+#---------------- 加载xbash配置和基础定义 ------------------
+    # The loader is deliberately self-contained: even common.methods can fail.
+    _ftXbashSource()
+    {
+        local file="$1" required="${2:-required}" kind="${3:-module}" status
+        if [[ ! -r "$file" ]]; then
+            [[ "$required" == optional ]] && return 0
+            printf 'xbash: required file is unavailable: %s\n' "$file" >&2
+            return 1
+        fi
+        source "$file"
+        status=$?
+        # Legacy option files often end in a false condition. New configurations
+        # can report failure explicitly with xbashConfigStatus (including 1).
+        if [[ "$kind" == config && "$status" == 1 && ${xbashConfigStatus:-0} == 0 ]]; then
+            status=0
+        fi
+        if [[ "$kind" == config && ${xbashConfigStatus:-0} != 0 ]]; then
+            status=1
+        fi
+        if (( status != 0 )); then
+            printf 'xbash: loading failed (%s): %s\n' "$status" "$file" >&2
+            return "$status"
+        fi
+        return 0
+    }
+    filePathXbashTragetBashrcConfigBase="$dirPathHomeXbashConfig/common.config"
+    _ftXbashSource "$filePathXbashTragetBashrcConfigBase" || return $?
+    _ftXbashSource "$rFilePathXbashModuleCommon" || return $?
+    filePathUserConfig="$rFilePathXbashConfigUser"
+    xbashConfigStatus=0
+    _ftXbashSource "$filePathUserConfig" required config || return $?
+    export filePathXbashTragetBashrcConfigProfile="$dirPathHomeXbashConfig/profile.config"
 
 #---------------- 加载扩展 ------------------
-    #加载 common module 10ms
-    if [[ -f "$rFilePathXbashModuleCommon" ]];then source "$rFilePathXbashModuleCommon"
-    else echo -e "\033[1;31mXbash的框架和公用扩展块加载失败\n${rFilePathXbashModuleCommon}\033[0m" ;return ;fi
-
-    # 加载 auto module 16ms
-    if [[ -f "$rFilePathXbashModuleAuto" ]];then source "$rFilePathXbashModuleAuto"
-    else echo -e "\033[1;31mXbash的Auto扩展块加载失败\n${rFilePathXbashModuleAuto}\033[0m" ;fi
-
-    #加载 git module 0ms
-    if [[ -f "$rFilePathXbashModuleGit" ]];then source "$rFilePathXbashModuleGit"
-    else echo -e "\033[1;31mXbash的git扩展块加载失败\n${rFilePathXbashModuleGit}\033[0m" ;fi
-
-    # 加载 user module 580ms
-    if [ ! -f "$rFilePathXbashModuleUser" ]; then
-        [ ! -d "$rDirPathXbashModuleUser" ] && mkdir $rDirPathXbashModuleUser
-        echo "#!/opt/homebrew/bin/bash" > $rFilePathXbashModuleUser
-    fi
-    if [[ -f "$rFilePathXbashModuleUser" ]];then source "$rFilePathXbashModuleUser"
-    else echo -e "\033[1;31mXbash的用户独立模块创建失败:\n${rFilePathXbashModuleUser}\033[0m" ;fi
-    [ ! -f "$rFilePathXbashPackagingUser" ] && [ -f "$rFilePathXbashPackagingUserExample" ]&& cp -rf $rFilePathXbashPackagingUserExample $rFilePathXbashPackagingUser
-    if [[ -f "$rFilePathXbashPackagingUser" ]];then source "$rFilePathXbashPackagingUser"
-    else echo -e "\033[1;31m用户可自定义命令封装扩展块加载失败\n${rFilePathXbashPackagingUser}\033[0m" ;fi
+    # Optional absent modules provide no capabilities; an existing broken module
+    # is an error rather than a successful but partly initialized environment.
+    _ftXbashSource "$rFilePathXbashModuleAuto" optional || return $?
+    _ftXbashSource "$rFilePathXbashModuleGit" optional || return $?
+    _ftXbashSource "$rFilePathXbashModuleUser" optional || return $?
+    _ftXbashSource "$rFilePathXbashPackagingUser" optional || return $?
+    _ftXbashSource "$rFilePathXbashModuleLearn" optional || return $?
 
     # Readline configuration belongs to the user. Startup never replaces it.
-
-    #加载 learn module 110ms
-    if [[ -f "$rFilePathXbashModuleLearn" ]];then
-        source "$rFilePathXbashModuleLearn"
-    else echo -e "\033[1;31mXbash的学习扩展块加载失败\n${rFilePathXbashModuleLearn}\033[0m" ;fi
-
-#---------------- 默认启用部分xbash功能 ------------------
-    # #处理bash历史记录
-    #ftBashHistory &
-    if [[ -f "$HOME/.bashrc_config_check" ]];then
-        #校验用户配置和模版版本一致性
-        ftCheckUserConfig
-        #校验用户数据库和模版版本一致性
-        ftCheckUserDatabase
-        #校验用户扩展和模版版本一致性
-        ftCheckUserPackaging
+    if [[ -f "$HOME/.bashrc_config_check" ]]; then
+        ftCheckUserConfig || :
+        ftCheckUserDatabase || :
+        ftCheckUserPackaging || :
     fi
-    if declare -F ftAutoConfigOpenAIEnv > /dev/null; then
-        ftAutoConfigOpenAIEnv
+    if declare -F ftAutoConfigOpenAIEnv >/dev/null; then
+        ftAutoConfigOpenAIEnv || return $?
     fi
-
-#learn
-
 
 # pnpm
 export PNPM_HOME="/home/wds_work/.local/share/pnpm"
@@ -225,3 +213,5 @@ fi
 #config lang env
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
+
+return 0
