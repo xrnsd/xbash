@@ -220,6 +220,59 @@ ftSetBashPs1ByGitBranch >/dev/null
 complete -p git >/dev/null && declare -F __git_main >/dev/null
 ''')
 
+    def test_refresh_overrides_apply_after_option_defaults(self):
+        self.config.write_text('''isEnableConda=false
+ftXbashApplyUserEnvironment() { printf 'conda=%s\\n' "$isEnableConda"; }
+''')
+        p = self.shell('''source "$TEST_REPO/module/main.module"
+ftResetXbash --conda
+[[ ! ${isResetXbash+x} && ! ${_xbash_refresh_overrides+x} ]] || exit 2
+''')
+        self.assertEqual(p.stdout.splitlines(), ['conda=false', 'conda=true'])
+
+    def test_force_reload_is_distinct_from_refresh(self):
+        self.shell('''source "$TEST_REPO/module/main.module"
+ftResetXbash
+ftResetXbash --reload
+''')
+        events = (self.root / 'events').read_text().splitlines()
+        self.assertEqual(events.count('module/common.methods'), 2)
+        self.assertEqual(events.count('module/user/test.module'), 2)
+        self.assertEqual(events.count('launchctl'), 0)
+
+    def test_failure_can_be_fixed_and_retried(self):
+        self.config.write_text('xbashConfigStatus=1; return 1\n')
+        self.shell('''source "$TEST_REPO/module/main.module"
+[[ "$?" == 1 && "$_xbash_startup_state" == failed ]] || exit 2
+printf 'isUseCustomPS1=false\\n' > "$TEST_REPO/config/user/test.config"
+ftResetXbash
+[[ "$?" == 0 && "$_xbash_startup_state" == ready ]] || exit 3
+''')
+
+    def test_explicit_session_sync_and_failures(self):
+        self.shell('''source "$TEST_REPO/module/main.module"
+ftResetXbash
+export OPENAI_BASE_URL=stub OPENAI_API_KEY=stub OPENAI_MODEL=stub
+ftResetXbash --sync-session
+''')
+        self.assertEqual((self.root / 'events').read_text().splitlines().count('launchctl'), 3)
+        self.shell('''source "$TEST_REPO/module/main.module"
+export OPENAI_BASE_URL=stub OPENAI_API_KEY=stub OPENAI_MODEL=stub
+launchctl() { return 23; }
+ftResetXbash --sync-session
+[[ $? == 23 && ! ${_xbash_refresh_overrides+x} ]]
+''')
+
+    def test_explicit_system_action_and_refresh_directory(self):
+        self.config.write_text('''ftXbashApplySystemConfig() { echo SYSTEM_ACTION; return 23; }
+''')
+        p = self.shell('''source "$TEST_REPO/module/main.module"
+before=$PWD
+ftResetXbash --system-config
+[[ $? == 23 && "$PWD" == "$before" && ! ${isResetXbash+x} ]]
+''')
+        self.assertEqual(p.stdout.strip(), 'SYSTEM_ACTION')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

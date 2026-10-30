@@ -8,6 +8,7 @@ xEcho(){
 
 export DEVICE_HARDWARE_FLAG=
 export isAutoUpdate=
+export isAutoSyncOpenAIEnv=false
 export isUseCustomPS1=
 export isUseXbashHistory=
 export isUseCustomAndroidDevEnvConfig=

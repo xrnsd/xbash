@@ -115,6 +115,9 @@ if ! shopt -oq posix; then
   fi
 fi
 
+# xbash loading stages return to this wrapper; failures never close the shell.
+_ftXbashRunStartup()
+{
 #added by wgx : xbash初始化
 #---------------- 初始化xbash变量 ----------------------------------
     # Resolve the sourced file, including relative .bashrc symlinks, without readlink -f.
@@ -145,6 +148,9 @@ fi
         export dirPathHomeXbashConfigUser="$root/config/user"
     }
     _ftXbashResolveContext "${BASH_SOURCE[0]}" || return 1
+    if [[ ${_xbash_force_reload:-false} == true && ${_xbash_modules_pid-} == "$BASHPID" ]]; then
+        _xbash_module_states=()
+    fi
 
 #---------------- 加载xbash配置和基础定义 ------------------
     # The loader is deliberately self-contained: even common.methods can fail.
@@ -205,10 +211,16 @@ fi
     _ftXbashLoadModule "$rDirPathXbashModuleBase/prompt.module" || return $?
     _ftXbashCapturePrompt
     _ftXbashResetOwnedPaths
-    unset -f ftXbashApplyUserEnvironment
+    unset -f ftXbashApplyUserEnvironment ftXbashApplySystemConfig
     filePathUserConfig="$rFilePathXbashConfigUser"
     xbashConfigStatus=0
     _ftXbashSource "$filePathUserConfig" required config || return $?
+    if declare -p _xbash_refresh_overrides >/dev/null 2>&1; then
+        for _xbash_setting in "${!_xbash_refresh_overrides[@]}"; do
+            printf -v "$_xbash_setting" '%s' "${_xbash_refresh_overrides[$_xbash_setting]}"
+            export "$_xbash_setting"
+        done
+    fi
     if declare -F ftXbashApplyUserEnvironment >/dev/null; then
         ftXbashApplyUserEnvironment || return $?
     fi
@@ -223,16 +235,14 @@ fi
     _ftXbashSource "$rFilePathXbashPackagingUser" optional || return $?
     _ftXbashLoadModule "$rFilePathXbashModuleLearn" optional || return $?
 
-    _ftXbashConfigurePrompt
-
     # Readline configuration belongs to the user. Startup never replaces it.
     if [[ -f "$HOME/.bashrc_config_check" ]]; then
         ftCheckUserConfig || :
         ftCheckUserDatabase || :
         ftCheckUserPackaging || :
     fi
-    if declare -F ftAutoConfigOpenAIEnv >/dev/null; then
-        ftAutoConfigOpenAIEnv || return $?
+    if [[ ${isAutoSyncOpenAIEnv:-false} == true ]]; then
+        ftXbashSyncSessionEnvironment || return $?
     fi
 
 # User-local package managers use the same exact, idempotent PATH operations.
@@ -249,4 +259,23 @@ fi
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-return 0
+    return 0
+}
+
+if [[ ${_xbash_startup_state-} == loading ]]; then
+    printf 'xbash: recursive startup\n' >&2
+    return 1
+fi
+_xbash_startup_state=loading
+_ftXbashRunStartup
+_xbash_startup_status=$?
+# Even a failed option file must not leave an undefined prompt callback installed.
+if declare -F _ftXbashConfigurePrompt >/dev/null; then
+    _ftXbashConfigurePrompt
+fi
+if (( _xbash_startup_status == 0 )); then
+    _xbash_startup_state=ready
+else
+    _xbash_startup_state=failed
+fi
+return "$_xbash_startup_status"
