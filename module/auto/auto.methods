@@ -1953,12 +1953,12 @@ ftAutoCdProjectDirectory()
                 itemPathCommonPrefix=$item
                 for itemPathCompare in "${mProjectStorageFullSelectPathList[@]}" ; do
                     [[ "${itemPathCompare##*/}" != "$itemName" ]] && continue
-                    while [[ -n "$itemPathCommonPrefix" ]] && [[ "$itemPathCompare" != "$itemPathCommonPrefix"* ]]; do
+                    while [[ -n "$itemPathCommonPrefix" ]] && [[ "$itemPathCompare/" != "$itemPathCommonPrefix/"* ]]; do
                         itemPathCommonPrefix=${itemPathCommonPrefix%/*}
                     done
                 done
                 [[ "$itemPathCommonPrefix" != "/" ]] && itemPathCommonPrefix="${itemPathCommonPrefix%/}/"
-                itemPathDisplay="${colorYellowStart}.../${item#$itemPathCommonPrefix}${colorReset}"
+                itemPathDisplay="${colorYellowStart}.../${item#"$itemPathCommonPrefix"}${colorReset}"
             fi
             if [[ -n "$itemPathDisplay" ]]; then
                 printf "%-4s %-20s %s\n" [$index] $itemName $itemPathDisplay
