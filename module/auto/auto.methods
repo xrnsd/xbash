@@ -1770,7 +1770,7 @@ ftAutoLnCcacheByAosp()
     # [[ "$(type -t ftCheckCcache)" = "function" ]] && ftCheckCcache
 }
 
-complete -W "-h --help -u --update -a -r -n -fm" ftAutoCdProjectDirectory
+complete -W "-h --help -u --update -a -r -d -n -fm" ftAutoCdProjectDirectory
 ftAutoCdProjectDirectory()
 {
     local ftEffect=快速进入不同项目目录
@@ -1798,7 +1798,7 @@ ftAutoCdProjectDirectory()
 #
 #    将当前目录加入或移出项目列表
 #    ftAutoCdProjectDirectory -a
-#    ftAutoCdProjectDirectory -r
+#    ftAutoCdProjectDirectory -r/-d
 #
 #    切换终端路径
 #    ftAutoCdProjectDirectory -n 项目名
@@ -1816,9 +1816,9 @@ ftAutoCdProjectDirectory()
             #mProjectName有效路径，立即调转
             [[ $mProjectName == /* ]] && [[ -d $mProjectName ]] && cd "$mProjectName" && return
          ;;
-        -u | --update | -a | -r ) #更新数据库
+        -u | --update | -a | -r | -d) #更新数据库
             local fullPath rootPath currentPath existingPath found=false
-            if [[ $arg == -a || $arg == -r ]]; then
+            if [[ $arg == -a || $arg == -r || $arg == -d ]]; then
                 currentPath=$PWD
                 local storedPaths="$(ftXbGetValue ProjectsInfo ProjectStorageFullPathList)"
                 local -a existingPaths=()
@@ -1826,7 +1826,7 @@ ftAutoCdProjectDirectory()
                 for existingPath in "${existingPaths[@]}"; do
                     if [[ $existingPath == "$currentPath" ]]; then
                         found=true
-                        [[ $arg == -r ]] && continue
+                        [[ $arg == -r ]]||[[ $arg == -d ]] && continue
                     fi
                     mProjectStorageFullPathList+=("$existingPath")
                 done
