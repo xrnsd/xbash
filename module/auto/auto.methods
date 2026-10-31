@@ -1817,46 +1817,103 @@ ftAutoCdProjectDirectory()
             [[ $mProjectName == /* ]] && [[ -d $mProjectName ]] && cd "$mProjectName" && return
          ;;
         -u | --update | -a | -r | -d) #更新数据库
-            local fullPath rootPath currentPath existingPath found=false
-            if [[ $arg == -a || $arg == -r || $arg == -d ]]; then
-                currentPath=$PWD
-                local storedPaths="$(ftXbGetValue ProjectsInfo ProjectStorageFullPathList)"
-                local -a existingPaths=()
-                _ftAutoParseProjectPaths "$storedPaths" existingPaths
-                for existingPath in "${existingPaths[@]}"; do
-                    if [[ $existingPath == "$currentPath" ]]; then
-                        found=true
-                        [[ $arg == -r ]]||[[ $arg == -d ]] && continue
-                    fi
-                    mProjectStorageFullPathList+=("$existingPath")
-                done
-                [[ $arg == -a && $found == false ]] && mProjectStorageFullPathList+=("$currentPath")
-            else
+            local fullPath rootPath existingPath scannedPath found
+            local storedPaths="$(ftXbGetValue ProjectsInfo ProjectStorageFullPathList)"
+            local storedManualPaths="$(ftXbGetValue ProjectsInfoManual ProjectStorageManualPathList)"
+            local -a existingPaths=() manualPaths=() scannedPaths=() updatedManualPaths=()
+            _ftAutoParseProjectPaths "$storedPaths" existingPaths
+            _ftAutoParseProjectPaths "$storedManualPaths" manualPaths
+
+            # 旧列表没有来源标记：保留仍存在且未被当前扫描发现的路径。
+            if [[ -z $storedManualPaths || $arg == -u || $arg == --update ]]; then
                 for rootPath in "${mProjectStorageRootPaths[@]}"; do
-                    [[ ! -d "${rootPath}" ]] && continue
-                    while IFS= read -r -d '' fullPath ;do
-                        mProjectStorageFullPathList+=("${fullPath%/.git}")
-                    done < <(find "${rootPath}" -type d -name .git -prune -print0)
+                    [[ ! -d "$rootPath" ]] && continue
+                    while IFS= read -r -d '' fullPath; do
+                        scannedPaths+=("${fullPath%/.git}")
+                    done < <(find "$rootPath" -type d -name .git -prune -print0)
+                done
+            fi
+            if [[ -z $storedManualPaths ]]; then
+                for existingPath in "${existingPaths[@]}"; do
+                    [[ ! -d $existingPath ]] && continue
+                    found=false
+                    for scannedPath in "${scannedPaths[@]}"; do
+                        [[ $existingPath == "$scannedPath" ]] && found=true && break
+                    done
+                    [[ $found == false ]] && manualPaths+=("$existingPath")
                 done
             fi
 
-            local encodedPath encodedPathList=
-            for fullPath in "${mProjectStorageFullPathList[@]}"; do
-                encodedPath=${fullPath//%/%25}
-                encodedPath=${encodedPath//|/%7C}
-                encodedPath=${encodedPath//&/%26}
-                encodedPath=${encodedPath//\\/%5C}
-                encodedPath=${encodedPath// /%20}
-                encodedPath=${encodedPath//$'\t'/%09}
-                encodedPath=${encodedPath//$'\r'/%0D}
-                encodedPath=${encodedPath//$'\n'/%0A}
-                encodedPathList+="|${encodedPath}"
+            for existingPath in "${manualPaths[@]}"; do
+                if [[ $arg == -u || $arg == --update ]]; then
+                    [[ ! -d $existingPath ]] && continue
+                elif [[ $arg == -r || $arg == -d ]]; then
+                    [[ $existingPath == "$PWD" ]] && continue
+                fi
+                updatedManualPaths+=("$existingPath")
             done
-            ftIniEditUtil -w "$rFilePathXbashDBUser" ProjectsInfo ProjectStorageFullPathList "${encodedPathList:-|}" || return $resultFail
+            if [[ $arg == -a ]]; then
+                found=false
+                for existingPath in "${updatedManualPaths[@]}"; do
+                    [[ $existingPath == "$PWD" ]] && found=true && break
+                done
+                [[ $found == false ]] && updatedManualPaths+=("$PWD")
+            fi
+
+            if [[ $arg == -u || $arg == --update ]]; then
+                mProjectStorageFullPathList=("${scannedPaths[@]}")
+                for existingPath in "${updatedManualPaths[@]}"; do
+                    found=false
+                    for scannedPath in "${scannedPaths[@]}"; do
+                        [[ $existingPath == "$scannedPath" ]] && found=true && break
+                    done
+                    [[ $found == false ]] && mProjectStorageFullPathList+=("$existingPath")
+                done
+            else
+                for existingPath in "${existingPaths[@]}"; do
+                    if [[ $arg == -r || $arg == -d ]]; then
+                        [[ $existingPath == "$PWD" ]] && continue
+                    fi
+                    mProjectStorageFullPathList+=("$existingPath")
+                done
+                if [[ $arg == -a ]]; then
+                    found=false
+                    for existingPath in "${mProjectStorageFullPathList[@]}"; do
+                        [[ $existingPath == "$PWD" ]] && found=true && break
+                    done
+                    [[ $found == false ]] && mProjectStorageFullPathList+=("$PWD")
+                fi
+            fi
+
+            local encodedPath encodedPathList pathListName keyName sectionName
+            for pathListName in updatedManualPaths mProjectStorageFullPathList; do
+                local -n pathsToWrite=$pathListName
+                encodedPathList=
+                for fullPath in "${pathsToWrite[@]}"; do
+                    encodedPath=${fullPath//%/%25}
+                    encodedPath=${encodedPath//|/%7C}
+                    encodedPath=${encodedPath//&/%26}
+                    encodedPath=${encodedPath//\\/%5C}
+                    encodedPath=${encodedPath// /%20}
+                    encodedPath=${encodedPath//$'\t'/%09}
+                    encodedPath=${encodedPath//$'\r'/%0D}
+                    encodedPath=${encodedPath//$'\n'/%0A}
+                    encodedPathList+="|${encodedPath}"
+                done
+                if [[ $pathListName == updatedManualPaths ]]; then
+                    sectionName=ProjectsInfoManual
+                    keyName=ProjectStorageManualPathList
+                else
+                    sectionName=ProjectsInfo
+                    keyName=ProjectStorageFullPathList
+                fi
+                ftIniEditUtil -w "$rFilePathXbashDBUser" "$sectionName" "$keyName" "${encodedPathList:-|}" || return $resultFail
+                unset -n pathsToWrite
+            done
 
             case $arg in
                 -a) ftEcho -s "当前目录已加入项目列表" ;;
-                -r) ftEcho -s "当前目录已从项目列表移除" ;;
+                -r | -d) ftEcho -s "当前目录已从项目列表移除" ;;
                 *) ftEcho -s "项目列表更新完成" ;;
             esac
             return;;
