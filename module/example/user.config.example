@@ -34,7 +34,8 @@ if [[ "$isUseCustomAndroidDevEnvConfig" == true ]]; then
     dirPathOpenJdk7=/usr/lib/jvm/java-7-openjdk-amd64
     dirPathOpenJdk8=/usr/lib/jvm/java-8-openjdk-amd64
     dirPathOpenJdk11=/usr/lib/jvm/java-11-openjdk-amd64
-    jdkHomePath=$dirPathOpenJdk8
+    dirPathOpenJdk17=/usr/lib/jvm/java-17-openjdk-amd64
+    jdkHomePath=$dirPathOpenJdk17
 
     dirPathOpenGcc44=/usr/bin/gcc-4.4
     dirPathOpenGcc46=/usr/bin/gcc-4.6
@@ -53,7 +54,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" == true ]]; then
     [[ -n "${targetSdkVersionForce}" ]] && sdkVersion=$targetSdkVersionForce
     if [[ -n $sdkVersion ]]; then
         if (( $sdkVersion>=29 ));then
-                jdkHomePath=$dirPathOpenJdk11
+                jdkHomePath=$dirPathOpenJdk17
                 gccPath=${dirPathOpenGcc48}
         elif (( $sdkVersion>=24 ));then
                 jdkHomePath=$dirPathOpenJdk8
@@ -63,7 +64,7 @@ if [[ "$isUseCustomAndroidDevEnvConfig" == true ]]; then
         #         gccPath=${dirPathOpenGcc44}
         fi
     else
-            jdkHomePath=$dirPathOpenJdk11
+            jdkHomePath=$dirPathOpenJdk17
             gccPath=${dirPathOpenGcc46}
     fi
 
