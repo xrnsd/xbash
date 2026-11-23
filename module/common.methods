@@ -3450,8 +3450,32 @@ ftAdbConnect()
     [[ -n "${deviceIdold}" ]]&&[[ "${deviceId}" != "${autoTestDeviceId}" ]] && echo -en "设备ID更新:" && ftEcho -s "${autoTestDeviceId} > ${deviceId}"
 
     if [[ -n ${isUseWifi} ]]; then
+        # adbd 重启为 TCP 模式需要时间,期间端口不监听且 ARP 不通,立即 connect 必然失败;
+        # 而 connect 的失败结果会被 adb server 缓存,之后即使设备已可达仍会一直返回 No route to host,
+        # 所以每次重试前必须 kill-server 清除缓存
+        local connectWifiDevice
+        connectWifiDevice()
+        {
+            local wifiTarget="$1" connectResult retry retryCount=10
+            for (( retry=1 ; retry<=retryCount ; retry++ )); do
+                connectResult=$(adb connect ${wifiTarget} 2>&1)
+                [[ "${connectResult}" == *connected* ]] && ftEcho -s "${connectResult}" && return
+                ftEcho -en "第${retry}次连接失败:" && echo "${connectResult}"
+                (( retry >= retryCount )) && break
+                ftEcho -sn "重启adb服务清除失败缓存,重试中>"
+                adb kill-server >/dev/null 2>&1
+                sleep 2
+                adb start-server >/dev/null 2>&1
+                sleep 1
+            done
+            ftEcho -e "wifi调试连接失败:${wifiTarget},请确认设备IP与端口,以及电脑与设备是否同网段" && return $resultFail
+        }
+        local wifiDevice
         if [[ -n ${isReConnectWifi} ]] && [[ -n ${ENV_ADB_DEV_IP} ]]; then
-            adb -s $ENV_ADB_DEV_ID connect ${ENV_ADB_DEV_IP}:${ENV_ADB_DEV_PORT}
+            connectWifiDevice "${ENV_ADB_DEV_IP}:${ENV_ADB_DEV_PORT}" || return $resultFail
+            wifiDevice="${ENV_ADB_DEV_IP}:${ENV_ADB_DEV_PORT}"
+            echo -en "设备ID更新:" && ftEcho -s "${deviceId} > ${wifiDevice}"
+            export autoTestDeviceId=${wifiDevice}
             return
         fi
         adb -s $deviceId shell svc wifi enable
@@ -3476,12 +3500,17 @@ ftAdbConnect()
         ftEcho -sn "请设定wifi调试端口号(5555-5585)(回车默认5555):"
         read -n 4 portNum && echo ;[ -z "${portNum}" ] && portNum=5555
         adb -s ${deviceId} tcpip ${portNum}
+        ftEcho -sn "等待设备以TCP模式重启adbd>" && sleep 3
         for ipAddress in ${ipAddressList[*]}; do
-            adb -s $deviceId connect ${ipAddress}:${portNum}
-            export ENV_ADB_DEV_ID=${deviceId}
-            export ENV_ADB_DEV_IP=${ipAddress}
-            export ENV_ADB_DEV_PORT=${portNum}
+            # tcpip 之后 USB 通道已消失,connect 不能带 -s 序列号过滤器
+            connectWifiDevice "${ipAddress}:${portNum}" && wifiDevice="${ipAddress}:${portNum}" && break
         done
+        [[ -z "${wifiDevice}" ]] && return $resultFail
+        export ENV_ADB_DEV_ID=${deviceId}
+        export ENV_ADB_DEV_IP=${ipAddress}
+        export ENV_ADB_DEV_PORT=${portNum}
+        echo -en "设备ID更新:" && ftEcho -s "${deviceId} > ${wifiDevice}"
+        export autoTestDeviceId=${wifiDevice}
     fi
 
     # 自动提权
